@@ -1,0 +1,28 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using XHTools;
+
+namespace PleaseChangeTheNamespace
+{
+	/// <summary>
+	/// Please modify the description。
+	/// </summary>
+	public class TemplateScript : MonoBehaviour
+	{
+		void Start()
+		{
+			
+		}
+		
+		void Update()
+		{
+			
+		}
+		
+		void OnDestroy()
+		{
+		    
+		}
+	}
+}

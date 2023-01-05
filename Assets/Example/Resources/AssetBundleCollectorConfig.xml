@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root Version="2.0">
+  <Common AutoAddressable="True" ShowPackageView="False" />
+  <Package PackageName="DefaultPackage" PackageDesc="">
+    <Group GroupName="Testure Group" GroupDesc="texture" AssetTags="">
+      <Collector CollectPath="Assets/Resources/27.jpg" CollectGUID="b7d20b55fb64e5c4c8dd467af74ad915" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+      <Collector CollectPath="Assets/Resources/30.jpg" CollectGUID="cdac1bab77abb6e40a0e561f0d060a32" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+    </Group>
+    <Group GroupName="Audio Group" GroupDesc="auido" AssetTags="">
+      <Collector CollectPath="Assets/Resources/Sources/BGM.mp3" CollectGUID="9ac404e63dd22754c9e72e582123397e" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+      <Collector CollectPath="Assets/Resources/Sources/FutureWorld_Dark_Loop_01.ogg" CollectGUID="258e311ecdad0499f84da6b125e6177c" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+      <Collector CollectPath="Assets/Resources/Sources/FutureWorld_Dark_Loop_02.ogg" CollectGUID="b15ff5a2e363844f495045993610505b" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+      <Collector CollectPath="Assets/Resources/Sources/FutureWorld_Dark_Loop_03.ogg" CollectGUID="a716130e5ecf94cfa9514c1ae65a516b" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+      <Collector CollectPath="Assets/Resources/Sources/FutureWorld_DarkCave_Loop.ogg" CollectGUID="46ec4ed652af74f7d9a680ac07e9f8a2" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" AssetTags="" />
+    </Group>
+  </Package>
+</root>

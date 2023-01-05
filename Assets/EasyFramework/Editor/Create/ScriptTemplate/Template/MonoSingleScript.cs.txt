@@ -1,0 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
+using EasyFramework.Framework.Core;
+using UnityEngine;
+using XHTools;
+
+namespace PleaseChangeTheNamespace
+{
+    /// <summary>
+    /// Please modify the description。
+    /// </summary>
+    public class MonoSingleScript : MonoSingleton<MonoSingleScript>, ISingleton
+    {
+        void ISingleton.Init()
+        {
+
+        }
+
+        void Update()
+        {
+
+        }
+
+        void ISingleton.Quit()
+        {
+
+        }
+    }
+}

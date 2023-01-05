@@ -1,0 +1,55 @@
+/* 
+ * ================================================
+ * Describe:      This script is used to loaded assets in unity.
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2022-06-08 14:43:47
+ * ModifyAuthor:  Xiaohei.Wang(Wenhao)
+ * ModifyTime:    2022-06-08 14:43:47
+ * Version:       0.1 
+ * ===============================================
+ */
+using EasyFramework.Framework.Core;
+using EasyFramework.Utils;
+using UnityEngine;
+
+
+public enum LoadType
+{
+    Sources,
+    UIPerfabs,
+}
+
+namespace EasyFramework.Managers
+{
+    /// <summary>
+    /// Loaded assets.
+    /// </summary>
+    public class LoadManager : MonoSingleton<LoadManager>, ISingleton, IManager
+    {
+        private string str_AssetsPath = "";
+        private string str_StreamingPath = "";
+        void ISingleton.Init()
+        {
+            str_AssetsPath = Application.dataPath;
+            str_StreamingPath = Application.streamingAssetsPath;
+
+            //StartCoroutine(PatchUpdater.Instance.Start());
+        }
+
+        void ISingleton.Quit()
+        {
+            str_AssetsPath = default;
+            str_StreamingPath = default;
+        }
+
+        public T Load<T>(string patghName) where T : Object
+        {
+            return Resources.Load<T>(patghName);
+        }
+
+        public T Download<T>() where T : Object
+        {
+            return Resources.Load<T>("");
+        }
+    }
+}

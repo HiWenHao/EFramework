@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>XHTools</name>
+    </assembly>
+    <members>
+        <member name="T:XHTools.D">
+            <summary>
+            Custom log print.
+            </summary>
+        </member>
+        <member name="M:XHTools.D.Init(System.Boolean,System.Boolean,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Initialize the debuger system.初始化日志系统
+            </summary>
+            <param name="openLog">Whether to enable logging.是否打开日志</param>
+            <param name="showUILog">Whether to enable log display on the UI.是否在UI上边显示日志</param>
+            <param name="logColor">the color with log.普通颜色</param>
+            <param name="warningColor">the color with warning log.警告颜色</param>
+            <param name="errorColor">the color with error log.错误颜色</param>
+            <param name="correctColor">the color with error log.正确颜色</param>
+            <param name="fatalColor">the color with error log.崩溃颜色</param>
+        </member>
+        <member name="M:XHTools.D.Log(System.Object)">
+            <summary>
+            打印日志
+            </summary>
+        </member>
+        <member name="M:XHTools.D.Correct(System.Object)">
+            <summary>
+            打印正确提示日志
+            </summary>
+        </member>
+        <member name="M:XHTools.D.Warning(System.Object)">
+            <summary>
+            打印警告日志
+            </summary>
+        </member>
+        <member name="M:XHTools.D.Error(System.Object)">
+            <summary>
+            打印错误日志
+            </summary>
+        </member>
+        <member name="M:XHTools.D.Fatal(System.Object)">
+            <summary>
+            打印崩溃日志
+            </summary>
+        </member>
+        <member name="T:XHTools.TStatic">
+            <summary>
+            XH-Tools
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsInt(System.String)">
+            <summary>
+            Check the string is int.
+            检查是否为整数
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsFloat(System.String)">
+            <summary>
+            Check the string is float.
+            检查是否为单精度浮点数
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsColor(System.String)">
+            <summary>
+            Check the string is color
+            检查当前字符串是否为颜色值
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsChinese(System.String)">
+            <summary>
+            Check the string is in pure Chinese.
+            检查是否为纯中文
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsEnglish(System.String)">
+            <summary>
+            Check the string is in pure English.
+            检查是否为纯英文
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsEmail(System.String)">
+            <summary>
+            Check the string is a email.
+            检查是否为邮箱
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsDoubleBytes(System.String)">
+            <summary>
+            Check the string is a double bytes.
+            检查是否为双字节
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.IsPhoneNumber(System.String)">
+            <summary>
+            Check the string is a phone number.
+            检查是否为手机号
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.MakeTexture2D(System.String)">
+            <summary>
+            Use the string to make texture.
+            将string转为texture
+            </summary>
+        </member>
+        <member name="M:XHTools.TStatic.BytesToAudioClip(System.Byte[])">
+            <summary>
+             Byte stream data to audio clip float array.字节流数据转音频单精度浮点型数组
+            </summary>
+            <param name="data">The byte stream.字节流数据</param>
+        </member>
+    </members>
+</doc>
