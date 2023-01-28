@@ -47,7 +47,8 @@ namespace EF.Editor
                 }
                 #endregion
 
-                GameObject _inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                GameObject _inst = (GameObject)PrefabUtility.InstantiateAttachedAsset(prefab);
+                _inst.name = prefabName;
                 _inst.transform.SetParent(_canvas.transform, false);
                 GameObjectUtility.SetParentAndAlign(_inst, menuCommand.context as GameObject);
                 Undo.RegisterCreatedObjectUndo(_inst, $"Create {_inst.name}__{_inst.name}");
