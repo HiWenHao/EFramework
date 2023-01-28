@@ -19,6 +19,7 @@ using UnityEngine.UI;
 
 namespace EasyFramework.UI
 {
+    [AddComponentMenu("UI/Button Pro", 101)]
     [RequireComponent(typeof(Image))]
     [RequireComponent(typeof(CanvasRenderer))]
     public class ButtonPro : Selectable, ISubmitHandler
