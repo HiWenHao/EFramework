@@ -29,7 +29,9 @@ public partial class EF
     static void InitInAfterSceneLoad()
     {
         XHTools.D.Init();
+#if UNITY_EDITOR
         ClearConsole();
+#endif
         #region Set the game run time info
         Application.targetFrameRate = 60;
         Application.runInBackground = true;
@@ -71,6 +73,7 @@ public partial class EF
     }
 
     #region Clear Console
+#if UNITY_EDITOR
     static System.Reflection.MethodInfo m_ClearMethod = null;
     /// <summary>
     /// 清空log信息
@@ -84,5 +87,6 @@ public partial class EF
         }
         m_ClearMethod.Invoke(null, null);
     }
+#endif
     #endregion
 }

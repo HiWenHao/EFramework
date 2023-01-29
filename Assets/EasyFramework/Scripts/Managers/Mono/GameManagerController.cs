@@ -11,12 +11,39 @@
 using EasyFramework.Framework.Core;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// The game managers master controller.游戏管理器总控制器.
 /// </summary>
 public partial class EF : MonoBehaviour
 {
+    #region Skip logo
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+    private static void BeforeSplashScreen()
+    {
+#if !UNITY_WEBGL
+        System.Threading.Tasks.Task.Run(AsyncEnter);
+#else
+        Application.focusChanged += ApplicationFocusChanged;
+#endif
+    }
+
+#if !UNITY_WEBGL
+    private static void AsyncEnter()
+    {
+        SplashScreen.Stop(SplashScreen.StopBehavior.StopImmediate);
+    }
+#else
+    private static void ApplicationFocusChanged(bool focus)
+    {
+        Application.focusChanged -= ApplicationFocusChanged;
+        SplashScreen.Stop(SplashScreen.StopBehavior.StopImmediate);
+    }
+#endif
+    #endregion
+
+    #region Initialize application
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
     {        
@@ -25,6 +52,7 @@ public partial class EF : MonoBehaviour
         DontDestroyOnLoad(Managers);
         InitInAfterSceneLoad();
     }
+    #endregion
 
     #region Control Mamager
     static Queue<ISingleton> Singletons;
