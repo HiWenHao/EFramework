@@ -18,14 +18,19 @@ namespace EF.Editor
     public class CreateUITemplatePrefab
 	{
         [MenuItem("GameObject/UI/Button Pro", false, 20)]
-        static void CreateUISuperButton(MenuCommand menuCommand)
+        static void CreateUIButtonPro(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro");
         }
         [MenuItem("GameObject/UI/Button Pro - TextMeshPro", false, 21)]
-        static void CreateUISuperButtonTmp(MenuCommand menuCommand)
+        static void CreateUIButtonProTmp(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro(TMP)"); 
+        }
+        [MenuItem("GameObject/UI/Radar Map", false, 22)]
+        static void CreateUIRadarMap(MenuCommand menuCommand)
+        {
+            CreateUIObject(menuCommand, "Radar Map");
         }
 
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)

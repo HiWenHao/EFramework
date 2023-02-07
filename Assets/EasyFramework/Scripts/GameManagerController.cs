@@ -66,10 +66,10 @@ public partial class EF
     public static void QuitGame()
     {
         QuitGames();
-#if !UNITY_EDITOR
-        Application.Quit(0);
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
 #endif
-        //UnityEditor.EditorApplication.isPlaying = false;
+        Application.Quit(0);
     }
 
     #region Clear Console
