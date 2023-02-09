@@ -297,6 +297,20 @@ namespace EasyFramework.Managers
             m_currentPage.OnPause(true, args);
             m_currentObj.SetActive(true);
         }
+
+        /// <summary>
+        /// Pop to only home page.退出到只剩下主界面
+        /// </summary>
+        /// <param name="args"> Send this params to home ui page. 给主页面传递参数</param>
+        public void PopToOnlyHome(params object[] args)
+        {
+            while (m_int_UiCount > 2)
+            {
+                Pop();
+            }
+
+            Pop(args);
+        }
         #endregion
 
         #region Show box region

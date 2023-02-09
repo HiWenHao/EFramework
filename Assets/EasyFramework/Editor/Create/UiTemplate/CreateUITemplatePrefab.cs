@@ -33,6 +33,8 @@ namespace EF.Editor
             CreateUIObject(menuCommand, "Radar Map");
         }
 
+
+
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)
         {
             string fullPath = ($"Assets/EasyFramework/Editor/Create/UiTemplate/Template/{prefabName}.prefab");

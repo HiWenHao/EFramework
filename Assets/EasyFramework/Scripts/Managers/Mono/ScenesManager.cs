@@ -37,6 +37,8 @@ namespace EasyFramework.Managers
             m_img_BG = LoadCanvas.GetChild(0).GetComponent<Image>();
             m_slid_ProgressBar = m_img_BG.transform.GetChild(0).GetComponent<Slider>();
             m_txt_PCTN = m_slid_ProgressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
+
+			LoadCanvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(Screen.width, Screen.height);
         }
 
         void ISingleton.Quit()

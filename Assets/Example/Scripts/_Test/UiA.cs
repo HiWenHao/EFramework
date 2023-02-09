@@ -25,6 +25,7 @@ namespace GMTest
 
             EF.Tool.RecursiveSearch<Button>(obj.transform, "btn_ToB").RegisterInListAndBindEvent(OnClickToB, ref m_lst_Buttons);
             EF.Tool.RecursiveSearch<Button>(obj.transform, "btn_Quit").RegisterInListAndBindEvent(OnClickQuit, ref m_lst_Buttons);
+            EF.Tool.RecursiveSearch<Button>(obj.transform, "btn_StartGame").RegisterInListAndBindEvent(OnClickStartGame, ref m_lst_Buttons);
 
         }
 
@@ -52,6 +53,15 @@ namespace GMTest
         void OnClickQuit()
         {
             EF.QuitGame();
+        }
+        void OnClickStartGame()
+        {
+            EF.Sources.SetBgmVolum(0.3f);
+            EF.Sources.PlayBGMByName("BGM");
+            EF.Scenes.LoadSceneWithName("GameMain", delegate
+            {
+                EF.Ui.Push(new ExampleGame.UI.UiGameMain());
+            });
         }
         #endregion
     }
