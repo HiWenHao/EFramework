@@ -65,5 +65,52 @@ namespace EasyFramework.UI
 
 
         #endregion
+
+        #region ButtonPro
+        /// <summary>
+        /// Register inL list and bind event.向列表注册自身，并且绑定事件
+        /// </summary>
+        /// <param name="button">按钮</param>
+        /// <param name="events">事件</param>
+        /// <param name="list">Button list manager. 按钮列表</param>
+        /// <returns></returns>
+        public static ButtonPro RegisterInListAndBindEvent(this ButtonPro button, UnityAction events, ref List<ButtonPro> list)
+        {
+            if (null == list)
+            {
+                list = new List<ButtonPro>();
+            }
+            button.onClick0.AddListener(events);
+            list.Add(button);
+            return button;
+        }
+
+
+
+
+        #endregion
+
+        #region List<ButtonPro>
+        /// <summary>
+        /// Releases all button events and removes buttons one by one from the list.释放所有按钮事件并且从列表中逐一删除按钮
+        /// </summary>
+        /// <param name="buttons">Button list. 按钮列表</param>
+        public static List<ButtonPro> ReleaseAndRemoveEvent(this List<ButtonPro> buttons)
+        {
+            int _tempLength = buttons.Count;
+            while (--_tempLength >= 0)
+            {
+                buttons[_tempLength].onClick0.RemoveAllListeners();
+                buttons.RemoveAt(_tempLength);
+            }
+            buttons.Clear();
+            return buttons;
+        }
+
+
+
+
+
+        #endregion
     }
 }

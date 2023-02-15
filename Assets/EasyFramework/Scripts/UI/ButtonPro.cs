@@ -4,67 +4,75 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-10-26 16:43:48
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2022-10-26 16:43:48
+ * ModifyTime:    2023-02-13 15:59:18
  * ScriptVersion: 0.1
  * ===============================================
 */
 
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using static UnityEngine.EventSystems.PointerEventData;
 
 namespace EasyFramework.UI
 {
     [AddComponentMenu("UI/Button Pro", 101)]
     [RequireComponent(typeof(Image))]
     [RequireComponent(typeof(CanvasRenderer))]
-    public class ButtonPro : Selectable, ISubmitHandler
+    public class ButtonPro : Selectable
     {
         protected ButtonPro() { }
 
         [Serializable]
         public class ButtonClickedEvent : UnityEvent { }
 
-        [FormerlySerializedAs("onClick")]
+        [FormerlySerializedAs("onClick0")]
         [SerializeField]
-        private ButtonClickedEvent m_OnClick = new ButtonClickedEvent();
+        private ButtonClickedEvent m_OnClick0 = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onLongPress")]
+        [FormerlySerializedAs("onClick1")]
         [SerializeField]
-        private ButtonClickedEvent m_onLongPress = new ButtonClickedEvent();
+        private ButtonClickedEvent m_OnClick1 = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onDoubleClick")]
+        [FormerlySerializedAs("onLongPress0")]
         [SerializeField]
-        private ButtonClickedEvent m_onDoubleClick = new ButtonClickedEvent();
+        private ButtonClickedEvent m_onLongPress0 = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onKeepPress")]
+        [FormerlySerializedAs("onDoubleClick0")]
         [SerializeField]
-        private ButtonClickedEvent m_onKeepPress = new ButtonClickedEvent();
+        private ButtonClickedEvent m_onDoubleClick0 = new ButtonClickedEvent();
 
-        public ButtonClickedEvent onClick
+        [FormerlySerializedAs("onKeepPress0")]
+        [SerializeField]
+        private ButtonClickedEvent m_onKeepPress0 = new ButtonClickedEvent();
+
+        public ButtonClickedEvent onClick0
         {
-            get { return m_OnClick; }
+            get { return m_OnClick0; }
         }
-        public ButtonClickedEvent onDoubleClick
+        public ButtonClickedEvent onClick1
         {
-            get { return m_onDoubleClick; }
+            get { return m_OnClick1; }
         }
-        public ButtonClickedEvent onLongPress
+        public ButtonClickedEvent onDoubleClick0
         {
-            get { return m_onLongPress; }
+            get { return m_onDoubleClick0; }
         }
-        public ButtonClickedEvent onKeepPress
+        public ButtonClickedEvent onLongPress0
         {
-            get { return m_onKeepPress; }
+            get { return m_onLongPress0; }
+        }
+        public ButtonClickedEvent onKeepPress0
+        {
+            get { return m_onKeepPress0; }
         }
 
         private float m_longPressIntervalTime = 600.0f;
         private float m_doubleClcikIntervalTime = 170.0f;
-        
+
         private float m_clickCount = 0;
         private bool m_onHoldDown = false;
         private bool m_isKeepPress = false;
@@ -83,14 +91,14 @@ namespace EasyFramework.UI
         {
             if (!IsActive() || !IsInteractable())
                 return;
-
+            Debug.LogWarning("sssssssssssssssss");
             UISystemProfilerApi.AddMarker("Button.onClick", this);
-            m_OnClick.Invoke();
+            m_OnClick0.Invoke();
         }
 
         private void Update()
         {
-            if (!this.interactable) return;
+            if (!interactable) return;
             m_clickIntervalTime = (DateTime.Now - m_clickStartTime).TotalMilliseconds;
 
             if (!m_onHoldDown && 0 != m_clickCount)
@@ -98,9 +106,9 @@ namespace EasyFramework.UI
                 if (m_clickIntervalTime >= m_doubleClcikIntervalTime && m_clickIntervalTime < m_longPressIntervalTime)
                 {
                     if (m_clickCount == 2)
-                        m_onDoubleClick?.Invoke();
+                        m_onDoubleClick0?.Invoke();
                     else
-                        onClick?.Invoke();
+                        onClick0?.Invoke();
                     OnAnyEventTrigger();
                 }
             }
@@ -110,76 +118,62 @@ namespace EasyFramework.UI
                 if (m_clickIntervalTime >= m_longPressIntervalTime)
                 {
                     m_onHoldDown = false;
+                    m_onLongPress0?.Invoke();
                     OnAnyEventTrigger();
-                    m_onLongPress?.Invoke();
                 }
             }
 
-            if (m_isKeepPress) onKeepPress?.Invoke();
+            if (m_isKeepPress) onKeepPress0?.Invoke();
         }
 
         public override void OnPointerDown(PointerEventData eventData)
         {
-            m_onHoldDown = true;
+            if (eventData.button == InputButton.Left)
+            {
+                m_onHoldDown = true;
+                m_onEventTrigger = false;
+                m_clickStartTime = DateTime.Now;
+            }
             m_isKeepPress = true;
-            m_onEventTrigger = false;
-            m_clickStartTime = DateTime.Now;
-
             base.OnPointerDown(eventData);
         }
 
         public override void OnPointerUp(PointerEventData eventData)
         {
-            if (m_onEventTrigger)
-                return;
-
-            m_clickCount++;
-            if (m_clickCount % 3 == 0)
+            if (eventData.button == InputButton.Right)
             {
-                onClick?.Invoke();
+                onClick1?.Invoke();
                 OnAnyEventTrigger();
-                return;
             }
-            else
+            else if (eventData.button == InputButton.Left && !m_onEventTrigger)
             {
-                m_onHoldDown = false;
-                m_isKeepPress = false;
+                m_clickCount++;
+                if (m_clickCount % 3 == 0)
+                {
+                    onClick0?.Invoke();
+                    OnAnyEventTrigger();
+                    return;
+                }
+                else
+                {
+                    m_onHoldDown = false;
+                    m_isKeepPress = false;
+                }
             }
+            m_isKeepPress = false;
 
             base.OnPointerUp(eventData);
         }
 
         public override void OnPointerExit(PointerEventData eventData)
         {
-            m_onHoldDown = false;
+            if (eventData.button == InputButton.Left)
+            {
+                m_onHoldDown = false;
+            }
             m_isKeepPress = false;
 
             base.OnPointerExit(eventData);
-        }
-
-        public virtual void OnSubmit(BaseEventData eventData)
-        {
-            Press();
-
-            if (!IsActive() || !IsInteractable())
-                return;
-
-            DoStateTransition(SelectionState.Pressed, false);
-            StartCoroutine(OnFinishSubmit());
-        }
-
-        private IEnumerator OnFinishSubmit()
-        {
-            var fadeTime = colors.fadeDuration;
-            var elapsedTime = 0f;
-
-            while (elapsedTime < fadeTime)
-            {
-                elapsedTime += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
-            DoStateTransition(currentSelectionState, false);
         }
     }
 }

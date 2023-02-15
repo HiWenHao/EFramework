@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
+  m_Name: AutoBindGlobalSetting
+  m_EditorClassIdentifier: Assembly-CSharp-Editor:EasyFramework.Framework.Core:AutoBindGlobalSetting
+  m_Namespace: EasyFramework
+  m_ComCodePath: Example/Scripts/Game
+  m_RulePrefixes:
+  - Prefixe: Tran
+    FullName: Transform
+  - Prefixe: OAnim
+    FullName: Animation
+  - Prefixe: NAnim
+    FullName: Animator
+  - Prefixe: Rect
+    FullName: RectTransform
+  - Prefixe: Canvas
+    FullName: Canvas
+  - Prefixe: Group
+    FullName: CanvasGroup
+  - Prefixe: VGroup
+    FullName: VerticalLayoutGroup
+  - Prefixe: HGroup
+    FullName: HorizontalLayoutGroup
+  - Prefixe: GGroup
+    FullName: GridLayoutGroup
+  - Prefixe: TGroup
+    FullName: ToggleGroup
+  - Prefixe: Btn
+    FullName: Button
+  - Prefixe: BtnP
+    FullName: ButtonPro
+  - Prefixe: Img
+    FullName: Image
+  - Prefixe: RImg
+    FullName: RawImage
+  - Prefixe: Txt
+    FullName: Text
+  - Prefixe: TxtM
+    FullName: TextMeshProUGUI
+  - Prefixe: Ipt
+    FullName: TMP_InputField
+  - Prefixe: Slider
+    FullName: Slider
+  - Prefixe: Mask
+    FullName: Mask
+  - Prefixe: Mask2D
+    FullName: RectMask2D
+  - Prefixe: Tog
+    FullName: Toggle
+  - Prefixe: Sbar
+    FullName: Scrollbar
+  - Prefixe: SRect
+    FullName: ScrollRect
+  - Prefixe: Drop
+    FullName: Dropdown
+  - Prefixe: VGridV
+    FullName: LoopGridView
+  - Prefixe: HGridV
+    FullName: LoopGridView
+  - Prefixe: VListV
+    FullName: LoopListView2
+  - Prefixe: HListV
+    FullName: LoopListView2
+  - Prefixe: Map
+    FullName: RadarMap
