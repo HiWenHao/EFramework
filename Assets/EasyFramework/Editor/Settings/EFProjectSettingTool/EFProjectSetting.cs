@@ -15,7 +15,7 @@ namespace EasyFramework.Framework
     /// <summary>
     /// 框架设置界面
     /// </summary>
-    [CreateAssetMenu(fileName = "EFProjectSetting", menuName = "EF/ProjectSetting")]
+    [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting")]
     public class EFProjectSetting : ScriptableObject
     {
         [Header("Framework 框架设置")]

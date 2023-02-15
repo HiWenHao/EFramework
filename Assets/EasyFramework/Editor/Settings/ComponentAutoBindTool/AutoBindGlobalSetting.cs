@@ -1,6 +1,6 @@
 /* 
  * ================================================
- * Describe:      This script is used to  . 
+ * Describe:      This script is used to setting auto bind. 
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-13 17:36:43
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
@@ -8,7 +8,6 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -16,34 +15,6 @@ using XHTools;
 
 namespace EasyFramework.Framework
 {
-    /// <summary>
-    /// 自动绑定规则前缀
-    /// </summary>
-    [Serializable]
-    public class AutoBindRulePrefixe
-    {
-        /// <summary>
-        /// 前缀
-        /// </summary>
-        public string Prefixe;
-
-        /// <summary>
-        /// 全名称
-        /// </summary>
-        public string FullName;
-
-        /// <summary>
-        /// 自动绑定规则前缀
-        /// </summary>
-        /// <param name="prefixe">前缀</param>
-        /// <param name="fullName">全名称</param>
-        public AutoBindRulePrefixe(string prefixe, string fullName)
-        {
-            Prefixe = prefixe;
-            FullName = fullName;
-        }
-    }
-
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
@@ -66,35 +37,37 @@ namespace EasyFramework.Framework
         /// 组件的缩略名字映射
         /// </summary>
         [SerializeField]
-        private List<AutoBindRulePrefixe> m_RulePrefixes = new List<AutoBindRulePrefixe>()
+        private List<EFRulePrefixe> m_RulePrefixes = new List<EFRulePrefixe>()
         {
-            new AutoBindRulePrefixe("Tran","Transform"),
-            new AutoBindRulePrefixe("OAnim","Animation"),
-            new AutoBindRulePrefixe("NAnim","Animator"),
-            new AutoBindRulePrefixe("Rect","RectTransform"),
-            new AutoBindRulePrefixe("Canvas","Canvas"),
-            new AutoBindRulePrefixe("Group","CanvasGroup"),
-            new AutoBindRulePrefixe("VGroup","VerticalLayoutGroup"),
-            new AutoBindRulePrefixe("HGroup","HorizontalLayoutGroup"),
-            new AutoBindRulePrefixe("GGroup","GridLayoutGroup"),
-            new AutoBindRulePrefixe("TGroup","ToggleGroup"),
-            new AutoBindRulePrefixe("Btn","ButtonPro"),
-            new AutoBindRulePrefixe("Img","Image"),
-            new AutoBindRulePrefixe("RImg","RawImage"),
-            new AutoBindRulePrefixe("Txt","Text"),
-            new AutoBindRulePrefixe("TxtM","TextMeshProUGUI"),
-            new AutoBindRulePrefixe("Ipt","TMP_InputField"),
-            new AutoBindRulePrefixe("Slider","Slider"),
-            new AutoBindRulePrefixe("Mask","Mask"),
-            new AutoBindRulePrefixe("Mask2D","RectMask2D"),
-            new AutoBindRulePrefixe("Tog","Toggle"),
-            new AutoBindRulePrefixe("Sbar","Scrollbar"),
-            new AutoBindRulePrefixe("SRect","ScrollRect"),
-            new AutoBindRulePrefixe("Drop","Dropdown"),
-            new AutoBindRulePrefixe("VGridV","LoopGridView"),
-            new AutoBindRulePrefixe("HGridV","LoopGridView"),
-            new AutoBindRulePrefixe("VListV","LoopListView2"),
-            new AutoBindRulePrefixe("HListV","LoopListView2"),
+            new EFRulePrefixe("Tran","Transform"),
+            new EFRulePrefixe("OAnim","Animation"),
+            new EFRulePrefixe("NAnim","Animator"),
+            new EFRulePrefixe("Rect","RectTransform"),
+            new EFRulePrefixe("Canvas","Canvas"),
+            new EFRulePrefixe("Group","CanvasGroup"),
+            new EFRulePrefixe("VGroup","VerticalLayoutGroup"),
+            new EFRulePrefixe("HGroup","HorizontalLayoutGroup"),
+            new EFRulePrefixe("GGroup","GridLayoutGroup"),
+            new EFRulePrefixe("TGroup","ToggleGroup"),
+            new EFRulePrefixe("Btn","Button"),
+            new EFRulePrefixe("BtnP","ButtonPro"),
+            new EFRulePrefixe("Img","Image"),
+            new EFRulePrefixe("RImg","RawImage"),
+            new EFRulePrefixe("Txt","Text"),
+            new EFRulePrefixe("TxtM","TextMeshProUGUI"),
+            new EFRulePrefixe("Ipt","TMP_InputField"),
+            new EFRulePrefixe("Slider","Slider"),
+            new EFRulePrefixe("Mask","Mask"),
+            new EFRulePrefixe("Mask2D","RectMask2D"),
+            new EFRulePrefixe("Tog","Toggle"),
+            new EFRulePrefixe("Sbar","Scrollbar"),
+            new EFRulePrefixe("SRect","ScrollRect"),
+            new EFRulePrefixe("Drop","Dropdown"),
+            new EFRulePrefixe("VGridV","LoopGridView"),
+            new EFRulePrefixe("HGridV","LoopGridView"),
+            new EFRulePrefixe("VListV","LoopListView2"),
+            new EFRulePrefixe("HListV","LoopListView2"),
+            new EFRulePrefixe("Map","Radar Map"),
         };
 
         /// <summary>
@@ -110,7 +83,7 @@ namespace EasyFramework.Framework
         /// <summary>
         /// 组件的缩略名字映射
         /// </summary>
-        public List<AutoBindRulePrefixe> RulePrefixes => m_RulePrefixes;
+        public List<EFRulePrefixe> RulePrefixes => m_RulePrefixes;
 
         /// <summary>
         /// 查找是否为有效绑定
@@ -144,7 +117,7 @@ namespace EasyFramework.Framework
                 {
                     if (autoBindRulePrefix.Prefixe.Equals(str))
                     {
-                        comName = autoBindRulePrefix.FullName;
+                        comName = autoBindRulePrefix.FullContent;
                         filedNames.Add($"{str}_{filedName}");
                         componentTypeNames.Add(comName);
                         isFind = true;

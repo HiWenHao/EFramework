@@ -8,6 +8,7 @@
  * Version:       0.1 
  * ===============================================
  */
+using EasyFramework.Framework;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,9 +21,9 @@ namespace EF.Editor
     class CreateTemplateScript
     {
         //脚本模板路径
-        private const string SingleScriptPath = GameEditorConfig.FrameworkPath + "Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
-        private const string TemplateScriptPath = GameEditorConfig.FrameworkPath + "Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
-        private const string MonoSingleScriptPath = GameEditorConfig.FrameworkPath + "Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
+        private readonly static string SingleScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
+        private readonly static string TemplateScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
+        private readonly static string MonoSingleScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
 
         //菜单项
         [MenuItem("Assets/Create/C# Scripts/TemplateScript", false, 1)]
@@ -94,11 +95,11 @@ namespace EF.Editor
             _sw.WriteLine("/* ");
             _sw.WriteLine(" * ================================================");
             _sw.WriteLine(" * Describe:      This script is used to  . ");
-            _sw.WriteLine(" * Author:        " + GameEditorConfig.Author);
+            _sw.WriteLine(" * Author:        " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ModifyAuthor:  " + GameEditorConfig.Author);
+            _sw.WriteLine(" * ModifyAuthor:  " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ScriptVersion: " + GameEditorConfig.ScriptVersion);
+            _sw.WriteLine(" * ScriptVersion: " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
             _sw.WriteLine(" * ===============================================");
             _sw.WriteLine("*/");
 

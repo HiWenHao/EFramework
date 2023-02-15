@@ -12,64 +12,64 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
   m_Name: AutoBindGlobalSetting
   m_EditorClassIdentifier: Assembly-CSharp-Editor:EasyFramework.Framework.Core:AutoBindGlobalSetting
-  m_Namespace: EasyFramework
-  m_ComCodePath: Example/Scripts/Game
+  m_Namespace: PleaseChangeTheNamespace
+  m_ComCodePath: D:/_Projects/Unity/EFramework/Assets
   m_RulePrefixes:
   - Prefixe: Tran
-    FullName: Transform
+    Full: 
   - Prefixe: OAnim
-    FullName: Animation
+    Full: 
   - Prefixe: NAnim
-    FullName: Animator
+    Full: 
   - Prefixe: Rect
-    FullName: RectTransform
+    Full: 
   - Prefixe: Canvas
-    FullName: Canvas
+    Full: 
   - Prefixe: Group
-    FullName: CanvasGroup
+    Full: 
   - Prefixe: VGroup
-    FullName: VerticalLayoutGroup
+    Full: 
   - Prefixe: HGroup
-    FullName: HorizontalLayoutGroup
+    Full: 
   - Prefixe: GGroup
-    FullName: GridLayoutGroup
+    Full: 
   - Prefixe: TGroup
-    FullName: ToggleGroup
+    Full: 
   - Prefixe: Btn
-    FullName: Button
+    Full: 
   - Prefixe: BtnP
-    FullName: ButtonPro
+    Full: 
   - Prefixe: Img
-    FullName: Image
+    Full: 
   - Prefixe: RImg
-    FullName: RawImage
+    Full: 
   - Prefixe: Txt
-    FullName: Text
+    Full: 
   - Prefixe: TxtM
-    FullName: TextMeshProUGUI
+    Full: 
   - Prefixe: Ipt
-    FullName: TMP_InputField
+    Full: TMP_InputField
   - Prefixe: Slider
-    FullName: Slider
+    Full: 
   - Prefixe: Mask
-    FullName: Mask
+    Full: 
   - Prefixe: Mask2D
-    FullName: RectMask2D
+    Full: 
   - Prefixe: Tog
-    FullName: Toggle
+    Full: 
   - Prefixe: Sbar
-    FullName: Scrollbar
+    Full: 
   - Prefixe: SRect
-    FullName: ScrollRect
+    Full: 
   - Prefixe: Drop
-    FullName: Dropdown
+    Full: 
   - Prefixe: VGridV
-    FullName: LoopGridView
+    Full: 
   - Prefixe: HGridV
-    FullName: LoopGridView
+    Full: 
   - Prefixe: VListV
-    FullName: LoopListView2
+    Full: 
   - Prefixe: HListV
-    FullName: LoopListView2
+    Full: 
   - Prefixe: Map
-    FullName: RadarMap
+    Full: 

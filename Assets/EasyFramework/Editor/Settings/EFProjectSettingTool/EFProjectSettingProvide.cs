@@ -20,8 +20,8 @@ namespace EasyFramework.Framework
     /// </summary>
     public class EFProjectSettingProvide : SettingsProvider
     {
-        private const string m_HeaderName = "EF/EFProjectSetting";
-        private const string m_EFProjectSettingPath = "Assets/EasyFramework/Resources/Settings/EFProjectSetting.asset";
+        private const string m_HeaderName = "EF/ProjectSetting";
+        private const string m_EFProjectSettingPath = "Assets/EasyFramework/Resources/Settings/ProjectSetting.asset";
         private SerializedObject m_CustomSettings;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)

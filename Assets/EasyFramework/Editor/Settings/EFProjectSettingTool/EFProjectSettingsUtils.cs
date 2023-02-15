@@ -20,7 +20,7 @@ namespace EasyFramework.Framework
     /// </summary>
     public class EFProjectSettingsUtils
     {
-        private static readonly string m_EFProjectSettingsPath = "Settings/EFProjectSetting";
+        private static readonly string m_EFProjectSettingsPath = "Settings/ProjectSetting";
         private static EFProjectSetting m_EFProjectSetting;
         public static FrameworkGlobalSettings FrameworkGlobalSetting { get { return EFProjectSettings.FrameworkGlobalSetting; } }
 

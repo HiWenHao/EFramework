@@ -89,15 +89,45 @@ namespace EasyFramework.Framework
         [SerializeField] private ServerTypeEnum m_ServerType = ServerTypeEnum.Intranet;
         public ServerTypeEnum ServerType => m_ServerType;
 
-        [Tooltip("内网地址")][SerializeField]
+        [Tooltip("内网地址")]
+        [SerializeField]
         private string m_InnerResourceSourceUrl = "http://192.168.0.1:8080";
         public string InnerResourceSourceUrl => m_InnerResourceSourceUrl;
-        [Tooltip("外网地址")][SerializeField]
+        [Tooltip("外网地址")]
+        [SerializeField]
         private string m_ExtraResourceSourceUrl = "http://192.168.0.1:8080";
         public string ExtraResourceSourceUrl => m_ExtraResourceSourceUrl;
-        [Tooltip("正式地址")][SerializeField]
+        [Tooltip("正式地址")]
+        [SerializeField]
         private string m_FormalResourceSourceUrl = "http://192.168.0.1:8080";
         public string FormalResourceSourceUrl => m_FormalResourceSourceUrl;
+    }
+
+    /// <summary>
+    /// 项目常量
+    /// </summary>
+    [Serializable]
+    public class AppConstConfig
+    {
+        [Tooltip("应用名称")]
+        [SerializeField]
+        private string m_AppName;
+        public string AppName => m_AppName;
+
+        [Tooltip("保存内容时的前缀")]
+        [SerializeField]
+        private string m_AppPrefix;
+        public string AppPrefix => m_AppPrefix;
+
+        [Tooltip("应用版本")]
+        [SerializeField]
+        private string m_AppVersion;
+        public string AppVersion => m_AppVersion;
+
+        [Tooltip("开发阶段")]
+        [SerializeField]
+        private AppStageEnum m_AppStage = AppStageEnum.Debug;
+        public AppStageEnum AppStage => m_AppStage;
     }
 
     /// <summary>
@@ -116,12 +146,18 @@ namespace EasyFramework.Framework
         private string m_ScriptVersion = "0.1";
         public string ScriptVersion => m_ScriptVersion;
 
-        [SerializeField] 
-        [Tooltip("开发阶段")]
-        private AppStageEnum m_AppStage = AppStageEnum.Debug;
-        public AppStageEnum AppStage => m_AppStage;
+        [SerializeField]
+        [Header("框架路径地址")]
+        [Tooltip("EF in the path under the asset folder. EF在Asset文件夹下的路径")]
+        private string m_FrameworkPath = "Assets/EasyFramework";
+        public string FrameworkPath => m_FrameworkPath;
 
-        [Header("资源存放地")]
+        //[Header("项目常量")]
+        //[SerializeField]
+        //private AppConstConfig m_AppConst;
+        //public AppConstConfig AppConst => m_AppConst;
+
+        [Header("出包资源存放地")]
         [SerializeField]
         private ResourcesArea m_ResourcesArea;
         public ResourcesArea ResourcesArea => m_ResourcesArea;
