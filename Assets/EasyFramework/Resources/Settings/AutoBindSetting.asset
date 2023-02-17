@@ -10,66 +10,67 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
-  m_Name: AutoBindGlobalSetting
+  m_Name: AutoBindSetting
   m_EditorClassIdentifier: Assembly-CSharp-Editor:EasyFramework.Framework.Core:AutoBindGlobalSetting
   m_Namespace: PleaseChangeTheNamespace
   m_ComCodePath: D:/_Projects/Unity/EFramework/Assets
+  m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
   m_RulePrefixes:
   - Prefixe: Tran
-    Full: 
+    FullContent: Transform
   - Prefixe: OAnim
-    Full: 
+    FullContent: Animation
   - Prefixe: NAnim
-    Full: 
+    FullContent: Animator
   - Prefixe: Rect
-    Full: 
+    FullContent: RectTransform
   - Prefixe: Canvas
-    Full: 
+    FullContent: Canvas
   - Prefixe: Group
-    Full: 
+    FullContent: CanvasGroup
   - Prefixe: VGroup
-    Full: 
+    FullContent: VerticalLayoutGroup
   - Prefixe: HGroup
-    Full: 
+    FullContent: HorizontalLayoutGroup
   - Prefixe: GGroup
-    Full: 
+    FullContent: GridLayoutGroup
   - Prefixe: TGroup
-    Full: 
+    FullContent: ToggleGroup
   - Prefixe: Btn
-    Full: 
+    FullContent: Button
   - Prefixe: BtnP
-    Full: 
+    FullContent: ButtonPro
   - Prefixe: Img
-    Full: 
+    FullContent: Image
   - Prefixe: RImg
-    Full: 
+    FullContent: RawImage
   - Prefixe: Txt
-    Full: 
+    FullContent: Text
   - Prefixe: TxtM
-    Full: 
+    FullContent: TextMeshProUGUI
   - Prefixe: Ipt
-    Full: TMP_InputField
+    FullContent: TMP_InputField
   - Prefixe: Slider
-    Full: 
+    FullContent: Slider
   - Prefixe: Mask
-    Full: 
+    FullContent: Mask
   - Prefixe: Mask2D
-    Full: 
+    FullContent: RectMask2D
   - Prefixe: Tog
-    Full: 
+    FullContent: Toggle
   - Prefixe: Sbar
-    Full: 
+    FullContent: Scrollbar
   - Prefixe: SRect
-    Full: 
+    FullContent: ScrollRect
   - Prefixe: Drop
-    Full: 
+    FullContent: Dropdown
   - Prefixe: VGridV
-    Full: 
+    FullContent: LoopGridView
   - Prefixe: HGridV
-    Full: 
+    FullContent: LoopGridView
   - Prefixe: VListV
-    Full: 
+    FullContent: LoopListView2
   - Prefixe: HListV
-    Full: 
+    FullContent: LoopListView2
   - Prefixe: Map
-    Full: 
+    FullContent: RadarMap

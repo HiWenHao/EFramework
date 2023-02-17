@@ -14,6 +14,7 @@ using UnityEngine;
 
 namespace EasyFramework.UI
 {
+    [DisallowMultipleComponent]
     public class UiBind : MonoBehaviour
     {
         [Serializable]
@@ -44,5 +45,14 @@ namespace EasyFramework.UI
 
         [SerializeField]
         private string m_ComCodePath;
-	}
+
+        [SerializeField]
+        private bool m_DeleteScript;
+
+        [SerializeField]
+        private bool m_CreatePrefab;
+
+        [SerializeField]
+        private string m_PrefabPath;
+    }
 }

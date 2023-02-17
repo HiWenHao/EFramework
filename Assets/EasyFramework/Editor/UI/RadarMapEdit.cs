@@ -12,7 +12,7 @@ using EasyFramework.UI;
 using UnityEditor;
 using UnityEngine;
 
-namespace EF.Editor
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// Please modify the description。

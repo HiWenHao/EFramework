@@ -8,7 +8,7 @@
  * Version:         1.0
  * ===============================================
  */
-namespace EasyFramework.Framework.Core
+namespace EasyFramework
 {
     /// <summary>
     /// Manager interface.

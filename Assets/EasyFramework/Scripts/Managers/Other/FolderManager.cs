@@ -8,7 +8,7 @@
  * Version:       0.1 
  * ===============================================
  */
-using EasyFramework.Framework.Core;
+
 using System;
 using System.IO;
 using System.Security.Cryptography;

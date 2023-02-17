@@ -16,13 +16,6 @@ MonoBehaviour:
     m_ScriptAuthor: Xiaohei.Wang(Wenhao)
     m_ScriptVersion: 0.1
     m_FrameworkPath: Assets\EasyFramework
-    m_AppConst:
-      m_AppName: EasyFramework
-      m_AppPrefix: EF_
-      m_AppVersion: 1.0
-      m_AppStage: 1
-      m_UIPath: Prefabs/UI/
-      m_AudioPath: Sources/
     m_ResourcesArea:
       m_ResAdminType: Default
       m_ResAdminCode: 0

@@ -8,7 +8,7 @@
  * Version:         1.0
  * ===============================================
  */
-using EasyFramework.Framework.Core;
+
 using EasyFramework.UI;
 using System.Collections.Generic;
 using UnityEngine;

@@ -51,9 +51,20 @@ public partial class EF
         if (Camera.main)
             DontDestroyOnLoad(Camera.main);
         Camera.main.gameObject.AddComponent<GMTest.Test>();
+
+        //FPS展示
         EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
+
+        //读表工具初始化
+        //XHTools.ExcelTool.ExcelDataManager.Init("JsonData");
+        //ExcelDataCacheManager.CacheData();
+        //资源热更
         //PatchUpdater.Instance.PlayMode = YooAsset.EPlayMode.HostPlayMode;
+
+        //UI进入
         //Ui.Push(new You Class());
+
+        //音频播放
         //Sources.PlayBGMByName("You bgm`s name", true);
     }
 

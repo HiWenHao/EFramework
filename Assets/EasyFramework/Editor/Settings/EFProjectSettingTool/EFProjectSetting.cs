@@ -8,9 +8,10 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+using EasyFramework.Framework;
 using UnityEngine;
 
-namespace EasyFramework.Framework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 框架设置界面
@@ -20,7 +21,7 @@ namespace EasyFramework.Framework
     {
         [Header("Framework 框架设置")]
         [SerializeField]
-        private FrameworkGlobalSettings m_FrameworkGlobalSettings;
-        public FrameworkGlobalSettings FrameworkGlobalSetting { get { return m_FrameworkGlobalSettings; } }
+        private FrameworkSettings m_FrameworkGlobalSettings;
+        public FrameworkSettings FrameworkGlobalSetting { get { return m_FrameworkGlobalSettings; } }
     }
 }

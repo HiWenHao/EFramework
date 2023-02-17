@@ -10,7 +10,7 @@
 */
 using System;
 
-namespace EasyFramework.Framework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 规则前缀

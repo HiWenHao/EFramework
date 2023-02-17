@@ -9,7 +9,6 @@
  * ===============================================
 */
 using BestHTTP;
-using EasyFramework.Framework.Core;
 using LitJson;
 using System;
 using System.Text;

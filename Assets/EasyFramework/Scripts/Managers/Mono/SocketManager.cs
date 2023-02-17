@@ -1,6 +1,5 @@
 ﻿using BestHTTP;
 using BestHTTP.WebSocket;
-using EasyFramework.Framework.Core;
 using System;
 using XHTools;
 

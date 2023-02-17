@@ -13,25 +13,34 @@ using UnityEditor;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Framework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
-    [CreateAssetMenu(fileName = "AutoBindGlobalSetting", menuName = "EF/AutoBindGlobalSetting")]
-    public class AutoBindGlobalSetting : ScriptableObject
+    [CreateAssetMenu(fileName = "AutoBindSetting", menuName = "EF/AutoBindSetting")]
+    public class AutoBindSetting : ScriptableObject
     {
         /// <summary>
         /// 默认命名空间
         /// </summary>
+        [Header("默认命名空间")]
         [SerializeField]
         private string m_Namespace;
 
         /// <summary>
         /// 默认组件代码保存路径
         /// </summary>
+        [Header("默认组件代码保存路径")]
         [SerializeField]
         private string m_ComCodePath;
+
+        /// <summary>
+        /// 默认UI预制件保存路径
+        /// </summary>
+        [Header("默认UI预制件保存路径")]
+        [SerializeField]
+        private string m_PrefabPath;
 
         /// <summary>
         /// 组件的缩略名字映射
@@ -67,7 +76,7 @@ namespace EasyFramework.Framework
             new EFRulePrefixe("HGridV","LoopGridView"),
             new EFRulePrefixe("VListV","LoopListView2"),
             new EFRulePrefixe("HListV","LoopListView2"),
-            new EFRulePrefixe("Map","Radar Map"),
+            new EFRulePrefixe("Map","RadarMap"),
         };
 
         /// <summary>
@@ -79,6 +88,11 @@ namespace EasyFramework.Framework
         /// 默认组件代码保存路径
         /// </summary>
         public string ComCodePath => m_ComCodePath;
+
+        /// <summary>
+        /// 默认UI预制件保存路径
+        /// </summary>
+        public string PrefabPath => m_PrefabPath;
 
         /// <summary>
         /// 组件的缩略名字映射
@@ -110,7 +124,7 @@ namespace EasyFramework.Framework
             {
                 string str = strArray[i].Replace("#", "");
                 string comName;
-                var _AutoBindGlobalSetting = GetAutoBindGlobalSetting();
+                var _AutoBindGlobalSetting = GetAutoBindSetting();
                 var _PrefixesDict = _AutoBindGlobalSetting.RulePrefixes;
                 bool isFindComponent = false;
                 foreach (var autoBindRulePrefix in _PrefixesDict)
@@ -140,22 +154,22 @@ namespace EasyFramework.Framework
         /// <summary>
         /// 获取自动绑定的全局设置
         /// </summary>
-        public static AutoBindGlobalSetting GetAutoBindGlobalSetting()
+        public static AutoBindSetting GetAutoBindSetting()
         {
-            AutoBindGlobalSetting _AutoBindGlobalSetting = null;
-            string[] paths = AssetDatabase.FindAssets("t:AutoBindGlobalSetting");
+            AutoBindSetting _AutoBindGlobalSetting = null;
+            string[] paths = AssetDatabase.FindAssets("t:AutoBindSetting");
             if (paths.Length == 0)
             {
-                D.Error("不存在AutoBindGlobalSetting");
+                D.Error("不存在AutoBindSetting");
                 return _AutoBindGlobalSetting;
             }
             if (paths.Length > 1)
             {
-                D.Error("AutoBindGlobalSetting数量大于1");
+                D.Error("AutoBindSetting数量大于1");
                 return _AutoBindGlobalSetting;
             }
             string path = AssetDatabase.GUIDToAssetPath(paths[0]);
-            _AutoBindGlobalSetting = AssetDatabase.LoadAssetAtPath<AutoBindGlobalSetting>(path);
+            _AutoBindGlobalSetting = AssetDatabase.LoadAssetAtPath<AutoBindSetting>(path);
             return _AutoBindGlobalSetting;
         }
 

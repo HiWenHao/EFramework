@@ -9,11 +9,12 @@
  * ===============================================
 */
 
+using EasyFramework.Framework;
 using System;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Framework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// Easy framework setting utils.框架设置工具
@@ -22,7 +23,7 @@ namespace EasyFramework.Framework
     {
         private static readonly string m_EFProjectSettingsPath = "Settings/ProjectSetting";
         private static EFProjectSetting m_EFProjectSetting;
-        public static FrameworkGlobalSettings FrameworkGlobalSetting { get { return EFProjectSettings.FrameworkGlobalSetting; } }
+        public static FrameworkSettings FrameworkGlobalSetting { get { return EFProjectSettings.FrameworkGlobalSetting; } }
 
         public static EFProjectSetting EFProjectSettings
         {

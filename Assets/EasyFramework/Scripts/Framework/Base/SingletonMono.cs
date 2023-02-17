@@ -8,7 +8,7 @@
  * Version:         1.0
  * ===============================================
  */
-using EasyFramework.Framework.Core;
+using EasyFramework;
 using UnityEngine;
 
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton, new()

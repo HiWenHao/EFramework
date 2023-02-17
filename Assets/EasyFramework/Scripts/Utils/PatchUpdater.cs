@@ -8,7 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework.Framework.Core;
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

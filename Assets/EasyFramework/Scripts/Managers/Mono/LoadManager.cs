@@ -8,7 +8,6 @@
  * Version:       0.1 
  * ===============================================
  */
-using EasyFramework.Framework.Core;
 using EasyFramework.Utils;
 using UnityEngine;
 

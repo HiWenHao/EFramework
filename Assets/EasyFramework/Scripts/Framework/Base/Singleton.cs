@@ -9,7 +9,7 @@
  * ===============================================
  */
 using System;
-using EasyFramework.Framework.Core;
+using EasyFramework;
 
 public abstract class Singleton<T> where T : class, ISingleton
 {

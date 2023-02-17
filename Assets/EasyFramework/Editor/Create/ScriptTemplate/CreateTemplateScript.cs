@@ -8,7 +8,7 @@
  * Version:       0.1 
  * ===============================================
  */
-using EasyFramework.Framework;
+
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,7 +16,7 @@ using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
-namespace EF.Editor
+namespace EasyFramework.Edit
 {
     class CreateTemplateScript
     {
@@ -26,7 +26,7 @@ namespace EF.Editor
         private readonly static string MonoSingleScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
 
         //菜单项
-        [MenuItem("Assets/Create/C# Scripts/TemplateScript", false, 1)]
+        [MenuItem("Assets/Create/EF/C# Scripts/TemplateScript", false, 1)]
         static void CreateScript()
         {
             CreateScriptAsset.ScriptName = "TemplateScript";
@@ -34,7 +34,7 @@ namespace EF.Editor
             GetSelectedPathOrFallback() + "/NewTemplateScript.cs",
             null, TemplateScriptPath);
         }
-        [MenuItem("Assets/Create/C# Scripts/SingleScript", false, 2)]
+        [MenuItem("Assets/Create/EF/C# Scripts/SingleScript", false, 2)]
         static void CreateSingleScript()
         {
             CreateScriptAsset.ScriptName = "SingleScript";
@@ -42,7 +42,7 @@ namespace EF.Editor
             GetSelectedPathOrFallback() + "/NewSingleScript.cs",
             null, SingleScriptPath);
         }
-        [MenuItem("Assets/Create/C# Scripts/MonoSingleScript", false, 3)]
+        [MenuItem("Assets/Create/EF/C# Scripts/MonoSingleScript", false, 3)]
         static void CreateMonoSingleScript()
         {
             CreateScriptAsset.ScriptName = "MonoSingleScript";
@@ -94,7 +94,7 @@ namespace EF.Editor
 
             _sw.WriteLine("/* ");
             _sw.WriteLine(" * ================================================");
-            _sw.WriteLine(" * Describe:      This script is used to  . ");
+            _sw.WriteLine(" * Describe:      This script is used to . ");
             _sw.WriteLine(" * Author:        " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             _sw.WriteLine(" * ModifyAuthor:  " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);

@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace EF.Editor
+namespace EasyFramework.Edit
 {
     public class CreateUITemplatePrefab
 	{

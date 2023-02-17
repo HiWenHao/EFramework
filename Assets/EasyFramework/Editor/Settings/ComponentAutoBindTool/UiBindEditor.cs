@@ -17,7 +17,7 @@ using UnityEditor;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Framework.Core
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// Ui builder with editor.
@@ -31,22 +31,31 @@ namespace EasyFramework.Framework.Core
         private SerializedProperty m_BindComs;
         private SerializedProperty m_Namespace;
         private SerializedProperty m_ComCodePath;
+        private SerializedProperty m_PrefabPath;
+        private SerializedProperty m_CreatePrefab;
+        private SerializedProperty m_DeleteScript;
 
-        private AutoBindGlobalSetting m_Setting;
+        private AutoBindSetting m_Setting;
         private List<string> m_TempFiledNames = new List<string>();
         private List<string> m_TempComponentTypeNames = new List<string>();
 
         private void OnEnable()
         {
             m_Builder = (UiBind)target;
-            m_Setting = AutoBindGlobalSetting.GetAutoBindGlobalSetting();
-            m_BindDatas = serializedObject.FindProperty("BindDatas");
+            m_Setting = AutoBindSetting.GetAutoBindSetting();
             m_BindComs = serializedObject.FindProperty("m_BindComs");
+            m_BindDatas = serializedObject.FindProperty("BindDatas");
             m_Namespace = serializedObject.FindProperty("m_Namespace");
+            m_PrefabPath = serializedObject.FindProperty("m_PrefabPath");
             m_ComCodePath = serializedObject.FindProperty("m_ComCodePath");
+            m_CreatePrefab = serializedObject.FindProperty("m_CreatePrefab");
+            m_DeleteScript = serializedObject.FindProperty("m_DeleteScript");
 
             m_Namespace.stringValue = string.IsNullOrEmpty(m_Namespace.stringValue) ? m_Setting.Namespace : m_Namespace.stringValue;
+            m_PrefabPath.stringValue = string.IsNullOrEmpty(m_PrefabPath.stringValue) ? m_Setting.PrefabPath : m_PrefabPath.stringValue;
             m_ComCodePath.stringValue = string.IsNullOrEmpty(m_ComCodePath.stringValue) ? m_Setting.ComCodePath : m_ComCodePath.stringValue;
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         public override void OnInspectorGUI()
@@ -55,15 +64,14 @@ namespace EasyFramework.Framework.Core
 
             DrawSetting();
 
-            GUILayout.Space(12.0f);
-            if (GUILayout.Button("自动绑定组件"))
-            {
-                AutoBindComponent();
-            }
+            DrawAutoBind();
 
             DrawKvData();
 
             DrawStartBind();
+
+            if (!target || !serializedObject.targetObject)
+                return;
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -84,6 +92,32 @@ namespace EasyFramework.Framework.Core
 
             EditorGUILayout.LabelField(new GUIContent($"类名： {m_Builder.gameObject.name}   (自动与当前对象名保持一致)"));
 
+            EditorGUILayout.Space(12f, true);
+
+            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ? "  UI预制件的保存路径：" : "  同时生成UI的预制件，如果已存在则会修改");
+            if (m_CreatePrefab.boolValue)
+            {
+                EditorGUILayout.LabelField(m_PrefabPath.stringValue);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("选择UI预制件保存路径"))
+                {
+                    string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
+                    if (!Directory.Exists(folder))
+                    {
+                        folder = Application.dataPath;
+                    }
+                    string path = EditorUtility.OpenFolderPanel("选择UI预制件保存路径", folder, "");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "");
+                    }
+                }
+                if (GUILayout.Button("默认设置"))
+                {
+                    m_PrefabPath.stringValue = m_Setting.PrefabPath;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
             EditorGUILayout.Space(12f, true);
 
             EditorGUILayout.LabelField("自动生成代码保存路径：");
@@ -107,6 +141,19 @@ namespace EasyFramework.Framework.Core
                 m_ComCodePath.stringValue = m_Setting.ComCodePath;
             }
             EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// Draw auto binding
+        /// 绘制绑定按钮
+        /// </summary>
+        private void DrawAutoBind()
+        {
+            GUILayout.Space(12.0f);
+            if (GUILayout.Button("自动绑定组件"))
+            {
+                AutoBindComponent();
+            }
         }
 
         /// <summary>
@@ -154,9 +201,20 @@ namespace EasyFramework.Framework.Core
         private void DrawStartBind()
         {
             GUILayout.Space(24f);
-            if (GUILayout.Button("确定生成对应UI脚本", GUILayout.Height(25.0f)))
+            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, "  生成UI后卸载该脚本");
+
+            GUILayout.Space(12f);
+            if (GUILayout.Button("确定生成", GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
+                if (m_CreatePrefab.boolValue)
+                {
+                    CreateOrModifyPrefab();
+                }
+                if (m_DeleteScript.boolValue)
+                {
+                    DestroyImmediate(m_Builder);
+                }
                 AssetDatabase.Refresh();
             }
         }
@@ -189,7 +247,7 @@ namespace EasyFramework.Framework.Core
                         continue;
                     }
                 }
-                if (AutoBindGlobalSetting.IsValidBind(child, m_TempFiledNames, m_TempComponentTypeNames))
+                if (AutoBindSetting.IsValidBind(child, m_TempFiledNames, m_TempComponentTypeNames))
                 {
                     for (int i = 0; i < m_TempFiledNames.Count; i++)
                     {
@@ -251,6 +309,28 @@ namespace EasyFramework.Framework.Core
         }
         #endregion
 
+        #region Create prefab file
+        private void CreateOrModifyPrefab()
+        {
+            string _path;
+            if (Application.dataPath == m_PrefabPath.stringValue)
+                _path = $"{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
+            else
+                _path = $"{Application.dataPath}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
+
+            if (File.Exists(_path))
+            {
+                File.Delete(_path);
+                File.Delete(_path + ".meta");
+            }
+
+            GameObject _obj = PrefabUtility.SaveAsPrefabAsset(m_Builder.gameObject, _path);
+            DestroyImmediate(_obj.GetComponent<UiBind>(), true);
+
+            AssetDatabase.SaveAssets();
+        }
+        #endregion
+
         #region Create code file. 生成代码文件
         readonly string m_AnnotationCSStr =
         "/*\n"
@@ -268,6 +348,8 @@ namespace EasyFramework.Framework.Core
 
         readonly string ComponentsStart = "#region Components.可使用组件 -- Auto";
         readonly string ComponentsEnd = "#endregion Components -- Auto";
+        readonly string QuitComponentsStart = "#region Quit Buttons.按钮 -- Auto";
+        readonly string QuitComponentsEnd = "#endregion Buttons.按钮 -- Auto";
         readonly string FindComsStart = "#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto";
         readonly string FindComsEnd = "#endregion  Find components end. -- Auto";
         readonly string ButtonEventsStart = "#region Button event in game ui page.";
@@ -306,7 +388,7 @@ namespace EasyFramework.Framework.Core
                     _hasButtonPro = true;
                     _ButtonProLst.Add(m_Builder.BindDatas[i].Name);
                 }
-                else if(_type == typeof(UnityEngine.UI.Button))
+                else if (_type == typeof(UnityEngine.UI.Button))
                 {
                     _hasButtonPro = true;
                     _ButtonLst.Add(m_Builder.BindDatas[i].Name);
@@ -386,10 +468,12 @@ namespace EasyFramework.Framework.Core
                 sw.WriteLine("\t\tpublic override void Quit()\n\t\t{");
                 if (_hasButtonPro)
                 {
+                    sw.WriteLine("\t\t\t" + QuitComponentsStart);
                     sw.WriteLine("\t\t\tm_AllButtons.ReleaseAndRemoveEvent();");
                     sw.WriteLine("\t\t\tm_AllButtons = null;");
                     sw.WriteLine("\t\t\tm_AllButtonPros.ReleaseAndRemoveEvent();");
                     sw.WriteLine("\t\t\tm_AllButtonPros = null;");
+                    sw.WriteLine("\t\t\t" + QuitComponentsEnd);
                 }
                 sw.WriteLine("\t\t}\n");
                 #endregion
@@ -440,6 +524,7 @@ namespace EasyFramework.Framework.Core
                             _strList.Add("\t\tprivate List<Button> m_AllButtons;");
                             _strList.Add("\t\tprivate List<ButtonPro> m_AllButtonPros;");
                         }
+                        continue;
                     }
 
                     if (str.Contains(ComponentsEnd))
@@ -453,6 +538,7 @@ namespace EasyFramework.Framework.Core
                     {
                         _canOverwrite = false;
                         _strList.Add("\t\t\t" + FindComsStart);
+                        continue;
                     }
 
                     if (str.Contains(FindComsEnd))
@@ -471,6 +557,36 @@ namespace EasyFramework.Framework.Core
                         }
                         //_strList.Add("\t\t\t" + FindComsEnd);
                         _canOverwrite = true;
+                    }
+                    #endregion
+
+                    #region override Quit
+                    if (!_hasButtonPro)
+                    {
+                        if (_canOverwrite && str.Contains(QuitComponentsStart))
+                        {
+                            _strList.Add(str);
+                            _canOverwrite = false;
+                            continue;
+                        }
+                        if (!_canOverwrite && str.Contains(QuitComponentsEnd))
+                        {
+                            _strList.Add(str);
+                            _canOverwrite = true;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (str.Contains(QuitComponentsStart))
+                        {
+                            _strList.Add(str);
+                            _strList.Add("\t\t\tm_AllButtons.ReleaseAndRemoveEvent();");
+                            _strList.Add("\t\t\tm_AllButtons = null;");
+                            _strList.Add("\t\t\tm_AllButtonPros.ReleaseAndRemoveEvent();");
+                            _strList.Add("\t\t\tm_AllButtonPros = null;");
+                            continue;
+                        }
                     }
                     #endregion
 

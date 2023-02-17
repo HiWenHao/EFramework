@@ -134,7 +134,7 @@ namespace EasyFramework.Framework
     /// 框架全局设置.
     /// </summary>
     [Serializable]
-    public class FrameworkGlobalSettings
+    public class FrameworkSettings
     {
         [SerializeField]
         [Tooltip("脚本作者名")]

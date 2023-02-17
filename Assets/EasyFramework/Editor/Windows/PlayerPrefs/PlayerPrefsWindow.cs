@@ -16,7 +16,7 @@ using UnityEditor;
 using UnityEngine;
 using XHTools;
 
-namespace EF.Windows
+namespace EasyFramework.Windows
 {
     /// <summary>
     /// Visualize PlayerPrefs

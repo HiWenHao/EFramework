@@ -13,7 +13,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace EasyFramework.Framework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 项目设置面板
