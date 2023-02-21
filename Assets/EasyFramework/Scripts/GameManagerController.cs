@@ -47,10 +47,9 @@ public partial class EF
         #endregion
 
         XHTools.D.Log("======================Initialize======================");
-        //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此  
-        if (Camera.main)
-            DontDestroyOnLoad(Camera.main);
-        Camera.main.gameObject.AddComponent<GMTest.Test>();
+        //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
+
+        ExampleGame.Controller.CameraControl.Instance.gameObject.AddComponent<GMTest.Test>();
 
         //FPS展示
         EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;

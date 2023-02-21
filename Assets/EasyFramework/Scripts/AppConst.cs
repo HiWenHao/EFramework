@@ -26,6 +26,11 @@ public class AppConst
     /// Save the ui page path.存放 UI面板 的路径
     /// </summary>
     public const string UI = "Prefabs/UI/";
+
+    /// <summary>
+    /// Save the player path.存放 人物模型 的路径
+    /// </summary>
+    public const string Player = "Prefabs/Players/";
     #endregion
 
     #region Audio Sources

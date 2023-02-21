@@ -500,6 +500,8 @@ namespace EasyFramework.Edit
             }
             else
             {
+                string _TabNumber = "";
+                bool _isFirstNameSpace = true;
                 bool _canOverwrite = true;
                 string[] _strArr = File.ReadAllLines(filePath);
                 List<string> _strList = new List<string>();
@@ -510,19 +512,29 @@ namespace EasyFramework.Edit
                     if (str.Contains(ScriptEnd))
                         break;
 
+                    if (str.Contains("namespace"))
+                    {
+                        if(_isFirstNameSpace)
+                            _isFirstNameSpace = false;
+                        else
+                        {
+                            _TabNumber += "\t";
+                        }
+                    }
+
                     #region Components
                     if (str.Contains(ComponentsStart))
                     {
                         _canOverwrite = false;
-                        _strList.Add("\t\t" + ComponentsStart);
+                        _strList.Add("\t\t" + _TabNumber + ComponentsStart);
                         foreach (KeyValuePair<string, string> item in _otherComponent)
                         {
-                            _strList.Add($"\t\tprivate {item.Value} {item.Key};");
+                            _strList.Add($"\t\t{_TabNumber}private {item.Value} {item.Key};");
                         }
                         if (_hasButtonPro)
                         {
-                            _strList.Add("\t\tprivate List<Button> m_AllButtons;");
-                            _strList.Add("\t\tprivate List<ButtonPro> m_AllButtonPros;");
+                            _strList.Add(_TabNumber + "\t\tprivate List<Button> m_AllButtons;");
+                            _strList.Add(_TabNumber + "\t\tprivate List<ButtonPro> m_AllButtonPros;");
                         }
                         continue;
                     }
@@ -537,7 +549,7 @@ namespace EasyFramework.Edit
                     if (str.Contains(FindComsStart))
                     {
                         _canOverwrite = false;
-                        _strList.Add("\t\t\t" + FindComsStart);
+                        _strList.Add("\t\t\t" + _TabNumber + FindComsStart);
                         continue;
                     }
 
@@ -545,15 +557,15 @@ namespace EasyFramework.Edit
                     {
                         foreach (KeyValuePair<string, string> item in _otherComponent)
                         {
-                            _strList.Add($"\t\t\t{item.Key} = EF.Tool.RecursiveSearch<{item.Value}>(obj.transform, \"{item.Key}\") ;");
+                            _strList.Add($"\t\t\t{_TabNumber}{item.Key} = EF.Tool.RecursiveSearch<{item.Value}>(obj.transform, \"{item.Key}\") ;");
                         }
                         foreach (var btn in _ButtonLst)
                         {
-                            _strList.Add($"\t\t\tEF.Tool.RecursiveSearch<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
+                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.RecursiveSearch<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
                         }
                         foreach (var btnPro in _ButtonProLst)
                         {
-                            _strList.Add($"\t\t\tEF.Tool.RecursiveSearch<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
+                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.RecursiveSearch<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
                         }
                         //_strList.Add("\t\t\t" + FindComsEnd);
                         _canOverwrite = true;
@@ -581,10 +593,13 @@ namespace EasyFramework.Edit
                         if (str.Contains(QuitComponentsStart))
                         {
                             _strList.Add(str);
-                            _strList.Add("\t\t\tm_AllButtons.ReleaseAndRemoveEvent();");
-                            _strList.Add("\t\t\tm_AllButtons = null;");
-                            _strList.Add("\t\t\tm_AllButtonPros.ReleaseAndRemoveEvent();");
-                            _strList.Add("\t\t\tm_AllButtonPros = null;");
+                            if (_strArr[i + 1].Contains(QuitComponentsEnd))
+                            {
+                                _strList.Add(_TabNumber + "\t\t\tm_AllButtons.ReleaseAndRemoveEvent();");
+                                _strList.Add(_TabNumber + "\t\t\tm_AllButtons = null;");
+                                _strList.Add(_TabNumber + "\t\t\tm_AllButtonPros.ReleaseAndRemoveEvent();");
+                                _strList.Add(_TabNumber + "\t\t\tm_AllButtonPros = null;");
+                            }
                             continue;
                         }
                     }
@@ -676,7 +691,7 @@ namespace EasyFramework.Edit
                 }
                 if (strList[i].Contains(m_StrChangeTime))
                 {
-                    strList[i] = $" {m_StrChangeTime}    {System.DateTime.Now:yyyy-MM-dd HH-mm-ss}";
+                    strList[i] = $" {m_StrChangeTime}    {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
                     return;
                 }
             }
@@ -689,13 +704,11 @@ namespace EasyFramework.Edit
         private string GetFileHead()
         {
             string annotationStr = m_AnnotationCSStr;
-            //annotationStr = annotationStr.Replace("#Class#",
-            //    fileNameWithoutExtension);
             //把#CreateTime#替换成具体创建的时间
             annotationStr = annotationStr.Replace("#CreatTime#",
-                System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss"));
+                System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             annotationStr = annotationStr.Replace("#ChangeTime#",
-                System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss"));
+                System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             //把#Author# 替换
             annotationStr = annotationStr.Replace("#Author#",
                 EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);

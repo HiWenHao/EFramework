@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 367878923811399402}
   - component: {fileID: 7646318192103580655}
   m_Layer: 5
-  m_Name: btn_PauseAll
+  m_Name: Btn_PauseAll
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 7557259822899769363}
   - component: {fileID: 8540678902416205172}
   m_Layer: 5
-  m_Name: btn_2D
+  m_Name: Btn_2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -334,7 +334,7 @@ GameObject:
   - component: {fileID: 56234215845408414}
   - component: {fileID: 1302022036342883435}
   m_Layer: 5
-  m_Name: btn_UnPauseAll
+  m_Name: Btn_UnPauseAll
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -455,7 +455,7 @@ GameObject:
   - component: {fileID: 4122215073879487537}
   - component: {fileID: 6745830014713471404}
   m_Layer: 5
-  m_Name: btn_StopEffect
+  m_Name: Btn_StopEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -576,7 +576,7 @@ GameObject:
   - component: {fileID: 953384844133762990}
   - component: {fileID: 5795041230163969405}
   m_Layer: 5
-  m_Name: btn_BackA
+  m_Name: Btn_BackA
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -697,7 +697,7 @@ GameObject:
   - component: {fileID: 2524115173571090753}
   - component: {fileID: 5457448944771126124}
   m_Layer: 5
-  m_Name: btn_3D
+  m_Name: Btn_3D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1125,7 +1125,7 @@ GameObject:
   - component: {fileID: 2036600851999556187}
   - component: {fileID: 7697011406474722783}
   m_Layer: 5
-  m_Name: btn_StopAllEffect
+  m_Name: Btn_StopAllEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1398,6 +1398,7 @@ GameObject:
   - component: {fileID: 5425419664697484093}
   - component: {fileID: 5503613796471116501}
   - component: {fileID: 5198790033782832696}
+  - component: {fileID: 3940309050694946367}
   m_Layer: 5
   m_Name: UiB
   m_TagString: Untagged
@@ -1477,6 +1478,64 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3940309050694946367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5259371324584638994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BindDatas:
+  - Name: Btn_ToC
+    BindCom: {fileID: 4988050445282902049}
+  - Name: Btn_ToCPop
+    BindCom: {fileID: 6512854699446899325}
+  - Name: Btn_BackA
+    BindCom: {fileID: 5795041230163969405}
+  - Name: Btn_StopAllEffect
+    BindCom: {fileID: 7697011406474722783}
+  - Name: Btn_StopEffect
+    BindCom: {fileID: 6745830014713471404}
+  - Name: Btn_StopBGM
+    BindCom: {fileID: 780042586038181779}
+  - Name: Btn_MuteAll
+    BindCom: {fileID: 8059494488657265249}
+  - Name: Btn_UnPauseAll
+    BindCom: {fileID: 1302022036342883435}
+  - Name: Btn_PauseAll
+    BindCom: {fileID: 7646318192103580655}
+  - Name: Btn_2D
+    BindCom: {fileID: 8540678902416205172}
+  - Name: Btn_3D
+    BindCom: {fileID: 5457448944771126124}
+  - Name: Btn_bgm
+    BindCom: {fileID: 3575846317719767500}
+  - Name: Sld_Volum
+    BindCom: {fileID: 2675759001588421638}
+  m_BindComs:
+  - {fileID: 4988050445282902049}
+  - {fileID: 6512854699446899325}
+  - {fileID: 5795041230163969405}
+  - {fileID: 7697011406474722783}
+  - {fileID: 6745830014713471404}
+  - {fileID: 780042586038181779}
+  - {fileID: 8059494488657265249}
+  - {fileID: 1302022036342883435}
+  - {fileID: 7646318192103580655}
+  - {fileID: 8540678902416205172}
+  - {fileID: 5457448944771126124}
+  - {fileID: 3575846317719767500}
+  - {fileID: 2675759001588421638}
+  m_Namespace: GMTest
+  m_ComCodePath: Example/Scripts/_Test
+  m_DeleteScript: 1
+  m_CreatePrefab: 0
+  m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
 --- !u!1 &5370460523925675195
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,7 +1549,7 @@ GameObject:
   - component: {fileID: 1956165988407322692}
   - component: {fileID: 3575846317719767500}
   m_Layer: 5
-  m_Name: btn_bgm
+  m_Name: Btn_bgm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1848,7 +1907,7 @@ GameObject:
   - component: {fileID: 4955362052479014795}
   - component: {fileID: 8059494488657265249}
   m_Layer: 5
-  m_Name: btn_MuteAll
+  m_Name: Btn_MuteAll
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2050,7 +2109,7 @@ GameObject:
   - component: {fileID: 6284435739195790984}
   - component: {fileID: 780042586038181779}
   m_Layer: 5
-  m_Name: btn_StopBGM
+  m_Name: Btn_StopBGM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2169,7 +2228,7 @@ GameObject:
   - component: {fileID: 5644172646025118491}
   - component: {fileID: 2675759001588421638}
   m_Layer: 5
-  m_Name: sld_Volum
+  m_Name: Sld_Volum
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2262,7 +2321,7 @@ GameObject:
   - component: {fileID: 2556813064707791769}
   - component: {fileID: 6512854699446899325}
   m_Layer: 5
-  m_Name: btn_ToCPop
+  m_Name: Btn_ToCPop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2541,7 +2600,7 @@ GameObject:
   - component: {fileID: 6862499823569794221}
   - component: {fileID: 4988050445282902049}
   m_Layer: 5
-  m_Name: btn_ToC
+  m_Name: Btn_ToC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

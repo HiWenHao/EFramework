@@ -13,13 +13,6 @@
       "source": "builtin",
       "dependencies": {}
     },
-    "com.unity.cinemachine": {
-      "version": "2.6.17",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.cn"
-    },
     "com.unity.collab-proxy": {
       "version": "1.15.18",
       "depth": 0,

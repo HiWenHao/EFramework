@@ -50,7 +50,7 @@ MonoBehaviour:
     FullContent: TextMeshProUGUI
   - Prefixe: Ipt
     FullContent: TMP_InputField
-  - Prefixe: Slider
+  - Prefixe: Sld
     FullContent: Slider
   - Prefixe: Mask
     FullContent: Mask

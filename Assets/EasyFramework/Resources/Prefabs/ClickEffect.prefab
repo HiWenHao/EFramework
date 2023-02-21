@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 643964371000298017}
   - component: {fileID: 7538085639851205874}
   - component: {fileID: 523884612951871116}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ClickEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}

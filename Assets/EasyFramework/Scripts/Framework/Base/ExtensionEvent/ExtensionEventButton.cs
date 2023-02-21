@@ -50,6 +50,9 @@ namespace EasyFramework.UI
         /// <param name="buttons">Button list. 按钮列表</param>
         public static List<Button> ReleaseAndRemoveEvent(this List<Button> buttons)
         {
+            if (null == buttons)
+                return null;
+
             int _tempLength = buttons.Count;
             while (--_tempLength >= 0)
             { 
@@ -97,6 +100,9 @@ namespace EasyFramework.UI
         /// <param name="buttons">Button list. 按钮列表</param>
         public static List<ButtonPro> ReleaseAndRemoveEvent(this List<ButtonPro> buttons)
         {
+            if (null == buttons)
+                return null;
+
             int _tempLength = buttons.Count;
             while (--_tempLength >= 0)
             {

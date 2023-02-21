@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1140352716009764307}
   - component: {fileID: 6983481547792729318}
   m_Layer: 0
-  m_Name: tran_Setting
+  m_Name: Tran_Setting
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -165,7 +165,7 @@ GameObject:
   - component: {fileID: 4439022620058451092}
   - component: {fileID: 8007412909032908345}
   m_Layer: 0
-  m_Name: btn_QuitGame
+  m_Name: Btn_QuitGame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -286,7 +286,7 @@ GameObject:
   - component: {fileID: 4419875685249765200}
   - component: {fileID: 8608448592823038259}
   m_Layer: 0
-  m_Name: btn_Close
+  m_Name: Btn_Close
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

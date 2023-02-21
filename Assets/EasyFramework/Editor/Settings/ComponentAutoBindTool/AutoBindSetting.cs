@@ -65,7 +65,7 @@ namespace EasyFramework.Edit
             new EFRulePrefixe("Txt","Text"),
             new EFRulePrefixe("TxtM","TextMeshProUGUI"),
             new EFRulePrefixe("Ipt","TMP_InputField"),
-            new EFRulePrefixe("Slider","Slider"),
+            new EFRulePrefixe("Sld","Slider"),
             new EFRulePrefixe("Mask","Mask"),
             new EFRulePrefixe("Mask2D","RectMask2D"),
             new EFRulePrefixe("Tog","Toggle"),

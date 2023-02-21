@@ -58,10 +58,12 @@ namespace EasyFramework.Managers
                 UICamera.orthographic = true;
                 UICamera.orthographicSize = UiScreenHeight / 2.0f;
                 UICamera.farClipPlane = 200.0f;
+                UICamera.cullingMask = 32;
                 Camera.main.GetUniversalAdditionalCameraData().cameraStack.Add(UICamera);
                 _root = new GameObject("_UIRoot");
                 _root.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
                 _root.GetComponent<Canvas>().worldCamera = UICamera;
+                _root.layer = 5;
                 CanvasScaler _cs = _root.AddComponent<CanvasScaler>();
                 _cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 _cs.referenceResolution = new Vector2(UiScreenWidth, UiScreenHeight);

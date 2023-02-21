@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using EasyFramework.Framework.Core;
+using EasyFramework;
 using UnityEngine;
 using XHTools;
 
