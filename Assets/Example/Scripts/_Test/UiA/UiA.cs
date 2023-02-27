@@ -75,7 +75,7 @@ namespace GMTest
         }
 		void OnClickBtn_ToB()
         {
-            EF.Ui.Push(new UiB(), "向B传递参数");
+			EF.Ui.Push(new UiB(), true, "向B传递参数");
         }
 		void OnClickBtn_Quit()
         {

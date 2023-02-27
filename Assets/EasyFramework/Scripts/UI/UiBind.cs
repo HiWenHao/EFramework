@@ -37,9 +37,8 @@ namespace EasyFramework.UI
         public List<BindData> BindDatas = new List<BindData>();
         public string Namespace => m_Namespace;
         public string ComCodePath => m_ComCodePath;
-
-        [SerializeField]
         public List<Component> m_BindComs = new List<Component>();
+
         [SerializeField]
         private string m_Namespace;
 

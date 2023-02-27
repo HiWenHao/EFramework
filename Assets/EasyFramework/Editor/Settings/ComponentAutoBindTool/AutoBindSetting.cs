@@ -26,7 +26,7 @@ namespace EasyFramework.Edit
         /// </summary>
         [Header("默认命名空间")]
         [SerializeField]
-        private string m_Namespace;
+        private string m_Namespace = "PleaseChangeTheNamespace";
 
         /// <summary>
         /// 默认组件代码保存路径

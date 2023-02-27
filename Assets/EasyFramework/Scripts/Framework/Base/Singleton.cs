@@ -14,7 +14,9 @@ using EasyFramework;
 public abstract class Singleton<T> where T : class, ISingleton
 {
     protected Singleton() { }
-    public static T Instance = new Lazy<T>(delegate
+
+    public static T Instance => m_Instance;
+    private static readonly T m_Instance = new Lazy<T>(delegate
     {
         T t = Activator.CreateInstance<T>();
         EF.Register(t);

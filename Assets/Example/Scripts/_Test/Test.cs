@@ -70,11 +70,11 @@ namespace GMTest
             #region UIManager Test          A - J
             if (Input.GetKeyDown(KeyCode.A))
             {
-                EF.Ui.Push(new UiA(), "Push UiA");
+                EF.Ui.Push(new UiA(), true, "Push UiA");
             }
             if (Input.GetKeyDown(KeyCode.S))
             {
-                EF.Ui.Push(new UiB(), "UiA push UiB   params", "1", "2", "3");
+                EF.Ui.Push(new UiB(), true, "UiA push UiB   params", "1", "2", "3");
             }
             if (Input.GetKeyDown(KeyCode.D))
             {

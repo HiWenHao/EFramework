@@ -35,7 +35,7 @@ public partial class EF
         #region Set the game run time info
         Application.targetFrameRate = 60;
         Application.runInBackground = true;
-        Timer.sleepTimeout = SleepTimeout.NeverSleep;
+        Timer.SleepTimeout = SleepTimeout.NeverSleep;
         #endregion
 
         #region Show platform infomation.展示平台信息
@@ -92,8 +92,8 @@ public partial class EF
     {
         if (m_ClearMethod == null)
         {
-            System.Type log = typeof(UnityEditor.EditorWindow).Assembly.GetType("UnityEditor.LogEntries");
-            m_ClearMethod = log.GetMethod("Clear");
+            System.Type _log = typeof(UnityEditor.EditorWindow).Assembly.GetType("UnityEditor.LogEntries");
+            m_ClearMethod = _log.GetMethod("Clear");
         }
         m_ClearMethod.Invoke(null, null);
     }

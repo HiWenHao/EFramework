@@ -52,7 +52,7 @@ namespace GMTest
 
         public override void OnPause(bool isPause, params object[] args)
         {
-            D.Correct("B pause" + isPause);
+            D.Correct("B pause:      " + isPause);
             foreach (var item in args)
             {
                 D.Correct($"B enter  {item}");

@@ -92,8 +92,8 @@ namespace ExampleGame
 
             }
         }
-    }
 
+    }
     public delegate void OnPlayerValueChanged(int value);
     public class PlayerObserver : Singleton<PlayerObserver>, ISingleton
     {
@@ -104,7 +104,11 @@ namespace ExampleGame
         Configs.PlayerConfig m_Config;
         void ISingleton.Init()
         {
-
+            EF.Timer.AddCountdownEvent(10.0f, delegate
+            {
+                XHTools.D.Correct("10.0f");
+                Config.SetBolld(-5);
+            });
         }
 
         void ISingleton.Quit()

@@ -71,7 +71,7 @@ namespace ExampleGame
                 {
                     m_bol_InGround = false;
                 }
-                D.Log(m_bol_InGround);
+
                 Debug.DrawLine(transform.position, transform.position + Vector3.down * .01f, Color.green, .1f);
             }
 
@@ -116,7 +116,7 @@ namespace ExampleGame
                 else
                     m_flt_SpeedRate = 1.0f;
 
-                var ss = Squaretocircle(transform.forward * EF.Input.Speed_Forward + transform.right * EF.Input.Speed_Right) * m_Config.MoveSpeed * m_flt_SpeedRate;
+                var ss = m_Config.MoveSpeed * m_flt_SpeedRate * Squaretocircle(transform.forward * EF.Input.Speed_Forward + transform.right * EF.Input.Speed_Right);
                 if (EF.Input.Speed_Forward < 0.0f)
                     ss *= 0.5f;
                 if (EF.Input.Speed_Forward == 0.0f && EF.Input.Speed_Right != 0.0f)

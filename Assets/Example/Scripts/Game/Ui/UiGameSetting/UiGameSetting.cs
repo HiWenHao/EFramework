@@ -57,7 +57,7 @@ namespace ExampleGame
             void OnClickBtn_QuitGame()
             {
                 EF.Sources.Play2DEffectSouceByName("OnClick1");
-                EF.Ui.PopToOnlyHome();
+                EF.Ui.PopToOnlyOnePage();
                 EF.Scenes.LoadSceneWithNameNow("Null");
             }
             #endregion button event.  Do not change here.不要更改这行 -- Auto

@@ -9,13 +9,24 @@
  * ===============================================
  */
 
-
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using XHTools;
 
 namespace EasyFramework.Managers
 {
+    /// <summary>
+    /// 语言
+    /// </summary>
+    public enum Language
+    {
+        Chinese,
+        English,
+        Japanese,
+
+    }
+
     public class TimeManager : MonoSingleton<TimeManager>, ISingleton, IManager
     {
         /// <summary>
@@ -24,9 +35,14 @@ namespace EasyFramework.Managers
         public float TotalTime => m_flt_GlobalTime;
 
         /// <summary>
+        /// Get current time.获取当前时间
+        /// </summary>
+        public string CurrentTime => DateTime.Now.ToString("yyyy-MM-dd-HH:mm:ss");
+
+        /// <summary>
         /// A power saving setting, allowing the screen to dim some time after the last active user interaction.
         /// </summary>
-        public int sleepTimeout
+        public int SleepTimeout
         {
             get { return m_int_SleepTimeout; }
             set {
@@ -104,8 +120,7 @@ namespace EasyFramework.Managers
         {
             for (int i = 0; i < m_int_countdownListCount; i++)
             {
-                m_lst_CountdownTime[i] -= Time.deltaTime;
-                if (m_lst_CountdownTime[i] > 0.0f)
+                if ((m_lst_CountdownTime[i] -= Time.deltaTime) > 0.0f)
                     continue;
 
                 m_int_countdownListCount--;
@@ -117,8 +132,8 @@ namespace EasyFramework.Managers
             }
         }
 
-
         #region Public function
+        #region Time event
         /// <summary>
         /// Add a time event.增加一个时间事件
         /// </summary>
@@ -215,11 +230,13 @@ namespace EasyFramework.Managers
 
             return true;
         }
+        #endregion
 
+        #region Time scale
         /// <summary>
         /// Setting time scale.设置时间速率
         /// </summary>
-        /// <param name="scale">Between 0.0f ~ 4.0f</param>
+        /// <param name="scale">Between 0.0f ~ 4.0f. 在0~4之间</param>
         public void SetTimeScale(float scale)
         {
             if (scale < 0.0f || scale > 4.0f)
@@ -229,6 +246,29 @@ namespace EasyFramework.Managers
             }
             Time.timeScale = scale;
         }
+        #endregion
+
+        #region Cuttent Day
+        readonly string[] m_WeekdaysOfChinese = { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+        readonly string[] m_WeekdaysOfJapanese = { "にちようび", "げつようび", "かようび", "すいようび", "もくようび", "きんようび", "どようび" };
+        /// <summary>
+        /// Current day of week.获取当前周几
+        /// </summary>
+        /// <param name="language">Show language.显示语言</param>
+        public string CurrentDayOfWeek(Language language)
+        {
+            if (language == Language.English)
+            {
+                return DateTime.Now.DayOfWeek.ToString();
+            }
+            else if (language == Language.Japanese)
+            {
+                return m_WeekdaysOfJapanese[(int)DateTime.Now.DayOfWeek];
+            }
+            else
+                return m_WeekdaysOfChinese[(int)DateTime.Now.DayOfWeek];
+        }
+        #endregion
         #endregion
     }
 }

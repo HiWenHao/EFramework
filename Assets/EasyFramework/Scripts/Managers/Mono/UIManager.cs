@@ -23,9 +23,18 @@ namespace EasyFramework.Managers
         public readonly float UiScreenHeight = Screen.height;
         public readonly float UiScreenWidth = Screen.width;
 
+        /// <summary>
+        /// UI相机
+        /// </summary>
+        public Camera UICamera { get; private set; }
+
+        /// <summary>
+        /// UI界面数量
+        /// </summary>
+        public int UiPageCount => m_int_UiCount;
+
         private readonly string pageBaseObjectName = "UIPages";
         private readonly string showBoxBaseObjectName = "UIShowBox";
-
         private Transform pageBaseObject, showBoxBaseObject;
 
         #region Page information
@@ -46,8 +55,6 @@ namespace EasyFramework.Managers
         Queue<PopupBox> m_que_BoxPopup;
         #endregion
 
-        public Camera UICamera { get; private set; }
-        public int UiPageCount => m_int_UiCount;
         void ISingleton.Init()
         {
             GameObject _root = GameObject.Find("_UIRoot");
@@ -161,8 +168,7 @@ namespace EasyFramework.Managers
         #region Update
         private void PageUpdate()
         {
-            if (null != m_currentPage)
-                m_currentPage.Update();
+            m_currentPage?.Update();
         }
         private void ShowBoxUpdate()
         {
@@ -191,12 +197,12 @@ namespace EasyFramework.Managers
             uiObj.SetActive(true);
             return uiObj;
         }
-        private void PushTo(UIPageBase page, params object[] args)
+        private void PushTo(UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (null != m_currentPage)
             {
                 m_currentPage.OnPause(false, args);
-                m_currentObj.SetActive(false);
+                m_currentObj.SetActive(!hideCurrent);
             }
             m_currentObj = CreateUI(page);
             m_stack_UI.Push(page);
@@ -214,6 +220,8 @@ namespace EasyFramework.Managers
                 m_stack_UI.Pop();
                 Destroy(m_stack_GO.Pop());
             }
+            m_currentPage = null;
+            m_currentObj = null;
         }
         #endregion
 
@@ -224,21 +232,37 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
         /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
-        public void Push(UIPageBase page, params object[] args)
+        public void Push(UIPageBase page,  params object[] args)
         {
             if (page == m_currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please use other Push function. ");
                 return;
             }
-            PushTo(page, args);
+            PushTo(page, true, args);
         }
 
         /// <summary>
         /// Push to next ui page.进入下个页面
         /// </summary>
         /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
+        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
+        /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
+        public void Push(UIPageBase page, bool hideCurrent, params object[] args)
+        {
+            if (page == m_currentPage)
+            {
+                D.Error("This is already the page, please dont enter again. If you need repeat enter, please use other Push function. ");
+                return;
+            }
+            PushTo(page, hideCurrent, args);
+        }
+        
+        /// <summary>
+        /// Push to next ui page.进入下个页面
+        /// </summary>
         /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
         /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
         public void Push(bool repeatCreated, UIPageBase page, params object[] args)
         {
@@ -247,7 +271,24 @@ namespace EasyFramework.Managers
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true. ");
                 return;
             }
-            PushTo(page, args);
+            PushTo(page, true, args);
+        }
+
+        /// <summary>
+        /// Push to next ui page.进入下个页面
+        /// </summary>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
+        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
+        /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
+        public void Push(bool repeatCreated, UIPageBase page, bool hideCurrent, params object[] args)
+        {
+            if (!repeatCreated && page == m_currentPage)
+            {
+                D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true. ");
+                return;
+            }
+            PushTo(page, hideCurrent, args);
         }
 
         /// <summary>
@@ -263,14 +304,31 @@ namespace EasyFramework.Managers
                 return;
             }
             PopTo();
-            PushTo(page, args);
+            PushTo(page, true, args);
         }
 
         /// <summary>
         /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
         /// </summary>
         /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
+        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
+        /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
+        public void PopAndPushTo(UIPageBase page, bool hideCurrent, params object[] args)
+        {
+            if (page == m_currentPage)
+            {
+                D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
+                return;
+            }
+            PopTo();
+            PushTo(page, hideCurrent, args);
+        }
+
+        /// <summary>
+        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// </summary>
         /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
         /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
         public void PopAndPushTo(bool repeatCreated, UIPageBase page, params object[] args)
         {
@@ -280,7 +338,25 @@ namespace EasyFramework.Managers
                 return;
             }
             PopTo();
-            PushTo(page, args);
+            PushTo(page, true, args);
+        }
+
+        /// <summary>
+        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// </summary>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
+        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
+        /// <param name="args">Send this params to current and next ui page.给当前页和要进入的页面 都传递该参数</param>
+        public void PopAndPushTo(bool repeatCreated, UIPageBase page, bool hideCurrent, params object[] args)
+        {
+            if (!repeatCreated && page == m_currentPage)
+            {
+                D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
+                return;
+            }
+            PopTo();
+            PushTo(page, hideCurrent, args);
         }
 
         /// <summary>
@@ -290,8 +366,6 @@ namespace EasyFramework.Managers
         public void Pop(params object[] args)
         {
             PopTo(args);
-            m_currentPage = null;
-            m_currentObj = null;
 
             if (m_int_UiCount == 0) return;
             m_currentPage = m_stack_UI.Peek();
@@ -301,10 +375,32 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Pop to only home page.退出到只剩下主界面
+        /// Pop current ui page.退出当前页面
+        /// </summary>
+        /// <param name="count">Number of consecutively quit ui page.连续退出页面的数量</param>
+        /// <param name="args"> Pass parameters to the page you are going to jump to. 给即将跳转到的页面传递参数</param>
+        public void Pop(int count, params object[] args)
+        {
+            do
+            {
+                PopTo();
+
+                if (m_int_UiCount == 0) return;
+                m_currentPage = m_stack_UI.Peek();
+                m_currentObj = m_stack_GO.Peek();
+                if (count == 1)
+                {
+                    m_currentPage.OnPause(true, args);
+                    m_currentObj.SetActive(true);
+                }
+            } while (--count > 0);
+        }
+
+        /// <summary>
+        /// Pop to only has one page.退出到只剩一个界面
         /// </summary>
         /// <param name="args"> Send this params to home ui page. 给主页面传递参数</param>
-        public void PopToOnlyHome(params object[] args)
+        public void PopToOnlyOnePage(params object[] args)
         {
             while (m_int_UiCount > 2)
             {

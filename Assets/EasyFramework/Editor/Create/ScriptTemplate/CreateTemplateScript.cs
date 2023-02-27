@@ -94,7 +94,7 @@ namespace EasyFramework.Edit
 
             _sw.WriteLine("/* ");
             _sw.WriteLine(" * ================================================");
-            _sw.WriteLine(" * Describe:      This script is used to . ");
+            _sw.WriteLine(" * Describe:      This script is used to .");
             _sw.WriteLine(" * Author:        " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             _sw.WriteLine(" * ModifyAuthor:  " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
@@ -103,6 +103,7 @@ namespace EasyFramework.Edit
             _sw.WriteLine(" * ===============================================");
             _sw.WriteLine("*/");
 
+            text = text.Replace("PleaseChangeTheNamespace", AutoBindSetting.GetAutoBindSetting().Namespace);
             _sw.Write(text);
             _sw.Close();
             AssetDatabase.ImportAsset(newScriptPath);

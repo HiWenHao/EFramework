@@ -39,6 +39,7 @@ namespace EasyFramework.Managers
             m_txt_PCTN = m_slid_ProgressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
 
 			LoadCanvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(Screen.width, Screen.height);
+            LoadCanvas.gameObject.SetActive(false);
         }
 
         void ISingleton.Quit()

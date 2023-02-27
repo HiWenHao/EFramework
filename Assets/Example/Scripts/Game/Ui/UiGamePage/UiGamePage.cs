@@ -73,7 +73,7 @@ namespace ExampleGame
             void OnClickBtn_Setting()
             {
                 EF.Sources.Play2DEffectSouceByName("OnClick1");
-                EF.Ui.Push(new UiGameSetting());
+                EF.Ui.Push(new UiGameSetting(), false);
             }
             #endregion button event.  Do not change here.不要更改这行 -- Auto
 

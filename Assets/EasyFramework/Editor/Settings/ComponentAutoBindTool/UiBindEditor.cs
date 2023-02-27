@@ -309,7 +309,7 @@ namespace EasyFramework.Edit
         }
         #endregion
 
-        #region Create prefab file
+        #region Create prefab file. 生成预制件文件
         private void CreateOrModifyPrefab()
         {
             string _path;
@@ -375,7 +375,7 @@ namespace EasyFramework.Edit
                 Directory.CreateDirectory(codePath);
             }
 
-            bool _hasButtonPro = false;
+            bool _hasButton = false;
             bool _hasOtherComs = false;
             List<string> _ButtonLst = new List<string>();
             List<string> _ButtonProLst = new List<string>();
@@ -385,12 +385,12 @@ namespace EasyFramework.Edit
                 Type _type = m_Builder.BindDatas[i].BindCom.GetType();
                 if (_type == typeof(ButtonPro))
                 {
-                    _hasButtonPro = true;
+                    _hasButton = true;
                     _ButtonProLst.Add(m_Builder.BindDatas[i].Name);
                 }
                 else if (_type == typeof(UnityEngine.UI.Button))
                 {
-                    _hasButtonPro = true;
+                    _hasButton = true;
                     _ButtonLst.Add(m_Builder.BindDatas[i].Name);
                 }
                 else
@@ -399,7 +399,7 @@ namespace EasyFramework.Edit
                     _otherComponent.Add(m_Builder.BindDatas[i].Name, m_Builder.BindDatas[i].BindCom.GetType().Name);
                 }
             }
-            //return;
+
             string filePath = $"{codePath}/{m_Builder.name}.cs";
             if (!File.Exists(filePath))
             {
@@ -431,7 +431,7 @@ namespace EasyFramework.Edit
                         sw.WriteLine($"\t\tprivate {item.Value} {item.Key};");
                     }
                 }
-                if (_hasButtonPro)
+                if (_hasButton)
                 {
                     //sw.WriteLine("\t\t/// <summary>\n\t\t/// Please dont changed this content, system will be proces. \n\t\t/// 请不要更改此内容，系统将会处理 \n\t\t/// </summary>");
                     sw.WriteLine("\t\tprivate List<Button> m_AllButtons;");
@@ -449,7 +449,7 @@ namespace EasyFramework.Edit
                         sw.WriteLine($"\t\t\t{item.Key} = EF.Tool.RecursiveSearch<{item.Value}>(obj.transform, \"{item.Key}\") ;");
                     }
                 }
-                if (_hasButtonPro)
+                if (_hasButton)
                 {
                     foreach (var btn in _ButtonLst)
                     {
@@ -466,7 +466,7 @@ namespace EasyFramework.Edit
 
                 #region override Quit
                 sw.WriteLine("\t\tpublic override void Quit()\n\t\t{");
-                if (_hasButtonPro)
+                if (_hasButton)
                 {
                     sw.WriteLine("\t\t\t" + QuitComponentsStart);
                     sw.WriteLine("\t\t\tm_AllButtons.ReleaseAndRemoveEvent();");
@@ -531,7 +531,7 @@ namespace EasyFramework.Edit
                         {
                             _strList.Add($"\t\t{_TabNumber}private {item.Value} {item.Key};");
                         }
-                        if (_hasButtonPro)
+                        if (_hasButton)
                         {
                             _strList.Add(_TabNumber + "\t\tprivate List<Button> m_AllButtons;");
                             _strList.Add(_TabNumber + "\t\tprivate List<ButtonPro> m_AllButtonPros;");
@@ -573,7 +573,7 @@ namespace EasyFramework.Edit
                     #endregion
 
                     #region override Quit
-                    if (!_hasButtonPro)
+                    if (!_hasButton)
                     {
                         if (_canOverwrite && str.Contains(QuitComponentsStart))
                         {
