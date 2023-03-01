@@ -446,18 +446,18 @@ namespace EasyFramework.Edit
                 {
                     foreach (KeyValuePair<string, string> item in _otherComponent)
                     {
-                        sw.WriteLine($"\t\t\t{item.Key} = EF.Tool.RecursiveSearch<{item.Value}>(obj.transform, \"{item.Key}\") ;");
+                        sw.WriteLine($"\t\t\t{item.Key} = EF.Tool.Find<{item.Value}>(obj.transform, \"{item.Key}\");");
                     }
                 }
                 if (_hasButton)
                 {
                     foreach (var btn in _ButtonLst)
                     {
-                        sw.WriteLine($"\t\t\tEF.Tool.RecursiveSearch<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
+                        sw.WriteLine($"\t\t\tEF.Tool.Find<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
                     }
                     foreach (var btnPro in _ButtonProLst)
                     {
-                        sw.WriteLine($"\t\t\tEF.Tool.RecursiveSearch<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
+                        sw.WriteLine($"\t\t\tEF.Tool.Find<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
                     }
                 }
                 sw.WriteLine("\t\t\t" + FindComsEnd);
@@ -557,15 +557,15 @@ namespace EasyFramework.Edit
                     {
                         foreach (KeyValuePair<string, string> item in _otherComponent)
                         {
-                            _strList.Add($"\t\t\t{_TabNumber}{item.Key} = EF.Tool.RecursiveSearch<{item.Value}>(obj.transform, \"{item.Key}\") ;");
+                            _strList.Add($"\t\t\t{_TabNumber}{item.Key} = EF.Tool.Find<{item.Value}>(obj.transform, \"{item.Key}\");");
                         }
                         foreach (var btn in _ButtonLst)
                         {
-                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.RecursiveSearch<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
+                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.Find<Button>(obj.transform, \"{btn}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
                         }
                         foreach (var btnPro in _ButtonProLst)
                         {
-                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.RecursiveSearch<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
+                            _strList.Add($"\t\t\t{_TabNumber}EF.Tool.Find<ButtonPro>(obj.transform, \"{btnPro}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
                         }
                         //_strList.Add("\t\t\t" + FindComsEnd);
                         _canOverwrite = true;

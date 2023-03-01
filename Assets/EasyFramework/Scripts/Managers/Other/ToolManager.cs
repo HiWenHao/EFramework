@@ -22,7 +22,7 @@ namespace EasyFramework.Managers
     {
         void ISingleton.Init()
         {
-
+            m_screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
         }
 
         void ISingleton.Quit()
@@ -37,7 +37,7 @@ namespace EasyFramework.Managers
         /// <param name="parent">Want to find object`s parent. 想要查找物体的父级</param>
         /// <param name="name">object name. 对象名字</param>
         /// <returns></returns>
-        public Transform RecursiveSearch(Transform parent, string name)
+        public Transform Find(Transform parent, string name)
         {
             Transform _target = parent.Find(name);
             if (_target)
@@ -45,7 +45,7 @@ namespace EasyFramework.Managers
 
             for (int i = 0; i < parent.childCount; i++)
             {
-                _target = RecursiveSearch(parent.GetChild(i), name);
+                _target = Find(parent.GetChild(i), name);
 
                 if (_target != null)
                     return _target;
@@ -61,7 +61,7 @@ namespace EasyFramework.Managers
         /// <param name="parent">Want to find object`s parent. 想要查找物体的父级</param>
         /// <param name="name">object name. 对象名字</param>
         /// <returns></returns>
-        public T RecursiveSearch<T>(Transform parent, string name) where T : Component
+        public T Find<T>(Transform parent, string name) where T : Component
         {
             Transform _target = parent.Find(name);
             T _component = null;
@@ -73,7 +73,7 @@ namespace EasyFramework.Managers
 
             for (int i = 0; i < parent.childCount; i++)
             {
-                _target = RecursiveSearch(parent.GetChild(i), name);
+                _target = Find(parent.GetChild(i), name);
 
                 if (_target)
                 {
@@ -132,6 +132,8 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Related to screen.屏幕相关
+        Vector3 m_screenHalf;
+
         /// <summary>
         /// Set screen orientation.   设置屏幕朝向
         /// </summary>
@@ -171,6 +173,43 @@ namespace EasyFramework.Managers
             Vector3 position = new Vector3(screenPoint.x, screenPoint.y, planeZ);
             Vector3 worldPoint = camera.ScreenToWorldPoint(position);
             return worldPoint;
+        }
+
+        /// <summary>
+        /// Get the mouse position in screen. 获取鼠标在屏幕的坐标位置
+        /// </summary>
+        /// <param name="center">Start at the center of the screen.以屏幕中央开始</param>
+        /// <returns>Current mouse position. 当前鼠标位置</returns>
+        public Vector2 GetMousePosInScreen(bool center = true)
+        {
+            if (center)
+                return Input.mousePosition - m_screenHalf;
+
+            return Input.mousePosition;
+        }
+
+        /// <summary>
+        /// Get the position orientation with screen center.获取对于屏幕中心的位置方向
+        /// </summary>
+        /// <param name="v2">Current position. 当前坐标</param>
+        /// <returns>Position orientation. 位置方向</returns>
+        public PositionOrientationType GetOrientationWithScreenCenter(Vector2 v2)
+        {
+            if (v2.x > m_screenHalf.x || v2.x < -m_screenHalf.x || v2.y > m_screenHalf.y || v2.y < -m_screenHalf.y)
+                return PositionOrientationType.None;
+            if (v2 == Vector2.zero)
+                return PositionOrientationType.Center;
+
+            if (v2.x >= 0.0f && v2.y >= 0.0f)
+                return PositionOrientationType.UpperRight;
+            if (v2.x >= 0.0f && v2.y < 0.0f)
+                return PositionOrientationType.LowRight;
+            if (v2.x < 0.0f && v2.y >= 0.0f)
+                return PositionOrientationType.UpperLeft;
+            if (v2.x < 0.0f && v2.y < 0.0f)
+                return PositionOrientationType.LeftLower;
+
+            return PositionOrientationType.None;
         }
         #endregion
 
@@ -236,5 +275,24 @@ namespace EasyFramework.Managers
         /// 右横屏
         /// </summary>
         LandscapeRight,
+    }
+
+    /// <summary>
+    /// 位置类型
+    /// </summary>
+    public enum PositionOrientationType
+    {
+        /// <summary> 非屏幕坐标 </summary>
+        None,
+        /// <summary> 中心 </summary>
+        Center,
+        /// <summary> 左上 </summary>
+        UpperLeft,
+        /// <summary> 右上 </summary>
+        UpperRight,
+        /// <summary> 右下 </summary>
+        LowRight,
+        /// <summary> 左下 </summary>
+        LeftLower,
     }
 }

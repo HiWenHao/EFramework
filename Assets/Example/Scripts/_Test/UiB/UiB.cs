@@ -32,19 +32,19 @@ namespace GMTest
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-			Sld_Volum = EF.Tool.RecursiveSearch<Slider>(obj.transform, "Sld_Volum") ;
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_ToC").RegisterInListAndBindEvent(OnClickBtn_ToC, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_ToCPop").RegisterInListAndBindEvent(OnClickBtn_ToCPop, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_BackA").RegisterInListAndBindEvent(OnClickBtn_BackA, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_StopAllEffect").RegisterInListAndBindEvent(OnClickBtn_StopAllEffect, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_StopEffect").RegisterInListAndBindEvent(OnClickBtn_StopEffect, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_StopBGM").RegisterInListAndBindEvent(OnClickBtn_StopBGM, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_MuteAll").RegisterInListAndBindEvent(OnClickBtn_MuteAll, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_UnPauseAll").RegisterInListAndBindEvent(OnClickBtn_UnPauseAll, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_PauseAll").RegisterInListAndBindEvent(OnClickBtn_PauseAll, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_2D").RegisterInListAndBindEvent(OnClickBtn_2D, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_3D").RegisterInListAndBindEvent(OnClickBtn_3D, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_bgm").RegisterInListAndBindEvent(OnClickBtn_bgm, ref m_AllButtons);
+			Sld_Volum = EF.Tool.Find<Slider>(obj.transform, "Sld_Volum") ;
+			EF.Tool.Find<Button>(obj.transform, "Btn_ToC").RegisterInListAndBindEvent(OnClickBtn_ToC, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_ToCPop").RegisterInListAndBindEvent(OnClickBtn_ToCPop, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_BackA").RegisterInListAndBindEvent(OnClickBtn_BackA, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_StopAllEffect").RegisterInListAndBindEvent(OnClickBtn_StopAllEffect, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_StopEffect").RegisterInListAndBindEvent(OnClickBtn_StopEffect, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_StopBGM").RegisterInListAndBindEvent(OnClickBtn_StopBGM, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_MuteAll").RegisterInListAndBindEvent(OnClickBtn_MuteAll, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_UnPauseAll").RegisterInListAndBindEvent(OnClickBtn_UnPauseAll, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_PauseAll").RegisterInListAndBindEvent(OnClickBtn_PauseAll, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_2D").RegisterInListAndBindEvent(OnClickBtn_2D, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_3D").RegisterInListAndBindEvent(OnClickBtn_3D, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_bgm").RegisterInListAndBindEvent(OnClickBtn_bgm, ref m_AllButtons);
 			#endregion  Find components end. -- Auto
 
 			Sld_Volum.onValueChanged.AddListener(OnVolumChanged);

@@ -31,9 +31,9 @@ namespace GMTest
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_StartGame").RegisterInListAndBindEvent(OnClickBtn_StartGame, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_StartGame").RegisterInListAndBindEvent(OnClickBtn_StartGame, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
 			#endregion  Find components end. -- Auto
 		}
 

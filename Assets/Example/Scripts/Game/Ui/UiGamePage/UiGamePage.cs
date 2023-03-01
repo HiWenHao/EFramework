@@ -38,14 +38,14 @@ namespace ExampleGame
             public override void Awake(GameObject obj, params object[] args)
             {
 				#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-				Tran_Title = EF.Tool.RecursiveSearch<RectTransform>(obj.transform, "Tran_Title") ;
-				Sld_Blood = EF.Tool.RecursiveSearch<Slider>(obj.transform, "Sld_Blood") ;
-				Img_Head = EF.Tool.RecursiveSearch<Image>(obj.transform, "Img_Head") ;
-				Txt_Nickname = EF.Tool.RecursiveSearch<Text>(obj.transform, "Txt_Nickname") ;
-				Txt_Grade = EF.Tool.RecursiveSearch<Text>(obj.transform, "Txt_Grade") ;
-				Tran_State = EF.Tool.RecursiveSearch<RectTransform>(obj.transform, "Tran_State") ;
-				Tran_Bottom = EF.Tool.RecursiveSearch<RectTransform>(obj.transform, "Tran_Bottom") ;
-				EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_Setting").RegisterInListAndBindEvent(OnClickBtn_Setting, ref m_AllButtons);
+				Tran_Title = EF.Tool.Find<RectTransform>(obj.transform, "Tran_Title") ;
+				Sld_Blood = EF.Tool.Find<Slider>(obj.transform, "Sld_Blood") ;
+				Img_Head = EF.Tool.Find<Image>(obj.transform, "Img_Head") ;
+				Txt_Nickname = EF.Tool.Find<Text>(obj.transform, "Txt_Nickname") ;
+				Txt_Grade = EF.Tool.Find<Text>(obj.transform, "Txt_Grade") ;
+				Tran_State = EF.Tool.Find<RectTransform>(obj.transform, "Tran_State") ;
+				Tran_Bottom = EF.Tool.Find<RectTransform>(obj.transform, "Tran_Bottom") ;
+				EF.Tool.Find<Button>(obj.transform, "Btn_Setting").RegisterInListAndBindEvent(OnClickBtn_Setting, ref m_AllButtons);
                 #endregion  Find components end. -- Auto
 
                 Sld_Blood.GetComponent<RectTransform>().sizeDelta = new Vector2(PlayerObserver.Instance.Config.MaxBlood * 5.0f, 40.0f);

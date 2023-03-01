@@ -32,7 +32,7 @@ namespace ExampleGame
             public override void Awake(GameObject obj, params object[] args)
             {
                 #region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-                EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_Start").RegisterInListAndBindEvent(OnClickBtn_Start, ref m_AllButtons);
+                EF.Tool.Find<Button>(obj.transform, "Btn_Start").RegisterInListAndBindEvent(OnClickBtn_Start, ref m_AllButtons);
                 #endregion  Find components end. -- Auto
             }
 

@@ -34,15 +34,15 @@ namespace GMTest
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-			Txt_TotalTime = EF.Tool.RecursiveSearch<Text>(obj.transform, "Txt_TotalTime") ;
-			Sld_Timer = EF.Tool.RecursiveSearch<Slider>(obj.transform, "Sld_Timer") ;
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_QuitC").RegisterInListAndBindEvent(OnClickBtn_QuitC, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_AddTimeEvent").RegisterInListAndBindEvent(OnClickBtn_AddTimeEvent, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_RemoveTimeEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveTimeEvent, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_AddCountdownEvent1").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent1, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_AddCountdownEvent3").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent3, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_AddCountdownEvent5").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent5, ref m_AllButtons);
-			EF.Tool.RecursiveSearch<Button>(obj.transform, "Btn_RemoveCountdownEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveCountdownEvent, ref m_AllButtons);
+			Txt_TotalTime = EF.Tool.Find<Text>(obj.transform, "Txt_TotalTime") ;
+			Sld_Timer = EF.Tool.Find<Slider>(obj.transform, "Sld_Timer") ;
+			EF.Tool.Find<Button>(obj.transform, "Btn_QuitC").RegisterInListAndBindEvent(OnClickBtn_QuitC, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_AddTimeEvent").RegisterInListAndBindEvent(OnClickBtn_AddTimeEvent, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_RemoveTimeEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveTimeEvent, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent1").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent1, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent3").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent3, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent5").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent5, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_RemoveCountdownEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveCountdownEvent, ref m_AllButtons);
             #endregion  Find components end. -- Auto
 
             D.Warning("C init" + obj.transform.childCount);
