@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This is all managers interface.
  * Author:          Xiaohei.Wang(Wenhao)
@@ -13,8 +13,11 @@ namespace EasyFramework
     /// <summary>
     /// Manager interface.
     /// </summary>
-    public interface IManager
+    public interface IManager  : ISingleton
     {
-
+        /// <summary>
+        /// Level of the manager. The smaller the number, the sooner it is executed.管理器的级别，数越小越先执行
+        /// </summary>
+        internal int ManagerLevel { get; }
     }
 }

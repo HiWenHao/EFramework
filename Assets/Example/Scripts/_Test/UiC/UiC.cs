@@ -57,7 +57,7 @@ namespace GMTest
             }
         }
 
-        public override void OnPause(bool isPause, params object[] args)
+        public override void OnFocus(bool isPause, params object[] args)
         {
             D.Warning("C pause");
         }

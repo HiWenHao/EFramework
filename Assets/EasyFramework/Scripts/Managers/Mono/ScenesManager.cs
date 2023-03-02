@@ -20,9 +20,10 @@ namespace EasyFramework.Managers
 	/// <summary>
 	/// Please modify the description。
 	/// </summary>
-	public class ScenesManager : MonoSingleton<ScenesManager>, ISingleton, IManager
-	{
-		bool m_bol_IsLoading;
+	public class ScenesManager : MonoSingleton<ScenesManager>, IManager
+    {
+        int IManager.ManagerLevel => 20;
+        bool m_bol_IsLoading;
 		float m_flt_transition = 1.0f;
 		Transform LoadCanvas;
 		Image m_img_BG;
@@ -121,13 +122,13 @@ namespace EasyFramework.Managers
 		/// </summary>
 		public string CurrentScene { get; private set; }
 
-		/// <summary>
-		/// Load scene with name.通过名字加载场景
-		/// </summary>
-		/// <param name="sceneName">The scene name. 场景名字</param>
-		/// <param name="callback">The scene load callback. 场景加载回调</param>
-		/// <param name="transition">The black screen transition speed. 过度黑屏速率</param>
-		public void LoadSceneWithName(string sceneName, EAction callback = null, float transition = 1.0f)
+        /// <summary>
+        /// Load scene with name.通过名字加载场景
+        /// </summary>
+        /// <param name="sceneName">The scene name. 场景名字</param>
+        /// <param name="callback">The scene load callback. 场景加载回调</param>
+        /// <param name="transition">The black screen transition speed. 过度黑屏速率</param>
+        public void LoadSceneWithName(string sceneName, EAction callback = null, float transition = 1.0f)
 		{
             if (m_bol_IsLoading)
             {

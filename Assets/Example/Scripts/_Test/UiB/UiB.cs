@@ -50,7 +50,7 @@ namespace GMTest
 			Sld_Volum.onValueChanged.AddListener(OnVolumChanged);
 		}
 
-        public override void OnPause(bool isPause, params object[] args)
+        public override void OnFocus(bool isPause, params object[] args)
         {
             D.Correct("B pause:      " + isPause);
             foreach (var item in args)

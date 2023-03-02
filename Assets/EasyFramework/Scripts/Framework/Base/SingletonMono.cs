@@ -31,7 +31,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
                 }
                 else
                 {
-                    DontDestroyOnLoad(_instance);
+                    _instance.transform.SetParent(EF.Singleton);
                 }
                 EF.Register(_instance);
                 _instance.Init();

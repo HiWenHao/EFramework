@@ -37,7 +37,7 @@ namespace GMTest
 			#endregion  Find components end. -- Auto
 		}
 
-        public override void OnPause(bool enable, params object[] args)
+        public override void OnFocus(bool enable, params object[] args)
         {
             D.Log("A pause   " + enable);
             foreach (var item in args)
