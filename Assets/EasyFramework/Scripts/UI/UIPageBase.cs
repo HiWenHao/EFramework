@@ -17,12 +17,12 @@ namespace EasyFramework.UI
         private bool m_Focus;
 
         /// <summary>
-        /// 序列号
+        /// Page serial number, do not change.页面序列号,请勿改动
         /// </summary>
         public int SerialId { get; set; }
 
         /// <summary>
-        /// 是否被聚焦
+        /// Focus or not.是否被聚焦
         /// </summary>
         public bool IsFocus => m_Focus;
 
