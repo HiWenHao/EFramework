@@ -35,7 +35,14 @@ namespace GMTest
 			EF.Tool.Find<Button>(obj.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
 			#endregion  Find components end. -- Auto
+
+			D.Correct("A :   " + SerialId);
 		}
+
+        public override void Open(params object[] args)
+        {
+            D.Correct("A Open:   " + SerialId);
+        }
 
         public override void OnFocus(bool enable, params object[] args)
         {
@@ -51,9 +58,13 @@ namespace GMTest
             }
         }
 
+        public override void Close()
+        {
+            D.Warning("A close" + SerialId);
+        }
         public override void Quit()
         {
-            D.Log("A quit");
+            D.Log("A quit" + SerialId);
             #region Quit Buttons.按钮 -- Auto
             m_AllButtons.ReleaseAndRemoveEvent();
 			m_AllButtons = null;

@@ -52,6 +52,12 @@ public partial class EF : MonoBehaviour
         Managers.gameObject.AddComponent<EF>();
         DontDestroyOnLoad(Managers);
         DontDestroyOnLoad(Singleton);
+
+        ManagerList = new List<IManager>();
+        ManageUpdater = new List<IUpdate>();
+        Updater = new List<IUpdate>();
+        Singletons = new List<ISingleton>();
+
         InitInAfterSceneLoad();
     }
     #endregion
@@ -59,7 +65,11 @@ public partial class EF : MonoBehaviour
     #region Update
     private void Update()
     {
-        for (int i = 0; i < SingletonsCount; i++)
+        for (int i = 0; i < MgrUprCount; i++)
+        {
+            ManageUpdater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+        for (int i = 0; i < UprCount; i++)
         {
             //XHTools.D.Correct($"{Updater[i].GetType().Name}       {i}  ");
             Updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
@@ -67,23 +77,50 @@ public partial class EF : MonoBehaviour
     }
     #endregion
 
-    #region Control Mamager
+    #region Control Mamager and update
     static int SingletonsCount;
+    static int UprCount;
+    static int MgrUprCount;
+    static List<IManager> ManagerList;
+    static List<IUpdate> ManageUpdater;
     static List<IUpdate> Updater;
-    static Queue<ISingleton> Singletons;
+    static List<ISingleton> Singletons;
     public static void Register(ISingleton item)
     {
-        if (null == Singletons)
+        if (item is IManager)
         {
-            Updater = new List<IUpdate>();
-            Singletons = new Queue<ISingleton>();
+            if (0 == ManagerList.Count)
+            {
+                ManagerList.Add(item as IManager);
+                ManageUpdater.Add(item as IUpdate);
+                MgrUprCount++;
+            }
+            else
+            {
+                int mgr = (item as IManager).ManagerLevel;
+
+                for (int i = ManagerList.Count - 1; i > 0; i--)
+                {
+                    if (ManagerList[i].ManagerLevel < mgr)
+                    {
+                        MgrUprCount++;
+                        ManagerList.Insert(i + 1, item as IManager);
+                        ManageUpdater.Insert(i + 1, item as IUpdate);
+                        break;
+                    }
+                }
+            }
         }
-        if (item is IUpdate)
+        else
         {
-            Updater.Add(item as IUpdate);
+            if (item is IUpdate)
+            {
+                UprCount++;
+                Updater.Add(item as IUpdate);
+            }
             SingletonsCount++;
+            Singletons.Add(item);
         }
-        Singletons.Enqueue(item);
     }
 
     public static void Unregister(ISingleton item)
@@ -93,17 +130,21 @@ public partial class EF : MonoBehaviour
 
     static void QuitGames()
     {
-        while (SingletonsCount != 0)
+        while (--SingletonsCount >= 0)
         {
-            Updater.RemoveAt(--SingletonsCount);
+            Singletons[SingletonsCount].Quit();
+            Singletons.RemoveAt(SingletonsCount);
         }
-        while (Singletons.Count != 0)
+
+        while (--UprCount >= 0)
         {
-            Singletons.Dequeue().Quit();
+            Updater.RemoveAt(UprCount);
         }
+
         Updater.Clear();
-        Singletons.Clear();
         Updater = null;
+
+        Singletons.Clear();
         Singletons = null;
     }
     #endregion

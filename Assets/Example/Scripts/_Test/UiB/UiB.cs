@@ -48,7 +48,10 @@ namespace GMTest
 			#endregion  Find components end. -- Auto
 
 			Sld_Volum.onValueChanged.AddListener(OnVolumChanged);
-		}
+
+
+            D.Correct("B :   " + SerialId);
+        }
 
         public override void OnFocus(bool isPause, params object[] args)
         {
@@ -61,7 +64,7 @@ namespace GMTest
 
         public override void Quit()
         {
-            D.Correct("B quit");
+            D.Correct("B quit" + SerialId);
             #region Quit Buttons.按钮 -- Auto
             m_AllButtons.ReleaseAndRemoveEvent();
 			m_AllButtons = null;

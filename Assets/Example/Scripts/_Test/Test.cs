@@ -38,7 +38,6 @@ namespace GMTest
         // Update is called once per frame
         void Update()
         {
-
             //return;
             #region SourcesManager Test     Q - Y
             if (Input.GetKeyDown(KeyCode.Q))
@@ -80,9 +79,13 @@ namespace GMTest
             {
                 EF.Ui.PopAndPushTo(new UiC());
             }
-            if (Input.GetKeyDown(KeyCode.F))
+            if (!Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F))
             {
                 EF.Ui.Pop("Pop a ui page. ", "aaaa", "bbbb", "cccc");
+            }
+            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F))
+            {
+                EF.Ui.Pop(true);
             }
             if (Input.GetKeyDown(KeyCode.G))
             {
@@ -112,7 +115,7 @@ namespace GMTest
             #region TimeManager Test        L
             if (Input.GetKeyDown(KeyCode.L))
             {
-                D.Log("<=== is Current time.  ");
+                D.Log(EF.Timer.TotalTime + "<=== is Current time.  ");
                 EF.Timer.AddCountdownEvent(2f, () => { D.Error("countdownEvent 2f"); });
             }
             #endregion

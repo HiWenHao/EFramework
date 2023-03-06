@@ -16,7 +16,7 @@ namespace EasyFramework
     public interface IManager  : ISingleton
     {
         /// <summary>
-        /// Level of the manager. The smaller the number, the sooner it is executed.管理器的级别，数越小越先执行
+        /// Level of the manager. The smaller the number, the update function performs faster, the quit function is also later .管理器的级别，数越小更新越先执行，同时退出也越后
         /// </summary>
         internal int ManagerLevel { get; }
     }

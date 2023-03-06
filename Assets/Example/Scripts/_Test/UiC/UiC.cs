@@ -55,6 +55,10 @@ namespace GMTest
             {
                 D.Log($"C enter  {item}");
             }
+
+
+
+            D.Correct("C :   " + SerialId);
         }
 
         public override void OnFocus(bool isPause, params object[] args)
@@ -80,7 +84,7 @@ namespace GMTest
 			m_AllButtonPros = null;
             #endregion Buttons.按钮 -- Auto            
 			
-			D.Warning("C quit");
+			D.Warning("C quit" + SerialId);
         }
 
         #region Button event in game ui page.

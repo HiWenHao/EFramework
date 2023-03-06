@@ -90,6 +90,7 @@ namespace EasyFramework.UI
             m_BG = null;
             m_Text = null;
             m_bgHorizontal = null;
+            Object.Destroy(BoxObject.gameObject);
         }
     }
 }
