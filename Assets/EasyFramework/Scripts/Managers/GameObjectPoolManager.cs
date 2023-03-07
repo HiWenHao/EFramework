@@ -17,7 +17,7 @@ namespace EasyFramework.Managers
 {
     public class GameObjectPoolManager : Singleton<GameObjectPoolManager>, IManager
     {
-        int IManager.ManagerLevel => 80;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.ObjectToolMgr;
         Dictionary<string, GameObjectPool<MonoBehaviour>> m_dic_Pool;
 
         void ISingleton.Init()

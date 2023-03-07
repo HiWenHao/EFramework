@@ -20,7 +20,7 @@ namespace EasyFramework.Managers
 {
     public partial class UIManager : Singleton<UIManager>, IManager, IUpdate
     {
-        int IManager.ManagerLevel => 100;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.UIMgr;
 
         private readonly string pageBaseObjectName = "UIPages";
         private readonly string showBoxBaseObjectName = "UIShowBox";
@@ -130,8 +130,7 @@ namespace EasyFramework.Managers
         }
         void PageUpdate()
         {
-            if (null != m_CurrentPage)
-                m_CurrentPage?.Update();
+            m_CurrentPage?.Update();
         }
         void PageExit()
         {

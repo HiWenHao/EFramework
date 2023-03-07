@@ -22,7 +22,7 @@ namespace EasyFramework.Managers
 	/// </summary>
 	public class ScenesManager : MonoSingleton<ScenesManager>, IManager
     {
-        int IManager.ManagerLevel => 20;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.SceneMgr;
         bool m_bol_IsLoading;
 		float m_flt_transition = 1.0f;
 		Transform LoadCanvas;

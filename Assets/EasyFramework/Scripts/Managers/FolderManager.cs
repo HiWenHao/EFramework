@@ -22,7 +22,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class FolderManager : Singleton<FolderManager>, IManager
     {
-        int IManager.ManagerLevel => 30;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.FolderMgr;
         private string m_AssetsPath;
         void ISingleton.Init()
         {

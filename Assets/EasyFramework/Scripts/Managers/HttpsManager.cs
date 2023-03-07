@@ -20,7 +20,7 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Client get data in server.
     /// </summary>
-    public class HttpsManager : Singleton<HttpsManager>, ISingleton
+    public class HttpsManager : Singleton<HttpsManager>, IManager
     {
         /// <summary>
         /// 返回码
@@ -40,6 +40,7 @@ namespace EasyFramework.Managers
         const string SendFiles = "multipart/form-data";
         const string GetFiles = "application/x-www-form-urlencoded";
 
+        int IManager.ManagerLevel => AppConst.ManagerLevel.HttpMgr;
 
         void ISingleton.Init()
         {

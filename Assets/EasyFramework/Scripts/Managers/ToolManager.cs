@@ -20,7 +20,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ToolManager : Singleton<ToolManager>, IManager
     {
-        int IManager.ManagerLevel => 40;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.ToolMgr;
         void ISingleton.Init()
         {
             m_screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);

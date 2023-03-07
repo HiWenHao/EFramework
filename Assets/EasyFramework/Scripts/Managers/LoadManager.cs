@@ -25,7 +25,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class LoadManager : Singleton<LoadManager>, IManager
     {
-        int IManager.ManagerLevel => 10;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.LoadMgr;
 
         private string str_AssetsPath = "";
         private string str_StreamingPath = "";

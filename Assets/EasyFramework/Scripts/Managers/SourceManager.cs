@@ -19,7 +19,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class SourceManager : Singleton<SourceManager>, IManager, IUpdate
     {
-        int IManager.ManagerLevel => 90;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.SourceMgr;
         private bool isPausing;
         private bool isMute;
         private AudioSource m_as_BGM;

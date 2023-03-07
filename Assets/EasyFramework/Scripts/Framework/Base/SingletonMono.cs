@@ -28,12 +28,13 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
                 if (_instance is IManager)
                 {
                     _instance.transform.SetParent(EF.Managers);
+                    EF.Register(_instance as IManager);
                 }
                 else
                 {
                     _instance.transform.SetParent(EF.Singleton);
+                    EF.Register(_instance);
                 }
-                EF.Register(_instance);
                 _instance.Init();
             }
             return _instance;

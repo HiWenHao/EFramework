@@ -71,7 +71,6 @@ public partial class EF : MonoBehaviour
         }
         for (int i = 0; i < UprCount; i++)
         {
-            //XHTools.D.Correct($"{Updater[i].GetType().Name}       {i}  ");
             Updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
@@ -81,71 +80,110 @@ public partial class EF : MonoBehaviour
     static int SingletonsCount;
     static int UprCount;
     static int MgrUprCount;
+    static int ManagerCount;
     static List<IManager> ManagerList;
     static List<IUpdate> ManageUpdater;
     static List<IUpdate> Updater;
     static List<ISingleton> Singletons;
     public static void Register(ISingleton item)
     {
-        if (item is IManager)
+        if (item is IUpdate)
         {
-            if (0 == ManagerList.Count)
+            UprCount++;
+            Updater.Add(item as IUpdate);
+        }
+        SingletonsCount++;
+        Singletons.Add(item);        
+    }
+    public static void Register(IManager item)
+    {
+        ManagerCount++;
+        int mgr = item.ManagerLevel;
+        if (ManagerList.Count == 0)
+            ManagerList.Add(item);
+        else
+        {
+            for (int i = ManagerList.Count - 1; i >= 0; i--)
             {
-                ManagerList.Add(item as IManager);
-                ManageUpdater.Add(item as IUpdate);
-                MgrUprCount++;
+                if (ManagerList[i].ManagerLevel < mgr)
+                {
+                    ManagerList.Insert(i + 1, item);
+                    break;
+                }
+                if (0 == i)
+                {
+                    ManagerList.Insert(0, item);
+                    break;
+                }
             }
+        }
+
+        if (item is IUpdate)
+        {
+            XHTools.D.Log($"{item.GetType().Name} \t\t    {item.ManagerLevel}");
+            if (ManageUpdater.Count == 0)
+                ManageUpdater.Add(item as IUpdate);
             else
             {
-                int mgr = (item as IManager).ManagerLevel;
-
-                for (int i = ManagerList.Count - 1; i > 0; i--)
+                for (int i = ManageUpdater.Count - 1; i >= 0; i--)
                 {
-                    if (ManagerList[i].ManagerLevel < mgr)
+                    if ((ManageUpdater[i] as IManager).ManagerLevel < mgr)
                     {
-                        MgrUprCount++;
-                        ManagerList.Insert(i + 1, item as IManager);
                         ManageUpdater.Insert(i + 1, item as IUpdate);
+                        break;
+                    }
+                    if (0 == i)
+                    {
+                        ManageUpdater.Insert(0, item as IUpdate);
                         break;
                     }
                 }
             }
-        }
-        else
-        {
-            if (item is IUpdate)
-            {
-                UprCount++;
-                Updater.Add(item as IUpdate);
-            }
-            SingletonsCount++;
-            Singletons.Add(item);
+            MgrUprCount++;
         }
     }
-
     public static void Unregister(ISingleton item)
     {
-
+        if (item is IManager)
+        {
+            XHTools.D.Error("You should not unregister this singleton, bescause is a manager.");
+            return;
+        }
+        --SingletonsCount;
+        Singletons.Remove(item);
+        if (item is IUpdate)
+            Updater.Remove(item as IUpdate);
     }
 
     static void QuitGames()
     {
+        while (--UprCount >= 0)
+        {
+            Updater.RemoveAt(UprCount);
+        }
         while (--SingletonsCount >= 0)
         {
             Singletons[SingletonsCount].Quit();
             Singletons.RemoveAt(SingletonsCount);
         }
-
-        while (--UprCount >= 0)
-        {
-            Updater.RemoveAt(UprCount);
-        }
-
         Updater.Clear();
         Updater = null;
-
         Singletons.Clear();
         Singletons = null;
+
+        while (--MgrUprCount >= 0)
+        {
+            ManageUpdater.RemoveAt(MgrUprCount);
+        }
+        while (--ManagerCount >= 0)
+        {
+            ManagerList[ManagerCount].Quit();
+            ManagerList.RemoveAt(ManagerCount);
+        }
+        ManagerList.Clear();
+        ManagerList = null;
+        ManageUpdater.Clear();
+        ManageUpdater = null;
     }
     #endregion
 }

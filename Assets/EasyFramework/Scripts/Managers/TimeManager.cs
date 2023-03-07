@@ -51,7 +51,7 @@ namespace EasyFramework.Managers
             }
         }
 
-        int IManager.ManagerLevel => 0;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.TimeMgr;
 
         private float m_flt_GlobalTime;
         private int m_int_SleepTimeout;

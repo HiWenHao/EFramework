@@ -19,7 +19,10 @@ public abstract class Singleton<T> where T : class, ISingleton
     private static readonly T m_Instance = new Lazy<T>(delegate
     {
         T t = Activator.CreateInstance<T>();
-        EF.Register(t);
+        if (t is IManager)
+            EF.Register(t as IManager);
+        else
+            EF.Register(t);
         t.Init();
         return t;
     }).Value;

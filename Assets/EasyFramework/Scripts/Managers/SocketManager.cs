@@ -17,14 +17,18 @@ namespace EasyFramework.Managers
 {
     public class SocketManager : Singleton<SocketManager>, IManager
     {
-        int IManager.ManagerLevel => 90;
+        int IManager.ManagerLevel => AppConst.ManagerLevel.SocketMgr;
 
-        const string Address = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+        const string Address = "Please changed you address path.";
 
         private WebSocket m_webSocket;
 
         void ISingleton.Init()
         {
+            if (Address.Contains("Please changed you address path."))
+            {
+                return;
+            }
             m_webSocket = new WebSocket(new Uri(Address));
 #if !BESTHTTP_DISABLE_PROXY && !UNITY_WEBGL
             if (HTTPManager.Proxy != null)

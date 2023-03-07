@@ -15,9 +15,28 @@
 public class AppConst
 {
     #region Global全局配置
-    public const string AppName = "XHFramework";
-    public const string AppPrefix = "XHFK_";
+    public const string AppName = "EasyFramework";
+    public const string AppPrefix = "EF_";
     public const string AppVersion = "1.0";
+    #endregion
+
+    #region 管理器运行顺序
+    /// <summary>
+    /// 数字越小更新越靠前，退出越靠后
+    /// </summary>
+    public class ManagerLevel
+    {
+        public const int TimeMgr = -100;
+        public const int HttpMgr = -10;
+        public const int SocketMgr = -9;
+        public const int LoadMgr = -8;
+        public const int ToolMgr = -7;
+        public const int SceneMgr = -6;
+        public const int ObjectToolMgr = -5;
+        public const int SourceMgr = -4;
+        public const int FolderMgr = -3;
+        public const int UIMgr = -2;
+    }
     #endregion
 
     #region Resource下的路径
