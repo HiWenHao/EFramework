@@ -120,7 +120,6 @@ public partial class EF : MonoBehaviour
 
         if (item is IUpdate)
         {
-            XHTools.D.Log($"{item.GetType().Name} \t\t    {item.ManagerLevel}");
             if (ManageUpdater.Count == 0)
                 ManageUpdater.Add(item as IUpdate);
             else
