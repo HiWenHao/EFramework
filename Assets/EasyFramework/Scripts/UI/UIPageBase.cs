@@ -14,7 +14,7 @@ namespace EasyFramework.UI
 {
     public abstract class UIPageBase : IUIPageBase
     {
-        private bool m_Focus;
+        private bool m_Focus = true;
 
         /// <summary>
         /// Page serial number, do not change.页面序列号,请勿改动

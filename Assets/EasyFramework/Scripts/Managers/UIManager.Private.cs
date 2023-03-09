@@ -169,12 +169,11 @@ namespace EasyFramework.Managers
             _rect.sizeDelta = Vector2.zero;
             _rect.localPosition = Vector2.zero;
             _rect.localScale = Vector2.one;
-            _uiObj.SetActive(true);
             _uiObj.name = page.GetType().Name;
             page.SerialId = m_int_Serial++;
             return _uiObj;
         }
-        private void PageOpen(UIPageBase page, bool hideCurrent, params object[] args)
+        private UIPageBase PageOpen(UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (null != m_CurrentPage)
             {
@@ -204,8 +203,7 @@ namespace EasyFramework.Managers
                 m_CurrentObj = m_dic_ReadyGO[_readyKey];
                 m_CurrentPage = m_dic_ReadyUI[_readyKey];
 
-                m_CurrentPage.Open(m_CurrentObj, args);
-                m_CurrentObj.SetActive(true);
+                m_CurrentPage.Open(args);
 
                 m_dic_ReadyUI.Remove(_readyKey);
                 m_dic_ReadyGO.Remove(_readyKey);
@@ -215,6 +213,9 @@ namespace EasyFramework.Managers
             m_stc_UseUI.Push(m_CurrentPage);
 
             ++m_int_PageCount;
+
+            m_CurrentObj.SetActive(true);
+            return m_CurrentPage;
         }
         private void PageClose(bool destroy = false, params object[] args)
         {
