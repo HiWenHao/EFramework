@@ -49,7 +49,7 @@ namespace EasyFramework.UI
         [Header("第一个顶点的起始弧度。默认从正右方开始")]
         public float InitialRadian = 0;//第一个顶点的起始弧度。默认从正右方开始。
 
-
+        private bool m_isFirst = true;
         private int m_sideCount;
         private float m_minDistance;
         private float m_maxDistance;
@@ -67,7 +67,12 @@ namespace EasyFramework.UI
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)
-        {
+        {            
+            if (m_isFirst)
+            {
+                m_isFirst = !m_isFirst;
+                return;
+            }
             vh.Clear();//清除原信息
 
             InitPositions();

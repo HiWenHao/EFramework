@@ -34,7 +34,7 @@ namespace EasyFramework.Managers
         private Queue<AudioSource> m_que_AudioSources;
         void ISingleton.Init()
         {
-            m_Traget = new GameObject("UI").transform;
+            m_Traget = new GameObject("Source").transform;
             m_Traget.SetParent(EF.Managers);
             m_as_BGM = m_Traget.gameObject.AddComponent<AudioSource>();
 
