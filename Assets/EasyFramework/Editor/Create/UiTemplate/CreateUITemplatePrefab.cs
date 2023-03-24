@@ -32,7 +32,11 @@ namespace EasyFramework.Edit
         {
             CreateUIObject(menuCommand, "Radar Map");
         }
-
+        [MenuItem("GameObject/UI/Scroll View Pro", false, 23)]
+        static void CreateUIScrollViewPro(MenuCommand menuCommand)
+        {
+            CreateUIObject(menuCommand, "Scroll View Pro");
+        }
 
 
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)

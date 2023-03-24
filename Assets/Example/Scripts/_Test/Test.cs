@@ -1,5 +1,7 @@
 using EasyFramework;
+using EasyFramework.UI;
 using UnityEngine;
+using UnityEngine.UI;
 using XHTools;
 
 namespace GMTest
@@ -9,6 +11,15 @@ namespace GMTest
         // Start is called before the first frame update
         void Start()
         {
+            EF.Timer.AddCountdownEvent(1.0f, delegate
+            {
+                ScrollRectPro _ro = GameObject.Find("Scroll View Pro").GetComponent<ScrollRectPro>();
+                _ro.InIt(delegate (GameObject go, int idx)
+                {
+                    go.GetComponentInChildren<Text>().text = idx.ToString();
+                }, 200);
+            });
+            return;
             EF.Ui.Push(new UiA());
             //GM.SourcesManager.PlayBGMByName("BGM", true);
             #region TimeManager Test
@@ -38,7 +49,7 @@ namespace GMTest
         // Update is called once per frame
         void Update()
         {
-            //return;
+            return;
             #region SourcesManager Test     Q - Y
             if (Input.GetKeyDown(KeyCode.Q))
             {
