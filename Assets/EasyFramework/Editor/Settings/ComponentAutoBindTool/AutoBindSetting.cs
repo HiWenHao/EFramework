@@ -70,12 +70,9 @@ namespace EasyFramework.Edit
             new EFRulePrefixe("Mask2D","RectMask2D"),
             new EFRulePrefixe("Tog","Toggle"),
             new EFRulePrefixe("Sbar","Scrollbar"),
-            new EFRulePrefixe("SRect","ScrollRect"),
+            new EFRulePrefixe("SRct","ScrollRect"),
+            new EFRulePrefixe("SRctP","ScrollRectPro"),
             new EFRulePrefixe("Drop","Dropdown"),
-            new EFRulePrefixe("VGridV","LoopGridView"),
-            new EFRulePrefixe("HGridV","LoopGridView"),
-            new EFRulePrefixe("VListV","LoopListView2"),
-            new EFRulePrefixe("HListV","LoopListView2"),
             new EFRulePrefixe("Map","RadarMap"),
         };
 

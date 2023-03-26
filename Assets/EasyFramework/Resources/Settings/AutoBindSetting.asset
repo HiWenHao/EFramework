@@ -60,17 +60,11 @@ MonoBehaviour:
     FullContent: Toggle
   - Prefixe: Sbar
     FullContent: Scrollbar
-  - Prefixe: SRect
+  - Prefixe: SRct
     FullContent: ScrollRect
+  - Prefixe: SRctP
+    FullContent: ScrollRectPro
   - Prefixe: Drop
     FullContent: Dropdown
-  - Prefixe: VGridV
-    FullContent: LoopGridView
-  - Prefixe: HGridV
-    FullContent: LoopGridView
-  - Prefixe: VListV
-    FullContent: LoopListView2
-  - Prefixe: HListV
-    FullContent: LoopListView2
   - Prefixe: Map
     FullContent: RadarMap
