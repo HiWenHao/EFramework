@@ -25,3 +25,4 @@ MonoBehaviour:
       m_InnerResourceSourceUrl: http://192.168.0.1:8080
       m_ExtraResourceSourceUrl: http://192.168.0.1:8080
       m_FormalResourceSourceUrl: http://192.168.0.1:8080
+    m_AtlasFolder: Assets/

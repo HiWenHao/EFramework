@@ -11,12 +11,12 @@
 using EasyFramework.Framework;
 using UnityEngine;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.Setting
 {
     /// <summary>
     /// 框架设置界面
     /// </summary>
-    [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting")]
+    [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 20)]
     public class EFProjectSetting : ScriptableObject
     {
         [Header("Framework 框架设置")]

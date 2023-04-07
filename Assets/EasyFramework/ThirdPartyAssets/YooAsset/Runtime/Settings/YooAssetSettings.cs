@@ -2,7 +2,7 @@
 
 namespace YooAsset
 {
-	[CreateAssetMenu(fileName = "YooAssetSettings", menuName = "YooAsset/Create Settings")]
+	[CreateAssetMenu(fileName = "YooAssetSettings", menuName = "EF/YooAssetSettings", order = 51)]
 	internal class YooAssetSettings : ScriptableObject
 	{
 		/// <summary>

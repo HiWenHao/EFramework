@@ -162,6 +162,10 @@ namespace EasyFramework.Framework
         private ResourcesArea m_ResourcesArea;
         public ResourcesArea ResourcesArea => m_ResourcesArea;
 
+        [Header("图集资源存放地")]
+        [SerializeField]
+        private string m_AtlasFolder = "Assets/";
+        public string AtlasFolder => m_AtlasFolder;
         //[Header("Hotfix")]
         //[SerializeField]
         //private string m_ResourceVersionFileName = "ResourceVersion.txt";

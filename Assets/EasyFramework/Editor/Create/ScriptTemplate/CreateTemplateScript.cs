@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using EasyFramework.Edit.Setting;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -103,7 +104,7 @@ namespace EasyFramework.Edit
             _sw.WriteLine(" * ===============================================");
             _sw.WriteLine("*/");
 
-            text = text.Replace("PleaseChangeTheNamespace", AutoBindSetting.GetAutoBindSetting().Namespace);
+            text = text.Replace("PleaseChangeTheNamespace", AutoBind.AutoBindSetting.GetAutoBindSetting().Namespace);
             _sw.Write(text);
             _sw.Close();
             AssetDatabase.ImportAsset(newScriptPath);

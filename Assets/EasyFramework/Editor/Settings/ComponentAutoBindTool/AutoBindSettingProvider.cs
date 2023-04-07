@@ -14,7 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.AutoBind
 {
     /// <summary>
     /// 依据全局设置进行组件自动绑定

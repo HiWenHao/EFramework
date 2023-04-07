@@ -14,7 +14,7 @@ using System;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.Setting
 {
     /// <summary>
     /// Easy framework setting utils.框架设置工具

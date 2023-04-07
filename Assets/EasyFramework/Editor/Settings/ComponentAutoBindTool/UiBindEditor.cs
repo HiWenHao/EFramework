@@ -8,6 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+using EasyFramework.Edit.Setting;
 using EasyFramework.UI;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ using UnityEditor;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.AutoBind
 {
     /// <summary>
     /// Ui builder with editor.

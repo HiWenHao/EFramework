@@ -11,16 +11,25 @@ namespace GMTest
         // Start is called before the first frame update
         void Start()
         {
-            EF.Timer.AddCountdownEvent(1.0f, delegate
+            if (false)
             {
-                ScrollRectPro _ro = GameObject.Find("Scroll View Pro").GetComponent<ScrollRectPro>();
-                _ro.InIt(delegate (GameObject go, int idx)
+                EF.Ui.Push(new UiA());
+            }
+
+            #region Scroll Rect Pro text
+            if (false)
+            {
+                EF.Timer.AddCountdownEvent(1.0f, delegate
                 {
-                    go.GetComponentInChildren<Text>().text = idx.ToString();
-                }, 200);
-            });
-            return;
-            EF.Ui.Push(new UiA());
+                    ScrollRectPro _ro = GameObject.Find("Scroll View Pro").GetComponent<ScrollRectPro>();
+                    _ro.InIt(delegate (GameObject go, int idx)
+                    {
+                        go.GetComponentInChildren<Text>().text = idx.ToString();
+                    }, 200);
+                });
+            }
+            #endregion
+
             //GM.SourcesManager.PlayBGMByName("BGM", true);
             #region TimeManager Test
             if (false)                      //  if want to test, plase change false to true.

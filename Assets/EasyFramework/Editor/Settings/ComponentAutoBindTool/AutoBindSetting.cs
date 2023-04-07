@@ -13,12 +13,12 @@ using UnityEditor;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.AutoBind
 {
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
-    [CreateAssetMenu(fileName = "AutoBindSetting", menuName = "EF/AutoBindSetting")]
+    [CreateAssetMenu(fileName = "AutoBindSetting", menuName = "EF/AutoBindSetting", order = 30)]
     public class AutoBindSetting : ScriptableObject
     {
         /// <summary>

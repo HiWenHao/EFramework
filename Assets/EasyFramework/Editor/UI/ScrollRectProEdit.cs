@@ -37,8 +37,7 @@ namespace EasyFramework.Edit
             m_Pro.DecelerationRate = EditorGUILayout.FloatField(new GUIContent("Deceleration Rate", "运动减慢的速度\n仅在启用惯性时使用"), m_Pro.DecelerationRate);
             m_Pro.ScrollSensitivity = EditorGUILayout.FloatField(new GUIContent("Scroll Sensitivity", "滚轮和跟踪垫滚轮事件的灵敏度"), m_Pro.ScrollSensitivity);
             m_Pro.Spacing = EditorGUILayout.Vector2IntField(new GUIContent("Spacing", "水平和垂直间距"), m_Pro.Spacing);
-            m_Pro.Ele
-            mental = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Elemental", "可以滚动的内容元素"), m_Pro.Elemental, typeof(GameObject), true);
+            m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Elemental", "可以滚动的内容元素"), m_Pro.Elemental, typeof(GameObject), true);
                         
             if (GUI.changed)
             {
