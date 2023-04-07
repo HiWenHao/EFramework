@@ -54,3 +54,4 @@
 *.controller filter=lfs diff=lfs merge=lfs -text
 *.ht filter=lfs diff=lfs merge=lfs -text
 *.physicMaterial filter=lfs diff=lfs merge=lfs -text
+*.spriteatlas filter=lfs diff=lfs merge=lfs -text
