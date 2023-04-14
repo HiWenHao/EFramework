@@ -249,6 +249,8 @@ MonoBehaviour:
   movementType: 1
   content: {fileID: 8139984883878821741}
   Elemental: {fileID: 8139984883246364408}
+  AutoDocking: 1
+  DockVelocity: 20
   Inertia: 1
   Lines: 1
   Elasticity: 0.1

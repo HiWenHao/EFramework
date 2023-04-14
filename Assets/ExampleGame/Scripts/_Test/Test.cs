@@ -21,11 +21,18 @@ namespace GMTest
             {
                 EF.Timer.AddCountdownEvent(1.0f, delegate
                 {
-                    ScrollRectPro _ro = GameObject.Find("Scroll View Pro").GetComponent<ScrollRectPro>();
-                    _ro.InIt(delegate (GameObject go, int idx)
+                    ScrollRectPro _roH = GameObject.Find("Scroll View Pro_H").GetComponent<ScrollRectPro>();
+                    _roH.InIt(delegate (GameObject go, int idx)
                     {
                         go.GetComponentInChildren<Text>().text = idx.ToString();
                     }, 200);
+                    _roH.GoToElementPosWithIndex(20);
+                    ScrollRectPro _roV = GameObject.Find("Scroll View Pro_V").GetComponent<ScrollRectPro>();
+                    _roV.InIt(delegate (GameObject go, int idx)
+                    {
+                        go.GetComponentInChildren<Text>().text = idx.ToString();
+                    }, 200);
+                    _roV.GoToElementPosWithIndex(20);
                 });
             }
             #endregion
@@ -54,7 +61,6 @@ namespace GMTest
             }
             #endregion
         }
-
         // Update is called once per frame
         void Update()
         {

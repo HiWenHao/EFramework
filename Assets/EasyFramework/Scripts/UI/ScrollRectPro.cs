@@ -80,6 +80,16 @@ namespace EasyFramework.UI
         public GameObject Elemental;
 
         /// <summary>
+        /// The scroll view can auto integer docking
+        /// </summary>
+        public bool AutoDocking = true;
+
+        /// <summary>
+        /// When the scroll view moves slow than this value able to dock.
+        /// </summary>
+        public float DockVelocity = 20f;
+
+        /// <summary>
         /// Should movement inertia be enabled?
         /// </summary>
         /// <remarks>
@@ -136,6 +146,7 @@ namespace EasyFramework.UI
         private int m_MaxCount = -1;
         private int m_MinIndex = -1;
         private int m_MaxIndex = -1;
+        private int m_CurrentIndex = -1;
 
         private float m_ElementWidth;
         private float m_ElementHeight;
@@ -397,34 +408,32 @@ namespace EasyFramework.UI
             Vector2 offset = CalculateOffset(Vector2.zero);
             if (!m_Dragging && (offset != Vector2.zero || m_Velocity != Vector2.zero))
             {
+                int _axis = (int)direction;
                 Vector2 position = content.anchoredPosition;
-                for (int axis = 0; axis < 2; axis++)
+                // Apply spring physics if movement is elastic and content has an offset from the view.
+                if (movementType == MovementType.Elastic && offset[_axis] != 0)
                 {
-                    // Apply spring physics if movement is elastic and content has an offset from the view.
-                    if (movementType == MovementType.Elastic && offset[axis] != 0)
-                    {
-                        float speed = m_Velocity[axis];
-                        float smoothTime = Elasticity;
-                        if (m_Scrolling)
-                            smoothTime *= 3.0f;
-                        position[axis] = Mathf.SmoothDamp(content.anchoredPosition[axis], content.anchoredPosition[axis] + offset[axis], ref speed, smoothTime, Mathf.Infinity, deltaTime);
-                        if (Mathf.Abs(speed) < 1)
-                            speed = 0;
-                        m_Velocity[axis] = speed;
-                    }
-                    // Else move content according to velocity with deceleration applied.
-                    else if (Inertia)
-                    {
-                        m_Velocity[axis] *= Mathf.Pow(DecelerationRate, deltaTime);
-                        if (Mathf.Abs(m_Velocity[axis]) < 1)
-                            m_Velocity[axis] = 0;
-                        position[axis] += m_Velocity[axis] * deltaTime;
-                    }
-                    // If we have neither elaticity or friction, there shouldn't be any velocity.
-                    else
-                    {
-                        m_Velocity[axis] = 0;
-                    }
+                    float speed = m_Velocity[_axis];
+                    float smoothTime = Elasticity;
+                    if (m_Scrolling)
+                        smoothTime *= 3.0f;
+                    position[_axis] = Mathf.SmoothDamp(content.anchoredPosition[_axis], content.anchoredPosition[_axis] + offset[_axis], ref speed, smoothTime, Mathf.Infinity, deltaTime);
+                    if (Mathf.Abs(speed) < 1)
+                        speed = 0;
+                    m_Velocity[_axis] = speed;
+                }
+                // Else move content according to velocity with deceleration applied.
+                else if (Inertia)
+                {
+                    m_Velocity[_axis] *= Mathf.Pow(DecelerationRate, deltaTime);
+                    if (Mathf.Abs(m_Velocity[_axis]) < 1)
+                        m_Velocity[_axis] = 0;
+                    position[_axis] += m_Velocity[_axis] * deltaTime;
+                }
+                // If we have neither elaticity or friction, there shouldn't be any velocity.
+                else
+                {
+                    m_Velocity[_axis] = 0;
                 }
 
                 if (movementType == MovementType.Clamped)
@@ -447,6 +456,29 @@ namespace EasyFramework.UI
                 UISystemProfilerApi.AddMarker("ScrollRectPro.value", this);
                 UpdateCheck(normalizedPosition);
                 UpdatePrevData();
+            }
+
+            if (!m_Dragging && AutoDocking)
+            {
+                float _va = m_Velocity[(int)direction];
+                if (Mathf.Abs(_va) <= DockVelocity && Mathf.Abs(_va) != 0)
+                {
+                    StopMovement();
+                    if (_va < 0)
+                    {
+                        if (direction == Direction.Horizontal)
+                            GoToElementPosWithIndex(m_CurrentIndex - m_MaxIndex);
+                        else
+                            GoToElementPosWithIndex(m_CurrentIndex + 1);
+                    }
+                    else
+                    {
+                        if (direction == Direction.Horizontal)
+                            GoToElementPosWithIndex(m_CurrentIndex + 1);
+                        else 
+                            GoToElementPosWithIndex(m_CurrentIndex - m_MaxIndex);
+                    }
+                }
             }
             m_Scrolling = false;
         }
@@ -804,12 +836,12 @@ namespace EasyFramework.UI
         {
             if (m_ElementInfos == null) return;
 
-            for (int i = 0, length = m_ElementInfos.Length; i < length; i++)
+            int _count = m_ElementInfos.Length;
+            for (int i = 0, length = _count; i < length; i++)
             {
                 ElementInfo _element = m_ElementInfos[i];
                 GameObject obj = _element.obj;
                 Vector3 pos = _element.pos;
-
                 float rangePos = direction == Direction.Vertical ? pos.y : pos.x;
 
                 if (IsOutRange(rangePos))
@@ -826,9 +858,9 @@ namespace EasyFramework.UI
                     {
                         GameObject cell = GetPoolsObj();
                         cell.transform.localPosition = pos;
-                        cell.name = i.ToString();
+                        //cell.name = i.ToString();
                         m_ElementInfos[i].obj = cell;
-                        CallbackFunction(cell);
+                        CallbackFunction(cell, i);
                     }
                 }
             }
@@ -931,10 +963,10 @@ namespace EasyFramework.UI
                         }
 
                         _ei.obj.transform.GetComponent<RectTransform>().localPosition = _ei.pos;
-                        _ei.obj.name = i.ToString();
+                        //_ei.obj.name = i.ToString();
                         _ei.obj.SetActive(true);
 
-                        CallbackFunction(_ei.obj);
+                        CallbackFunction(_ei.obj, i);
                     }
                     else
                     {
@@ -969,13 +1001,13 @@ namespace EasyFramework.UI
                 m_MaxIndex = i;
 
                 GameObject cell = GetPoolsObj();
-                cell.transform.GetComponent<RectTransform>().localPosition = _element.pos;
-                cell.name = i.ToString();
+                cell.GetComponent<RectTransform>().localPosition = _element.pos;
+                //cell.name = i.ToString();
 
                 _element.obj = cell;
                 m_ElementInfos[i] = _element;
 
-                CallbackFunction(cell);
+                CallbackFunction(cell, i);
             }
             m_MaxCount = num;
             m_Inited = true;
@@ -984,9 +1016,10 @@ namespace EasyFramework.UI
         /// <summary>
         /// The callback event with elements list update.
         /// </summary>
-        protected void CallbackFunction(GameObject obj)
+        protected void CallbackFunction(GameObject obj, int index)
         {
-            CallbackFunc?.Invoke(obj, int.Parse(obj.name));
+            CallbackFunc?.Invoke(obj, index);
+            m_CurrentIndex = index;
         }
 
         /// <summary>
@@ -1044,7 +1077,7 @@ namespace EasyFramework.UI
         /// <param name="index">The element index. Ë÷ÒýID</param>
         public void GoToElementPosWithIndex(int index)
         {
-            if (m_ElementInfos.Length == 0) return;
+            if (null == m_ElementInfos || m_ElementInfos.Length == 0) return;
 
             int theFirstIndex = index - index % Lines;
             var tmpIndex = theFirstIndex + m_MaxIndex;
@@ -1085,7 +1118,7 @@ namespace EasyFramework.UI
                     float rangePos = direction == Direction.Vertical ? _element.pos.y : _element.pos.x;
                     if (!IsOutRange(rangePos))
                     {
-                        CallbackFunction(_element.obj);
+                        CallbackFunction(_element.obj, i);
                     }
                 }
             }
@@ -1103,7 +1136,7 @@ namespace EasyFramework.UI
                 float rangePos = direction == Direction.Vertical ? _element.pos.y : _element.pos.x;
                 if (!IsOutRange(rangePos))
                 {
-                    CallbackFunction(_element.obj);
+                    CallbackFunction(_element.obj, index - 1);
                 }
             }
         }

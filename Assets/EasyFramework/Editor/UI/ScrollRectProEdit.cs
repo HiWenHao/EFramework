@@ -38,7 +38,11 @@ namespace EasyFramework.Edit
             m_Pro.ScrollSensitivity = EditorGUILayout.FloatField(new GUIContent("Scroll Sensitivity", "滚轮和跟踪垫滚轮事件的灵敏度"), m_Pro.ScrollSensitivity);
             m_Pro.Spacing = EditorGUILayout.Vector2IntField(new GUIContent("Spacing", "水平和垂直间距"), m_Pro.Spacing);
             m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Elemental", "可以滚动的内容元素"), m_Pro.Elemental, typeof(GameObject), true);
-                        
+            m_Pro.AutoDocking = EditorGUILayout.Toggle(new GUIContent("AutoDocking", "移动惯性"), m_Pro.AutoDocking);
+            if (m_Pro.AutoDocking)
+            {
+                m_Pro.DockVelocity = EditorGUILayout.FloatField(new GUIContent("Dock Velocity", "当视图滚动的速度小于该值时，会自动停靠\n仅在启用自动停靠时有用"), m_Pro.DockVelocity);
+            }
             if (GUI.changed)
             {
                 EditorUtility.SetDirty(m_Pro);
