@@ -17,22 +17,22 @@ namespace EasyFramework.Edit
 {
     public class CreateUITemplatePrefab
 	{
-        [MenuItem("GameObject/UI/Button Pro", false, 20)]
+        [MenuItem("GameObject/UI/EF/Button Pro", false, 20)]
         static void CreateUIButtonPro(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro");
         }
-        [MenuItem("GameObject/UI/Button Pro - TextMeshPro", false, 21)]
+        [MenuItem("GameObject/UI/EF/Button Pro - TextMeshPro", false, 21)]
         static void CreateUIButtonProTmp(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro(TMP)"); 
         }
-        [MenuItem("GameObject/UI/Radar Map", false, 22)]
+        [MenuItem("GameObject/UI/EF/Radar Map", false, 22)]
         static void CreateUIRadarMap(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "Radar Map");
         }
-        [MenuItem("GameObject/UI/Scroll View Pro", false, 23)]
+        [MenuItem("GameObject/UI/EF/Scroll View Pro", false, 23)]
         static void CreateUIScrollViewPro(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "Scroll View Pro");

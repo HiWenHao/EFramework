@@ -9,6 +9,7 @@
  * ===============================================
 */
 using EasyFramework;
+using EasyFramework.Edit;
 using EasyFramework.Edit.SpriteTools;
 using System.Collections.Generic;
 using System.IO;
@@ -40,7 +41,7 @@ namespace EFExample
             m_Target = (SpriteCollection)target;
             AtlasFolder = serializedObject.FindProperty("m_AtlasFolder");
             TargetObjects = serializedObject.FindProperty("m_Objects");
-            m_FrameworkAtlasFolder = EasyFramework.Edit.Setting.EFProjectSettingsUtils.EFProjectSettings.FrameworkGlobalSetting.AtlasFolder;
+            m_FrameworkAtlasFolder = ProjectSettingsUtils.EFProjectSettings.FrameworkGlobalSetting.AtlasFolder;
 
             m_AllOverwrite = true;
             HasPreview = new List<bool>();

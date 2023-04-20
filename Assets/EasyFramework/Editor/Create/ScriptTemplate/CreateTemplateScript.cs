@@ -9,7 +9,6 @@
  * ===============================================
  */
 
-using EasyFramework.Edit.Setting;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,9 +21,9 @@ namespace EasyFramework.Edit
     class CreateTemplateScript
     {
         //脚本模板路径
-        private readonly static string SingleScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
-        private readonly static string TemplateScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
-        private readonly static string MonoSingleScriptPath = EFProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
+        private readonly static string SingleScriptPath = ProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
+        private readonly static string TemplateScriptPath = ProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
+        private readonly static string MonoSingleScriptPath = ProjectSettingsUtils.FrameworkGlobalSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
 
         //菜单项
         [MenuItem("Assets/Create/EF/C# Scripts/TemplateScript", false, 1)]
@@ -96,11 +95,11 @@ namespace EasyFramework.Edit
             _sw.WriteLine("/* ");
             _sw.WriteLine(" * ================================================");
             _sw.WriteLine(" * Describe:      This script is used to .");
-            _sw.WriteLine(" * Author:        " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+            _sw.WriteLine(" * Author:        " + ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ModifyAuthor:  " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+            _sw.WriteLine(" * ModifyAuthor:  " + ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             _sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ScriptVersion: " + EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
+            _sw.WriteLine(" * ScriptVersion: " + ProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
             _sw.WriteLine(" * ===============================================");
             _sw.WriteLine("*/");
 

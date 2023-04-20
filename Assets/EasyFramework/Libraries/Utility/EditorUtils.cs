@@ -1,43 +1,25 @@
 /* 
  * ================================================
- * Describe:      This script is used to  . 
+ * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-02-14 11:51:39
+ * CreationTime:  2023-04-20 19:57:04
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-14 11:51:39
+ * ModifyTime:    2023-04-20 19:57:04
  * ScriptVersion: 0.1
  * ===============================================
 */
-
-using EasyFramework.Framework;
 using System;
 using UnityEngine;
 using XHTools;
 
-namespace EasyFramework.Edit.Setting
+namespace EasyFramework.Edit
 {
     /// <summary>
-    /// Easy framework setting utils.框架设置工具
+    /// The editor folder utils.
     /// </summary>
-    public class EFProjectSettingsUtils
-    {
-        private static readonly string m_EFProjectSettingsPath = "Settings/ProjectSetting";
-        private static EFProjectSetting m_EFProjectSetting;
-        public static FrameworkSettings FrameworkGlobalSetting { get { return EFProjectSettings.FrameworkGlobalSetting; } }
-
-        public static EFProjectSetting EFProjectSettings
-        {
-            get
-            {
-                if (m_EFProjectSetting == null)
-                {
-                    m_EFProjectSetting = GetSingletonAssetsByResources<EFProjectSetting>(m_EFProjectSettingsPath);
-                }
-                return m_EFProjectSetting;
-            }
-        }
-
-        private static T GetSingletonAssetsByResources<T>(string assetsPath) where T : ScriptableObject, new()
+    public class EditorUtils
+	{
+        public static T GetSingletonAssetsByResources<T>(string assetsPath) where T : ScriptableObject, new()
         {
             string assetType = typeof(T).Name;
 #if UNITY_EDITOR
@@ -60,5 +42,6 @@ namespace EasyFramework.Edit.Setting
 
             return customGlobalSettings;
         }
+
     }
 }

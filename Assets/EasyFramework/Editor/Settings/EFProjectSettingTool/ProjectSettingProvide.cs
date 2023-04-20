@@ -8,6 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -18,16 +19,16 @@ namespace EasyFramework.Edit.Setting
     /// <summary>
     /// 项目设置面板
     /// </summary>
-    public class EFProjectSettingProvide : SettingsProvider
+    public class ProjectSettingProvide : SettingsProvider
     {
-        private const string m_HeaderName = "EF/ProjectSetting";
+        private const string m_HeaderName = "EF/Project Setting";
         private const string m_EFProjectSettingPath = "Assets/EasyFramework/Resources/Settings/ProjectSetting.asset";
         private SerializedObject m_CustomSettings;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
             base.OnActivate(searchContext, rootElement);
-            m_CustomSettings = new SerializedObject(EFProjectSettingsUtils.EFProjectSettings);
+            m_CustomSettings = new SerializedObject(ProjectSettingsUtils.EFProjectSettings);
         }
 
         public override void OnGUI(string searchContext)
@@ -43,7 +44,7 @@ namespace EasyFramework.Edit.Setting
         /// <summary>
         /// 项目设置面板 (构造)
         /// </summary>
-        public EFProjectSettingProvide(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
+        public ProjectSettingProvide(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
         {
         }
 
@@ -56,9 +57,9 @@ namespace EasyFramework.Edit.Setting
         {
             if (File.Exists(m_EFProjectSettingPath))
             {
-                var provider = new EFProjectSettingProvide(m_HeaderName, SettingsScope.Project)
+                var provider = new ProjectSettingProvide(m_HeaderName, SettingsScope.Project)
                 {
-                    keywords = GetSearchKeywordsFromGUIContentProperties<EFProjectSetting>()
+                    keywords = GetSearchKeywordsFromGUIContentProperties<ProjectSetting>()
                 };
                 return provider;
             }

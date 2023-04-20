@@ -46,34 +46,34 @@ namespace EasyFramework.Edit.AutoBind
         /// 组件的缩略名字映射
         /// </summary>
         [SerializeField]
-        private List<EFRulePrefixe> m_RulePrefixes = new List<EFRulePrefixe>()
+        private List<RulePrefixe> m_RulePrefixes = new List<RulePrefixe>()
         {
-            new EFRulePrefixe("Tran","Transform"),
-            new EFRulePrefixe("OAnim","Animation"),
-            new EFRulePrefixe("NAnim","Animator"),
-            new EFRulePrefixe("Rect","RectTransform"),
-            new EFRulePrefixe("Canvas","Canvas"),
-            new EFRulePrefixe("Group","CanvasGroup"),
-            new EFRulePrefixe("VGroup","VerticalLayoutGroup"),
-            new EFRulePrefixe("HGroup","HorizontalLayoutGroup"),
-            new EFRulePrefixe("GGroup","GridLayoutGroup"),
-            new EFRulePrefixe("TGroup","ToggleGroup"),
-            new EFRulePrefixe("Btn","Button"),
-            new EFRulePrefixe("BtnP","ButtonPro"),
-            new EFRulePrefixe("Img","Image"),
-            new EFRulePrefixe("RImg","RawImage"),
-            new EFRulePrefixe("Txt","Text"),
-            new EFRulePrefixe("TxtM","TextMeshProUGUI"),
-            new EFRulePrefixe("Ipt","TMP_InputField"),
-            new EFRulePrefixe("Sld","Slider"),
-            new EFRulePrefixe("Mask","Mask"),
-            new EFRulePrefixe("Mask2D","RectMask2D"),
-            new EFRulePrefixe("Tog","Toggle"),
-            new EFRulePrefixe("Sbar","Scrollbar"),
-            new EFRulePrefixe("SRct","ScrollRect"),
-            new EFRulePrefixe("SRctP","ScrollRectPro"),
-            new EFRulePrefixe("Drop","Dropdown"),
-            new EFRulePrefixe("Map","RadarMap"),
+            new RulePrefixe("Tran","Transform"),
+            new RulePrefixe("OAnim","Animation"),
+            new RulePrefixe("NAnim","Animator"),
+            new RulePrefixe("Rect","RectTransform"),
+            new RulePrefixe("Canvas","Canvas"),
+            new RulePrefixe("Group","CanvasGroup"),
+            new RulePrefixe("VGroup","VerticalLayoutGroup"),
+            new RulePrefixe("HGroup","HorizontalLayoutGroup"),
+            new RulePrefixe("GGroup","GridLayoutGroup"),
+            new RulePrefixe("TGroup","ToggleGroup"),
+            new RulePrefixe("Btn","Button"),
+            new RulePrefixe("BtnP","ButtonPro"),
+            new RulePrefixe("Img","Image"),
+            new RulePrefixe("RImg","RawImage"),
+            new RulePrefixe("Txt","Text"),
+            new RulePrefixe("TxtM","TextMeshProUGUI"),
+            new RulePrefixe("Ipt","TMP_InputField"),
+            new RulePrefixe("Sld","Slider"),
+            new RulePrefixe("Mask","Mask"),
+            new RulePrefixe("Mask2D","RectMask2D"),
+            new RulePrefixe("Tog","Toggle"),
+            new RulePrefixe("Sbar","Scrollbar"),
+            new RulePrefixe("SRct","ScrollRect"),
+            new RulePrefixe("SRctP","ScrollRectPro"),
+            new RulePrefixe("Drop","Dropdown"),
+            new RulePrefixe("Map","RadarMap"),
         };
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 组件的缩略名字映射
         /// </summary>
-        public List<EFRulePrefixe> RulePrefixes => m_RulePrefixes;
+        public List<RulePrefixe> RulePrefixes => m_RulePrefixes;
 
         /// <summary>
         /// 查找是否为有效绑定

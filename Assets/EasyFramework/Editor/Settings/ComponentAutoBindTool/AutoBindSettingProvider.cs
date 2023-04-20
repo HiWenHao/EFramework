@@ -29,7 +29,7 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 在设置中的标题名称
         /// </summary>
-        private const string m_HeaderName = "EF/AutoBindSetting";
+        private const string m_HeaderName = "EF/Auto Bind Setting";
 
         private SerializedProperty m_PrefabPath;
         private SerializedProperty m_ComCodePath;

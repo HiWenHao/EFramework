@@ -17,9 +17,13 @@ namespace EasyFramework.Windows
     /// </summary>
     public sealed class EFMenus
 	{
-        [MenuItem("EFTools/Settings/EF - ProjectSettings", priority = 100)]
-        public static void OpenDeerSettings() => SettingsService.OpenProjectSettings("EF/ProjectSetting");
-        [MenuItem("EFTools/Settings/EF - AutoBindSetting", priority = 200)]
-        public static void OpenAutoBindGlobalSettings() => SettingsService.OpenProjectSettings("EF/AutoBindSetting");
+        #region Settings
+        [MenuItem("EFTools/Settings/Project Settings", priority = 100)]
+        public static void OpenDeerSettings() => SettingsService.OpenProjectSettings("EF/Project Setting");
+        [MenuItem("EFTools/Settings/Auto Bind Setting", priority = 200)]
+        public static void OpenAutoBindGlobalSettings() => SettingsService.OpenProjectSettings("EF/Auto Bind Setting");
+        [MenuItem("EFTools/Settings/Optimal Setting", priority = 300)]
+        public static void OpenOptimalSettings() => SettingsService.OpenProjectSettings("EF/Optimal Setting");
+        #endregion
     }
 }

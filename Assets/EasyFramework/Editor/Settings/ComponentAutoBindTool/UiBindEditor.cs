@@ -8,7 +8,6 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework.Edit.Setting;
 using EasyFramework.UI;
 using System;
 using System.Collections.Generic;
@@ -688,7 +687,7 @@ namespace EasyFramework.Edit.AutoBind
             {
                 if (strList[i].Contains(m_StrChangeAuthor))
                 {
-                    strList[i] = $" {m_StrChangeAuthor}  {EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor}";
+                    strList[i] = $" {m_StrChangeAuthor}  {ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor}";
                 }
                 if (strList[i].Contains(m_StrChangeTime))
                 {
@@ -712,13 +711,13 @@ namespace EasyFramework.Edit.AutoBind
                 System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             //把#Author# 替换
             annotationStr = annotationStr.Replace("#Author#",
-                EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             //把#ChangeAuthor# 替换
             annotationStr = annotationStr.Replace("#ChangeAuthor#",
-                EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
             //把#Version# 替换
             annotationStr = annotationStr.Replace("#Version#",
-                EFProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
+                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
             return annotationStr;
         }
         #endregion

@@ -16,7 +16,7 @@ namespace EasyFramework.Edit
     /// 规则前缀
     /// </summary>
     [Serializable]
-    public class EFRulePrefixe
+    public class RulePrefixe
     {
         /// <summary>
         /// 前缀
@@ -33,7 +33,7 @@ namespace EasyFramework.Edit
         /// </summary>
         /// <param name="prefixe">前缀</param>
         /// <param name="fullContent">全内容</param>
-        public EFRulePrefixe(string prefixe, string fullContent)
+        public RulePrefixe(string prefixe, string fullContent)
         {
             Prefixe = prefixe;
             FullContent = fullContent;

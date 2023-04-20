@@ -17,9 +17,9 @@ namespace EasyFramework.Edit.Setting
     /// 框架设置界面
     /// </summary>
     [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 20)]
-    public class EFProjectSetting : ScriptableObject
+    public class ProjectSetting : ScriptableObject
     {
-        [Header("Framework 框架设置")]
+        [Header("Framework Setting 框架设置")]
         [SerializeField]
         private FrameworkSettings m_FrameworkGlobalSettings;
         public FrameworkSettings FrameworkGlobalSetting { get { return m_FrameworkGlobalSettings; } }
