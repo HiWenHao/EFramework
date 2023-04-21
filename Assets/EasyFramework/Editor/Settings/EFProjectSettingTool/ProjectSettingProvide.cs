@@ -22,7 +22,7 @@ namespace EasyFramework.Edit.Setting
     public class ProjectSettingProvide : SettingsProvider
     {
         private const string m_HeaderName = "EF/Project Setting";
-        private const string m_EFProjectSettingPath = "Assets/EasyFramework/Resources/Settings/ProjectSetting.asset";
+        private static readonly string m_EFProjectSettingPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Resources/Settings/ProjectSetting.asset";
         private SerializedObject m_CustomSettings;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
@@ -35,7 +35,7 @@ namespace EasyFramework.Edit.Setting
         {
             base.OnGUI(searchContext);
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-            EditorGUILayout.PropertyField(m_CustomSettings.FindProperty("m_FrameworkGlobalSettings"));
+            EditorGUILayout.PropertyField(m_CustomSettings.FindProperty("m_Setting"));
             EditorGUILayout.Space(20);
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();

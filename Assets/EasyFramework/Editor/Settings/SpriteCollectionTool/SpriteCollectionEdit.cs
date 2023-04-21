@@ -41,7 +41,7 @@ namespace EFExample
             m_Target = (SpriteCollection)target;
             AtlasFolder = serializedObject.FindProperty("m_AtlasFolder");
             TargetObjects = serializedObject.FindProperty("m_Objects");
-            m_FrameworkAtlasFolder = ProjectSettingsUtils.EFProjectSettings.FrameworkGlobalSetting.AtlasFolder;
+            m_FrameworkAtlasFolder = ProjectSettingsUtils.Optimal.AtlasFolder;
 
             m_AllOverwrite = true;
             HasPreview = new List<bool>();
@@ -100,7 +100,7 @@ namespace EFExample
                         AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path);
                 }
                 if (GUILayout.Button(new GUIContent("Default Path", "Set the path with EF project atlas folder.")))
-                    AtlasFolder.stringValue = m_FrameworkAtlasFolder;
+                    AtlasFolder.stringValue = "Assets/" + m_FrameworkAtlasFolder;
             }
             EditorGUILayout.EndHorizontal();
         }

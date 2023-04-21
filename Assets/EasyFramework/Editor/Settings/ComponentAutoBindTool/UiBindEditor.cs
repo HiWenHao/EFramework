@@ -42,7 +42,7 @@ namespace EasyFramework.Edit.AutoBind
         private void OnEnable()
         {
             m_Builder = (UiBind)target;
-            m_Setting = AutoBindSetting.GetAutoBindSetting();
+            m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
             m_BindComs = serializedObject.FindProperty("m_BindComs");
             m_BindDatas = serializedObject.FindProperty("BindDatas");
             m_Namespace = serializedObject.FindProperty("m_Namespace");
@@ -247,7 +247,7 @@ namespace EasyFramework.Edit.AutoBind
                         continue;
                     }
                 }
-                if (AutoBindSetting.IsValidBind(child, m_TempFiledNames, m_TempComponentTypeNames))
+                if (IsValidBind(child, m_TempFiledNames, m_TempComponentTypeNames))
                 {
                     for (int i = 0; i < m_TempFiledNames.Count; i++)
                     {
@@ -306,6 +306,58 @@ namespace EasyFramework.Edit.AutoBind
             element.FindPropertyRelative("Name").stringValue = name;
             element.FindPropertyRelative("BindCom").objectReferenceValue = bindCom;
 
+        }
+
+        /// <summary>
+        /// 查找是否为有效绑定
+        /// </summary>
+        /// <param name="target">目标</param>
+        /// <param name="filedNames">对象名</param>
+        /// <param name="componentTypeNames">对象组件</param>
+        /// <returns>是否有效</returns>
+        private bool IsValidBind(Transform target, List<string> filedNames, List<string> componentTypeNames)
+        {
+            string[] strArray = target.name.Split('_');
+
+            if (strArray.Length == 1)
+            {
+                return false;
+            }
+
+            bool isFind = false;
+            string filedName = strArray[strArray.Length - 1];
+            filedName = EditorUtils.RemovePunctuation(filedName);
+            filedName.Trim();
+            target.name = $"{strArray[0]}_{filedName}";
+            for (int i = 0; i < strArray.Length - 1; i++)
+            {
+                string str = strArray[i].Replace("#", "");
+                string comName;
+                AutoBindSetting _AutoBindGlobalSetting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
+                List<RulePrefixe> _PrefixesDict = _AutoBindGlobalSetting.RulePrefixes;
+                bool isFindComponent = false;
+                foreach (RulePrefixe autoBindRulePrefix in _PrefixesDict)
+                {
+                    if (autoBindRulePrefix.Prefixe.Equals(str))
+                    {
+                        comName = autoBindRulePrefix.FullContent;
+                        filedNames.Add($"{str}_{filedName}");
+                        componentTypeNames.Add(comName);
+                        isFind = true;
+                        isFindComponent = true;
+                        break;
+                    }
+                }
+                if (!isFindComponent)
+                {
+                    D.Warning($"{target.name}的命名中{str}不存在对应的组件类型，绑定失败");
+                }
+            }
+            if (!isFind)
+            {
+                return false;
+            }
+            return true;
         }
         #endregion
 
@@ -687,11 +739,11 @@ namespace EasyFramework.Edit.AutoBind
             {
                 if (strList[i].Contains(m_StrChangeAuthor))
                 {
-                    strList[i] = $" {m_StrChangeAuthor}  {ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor}";
+                    strList[i] = $" {m_StrChangeAuthor}  {ProjectSettingsUtils.projectSetting.ScriptAuthor}";
                 }
                 if (strList[i].Contains(m_StrChangeTime))
                 {
-                    strList[i] = $" {m_StrChangeTime}    {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                    strList[i] = $" {m_StrChangeTime}    {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
                     return;
                 }
             }
@@ -706,18 +758,18 @@ namespace EasyFramework.Edit.AutoBind
             string annotationStr = m_AnnotationCSStr;
             //把#CreateTime#替换成具体创建的时间
             annotationStr = annotationStr.Replace("#CreatTime#",
-                System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             annotationStr = annotationStr.Replace("#ChangeTime#",
-                System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             //把#Author# 替换
             annotationStr = annotationStr.Replace("#Author#",
-                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+                ProjectSettingsUtils.projectSetting.ScriptAuthor);
             //把#ChangeAuthor# 替换
             annotationStr = annotationStr.Replace("#ChangeAuthor#",
-                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptAuthor);
+                ProjectSettingsUtils.projectSetting.ScriptAuthor);
             //把#Version# 替换
             annotationStr = annotationStr.Replace("#Version#",
-                ProjectSettingsUtils.FrameworkGlobalSetting.ScriptVersion);
+                ProjectSettingsUtils.projectSetting.ScriptVersion);
             return annotationStr;
         }
         #endregion

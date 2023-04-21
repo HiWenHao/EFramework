@@ -10,7 +10,6 @@
 */
 using EasyFramework.Edit.Optimal;
 using EasyFramework.Edit.Setting;
-using EasyFramework.Framework;
 
 namespace EasyFramework.Edit
 {
@@ -19,44 +18,32 @@ namespace EasyFramework.Edit
     /// </summary>
     public class ProjectSettingsUtils
     {
-        private static readonly string m_EFProjectSettingsPath = "Settings/ProjectSetting";
-        private static ProjectSetting m_EFProjectSetting;
-        public static FrameworkSettings FrameworkGlobalSetting { get { return EFProjectSettings.FrameworkGlobalSetting; } }
-
+        static ProjectSetting m_ProjectSetting;
+        public static Settings projectSetting => EFProjectSettings.Setting;
         public static ProjectSetting EFProjectSettings
         {
             get
             {
-                if (m_EFProjectSetting == null)
+                if (m_ProjectSetting == null)
                 {
-                    m_EFProjectSetting = EditorUtils.GetSingletonAssetsByResources<ProjectSetting>(m_EFProjectSettingsPath);
+                    m_ProjectSetting = EditorUtils.GetSingletonAssetsByResources<ProjectSetting>("Settings/ProjectSetting");
                 }
-                return m_EFProjectSetting;
+                return m_ProjectSetting;
             }
         }
-    }
+    
 
-
-    /// <summary>
-    /// Easy framework optimal utils.框架优化工具
-    /// </summary>
-    public class OptimalSettingUtils
-    {
-        private static readonly string m_EFOptimalSettingPath = "Settings/OptimalSetting";
-        private static OptimalSetting m_EFOptimalSetting;
-        public static OptimalSettings OptimalSetting => EFOptimalSettingss.FrameworkOptimalSetting;
-
-        public static OptimalSetting EFOptimalSettingss
+        static OptimalSetting m_OptimalSetting;
+        public static OptimalSetting Optimal
         {
             get
             {
-                if (m_EFOptimalSetting == null)
+                if (m_OptimalSetting == null)
                 {
-                    m_EFOptimalSetting = EditorUtils.GetSingletonAssetsByResources<OptimalSetting>(m_EFOptimalSettingPath);
+                    m_OptimalSetting = EditorUtils.GetSingletonAssetsByResources<OptimalSetting>("Settings/OptimalSetting");
                 }
-                return m_EFOptimalSetting;
+                return m_OptimalSetting;
             }
         }
     }
 }
-

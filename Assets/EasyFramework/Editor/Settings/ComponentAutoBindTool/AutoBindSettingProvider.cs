@@ -24,7 +24,7 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 自动绑定全局设置路径
         /// </summary>
-        const string m_AutoBindSettingPath = "Assets/EasyFramework/Resources/Settings/AutoBindSetting.asset";
+        static string m_AutoBindSettingPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Resources/Settings/AutoBindSetting.asset";
         
         /// <summary>
         /// 在设置中的标题名称
@@ -38,7 +38,8 @@ namespace EasyFramework.Edit.AutoBind
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
             base.OnActivate(searchContext, rootElement);
-            m_CustomSettings = GetSerializedSettings();
+            AutoBindSetting m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
+            m_CustomSettings =  new SerializedObject(m_Setting);
             m_PrefabPath = m_CustomSettings.FindProperty("m_PrefabPath");
             m_ComCodePath = m_CustomSettings.FindProperty("m_ComCodePath");
             m_RulePrefixes = m_CustomSettings.FindProperty("m_RulePrefixes");
@@ -124,15 +125,6 @@ namespace EasyFramework.Edit.AutoBind
                 return provider;
             }
             return null;
-        }
-
-        /// <summary>
-        /// 获取序列化设置
-        /// </summary>
-        private static SerializedObject GetSerializedSettings()
-        {
-            var m_Setting = AutoBindSetting.GetAutoBindSetting();
-            return new SerializedObject(m_Setting);
         }
     }
 }

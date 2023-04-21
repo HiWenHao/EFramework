@@ -8,7 +8,6 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework.Framework;
 using UnityEngine;
 
 namespace EasyFramework.Edit.Optimal
@@ -19,9 +18,15 @@ namespace EasyFramework.Edit.Optimal
     [CreateAssetMenu(fileName = "OptimalSetting", menuName = "EF/OptimalSetting", order = 100)]
     public class OptimalSetting : ScriptableObject
     {
-        [Header("Optimal Setting 优化设置")]
+        [Header("图集资源存放地")]
         [SerializeField]
-        private OptimalSettings m_FrameworkOptimalSettings;
-        public OptimalSettings FrameworkOptimalSetting { get { return m_FrameworkOptimalSettings; } }
+        private string m_AtlasFolder = "Assets/";
+        public string AtlasFolder => m_AtlasFolder;
+
+        [Tooltip("提取压缩动画的路径")]
+        [Header("Extract and compress the animation file to this path")]
+        [SerializeField]
+        private string m_ExtractPath = "Assets/";
+        public string ExtractPath => m_ExtractPath;
     }
 }

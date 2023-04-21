@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09068ab9f626737458e14d9a2ccaf879, type: 3}
   m_Name: OptimalSetting
   m_EditorClassIdentifier: 
-  m_FrameworkOptimalSettings:
-    m_OptimalType: 000000000
+  m_AtlasFolder: Assets/ExampleGame/Resources/Atlas
+  m_ExtractPath: Assets/ExampleMod/New

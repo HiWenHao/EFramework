@@ -12,6 +12,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace EasyFramework.Edit.Optimal
@@ -22,23 +23,72 @@ namespace EasyFramework.Edit.Optimal
     public class OptimalSettingProvide : SettingsProvider
     {
         private const string m_HeaderName = "EF/Optimal Setting";
-        private const string EFOptimalSettingPath = "Assets/EasyFramework/Resources/Settings/OptimalSetting.asset";
+        private static readonly string EFOptimalSettingPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Resources/Settings/OptimalSetting.asset";
+
+        private SerializedProperty m_AtlasFolder;
+        private SerializedProperty m_ExtractPath;
         private SerializedObject m_CustomSettings;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
             base.OnActivate(searchContext, rootElement);
-            m_CustomSettings = new SerializedObject(OptimalSettingUtils.EFOptimalSettingss);
+            OptimalSetting _optimal = EditorUtils.LoadSettingAtPath<OptimalSetting>();
+            m_CustomSettings = new SerializedObject(_optimal);
+
+            m_AtlasFolder = m_CustomSettings.FindProperty("m_AtlasFolder");
+            m_ExtractPath = m_CustomSettings.FindProperty("m_ExtractPath");
         }
 
         public override void OnGUI(string searchContext)
         {
             base.OnGUI(searchContext);
+            m_CustomSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-            EditorGUILayout.PropertyField(m_CustomSettings.FindProperty("m_FrameworkOptimalSettings"));
+            EditorGUILayout.Space(20);
+
+            EditorGUILayout.LabelField("图集保存路径：");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(m_AtlasFolder.stringValue);
+            if (GUILayout.Button("选择图集保存路径", GUILayout.Width(140f)))
+            {
+                string folder = Path.Combine(Application.dataPath, m_AtlasFolder.stringValue);
+                if (!Directory.Exists(folder))
+                {
+                    folder = Application.dataPath;
+                }
+                string path = EditorUtility.OpenFolderPanel("选择图集保存路径", folder, "");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    m_AtlasFolder.stringValue = "Assets/" + path.Replace(Application.dataPath + "/", "");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField("提取压缩后的动画保存路径：");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(m_ExtractPath.stringValue);
+            if (GUILayout.Button("选择动画保存路径", GUILayout.Width(140f)))
+            {
+                string folder = Path.Combine(Application.dataPath,  m_ExtractPath.stringValue);
+                if (!Directory.Exists(folder))
+                {
+                    folder = Application.dataPath;
+                }
+                string path = EditorUtility.OpenFolderPanel("选择动画保存路径", folder, "");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    m_ExtractPath.stringValue = "Assets/" + path.Replace(Application.dataPath + "/", "");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+
             EditorGUILayout.Space(20);
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
+            m_CustomSettings.ApplyModifiedProperties();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
