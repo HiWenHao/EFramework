@@ -246,6 +246,13 @@ namespace EasyFramework.UI
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
             base.OnDisable();
         }
+        
+        protected override void OnDestroy()
+        {
+            CallbackFunc = null;
+            m_Velocity = Vector2.zero;
+            base.OnDestroy();
+        }
 
         /// <summary>
         /// See member in base class.
