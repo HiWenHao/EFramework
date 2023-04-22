@@ -66,7 +66,7 @@ namespace GMTest
             D.Warning("C pause");
         }
 
-        public override void Update()
+        public override void Update(float elapse, float realElapse)
         {
             Txt_TotalTime.text = $"当前游戏已运行 {EF.Timer.TotalTime} s";
         }

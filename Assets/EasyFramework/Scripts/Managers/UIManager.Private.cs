@@ -77,7 +77,7 @@ namespace EasyFramework.Managers
                 m_ClickPS.Play();
             }
 
-            PageUpdate();
+            PageUpdate(elapse, realElapse);
             ShowBoxUpdate();
         }
 
@@ -128,9 +128,9 @@ namespace EasyFramework.Managers
             m_dic_ReadyUI = new Dictionary<int, UIPageBase>();
             m_dic_ReadyGO = new Dictionary<int, GameObject>();
         }
-        void PageUpdate()
+        void PageUpdate(float elapse, float realElapse)
         {
-            m_CurrentPage?.Update();
+            m_CurrentPage?.Update(elapse, realElapse);
         }
         void PageExit()
         {

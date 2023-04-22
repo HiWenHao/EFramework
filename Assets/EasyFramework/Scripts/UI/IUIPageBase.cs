@@ -33,7 +33,7 @@ namespace EasyFramework.UI
         /// <summary>
         /// 轮询刷新
         /// </summary>
-        void Update();
+        void Update(float elapse, float realElapse);
 
         /// <summary>
         /// Called when on non-first entering or leaving the page.在非首次进入或离开该页面时调用.

@@ -8,9 +8,6 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework;
-using EasyFramework.Edit;
-using EasyFramework.Edit.SpriteTools;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +17,7 @@ using UnityEngine;
 using UnityEngine.U2D;
 using Application = UnityEngine.Application;
 
-namespace EFExample
+namespace EasyFramework.Edit.SpriteTools
 {
     /// <summary>
     /// The sprite collect editer

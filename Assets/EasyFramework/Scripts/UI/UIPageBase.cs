@@ -30,7 +30,7 @@ namespace EasyFramework.UI
 
         public virtual void Open(params object[] args) { }
 
-        public virtual void Update() { }
+        public virtual void Update(float elapse, float realElapse) { }
 
         public virtual void OnFocus(bool focus, params object[] args) 
         {
