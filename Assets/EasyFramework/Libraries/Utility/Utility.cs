@@ -118,14 +118,14 @@ namespace EasyFramework
                 string _endPath = Application.dataPath;
                 if (!string.IsNullOrEmpty(path))
                 {
-                    int index = path.IndexOf("Assets/", System.StringComparison.Ordinal);
+                    int index = path.IndexOf("/Assets", System.StringComparison.Ordinal);
                     if (index == -1)
                     {
                         EditorUtility.DisplayDialog("提示", $"必须在Assets目录下", "确定");
                         return _endPath;
                     }
 
-                    _endPath = path.Substring(index);
+                    _endPath = path.Substring(index + 1);
                 }
                 return _endPath;
             }

@@ -25,6 +25,8 @@ namespace EasyFramework.Edit.Optimal
         private const string m_HeaderName = "EF/Optimal Setting";
         private static readonly string EFOptimalSettingPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Resources/Settings/OptimalSetting.asset";
 
+        private SerializedProperty m_NotepadPath;
+        private SerializedProperty m_SublimePath;
         private SerializedProperty m_AtlasFolder;
         private SerializedProperty m_ExtractPath;
         private SerializedObject m_CustomSettings;
@@ -35,6 +37,8 @@ namespace EasyFramework.Edit.Optimal
             OptimalSetting _optimal = EditorUtils.LoadSettingAtPath<OptimalSetting>();
             m_CustomSettings = new SerializedObject(_optimal);
 
+            m_SublimePath = m_CustomSettings.FindProperty("m_SublimePath");
+            m_NotepadPath = m_CustomSettings.FindProperty("m_NotepadPath");
             m_AtlasFolder = m_CustomSettings.FindProperty("m_AtlasFolder");
             m_ExtractPath = m_CustomSettings.FindProperty("m_ExtractPath");
         }
@@ -45,6 +49,44 @@ namespace EasyFramework.Edit.Optimal
             m_CustomSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
+
+            EditorGUILayout.LabelField("Sublime文件路径：");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(m_SublimePath.stringValue);
+            if (GUILayout.Button("选择Sublime路径", GUILayout.Width(140f)))
+            {
+                string folder = Path.Combine(Application.dataPath, m_SublimePath.stringValue);
+                if (!Directory.Exists(folder))
+                    folder = Application.dataPath;
+                string path = EditorUtility.OpenFilePanel("选择Sublime路径", folder, "exe");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    if (!path.Contains("sublime_text"))
+                        EditorUtility.DisplayDialog("路径错误", "Please configure the correct path to Sublime\n请配置正确的Sublime路径", "ok");
+                    else
+                        m_SublimePath.stringValue = path;
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField("Notepad++文件路径：");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(m_NotepadPath.stringValue);
+            if (GUILayout.Button("选择Notepad++路径", GUILayout.Width(140f)))
+            {
+                string folder = Path.Combine(Application.dataPath, m_NotepadPath.stringValue);
+                if (!Directory.Exists(folder))
+                    folder = Application.dataPath;
+                string path = EditorUtility.OpenFilePanel("选择Notepad++路径", folder, "exe");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    if (!path.Contains("notepad"))
+                        EditorUtility.DisplayDialog("路径错误", "Please configure the correct path to Notepad++\n请配置正确的Notepad++路径", "ok");
+                    else
+                        m_NotepadPath.stringValue = path;
+                }
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.LabelField("图集保存路径：");
             EditorGUILayout.BeginHorizontal();
@@ -59,7 +101,10 @@ namespace EasyFramework.Edit.Optimal
                 string path = EditorUtility.OpenFolderPanel("选择图集保存路径", folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    m_AtlasFolder.stringValue = "Assets/" + path.Replace(Application.dataPath + "/", "");
+                    if (path.Equals(Application.dataPath))
+                        m_AtlasFolder.stringValue = "Assets/";
+                    else
+                        m_AtlasFolder.stringValue = "Assets" + path.Replace(Application.dataPath, "") + "/";
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -77,7 +122,10 @@ namespace EasyFramework.Edit.Optimal
                 string path = EditorUtility.OpenFolderPanel("选择动画保存路径", folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    m_ExtractPath.stringValue = "Assets/" + path.Replace(Application.dataPath + "/", "");
+                    if (path.Equals(Application.dataPath))
+                        m_ExtractPath.stringValue = "Assets/";
+                    else
+                        m_ExtractPath.stringValue = "Assets" + path.Replace(Application.dataPath, "") + "/";
                 }
             }
             EditorGUILayout.EndHorizontal();

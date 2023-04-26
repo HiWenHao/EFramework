@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bcefb87a77f72a4fb58aeca3cfccba1, type: 3}
   m_Name: SpriteCollection
   m_EditorClassIdentifier: 
-  m_AtlasFolder: Assets/ExampleGame/Resources/Atlas
+  m_AtlasFolder: Assets/ExampleGame/Resources/Atlas/
   m_Objects:
   - {fileID: 102900000, guid: 55b88dfbcb37b6b4796dc507ad1e1ddf, type: 3}
   - {fileID: 102900000, guid: eb512ce67be0d9f4b85efc482b80361d, type: 3}
   - {fileID: 102900000, guid: db6f39f49fac3cc41abeec908a20ad30, type: 3}
   - {fileID: 102900000, guid: 8879146dfc5721a429c0fe418f9a391e, type: 3}
   m_Atlas:
-  - {fileID: 4343727234628468602, guid: 4ad29413202a7974aac50c1e6a069bda, type: 2}
+  - {fileID: 4343727234628468602, guid: a5828979790245d4398d783fff8a6c8c, type: 2}
+  - {fileID: 4343727234628468602, guid: 2992a91464ce0d445a68a5b4c3c4a17c, type: 2}
+  - {fileID: 4343727234628468602, guid: 6049a8d50ea062e4282fcd64c7378de8, type: 2}
+  - {fileID: 4343727234628468602, guid: e2ba3b2aa2969a84d9231b251a9a7a27, type: 2}
   m_SpriteInfos: []

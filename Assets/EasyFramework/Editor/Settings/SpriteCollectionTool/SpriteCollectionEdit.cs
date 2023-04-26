@@ -91,13 +91,15 @@ namespace EasyFramework.Edit.SpriteTools
                     if (string.IsNullOrEmpty(_path))
                     {
                         if (string.IsNullOrEmpty(AtlasFolder.stringValue))
-                            AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(m_FrameworkAtlasFolder);
+                            AtlasFolder.stringValue = m_FrameworkAtlasFolder;
                     }
                     else
-                        AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path);
+                        AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path) + "/";
                 }
                 if (GUILayout.Button(new GUIContent("Default Path", "Set the path with EF project atlas folder.")))
-                    AtlasFolder.stringValue = "Assets/" + m_FrameworkAtlasFolder;
+                {
+                    AtlasFolder.stringValue = m_FrameworkAtlasFolder;
+                }
             }
             EditorGUILayout.EndHorizontal();
         }

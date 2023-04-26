@@ -12,17 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectSetting
   m_EditorClassIdentifier: 
-  m_FrameworkGlobalSettings:
+  m_Setting:
     m_ScriptAuthor: Xiaohei.Wang(Wenhao)
     m_ScriptVersion: 0.1
-    m_FrameworkPath: Assets\EasyFramework
+    m_FrameworkPath: Assets/EasyFramework
     m_ResourcesArea:
       m_ResAdminType: Default
       m_ResAdminCode: 0
       m_WhetherCopyResToCommitPath: 0
       m_CleanCommitPathRes: 1
-      m_ServerType: 0
+      m_ServerType: 1
       m_InnerResourceSourceUrl: http://192.168.0.1:8080
       m_ExtraResourceSourceUrl: http://192.168.0.1:8080
       m_FormalResourceSourceUrl: http://192.168.0.1:8080
-    m_AtlasFolder: Assets/

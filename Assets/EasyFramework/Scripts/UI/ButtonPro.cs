@@ -29,45 +29,45 @@ namespace EasyFramework.UI
         [Serializable]
         public class ButtonClickedEvent : UnityEvent { }
 
-        [FormerlySerializedAs("onClick0")]
+        [FormerlySerializedAs("onClickLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_OnClick0 = new ButtonClickedEvent();
+        private ButtonClickedEvent m_OnClickLeft = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onClick1")]
+        [FormerlySerializedAs("onClickRight")]
         [SerializeField]
-        private ButtonClickedEvent m_OnClick1 = new ButtonClickedEvent();
+        private ButtonClickedEvent m_OnClickRight = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onLongPress0")]
+        [FormerlySerializedAs("onLongPressLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onLongPress0 = new ButtonClickedEvent();
+        private ButtonClickedEvent m_onLongPressLeft = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onDoubleClick0")]
+        [FormerlySerializedAs("onDoubleClickLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onDoubleClick0 = new ButtonClickedEvent();
+        private ButtonClickedEvent m_onDoubleClickLeft = new ButtonClickedEvent();
 
-        [FormerlySerializedAs("onKeepPress0")]
+        [FormerlySerializedAs("onKeepPressLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onKeepPress0 = new ButtonClickedEvent();
+        private ButtonClickedEvent m_onKeepPressLeft = new ButtonClickedEvent();
 
-        public ButtonClickedEvent onClick0
+        public ButtonClickedEvent onClickLeft
         {
-            get { return m_OnClick0; }
+            get { return m_OnClickLeft; }
         }
-        public ButtonClickedEvent onClick1
+        public ButtonClickedEvent onClickRight
         {
-            get { return m_OnClick1; }
+            get { return m_OnClickRight; }
         }
-        public ButtonClickedEvent onDoubleClick0
+        public ButtonClickedEvent onDoubleClickLeft
         {
-            get { return m_onDoubleClick0; }
+            get { return m_onDoubleClickLeft; }
         }
-        public ButtonClickedEvent onLongPress0
+        public ButtonClickedEvent onLongPressLeft
         {
-            get { return m_onLongPress0; }
+            get { return m_onLongPressLeft; }
         }
-        public ButtonClickedEvent onKeepPress0
+        public ButtonClickedEvent onKeepPressLeft
         {
-            get { return m_onKeepPress0; }
+            get { return m_onKeepPressLeft; }
         }
 
         private float m_longPressIntervalTime = 600.0f;
@@ -93,7 +93,7 @@ namespace EasyFramework.UI
                 return;
             Debug.LogWarning("sssssssssssssssss");
             UISystemProfilerApi.AddMarker("Button.onClick", this);
-            m_OnClick0.Invoke();
+            m_OnClickLeft.Invoke();
         }
 
         private void Update()
@@ -106,9 +106,9 @@ namespace EasyFramework.UI
                 if (m_clickIntervalTime >= m_doubleClcikIntervalTime && m_clickIntervalTime < m_longPressIntervalTime)
                 {
                     if (m_clickCount == 2)
-                        m_onDoubleClick0?.Invoke();
+                        m_onDoubleClickLeft?.Invoke();
                     else
-                        onClick0?.Invoke();
+                        onClickLeft?.Invoke();
                     OnAnyEventTrigger();
                 }
             }
@@ -118,12 +118,12 @@ namespace EasyFramework.UI
                 if (m_clickIntervalTime >= m_longPressIntervalTime)
                 {
                     m_onHoldDown = false;
-                    m_onLongPress0?.Invoke();
+                    m_onLongPressLeft?.Invoke();
                     OnAnyEventTrigger();
                 }
             }
 
-            if (m_isKeepPress) onKeepPress0?.Invoke();
+            if (m_isKeepPress) onKeepPressLeft?.Invoke();
         }
 
         public override void OnPointerDown(PointerEventData eventData)
@@ -142,7 +142,7 @@ namespace EasyFramework.UI
         {
             if (eventData.button == InputButton.Right)
             {
-                onClick1?.Invoke();
+                onClickRight?.Invoke();
                 OnAnyEventTrigger();
             }
             else if (eventData.button == InputButton.Left && !m_onEventTrigger)
@@ -150,7 +150,7 @@ namespace EasyFramework.UI
                 m_clickCount++;
                 if (m_clickCount % 3 == 0)
                 {
-                    onClick0?.Invoke();
+                    onClickLeft?.Invoke();
                     OnAnyEventTrigger();
                     return;
                 }
