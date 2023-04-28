@@ -61,10 +61,10 @@ namespace EasyFramework.Edit.Optimal
                 string path = EditorUtility.OpenFilePanel("选择Sublime路径", folder, "exe");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    if (!path.Contains("sublime_text"))
-                        EditorUtility.DisplayDialog("路径错误", "Please configure the correct path to Sublime\n请配置正确的Sublime路径", "ok");
-                    else
+                    if (path.Contains("sublime_text") || path.Contains("subl"))
                         m_SublimePath.stringValue = path;
+                    else
+                        EditorUtility.DisplayDialog("路径错误", "Please configure the correct path to Sublime\n请配置正确的Sublime路径", "ok");
                 }
             }
             EditorGUILayout.EndHorizontal();

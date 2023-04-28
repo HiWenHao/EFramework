@@ -59,7 +59,9 @@ namespace EasyFramework.Edit
         {
             if (!File.Exists(appPath))
             {
-                EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.找不到相关程序\nPlease go to Settings to configure the path first.\n请先到设置中配置路径", "ok");
+                EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
+                    $"Please go to Settings to configure the path first.\n" +
+                    $"EFTools > Settings > Optimal Setting", "ok");
                 return;
             }
             System.Diagnostics.Process.Start(appPath, filePath);

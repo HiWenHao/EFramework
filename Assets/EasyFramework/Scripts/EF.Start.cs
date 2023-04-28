@@ -57,7 +57,7 @@ public partial class EF
 
         //读表工具初始化
         //XHTools.ExcelTool.ExcelDataManager.Init("JsonData");
-        //ExcelDataCacheManager.CacheData();
+        //ETB.ExcelDataCacheManager.CacheAllData();
         //资源热更
         //PatchUpdater.Instance.PlayMode = YooAsset.EPlayMode.HostPlayMode;
 
