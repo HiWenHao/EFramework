@@ -2,9 +2,9 @@
  * ================================================
  * Describe:      This is the code for the excel struct define table. 
  * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-04-28 18:56:05
+ * CreationTime:  2023-05-01 16:55:39
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-04-28 18:56:05
+ * ModifyTime:    2023-05-01 16:55:39
  * Version:       1.0
  * ================================================
 */
@@ -38,7 +38,7 @@ namespace ETB
 		/// <summary> 四维向量 </summary>
 		public Vector4 v4 => byteFileInfo.Get<Vector4>(primaryColVal, 327712);
 		/// <summary> 字典双int </summary>
-		public Dictionary<int, int> di => byteFileInfo.GetDict<int, int>(primaryColVal, 393264);
+		public Dictionary<int, int> dic_Int => byteFileInfo.GetDict<int, int>(primaryColVal, 393264);
 		/// <summary> 字典双string </summary>
 		public Dictionary<string, string> ds => byteFileInfo.GetDict<string, string>(primaryColVal, 458804);
 		/// <summary> 布尔值 </summary>

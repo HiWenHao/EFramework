@@ -2,9 +2,9 @@
  * ================================================
  * Describe:      This is the code for the excel variable define table. 
  * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-04-28 18:56:05
+ * CreationTime:  2023-05-01 16:55:39
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-04-28 18:56:05
+ * ModifyTime:    2023-05-01 16:55:39
  * Version:       1.0
  * ================================================
 */
@@ -29,7 +29,7 @@ namespace ETB
 		/// <summary> [Vector4] 四维向量 </summary>
 		public const int v4 = 327712;
 		/// <summary> [Dict&lt;Int ,Int&gt;] 字典双int </summary>
-		public const int di = 393264;
+		public const int dic_Int = 393264;
 		/// <summary> [Dict&lt;String ,String&gt;] 字典双string </summary>
 		public const int ds = 458804;
 		/// <summary> [Bool] 布尔值 </summary>
