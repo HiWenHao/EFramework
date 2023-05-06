@@ -61,7 +61,7 @@ namespace EasyFramework.Edit
         [MenuItem("EFTools/About Us/Open Git Page", false, 10001)]
         private static void OpenGitPage()
         {
-            Application.OpenURL("https://github.com/HiWenHao/EFramework`");
+            Application.OpenURL("https://github.com/HiWenHao/EFramework");
         }
         #endregion
     }

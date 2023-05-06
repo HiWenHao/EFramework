@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: OptimalSetting
   m_EditorClassIdentifier: 
   m_SublimePath: D:/Job_Files/Sublime Text/sublime_text.exe
-  m_NotepadPath: C:/Users/A03/Desktop/notepad.exe
+  m_NotepadPath: C:/Users/A03/Desktop/notepad++.exe
   m_AtlasFolder: Assets/ExampleGame/Resources/Atlas/
   m_ExtractPath: Assets/ExampleGame/_Temp/New/
