@@ -739,7 +739,7 @@ namespace EasyFramework.Edit.AutoBind
             {
                 if (strList[i].Contains(m_StrChangeAuthor))
                 {
-                    strList[i] = $" {m_StrChangeAuthor}  {ProjectSettingsUtils.projectSetting.ScriptAuthor}";
+                    strList[i] = $" {m_StrChangeAuthor}  {ProjectUtility.Project.ScriptAuthor}";
                 }
                 if (strList[i].Contains(m_StrChangeTime))
                 {
@@ -763,13 +763,13 @@ namespace EasyFramework.Edit.AutoBind
                 DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             //把#Author# 替换
             annotationStr = annotationStr.Replace("#Author#",
-                ProjectSettingsUtils.projectSetting.ScriptAuthor);
+                ProjectUtility.Project.ScriptAuthor);
             //把#ChangeAuthor# 替换
             annotationStr = annotationStr.Replace("#ChangeAuthor#",
-                ProjectSettingsUtils.projectSetting.ScriptAuthor);
+                ProjectUtility.Project.ScriptAuthor);
             //把#Version# 替换
             annotationStr = annotationStr.Replace("#Version#",
-                ProjectSettingsUtils.projectSetting.ScriptVersion);
+                ProjectUtility.Project.ScriptVersion);
             return annotationStr;
         }
         #endregion

@@ -22,8 +22,8 @@ namespace EasyFramework.Windows
         public static void OpenDeerSettings() => SettingsService.OpenProjectSettings("EF/Project Setting");
         [MenuItem("EFTools/Settings/Auto Bind Setting", priority = 200)]
         public static void OpenAutoBindGlobalSettings() => SettingsService.OpenProjectSettings("EF/Auto Bind Setting");
-        [MenuItem("EFTools/Settings/Optimal Setting", priority = 300)]
-        public static void OpenOptimalSettings() => SettingsService.OpenProjectSettings("EF/Optimal Setting");
+        [MenuItem("EFTools/Settings/Path Config Setting", priority = 300)]
+        public static void OpenOptimalSettings() => SettingsService.OpenProjectSettings("EF/Path Config Setting");
         #endregion
     }
 }

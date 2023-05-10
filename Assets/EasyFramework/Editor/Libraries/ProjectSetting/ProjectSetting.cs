@@ -19,19 +19,6 @@ namespace EasyFramework.Edit.Setting
     [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 200)]
     public class ProjectSetting : ScriptableObject
     {
-        [Header("Framework Setting 框架设置")]
-        [SerializeField]
-        private Settings m_Setting;
-        public Settings Setting { get { return m_Setting; } }
-
-    }
-
-    /// <summary>
-    /// 框架全局设置.
-    /// </summary>
-    [Serializable]
-    public class Settings
-    {
         [SerializeField]
         [Tooltip("脚本作者名")]
         private string m_ScriptAuthor = "Default";
@@ -42,21 +29,17 @@ namespace EasyFramework.Edit.Setting
         private string m_ScriptVersion = "0.1";
         public string ScriptVersion => m_ScriptVersion;
 
+        [Header("出包资源存放地")]
         [SerializeField]
-        [Header("框架路径地址")]
-        [Tooltip("EF in the path under the asset folder. EF在Asset文件夹下的路径")]
-        private string m_FrameworkPath = "Assets/EasyFramework";
-        public string FrameworkPath => m_FrameworkPath;
+        private ResourcesArea m_ResourcesArea;
+        public ResourcesArea ResourcesArea => m_ResourcesArea;
 
         //[Header("项目常量")]
         //[SerializeField]
         //private AppConstConfig m_AppConst;
         //public AppConstConfig AppConst => m_AppConst;
 
-        [Header("出包资源存放地")]
-        [SerializeField]
-        private ResourcesArea m_ResourcesArea;
-        public ResourcesArea ResourcesArea => m_ResourcesArea;
+
 
         //[Header("Hotfix")]
         //[SerializeField]
@@ -88,7 +71,6 @@ namespace EasyFramework.Edit.Setting
         //[SerializeField]
         //private string m_ConfigFolderName = "LubanConfig";
         //public string ConfigFolderName { get { return m_ConfigFolderName; } }
-
     }
 
 

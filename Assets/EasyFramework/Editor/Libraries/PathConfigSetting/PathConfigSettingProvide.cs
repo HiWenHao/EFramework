@@ -15,16 +15,17 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace EasyFramework.Edit.Optimal
+namespace EasyFramework.Edit.PathConfig
 {
     /// <summary>
     /// 工程优化
     /// </summary>
-    public class OptimalSettingProvide : SettingsProvider
+    public class PathConfigSettingProvide : SettingsProvider
     {
-        private const string m_HeaderName = "EF/Optimal Setting";
-        private static readonly string EFOptimalSettingPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Resources/Settings/OptimalSetting.asset";
+        private const string m_HeaderName = "EF/Path Config Setting";
+        private static readonly string EFOptimalSettingPath = ProjectUtility.Path.FrameworkPath + "Resources/Settings/PathConfigSetting.asset";
 
+        private SerializedProperty m_FrameworkPath;
         private SerializedProperty m_SublimePath;
         private SerializedProperty m_NotepadPath;
         private SerializedProperty m_AtlasFolder;
@@ -44,9 +45,10 @@ namespace EasyFramework.Edit.Optimal
                 }
             };
 
-            OptimalSetting _optimal = EditorUtils.LoadSettingAtPath<OptimalSetting>();
-            m_CustomSettings = new SerializedObject(_optimal);
+            PathConfigSetting _pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
+            m_CustomSettings = new SerializedObject(_pathConfig);
 
+            m_FrameworkPath = m_CustomSettings.FindProperty("m_FrameworkPath");
             m_SublimePath = m_CustomSettings.FindProperty("m_SublimePath");
             m_NotepadPath = m_CustomSettings.FindProperty("m_NotepadPath");
             m_AtlasFolder = m_CustomSettings.FindProperty("m_AtlasFolder");
@@ -60,6 +62,7 @@ namespace EasyFramework.Edit.Optimal
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
 
+            SelectionFolderPath("框架地址：", "选择框架路径", m_FrameworkPath);
             SelectionEXEPath("Sublime文件路径：", "选择Sublime路径", new string[] { "sublime_text", "subl" }, m_SublimePath);
             SelectionEXEPath("Notepad++文件路径：", "选择Notepad++路径", new string[] { "notepad" }, m_NotepadPath);
             SelectionFolderPath("图集保存路径：", "选择图集保存路径", m_AtlasFolder);
@@ -132,7 +135,7 @@ namespace EasyFramework.Edit.Optimal
         /// <summary>
         /// 项目设置面板 (构造)
         /// </summary>
-        public OptimalSettingProvide(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
+        public PathConfigSettingProvide(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
         {
         }
 
@@ -145,9 +148,9 @@ namespace EasyFramework.Edit.Optimal
         {
             if (File.Exists(EFOptimalSettingPath))
             {
-                var provider = new OptimalSettingProvide(m_HeaderName, SettingsScope.Project)
+                var provider = new PathConfigSettingProvide(m_HeaderName, SettingsScope.Project)
                 {
-                    keywords = GetSearchKeywordsFromGUIContentProperties<OptimalSetting>()
+                    keywords = GetSearchKeywordsFromGUIContentProperties<PathConfigSetting>()
                 };
                 return provider;
             }

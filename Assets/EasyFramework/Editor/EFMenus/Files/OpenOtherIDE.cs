@@ -25,14 +25,14 @@ namespace EasyFramework.Edit
         private static void OpenSublime()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIDEWithPath(ProjectSettingsUtils.Optimal.SublimePath, args);
+            OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
         }
         [MenuItem("Assets/EF/Open With IDE/Sublime *meta", false, 2)]
         private static void OpenSublimeMeta()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIDEWithPath(ProjectSettingsUtils.Optimal.SublimePath, args);
+            OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
         }
 
@@ -40,31 +40,76 @@ namespace EasyFramework.Edit
         private static void OpenNotepad()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIDEWithPath(ProjectSettingsUtils.Optimal.NotepadPath, args);
+            OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
         }
         [MenuItem("Assets/EF/Open With IDE/Notepad++ *meta", false, 4)]
         private static void OpenNotepadMeta()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIDEWithPath(ProjectSettingsUtils.Optimal.NotepadPath, args);
+            OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
 
         }
+
+        private static string[] _notepadPaths = new string[] {
+            @"C:\Program Files\Notepad++\notepad++.exe",
+            @"C:\Program Files (x86)\Notepad++\notepad++.exe",
+            @"C:\Programs\Notepad++\notepad++.exe",
+
+            @"D:\Program Files\Notepad++\notepad++.exe",
+            @"D:\Program Files (x86)\Notepad++\notepad++.exe",
+            @"D:\Programs\Notepad++\notepad++.exe",
+        };
+        private static string[] _sublimePaths = new string[] {
+            @"C:\Program Files\Sublime Text 3\subl.exe",
+            @"C:\Program Files\Sublime Text 3\sublime_text.exe",
+            @"C:\Program Files\Sublime Text 2\sublime_text.exe",
+            @"C:\Program Files (x86)\Sublime Text 3\subl.exe",
+            @"C:\Program Files (x86)\Sublime Text 3\sublime_text.exe",
+            @"C:\Program Files (x86)\Sublime Text 2\sublime_text.exe",
+            @"C:\Programs\Sublime Text 3\subl.exe",
+            @"C:\Programs\Sublime Text 3\sublime_text.exe",
+            @"C:\Programs\Sublime Text 2\sublime_text.exe",
+
+            @"D:\Program Files\Sublime Text 3\subl.exe",
+            @"D:\Program Files\Sublime Text 3\sublime_text.exe",
+            @"D:\Program Files\Sublime Text 2\sublime_text.exe",
+            @"D:\Program Files (x86)\Sublime Text 3\subl.exe",
+            @"D:\Program Files (x86)\Sublime Text 3\sublime_text.exe",
+            @"D:\Program Files (x86)\Sublime Text 2\sublime_text.exe",
+            @"D:\Programs\Sublime Text 3\subl.exe",
+            @"D:\Programs\Sublime Text 3\sublime_text.exe",
+            @"D:\Programs\Sublime Text 2\sublime_text.exe",
+            @"/Applications/Sublime Text.app/Contents/MacOS/sublime_text",
+        };
 
         /// <summary>
         /// Open file with other IDE.
         /// </summary>
         /// <param name="appPath">IDE path</param>
         /// <param name="filePath">Selection objcet path</param>
-        private static void OpenIDEWithPath(string appPath, string filePath)
+        private static void OpenIDEWithPath(string appPath, string filePath, string[] defaultPath)
         {
-            if (!File.Exists(appPath))
+            string _path = appPath;
+            bool _hasPath = File.Exists(_path);
+            if (!_hasPath)
             {
-                EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
-                    $"Please go to Settings to configure the path first.\n" +
-                    $"EFTools > Settings > Optimal Setting", "ok");
-                return;
+                if (null == defaultPath)
+                {
+                    EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
+                        $"Please go to Settings to configure the path first.\n" +
+                        $"EFTools > Settings > Optimal Setting", "ok");
+                    return;
+                }
+                _path = defaultPath.FirstOrDefault(File.Exists);
+                if (string.IsNullOrEmpty(_path))
+                {
+                    EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
+                        $"Please go to Settings to configure the path first.\n" +
+                        $"EFTools > Settings > Optimal Setting", "ok");
+                    return;
+                }
             }
-            System.Diagnostics.Process.Start(appPath, filePath);
+            System.Diagnostics.Process.Start(_path, filePath);
         }
 
         /// <summary>

@@ -75,7 +75,7 @@ public class AnimationEditor : Editor
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(path);
                 string _pt = directoryInfo.FullName.Remove(directoryInfo.FullName.IndexOf("Assets"));
-                _pt += ProjectSettingsUtils.Optimal.ExtractPath + directoryInfo.Name;
+                _pt += ProjectUtility.Path.ExtractPath + directoryInfo.Name;
 
                 if (Directory.Exists(_pt))
                     Directory.Delete(_pt, true);
@@ -99,8 +99,8 @@ public class AnimationEditor : Editor
                     D.Error($"The <<{obj.name}>> is not a FBX/fbx file or folder, please reselection.");
                     continue;
                 }
-                if (!Directory.Exists(ProjectSettingsUtils.Optimal.ExtractPath + "Extract"))
-                    Directory.CreateDirectory(ProjectSettingsUtils.Optimal.ExtractPath + "Extract");
+                if (!Directory.Exists(ProjectUtility.Path.ExtractPath + "Extract"))
+                    Directory.CreateDirectory(ProjectUtility.Path.ExtractPath + "Extract");
                 ExtractClips(_clip, "Extract");
             }
         }
@@ -111,7 +111,7 @@ public class AnimationEditor : Editor
         AnimationClip _tempAC = new AnimationClip();
         EditorUtility.CopySerialized(clip, _tempAC);
         CullCurves(_tempAC);
-        string _path = ProjectSettingsUtils.Optimal.ExtractPath + directoryName + "/" + EditorUtils.RemovePunctuation(_tempAC.name);
+        string _path = ProjectUtility.Path.ExtractPath + directoryName + "/" + EditorUtils.RemovePunctuation(_tempAC.name);
         int _ClipIndex = 0;
         while (File.Exists($"{_path}_{_ClipIndex}.anim"))
         {

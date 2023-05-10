@@ -34,7 +34,7 @@ public partial class EF
         ClearConsole();
 #endif
         #region Set the game run time info
-        Application.targetFrameRate = 60;
+        //Application.targetFrameRate = 60;
         Application.runInBackground = true;
         #endregion
 

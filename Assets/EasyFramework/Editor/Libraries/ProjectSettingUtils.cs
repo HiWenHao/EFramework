@@ -8,7 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework.Edit.Optimal;
+using EasyFramework.Edit.PathConfig;
 using EasyFramework.Edit.Setting;
 
 namespace EasyFramework.Edit
@@ -16,11 +16,10 @@ namespace EasyFramework.Edit
     /// <summary>
     /// Easy framework setting utils.框架设置工具
     /// </summary>
-    public class ProjectSettingsUtils
+    public class ProjectUtility
     {
         static ProjectSetting m_ProjectSetting;
-        public static Settings projectSetting => EFProjectSettings.Setting;
-        public static ProjectSetting EFProjectSettings
+        public static ProjectSetting Project
         {
             get
             {
@@ -33,16 +32,16 @@ namespace EasyFramework.Edit
         }
     
 
-        static OptimalSetting m_OptimalSetting;
-        public static OptimalSetting Optimal
+        static PathConfigSetting m_PathConfigSetting;
+        public static PathConfigSetting Path
         {
             get
             {
-                if (m_OptimalSetting == null)
+                if (m_PathConfigSetting == null)
                 {
-                    m_OptimalSetting = EditorUtils.GetSingletonAssetsByResources<OptimalSetting>("Settings/OptimalSetting");
+                    m_PathConfigSetting = EditorUtils.GetSingletonAssetsByResources<PathConfigSetting>("Settings/PathConfigSetting");
                 }
-                return m_OptimalSetting;
+                return m_PathConfigSetting;
             }
         }
     }

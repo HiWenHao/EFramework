@@ -21,9 +21,9 @@ namespace EasyFramework.Edit
     class CreateTemplateScript
     {
         //脚本模板路径
-        private readonly static string SingleScriptPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
-        private readonly static string TemplateScriptPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
-        private readonly static string MonoSingleScriptPath = ProjectSettingsUtils.projectSetting.FrameworkPath + "/Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
+        private readonly static string SingleScriptPath = ProjectUtility.Path.FrameworkPath + "Editor/Create/ScriptTemplate/Template/SingleScript.cs.txt";
+        private readonly static string TemplateScriptPath = ProjectUtility.Path.FrameworkPath + "Editor/Create/ScriptTemplate/Template/TemplateScript.cs.txt";
+        private readonly static string MonoSingleScriptPath = ProjectUtility.Path.FrameworkPath + "Editor/Create/ScriptTemplate/Template/MonoSingleScript.cs.txt";
 
         //菜单项
         [MenuItem("Assets/Create/EF/C# Scripts/TemplateScript", false, 1)]
@@ -95,11 +95,11 @@ namespace EasyFramework.Edit
             _sw.WriteLine("/* ");
             _sw.WriteLine(" * ================================================");
             _sw.WriteLine(" * Describe:      This script is used to .");
-            _sw.WriteLine(" * Author:        " + ProjectSettingsUtils.projectSetting.ScriptAuthor);
+            _sw.WriteLine(" * Author:        " + ProjectUtility.Project.ScriptAuthor);
             _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ModifyAuthor:  " + ProjectSettingsUtils.projectSetting.ScriptAuthor);
+            _sw.WriteLine(" * ModifyAuthor:  " + ProjectUtility.Project.ScriptAuthor);
             _sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ScriptVersion: " + ProjectSettingsUtils.projectSetting.ScriptVersion);
+            _sw.WriteLine(" * ScriptVersion: " + ProjectUtility.Project.ScriptVersion);
             _sw.WriteLine(" * ===============================================");
             _sw.WriteLine("*/");
 

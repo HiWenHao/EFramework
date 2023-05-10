@@ -38,7 +38,7 @@ namespace EasyFramework.Edit.SpriteTools
             m_Target = (SpriteCollection)target;
             AtlasFolder = serializedObject.FindProperty("m_AtlasFolder");
             TargetObjects = serializedObject.FindProperty("m_Objects");
-            m_FrameworkAtlasFolder = ProjectSettingsUtils.Optimal.AtlasFolder;
+            m_FrameworkAtlasFolder = ProjectUtility.Path.AtlasFolder;
 
             m_AllOverwrite = true;
             HasPreview = new List<bool>();
@@ -69,9 +69,11 @@ namespace EasyFramework.Edit.SpriteTools
 
             CrateTheAtlas();
 
+            if (!GUI.changed)
+            {
+                return;
+            }
             serializedObject.ApplyModifiedProperties();
-
-            base.OnInspectorGUI();
         }
 
         #region Select Path
