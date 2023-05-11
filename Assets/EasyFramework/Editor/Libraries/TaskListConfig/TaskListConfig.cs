@@ -20,6 +20,8 @@ namespace EasyFramework.Edit.TaskList
         int TaskCount = 0;
 #pragma warning disable 0414
         [SerializeField]
+        bool[] Mark = new bool[] { };
+        [SerializeField]
         bool[] Enabled = new bool[] { };
         [SerializeField]
         int[] Progress = new int[] { };

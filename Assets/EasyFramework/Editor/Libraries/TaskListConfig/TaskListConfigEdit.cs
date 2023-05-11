@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-15 16:22:01
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-15 16:22:01
+ * ModifyTime:    2023-05-11 11:09:32
  * ScriptVersion: 0.1
  * ===============================================
 */
@@ -19,16 +19,23 @@ namespace EasyFramework.Edit.TaskList
     [CustomEditor(typeof(TaskListConfig))]
     public class TaskListConfigEdit : Editor
     {
-        SerializedProperty TaskCount;
+        SerializedProperty Mark;
+        SerializedProperty Title;
         SerializedProperty Enabled;
         SerializedProperty Progress;
-        SerializedProperty Title;
+        SerializedProperty TaskCount;
         SerializedProperty Description;
 
         GUIStyle m_HeadStyle;
-        GUIStyle m_TaskTitleStyle;
         GUIStyle m_DeleteStyle;
-        GUIContent[] UIContents;
+        GUIStyle m_TaskTitleStyle;
+        GUIStyle m_DescriptionStyle;
+        GUIStyle m_TaskTitleMarkStyle;
+        GUIStyle m_HighlightMarkStyle;
+
+        Color[] m_ContentColors;
+        GUIContent[] UIPopupContents;
+
         private void Awake()
         {
             m_HeadStyle = new GUIStyle()
@@ -44,18 +51,44 @@ namespace EasyFramework.Edit.TaskList
 
             m_DeleteStyle = new GUIStyle("Button");
             m_DeleteStyle.normal.textColor = new Color(0.4f, 0f, 0f);
+            m_DeleteStyle.hover.textColor = new Color(0.4f, 0f, 0f);
+            m_DeleteStyle.active.textColor = new Color(0.4f, 0f, 0f);
+            m_HighlightMarkStyle = new GUIStyle("Button");
+            m_HighlightMarkStyle.normal.textColor = new Color(0.5f, 1f, 1f);
+            m_HighlightMarkStyle.hover.textColor = new Color(0.5f, 1f, 1f);
+            m_HighlightMarkStyle.active.textColor = new Color(0.5f, 1f, 1f);
 
-            m_TaskTitleStyle = new GUIStyle("MiniPopup");//1.Titlebar Foldout      4.MiniPopup
+            m_TaskTitleStyle = new GUIStyle("MiniPopup");
+            m_TaskTitleMarkStyle = new GUIStyle("PreviewPackageInUse");
+            m_DescriptionStyle = new GUIStyle("TextField")
+            {
+                wordWrap = true
+            };
 
-            UIContents = new GUIContent[] { new GUIContent("Doing", "正在做"), new GUIContent("Done", "已完成"), new GUIContent("Timeout", "超时"), new GUIContent("Abandon", "遗弃") };
+            UIPopupContents = new GUIContent[]
+            {
+                new GUIContent("Doing", "正在做"),
+                new GUIContent("Done", "已完成"),
+                new GUIContent("Timeout", "超时"),
+                new GUIContent("Abandon", "遗弃")
+            };
+
+            m_ContentColors = new Color[]
+            {
+                new Color(1f, 1f, 0f),
+                Color.green,
+                Color.red,
+                Color.gray
+            };
         }
 
         private void OnEnable()
         {
-            TaskCount = serializedObject.FindProperty("TaskCount");
+            Mark = serializedObject.FindProperty("Mark");
+            Title = serializedObject.FindProperty("Title");
             Enabled = serializedObject.FindProperty("Enabled");
             Progress = serializedObject.FindProperty("Progress");
-            Title = serializedObject.FindProperty("Title");
+            TaskCount = serializedObject.FindProperty("TaskCount");
             Description = serializedObject.FindProperty("Description");
         }
 
@@ -70,12 +103,15 @@ namespace EasyFramework.Edit.TaskList
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             if (GUILayout.Button(new GUIContent("+Add Task", "增加任务")))
             {
+                Mark.InsertArrayElementAtIndex(TaskCount.intValue);
+                Title.InsertArrayElementAtIndex(TaskCount.intValue);
                 Enabled.InsertArrayElementAtIndex(TaskCount.intValue);
                 Progress.InsertArrayElementAtIndex(TaskCount.intValue);
-                Title.InsertArrayElementAtIndex(TaskCount.intValue);
                 Description.InsertArrayElementAtIndex(TaskCount.intValue);
-                Enabled.GetArrayElementAtIndex(TaskCount.intValue).boolValue = true;
+
                 Progress.GetArrayElementAtIndex(TaskCount.intValue).intValue = 0;
+                Mark.GetArrayElementAtIndex(TaskCount.intValue).boolValue = false;
+                Enabled.GetArrayElementAtIndex(TaskCount.intValue).boolValue = true;
                 Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = "Title 标题";
                 Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = "Please fill in the task description.请填写任务描述";
 
@@ -89,8 +125,9 @@ namespace EasyFramework.Edit.TaskList
                 if (0 != TaskCount.intValue && EditorUtility.DisplayDialog("Delete Task", "Remove all tasks.\n删除全部任务", "OK"))
                 {
                     TaskCount.intValue = 0;
-                    Enabled.ClearArray();
+                    Mark.ClearArray();
                     Title.ClearArray();
+                    Enabled.ClearArray();
                     Progress.ClearArray();
                     Description.ClearArray();
                 }
@@ -108,16 +145,53 @@ namespace EasyFramework.Edit.TaskList
             for (int i = 0; i < TaskCount.intValue; i++)
             {
                 EditorGUILayout.Space(6f);
-                Enabled.GetArrayElementAtIndex(i).boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(Enabled.GetArrayElementAtIndex(i).boolValue, $"    {Title.GetArrayElementAtIndex(i).stringValue}", TaskStyle(Progress.GetArrayElementAtIndex(i).intValue));
+                Enabled.GetArrayElementAtIndex(i).boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(Enabled.GetArrayElementAtIndex(i).boolValue,
+                    content: $"    {Title.GetArrayElementAtIndex(i).stringValue}",
+                    style: TaskStyle(Progress.GetArrayElementAtIndex(i).intValue, Mark.GetArrayElementAtIndex(i).boolValue)
+                    );
                 if (Enabled.GetArrayElementAtIndex(i).boolValue)
                 {
                     EditorGUILayout.BeginVertical("AvatarMappingBox");
 
                     EditorGUILayout.BeginHorizontal();
-                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(new GUIContent("Progress", "任务进度"), Progress.GetArrayElementAtIndex(i).intValue, UIContents, new int[] { 0, 1, 2, 3 }, TaskStyle(Progress.GetArrayElementAtIndex(i).intValue));
+                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(new GUIContent("Progress", "任务进度"),
+                        selectedValue: Progress.GetArrayElementAtIndex(i).intValue,
+                        displayedOptions: UIPopupContents,
+                        optionValues: new int[] { 0, 1, 2, 3 },
+                        style: TaskStyle(Progress.GetArrayElementAtIndex(i).intValue, false)
+                        );
                     GUILayout.Space(15f);
+                    if (GUILayout.Button(Mark.GetArrayElementAtIndex(i).boolValue ?
+                        new GUIContent("Cancel Mark", "取消标记") :
+                        new GUIContent("Highlight Mark", "突出标记"),
+                        m_HighlightMarkStyle)
+                        )
+                    {
+                        Mark.GetArrayElementAtIndex(i).boolValue = !Mark.GetArrayElementAtIndex(i).boolValue;
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    Title.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextField(Title.GetArrayElementAtIndex(i).stringValue);
+                    Description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(Description.GetArrayElementAtIndex(i).stringValue, m_DescriptionStyle);
+
+                    EditorGUILayout.BeginHorizontal();
+                    if (i != 0 && GUILayout.Button(new GUIContent("Move Up", "上移")))
+                    {
+                        Mark.MoveArrayElement(i, i - 1);
+                        Enabled.MoveArrayElement(i, i - 1);
+                        Progress.MoveArrayElement(i, i - 1);
+                        Title.MoveArrayElement(i, i - 1);
+                        Description.MoveArrayElement(i, i - 1);
+                    }
+                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(new GUIContent("Move Down", "下移")))
+                    {
+                        Mark.MoveArrayElement(i, i + 1);
+                        Progress.MoveArrayElement(i, i + 1);
+                        Title.MoveArrayElement(i, i + 1);
+                        Description.MoveArrayElement(i, i + 1);
+                    }
                     if (GUILayout.Button(new GUIContent("Delete Task", "删除任务"), m_DeleteStyle))
                     {
+                        Mark.DeleteArrayElementAtIndex(i);
                         Enabled.DeleteArrayElementAtIndex(i);
                         Progress.DeleteArrayElementAtIndex(i);
                         Title.DeleteArrayElementAtIndex(i);
@@ -126,34 +200,26 @@ namespace EasyFramework.Edit.TaskList
                         continue;
                     }
                     EditorGUILayout.EndHorizontal();
-                    Title.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextField(Title.GetArrayElementAtIndex(i).stringValue);
-                    Description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextField(Description.GetArrayElementAtIndex(i).stringValue);
+
                     EditorGUILayout.EndVertical();
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
         }
 
-        GUIStyle TaskStyle(int index)
+        GUIStyle TaskStyle(int index, bool mark)
         {
-            switch (index)
-            {
-                case 0:
-                    m_TaskTitleStyle.normal.textColor = new Color(1f, 0.6f, 0f);
-                    break;
-                case 1:
-                    m_TaskTitleStyle.normal.textColor = Color.green;
-                    break;
-                case 2:
-                    m_TaskTitleStyle.normal.textColor = Color.red;
-                    break;
-                case 3:
-                    m_TaskTitleStyle.normal.textColor = Color.gray;
-                    break;
-                default:
-                    break;
-            }
-            return m_TaskTitleStyle;
+            GUIStyle _style = mark ? m_TaskTitleMarkStyle : m_TaskTitleStyle;
+
+            _style.hover.textColor = m_ContentColors[index];
+            _style.normal.textColor = m_ContentColors[index];
+            _style.active.textColor = m_ContentColors[index];
+            _style.focused.textColor = m_ContentColors[index];
+            _style.onHover.textColor = m_ContentColors[index];
+            _style.onNormal.textColor = m_ContentColors[index];
+            _style.onFocused.textColor = m_ContentColors[index];
+
+            return _style;
         }
     }
 }

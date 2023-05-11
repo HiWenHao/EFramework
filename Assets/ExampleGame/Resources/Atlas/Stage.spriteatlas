@@ -37,8 +37,26 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ee09064370211334abdec1b1410d1cff, type: 3}
+  - {fileID: 21300000, guid: 8f6c4004b346a6a41bedc9623425dbd3, type: 3}
+  - {fileID: 21300000, guid: f27b6ac45bf783340ad9ab9fb3f53a39, type: 3}
+  - {fileID: 21300000, guid: 88dd22b5715878f4281b7ae68d00ff56, type: 3}
+  - {fileID: 21300000, guid: 2d7261d597abf884dbb36f9e026d9dbf, type: 3}
+  - {fileID: 21300000, guid: d00927981ae24934188ed5c5078e0328, type: 3}
+  - {fileID: 21300000, guid: 803d9b989f0aeac46871527acbb14986, type: 3}
+  - {fileID: 21300000, guid: 64452e98f94a1cc468ec09323dd787c5, type: 3}
+  - {fileID: 21300000, guid: 6b3336592bcf2134abb33fc57225674a, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Backbotton
+  - Cristalblue
+  - Cristalred
+  - Stageexplanation
+  - Gamebotton
+  - Card
+  - Cardline
+  - Stage
+  - Cristalorange
   m_RenderDataMap: {}
   m_Tag: Stage
   m_IsVariant: 0

@@ -37,8 +37,20 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 1d28e361e0befb14ba77f2e74c8bfe83, type: 3}
+  - {fileID: 21300000, guid: 1f576f745832c5f44984d497b68e17ca, type: 3}
+  - {fileID: 21300000, guid: 0919efc52c563654385e36a9ea1c61b7, type: 3}
+  - {fileID: 21300000, guid: b17a705b1fccb414c9a1ca863d3ff64b, type: 3}
+  - {fileID: 21300000, guid: 80b4f6fd14c293341a961925c1fc2969, type: 3}
+  - {fileID: 21300000, guid: 1636c30fd461d7543b7d3e0438d525b4, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Rightupside
+  - Lefrupside
+  - RIghtdownside
+  - Foldingpaper
+  - FoldingpaperShadow
+  - Background
   m_RenderDataMap: {}
   m_Tag: Back
   m_IsVariant: 0
