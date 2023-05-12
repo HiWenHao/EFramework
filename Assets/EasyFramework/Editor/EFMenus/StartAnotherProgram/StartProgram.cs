@@ -20,7 +20,7 @@ namespace EasyFramework.Edit
     /// </summary>
     public class StartProgram
     {
-        [MenuItem("EFTools/ThirdPartyAssets/Excel To Byte File", false, 2000)]
+        [MenuItem("EFTools/Other Tools/Excel To Byte File", false, 20000)]
         private static void StartETB()
         {
             string _path = Application.dataPath.Substring(0, Application.dataPath.IndexOf("Assets"));            
@@ -53,12 +53,12 @@ namespace EasyFramework.Edit
         }
 
         #region Open URL
-        [MenuItem("EFTools/About Us/Join QQ group", false, 10000)]
+        [MenuItem("EFTools/About Us/Join QQ group", false, 100000)]
         private static void JoinQQGroup()
         {
             Application.OpenURL("https://jq.qq.com/?_wv=1027&k=4GvMJd6w");
         }
-        [MenuItem("EFTools/About Us/Open Git Page", false, 10001)]
+        [MenuItem("EFTools/About Us/Open Git Page", false, 100001)]
         private static void OpenGitPage()
         {
             Application.OpenURL("https://github.com/HiWenHao/EFramework");

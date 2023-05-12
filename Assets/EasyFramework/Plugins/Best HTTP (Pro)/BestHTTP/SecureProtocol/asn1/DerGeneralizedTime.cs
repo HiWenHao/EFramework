@@ -175,7 +175,9 @@ namespace Org.BouncyCastle.Asn1
             int minutes = (int)(offset / TimeSpan.TicksPerMinute) % 60;
 #else
             // Note: GetUtcOffset incorporates Daylight Savings offset
+#pragma warning disable CS0618 // 类型或成员已过时
             TimeSpan offset =  TimeZone.CurrentTimeZone.GetUtcOffset(time);
+#pragma warning restore CS0618 // 类型或成员已过时
             if (offset.CompareTo(TimeSpan.Zero) < 0)
             {
                 sign = '-';

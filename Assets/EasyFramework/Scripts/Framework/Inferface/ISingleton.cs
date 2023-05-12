@@ -8,10 +8,11 @@
  * Version:         1.0
  * ===============================================
  */
-namespace EasyFramework{
-    public interface ISingleton 
+namespace EasyFramework
+{
+    public interface ISingleton
     {
-        internal void Init();
-        internal void Quit();
+        public void Init();
+        public void Quit();
     }
 }
