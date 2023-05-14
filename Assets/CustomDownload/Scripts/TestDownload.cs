@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 public class TestDownload : MonoBehaviour
 {

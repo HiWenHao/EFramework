@@ -10,7 +10,7 @@
  */
 using ExampleGame.Configs;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace ExampleGame
 {

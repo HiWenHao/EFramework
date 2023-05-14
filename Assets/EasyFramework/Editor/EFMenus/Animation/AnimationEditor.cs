@@ -13,7 +13,7 @@ using EasyFramework.Edit;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 public class AnimationEditor : Editor
 {

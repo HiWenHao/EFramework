@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Managers
 {

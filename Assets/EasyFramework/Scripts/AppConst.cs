@@ -24,7 +24,7 @@ public class AppConst
     /// <summary>
     /// 数字越小更新越靠前，退出越靠后
     /// </summary>
-    public class ManagerLevel
+    public struct ManagerLevel
     {
         public const int TimeMgr = -100;
         public const int HttpMgr = -10;

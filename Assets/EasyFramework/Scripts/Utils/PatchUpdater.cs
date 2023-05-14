@@ -13,7 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using XHTools;
+using EasyFramework;
 using YooAsset;
 
 namespace EasyFramework.Utils

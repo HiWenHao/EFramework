@@ -2,16 +2,16 @@
  * ================================================
  * Describe:      This is the code for the XH_Sheet1 table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-14 14:44:45
+ * CreationTime:  2023-05-14 18:21:21
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-14 14:44:45
- * Version:       0.1
+ * ModifyTime:    2023-05-14 18:21:21
+ * Version:       0.2
  * ===============================================
 */
 using System.Collections.Generic;
 using UnityEngine;
-using XHTools;
-using XHTools.ExcelTool;
+using EasyFramework;
+using EasyFramework.ExcelTool;
 
 #pragma warning disable
 namespace ETB

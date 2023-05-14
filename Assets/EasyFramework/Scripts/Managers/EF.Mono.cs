@@ -145,7 +145,7 @@ public partial class EF : MonoBehaviour
     {
         if (item is IManager)
         {
-            XHTools.D.Error("You should not unregister this singleton, bescause is a manager.");
+            EasyFramework.D.Error("You should not unregister this singleton, bescause is a manager.");
             return;
         }
         --SingletonsCount;

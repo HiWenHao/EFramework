@@ -11,7 +11,7 @@
 using BestHTTP;
 using BestHTTP.WebSocket;
 using System;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Managers
 {

@@ -13,7 +13,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Managers
 {

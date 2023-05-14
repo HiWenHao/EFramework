@@ -13,7 +13,7 @@ using LitJson;
 using System;
 using System.Text;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Managers
 {

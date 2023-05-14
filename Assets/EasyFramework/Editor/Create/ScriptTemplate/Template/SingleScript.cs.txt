@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using EasyFramework;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace PleaseChangeTheNamespace
 {

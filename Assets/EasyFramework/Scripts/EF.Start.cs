@@ -29,7 +29,7 @@ public partial class EF
 
     static void InitInAfterSceneLoad()
     {
-        XHTools.D.Init();
+        EasyFramework.D.Init();
 #if UNITY_EDITOR
         ClearConsole();
 #endif
@@ -39,14 +39,14 @@ public partial class EF
         #endregion
 
         #region Show platform infomation.展示平台信息
-        XHTools.D.Correct($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
+        EasyFramework.D.Correct($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
             $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
             $"  GPU: {SystemInfo.graphicsDeviceName}   " +
             $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
             $" {Screen.width} * {Screen.height} @{Screen.currentResolution.refreshRate}Hz");
         #endregion
 
-        XHTools.D.Log("======================Initialize======================");
+        EasyFramework.D.Log("======================Initialize======================");
         //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
 
         Timer.SleepTimeout = SleepTimeout.NeverSleep;
@@ -56,7 +56,7 @@ public partial class EF
         EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
 
         //读表工具初始化
-        //XHTools.ExcelTool.ExcelDataManager.Init("JsonData");
+        //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
         //ETB.ExcelDataCacheManager.CacheAllData();
         //资源热更
         //PatchUpdater.Instance.PlayMode = YooAsset.EPlayMode.HostPlayMode;

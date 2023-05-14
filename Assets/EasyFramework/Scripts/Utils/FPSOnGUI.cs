@@ -10,7 +10,7 @@
 */
 
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Utils
 {

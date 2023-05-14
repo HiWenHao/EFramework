@@ -11,7 +11,7 @@
 
 using System;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Managers
 {

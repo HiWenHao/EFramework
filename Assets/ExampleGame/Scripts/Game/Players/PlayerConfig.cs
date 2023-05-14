@@ -106,7 +106,7 @@ namespace ExampleGame
         {
             EF.Timer.AddCountdownEvent(10.0f, delegate
             {
-                XHTools.D.Correct("10.0f");
+                EasyFramework.D.Correct("10.0f");
                 Config.SetBolld(-5);
             });
         }

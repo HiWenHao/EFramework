@@ -13,7 +13,6 @@ using EasyFramework.UI;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using XHTools;
 
 namespace GMTest
 {

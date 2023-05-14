@@ -15,7 +15,7 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using XHTools;
+using EasyFramework;
 
 namespace EasyFramework.Edit.AutoBind
 {
@@ -462,7 +462,7 @@ namespace EasyFramework.Edit.AutoBind
                 sw.WriteLine("using System.Collections.Generic;");
                 sw.WriteLine("using UnityEngine;");
                 sw.WriteLine("using UnityEngine.UI;");
-                sw.WriteLine("using XHTools;");
+                sw.WriteLine("using EasyFramework;");
 
                 if (!string.IsNullOrEmpty(m_Builder.Namespace))
                     sw.WriteLine($"\nnamespace {m_Builder.Namespace}" + "\n{");

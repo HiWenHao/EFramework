@@ -8,11 +8,8 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using System.Collections;
-using System.Collections.Generic;
 using EasyFramework;
 using UnityEngine;
-using XHTools;
 
 namespace ExampleGame
 {

@@ -2,7 +2,6 @@ using EasyFramework;
 using EasyFramework.UI;
 using UnityEngine;
 using UnityEngine.UI;
-using XHTools;
 
 namespace GMTest
 {

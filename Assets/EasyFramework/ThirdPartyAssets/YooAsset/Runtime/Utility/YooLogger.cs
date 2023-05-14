@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using XHTools;
+using EasyFramework;
 
 namespace YooAsset
 {
