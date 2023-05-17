@@ -12,7 +12,6 @@ using Microsoft.Win32;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Windows
 {

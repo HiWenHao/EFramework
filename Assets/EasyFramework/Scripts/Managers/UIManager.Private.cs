@@ -13,7 +13,6 @@ using EasyFramework.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace EasyFramework.Managers
@@ -35,12 +34,12 @@ namespace EasyFramework.Managers
             //Create ui root object.
             {
                 UICamera = new GameObject("_UICamera").AddComponent<Camera>();
-                UICamera.GetUniversalAdditionalCameraData().renderType = CameraRenderType.Overlay;
                 UICamera.orthographic = true;
                 UICamera.orthographicSize = UiScreenHeight / 2.0f;
                 UICamera.farClipPlane = 200.0f;
                 UICamera.cullingMask = 32;
-                Camera.main.GetUniversalAdditionalCameraData().cameraStack.Add(UICamera);
+                UICamera.clearFlags = CameraClearFlags.SolidColor;
+
                 m_Root = new GameObject("_UIRoot");
                 m_Root.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
                 m_Root.GetComponent<Canvas>().worldCamera = UICamera;
@@ -49,7 +48,6 @@ namespace EasyFramework.Managers
                 _cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 _cs.referenceResolution = new Vector2(UiScreenWidth, UiScreenHeight);
                 _cs.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-                m_Root.AddComponent<GraphicRaycaster>();
                 m_Root.transform.SetParent(m_target, false);
                 UICamera.transform.SetParent(m_target, false);
             }
@@ -89,7 +87,6 @@ namespace EasyFramework.Managers
             Destroy(m_ClickPS.gameObject);
             m_ClickPS = null;
 
-            Camera.main.GetUniversalAdditionalCameraData().cameraStack.Remove(UICamera);
             Destroy(UICamera.gameObject);
             UICamera = null;
         }
@@ -114,7 +111,6 @@ namespace EasyFramework.Managers
         void PageInit()
         {
             RectTransform _rect = new GameObject(pageBaseObjectName).AddComponent<RectTransform>();
-            _rect.gameObject.AddComponent<CanvasRenderer>();
             pageBaseObject = _rect.transform;
             pageBaseObject.SetParent(m_Root.transform, false);
             pageBaseObject.localPosition = Vector3.zero;
@@ -166,8 +162,10 @@ namespace EasyFramework.Managers
             GameObject _uiObj = Object.Instantiate(EF.Load.Load<GameObject>($"{AppConst.UI}{page.GetType().Name}"));
             _uiObj.transform.SetParent(pageBaseObject);
             RectTransform _rect = _uiObj.GetComponent<RectTransform>();
+            _rect.anchorMax = Vector2.one;
+            _rect.anchorMin = Vector2.zero;
             _rect.sizeDelta = Vector2.zero;
-            _rect.localPosition = Vector2.zero;
+            _rect.anchoredPosition = Vector2.zero;
             _rect.localScale = Vector2.one;
             _uiObj.name = page.GetType().Name;
             page.SerialId = m_int_Serial++;

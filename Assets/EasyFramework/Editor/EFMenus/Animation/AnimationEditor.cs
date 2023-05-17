@@ -17,7 +17,7 @@ using EasyFramework;
 
 public class AnimationEditor : Editor
 {
-    [MenuItem("Assets/EF/Animation Tools/Compress One Clip", false, 30)]
+    [MenuItem("Assets/EF/Animation Tools/Compress One Clip", false, 50)]
     static void CompressAnimation()
     {
         Object[] _selection = Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets);
@@ -35,7 +35,7 @@ public class AnimationEditor : Editor
         }
     }
 
-    [MenuItem("Assets/EF/Animation Tools/Compress All Clips", false, 31)]
+    [MenuItem("Assets/EF/Animation Tools/Compress All Clips", false, 51)]
     public static void CompressAnimations()
     {
         foreach (var obj in Selection.GetFiltered<Object>(SelectionMode.Assets))
@@ -62,7 +62,7 @@ public class AnimationEditor : Editor
         }
     }
 
-    [MenuItem("Assets/EF/Animation Tools/Extract Clips Compress", false, 32)]
+    [MenuItem("Assets/EF/Animation Tools/Extract Clips Compress", false, 52)]
     public static void GetAniamtionClipAndCompress()
     {
         Object[] _objects = Selection.GetFiltered<Object>(SelectionMode.Assets);

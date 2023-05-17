@@ -16,23 +16,28 @@ using UnityEngine.UI;
 namespace EasyFramework.Edit
 {
     public class CreateUITemplatePrefab
-	{
-        [MenuItem("GameObject/UI/EF/Button Pro", false, 20)]
+    {
+        [MenuItem("GameObject/UI/EF/New UI Page", false, 20)]
+        static void CreateUINewUIPage(MenuCommand menuCommand)
+        {
+            CreateUIObject(menuCommand, "UiPage");
+        }
+        [MenuItem("GameObject/UI/EF/Button Pro", false, 40)]
         static void CreateUIButtonPro(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro");
         }
-        [MenuItem("GameObject/UI/EF/Button Pro - TextMeshPro", false, 21)]
+        [MenuItem("GameObject/UI/EF/Button Pro - TextMeshPro", false, 41)]
         static void CreateUIButtonProTmp(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "ButtonPro(TMP)"); 
         }
-        [MenuItem("GameObject/UI/EF/Radar Map", false, 22)]
+        [MenuItem("GameObject/UI/EF/Radar Map", false, 42)]
         static void CreateUIRadarMap(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "Radar Map");
         }
-        [MenuItem("GameObject/UI/EF/Scroll View Pro", false, 23)]
+        [MenuItem("GameObject/UI/EF/Scroll View Pro", false, 43)]
         static void CreateUIScrollViewPro(MenuCommand menuCommand)
         {
             CreateUIObject(menuCommand, "Scroll View Pro");
@@ -41,7 +46,7 @@ namespace EasyFramework.Edit
 
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)
         {
-            string fullPath = ($"Assets/EasyFramework/Editor/Create/UiTemplate/Template/{prefabName}.prefab");
+            string fullPath = ProjectUtility.Path.FrameworkPath + $"Editor/Create/UiTemplate/Template/{prefabName}.prefab";
             GameObject prefab = (GameObject)AssetDatabase.LoadMainAssetAtPath(fullPath);
             if (prefab)
             {
@@ -58,7 +63,7 @@ namespace EasyFramework.Edit
                 }
                 #endregion
 
-                GameObject _inst = (GameObject)PrefabUtility.InstantiateAttachedAsset(prefab);
+                GameObject _inst = GameObject.Instantiate(prefab);
                 _inst.name = prefabName;
                 _inst.transform.SetParent(_canvas.transform, false);
                 GameObjectUtility.SetParentAndAlign(_inst, menuCommand.context as GameObject);

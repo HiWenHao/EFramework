@@ -15,7 +15,6 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Edit.AutoBind
 {
@@ -83,14 +82,16 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawSetting()
         {
             EditorGUILayout.BeginHorizontal();
-            m_Namespace.stringValue = EditorGUILayout.TextField(new GUIContent("命名空间："), m_Namespace.stringValue);
+            m_Namespace.stringValue = EditorGUILayout.TextField(new GUIContent("命名空间：", "The Namespace"), m_Namespace.stringValue);
             if (GUILayout.Button("默认设置"))
             {
                 m_Namespace.stringValue = m_Setting.Namespace;
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.LabelField(new GUIContent($"类名： {m_Builder.gameObject.name}   (自动与当前对象名保持一致)"));
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.TextField(new GUIContent("类型命名：", "The class name"), $"{m_Builder.gameObject.name}  (与对象名相一致)");
+            EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.Space(12f, true);
 

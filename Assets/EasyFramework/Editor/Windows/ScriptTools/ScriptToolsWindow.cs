@@ -63,7 +63,7 @@ namespace EasyFramework.Windows
             [MenuItem("EFTools/Assets/Script Tools &F", priority = 10)]
             private static void OpenWindow()
             {
-                ScriptToolsWindow window = (ScriptToolsWindow)GetWindow(typeof(ScriptToolsWindow), true, "Script Tools");
+                ScriptToolsWindow window = GetWindow<ScriptToolsWindow>(false, "Script Tools");
                 window.minSize = new Vector2(360.0f, 200.0f);
                 window.Show();
             }

@@ -10,7 +10,7 @@ namespace GMTest
         // Start is called before the first frame update
         void Start()
         {
-            if (false)
+            if (true)
             {
                 EF.Ui.Push(new UiA());
             }
