@@ -2,10 +2,10 @@
  * ================================================
  * Describe:      This is the code for the excel variable define table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-14 18:21:21
+ * CreationTime:  2023-05-18 14:46:42
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-14 18:21:21
- * Version:       0.2
+ * ModifyTime:    2023-05-18 14:46:42
+ * Version:       0.3
  * ================================================
 */
 #pragma warning disable
@@ -27,7 +27,7 @@ namespace ETB{
         /// <summary> [Vector4] 四维向量 </summary>
         public const int v4 = 327712;
         /// <summary> [Dict&lt;Int ,Int&gt;] 字典双int </summary>
-        public const int di = 393264;
+        public const int dic_Int = 393264;
         /// <summary> [Dict&lt;String ,String&gt;] 字典双string </summary>
         public const int ds = 458804;
         /// <summary> [Bool] 布尔值 </summary>

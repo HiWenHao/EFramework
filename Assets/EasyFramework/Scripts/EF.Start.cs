@@ -58,7 +58,7 @@ public partial class EF
         //读表工具初始化
         //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
         //ETB.ExcelDataCacheManager.CacheAllData();
-        //资源热更
+        //资源热更     仅支持Unity2019.4+
         //PatchUpdater.Instance.PlayMode = YooAsset.EPlayMode.HostPlayMode;
 
         //UI进入

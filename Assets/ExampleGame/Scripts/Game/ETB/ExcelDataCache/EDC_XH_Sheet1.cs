@@ -2,10 +2,10 @@
  * ================================================
  * Describe:      This is the code for the XH_Sheet1 table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-14 18:21:21
+ * CreationTime:  2023-05-18 14:46:42
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-14 18:21:21
- * Version:       0.2
+ * ModifyTime:    2023-05-18 14:46:42
+ * Version:       0.3
  * ===============================================
 */
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace ETB
         /// <summary> 四维向量 </summary>
         public Vector4 v4 { get; }
         /// <summary> 字典双int </summary>
-        public Dictionary<int, int> di { get; }
+        public Dictionary<int, int> dic_Int { get; }
         /// <summary> 字典双string </summary>
         public Dictionary<string, string> ds { get; }
         /// <summary> 布尔值 </summary>
@@ -73,7 +73,7 @@ namespace ETB
             this.v2 = ByteFileReader.Get<Vector2>();
             this.v3i = ByteFileReader.Get<Vector3Int>();
             this.v4 = ByteFileReader.Get<Vector4>();
-            this.di = ByteFileReader.GetDict<int, int>();
+            this.dic_Int = ByteFileReader.GetDict<int, int>();
             this.ds = ByteFileReader.GetDict<string, string>();
             this.boolType = ByteFileReader.Get<bool>();
             this.sbyteType = ByteFileReader.Get<sbyte>();
