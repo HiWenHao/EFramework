@@ -11,7 +11,7 @@ namespace YooAsset.Editor
 {
 	public class ShaderVariantCollectorWindow : EditorWindow
 	{
-		[MenuItem("YooAsset/ShaderVariant Collector", false, 201)]
+		[MenuItem("EFTools/YooAsset/ShaderVariant Collector", false, 201)]
 		public static void OpenWindow()
 		{
 			ShaderVariantCollectorWindow window = GetWindow<ShaderVariantCollectorWindow>("着色器变种收集工具", true, WindowsDefine.DockedWindowTypes);

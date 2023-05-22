@@ -9,7 +9,7 @@ namespace YooAsset.Editor
 {
 	public class AssetBundleReporterWindow : EditorWindow
 	{
-		[MenuItem("YooAsset/AssetBundle Reporter", false, 103)]
+		[MenuItem("EFTools/YooAsset/AssetBundle Reporter", false, 103)]
 		public static void OpenWindow()
 		{
 			AssetBundleReporterWindow window = GetWindow<AssetBundleReporterWindow>("资源包报告工具", true, WindowsDefine.DockedWindowTypes);

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace YooAsset.Editor
 {
-	[CreateAssetMenu(fileName = "AssetBundleCollectorSetting", menuName = "YooAsset/Create AssetBundle Collector Settings")]
+	[CreateAssetMenu(fileName = "AssetBundleCollectorSetting", menuName = "EF/YooAsset/Create AssetBundle Collector Settings", order = 21)]
 	public class AssetBundleCollectorSetting : ScriptableObject
 	{
 		/// <summary>

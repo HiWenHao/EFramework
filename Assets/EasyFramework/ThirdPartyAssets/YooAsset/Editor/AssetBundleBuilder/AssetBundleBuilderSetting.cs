@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace YooAsset.Editor
 {
-	[CreateAssetMenu(fileName = "AssetBundleBuilderSetting", menuName = "YooAsset/Create AssetBundle Builder Settings")]
+	[CreateAssetMenu(fileName = "AssetBundleBuilderSetting", menuName = "EF/YooAsset/Create AssetBundle Builder Settings", order = 20)]
 	public class AssetBundleBuilderSetting : ScriptableObject
 	{
 		/// <summary>
