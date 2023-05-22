@@ -22,7 +22,7 @@ namespace YooAsset.Editor
 		/// </summary>
 		public static string GetStreamingAssetsFolderPath()
 		{
-			return $"{Application.dataPath}/StreamingAssets/{YooAssetSettings.StreamingAssetsRootFolder}/";
+			return $"{Application.dataPath}/StreamingAssets/{YooAssetSettings.StreamingAssetsBuildinFolder}/";
 		}
 
 		/// <summary>
@@ -57,34 +57,6 @@ namespace YooAsset.Editor
 					info.Delete();
 				}
 			}
-		}
-
-		/// <summary>
-		/// 获取构建管线的输出目录
-		/// </summary>
-		public static string MakePipelineOutputDirectory(string outputRoot, string buildPackage, BuildTarget buildTarget, EBuildMode buildMode)
-		{
-			string result = $"{outputRoot}/{buildPackage}/{buildTarget}/{YooAssetSettings.OutputFolderName}";
-			if (buildMode == EBuildMode.DryRunBuild)
-				result += $"_{EBuildMode.DryRunBuild}";
-			else if (buildMode == EBuildMode.SimulateBuild)
-				result += $"_{EBuildMode.SimulateBuild}";
-			return result;
-		}
-
-		/// <summary>
-		/// 加载补丁清单文件
-		/// </summary>
-		internal static PatchManifest LoadPatchManifestFile(string fileDirectory, string packageName, string packageCRC)
-		{
-			string filePath = $"{fileDirectory}/{YooAssetSettingsData.GetPatchManifestFileName(packageName, packageCRC)}";
-			if (File.Exists(filePath) == false)
-			{
-				throw new System.Exception($"Not found patch manifest file : {filePath}");
-			}
-
-			string jsonData = FileUtility.ReadFile(filePath);
-			return PatchManifest.Deserialize(jsonData);
 		}
 	}
 }

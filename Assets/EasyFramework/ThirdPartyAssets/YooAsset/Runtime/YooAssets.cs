@@ -9,55 +9,43 @@ namespace YooAsset
 	public static partial class YooAssets
 	{
 		private static bool _isInitialize = false;
-		private static readonly List<AssetsPackage> _packages = new List<AssetsPackage>();
+		private static GameObject _driver = null;
+		private static readonly List<ResourcePackage> _packages = new List<ResourcePackage>();
 
 		/// <summary>
 		/// 初始化资源系统
 		/// </summary>
-		public static void Initialize()
+		/// <param name="logger">自定义日志处理</param>
+		public static void Initialize(ILogger logger = null)
 		{
 			if (_isInitialize)
 				throw new Exception($"{nameof(YooAssets)} is initialized !");
 
 			if (_isInitialize == false)
 			{
+				YooLogger.Logger = logger;
+
 				// 创建驱动器
 				_isInitialize = true;
-				UnityEngine.GameObject driverGo = new UnityEngine.GameObject($"[{nameof(YooAssets)}]");
-				driverGo.AddComponent<YooAssetsDriver>();
-				UnityEngine.Object.DontDestroyOnLoad(driverGo);
+				_driver = new UnityEngine.GameObject($"[{nameof(YooAssets)}]");
+				_driver.AddComponent<YooAssetsDriver>();
+				UnityEngine.Object.DontDestroyOnLoad(_driver);
+				YooLogger.Log($"{nameof(YooAssets)} initialize !");
 
 #if DEBUG
 				// 添加远程调试脚本
-				driverGo.AddComponent<RemoteDebuggerInRuntime>();
+				_driver.AddComponent<RemoteDebuggerInRuntime>();
 #endif
 
-				// 初始化异步系统
 				OperationSystem.Initialize();
-			}
-		}
-
-		/// <summary>
-		/// 更新资源系统
-		/// </summary>
-		internal static void Update()
-		{
-			if (_isInitialize)
-			{
-				OperationSystem.Update();
-				DownloadSystem.Update();
-
-				foreach (var package in _packages)
-				{
-					package.UpdatePackage();
-				}
+				DownloadSystem.Initialize();
 			}
 		}
 
 		/// <summary>
 		/// 销毁资源系统
 		/// </summary>
-		internal static void Destroy()
+		public static void Destroy()
 		{
 			if (_isInitialize)
 			{
@@ -72,7 +60,26 @@ namespace YooAsset
 				_packages.Clear();
 
 				_isInitialize = false;
-				YooLogger.Log("YooAssets destroy all !");
+				if (_driver != null)
+					GameObject.Destroy(_driver);
+				YooLogger.Log($"{nameof(YooAssets)} destroy all !");
+			}
+		}
+
+		/// <summary>
+		/// 更新资源系统
+		/// </summary>
+		internal static void Update()
+		{
+			if (_isInitialize)
+			{
+				OperationSystem.Update();
+				DownloadSystem.Update();
+
+				for (int i = 0; i < _packages.Count; i++)
+				{
+					_packages[i].UpdatePackage();
+				}
 			}
 		}
 
@@ -81,7 +88,7 @@ namespace YooAsset
 		/// 创建资源包
 		/// </summary>
 		/// <param name="packageName">资源包名称</param>
-		public static AssetsPackage CreateAssetsPackage(string packageName)
+		public static ResourcePackage CreatePackage(string packageName)
 		{
 			if (_isInitialize == false)
 				throw new Exception($"{nameof(YooAssets)} not initialize !");
@@ -89,19 +96,32 @@ namespace YooAsset
 			if (string.IsNullOrEmpty(packageName))
 				throw new Exception("Package name is null or empty !");
 
-			if (HasAssetsPackage(packageName))
+			if (HasPackage(packageName))
 				throw new Exception($"Package {packageName} already existed !");
 
-			AssetsPackage assetsPackage = new AssetsPackage(packageName);
-			_packages.Add(assetsPackage);
-			return assetsPackage;
+			YooLogger.Log($"Create resource package : {packageName}");
+			ResourcePackage package = new ResourcePackage(packageName);
+			_packages.Add(package);
+			return package;
 		}
 
 		/// <summary>
 		/// 获取资源包
 		/// </summary>
 		/// <param name="packageName">资源包名称</param>
-		public static AssetsPackage GetAssetsPackage(string packageName)
+		public static ResourcePackage GetPackage(string packageName)
+		{
+			var package = TryGetPackage(packageName);
+			if (package == null)
+				YooLogger.Error($"Not found assets package : {packageName}");
+			return package;
+		}
+
+		/// <summary>
+		/// 尝试获取资源包
+		/// </summary>
+		/// <param name="packageName">资源包名称</param>
+		public static ResourcePackage TryGetPackage(string packageName)
 		{
 			if (_isInitialize == false)
 				throw new Exception($"{nameof(YooAssets)} not initialize !");
@@ -114,16 +134,32 @@ namespace YooAsset
 				if (package.PackageName == packageName)
 					return package;
 			}
-
-			YooLogger.Warning($"Not found assets package : {packageName}");
 			return null;
+		}
+
+		/// <summary>
+		/// 销毁资源包
+		/// </summary>
+		/// <param name="packageName">资源包名称</param>
+		public static void DestroyPackage(string packageName)
+		{
+			ResourcePackage package = GetPackage(packageName);
+			if (package == null)
+				return;
+
+			YooLogger.Log($"Destroy resource package : {packageName}");
+			_packages.Remove(package);
+			package.DestroyPackage();
+
+			// 清空缓存
+			CacheSystem.ClearPackage(packageName);
 		}
 
 		/// <summary>
 		/// 检测资源包是否存在
 		/// </summary>
 		/// <param name="packageName">资源包名称</param>
-		public static bool HasAssetsPackage(string packageName)
+		public static bool HasPackage(string packageName)
 		{
 			if (_isInitialize == false)
 				throw new Exception($"{nameof(YooAssets)} not initialize !");
@@ -135,7 +171,7 @@ namespace YooAsset
 			}
 			return false;
 		}
-		
+
 		/// <summary>
 		/// 开启一个异步操作
 		/// </summary>
@@ -147,7 +183,7 @@ namespace YooAsset
 
 		#region 系统参数
 		/// <summary>
-		/// 启用下载系统的断点续传功能的文件大小
+		/// 设置下载系统参数，启用断点续传功能文件的最小字节数
 		/// </summary>
 		public static void SetDownloadSystemBreakpointResumeFileSize(int fileBytes)
 		{
@@ -155,50 +191,96 @@ namespace YooAsset
 		}
 
 		/// <summary>
-		/// 设置异步系统的每帧允许运行的最大时间切片（单位：毫秒）
+		/// 设置下载系统参数，下载失败后清理文件的HTTP错误码
+		/// </summary>
+		public static void SetDownloadSystemClearFileResponseCode(List<long> codes)
+		{
+			DownloadSystem.ClearFileResponseCodes = codes;
+		}
+
+		/// <summary>
+		/// 设置下载系统参数，自定义的证书认证实例
+		/// </summary>
+		public static void SetDownloadSystemCertificateHandler(UnityEngine.Networking.CertificateHandler instance)
+		{
+			DownloadSystem.CertificateHandlerInstance = instance;
+		}
+
+		/// <summary>
+		/// 设置下载系统参数，自定义下载请求
+		/// </summary>
+		public static void SetDownloadSystemUnityWebRequest(DownloadRequestDelegate requestDelegate)
+		{
+			DownloadSystem.RequestDelegate = requestDelegate;
+		}
+
+		/// <summary>
+		/// 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 		/// </summary>
 		public static void SetOperationSystemMaxTimeSlice(long milliseconds)
 		{
-			if (milliseconds < 30)
+			if (milliseconds < 10)
 			{
-				milliseconds = 30;
-				YooLogger.Warning($"MaxTimeSlice minimum value is 30 milliseconds.");
+				milliseconds = 10;
+				YooLogger.Warning($"MaxTimeSlice minimum value is 10 milliseconds.");
 			}
 			OperationSystem.MaxTimeSlice = milliseconds;
 		}
 
 		/// <summary>
-		/// 设置缓存系统的已经缓存文件的校验等级
+		/// 设置缓存系统参数，已经缓存文件的校验等级
 		/// </summary>
 		public static void SetCacheSystemCachedFileVerifyLevel(EVerifyLevel verifyLevel)
 		{
 			CacheSystem.InitVerifyLevel = verifyLevel;
 		}
+
+		/// <summary>
+		/// 设置缓存系统参数，沙盒目录的存储路径
+		/// </summary>
+		public static void SetCacheSystemSandboxPath(string sandboxPath)
+		{
+			if (string.IsNullOrEmpty(sandboxPath))
+			{
+				YooLogger.Error($"Sandbox path is null or empty !");
+				return;
+			}
+
+			// 注意：需要确保没有任何资源系统起效之前才可以设置沙盒目录！
+			if (_packages.Count > 0)
+			{
+				YooLogger.Error($"Please call this method {nameof(SetCacheSystemSandboxPath)} before the package is created !");
+				return;
+			}
+
+			PersistentTools.OverwriteSandboxPath(sandboxPath);
+		}
 		#endregion
 
 		#region 沙盒相关
+		/// <summary>
+		/// 获取内置文件夹名称
+		/// </summary>
+		public static string GetStreamingAssetBuildinFolderName()
+		{
+			return YooAssetSettings.StreamingAssetsBuildinFolder;
+		}
+
 		/// <summary>
 		/// 获取沙盒的根路径
 		/// </summary>
 		public static string GetSandboxRoot()
 		{
-			return PathHelper.MakePersistentRootPath();
+			return PersistentTools.GetPersistentRootPath();
 		}
 
 		/// <summary>
-		/// 清空沙盒目录
+		/// 清空沙盒目录（需要重启APP）
 		/// </summary>
 		public static void ClearSandbox()
 		{
-			SandboxHelper.DeleteSandbox();
-		}
-
-		/// <summary>
-		/// 清空所有的缓存文件
-		/// </summary>
-		public static void ClearAllCacheFiles()
-		{
-			SandboxHelper.DeleteCacheFolder();
+			YooLogger.Warning("Clear sandbox folder files, Finally, restart the application !");
+			PersistentTools.DeleteSandbox();
 		}
 		#endregion
 
@@ -210,12 +292,9 @@ namespace YooAsset
 
 			foreach (var package in _packages)
 			{
-				var result = package.GetDebugReportInfos();
-				report.ProviderInfos.AddRange(result);
+				var packageData = package.GetDebugPackageData();
+				report.PackageDatas.Add(packageData);
 			}
-
-			// 重新排序
-			report.ProviderInfos.Sort();
 			return report;
 		}
 		#endregion

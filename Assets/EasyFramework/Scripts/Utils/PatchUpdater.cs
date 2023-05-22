@@ -11,32 +11,63 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using EasyFramework;
 using YooAsset;
 
 namespace EasyFramework.Utils
 {
-    public class PatchUpdater : MonoSingleton<PatchUpdater>,ISingleton
+    public class PatchUpdater : MonoSingleton<PatchUpdater>, ISingleton
     {
-        public EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
+        EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
         Text m_Tips;
         Button btn_MessgeBox, btn_Done;
         Slider m_updaterSlider;
         Transform m_patchUpdater;
 
-        string PackageCRC;
-        PatchDownloaderOperation Downloader;
+        string m_packageVersion;
+        ResourcePackage m_Package;
+        static Dictionary<string, bool> m_CacheData;
+        ResourceDownloaderOperation m_Downloader;
+
         IEnumerator m_ie_currentIE;
         Queue<IEnumerator> m_que_updaterState;
 
         void ISingleton.Init()
         {
-            D.Correct($"资源系统运行模式：{PlayMode}");
-            // 初始化BetterStreaming
-            BetterStreamingAssets.Initialize();
+        }
+
+        void ISingleton.Quit()
+        {
+            m_CacheData.Clear();
+            m_CacheData = null;
+            if (null != m_Package)
+            {
+                m_Package.ClearAllCacheFilesAsync();
+                m_Package = null;
+            }
+
+            m_Downloader = null;
+
+            btn_Done.onClick.RemoveAllListeners();
+            btn_MessgeBox.onClick.RemoveAllListeners();
+        }
+
+        public void PatchStart(EPlayMode mode)
+        {
+            m_CacheData = new Dictionary<string, bool>(1000);
+            PlayMode = mode;
+            D.Correct($"资源系统运行模式：{mode}");
+
+            // 初始化资源系统
+            YooAssets.Initialize();
+            // 创建默认的资源包
+            m_Package = YooAssets.CreatePackage("DefaultPackage");
+
+            //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
+            YooAssets.SetDefaultPackage(m_Package);
 
             m_que_updaterState = new Queue<IEnumerator>();
             m_que_updaterState.Enqueue(Initialize());
@@ -44,13 +75,8 @@ namespace EasyFramework.Utils
             m_que_updaterState.Enqueue(GetManifest());
             m_que_updaterState.Enqueue(CreateDownloader());
             m_que_updaterState.Enqueue(BeginDownload());
-            
+
             Run("Initialize");
-        }
-
-        void ISingleton.Quit()
-        {
-
         }
 
         void Run(string nextState)
@@ -60,8 +86,7 @@ namespace EasyFramework.Utils
             {
                 StopCoroutine(m_ie_currentIE);
                 m_ie_currentIE = null;
-
-                if(m_patchUpdater)
+                if (m_patchUpdater)
                     btn_MessgeBox.gameObject.SetActive(true);
                 return;
             }
@@ -88,76 +113,75 @@ namespace EasyFramework.Utils
         #region Setting config Initialize
         IEnumerator Initialize()
         {
-            // 初始化资源系统
-            YooAssets.Initialize();
-
-            // 创建默认的资源包
-            var defaultPackage = YooAssets.CreateAssetsPackage("DefaultPackage");
-
-            // 设置该资源包为默认的资源包
-            YooAssets.SetDefaultAssetsPackage(defaultPackage);
-
-            // 编辑器下的模拟模式
-            if (PlayMode == EPlayMode.EditorSimulateMode)
+            InitializeParameters initParameters = null;
+            switch (PlayMode)
             {
-                var createParameters = new EditorSimulateModeParameters();
-                createParameters.LocationServices = new AddressLocationServices();
-                createParameters.SimulatePatchManifestPath = EditorSimulateModeHelper.SimulateBuild("DefaultPackage");
-                yield return defaultPackage.InitializeAsync(createParameters);
+                case EPlayMode.EditorSimulateMode:
+                    initParameters = new EditorSimulateModeParameters
+                    {
+                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild("DefaultPackage")
+                    };
+                    break;
+                case EPlayMode.OfflinePlayMode:
+                    initParameters = new OfflinePlayModeParameters();
+                    break;
+                case EPlayMode.HostPlayMode:
+                    initParameters = new HostPlayModeParameters
+                    {
+                        QueryServices = new QueryStreamingAssetsFileServices(),
+                        DecryptionServices = new GameDecryptionServices(),
+                        DefaultHostServer = "http://127.0.0.1/dashboard/_Download/v2.0",
+                        FallbackHostServer = "http://127.0.0.1/dashboard/_Download/v2.0"
+                    };
+                    break;
             }
-
-            // 单机运行模式
-            if (PlayMode == EPlayMode.OfflinePlayMode)
-            {
-                var createParameters = new OfflinePlayModeParameters();
-                createParameters.LocationServices = new AddressLocationServices();
-                yield return defaultPackage.InitializeAsync(createParameters);
-            }
-
-            // 联机运行模式
-            if (PlayMode == EPlayMode.HostPlayMode)
-            {
-                var createParameters = new HostPlayModeParameters();
-                createParameters.LocationServices = new AddressLocationServices();
-                createParameters.QueryServices = new QueryStreamingAssetsFileServices();
-                createParameters.DefaultHostServer = GetHostServerURL();
-                createParameters.FallbackHostServer = GetHostServerURL();
-                yield return defaultPackage.InitializeAsync(createParameters);
-            }
-
+            yield return m_Package.InitializeAsync(initParameters);
             Run("GetStaticVersion");
         }
 
-        private string GetHostServerURL()
-        {
-            string hostServerIP = "http://127.0.0.1/dashboard/Adownload";
-            string gameVersion = "v1.0";
-
-#if UNITY_EDITOR
-            if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android)
-                return $"{hostServerIP}/CDN/Android/{gameVersion}";
-            else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.iOS)
-                return $"{hostServerIP}/CDN/IPhone/{gameVersion}";
-            else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.WebGL)
-                return $"{hostServerIP}/CDN/WebGL/{gameVersion}";
-            else
-                return $"{hostServerIP}/CDN/PC/{gameVersion}";
-#else
-		if (Application.platform == RuntimePlatform.Android)
-			return $"{hostServerIP}/CDN/Android/{gameVersion}";
-		else if (Application.platform == RuntimePlatform.IPhonePlayer)
-			return $"{hostServerIP}/CDN/IPhone/{gameVersion}";
-		else if (Application.platform == RuntimePlatform.WebGLPlayer)
-			return $"{hostServerIP}/CDN/WebGL/{gameVersion}";
-		else
-			return $"{hostServerIP}/CDN/PC/{gameVersion}";
-#endif
-        }
         private class QueryStreamingAssetsFileServices : IQueryServices
         {
             public bool QueryStreamingAssets(string fileName)
             {
-                return BetterStreamingAssets.FileExists($"YooAssets/{fileName}");
+                string buildinFolderName = YooAssets.GetStreamingAssetBuildinFolderName();
+                return FileExists($"{buildinFolderName}/{fileName}");
+            }
+        }
+
+        static bool FileExists(string filePath)
+        {
+            if (m_CacheData.TryGetValue(filePath, out bool result) == false)
+            {
+                result = File.Exists(Path.Combine(Application.streamingAssetsPath, filePath));
+                m_CacheData.Add(filePath, result);
+            }
+            return result;
+        }
+
+        // 文件解密的示例代码
+        // 注意：解密类必须配合加密类。
+        private class GameDecryptionServices : IDecryptionServices
+        {
+            public ulong LoadFromFileOffset(DecryptFileInfo fileInfo)
+            {
+                return 32;
+            }
+
+            public byte[] LoadFromMemory(DecryptFileInfo fileInfo)
+            {
+                // 如果没有内存加密方式，可以返回空
+                return null;
+            }
+
+            public Stream LoadFromStream(DecryptFileInfo fileInfo)
+            {
+                // 如果没有流加密方式，可以返回空
+                return null;
+            }
+
+            public uint GetManagedReadBufferSize()
+            {
+                return 1024;
             }
         }
         #endregion
@@ -168,19 +192,22 @@ namespace EasyFramework.Utils
         /// </summary>
         IEnumerator GetStaticVersion()
         {
-            yield return new WaitForSecondsRealtime(0.5f);
-            var package = YooAssets.GetAssetsPackage("DefaultPackage");
-            UpdateStaticVersionOperation operation = package.UpdateStaticVersionAsync(30);
+            var operation = m_Package.UpdatePackageVersionAsync();
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
-                PackageCRC = operation.PackageCRC;
+                //更新成功
+                string packageVersion = operation.PackageVersion;
+                m_packageVersion = packageVersion;
+                D.Log($"Updated package Version : {packageVersion}");
+
                 //拿到版本号接下来去获取Manifest信息     GetManifestInfo
                 Run("GetManifestInfo");
             }
             else
             {
+                //更新失败
                 D.Error($"Get the StaticVersion file error: {operation.Error}");
             }
         }
@@ -192,17 +219,21 @@ namespace EasyFramework.Utils
         /// </summary>
         IEnumerator GetManifest()
         {
-            var package = YooAssets.GetAssetsPackage("DefaultPackage");
-            UpdateManifestOperation operation = package.UpdateManifestAsync(PackageCRC);
+            var operation = m_Package.UpdatePackageManifestAsync(m_packageVersion);
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
+                //更新成功
+                //注意：保存资源版本号作为下次默认启动的版本!
+                operation.SavePackageVersion();
+
                 //拿到配置信息接下来去获取热更资源
                 Run("CreateDownloader");
             }
             else
             {
+                //更新失败
                 D.Error($"Get the Manifest file error: {operation.Error}");
             }
         }
@@ -214,23 +245,27 @@ namespace EasyFramework.Utils
         /// </summary>
         IEnumerator CreateDownloader()
         {
-            yield return new WaitForSecondsRealtime(0.5f);
+            int downloadingMaxNum = 10;
+            int failedTryAgain = 3;
+            int timeout = 60;
+            m_Downloader = m_Package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain, timeout);
 
-            Downloader = YooAssets.CreatePatchDownloader(10, 3);
-            if (Downloader.TotalDownloadCount == 0)
+            yield return null;
+
+            if (m_Downloader.TotalDownloadCount == 0)
             {
                 Run("Done");
             }
             else
             {
                 // 注意：开发者需要在下载前检测磁盘空间不足
-                EF.Ui.ShowDialog($"一共发现了{Downloader.TotalDownloadCount}个资源，总大小为{(int)(Downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
-                    okEvent: delegate 
+                EF.Ui.ShowDialog($"一共发现了{m_Downloader.TotalDownloadCount}个资源，总大小为{(int)(m_Downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
+                    okEvent: delegate
                     {
                         Run("BeginDownload");
                     },
-                    okBtnText:"下载",
-                    noBtnText:"取消"
+                    okBtnText: "下载",
+                    noBtnText: "取消"
                 );
             }
         }
@@ -250,30 +285,42 @@ namespace EasyFramework.Utils
             btn_MessgeBox.onClick.AddListener(UpdateDone);
             btn_Done.onClick.AddListener(UpdateDone);
 
-            // 注册下载回调
-            Downloader.OnDownloadErrorCallback = SendWebFileDownloadFailedMsg;
-            Downloader.OnDownloadProgressCallback = SendDownloadProgressUpdateMsg;
-            Downloader.BeginDownload();
-            yield return Downloader;
+            //注册下载回调
+            m_Downloader.OnDownloadErrorCallback = OnDownloadErrorFunction;
+            m_Downloader.OnDownloadProgressCallback = OnDownloadProgressUpdateFunction;
+            m_Downloader.OnDownloadOverCallback = OnDownloadOverFunction;
+            m_Downloader.OnStartDownloadFileCallback = OnStartDownloadFileFunction;
+
+            //开启下载
+            m_Downloader.BeginDownload();
+            yield return m_Downloader;
 
             // 检测下载结果
-            if (Downloader.Status != EOperationStatus.Succeed)
+            if (m_Downloader.Status != EOperationStatus.Succeed)
                 yield break;
 
             Run("Done");
         }
 
-        public void SendWebFileDownloadFailedMsg(string fileName, string error)
+        private void OnDownloadErrorFunction(string fileName, string error)
         {
             D.Error($"Download the file failed. The file name is {fileName} ,  Error info is {error}");
         }
-        public void SendDownloadProgressUpdateMsg(int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
+        private void OnDownloadProgressUpdateFunction(int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes)
         {
-            m_updaterSlider.value = (float)currentDownloadSizeBytes / totalDownloadSizeBytes;
+            m_updaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
 
-            string currentSizeMB = (currentDownloadSizeBytes / 1048576f).ToString("f1");
-            string totalSizeMB = (totalDownloadSizeBytes / 1048576f).ToString("f1");
+            string currentSizeMB = (currentDownloadBytes / 1048576f).ToString("f1");
+            string totalSizeMB = (totalDownloadBytes / 1048576f).ToString("f1");
             m_Tips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
+        }
+        private void OnStartDownloadFileFunction(string fileName, long sizeBytes)
+        {
+            D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
+        }
+        private void OnDownloadOverFunction(bool isSucceed)
+        {
+            D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
     }

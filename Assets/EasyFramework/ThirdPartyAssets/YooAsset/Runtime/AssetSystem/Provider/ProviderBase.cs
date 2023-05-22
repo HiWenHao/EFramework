@@ -13,8 +13,8 @@ namespace YooAsset
 			CheckBundle,
 			Loading,
 			Checking,
-			Success,
-			Fail,
+			Succeed,
+			Failed,
 		}
 
 		/// <summary>
@@ -47,6 +47,11 @@ namespace YooAsset
 		/// </summary>
 		public UnityEngine.SceneManagement.Scene SceneObject { protected set; get; }
 
+		/// <summary>
+		/// 原生文件路径
+		/// </summary>
+		public string RawFilePath { protected set; get; }
+
 
 		/// <summary>
 		/// 当前的加载状态
@@ -57,6 +62,11 @@ namespace YooAsset
 		/// 最近的错误信息
 		/// </summary>
 		public string LastError { protected set; get; } = string.Empty;
+
+		/// <summary>
+		/// 加载进度
+		/// </summary>
+		public float Progress { protected set; get; } = 0f;
 
 		/// <summary>
 		/// 引用计数
@@ -75,22 +85,13 @@ namespace YooAsset
 		{
 			get
 			{
-				return Status == EStatus.Success || Status == EStatus.Fail;
-			}
-		}
-
-		/// <summary>
-		/// 加载进度
-		/// </summary>
-		public virtual float Progress
-		{
-			get
-			{
-				return 0;
+				return Status == EStatus.Succeed || Status == EStatus.Failed;
 			}
 		}
 
 
+		protected BundleLoaderBase OwnerBundle { private set; get; }
+		protected DependAssetBundleGroup DependBundleGroup { private set; get; }
 		protected bool IsWaitForAsyncComplete { private set; get; } = false;
 		private readonly List<OperationHandleBase> _handles = new List<OperationHandleBase>();
 
@@ -100,6 +101,18 @@ namespace YooAsset
 			Impl = impl;
 			ProviderGUID = providerGUID;
 			MainAssetInfo = assetInfo;
+
+			// 创建资源包加载器
+			if (impl != null)
+			{
+				OwnerBundle = impl.CreateOwnerAssetBundleLoader(assetInfo);
+				OwnerBundle.Reference();
+				OwnerBundle.AddProvider(this);
+
+				var dependBundles = impl.CreateDependAssetBundleLoaders(assetInfo);
+				DependBundleGroup = new DependAssetBundleGroup(dependBundles);
+				DependBundleGroup.Reference();
+			}
 		}
 
 		/// <summary>
@@ -113,6 +126,18 @@ namespace YooAsset
 		public virtual void Destroy()
 		{
 			IsDestroyed = true;
+
+			// 释放资源包加载器
+			if (OwnerBundle != null)
+			{
+				OwnerBundle.Release();
+				OwnerBundle = null;
+			}
+			if (DependBundleGroup != null)
+			{
+				DependBundleGroup.Release();
+				DependBundleGroup = null;
+			}
 		}
 
 		/// <summary>
@@ -152,6 +177,8 @@ namespace YooAsset
 				handle = new SceneOperationHandle(this);
 			else if (typeof(T) == typeof(SubAssetsOperationHandle))
 				handle = new SubAssetsOperationHandle(this);
+			else if (typeof(T) == typeof(RawFileOperationHandle))
+				handle = new RawFileOperationHandle(this);
 			else
 				throw new System.NotImplementedException();
 
@@ -212,7 +239,13 @@ namespace YooAsset
 		private TaskCompletionSource<object> _taskCompletionSource;
 		protected void InvokeCompletion()
 		{
+			DebugEndRecording();
+
+			// 进度百分百完成
+			Progress = 1f;
+
 			// 注意：创建临时列表是为了防止外部逻辑在回调函数内创建或者释放资源句柄。
+			// 注意：回调方法如果发生异常，会阻断列表里的后续回调方法！
 			List<OperationHandleBase> tempers = new List<OperationHandleBase>(_handles);
 			foreach (var hande in tempers)
 			{
@@ -238,6 +271,14 @@ namespace YooAsset
 		/// </summary>
 		public string SpawnTime = string.Empty;
 
+		/// <summary>
+		/// 加载耗时（单位：毫秒）
+		/// </summary>
+		public long LoadingTime { protected set; get; }
+
+		// 加载耗时统计
+		private Stopwatch _watch = null;
+
 		[Conditional("DEBUG")]
 		public void InitSpawnDebugInfo()
 		{
@@ -250,6 +291,56 @@ namespace YooAsset
 			float m = UnityEngine.Mathf.FloorToInt(spawnTime / 60f - h * 60f);
 			float s = UnityEngine.Mathf.FloorToInt(spawnTime - m * 60f - h * 3600f);
 			return h.ToString("00") + ":" + m.ToString("00") + ":" + s.ToString("00");
+		}
+
+		[Conditional("DEBUG")]
+		protected void DebugBeginRecording()
+		{
+			if (_watch == null)
+			{
+				_watch = Stopwatch.StartNew();
+			}
+		}
+
+		[Conditional("DEBUG")]
+		private void DebugEndRecording()
+		{
+			if (_watch != null)
+			{
+				LoadingTime = _watch.ElapsedMilliseconds;
+				_watch = null;
+			}
+		}
+
+		/// <summary>
+		/// 获取下载报告
+		/// </summary>
+		internal DownloadReport GetDownloadReport()
+		{
+			DownloadReport result = new DownloadReport();
+			result.TotalSize = (ulong)OwnerBundle.MainBundleInfo.Bundle.FileSize;
+			result.DownloadedBytes = OwnerBundle.DownloadedBytes;
+			foreach (var dependBundle in DependBundleGroup.DependBundles)
+			{
+				result.TotalSize += (ulong)dependBundle.MainBundleInfo.Bundle.FileSize;
+				result.DownloadedBytes += dependBundle.DownloadedBytes;
+			}
+			result.Progress = (float)result.DownloadedBytes / result.TotalSize;
+			return result;
+		}
+
+		/// <summary>
+		/// 获取资源包的调试信息列表
+		/// </summary>
+		internal void GetBundleDebugInfos(List<DebugBundleInfo> output)
+		{
+			var bundleInfo = new DebugBundleInfo();
+			bundleInfo.BundleName = OwnerBundle.MainBundleInfo.Bundle.BundleName;
+			bundleInfo.RefCount = OwnerBundle.RefCount;
+			bundleInfo.Status = OwnerBundle.Status.ToString();
+			output.Add(bundleInfo);
+
+			DependBundleGroup.GetBundleDebugInfos(output);
 		}
 		#endregion
 	}

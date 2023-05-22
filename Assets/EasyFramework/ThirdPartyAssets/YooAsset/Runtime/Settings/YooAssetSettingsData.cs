@@ -35,41 +35,41 @@ namespace YooAsset
 		/// <summary>
 		/// 获取构建报告文件名
 		/// </summary>
-		public static string GetReportFileName(string packageName, string packageCRC)
+		public static string GetReportFileName(string packageName, string packageVersion)
 		{
-			return $"{YooAssetSettings.ReportFileName}_{packageName}_{packageCRC}.json";
+			return $"{YooAssetSettings.ReportFileName}_{packageName}_{packageVersion}.json";
 		}
 
 		/// <summary>
-		/// 获取补丁清单文件完整名称
+		/// 获取清单文件完整名称
 		/// </summary>
-		public static string GetPatchManifestFileName(string packageName, string packageCRC)
+		public static string GetManifestBinaryFileName(string packageName, string packageVersion)
 		{
-			return $"{Setting.PatchManifestFileName}_{packageName}_{packageCRC}.bytes";
+			return $"{Setting.ManifestFileName}_{packageName}_{packageVersion}.bytes";
 		}
 
 		/// <summary>
-		/// 获取补丁清单文件临时名称
+		/// 获取清单文件完整名称
 		/// </summary>
-		public static string GetPatchManifestTempFileName(string packageName)
+		public static string GetManifestJsonFileName(string packageName, string packageVersion)
 		{
-			return $"{Setting.PatchManifestFileName}_{packageName}.temp";
+			return $"{Setting.ManifestFileName}_{packageName}_{packageVersion}.json";
 		}
 
 		/// <summary>
-		/// 获取静态版本文件名称
+		/// 获取包裹的哈希文件完整名称
 		/// </summary>
-		public static string GetStaticVersionFileName(string packageName)
+		public static string GetPackageHashFileName(string packageName, string packageVersion)
 		{
-			return $"{YooAssetSettings.VersionFileName}_{packageName}.bytes";
+			return $"{Setting.ManifestFileName}_{packageName}_{packageVersion}.hash";
 		}
 
 		/// <summary>
-		/// 获取着色器资源包全名称（包含后缀名）
+		/// 获取包裹的版本文件完整名称
 		/// </summary>
-		public static string GetUnityShadersBundleFullName()
+		public static string GetPackageVersionFileName(string packageName)
 		{
-			return $"{YooAssetSettings.UnityShadersBundleName}.{Setting.AssetBundleFileVariant}";
+			return $"{Setting.ManifestFileName}_{packageName}.version";
 		}
 	}
 }

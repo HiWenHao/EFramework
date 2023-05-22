@@ -19,16 +19,11 @@ namespace YooAsset.Editor
         /// <summary>
         /// 构建失败的信息
         /// </summary>
-        public string FailedInfo;
+        public string ErrorInfo;
 
         /// <summary>
         /// 输出的补丁包目录
         /// </summary>
         public string OutputPackageDirectory;
-
-        /// <summary>
-        /// 输出的包裹清单哈希值
-        /// </summary>
-        public string OutputPackageCRC;
     }
 }

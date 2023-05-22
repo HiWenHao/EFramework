@@ -44,14 +44,24 @@ namespace YooAsset.Editor
 		public EBuildMode BuildMode;
 
 		/// <summary>
-		/// 构建包裹
+		/// 构建包裹名称
 		/// </summary>
-		public string BuildPackage;
+		public string BuildPackageName;
+
+		/// <summary>
+		/// 构建包裹版本
+		/// </summary>
+		public string BuildPackageVersion;
 
 		/// <summary>
 		/// 启用可寻址资源定位
 		/// </summary>
 		public bool EnableAddressable;
+
+		/// <summary>
+		/// 资源包名唯一化
+		/// </summary>
+		public bool UniqueBundleName;
 
 		/// <summary>
 		/// 加密服务类名称

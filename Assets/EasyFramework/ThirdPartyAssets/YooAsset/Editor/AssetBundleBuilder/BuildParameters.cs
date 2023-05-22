@@ -57,28 +57,33 @@ namespace YooAsset.Editor
 		public EBuildMode BuildMode;
 
 		/// <summary>
-		/// 构建的Package名称
+		/// 构建的包裹名称
 		/// </summary>
-		public string BuildPackage;
+		public string PackageName;
 
 		/// <summary>
-		/// 人类可读的版本信息
+		/// 构建的包裹版本
 		/// </summary>
-		public string HumanReadableVersion;
+		public string PackageVersion;
 
 
+		/// <summary>
+		/// 是否显示普通日志
+		/// </summary>
+		public bool EnableLog = true;
+		
 		/// <summary>
 		/// 验证构建结果
 		/// </summary>
 		public bool VerifyBuildingResult = false;
 
 		/// <summary>
-		/// 启用可寻址资源定位
+		/// 共享资源的打包规则
 		/// </summary>
-		public bool EnableAddressable = false;
+		public IShareAssetPackRule ShareAssetPackRule = null;
 
 		/// <summary>
-		/// 加密类
+		/// 资源的加密接口
 		/// </summary>
 		public IEncryptionServices EncryptionServices = null;
 

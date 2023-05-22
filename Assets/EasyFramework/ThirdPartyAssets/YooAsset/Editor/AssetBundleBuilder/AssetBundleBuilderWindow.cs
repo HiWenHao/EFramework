@@ -12,9 +12,9 @@ namespace YooAsset.Editor
 	public class AssetBundleBuilderWindow : EditorWindow
 	{
 		[MenuItem("YooAsset/AssetBundle Builder", false, 102)]
-		public static void ShowExample()
+		public static void OpenWindow()
 		{
-			AssetBundleBuilderWindow window = GetWindow<AssetBundleBuilderWindow>("资源包构建工具", true, EditorDefine.DockedWindowTypes);
+			AssetBundleBuilderWindow window = GetWindow<AssetBundleBuilderWindow>("资源包构建工具", true, WindowsDefine.DockedWindowTypes);
 			window.minSize = new Vector2(800, 600);
 		}
 
@@ -27,6 +27,7 @@ namespace YooAsset.Editor
 		private TextField _buildOutputField;
 		private EnumField _buildPipelineField;
 		private EnumField _buildModeField;
+		private TextField _buildVersionField;
 		private PopupField<string> _buildPackageField;
 		private PopupField<string> _encryptionField;
 		private EnumField _compressionField;
@@ -41,7 +42,7 @@ namespace YooAsset.Editor
 				VisualElement root = this.rootVisualElement;
 
 				// 加载布局文件
-				var visualAsset = EditorHelper.LoadWindowUXML<AssetBundleBuilderWindow>();
+				var visualAsset = UxmlLoader.LoadWindowUXML<AssetBundleBuilderWindow>();
 				if (visualAsset == null)
 					return;
 
@@ -59,7 +60,7 @@ namespace YooAsset.Editor
 
 				// 加密服务类
 				_encryptionServicesClassTypes = GetEncryptionServicesClassTypes();
-				_encryptionServicesClassNames = _encryptionServicesClassTypes.Select(t => t.FullName).ToList();
+				_encryptionServicesClassNames = _encryptionServicesClassTypes.Select(t => t.Name).ToList();
 
 				// 输出目录
 				string defaultOutputRoot = AssetBundleBuilderHelper.GetDefaultOutputRoot();
@@ -90,6 +91,10 @@ namespace YooAsset.Editor
 					AssetBundleBuilderSettingData.Setting.BuildMode = (EBuildMode)_buildModeField.value;
 					RefreshWindow();
 				});
+
+				// 构建版本
+				_buildVersionField = root.Q<TextField>("BuildVersion");
+				_buildVersionField.SetValueWithoutNotify(GetBuildPackageVersion());
 
 				// 构建包裹
 				var buildPackageContainer = root.Q("BuildPackageContainer");
@@ -215,15 +220,27 @@ namespace YooAsset.Editor
 
 		private void RefreshWindow()
 		{
+			var buildPipeline = AssetBundleBuilderSettingData.Setting.BuildPipeline;
 			var buildMode = AssetBundleBuilderSettingData.Setting.BuildMode;
 			var copyOption = AssetBundleBuilderSettingData.Setting.CopyBuildinFileOption;
 			bool enableElement = buildMode == EBuildMode.ForceRebuild;
 			bool tagsFiledVisible = copyOption == ECopyBuildinFileOption.ClearAndCopyByTags || copyOption == ECopyBuildinFileOption.OnlyCopyByTags;
-			_encryptionField.SetEnabled(enableElement);
-			_compressionField.SetEnabled(enableElement);
-			_outputNameStyleField.SetEnabled(enableElement);
-			_copyBuildinFileOptionField.SetEnabled(enableElement);
-			_copyBuildinFileTagsField.SetEnabled(enableElement);
+
+			if (buildPipeline == EBuildPipeline.BuiltinBuildPipeline)
+			{
+				_compressionField.SetEnabled(enableElement);
+				_outputNameStyleField.SetEnabled(enableElement);
+				_copyBuildinFileOptionField.SetEnabled(enableElement);
+				_copyBuildinFileTagsField.SetEnabled(enableElement);
+			}
+			else
+			{
+				_compressionField.SetEnabled(true);
+				_outputNameStyleField.SetEnabled(true);
+				_copyBuildinFileOptionField.SetEnabled(true);
+				_copyBuildinFileTagsField.SetEnabled(true);
+			}
+
 			_copyBuildinFileTagsField.visible = tagsFiledVisible;
 		}
 		private void SaveBtn_clicked()
@@ -255,9 +272,10 @@ namespace YooAsset.Editor
 			buildParameters.BuildTarget = _buildTarget;
 			buildParameters.BuildPipeline = AssetBundleBuilderSettingData.Setting.BuildPipeline;
 			buildParameters.BuildMode = AssetBundleBuilderSettingData.Setting.BuildMode;
-			buildParameters.BuildPackage = AssetBundleBuilderSettingData.Setting.BuildPackage;
+			buildParameters.PackageName = AssetBundleBuilderSettingData.Setting.BuildPackage;
+			buildParameters.PackageVersion = _buildVersionField.value;
 			buildParameters.VerifyBuildingResult = true;
-			buildParameters.EnableAddressable = AssetBundleCollectorSettingData.Setting.EnableAddressable;
+			buildParameters.ShareAssetPackRule = new DefaultShareAssetPackRule();
 			buildParameters.EncryptionServices = CreateEncryptionServicesInstance();
 			buildParameters.CompressOption = AssetBundleBuilderSettingData.Setting.CompressOption;
 			buildParameters.OutputNameStyle = AssetBundleBuilderSettingData.Setting.OutputNameStyle;
@@ -276,6 +294,13 @@ namespace YooAsset.Editor
 			{
 				EditorUtility.RevealInFinder(buildResult.OutputPackageDirectory);
 			}
+		}
+
+		// 构建版本相关
+		private string GetBuildPackageVersion()
+		{
+			int totalMinutes = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
+			return DateTime.Now.ToString("yyyy-MM-dd") + "-" + totalMinutes;
 		}
 
 		// 构建包裹相关

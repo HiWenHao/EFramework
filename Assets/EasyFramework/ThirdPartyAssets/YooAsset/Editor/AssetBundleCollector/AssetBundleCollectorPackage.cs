@@ -56,14 +56,14 @@ namespace YooAsset.Editor
 		/// <summary>
 		/// 获取打包收集的资源文件
 		/// </summary>
-		public List<CollectAssetInfo> GetAllCollectAssets(EBuildMode buildMode, bool enableAddressable)
+		public List<CollectAssetInfo> GetAllCollectAssets(CollectCommand command)
 		{
 			Dictionary<string, CollectAssetInfo> result = new Dictionary<string, CollectAssetInfo>(10000);
 
 			// 收集打包资源
 			foreach (var group in Groups)
 			{
-				var temper = group.GetAllCollectAssets(buildMode, enableAddressable);
+				var temper = group.GetAllCollectAssets(command);
 				foreach (var assetInfo in temper)
 				{
 					if (result.ContainsKey(assetInfo.AssetPath) == false)
@@ -74,18 +74,19 @@ namespace YooAsset.Editor
 			}
 
 			// 检测可寻址地址是否重复
-			if (enableAddressable)
+			if (command.EnableAddressable)
 			{
-				HashSet<string> adressTemper = new HashSet<string>();
+				var addressTemper = new Dictionary<string, string>();
 				foreach (var collectInfoPair in result)
 				{
 					if (collectInfoPair.Value.CollectorType == ECollectorType.MainAssetCollector)
 					{
 						string address = collectInfoPair.Value.Address;
-						if (adressTemper.Contains(address) == false)
-							adressTemper.Add(address);
+						string assetPath = collectInfoPair.Value.AssetPath;
+						if (addressTemper.TryGetValue(address, out var existed) == false)
+							addressTemper.Add(address, assetPath);
 						else
-							throw new Exception($"The address is existed : {address}");
+							throw new Exception($"The address is existed : {address} \nAssetPath:\n     {existed}\n     {assetPath}");
 					}
 				}
 			}
@@ -102,7 +103,7 @@ namespace YooAsset.Editor
 			HashSet<string> result = new HashSet<string>();
 			foreach (var group in Groups)
 			{
-				List<string> groupTags = StringUtility.StringToStringList(group.AssetTags, ';');
+				List<string> groupTags = EditorTools.StringToStringList(group.AssetTags, ';');
 				foreach (var tag in groupTags)
 				{
 					if (result.Contains(tag) == false)
@@ -111,7 +112,7 @@ namespace YooAsset.Editor
 
 				foreach (var collector in group.Collectors)
 				{
-					List<string> collectorTags = StringUtility.StringToStringList(collector.AssetTags, ';');
+					List<string> collectorTags = EditorTools.StringToStringList(collector.AssetTags, ';');
 					foreach (var tag in collectorTags)
 					{
 						if (result.Contains(tag) == false)

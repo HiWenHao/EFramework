@@ -69,7 +69,7 @@ namespace YooAsset.Editor
 		/// <summary>
 		/// 获取打包收集的资源文件
 		/// </summary>
-		public List<CollectAssetInfo> GetAllCollectAssets(EBuildMode buildMode, bool enableAddressable)
+		public List<CollectAssetInfo> GetAllCollectAssets(CollectCommand command)
 		{
 			Dictionary<string, CollectAssetInfo> result = new Dictionary<string, CollectAssetInfo>(10000);
 
@@ -83,7 +83,7 @@ namespace YooAsset.Editor
 			// 收集打包资源
 			foreach (var collector in Collectors)
 			{
-				var temper = collector.GetAllCollectAssets(buildMode, enableAddressable, this);
+				var temper = collector.GetAllCollectAssets(command, this);
 				foreach (var assetInfo in temper)
 				{
 					if (result.ContainsKey(assetInfo.AssetPath) == false)
@@ -94,18 +94,19 @@ namespace YooAsset.Editor
 			}
 
 			// 检测可寻址地址是否重复
-			if (enableAddressable)
+			if (command.EnableAddressable)
 			{
-				HashSet<string> adressTemper = new HashSet<string>();
+				var addressTemper = new Dictionary<string, string>();
 				foreach (var collectInfoPair in result)
 				{
 					if (collectInfoPair.Value.CollectorType == ECollectorType.MainAssetCollector)
 					{
 						string address = collectInfoPair.Value.Address;
-						if (adressTemper.Contains(address) == false)
-							adressTemper.Add(address);
+						string assetPath = collectInfoPair.Value.AssetPath;
+						if (addressTemper.TryGetValue(address, out var existed) == false)
+							addressTemper.Add(address, assetPath);
 						else
-							throw new Exception($"The address is existed : {address} in group : {GroupName}");
+							throw new Exception($"The address is existed : {address} in group : {GroupName} \nAssetPath:\n     {existed}\n     {assetPath}");
 					}
 				}
 			}

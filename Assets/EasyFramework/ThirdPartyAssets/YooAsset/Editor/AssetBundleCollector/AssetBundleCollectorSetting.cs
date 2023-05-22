@@ -6,10 +6,11 @@ using UnityEngine;
 
 namespace YooAsset.Editor
 {
+	[CreateAssetMenu(fileName = "AssetBundleCollectorSetting", menuName = "YooAsset/Create AssetBundle Collector Settings")]
 	public class AssetBundleCollectorSetting : ScriptableObject
 	{
 		/// <summary>
-		/// 是否显示包裹视图
+		/// 是否显示包裹列表视图
 		/// </summary>
 		public bool ShowPackageView = false;
 
@@ -17,6 +18,17 @@ namespace YooAsset.Editor
 		/// 是否启用可寻址资源定位
 		/// </summary>
 		public bool EnableAddressable = false;
+
+		/// <summary>
+		/// 资源包名唯一化
+		/// </summary>
+		public bool UniqueBundleName = false;
+
+		/// <summary>
+		/// 是否显示编辑器别名
+		/// </summary>
+		public bool ShowEditorAlias = false;
+
 
 		/// <summary>
 		/// 包裹列表
@@ -76,37 +88,27 @@ namespace YooAsset.Editor
 			Debug.LogWarning($"Not found package : {packageName}");
 			return new List<string>();
 		}
-		
+
 		/// <summary>
 		/// 获取包裹收集的资源文件
 		/// </summary>
-		public List<CollectAssetInfo> GetPackageAssets(EBuildMode buildMode, string packageName)
+		public CollectResult GetPackageAssets(EBuildMode buildMode, string packageName)
 		{
 			if (string.IsNullOrEmpty(packageName))
-				throw new Exception("Build Package name is null or mepty !");
+				throw new Exception("Build package name is null or mepty !");
 
 			foreach (var package in Packages)
 			{
 				if (package.PackageName == packageName)
 				{
-					return package.GetAllCollectAssets(buildMode, EnableAddressable);
+					CollectCommand command = new CollectCommand(buildMode, packageName, EnableAddressable, UniqueBundleName);
+					CollectResult collectResult = new CollectResult(command);
+					collectResult.SetCollectAssets(package.GetAllCollectAssets(command));
+					return collectResult;
 				}
 			}
-			throw new Exception($"Not found collector pacakge : {packageName}");
-		}
 
-		/// <summary>
-		/// 获取所有包裹收集的资源文件
-		/// </summary>
-		public List<CollectAssetInfo> GetAllPackageAssets(EBuildMode buildMode)
-		{
-			List<CollectAssetInfo> result = new List<CollectAssetInfo>(1000);
-			foreach (var package in Packages)
-			{
-				var temper = package.GetAllCollectAssets(buildMode, EnableAddressable);
-				result.AddRange(temper);
-			}
-			return result;
+			throw new Exception($"Not found collector pacakge : {packageName}");
 		}
 	}
 }
