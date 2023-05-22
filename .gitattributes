@@ -60,3 +60,7 @@
 *.data filter=lfs diff=lfs merge=lfs -text
 *.xlsx filter=lfs diff=lfs merge=lfs -text
 *.settings filter=lfs diff=lfs merge=lfs -text
+*.FBX filter=lfs diff=lfs merge=lfs -text
+*.cubemap filter=lfs diff=lfs merge=lfs -text
+*.shadervariants filter=lfs diff=lfs merge=lfs -text
+*.tt filter=lfs diff=lfs merge=lfs -text
