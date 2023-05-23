@@ -15,11 +15,28 @@ MonoBehaviour:
   m_ScriptAuthor: Xiaohei.Wang(Wenhao)
   m_ScriptVersion: 0.1
   m_ResourcesArea:
-    m_ResAdminType: Default
-    m_ResAdminCode: 0
-    m_WhetherCopyResToCommitPath: 0
-    m_CleanCommitPathRes: 1
+    m_CopyResToCommit: 0
+    m_CleanCommitRes: 1
     m_ServerType: 1
-    m_InnerResourceSourceUrl: http://192.168.0.1:8080
-    m_ExtraResourceSourceUrl: http://192.168.0.1:8080
-    m_FormalResourceSourceUrl: http://192.168.0.1:8080
+    m_InnerUrl: http://127.0.0.1/dashboard/_Download/v2.0
+    m_ExtraUrl: http://192.168.0.1:8080
+    m_FormalUrl: http://192.168.0.1:8080
+    m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v2.0
+  m_AppConst:
+    m_AppName: EasyFramework
+    m_AppPrefix: EF_
+    m_AppVersion: 1.0
+    m_AppStage: 1
+    m_UIPath: Prefabs/UI/
+    m_AudioPath: Sources/
+    m_ManagerLevel:
+    - TimeManager
+    - HttpManager
+    - SocketManager
+    - LoadManager
+    - ToolManager
+    - SceneManager
+    - ObjectToolManager
+    - SourceManager
+    - FolderManager
+    - UIManager
