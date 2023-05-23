@@ -64,6 +64,8 @@
 *.cubemap filter=lfs diff=lfs merge=lfs -text
 *.shadervariants filter=lfs diff=lfs merge=lfs -text
 *.tt filter=lfs diff=lfs merge=lfs -text
+*.version filter=lfs diff=lfs merge=lfs -text
+*.hash filter=lfs diff=lfs merge=lfs -text
 EF_Unity/Packages/cn.efefef.core/Editor[[:space:]]Resources/Gizmos/EF_Icon*.png !text !filter !merge !diff
 EF_Unity/Packages/cn.efefef.core/Editor[[:space:]]Resources/Mascots/RunCat/RunCat_*.png !text !filter !merge !diff
 EF_Unity/Packages/cn.efefef.core/Resources/CommonTexture/CommonSquare.png !text !filter !merge !diff
