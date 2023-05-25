@@ -323,5 +323,22 @@ namespace EasyFramework.Utils
             D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
+
+        #region RunDllCode
+        /// <summary>
+        /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
+        /// 一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
+        /// </summary>
+        IEnumerator LoadMetadataForAOTAssemblies()
+        {
+            YooAsset.RawFileOperationHandle _handle = m_Package.LoadRawFileAsync("HotUpdate.dll");
+            yield return _handle;
+            byte[] dllBytes = _handle.GetRawFileData();
+            System.Reflection.Assembly hotUpdateAss = System.Reflection.Assembly.Load(dllBytes);
+            System.Type type = hotUpdateAss.GetType("Hello");
+            type.GetMethod("Run").Invoke(null, null);
+            yield return null;
+        }
+        #endregion
     }
 }
