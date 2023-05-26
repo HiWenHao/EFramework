@@ -51,7 +51,7 @@ namespace ExampleGame
             {
                 EF.Sources.Play2DEffectSouceByName("OnClick2");
 
-                Transform _Player = Object.Instantiate(EF.Load.Load<Transform>("Prefabs/Players/VBOT"));
+                Transform _Player = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/Players/VBOT"));
                 _Player.SetPositionAndRotation(Vector3.up * 7.0f, Quaternion.identity);
 
                 CameraControl.Instance.SetTarget(_Player);

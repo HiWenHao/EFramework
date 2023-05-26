@@ -113,7 +113,7 @@ namespace YooAsset
 
 			// 创建新的下载器	
 			{
-				YooLogger.Log($"Beginning to download file : {bundleInfo.Bundle.FileName} URL : {bundleInfo.RemoteMainURL}");
+                EasyFramework.D.Log($"Beginning to download file : {bundleInfo.Bundle.FileName} URL : {bundleInfo.RemoteMainURL}");
 				FileUtility.CreateFileDirectory(bundleInfo.Bundle.CachedDataFilePath);
 				bool breakDownload = bundleInfo.Bundle.FileSize >= BreakpointResumeFileSize;
 				DownloaderBase newDownloader = new FileDownloader(bundleInfo, breakDownload);

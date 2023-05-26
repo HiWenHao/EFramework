@@ -115,7 +115,7 @@ namespace YooAsset
 		/// </summary>
 		public void ReportError()
 		{
-			YooLogger.Error(GetLastError());
+			EasyFramework.D.Error(GetLastError());
 		}
 
 		/// <summary>
@@ -123,7 +123,7 @@ namespace YooAsset
 		/// </summary>
 		public void ReportWarning()
 		{
-			YooLogger.Warning(GetLastError());
+			EasyFramework.D.Warning(GetLastError());
 		}
 
 		/// <summary>

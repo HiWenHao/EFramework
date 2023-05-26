@@ -200,7 +200,7 @@ namespace YooAsset
 			{
 				if (assetInfo.IsInvalid)
 				{
-					YooLogger.Warning(assetInfo.Error);
+					EasyFramework.D.Warning(assetInfo.Error);
 					continue;
 				}
 

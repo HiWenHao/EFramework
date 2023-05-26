@@ -55,7 +55,7 @@ namespace YooAsset
 		/// </summary>
 		public static void RecordFile(string packageName, string cacheGUID, PackageCache.RecordWrapper wrapper)
 		{
-			//YooLogger.Log($"Record file : {packageName} = {cacheGUID}");
+			//EasyFramework.D.Log($"Record file : {packageName} = {cacheGUID}");
 			var cache = GetOrCreateCache(packageName);
 			cache.Record(cacheGUID, wrapper);
 		}
@@ -81,7 +81,7 @@ namespace YooAsset
 			}
 			catch (Exception e)
 			{
-				YooLogger.Error($"Failed to delete cache file ! {e.Message}");
+				EasyFramework.D.Error($"Failed to delete cache file ! {e.Message}");
 			}
 		}
 

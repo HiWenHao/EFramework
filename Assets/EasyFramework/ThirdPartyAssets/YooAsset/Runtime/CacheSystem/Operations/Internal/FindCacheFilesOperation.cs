@@ -85,7 +85,7 @@ namespace YooAsset
 				_steps = ESteps.Done;
 				Status = EOperationStatus.Succeed;
 				float costTime = UnityEngine.Time.realtimeSinceStartup - _verifyStartTime;
-				YooLogger.Log($"Find cache files elapsed time {costTime:f1} seconds");
+				EasyFramework.D.Log($"Find cache files elapsed time {costTime:f1} seconds");
 			}
 		}
 

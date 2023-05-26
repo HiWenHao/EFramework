@@ -66,7 +66,7 @@ namespace YooAsset
 				{
 					Status = EStatus.Failed;
 					LastError = $"Failed to load scene : {MainAssetInfo.AssetPath}";
-					YooLogger.Error(LastError);
+					EasyFramework.D.Error(LastError);
 					InvokeCompletion();
 				}
 			}
@@ -84,7 +84,7 @@ namespace YooAsset
 					if (Status == EStatus.Failed)
 					{
 						LastError = $"The loaded scene is invalid : {MainAssetInfo.AssetPath}";
-						YooLogger.Error(LastError);
+						EasyFramework.D.Error(LastError);
 					}
 					InvokeCompletion();
 				}

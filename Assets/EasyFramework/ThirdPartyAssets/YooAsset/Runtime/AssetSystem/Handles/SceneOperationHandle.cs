@@ -64,7 +64,7 @@ namespace YooAsset
 			}
 			else
 			{
-				YooLogger.Warning($"Scene is invalid or not loaded : {SceneObject.name}");
+				EasyFramework.D.Warning($"Scene is invalid or not loaded : {SceneObject.name}");
 				return false;
 			}
 		}
@@ -111,7 +111,7 @@ namespace YooAsset
 			if (IsMainScene())
 			{
 				string error = $"Cannot unload main scene. Use {nameof(YooAssets.LoadSceneAsync)} method to change the main scene !";
-				YooLogger.Error(error);
+				EasyFramework.D.Error(error);
 				var operation = new UnloadSceneOperation(error);
 				OperationSystem.StartOperation(operation);
 				return operation;

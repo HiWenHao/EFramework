@@ -192,7 +192,7 @@ namespace YooAsset
 		public void ReleaseHandle(OperationHandleBase handle)
 		{
 			if (RefCount <= 0)
-				YooLogger.Warning("Asset provider reference count is already zero. There may be resource leaks !");
+                EasyFramework.D.Warning("Asset provider reference count is already zero. There may be resource leaks !");
 
 			if (_handles.Remove(handle) == false)
 				throw new System.Exception("Should never get here !");
@@ -214,7 +214,7 @@ namespace YooAsset
 			// 验证结果
 			if (IsDone == false)
 			{
-				YooLogger.Warning($"WaitForAsyncComplete failed to loading : {MainAssetInfo.AssetPath}");
+                EasyFramework.D.Warning($"WaitForAsyncComplete failed to loading : {MainAssetInfo.AssetPath}");
 			}
 		}
 

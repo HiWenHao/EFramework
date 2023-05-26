@@ -379,7 +379,7 @@ namespace EasyFramework.Managers
 
         private AudioClip GetClipByName(string name)
         {
-            return EF.Load.Load<AudioClip>($"{EF.Projects.AppConst.AudioPath}{name}");
+            return EF.Load.LoadInResources<AudioClip>($"{EF.Projects.AppConst.AudioPath}{name}");
         }
         #endregion
     }

@@ -27,8 +27,8 @@ public class HPUIInterface : MonoBehaviour
     private void Awake()
     {
         m_gUIRoot = transform.parent.gameObject;
-        m_gHP = Instantiate(EF.Load.Load<GameObject>(EF.Projects.AppConst.UIPath + "UI_HP"), m_gUIRoot.transform);
-        m_HPEffect = EF.Load.Load<GameObject>(EF.Projects.AppConst.UIPath + "HP_effect"); 
+        m_gHP = Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "UI_HP"), m_gUIRoot.transform);
+        m_HPEffect = EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "HP_effect"); 
         m_sHP = m_gHP.transform.GetComponent<Slider>();
         m_sResHP = m_gHP.transform.Find("Fill Area/ResHP").GetComponent<Slider>();
     }

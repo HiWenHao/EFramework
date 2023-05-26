@@ -1,4 +1,7 @@
 Library/
+HybridCLRData/
+UserSettings/
+Sandbox/
 Logs/
 obj/
 Temp/

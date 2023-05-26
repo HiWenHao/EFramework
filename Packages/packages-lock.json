@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.bshsf.joystick": {
-      "version": "https://github.com/Bian-Sh/UniJoystick.git?path=Packages/Joystick",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "f6efebcf74d7f8f75b633c429b0f90f2712978b6"
-    },
     "com.focus-creative-games.hybridclr_unity": {
       "version": "https://github.com/focus-creative-games/hybridclr_unity.git",
       "depth": 0,

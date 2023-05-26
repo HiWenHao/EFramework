@@ -18,9 +18,33 @@ using YooAsset;
 
 namespace EasyFramework.Utils
 {
+    /// <summary>
+    /// 资源运行模式
+    /// </summary>
+    public enum EFPlayMode
+    {
+        /// <summary>
+        /// 编辑器下的模拟模式
+        /// </summary>
+        EditorSimulateMode,
+
+        /// <summary>
+        /// 离线运行模式
+        /// </summary>
+        OfflinePlayMode,
+
+        /// <summary>
+        /// 联机运行模式
+        /// </summary>
+        HostPlayMode,
+    }
+
+    /// <summary>
+    /// 资源更新
+    /// </summary>
     public class PatchUpdater : MonoSingleton<PatchUpdater>, ISingleton
     {
-        EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
+        EFPlayMode PlayMode = EFPlayMode.EditorSimulateMode;
 
         Text m_Tips;
         Button btn_MessgeBox, btn_Done;
@@ -50,12 +74,9 @@ namespace EasyFramework.Utils
             }
 
             m_Downloader = null;
-
-            btn_Done.onClick.RemoveAllListeners();
-            btn_MessgeBox.onClick.RemoveAllListeners();
         }
 
-        public void PatchStart(EPlayMode mode)
+        public void PatchStart(EFPlayMode mode)
         {
             m_CacheData = new Dictionary<string, bool>(1000);
             PlayMode = mode;
@@ -81,21 +102,20 @@ namespace EasyFramework.Utils
 
         void Run(string nextState)
         {
-            D.Correct("Next state is " + nextState);
-            if ("Done" == nextState || m_que_updaterState.Count <= 0)
-            {
+            //D.Correct($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
+
+            if (null != m_ie_currentIE)
                 StopCoroutine(m_ie_currentIE);
+            if (nextState.Equals("Done") || m_que_updaterState.Count <= 0)
+            {
                 m_ie_currentIE = null;
                 if (m_patchUpdater)
                     btn_MessgeBox.gameObject.SetActive(true);
                 return;
             }
 
-            if (null != m_ie_currentIE)
-                StopCoroutine(m_ie_currentIE);
             m_ie_currentIE = m_que_updaterState.Dequeue();
             StartCoroutine(m_ie_currentIE);
-
         }
 
         void UpdateDone()
@@ -116,16 +136,16 @@ namespace EasyFramework.Utils
             InitializeParameters initParameters = null;
             switch (PlayMode)
             {
-                case EPlayMode.EditorSimulateMode:
+                case EFPlayMode.EditorSimulateMode:
                     initParameters = new EditorSimulateModeParameters
                     {
                         SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild("DefaultPackage")
                     };
                     break;
-                case EPlayMode.OfflinePlayMode:
+                case EFPlayMode.OfflinePlayMode:
                     initParameters = new OfflinePlayModeParameters();
                     break;
-                case EPlayMode.HostPlayMode:
+                case EFPlayMode.HostPlayMode:
                     initParameters = new HostPlayModeParameters
                     {
                         QueryServices = new QueryStreamingAssetsFileServices(),
@@ -277,7 +297,7 @@ namespace EasyFramework.Utils
         /// </summary>
         IEnumerator BeginDownload()
         {
-            m_patchUpdater = Instantiate(EF.Load.Load<GameObject>(EF.Projects.AppConst.UIPath + "PatchUpdater")).transform;
+            m_patchUpdater = Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "PatchUpdater")).transform;
             m_updaterSlider = m_patchUpdater.Find("Slider").GetComponent<Slider>();
             m_Tips = m_patchUpdater.Find("Slider/txt_Tips").GetComponent<Text>();
             btn_MessgeBox = m_patchUpdater.Find("btn_MessgeBox").GetComponent<Button>();
@@ -324,21 +344,5 @@ namespace EasyFramework.Utils
         }
         #endregion
 
-        #region RunDllCode
-        /// <summary>
-        /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
-        /// 一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
-        /// </summary>
-        IEnumerator LoadMetadataForAOTAssemblies()
-        {
-            YooAsset.RawFileOperationHandle _handle = m_Package.LoadRawFileAsync("HotUpdate.dll");
-            yield return _handle;
-            byte[] dllBytes = _handle.GetRawFileData();
-            System.Reflection.Assembly hotUpdateAss = System.Reflection.Assembly.Load(dllBytes);
-            System.Type type = hotUpdateAss.GetType("Hello");
-            type.GetMethod("Run").Invoke(null, null);
-            yield return null;
-        }
-        #endregion
     }
 }

@@ -295,7 +295,7 @@ namespace YooAsset
 					_failedTryAgain--;
 					_steps = ESteps.PrepareDownload;
 					ReportWarning();
-					YooLogger.Warning($"Try again download : {_requestURL}");
+					EasyFramework.D.Warning($"Try again download : {_requestURL}");
 				}
 			}
 		}
@@ -324,7 +324,7 @@ namespace YooAsset
 				float offset = Time.realtimeSinceStartup - _latestDownloadRealtime;
 				if (offset > _timeout)
 				{
-					YooLogger.Warning($"Web file request timeout : {_requestURL}");
+					EasyFramework.D.Warning($"Web file request timeout : {_requestURL}");
 					_webRequest.Abort();
 					_isAbort = true;
 				}

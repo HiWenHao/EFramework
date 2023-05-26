@@ -110,7 +110,7 @@ namespace YooAsset
 		{
 			if (_isUnloadSafe == false)
 			{
-				YooLogger.Warning("Can not unload unused assets when processing resource loading !");
+                EasyFramework.D.Warning("Can not unload unused assets when processing resource loading !");
 				return;
 			}
 
@@ -173,7 +173,7 @@ namespace YooAsset
 		{
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Error($"Failed to load scene ! {assetInfo.Error}");
+				EasyFramework.D.Error($"Failed to load scene ! {assetInfo.Error}");
 				CompletedProvider completedProvider = new CompletedProvider(assetInfo);
 				completedProvider.SetCompleted(assetInfo.Error);
 				return completedProvider.CreateHandle<SceneOperationHandle>();
@@ -211,7 +211,7 @@ namespace YooAsset
 		{
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Error($"Failed to load asset ! {assetInfo.Error}");
+				EasyFramework.D.Error($"Failed to load asset ! {assetInfo.Error}");
 				CompletedProvider completedProvider = new CompletedProvider(assetInfo);
 				completedProvider.SetCompleted(assetInfo.Error);
 				return completedProvider.CreateHandle<AssetOperationHandle>();
@@ -239,7 +239,7 @@ namespace YooAsset
 		{
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Error($"Failed to load sub assets ! {assetInfo.Error}");
+				EasyFramework.D.Error($"Failed to load sub assets ! {assetInfo.Error}");
 				CompletedProvider completedProvider = new CompletedProvider(assetInfo);
 				completedProvider.SetCompleted(assetInfo.Error);
 				return completedProvider.CreateHandle<SubAssetsOperationHandle>();
@@ -267,7 +267,7 @@ namespace YooAsset
 		{
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Error($"Failed to load raw file ! {assetInfo.Error}");
+				EasyFramework.D.Error($"Failed to load raw file ! {assetInfo.Error}");
 				CompletedProvider completedProvider = new CompletedProvider(assetInfo);
 				completedProvider.SetCompleted(assetInfo.Error);
 				return completedProvider.CreateHandle<RawFileOperationHandle>();

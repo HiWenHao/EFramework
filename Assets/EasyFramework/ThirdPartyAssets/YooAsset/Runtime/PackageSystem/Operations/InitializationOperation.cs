@@ -224,7 +224,7 @@ namespace YooAsset
 				{
 					PersistentTools.DeleteManifestFolder();
 					appFootPrint.Coverage();
-					YooLogger.Log("Delete manifest files when application foot print dirty !");
+                    EasyFramework.D.Log("Delete manifest files when application foot print dirty !");
 				}
 				_steps = ESteps.QueryCachePackageVersion;
 			}
@@ -293,7 +293,7 @@ namespace YooAsset
 					// 注意：为了兼容MOD模式，初始化动态新增的包裹的时候，如果内置清单不存在也不需要报错！
 					_steps = ESteps.PackageCaching;
 					string error = _queryBuildinPackageVersionOp.Error;
-					YooLogger.Log($"Failed to load buildin package version file : {error}");
+                    EasyFramework.D.Log($"Failed to load buildin package version file : {error}");
 				}
 			}
 
@@ -411,7 +411,7 @@ namespace YooAsset
 #endif
 			string footPrintFilePath = PersistentTools.GetAppFootPrintFilePath();
 			FileUtility.CreateFile(footPrintFilePath, _footPrint);
-			YooLogger.Log($"Save application foot print : {_footPrint}");
+            EasyFramework.D.Log($"Save application foot print : {_footPrint}");
 		}
 	}
 }

@@ -83,7 +83,7 @@ namespace YooAsset
 			if (EnableAddressable)
 			{
 				if (locationToLower)
-					YooLogger.Error("Addressable not support location to lower !");
+					EasyFramework.D.Error("Addressable not support location to lower !");
 
 				AssetPathMapping = new Dictionary<string, string>(AssetList.Count);
 				foreach (var packageAsset in AssetList)
@@ -116,7 +116,7 @@ namespace YooAsset
 					{
 						string locationWithoutExtension = StringUtility.RemoveExtension(location);
 						if (AssetPathMapping.ContainsKey(locationWithoutExtension))
-							YooLogger.Warning($"AssetPath have existed : {locationWithoutExtension}");
+							EasyFramework.D.Warning($"AssetPath have existed : {locationWithoutExtension}");
 						else
 							AssetPathMapping.Add(locationWithoutExtension, packageAsset.AssetPath);
 					}
@@ -131,7 +131,7 @@ namespace YooAsset
 		{
 			if (string.IsNullOrEmpty(location))
 			{
-				YooLogger.Error("Failed to mapping location to asset path, The location is null or empty.");
+				EasyFramework.D.Error("Failed to mapping location to asset path, The location is null or empty.");
 				return string.Empty;
 			}
 
@@ -144,7 +144,7 @@ namespace YooAsset
 			}
 			else
 			{
-				YooLogger.Warning($"Failed to mapping location to asset path : {location}");
+				EasyFramework.D.Warning($"Failed to mapping location to asset path : {location}");
 				return string.Empty;
 			}
 		}
@@ -319,11 +319,11 @@ namespace YooAsset
 				if (index != -1)
 				{
 					if (location.Length == index + 1)
-						YooLogger.Warning($"Found blank character in location : \"{location}\"");
+						EasyFramework.D.Warning($"Found blank character in location : \"{location}\"");
 				}
 
 				if (location.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
-					YooLogger.Warning($"Found illegal character in location : \"{location}\"");
+					EasyFramework.D.Warning($"Found illegal character in location : \"{location}\"");
 			}
 		}
 		#endregion

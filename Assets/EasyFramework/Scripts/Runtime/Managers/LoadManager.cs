@@ -10,13 +10,6 @@
  */
 using UnityEngine;
 
-
-public enum LoadType
-{
-    Sources,
-    UIPerfabs,
-}
-
 namespace EasyFramework.Managers
 {
     /// <summary>
@@ -26,23 +19,25 @@ namespace EasyFramework.Managers
     {
         int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("LoadManager");
 
-        private string str_AssetsPath = "";
-        private string str_StreamingPath = "";
         void ISingleton.Init()
         {
-            str_AssetsPath = Application.dataPath;
-            str_StreamingPath = Application.streamingAssetsPath;
+
         }
 
         void ISingleton.Quit()
         {
-            str_AssetsPath = default;
-            str_StreamingPath = default;
+
         }
 
-        public T Load<T>(string patghName) where T : Object
+        /// <summary>
+        /// Load the object in resources folder.
+        /// 加载资源文件夹中的对象
+        /// </summary>
+        /// <param name="pathName">The object path in resources folder.对象在文件夹中的路径</param>
+        /// <returns>Return the object typeof T. 返回T类型的对象</returns>
+        public T LoadInResources<T>(string pathName) where T : Object
         {
-            return Resources.Load<T>(patghName);
+            return Resources.Load<T>(pathName);
         }
 
         public T Download<T>() where T : Object

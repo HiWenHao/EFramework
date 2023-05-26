@@ -102,7 +102,7 @@ namespace YooAsset
 		}
 		internal override void Start()
 		{
-			YooLogger.Log($"Begine to download : {TotalDownloadCount} files and {TotalDownloadBytes} bytes");
+			EasyFramework.D.Log($"Begine to download : {TotalDownloadCount} files and {TotalDownloadBytes} bytes");
 			_steps = ESteps.Check;
 		}
 		internal override void Update()

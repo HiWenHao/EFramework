@@ -52,7 +52,7 @@ public partial class EF
         //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
 
         Timer.SleepTimeout = SleepTimeout.NeverSleep;
-        ExampleGame.Controller.CameraControl.Instance.gameObject.AddComponent<GMTest.Test>();
+        //ExampleGame.Controller.CameraControl.Instance.gameObject.AddComponent<GMTest.Test>();
 
         //FPS展示
         EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
@@ -61,7 +61,7 @@ public partial class EF
         //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
         //ETB.ExcelDataCacheManager.CacheAllData();
         //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同
-        //EasyFramework.Utils.PatchUpdater.Instance.PatchStart(YooAsset.EPlayMode.HostPlayMode);
+        EasyFramework.Utils.PatchUpdater.Instance.PatchStart(EasyFramework.Utils.EFPlayMode.HostPlayMode);
 
         //UI进入
         //Ui.Push(new You Class());

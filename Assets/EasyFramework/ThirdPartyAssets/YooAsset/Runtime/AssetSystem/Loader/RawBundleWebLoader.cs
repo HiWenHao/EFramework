@@ -144,7 +144,7 @@ namespace YooAsset
 			{
 				Status = EStatus.Failed;
 				LastError = $"{nameof(WaitForAsyncComplete)} failed ! WebGL platform not support sync load method !";
-				YooLogger.Error(LastError);
+				EasyFramework.D.Error(LastError);
 			}
 		}
 	}

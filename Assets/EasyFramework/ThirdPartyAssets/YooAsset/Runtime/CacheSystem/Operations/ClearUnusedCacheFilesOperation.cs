@@ -39,7 +39,7 @@ namespace YooAsset
 			{
 				_unusedCacheGUIDs = CacheSystem.GetUnusedCacheGUIDs(_package);
 				_unusedFileTotalCount = _unusedCacheGUIDs.Count;
-				YooLogger.Log($"Found unused cache file count : {_unusedFileTotalCount}");
+				EasyFramework.D.Log($"Found unused cache file count : {_unusedFileTotalCount}");
 				_steps = ESteps.ClearUnusedCacheFiles;
 			}
 

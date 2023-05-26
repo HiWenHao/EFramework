@@ -245,6 +245,7 @@ namespace EasyFramework.Managers
             show_txt_false.text = noBtnText;
             show_btn_CloseBG.interactable = openCloseBG;
 
+            BoxDialog.transform.localScale = Vector3.one;
             BoxDialog.SetActive(true);
         }
 
@@ -264,7 +265,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                _popup = new PopupBox(Object.Instantiate(EF.Load.Load<Transform>(EF.Projects.AppConst.UIPath + "Box_Popup"), showBoxBaseObject));
+                _popup = new PopupBox(Object.Instantiate(EF.Load.LoadInResources<Transform>(EF.Projects.AppConst.UIPath + "Box_Popup"), showBoxBaseObject));
             }
 
             _popup.TextInfo = text;

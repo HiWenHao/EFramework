@@ -191,12 +191,12 @@ namespace YooAsset
 			if (parameters.LoadingMaxTimeSlice < 10)
 			{
 				parameters.LoadingMaxTimeSlice = 10;
-				YooLogger.Warning($"{nameof(parameters.LoadingMaxTimeSlice)} minimum value is 10 milliseconds.");
+				EasyFramework.D.Warning($"{nameof(parameters.LoadingMaxTimeSlice)} minimum value is 10 milliseconds.");
 			}
 			if (parameters.DownloadFailedTryAgain < 1)
 			{
 				parameters.DownloadFailedTryAgain = 1;
-				YooLogger.Warning($"{nameof(parameters.DownloadFailedTryAgain)} minimum value is 1");
+				EasyFramework.D.Warning($"{nameof(parameters.DownloadFailedTryAgain)} minimum value is 1");
 			}
 		}
 		private void InitializeOperation_Completed(AsyncOperationBase op)
@@ -304,7 +304,7 @@ namespace YooAsset
 			AssetInfo assetInfo = ConvertLocationToAssetInfo(location, null);
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Warning(assetInfo.Error);
+				EasyFramework.D.Warning(assetInfo.Error);
 				return false;
 			}
 
@@ -324,7 +324,7 @@ namespace YooAsset
 			DebugCheckInitialize();
 			if (assetInfo.IsInvalid)
 			{
-				YooLogger.Warning(assetInfo.Error);
+				EasyFramework.D.Warning(assetInfo.Error);
 				return false;
 			}
 
@@ -825,7 +825,7 @@ namespace YooAsset
 			var loadedBundleInfos = _assetSystemImpl.GetLoadedBundleInfos();
 			if (loadedBundleInfos.Count > 0)
 			{
-				YooLogger.Warning($"Found loaded bundle before update manifest ! Recommended to call the  {nameof(ForceUnloadAllAssets)} method to release loaded bundle !");
+				EasyFramework.D.Warning($"Found loaded bundle before update manifest ! Recommended to call the  {nameof(ForceUnloadAllAssets)} method to release loaded bundle !");
 			}
 		}
 		#endregion

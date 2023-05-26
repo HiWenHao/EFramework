@@ -45,7 +45,7 @@ namespace YooAsset
 					return;
 				}
 				
-				YooLogger.Log($"Load editor manifest file : {_manifestFilePath}");
+				EasyFramework.D.Log($"Load editor manifest file : {_manifestFilePath}");
 				byte[] bytesData = FileUtility.ReadAllBytes(_manifestFilePath);
 				_deserializer = new DeserializeManifestOperation(bytesData);
 				OperationSystem.StartOperation(_deserializer);

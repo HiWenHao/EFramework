@@ -65,7 +65,7 @@ namespace YooAsset
 				Status = EOperationStatus.Succeed;
 
 				int totalCount = CacheSystem.GetCachedFilesCount(_packageName);
-				YooLogger.Log($"Package '{_packageName}' cached files count : {totalCount}");
+                EasyFramework.D.Log($"Package '{_packageName}' cached files count : {totalCount}");
 			}
 		}
 	}

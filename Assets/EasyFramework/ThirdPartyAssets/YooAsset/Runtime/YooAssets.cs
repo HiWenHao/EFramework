@@ -1,12 +1,10 @@
 using System;
-using System.Diagnostics;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace YooAsset
 {
-	public static partial class YooAssets
+    public static partial class YooAssets
 	{
 		private static bool _isInitialize = false;
 		private static GameObject _driver = null;
@@ -15,22 +13,19 @@ namespace YooAsset
 		/// <summary>
 		/// 初始化资源系统
 		/// </summary>
-		/// <param name="logger">自定义日志处理</param>
-		public static void Initialize(ILogger logger = null)
+		public static void Initialize()
 		{
 			if (_isInitialize)
 				throw new Exception($"{nameof(YooAssets)} is initialized !");
 
 			if (_isInitialize == false)
 			{
-				YooLogger.Logger = logger;
-
 				// 创建驱动器
 				_isInitialize = true;
 				_driver = new UnityEngine.GameObject($"[{nameof(YooAssets)}]");
 				_driver.AddComponent<YooAssetsDriver>();
 				UnityEngine.Object.DontDestroyOnLoad(_driver);
-				YooLogger.Log($"{nameof(YooAssets)} initialize !");
+				EasyFramework.D.Log($"{nameof(YooAssets)} initialize !");
 
 #if DEBUG
 				// 添加远程调试脚本
@@ -62,7 +57,7 @@ namespace YooAsset
 				_isInitialize = false;
 				if (_driver != null)
 					GameObject.Destroy(_driver);
-				YooLogger.Log($"{nameof(YooAssets)} destroy all !");
+				EasyFramework.D.Log($"{nameof(YooAssets)} destroy all !");
 			}
 		}
 
@@ -99,7 +94,7 @@ namespace YooAsset
 			if (HasPackage(packageName))
 				throw new Exception($"Package {packageName} already existed !");
 
-			YooLogger.Log($"Create resource package : {packageName}");
+			EasyFramework.D.Log($"Create resource package : {packageName}");
 			ResourcePackage package = new ResourcePackage(packageName);
 			_packages.Add(package);
 			return package;
@@ -113,7 +108,7 @@ namespace YooAsset
 		{
 			var package = TryGetPackage(packageName);
 			if (package == null)
-				YooLogger.Error($"Not found assets package : {packageName}");
+				EasyFramework.D.Error($"Not found assets package : {packageName}");
 			return package;
 		}
 
@@ -147,7 +142,7 @@ namespace YooAsset
 			if (package == null)
 				return;
 
-			YooLogger.Log($"Destroy resource package : {packageName}");
+			EasyFramework.D.Log($"Destroy resource package : {packageName}");
 			_packages.Remove(package);
 			package.DestroyPackage();
 
@@ -222,7 +217,7 @@ namespace YooAsset
 			if (milliseconds < 10)
 			{
 				milliseconds = 10;
-				YooLogger.Warning($"MaxTimeSlice minimum value is 10 milliseconds.");
+				EasyFramework.D.Warning($"MaxTimeSlice minimum value is 10 milliseconds.");
 			}
 			OperationSystem.MaxTimeSlice = milliseconds;
 		}
@@ -242,14 +237,14 @@ namespace YooAsset
 		{
 			if (string.IsNullOrEmpty(sandboxPath))
 			{
-				YooLogger.Error($"Sandbox path is null or empty !");
+				EasyFramework.D.Error($"Sandbox path is null or empty !");
 				return;
 			}
 
 			// 注意：需要确保没有任何资源系统起效之前才可以设置沙盒目录！
 			if (_packages.Count > 0)
 			{
-				YooLogger.Error($"Please call this method {nameof(SetCacheSystemSandboxPath)} before the package is created !");
+				EasyFramework.D.Error($"Please call this method {nameof(SetCacheSystemSandboxPath)} before the package is created !");
 				return;
 			}
 
@@ -279,7 +274,7 @@ namespace YooAsset
 		/// </summary>
 		public static void ClearSandbox()
 		{
-			YooLogger.Warning("Clear sandbox folder files, Finally, restart the application !");
+			EasyFramework.D.Warning("Clear sandbox folder files, Finally, restart the application !");
 			PersistentTools.DeleteSandbox();
 		}
 		#endregion

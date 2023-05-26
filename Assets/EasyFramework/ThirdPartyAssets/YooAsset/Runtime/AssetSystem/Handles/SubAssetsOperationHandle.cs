@@ -93,7 +93,7 @@ namespace YooAsset
 					return assetObject as TObject;
 			}
 
-			YooLogger.Warning($"Not found sub asset object : {assetName}");
+		 EasyFramework.D.Warning($"Not found sub asset object : {assetName}");
 			return null;
 		}
 

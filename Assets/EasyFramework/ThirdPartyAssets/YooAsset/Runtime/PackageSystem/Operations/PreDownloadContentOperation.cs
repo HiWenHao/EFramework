@@ -218,7 +218,7 @@ namespace YooAsset
 		{
 			if (Status != EOperationStatus.Succeed)
 			{
-				YooLogger.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
+				EasyFramework.D.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
 				return ResourceDownloaderOperation.CreateEmptyDownloader(downloadingMaxNumber, failedTryAgain, timeout);
 			}
 
@@ -230,7 +230,7 @@ namespace YooAsset
 		{
 			if (Status != EOperationStatus.Succeed)
 			{
-				YooLogger.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
+				EasyFramework.D.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
 				return ResourceDownloaderOperation.CreateEmptyDownloader(downloadingMaxNumber, failedTryAgain, timeout);
 			}
 
@@ -242,7 +242,7 @@ namespace YooAsset
 		{
 			if (Status != EOperationStatus.Succeed)
 			{
-				YooLogger.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
+				EasyFramework.D.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
 				return ResourceDownloaderOperation.CreateEmptyDownloader(downloadingMaxNumber, failedTryAgain, timeout);
 			}
 
@@ -254,7 +254,7 @@ namespace YooAsset
 		{
 			if (Status != EOperationStatus.Succeed)
 			{
-				YooLogger.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
+				EasyFramework.D.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
 				return ResourceDownloaderOperation.CreateEmptyDownloader(downloadingMaxNumber, failedTryAgain, timeout);
 			}
 
@@ -270,7 +270,7 @@ namespace YooAsset
 		{
 			if (Status != EOperationStatus.Succeed)
 			{
-				YooLogger.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
+				EasyFramework.D.Warning($"{nameof(PreDownloadContentOperation)} status is not succeed !");
 				return ResourceDownloaderOperation.CreateEmptyDownloader(downloadingMaxNumber, failedTryAgain, timeout);
 			}
 

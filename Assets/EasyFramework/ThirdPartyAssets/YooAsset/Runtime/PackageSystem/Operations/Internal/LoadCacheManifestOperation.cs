@@ -126,8 +126,8 @@ namespace YooAsset
 			// 注意：如果加载沙盒内的清单报错，为了避免流程被卡住，主动把损坏的文件删除。
 			if (File.Exists(_manifestFilePath))
 			{
-				YooLogger.Warning($"Failed to load cache manifest file : {Error}");
-				YooLogger.Warning($"Invalid cache manifest file have been removed : {_manifestFilePath}");
+				EasyFramework.D.Warning($"Failed to load cache manifest file : {Error}");
+				EasyFramework.D.Warning($"Invalid cache manifest file have been removed : {_manifestFilePath}");
 				File.Delete(_manifestFilePath);
 			}
 

@@ -57,9 +57,7 @@ public partial class EF : MonoBehaviour
         ManageUpdater = new List<IUpdate>();
         Updater = new List<IUpdate>();
         Singletons = new List<ISingleton>();
-
         Projects = Resources.Load<EasyFramework.Edit.Setting.ProjectSetting>("Settings/ProjectSetting");
-        InitInAfterSceneLoad();
     }
     #endregion
 

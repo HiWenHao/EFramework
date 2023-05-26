@@ -32,7 +32,7 @@ namespace EasyFramework.Managers
 		EAction m_act_Callback;
         void ISingleton.Init()
         {
-            LoadCanvas = Instantiate(EF.Load.Load<Transform>("Prefabs/UI/LoadCanvas"));
+            LoadCanvas = Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
             LoadCanvas.SetParent(transform);
             m_img_BG = LoadCanvas.GetChild(0).GetComponent<Image>();
             m_slid_ProgressBar = m_img_BG.transform.GetChild(0).GetComponent<Slider>();

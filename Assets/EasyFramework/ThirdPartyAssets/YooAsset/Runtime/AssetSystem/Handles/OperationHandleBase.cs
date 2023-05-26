@@ -120,9 +120,9 @@ namespace YooAsset
 				else
 				{
 					if (Provider == null)
-						YooLogger.Warning($"Operation handle is released : {_assetInfo.AssetPath}");
+						EasyFramework.D.Warning($"Operation handle is released : {_assetInfo.AssetPath}");
 					else if (Provider.IsDestroyed)
-						YooLogger.Warning($"Provider is destroyed : {_assetInfo.AssetPath}");
+						EasyFramework.D.Warning($"Provider is destroyed : {_assetInfo.AssetPath}");
 					return false;
 				}
 			}

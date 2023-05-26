@@ -15,8 +15,47 @@ MonoBehaviour:
   ShowPackageView: 0
   EnableAddressable: 1
   UniqueBundleName: 1
-  ShowEditorAlias: 0
+  ShowEditorAlias: 1
   Packages:
   - PackageName: DefaultPackage
     PackageDesc: 
-    Groups: []
+    Groups:
+    - GroupName: UIPrefabs
+      GroupDesc: "UI\u9884\u5236\u4EF6"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/ExampleGame/Resources/Prefabs/UI
+        CollectorGUID: 09b33bafaca989445a79b96c761a410b
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: Audio
+      GroupDesc: "\u97F3\u9891\u6587\u4EF6"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/ExampleGame/Resources/Sources
+        CollectorGUID: 97adeb34d337f4a40967cd3f992053b7
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: HotfixDll
+      GroupDesc: "\u70ED\u66F4\u7684\u4EE3\u7801\u5E93"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/AssetsHotfix/Code
+        CollectorGUID: e3aec4aabb9e6474f9d9e238365400e1
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackRawFile
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
