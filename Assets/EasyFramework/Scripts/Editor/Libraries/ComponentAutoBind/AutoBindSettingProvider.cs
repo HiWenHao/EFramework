@@ -31,6 +31,7 @@ namespace EasyFramework.Edit.AutoBind
         /// </summary>
         private const string m_HeaderName = "EF/Auto Bind Setting";
 
+        private SerializedProperty m_Namespace;
         private SerializedProperty m_PrefabPath;
         private SerializedProperty m_ComCodePath;
         private SerializedProperty m_RulePrefixes;
@@ -40,6 +41,7 @@ namespace EasyFramework.Edit.AutoBind
             base.OnActivate(searchContext, rootElement);
             AutoBindSetting m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
             m_CustomSettings =  new SerializedObject(m_Setting);
+            m_Namespace = m_CustomSettings.FindProperty("m_Namespace");
             m_PrefabPath = m_CustomSettings.FindProperty("m_PrefabPath");
             m_ComCodePath = m_CustomSettings.FindProperty("m_ComCodePath");
             m_RulePrefixes = m_CustomSettings.FindProperty("m_RulePrefixes");
@@ -50,39 +52,42 @@ namespace EasyFramework.Edit.AutoBind
             base.OnGUI(searchContext);
             m_CustomSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-            EditorGUILayout.PropertyField(m_CustomSettings.FindProperty("m_Namespace"));
 
-            EditorGUILayout.Space(12f, true);
+            EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("默认组件代码保存路径：");
+            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Language.DefaultScriptNamespace, m_Namespace.stringValue);
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField(LC.Language.DefaultScriptSavePath);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(m_ComCodePath.stringValue);
-            if (GUILayout.Button("选择组件代码路径", GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Language.PathSelect, GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, m_ComCodePath.stringValue);
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
                 }
-                string path = EditorUtility.OpenFolderPanel("选择组件代码保存路径", folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "");
                 }
             }
             EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.LabelField("默认UI预制件的保存路径：");
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField(LC.Language.DefaultPrefabSavePath);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(m_PrefabPath.stringValue);
-            if (GUILayout.Button("选择UI预制件保存路径", GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Language.PathSelect, GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
                 }
-                string path = EditorUtility.OpenFolderPanel("选择UI预制件保存路径", folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "");
@@ -92,8 +97,7 @@ namespace EasyFramework.Edit.AutoBind
 
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField("组件规则设置");
-            EditorGUILayout.LabelField("RulePrefixes");
+            EditorGUILayout.LabelField(LC.Language.SetRulePrefixes);
             EditorGUILayout.PropertyField(m_RulePrefixes);
             EditorGUILayout.Space(20);
             if (!changeCheckScope.changed) return;

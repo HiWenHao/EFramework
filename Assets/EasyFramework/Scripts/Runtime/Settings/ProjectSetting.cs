@@ -21,12 +21,14 @@ namespace EasyFramework.Edit.Setting
     public class ProjectSetting : ScriptableObject
     {
         [SerializeField]
-        [Tooltip("脚本作者名")]
+        private int m_LanguageIndex;
+        public int LanguageIndex => m_LanguageIndex;
+
+        [SerializeField]
         private string m_ScriptAuthor = "Default";
         public string ScriptAuthor => m_ScriptAuthor;
 
         [SerializeField]
-        [Tooltip("脚本版本")]
         private string m_ScriptVersion = "0.1";
         public string ScriptVersion => m_ScriptVersion;
 

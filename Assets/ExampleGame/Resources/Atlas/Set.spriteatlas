@@ -38,24 +38,8 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 90e68fc4a91e688499437eb6b367f443, type: 3}
-  - {fileID: 21300000, guid: 5ad1d60795a758c468e9886f7fa4a71b, type: 3}
-  - {fileID: 21300000, guid: 3f302b37d4c72954a87f7d7a773b0fb9, type: 3}
-  - {fileID: 21300000, guid: bd0195086f379264ead3d25d065bf297, type: 3}
-  - {fileID: 21300000, guid: 76c0ca38d0b47f74980e105c2317187f, type: 3}
-  - {fileID: 21300000, guid: 553b12781cfb17945a355190edf2412f, type: 3}
-  - {fileID: 21300000, guid: 424930b82ac0aa64fa899d0b9b493eb2, type: 3}
-  - {fileID: 21300000, guid: 7b20bd7c1d6bf0a4c9eb3ffdd7bd421f, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Line2
-  - Icon
-  - Close
-  - Namebotton02
-  - Line1
-  - Enter
-  - Namebotton01
-  - Back
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: Set
   m_IsVariant: 0

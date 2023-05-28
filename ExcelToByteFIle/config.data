@@ -1,7 +1,7 @@
-D:\_Projects\Unity\EFramework\ExcelFolder
-ETB
+F:\_Projects\Unity\EFramework\ExcelFolder
+EasyFramework.Edit
 Xiaohei.Wang(Wenaho)
-0.3
-D:\_Projects\Unity\EFramework\Assets\ExampleGame\Resources\JsonData
-D:\_Projects\Unity\EFramework\Assets\ExampleGame\Scripts\Game\ETB
-false
+0.2
+F:\_Projects\Unity\EFramework\Assets\EasyFramework\Resources\LanguageConfig
+F:\_Projects\Unity\EFramework\Assets\EasyFramework\Scripts\Editor\Config\LanguageConfig
+true

@@ -62,11 +62,11 @@ namespace EasyFramework.Edit.PathConfig
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
 
-            SelectionFolderPath("框架地址：", "选择框架路径", m_FrameworkPath);
-            SelectionEXEPath("Sublime文件路径：", "选择Sublime路径", new string[] { "sublime_text", "subl" }, m_SublimePath);
-            SelectionEXEPath("Notepad++文件路径：", "选择Notepad++路径", new string[] { "notepad" }, m_NotepadPath);
-            SelectionFolderPath("图集保存路径：", "选择图集保存路径", m_AtlasFolder);
-            SelectionFolderPath("提取压缩后的动画保存路径：", "选择动画保存路径", m_ExtractPath);
+            SelectionFolderPath(LC.Language.FrameworkPath, LC.Language.PathSelect, m_FrameworkPath);
+            SelectionEXEPath(LC.Language.SublimePath, LC.Language.PathSelect, new string[] { "sublime_text", "subl" }, m_SublimePath);
+            SelectionEXEPath(LC.Language.NotepadPath, LC.Language.PathSelect, new string[] { "notepad" }, m_NotepadPath);
+            SelectionFolderPath(LC.Language.AtlasSavePath, LC.Language.PathSelect, m_AtlasFolder);
+            SelectionFolderPath(LC.Language.AnimatorExtractPath, LC.Language.PathSelect, m_ExtractPath);
 
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
@@ -100,7 +100,7 @@ namespace EasyFramework.Edit.PathConfig
                     if (_exit)
                         property.stringValue = path;
                     else
-                        EditorUtility.DisplayDialog("路径错误", "Please configure the correct path to Sublime\n请配置正确的路径", "ok");
+                        EditorUtility.DisplayDialog(LC.Language.PathSelecteError, LC.Language.PathSelecteErrorContent, LC.Language.Ok);
                 }
             }
             EditorGUILayout.EndHorizontal();

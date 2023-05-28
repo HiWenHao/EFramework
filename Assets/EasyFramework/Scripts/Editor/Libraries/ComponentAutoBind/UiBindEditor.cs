@@ -82,38 +82,38 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawSetting()
         {
             EditorGUILayout.BeginHorizontal();
-            m_Namespace.stringValue = EditorGUILayout.TextField(new GUIContent("命名空间：", "The Namespace"), m_Namespace.stringValue);
-            if (GUILayout.Button("默认设置"))
+            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Language.ScriptNamespace, m_Namespace.stringValue);
+            if (GUILayout.Button(LC.Language.DefaultSetting))
             {
                 m_Namespace.stringValue = m_Setting.Namespace;
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(new GUIContent("类型命名：", "The class name"), $"{m_Builder.gameObject.name}  (与对象名相一致)");
+            EditorGUILayout.TextField(LC.Language.ScriptClassName, m_Builder.gameObject.name + LC.Language.ScriptClassNameTips);
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.Space(12f, true);
 
-            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ? "  UI预制件的保存路径：" : "  同时生成UI的预制件，如果已存在则会修改");
+            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ? LC.Language.NoCreatedUIPrefabSavePath : LC.Language.CreatedUIPrefabSavePath);
             if (m_CreatePrefab.boolValue)
             {
                 EditorGUILayout.LabelField(m_PrefabPath.stringValue);
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("选择UI预制件保存路径"))
+                if (GUILayout.Button(LC.Language.PathSelect))
                 {
                     string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
                     if (!Directory.Exists(folder))
                     {
                         folder = Application.dataPath;
                     }
-                    string path = EditorUtility.OpenFolderPanel("选择UI预制件保存路径", folder, "");
+                    string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "");
                     }
                 }
-                if (GUILayout.Button("默认设置"))
+                if (GUILayout.Button(LC.Language.DefaultSetting))
                 {
                     m_PrefabPath.stringValue = m_Setting.PrefabPath;
                 }
@@ -121,23 +121,23 @@ namespace EasyFramework.Edit.AutoBind
             }
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField("自动生成代码保存路径：");
+            EditorGUILayout.LabelField(LC.Language.DefaultScriptSavePath);
             EditorGUILayout.LabelField(m_ComCodePath.stringValue);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("选择组件代码路径"))
+            if (GUILayout.Button(LC.Language.PathSelect))
             {
                 string folder = Path.Combine(Application.dataPath, m_ComCodePath.stringValue);
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
                 }
-                string path = EditorUtility.OpenFolderPanel("选择组件代码保存路径", folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "");
                 }
             }
-            if (GUILayout.Button("默认设置"))
+            if (GUILayout.Button(LC.Language.DefaultSetting))
             {
                 m_ComCodePath.stringValue = m_Setting.ComCodePath;
             }
@@ -151,7 +151,7 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawAutoBind()
         {
             GUILayout.Space(12.0f);
-            if (GUILayout.Button("自动绑定组件"))
+            if (GUILayout.Button(LC.Language.AutoBindingComponents))
             {
                 AutoBindComponent();
             }
@@ -202,10 +202,10 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawStartBind()
         {
             GUILayout.Space(24f);
-            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, "  生成UI后卸载该脚本");
+            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, LC.Language.UnloadBindingScripts);
 
             GUILayout.Space(12f);
-            if (GUILayout.Button("确定生成", GUILayout.Height(25.0f)))
+            if (GUILayout.Button(LC.Language.BindingGenerate, GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
                 if (m_CreatePrefab.boolValue)

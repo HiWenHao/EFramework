@@ -22,21 +22,18 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 默认命名空间
         /// </summary>
-        [Header("默认命名空间")]
         [SerializeField]
         private string m_Namespace = "PleaseChangeTheNamespace";
 
         /// <summary>
         /// 默认组件代码保存路径
         /// </summary>
-        [Header("默认组件代码保存路径")]
         [SerializeField]
         private string m_ComCodePath;
 
         /// <summary>
         /// 默认UI预制件保存路径
         /// </summary>
-        [Header("默认UI预制件保存路径")]
         [SerializeField]
         private string m_PrefabPath;
 

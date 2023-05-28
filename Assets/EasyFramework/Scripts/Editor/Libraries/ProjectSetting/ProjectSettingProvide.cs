@@ -12,7 +12,6 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace EasyFramework.Edit.Setting
@@ -27,6 +26,7 @@ namespace EasyFramework.Edit.Setting
 
         private SerializedObject m_SettingPanel;
         private SerializedProperty m_ScriptAuthor;
+        private SerializedProperty m_LanguageIndex;
         private SerializedProperty m_ScriptVersion;
         private SerializedProperty m_ResourcesArea;
         private SerializedProperty m_AppConstConfig;
@@ -36,6 +36,7 @@ namespace EasyFramework.Edit.Setting
             base.OnActivate(searchContext, rootElement);
             m_SettingPanel = new SerializedObject(ProjectUtility.Project);
             m_ScriptAuthor = m_SettingPanel.FindProperty("m_ScriptAuthor");
+            m_LanguageIndex = m_SettingPanel.FindProperty("m_LanguageIndex");
             m_ScriptVersion = m_SettingPanel.FindProperty("m_ScriptVersion");
             m_ResourcesArea = m_SettingPanel.FindProperty("m_ResourcesArea");
             m_AppConstConfig = m_SettingPanel.FindProperty("m_AppConst");
@@ -47,10 +48,9 @@ namespace EasyFramework.Edit.Setting
             base.OnGUI(searchContext);
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            EditorGUILayout.LabelField("脚本作者名");
-            m_ScriptAuthor.stringValue = EditorGUILayout.TextField("Script author name", m_ScriptAuthor.stringValue);
-            EditorGUILayout.LabelField("脚本版本");
-            m_ScriptVersion.stringValue = EditorGUILayout.TextField("Script version", m_ScriptVersion.stringValue);
+            m_LanguageIndex.intValue = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Language.EditorLanguage, (ELanguage)m_LanguageIndex.intValue);
+            m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Language.ScriptAuthor, m_ScriptAuthor.stringValue);
+            m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Language.ScriptVersion, m_ScriptVersion.stringValue);
             EditorGUILayout.PropertyField(m_AppConstConfig);
             EditorGUILayout.PropertyField(m_ResourcesArea);
             EditorGUILayout.Space(20);

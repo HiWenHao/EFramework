@@ -12,16 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectSetting
   m_EditorClassIdentifier: 
+  m_LanguageIndex: 1
   m_ScriptAuthor: Xiaohei.Wang(Wenhao)
   m_ScriptVersion: 0.1
   m_ResourcesArea:
     m_CopyResToCommit: 0
     m_CleanCommitRes: 1
     m_ServerType: 1
-    m_InnerUrl: http://127.0.0.1/dashboard/_Download/v2.0
+    m_InnerUrl: http://127.0.0.1/dashboard/_Download/v1.0
     m_ExtraUrl: http://192.168.0.1:8080
     m_FormalUrl: http://192.168.0.1:8080
-    m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v2.0
+    m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v1.0
   m_AppConst:
     m_AppName: EasyFramework
     m_AppPrefix: EF_
