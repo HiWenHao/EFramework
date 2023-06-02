@@ -44,12 +44,13 @@ public partial class EF : MonoBehaviour
     #endregion
 
     #region Initialize application
+    static EF m_monoEF;
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
     {
         Managers = new GameObject("GM.Managers").transform;
         Singleton = new GameObject("GM.Singleton").transform;
-        Managers.gameObject.AddComponent<EF>();
+        m_monoEF = Managers.gameObject.AddComponent<EF>();
         DontDestroyOnLoad(Managers);
         DontDestroyOnLoad(Singleton);
 

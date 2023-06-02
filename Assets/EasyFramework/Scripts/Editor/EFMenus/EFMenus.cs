@@ -8,6 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using UnityEditor;
 
 namespace EasyFramework.Windows

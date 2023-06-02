@@ -26,6 +26,7 @@ namespace EasyFramework.Edit
         static LanguageBase m_English;
         static LanguageBase m_Chinese;
 
+        static bool init;
         public static ELanguage LanguageType => (ELanguage)ProjectUtility.Project.LanguageIndex;
         public static LanguageBase Language
         {
@@ -40,10 +41,22 @@ namespace EasyFramework.Edit
                         m_Chinese ??= new Chinese();
                         return m_Chinese;
                     case ELanguage.そうか:
-                        break;
                     default:
+                        if (!init)
+                        {
+                            init = true;
+                            ExcelTool.ExcelDataManager.Init("Config/LC");
+                            EDC_LC.CacheData();
+                            foreach (var id in EDC_LC.Ids)
+                            {
+                                EDC_LC _LC = EDC_LC.Get(id);
+                                D.Correct($"_LC.Lc = {_LC.Lc}");
+                                D.Warning($"_LC.Lc1 = {_LC.Lc1}");
+                            }
+                        }
                         break;
                 }
+                m_English ??= new English();
                 return m_English;
             }
         }

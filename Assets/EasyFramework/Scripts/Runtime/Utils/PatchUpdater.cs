@@ -61,6 +61,9 @@ namespace EasyFramework.Utils
 
         void ISingleton.Init()
         {
+            // 初始化资源系统
+            YooAssets.Initialize();
+            m_que_updaterState = new Queue<IEnumerator>();
         }
 
         void ISingleton.Quit()
@@ -74,23 +77,24 @@ namespace EasyFramework.Utils
             }
 
             m_Downloader = null;
+
+            m_que_updaterState.Clear();
+            m_que_updaterState = null;
         }
 
-        public void PatchStart(EFPlayMode mode)
+        public void PatchStart(EFPlayMode mode, string packageName = "DefaultPackage")
         {
             m_CacheData = new Dictionary<string, bool>(1000);
             PlayMode = mode;
             D.Correct($"资源系统运行模式：{mode}");
 
-            // 初始化资源系统
-            YooAssets.Initialize();
             // 创建默认的资源包
-            m_Package = YooAssets.CreatePackage("DefaultPackage");
+            m_Package = YooAssets.CreatePackage(packageName);
 
             //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
             YooAssets.SetDefaultPackage(m_Package);
 
-            m_que_updaterState = new Queue<IEnumerator>();
+            m_que_updaterState.Clear();
             m_que_updaterState.Enqueue(Initialize());
             m_que_updaterState.Enqueue(GetStaticVersion());
             m_que_updaterState.Enqueue(GetManifest());

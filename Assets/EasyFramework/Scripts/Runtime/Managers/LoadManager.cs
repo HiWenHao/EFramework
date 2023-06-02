@@ -1,4 +1,4 @@
-/* 
+ï»¿/* 
  * ================================================
  * Describe:      This script is used to loaded assets in unity.
  * Author:        Xiaohei.Wang(Wenhao)
@@ -8,7 +8,9 @@
  * Version:       0.1 
  * ===============================================
  */
+using System.Collections.Generic;
 using UnityEngine;
+using YooAsset;
 
 namespace EasyFramework.Managers
 {
@@ -19,30 +21,114 @@ namespace EasyFramework.Managers
     {
         int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("LoadManager");
 
+        private string m_DefaultPackage;
+
+        private Dictionary<string, ResourcePackage> m_ResourcePackageList;
+        private Dictionary<string, List<AssetOperationHandle>> m_AssetOperationHandles;
         void ISingleton.Init()
         {
-
+            m_ResourcePackageList = new Dictionary<string, ResourcePackage>();
+            m_AssetOperationHandles = new Dictionary<string, List<AssetOperationHandle>>();
         }
 
         void ISingleton.Quit()
         {
+            foreach (var handle in m_AssetOperationHandles)
+            {
+                for (int i = handle.Value.Count - 1; i >= 0; i--)
+                {
+                    handle.Value[i].Release();
+                    handle.Value.RemoveAt(i);
+                }
+                handle.Value.Clear();
+            }
+            m_AssetOperationHandles.Clear();
+            m_AssetOperationHandles = null;
+
+            foreach (var package in m_ResourcePackageList)
+            {
+                package.Value.ForceUnloadAllAssets();
+                package.Value.UnloadUnusedAssets();
+            }
+            m_ResourcePackageList.Clear();
+            m_ResourcePackageList = null;
 
         }
 
+        #region Added the ResourcePackage
+        public void AddResourcePackage(ResourcePackage package)
+        {
+            m_ResourcePackageList.Add(package.PackageName, package);
+        }
+        #endregion
+
         /// <summary>
         /// Load the object in resources folder.
-        /// ¼ÓÔØ×ÊÔ´ÎÄ¼ş¼ĞÖĞµÄ¶ÔÏó
+        /// åŠ è½½èµ„æºæ–‡ä»¶å¤¹ä¸­çš„å¯¹è±¡
         /// </summary>
-        /// <param name="pathName">The object path in resources folder.¶ÔÏóÔÚÎÄ¼ş¼ĞÖĞµÄÂ·¾¶</param>
-        /// <returns>Return the object typeof T. ·µ»ØTÀàĞÍµÄ¶ÔÏó</returns>
+        /// <param name="pathName">The object path in resources folder.å¯¹è±¡åœ¨æ–‡ä»¶å¤¹ä¸­çš„è·¯å¾„</param>
+        /// <returns>Return the object typeof T. è¿”å›Tç±»å‹çš„å¯¹è±¡</returns>
         public T LoadInResources<T>(string pathName) where T : Object
         {
             return Resources.Load<T>(pathName);
         }
 
-        public T Download<T>() where T : Object
+        //public T LoadInYooAsset<T>()
+        //{
+        //
+        //}
+
+
+        public void LoadSceneAsyncInYooAsset(string pathName, string packageName = "DefaultPackage")
         {
-            return Resources.Load<T>("");
+            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            {
+                package.LoadSceneAsync(pathName);
+            }
+            else
+            {
+                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
+            }
         }
+        public void LoadSceneAsyncInYooAsset(AssetInfo assetInfo, string packageName = "DefaultPackage")
+        {
+            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            {
+                package.LoadSceneAsync(assetInfo);
+            }
+            else
+            {
+                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
+            }
+        }
+
+        #region ClearMemory
+        /// <summary>
+        /// Clear the application all memory.
+        /// æ¸…ç†åº”ç”¨ç¨‹åºå†…å­˜
+        /// </summary>
+        public void ClearAllMemory()
+        {
+            ClearYooAssetMemory();
+            ClearResourcesMemory();
+        }
+        /// <summary>
+        /// Clear the application memory for YooAsset.
+        /// æ¸…ç†åº”ç”¨ç¨‹åºä¸­,YooAssetä¸‹å¼•ç”¨è®¡æ•°ä¸º 0 çš„èµ„æº
+        /// </summary>
+        public void ClearYooAssetMemory()
+        {
+            foreach (var package in m_AssetOperationHandles)
+                YooAssets.GetPackage(package.Key).UnloadUnusedAssets();
+        }
+        /// <summary>
+        /// Clear the application memory for Resources.
+        /// æ¸…ç†åº”ç”¨ç¨‹åºä¸­ Resources èµ„æº
+        /// </summary>
+        public void ClearResourcesMemory()
+        {
+            Resources.UnloadUnusedAssets();
+        }
+        #endregion
     }
 }

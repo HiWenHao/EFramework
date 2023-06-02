@@ -2,76 +2,65 @@
  * ================================================
  * Describe:      This is the code for the excel variable define table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-18 14:46:42
+ * CreationTime:  2023-05-30 11:29:41
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-18 14:46:42
- * Version:       0.3
+ * ModifyTime:    2023-05-30 11:29:41
+ * Version:       0.1
  * ================================================
 */
 #pragma warning disable
 using EasyFramework.ExcelTool;
 
 namespace ETB{
-    public static class EVD_XH_Sheet1
+    public static class EVD_Example
     {
         /// <summary> [Int] ID </summary>
         public const int id = 0;
+        /// <summary> [String] 表格名字 </summary>
+        public const int name = 65540;
         /// <summary> [List&lt;Int&gt;] int列表 </summary>
-        public const int lsi = 65540;
+        public const int lsi = 131080;
         /// <summary> [List&lt;String&gt;] string列表 </summary>
-        public const int lss = 131080;
+        public const int lss = 196620;
         /// <summary> [Vector2] 二维向量 </summary>
-        public const int v2 = 196620;
+        public const int v2 = 262160;
         /// <summary> [Vector3Int] 三维向量 </summary>
-        public const int v3i = 262164;
+        public const int v3i = 327704;
         /// <summary> [Vector4] 四维向量 </summary>
-        public const int v4 = 327712;
+        public const int v4 = 393252;
         /// <summary> [Dict&lt;Int ,Int&gt;] 字典双int </summary>
-        public const int dic_Int = 393264;
+        public const int dic_Int = 458804;
         /// <summary> [Dict&lt;String ,String&gt;] 字典双string </summary>
-        public const int ds = 458804;
+        public const int ds = 524344;
         /// <summary> [Bool] 布尔值 </summary>
-        public const int boolType = 524344;
+        public const int boolType = 589884;
         /// <summary> [Sbyte] 1 </summary>
-        public const int sbyteType = 589881;
+        public const int sbyteType = 655421;
         /// <summary> [Byte] 2 </summary>
-        public const int byteType = 655418;
+        public const int byteType = 720958;
         /// <summary> [UShort] 3 </summary>
-        public const int ushortType = 720955;
+        public const int ushortType = 786495;
         /// <summary> [Short] 4 </summary>
-        public const int shortType = 786493;
+        public const int shortType = 852033;
         /// <summary> [UInt] 5 </summary>
-        public const int uintType = 852031;
+        public const int uintType = 917571;
         /// <summary> [Int] 6 </summary>
-        public const int intType = 917571;
+        public const int intType = 983111;
         /// <summary> [ULong] 7 </summary>
-        public const int ulongTYpe = 983111;
+        public const int ulongTYpe = 1048651;
         /// <summary> [Long] 8 </summary>
-        public const int longTYpe = 1048655;
+        public const int longTYpe = 1114195;
         /// <summary> [Float] 9 </summary>
-        public const int floatType = 1114199;
+        public const int floatType = 1179739;
         /// <summary> [String] 10 </summary>
-        public const int StrType = 1179739;
+        public const int StrType = 1245279;
         /// <summary> [Double] 11 </summary>
-        public const int douType = 1245279;
-    }
-    public static class EVD_XH_Sheet2
-    {
-        /// <summary> [Int] 序列ID </summary>
-        public const int id = 0;
-        /// <summary> [String] 拼音 </summary>
-        public const int Spelling = 65540;
-        /// <summary> [List&lt;Float&gt;] Msg.消息 </summary>
-        public const int OpenData = 131080;
-        /// <summary> [List&lt;Float&gt;]  </summary>
-        public const int ShutData = 196620;
+        public const int douType = 1310819;
     }
     public enum ExcelName
     {
         ///<summary>主列: id [Int]</summary>
-        XH_Sheet1 = 0,
-        ///<summary>主列: id [Int]</summary>
-        XH_Sheet2 = 1,
+        Example = 0,
     }
 }
 #pragma warning disable

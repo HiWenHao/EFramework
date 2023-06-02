@@ -10,6 +10,7 @@
  */
 using EasyFramework.Edit.Setting;
 using EasyFramework.Managers;
+using System.Collections;
 using UnityEngine;
 
 public partial class EF
@@ -70,14 +71,59 @@ public partial class EF
         //Sources.PlayBGMByName("You bgm`s name", true);
     }
 
+    #region Coroutine  协程
+    /// <summary>
+    /// 开启一个协程
+    /// </summary>
+    public static Coroutine StartCoroutines(IEnumerator coroutine)
+    {
+        return m_monoEF.StartCoroutine(coroutine);
+    }
+    /// <summary>
+    /// 开启一个协程
+    /// </summary>
+    public static Coroutine StartCoroutines(string coroutine)
+    {
+        return m_monoEF.StartCoroutine(coroutine);
+    }
+    /// <summary>
+    /// 停止一个协程
+    /// </summary>
+    public static void StopCoroutines(Coroutine coroutine)
+    {
+        m_monoEF.StopCoroutine(coroutine);
+    }
+    /// <summary>
+    /// 停止一个协程
+    /// </summary>
+    public static void StopCoroutines(string methodName)
+    {
+        m_monoEF.StopCoroutine(methodName);
+    }
+    /// <summary>
+    /// 停止所有协程
+    /// </summary>
+    public static void StopAllCoroutine()
+    {
+        m_monoEF.StopAllCoroutines();
+    }
+    #endregion
+
+    /// <summary>
+    /// 清理内存
+    /// </summary>
     public static void ClearMemory()
     {
         System.GC.Collect();
-        Resources.UnloadUnusedAssets();
+        Load.ClearAllMemory();
     }
 
+    /// <summary>
+    /// 退出游戏
+    /// </summary>
     public static void QuitGame()
     {
+        ClearMemory();
         QuitGames();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

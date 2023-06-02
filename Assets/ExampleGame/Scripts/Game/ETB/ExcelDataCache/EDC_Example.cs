@@ -1,11 +1,11 @@
 /* 
  * ================================================
- * Describe:      This is the code for the XH_Sheet1 table. 
+ * Describe:      This is the code for the Example table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-18 14:46:42
+ * CreationTime:  2023-05-30 11:29:41
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-18 14:46:42
- * Version:       0.3
+ * ModifyTime:    2023-05-30 11:29:41
+ * Version:       0.1
  * ===============================================
 */
 using System.Collections.Generic;
@@ -16,15 +16,17 @@ using EasyFramework.ExcelTool;
 #pragma warning disable
 namespace ETB
 {
-    public class EDC_XH_Sheet1
+    public class EDC_Example
     {
         public static int[] Ids => byteFileInfo.Ids;
         static bool cached = false;
         static ByteFileInfo<int> byteFileInfo;
-        static Dictionary<int, EDC_XH_Sheet1> cacheDict = new Dictionary<int, EDC_XH_Sheet1>();
+        static Dictionary<int, EDC_Example> cacheDict = new Dictionary<int, EDC_Example>();
 
         /// <summary> ID </summary>
         public int id { get; }
+        /// <summary> 表格名字 </summary>
+        public string name { get; }
         /// <summary> int列表 </summary>
         public List<int> lsi { get; }
         /// <summary> string列表 </summary>
@@ -64,10 +66,11 @@ namespace ETB
         /// <summary> 11 </summary>
         public double douType { get; }
 
-        public EDC_XH_Sheet1(int id)
+        public EDC_Example(int id)
         {
             this.id = id;
             ByteFileReader.SkipOne();
+            this.name = ByteFileReader.Get<string>();
             this.lsi = ByteFileReader.Get<List<int>>();
             this.lss = ByteFileReader.Get<List<string>>();
             this.v2 = ByteFileReader.Get<Vector2>();
@@ -95,22 +98,22 @@ namespace ETB
             if (cached) return;
             if (byteFileInfo == null)
             {
-                byteFileInfo = ExcelDataManager.GetByteFileInfo<int>((short)ExcelName.XH_Sheet1);
+                byteFileInfo = ExcelDataManager.GetByteFileInfo<int>((short)ExcelName.Example);
             }
             if (!byteFileInfo.ByteDataLoaded) byteFileInfo.LoadByteData();
             byteFileInfo.ResetByteFileReader();
             for (int i = 0; i < byteFileInfo.RowCount; i++)
             {
                 int id = byteFileInfo.GetKey(i);
-                EDC_XH_Sheet1 cache = new EDC_XH_Sheet1(id);
+                EDC_Example cache = new EDC_Example(id);
                 cacheDict.Add(id, cache);
             }
         }
 
-        public static EDC_XH_Sheet1 Get(int id)
+        public static EDC_Example Get(int id)
         {
             if (cacheDict.TryGetValue(id, out var cache)) return cache;
-            D.Error($"{typeof(EDC_XH_Sheet1).Name}不存在主列值{id.ToString()}");
+            D.Error($"{typeof(EDC_Example).Name}不存在主列值{id.ToString()}");
             return null;
         }
     }
