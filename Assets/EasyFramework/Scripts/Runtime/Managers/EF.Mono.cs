@@ -59,6 +59,8 @@ public partial class EF : MonoBehaviour
         Updater = new List<IUpdate>();
         Singletons = new List<ISingleton>();
         Projects = Resources.Load<EasyFramework.Edit.Setting.ProjectSetting>("Settings/ProjectSetting");
+        
+        Exiting = false;
     }
     #endregion
 
@@ -77,6 +79,7 @@ public partial class EF : MonoBehaviour
     #endregion
 
     #region Control Mamager and update
+    static bool Exiting;
     static int SingletonsCount;
     static int UprCount;
     static int MgrUprCount;
@@ -149,6 +152,7 @@ public partial class EF : MonoBehaviour
             return;
         }
         --SingletonsCount;
+        Singletons[SingletonsCount].Quit();
         Singletons.Remove(item);
         if (item is IUpdate)
             Updater.Remove(item as IUpdate);
@@ -156,6 +160,10 @@ public partial class EF : MonoBehaviour
 
     static void QuitGames()
     {
+        if (Exiting)
+            return;
+        Exiting = true;
+
         while (--UprCount >= 0)
         {
             Updater.RemoveAt(UprCount);
@@ -183,6 +191,13 @@ public partial class EF : MonoBehaviour
         ManagerList = null;
         ManageUpdater.Clear();
         ManageUpdater = null;
+    }
+    #endregion
+
+    #region Destory
+    private void OnDestroy()
+    {
+        QuitGames();
     }
     #endregion
 }

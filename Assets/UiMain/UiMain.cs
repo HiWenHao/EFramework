@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using EasyFramework;
+using TMPro;
 
 namespace EFExample
 {
