@@ -54,7 +54,7 @@ namespace EFExample
 
 
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
-            EasyFramework.Utils.PatchUpdater.Instance.PatchStart(EasyFramework.Utils.EFPlayMode.HostPlayMode);
+            //EasyFramework.Utils.PatchUpdater.Instance.PatchStart(EasyFramework.Utils.EFPlayMode.HostPlayMode);
 
             //UI进入
             //Ui.Push(new You Class());

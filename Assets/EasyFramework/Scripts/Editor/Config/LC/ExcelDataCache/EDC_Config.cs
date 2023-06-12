@@ -1,11 +1,11 @@
 /* 
  * ================================================
- * Describe:      This is the code for the LC table. 
+ * Describe:      This is the code for the Config table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-30 14:21:12
+ * CreationTime:  2023-06-12 17:29:21
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-30 14:21:12
- * Version:       0.4
+ * ModifyTime:    2023-06-12 17:29:21
+ * Version:       1.3000002
  * ===============================================
 */
 using System.Collections.Generic;
@@ -16,26 +16,23 @@ using EasyFramework.ExcelTool;
 #pragma warning disable
 namespace EasyFramework.Edit
 {
-    public class EDC_LC
+    public class EDC_Config
     {
-        public static int[] Ids => byteFileInfo.Ids;
+        public static string[] Ids => byteFileInfo.Ids;
         static bool cached = false;
-        static ByteFileInfo<int> byteFileInfo;
-        static Dictionary<int, EDC_LC> cacheDict = new Dictionary<int, EDC_LC>();
+        static ByteFileInfo<string> byteFileInfo;
+        static Dictionary<string, EDC_Config> cacheDict = new Dictionary<string, EDC_Config>();
 
         /// <summary> ID </summary>
-        public int id { get; }
-        /// <summary> 英文注释 </summary>
-        public string Lc { get; }
-        /// <summary> 测试数据 </summary>
-        public string Lc1 { get; }
+        public string ID { get; }
+        /// <summary> 展示名字 </summary>
+        public List<string> ShowName { get; }
 
-        public EDC_LC(int id)
+        public EDC_Config(string id)
         {
-            this.id = id;
+            this.ID = id;
             ByteFileReader.SkipOne();
-            this.Lc = ByteFileReader.Get<string>();
-            this.Lc1 = ByteFileReader.Get<string>();
+            this.ShowName = ByteFileReader.Get<List<string>>();
 
         }
 
@@ -44,22 +41,22 @@ namespace EasyFramework.Edit
             if (cached) return;
             if (byteFileInfo == null)
             {
-                byteFileInfo = ExcelDataManager.GetByteFileInfo<int>((short)ExcelName.LC);
+                byteFileInfo = ExcelDataManager.GetByteFileInfo<string>((short)ExcelName.Config);
             }
             if (!byteFileInfo.ByteDataLoaded) byteFileInfo.LoadByteData();
             byteFileInfo.ResetByteFileReader();
             for (int i = 0; i < byteFileInfo.RowCount; i++)
             {
-                int id = byteFileInfo.GetKey(i);
-                EDC_LC cache = new EDC_LC(id);
+                string id = byteFileInfo.GetKey(i);
+                EDC_Config cache = new EDC_Config(id);
                 cacheDict.Add(id, cache);
             }
         }
 
-        public static EDC_LC Get(int id)
+        public static EDC_Config Get(string id)
         {
             if (cacheDict.TryGetValue(id, out var cache)) return cache;
-            D.Error($"{typeof(EDC_LC).Name}不存在主列值{id.ToString()}");
+            D.Error($"{typeof(EDC_Config).Name}不存在主列值{id.ToString()}");
             return null;
         }
     }

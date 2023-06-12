@@ -2,10 +2,10 @@
  * ================================================
  * Describe:      This is the code for the excel struct define table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-30 14:21:12
+ * CreationTime:  2023-06-12 17:29:21
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-30 14:21:12
- * Version:       0.4
+ * ModifyTime:    2023-06-12 17:29:21
+ * Version:       1.3000002
  * ================================================
 */
 using System.Collections.Generic;
@@ -15,22 +15,20 @@ using EasyFramework.ExcelTool;
 #pragma warning disable
 namespace EasyFramework.Edit
 {
-    public struct ESD_LC
+    public struct ESD_Config
     {
-        int primaryColVal;
-        readonly ByteFileInfo<int> byteFileInfo;
-        public ESD_LC(int val)
+        string primaryColVal;
+        readonly ByteFileInfo<string> byteFileInfo;
+        public ESD_Config(string val)
         {
             this.primaryColVal = val;
-            this.byteFileInfo = ExcelDataManager.GetByteFileInfo<int>((short)ExcelName.LC);
+            this.byteFileInfo = ExcelDataManager.GetByteFileInfo<string>((short)ExcelName.Config);
         }
-        public void SetPrimary(int id) { this.primaryColVal = id; } 
+        public void SetPrimary(string id) { this.primaryColVal = id; } 
         /// <summary> ID </summary>
-        public int id => byteFileInfo.Get<int>(primaryColVal, 0);
-        /// <summary> 英文注释 </summary>
-        public string Lc => byteFileInfo.Get<string>(primaryColVal, 65540);
-        /// <summary> 测试数据 </summary>
-        public string Lc1 => byteFileInfo.Get<string>(primaryColVal, 131080);
+        public string ID => byteFileInfo.Get<string>(primaryColVal, 0);
+        /// <summary> 展示名字 </summary>
+        public List<string> ShowName => byteFileInfo.Get<List<string>>(primaryColVal, 65540);
     }
 
 }

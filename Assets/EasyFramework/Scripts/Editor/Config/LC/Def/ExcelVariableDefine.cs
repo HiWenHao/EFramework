@@ -2,29 +2,27 @@
  * ================================================
  * Describe:      This is the code for the excel variable define table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-05-30 14:21:12
+ * CreationTime:  2023-06-12 17:29:21
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-05-30 14:21:12
- * Version:       0.4
+ * ModifyTime:    2023-06-12 17:29:21
+ * Version:       1.3000002
  * ================================================
 */
 #pragma warning disable
 using EasyFramework.ExcelTool;
 
 namespace EasyFramework.Edit{
-    public static class EVD_LC
+    public static class EVD_Config
     {
-        /// <summary> [Int] ID </summary>
-        public const int id = 0;
-        /// <summary> [String] 英文注释 </summary>
-        public const int Lc = 65540;
-        /// <summary> [String] 测试数据 </summary>
-        public const int Lc1 = 131080;
+        /// <summary> [String] ID </summary>
+        public const int ID = 0;
+        /// <summary> [List&lt;String&gt;] 展示名字 </summary>
+        public const int ShowName = 65540;
     }
     public enum ExcelName
     {
-        ///<summary>主列: id [Int]</summary>
-        LC = 0,
+        ///<summary>主列: ID [String]</summary>
+        Config = 0,
     }
 }
 #pragma warning disable
