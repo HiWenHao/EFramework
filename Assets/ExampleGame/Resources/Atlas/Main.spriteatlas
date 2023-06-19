@@ -38,8 +38,42 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 75b16411d4ff9c3409ae0d7e003b08ad, type: 3}
+  - {fileID: 21300000, guid: 78553621fa8040145a7f0c9f93eaf545, type: 3}
+  - {fileID: 21300000, guid: e5dafe212d204dd43b7abe95bcf04900, type: 3}
+  - {fileID: 21300000, guid: 18db708154348f145841b40915b5f277, type: 3}
+  - {fileID: 21300000, guid: 05205ab3ef093d44ea14c294def5d47f, type: 3}
+  - {fileID: 21300000, guid: 901081f5deab5de47a34e05f3b267cc2, type: 3}
+  - {fileID: 21300000, guid: 3d6e441791dc08b41b9cccd520a510c9, type: 3}
+  - {fileID: 21300000, guid: cc76853705fefad42b28c481f3dd9c9b, type: 3}
+  - {fileID: 21300000, guid: 26ef65184462d4f49aca4bbf258ea91e, type: 3}
+  - {fileID: 21300000, guid: 1990482894d7f7e4ab63dafe4ad46db9, type: 3}
+  - {fileID: 21300000, guid: f41dcb485907ee04db434cde9d7593dc, type: 3}
+  - {fileID: 21300000, guid: 6fb7c4e92abba1c47a569cdd755fcc4c, type: 3}
+  - {fileID: 21300000, guid: 044db06a8f2aed04291039646f2c8633, type: 3}
+  - {fileID: 21300000, guid: 019b78fb10c81644e80230d8364517ca, type: 3}
+  - {fileID: 21300000, guid: 8b83783dea58a794dab09a649cdab33d, type: 3}
+  - {fileID: 21300000, guid: 11b712ae2716487429cfdeb03f86a3ad, type: 3}
+  - {fileID: 21300000, guid: 7f4dbb6f6530a6442b3bb0e862b4fff0, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Rightup
+  - Deckbotton
+  - LV
+  - Profile
+  - Decoration
+  - Shopbotton
+  - Itembotton
+  - Incircle
+  - Cristal
+  - Quantity
+  - EXP
+  - Guildbotton
+  - Questbotton
+  - Gamebotton
+  - Coin
+  - Outcircle
+  - Botton
   m_RenderDataMap: {}
   m_Tag: Main
   m_IsVariant: 0

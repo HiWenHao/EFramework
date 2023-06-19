@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-20 09-35-44
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-20 09-35-44
+ * ModifyTime:    2023-06-19 16:07:06
  * ScriptVersion: 0.1 
  * ================================================
 */
@@ -31,7 +31,6 @@ namespace GMTest
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-			EF.Tool.Find<Button>(obj.transform, "Btn_StartGame").RegisterInListAndBindEvent(OnClickBtn_StartGame, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
 			#endregion  Find components end. -- Auto
@@ -74,16 +73,6 @@ namespace GMTest
 		}
 
 		#region Button event in game ui page.
-		void OnClickBtn_StartGame()
-        {
-			Camera.main.gameObject.GetComponent<Test>().enabled = false;
-            EF.Sources.SetBgmVolum(0.3f);
-            EF.Sources.PlayBGMByName("BGM");
-            EF.Scenes.LoadSceneWithName("GameMain", delegate
-            {
-                EF.Ui.Push(new ExampleGame.UI.UiGameMain());
-            });
-        }
 		void OnClickBtn_ToB()
         {
 			EF.Ui.Push(new UiB(), true, "向B传递参数");
