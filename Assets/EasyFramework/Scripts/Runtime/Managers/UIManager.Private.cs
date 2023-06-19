@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+//using UnityEngine.Rendering.Universal;
 
 namespace EasyFramework.Managers
 {
@@ -44,6 +45,9 @@ namespace EasyFramework.Managers
                 m_Root.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
                 m_Root.GetComponent<Canvas>().worldCamera = UICamera;
                 m_Root.layer = 5;
+                //UniversalAdditionalCameraData _ca = UICamera.GetUniversalAdditionalCameraData();
+                //_ca.renderType = CameraRenderType.Overlay;
+                //Camera.main.GetUniversalAdditionalCameraData().cameraStack.Add(UICamera);
                 CanvasScaler _cs = m_Root.AddComponent<CanvasScaler>();
                 _cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 _cs.referenceResolution = new Vector2(UiScreenWidth, UiScreenHeight);
