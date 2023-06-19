@@ -4,12 +4,18 @@
         <name>EasyFrameworkTools</name>
     </assembly>
     <members>
+        <member name="F:EasyFramework.ELogStyleType.Homochromy">
+            <summary> 单一色彩 </summary>
+        </member>
+        <member name="F:EasyFramework.ELogStyleType.Multicolour">
+            <summary> 多色彩，前后分离 </summary>
+        </member>
         <member name="T:EasyFramework.D">
             <summary>
             Custom log print.
             </summary>
         </member>
-        <member name="M:EasyFramework.D.Init(System.Boolean,System.Boolean,System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:EasyFramework.D.Init(System.Boolean,System.Boolean,EasyFramework.ELogStyleType,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             Initialize the debuger system.初始化日志系统
             </summary>

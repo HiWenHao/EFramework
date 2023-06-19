@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using EasyFramework;
 
 namespace YooAsset.Editor
 {
@@ -18,16 +19,16 @@ namespace YooAsset.Editor
 		{
 			if (_enableLog)
 			{
-				Debug.Log(message);
+				D.Log("[YooAsset] ► " + message);
 			}
 		}
 		public static void Warning(string message)
 		{
-			Debug.LogWarning(message);
+			D.Warning("[YooAsset] ► " + message);
 		}
 		public static void Error(string message)
 		{
-			Debug.LogError(message);
+			D.Error("[YooAsset] ► " + message);
 		}
 	}
 }
