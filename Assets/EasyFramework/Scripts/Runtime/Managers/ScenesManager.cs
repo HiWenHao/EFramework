@@ -19,7 +19,7 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    public class ScenesManager : MonoSingleton<ScenesManager>, IManager
+    public class ScenesManager : Singleton<ScenesManager>, IManager
     {
         int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("ScenesManager");
         bool m_bol_IsLoading;
@@ -32,8 +32,8 @@ namespace EasyFramework.Managers
 		EAction m_act_Callback;
         void ISingleton.Init()
         {
-            LoadCanvas = Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
-            LoadCanvas.SetParent(transform);
+            LoadCanvas = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
+            LoadCanvas.SetParent(EF.Singleton);
             m_img_BG = LoadCanvas.GetChild(0).GetComponent<Image>();
             m_slid_ProgressBar = m_img_BG.transform.GetChild(0).GetComponent<Slider>();
             m_txt_PCTN = m_slid_ProgressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
@@ -44,7 +44,7 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            StopAllCoroutines();
+            EF.StopAllCoroutine();
             m_txt_PCTN = null;
             m_slid_ProgressBar = null;
             m_img_BG = null;
@@ -111,7 +111,7 @@ namespace EasyFramework.Managers
 			}
 			LoadCanvas.gameObject.SetActive(false);
 			m_bol_IsLoading = false;
-			StopCoroutine(LoadScene());
+			EF.StopCoroutines(LoadScene());
 		}
 		#endregion
 
@@ -149,7 +149,7 @@ namespace EasyFramework.Managers
 			m_flt_transition = transition;
 			CurrentScene = sceneName;
 			m_act_Callback = callback;
-			StartCoroutine(LoadScene());
+			EF.StartCoroutines(LoadScene());
 		}
 
 

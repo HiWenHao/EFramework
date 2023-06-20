@@ -76,8 +76,8 @@ namespace GMTest
 		#region Button event in game ui page.
 		void OnVolumChanged(float volum)
         {
-            EF.Sources.SetBgmVolum(volum);
-            EF.Sources.SetEffectVolum(volum);
+            EF.Audio.SetBgmVolum(volum);
+            EF.Audio.SetEffectVolum(volum);
         }
         void OnClickBtn_ToC()
         {
@@ -93,46 +93,46 @@ namespace GMTest
         }
 		void OnClickBtn_StopAllEffect()
         {
-            EF.Sources.StopAllEffectSources();
+            EF.Audio.StopAllEffectSources();
         }
 		void OnClickBtn_StopEffect()
         {
-            EF.Sources.StopEffectSourceByName("Haoheng");
+            EF.Audio.StopEffectSourceByName("Haoheng");
         }
 		void OnClickBtn_StopBGM()
         {
-            EF.Sources.StopBGM();
+            EF.Audio.StopBGM();
         }
 		void OnClickBtn_MuteAll()
         {
             m_bol_MuteSource = !m_bol_MuteSource;
-            EF.Sources.MuteAll(m_bol_MuteSource);
+            EF.Audio.MuteAll(m_bol_MuteSource);
         }
 		void OnClickBtn_UnPauseAll()
         {
-            EF.Sources.UnPauseAll();
+            EF.Audio.UnPauseAll();
         }
 		void OnClickBtn_PauseAll()
         {
-            EF.Sources.PauseAll();
+            EF.Audio.PauseAll();
         }
 		void OnClickBtn_2D()
         {
-            EF.Sources.Play2DEffectSouceByName("HaoHeng", delegate
+            EF.Audio.Play2DEffectSouceByName("HaoHeng", delegate
             {
                 D.Log("2D HaoHeng is play done.");
             });
         }
 		void OnClickBtn_3D()
         {
-            EF.Sources.Play3DEffectSouceByName("HaoHeng", Vector3.one, delegate
+            EF.Audio.Play3DEffectSouceByName("HaoHeng", Vector3.one, delegate
             {
                 D.Log("3D HaoHeng is play done.");
             });
         }
 		void OnClickBtn_bgm()
         {
-            EF.Sources.PlayBGMByName("BGM", true);
+            EF.Audio.PlayBGMByName("BGM", true);
         }
 		#endregion button event.  Do not change here.不要更改这行 -- Auto
 	}

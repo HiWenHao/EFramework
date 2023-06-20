@@ -78,7 +78,6 @@ namespace EasyFramework.Managers
         //
         //}
 
-
         public void LoadSceneAsyncInYooAsset(string pathName, string packageName = "DefaultPackage")
         {
             if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))

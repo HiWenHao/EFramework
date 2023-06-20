@@ -16,7 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;
 
-namespace EasyFramework.Utils
+namespace EasyFramework.Managers
 {
     /// <summary>
     /// 资源运行模式
@@ -42,7 +42,7 @@ namespace EasyFramework.Utils
     /// <summary>
     /// 资源更新
     /// </summary>
-    public class PatchUpdater : MonoSingleton<PatchUpdater>, ISingleton
+    public class PatchManager : Singleton<PatchManager>, ISingleton
     {
         EFPlayMode PlayMode = EFPlayMode.EditorSimulateMode;
 
@@ -55,7 +55,7 @@ namespace EasyFramework.Utils
         ResourcePackage m_Package;
         static Dictionary<string, bool> m_CacheData;
         ResourceDownloaderOperation m_Downloader;
-
+        EAction m_Callback;
         IEnumerator m_ie_currentIE;
         Queue<IEnumerator> m_que_updaterState;
 
@@ -80,19 +80,27 @@ namespace EasyFramework.Utils
 
             m_que_updaterState.Clear();
             m_que_updaterState = null;
+            m_Callback = null;
         }
 
-        public void PatchStart(EFPlayMode mode, string packageName = "DefaultPackage")
+        /// <summary>
+        /// 开始更新补丁
+        /// </summary>
+        /// <param name="mode">更新模式</param>
+        /// <param name="callback">更新完成回调</param>
+        /// <param name="packageName">要更新的包名</param>
+        public void StartUpdatePatch(EFPlayMode mode, EAction callback = null, string packageName = "DefaultPackage")
         {
             m_CacheData = new Dictionary<string, bool>(1000);
             PlayMode = mode;
             D.Correct($"资源系统运行模式：{mode}");
-
+            m_Callback = callback;
             // 创建默认的资源包
             m_Package = YooAssets.CreatePackage(packageName);
 
             //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
             YooAssets.SetDefaultPackage(m_Package);
+            EF.Load.AddResourcePackage(m_Package);
 
             m_que_updaterState.Clear();
             m_que_updaterState.Enqueue(Initialize());
@@ -104,12 +112,13 @@ namespace EasyFramework.Utils
             Run("Initialize");
         }
 
+        #region Run progress. 跑更新流程
         void Run(string nextState)
         {
             //D.Correct($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
 
             if (null != m_ie_currentIE)
-                StopCoroutine(m_ie_currentIE);
+                EF.StopCoroutines(m_ie_currentIE);
             if (nextState.Equals("Done") || m_que_updaterState.Count <= 0)
             {
                 m_ie_currentIE = null;
@@ -119,7 +128,7 @@ namespace EasyFramework.Utils
             }
 
             m_ie_currentIE = m_que_updaterState.Dequeue();
-            StartCoroutine(m_ie_currentIE);
+            EF.StartCoroutines(m_ie_currentIE);
         }
 
         void UpdateDone()
@@ -130,11 +139,13 @@ namespace EasyFramework.Utils
             btn_Done.onClick.RemoveAllListeners();
             btn_MessgeBox = null;
             btn_Done = null;
-            Destroy(m_patchUpdater.gameObject);
+            Object.Destroy(m_patchUpdater.gameObject);
             m_patchUpdater = null;
+            m_Callback?.Invoke();
         }
+        #endregion
 
-        #region Setting config Initialize
+        #region Setting config Initialize.初始化更新设置
         IEnumerator Initialize()
         {
             InitializeParameters initParameters = null;
@@ -143,7 +154,7 @@ namespace EasyFramework.Utils
                 case EFPlayMode.EditorSimulateMode:
                     initParameters = new EditorSimulateModeParameters
                     {
-                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild("DefaultPackage")
+                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(m_Package.PackageName)
                     };
                     break;
                 case EFPlayMode.OfflinePlayMode:
@@ -301,7 +312,7 @@ namespace EasyFramework.Utils
         /// </summary>
         IEnumerator BeginDownload()
         {
-            m_patchUpdater = Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "PatchUpdater")).transform;
+            m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "PatchUpdater")).transform;
             m_updaterSlider = m_patchUpdater.Find("Slider").GetComponent<Slider>();
             m_Tips = m_patchUpdater.Find("Slider/txt_Tips").GetComponent<Text>();
             btn_MessgeBox = m_patchUpdater.Find("btn_MessgeBox").GetComponent<Button>();
@@ -347,6 +358,5 @@ namespace EasyFramework.Utils
             //D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
-
     }
 }

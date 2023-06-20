@@ -67,27 +67,27 @@ namespace GMTest
             #region SourcesManager Test     Q - Y
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                EF.Sources.PlayBGMByName("BGM", false);
+                EF.Audio.PlayBGMByName("BGM", false);
             }
             if (Input.GetKeyDown(KeyCode.W))
             {
-                EF.Sources.Play3DEffectSouceByName("Haoheng", new Vector3(0, 1, 1), () => { D.Log("The music is play done"); });
+                EF.Audio.Play3DEffectSouceByName("Haoheng", new Vector3(0, 1, 1), () => { D.Log("The music is play done"); });
             }
             if (Input.GetKeyDown(KeyCode.E))
             {
-                EF.Sources.Play2DEffectSouceByName("Haoheng", () => { D.Log("The music is play done 2D"); });
+                EF.Audio.Play2DEffectSouceByName("Haoheng", () => { D.Log("The music is play done 2D"); });
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                EF.Sources.Play2DEffectSouceByName("Haoheng", () => { D.Log("The music is play done 2DDDDD"); });
+                EF.Audio.Play2DEffectSouceByName("Haoheng", () => { D.Log("The music is play done 2DDDDD"); });
             }
             if (Input.GetKeyDown(KeyCode.T))
             {
-                EF.Sources.PauseAll();
+                EF.Audio.PauseAll();
             }
             if (Input.GetKeyDown(KeyCode.Y))
             {
-                EF.Sources.UnPauseAll();
+                EF.Audio.UnPauseAll();
             }
             #endregion
 

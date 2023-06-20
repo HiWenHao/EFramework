@@ -17,7 +17,7 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Sources manager.
     /// </summary>
-    public class SourceManager : Singleton<SourceManager>, IManager, IUpdate
+    public class AudioManager : Singleton<AudioManager>, IManager, IUpdate
     {
         int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("SourceManager");
         private bool isPausing;

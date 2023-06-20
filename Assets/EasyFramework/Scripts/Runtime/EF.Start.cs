@@ -15,19 +15,46 @@ using UnityEngine;
 
 public partial class EF
 {
+    /// <summary> 场景中的EF对象 </summary>
     public static Transform Managers { get; private set; }
+
+    /// <summary> 场景中单例父节点 </summary>
     public static Transform Singleton { get; private set; }
+
+    /// <summary> 项目配置资源 </summary>
     public static ProjectSetting Projects { get; private set; }
+
+    /// <summary> UI管理器 </summary>
     public static UIManager Ui => UIManager.Instance;
-    public static LoadManager Load => LoadManager.Instance;
+
+    /// <summary> 通用工具管理器 </summary>
     public static ToolManager Tool => ToolManager.Instance;
+
+    /// <summary> 资源管理器 </summary>
+    public static LoadManager Load => LoadManager.Instance;
+
+    /// <summary> 时间管理器 </summary>
     public static TimeManager Timer => TimeManager.Instance;
-    public static InputManager Input => InputManager.Instance;
+
+    /// <summary> 补丁更新管理器 </summary>
+    public static PatchManager Patch => PatchManager.Instance;
+
+    /// <summary> 音频管理器 </summary>
+    public static AudioManager Audio => AudioManager.Instance;
+
+    /// <summary> 网络HTTP管理器 </summary>
     public static HttpsManager Https => HttpsManager.Instance;
+
+    /// <summary> 场景管理器 </summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
+
+    /// <summary> 网络Socket管理器 </summary>
     public static SocketManager Socket => SocketManager.Instance;
+
+    /// <summary> 文件夹管理器 </summary>
     public static FolderManager Folder => FolderManager.Instance;
-    public static SourceManager Sources => SourceManager.Instance;
+
+    /// <summary> 对象池管理器 </summary>
     public static GameObjectPoolManager ObjectPool => GameObjectPoolManager.Instance;
 
     static void InitInAfterSceneLoad()
@@ -62,7 +89,7 @@ public partial class EF
         //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
         //ETB.ExcelDataCacheManager.CacheAllData();
         //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同
-        EasyFramework.Utils.PatchUpdater.Instance.PatchStart(EasyFramework.Utils.EFPlayMode.HostPlayMode);
+        Patch.StartUpdatePatch(EFPlayMode.HostPlayMode);
 
         //UI进入
         //Ui.Push(new You Class());
