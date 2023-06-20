@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace YooAsset
 {
-    /// <summary>
-    /// 数据存储以小端字节序为标准
-    /// </summary>
-    internal class BufferWriter
+	/// <summary>
+	/// 数据存储以小端字节序为标准
+	/// </summary>
+	internal class BufferWriter
 	{
 		private readonly byte[] _buffer;
 		private int _index = 0;

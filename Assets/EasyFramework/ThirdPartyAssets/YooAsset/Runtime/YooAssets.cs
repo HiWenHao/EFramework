@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace YooAsset
 {
-    public static partial class YooAssets
+	public static partial class YooAssets
 	{
 		private static bool _isInitialize = false;
 		private static GameObject _driver = null;
@@ -108,7 +110,7 @@ namespace YooAsset
 		{
 			var package = TryGetPackage(packageName);
 			if (package == null)
-				EasyFramework.D.Error($"Not found assets package : {packageName}");
+				EasyFramework.D.Error($"Not found resource package : {packageName}");
 			return package;
 		}
 

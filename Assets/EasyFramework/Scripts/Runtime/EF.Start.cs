@@ -82,9 +82,11 @@ public partial class EF
     /// <summary>
     /// 开启一个协程
     /// </summary>
-    public static Coroutine StartCoroutines(string coroutine)
+    public static Coroutine StartCoroutines(string coroutine, object value)
     {
-        return m_monoEF.StartCoroutine(coroutine);
+        if (null == value)
+            return m_monoEF.StartCoroutine(coroutine);
+        return m_monoEF.StartCoroutine(coroutine, value);
     }
     /// <summary>
     /// 停止一个协程
@@ -96,12 +98,20 @@ public partial class EF
     /// <summary>
     /// 停止一个协程
     /// </summary>
+    public static void StopCoroutines(IEnumerator coroutine)
+    {
+        m_monoEF.StopCoroutine(coroutine);
+    }
+    /// <summary>
+    /// 停止一个协程
+    /// </summary>
     public static void StopCoroutines(string methodName)
     {
         m_monoEF.StopCoroutine(methodName);
     }
     /// <summary>
-    /// 停止所有协程
+    /// 停止所有协程,谨慎使用
+    /// Be prudent to use
     /// </summary>
     public static void StopAllCoroutine()
     {

@@ -33,9 +33,9 @@ namespace YooAsset
 		private ResourcePackage()
 		{
 		}
-		internal ResourcePackage(string packagsadasdasdeName)
+		internal ResourcePackage(string packageName)
 		{
-			//PackageName = packageName;
+			PackageName = packageName;
 		}
 
 		/// <summary>

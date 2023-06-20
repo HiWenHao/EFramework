@@ -251,7 +251,7 @@ namespace YooAsset.Editor
 			// 检测原生文件是否合规
 			if (isRawFilePackRule)
 			{
-				string extension = StringUtility.RemoveFirstChar(System.IO.Path.GetExtension(assetPath));
+				string extension = EditorTools.RemoveFirstChar(System.IO.Path.GetExtension(assetPath));
 				if (extension == EAssetFileExtension.unity.ToString() || extension == EAssetFileExtension.prefab.ToString() ||
 					extension == EAssetFileExtension.fbx.ToString() || extension == EAssetFileExtension.mat.ToString() ||
 					extension == EAssetFileExtension.controller.ToString() || extension == EAssetFileExtension.anim.ToString() ||
@@ -290,10 +290,6 @@ namespace YooAsset.Editor
 		}
 		private bool IsCollectAsset(string assetPath)
 		{
-			Type assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
-			if (assetType == typeof(UnityEngine.Shader) || assetType == typeof(UnityEngine.ShaderVariantCollection))
-				return true;
-
 			// 根据规则设置过滤资源文件
 			IFilterRule filterRuleInstance = AssetBundleCollectorSettingData.GetFilterRuleInstance(FilterRuleName);
 			return filterRuleInstance.IsCollectAsset(new FilterRuleData(assetPath));

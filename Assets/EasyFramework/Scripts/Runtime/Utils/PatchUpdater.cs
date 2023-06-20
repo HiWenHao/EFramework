@@ -340,11 +340,11 @@ namespace EasyFramework.Utils
         }
         private void OnStartDownloadFileFunction(string fileName, long sizeBytes)
         {
-            D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
+            //D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
         }
         private void OnDownloadOverFunction(bool isSucceed)
         {
-            D.Log("下载完成，结果为：" + isSucceed);
+            //D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
 
