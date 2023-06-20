@@ -37,5 +37,13 @@ namespace EasyFramework.Edit.PathConfig
         [SerializeField]
         private string m_ExtractPath = "Assets/";
         public string ExtractPath => m_ExtractPath;
+
+        [SerializeField]
+        private string m_UIPrefabPath = "Assets/";
+        public string UIPrefabPath => m_UIPrefabPath;
+
+        [SerializeField]
+        private string m_UICodePath = "Assets/";
+        public string UICodePath => m_UICodePath;
     }
 }

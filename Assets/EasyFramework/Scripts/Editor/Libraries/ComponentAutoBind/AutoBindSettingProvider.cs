@@ -11,7 +11,6 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace EasyFramework.Edit.AutoBind
@@ -32,8 +31,6 @@ namespace EasyFramework.Edit.AutoBind
         private const string m_HeaderName = "EF/Auto Bind Setting";
 
         private SerializedProperty m_Namespace;
-        private SerializedProperty m_PrefabPath;
-        private SerializedProperty m_ComCodePath;
         private SerializedProperty m_RulePrefixes;
         private SerializedObject m_CustomSettings;
         public override void OnActivate(string searchContext, VisualElement rootElement)
@@ -42,8 +39,6 @@ namespace EasyFramework.Edit.AutoBind
             AutoBindSetting m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
             m_CustomSettings =  new SerializedObject(m_Setting);
             m_Namespace = m_CustomSettings.FindProperty("m_Namespace");
-            m_PrefabPath = m_CustomSettings.FindProperty("m_PrefabPath");
-            m_ComCodePath = m_CustomSettings.FindProperty("m_ComCodePath");
             m_RulePrefixes = m_CustomSettings.FindProperty("m_RulePrefixes");
         }
 
@@ -58,42 +53,6 @@ namespace EasyFramework.Edit.AutoBind
             m_Namespace.stringValue = EditorGUILayout.TextField(LC.Language.DefaultScriptNamespace, m_Namespace.stringValue);
 
             EditorGUILayout.Space();
-
-            EditorGUILayout.LabelField(LC.Language.DefaultScriptSavePath);
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(m_ComCodePath.stringValue);
-            if (GUILayout.Button(LC.Language.PathSelect, GUILayout.Width(140f)))
-            {
-                string folder = Path.Combine(Application.dataPath, m_ComCodePath.stringValue);
-                if (!Directory.Exists(folder))
-                {
-                    folder = Application.dataPath;
-                }
-                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
-                if (!string.IsNullOrEmpty(path))
-                {
-                    m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "");
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField(LC.Language.DefaultPrefabSavePath);
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(m_PrefabPath.stringValue);
-            if (GUILayout.Button(LC.Language.PathSelect, GUILayout.Width(140f)))
-            {
-                string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
-                if (!Directory.Exists(folder))
-                {
-                    folder = Application.dataPath;
-                }
-                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
-                if (!string.IsNullOrEmpty(path))
-                {
-                    m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "");
-                }
-            }
-            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(12f, true);
 

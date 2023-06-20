@@ -26,18 +26,6 @@ namespace EasyFramework.Edit.AutoBind
         private string m_Namespace = "PleaseChangeTheNamespace";
 
         /// <summary>
-        /// 默认组件代码保存路径
-        /// </summary>
-        [SerializeField]
-        private string m_ComCodePath;
-
-        /// <summary>
-        /// 默认UI预制件保存路径
-        /// </summary>
-        [SerializeField]
-        private string m_PrefabPath;
-
-        /// <summary>
         /// 组件的缩略名字映射
         /// </summary>
         [SerializeField]
@@ -75,16 +63,6 @@ namespace EasyFramework.Edit.AutoBind
         /// 默认命名空间
         /// </summary>
         public string Namespace => m_Namespace;
-
-        /// <summary>
-        /// 默认组件代码保存路径
-        /// </summary>
-        public string ComCodePath => m_ComCodePath;
-
-        /// <summary>
-        /// 默认UI预制件保存路径
-        /// </summary>
-        public string PrefabPath => m_PrefabPath;
 
         /// <summary>
         /// 组件的缩略名字映射

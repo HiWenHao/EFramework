@@ -48,6 +48,7 @@ namespace EasyFramework.Edit
 
         static void Initialize(int index)
         {
+            #region Common
             m_language.Ok = EDC_Config.Get("Ok").ShowName[index];
             m_language.Cancel = EDC_Config.Get("Cancel").ShowName[index];
             m_language.ConfirmDelete = EDC_Config.Get("ConfirmDelete").ShowName[index];
@@ -62,18 +63,29 @@ namespace EasyFramework.Edit
             m_language.PathSelecteError = EDC_Config.Get("PathSelecteError").ShowName[index];
             m_language.PathSelecteErrorContent = EDC_Config.Get("PathSelecteErrorContent").ShowName[index];
 
+            #endregion
+
+            #region Project Setting
             m_language.EditorLanguage = EDC_Config.Get("EditorLanguage").ShowName[index];
             m_language.ScriptAuthor = EDC_Config.Get("ScriptAuthor").ShowName[index];
             m_language.ScriptVersion = EDC_Config.Get("ScriptVersion").ShowName[index];
 
+            #endregion
+
+            #region Path Config Setting
+            m_language.UnderProjectPath = EDC_Config.Get("UnderProjectPath").ShowName[index];
+            m_language.NonProjectPath = EDC_Config.Get("NonProjectPath").ShowName[index];
             m_language.FrameworkPath = EDC_Config.Get("FrameworkPath").ShowName[index];
             m_language.SublimePath = EDC_Config.Get("SublimePath").ShowName[index];
             m_language.NotepadPath = EDC_Config.Get("NotepadPath").ShowName[index];
             m_language.AtlasSavePath = EDC_Config.Get("AtlasSavePath").ShowName[index];
+            m_language.DefaultUIPrefabSavePath = EDC_Config.Get("DefaultUIPrefabSavePath").ShowName[index];
+            m_language.DefaultUICodeSavePath = EDC_Config.Get("DefaultUICodeSavePath").ShowName[index];
             m_language.AnimatorExtractPath = EDC_Config.Get("AnimatorExtractPath").ShowName[index];
 
-            m_language.DefaultScriptSavePath = EDC_Config.Get("DefaultScriptSavePath").ShowName[index];
-            m_language.DefaultPrefabSavePath = EDC_Config.Get("DefaultPrefabSavePath").ShowName[index];
+            #endregion
+
+            #region Auto Bind Setting
             m_language.SetRulePrefixes = EDC_Config.Get("SetRulePrefixes").ShowName[index];
             m_language.ScriptNamespace = EDC_Config.Get("ScriptNamespace").ShowName[index];
             m_language.DefaultScriptNamespace = EDC_Config.Get("DefaultScriptNamespace").ShowName[index];
@@ -85,6 +97,9 @@ namespace EasyFramework.Edit
             m_language.BindingGenerate = EDC_Config.Get("BindingGenerate").ShowName[index];
             m_language.UnloadBindingScripts = EDC_Config.Get("UnloadBindingScripts").ShowName[index];
 
+            #endregion
+
+            #region Sprite Collection
             m_language.Atlas = EDC_Config.Get("Atlas").ShowName[index];
             m_language.AtlasPath = EDC_Config.Get("AtlasPath").ShowName[index];
             m_language.CreateAtlas = EDC_Config.Get("CreateAtlas").ShowName[index];
@@ -98,7 +113,8 @@ namespace EasyFramework.Edit
             m_language.AtlasSelectFolder = EDC_Config.Get("AtlasSelectFolder").ShowName[index];
             m_language.AtlasExistInCollection = EDC_Config.Get("AtlasExistInCollection").ShowName[index];
             m_language.AtlasExistAlsoOverwrite = EDC_Config.Get("AtlasExistAlsoOverwrite").ShowName[index];
-
+            
+            #endregion
 
         }
     }
@@ -144,7 +160,11 @@ namespace EasyFramework.Edit
         public string ScriptVersion { get; set; }
         #endregion
 
-        #region Path Config Setting 
+        #region Path Config Setting
+        /// <summary> 在项目路径下 </summary>
+        public string UnderProjectPath { get; set; }
+        /// <summary> 非项目路径下 </summary>
+        public string NonProjectPath { get; set; }
         /// <summary> 框架路径 </summary>
         public string FrameworkPath { get; set; }
         /// <summary> Sublime文件路径 </summary>
@@ -153,15 +173,15 @@ namespace EasyFramework.Edit
         public string NotepadPath { get; set; }
         /// <summary> 图集保存路径 </summary>
         public string AtlasSavePath { get; set; }
+        /// <summary> 默认UI预制件路径 </summary>
+        public string DefaultUIPrefabSavePath { get; set; }
+        /// <summary> 默认UI代码路径 </summary>
+        public string DefaultUICodeSavePath { get; set; }
         /// <summary> 动画提取路径 </summary>
         public string AnimatorExtractPath { get; set; }
         #endregion
 
         #region Auto Bind Setting
-        /// <summary> 默认脚本保存路径 </summary>
-        public string DefaultScriptSavePath { get; set; }
-        /// <summary> 默认预制件保存路径 </summary>
-        public string DefaultPrefabSavePath { get; set; }
         /// <summary> 组件规则设置 </summary>
         public string SetRulePrefixes { get; set; }
         /// <summary> 命名空间 </summary>

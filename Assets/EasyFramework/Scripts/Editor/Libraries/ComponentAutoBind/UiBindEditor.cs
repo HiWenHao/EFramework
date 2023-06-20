@@ -51,8 +51,8 @@ namespace EasyFramework.Edit.AutoBind
             m_DeleteScript = serializedObject.FindProperty("m_DeleteScript");
 
             m_Namespace.stringValue = string.IsNullOrEmpty(m_Namespace.stringValue) ? m_Setting.Namespace : m_Namespace.stringValue;
-            m_PrefabPath.stringValue = string.IsNullOrEmpty(m_PrefabPath.stringValue) ? m_Setting.PrefabPath : m_PrefabPath.stringValue;
-            m_ComCodePath.stringValue = string.IsNullOrEmpty(m_ComCodePath.stringValue) ? m_Setting.ComCodePath : m_ComCodePath.stringValue;
+            m_PrefabPath.stringValue = string.IsNullOrEmpty(m_PrefabPath.stringValue) ? ProjectUtility.Path.UIPrefabPath : m_PrefabPath.stringValue;
+            m_ComCodePath.stringValue = string.IsNullOrEmpty(m_ComCodePath.stringValue) ? ProjectUtility.Path.UICodePath : m_ComCodePath.stringValue;
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -115,13 +115,13 @@ namespace EasyFramework.Edit.AutoBind
                 }
                 if (GUILayout.Button(LC.Language.DefaultSetting))
                 {
-                    m_PrefabPath.stringValue = m_Setting.PrefabPath;
+                    m_PrefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
                 }
                 EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField(LC.Language.DefaultScriptSavePath);
+            EditorGUILayout.LabelField(LC.Language.DefaultUICodeSavePath);
             EditorGUILayout.LabelField(m_ComCodePath.stringValue);
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Language.PathSelect))
@@ -139,7 +139,7 @@ namespace EasyFramework.Edit.AutoBind
             }
             if (GUILayout.Button(LC.Language.DefaultSetting))
             {
-                m_ComCodePath.stringValue = m_Setting.ComCodePath;
+                m_ComCodePath.stringValue = ProjectUtility.Path.UICodePath;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -365,11 +365,12 @@ namespace EasyFramework.Edit.AutoBind
         #region Create prefab file. 生成预制件文件
         private void CreateOrModifyPrefab()
         {
+            D.Correct(m_PrefabPath.stringValue);
             string _path;
-            if (Application.dataPath == m_PrefabPath.stringValue)
+            if (Application.dataPath.Equals(m_PrefabPath.stringValue))
                 _path = $"{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
             else
-                _path = $"{Application.dataPath}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
+                _path = $"{Application.dataPath[..^7]}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
 
             if (File.Exists(_path))
             {
@@ -415,8 +416,8 @@ namespace EasyFramework.Edit.AutoBind
         /// </summary>
         private void GenAutoBindCode()
         {
-            string codePath = !string.IsNullOrEmpty(m_Builder.ComCodePath) ? m_Builder.ComCodePath : m_Setting.ComCodePath;
-            codePath = Path.Combine(Application.dataPath, codePath);
+            string codePath = !string.IsNullOrEmpty(m_Builder.ComCodePath) ? m_Builder.ComCodePath : ProjectUtility.Path.UICodePath;
+            //codePath = Path.Combine(Application.dataPath, codePath);
             if (!Directory.Exists(codePath))
             {
                 D.Error($"生成{m_Builder.name}的代码保存路径{codePath}无效");

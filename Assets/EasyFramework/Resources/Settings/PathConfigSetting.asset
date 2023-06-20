@@ -17,3 +17,5 @@ MonoBehaviour:
   m_NotepadPath: C:/Users/A03/Desktop/notepad++.exe
   m_AtlasFolder: Assets/ExampleGame/Resources/Atlas/
   m_ExtractPath: Assets/ExampleGame/_Temp/New/
+  m_UIPrefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
+  m_UICodePath: Assets/ExampleGame/Scripts/_Test/

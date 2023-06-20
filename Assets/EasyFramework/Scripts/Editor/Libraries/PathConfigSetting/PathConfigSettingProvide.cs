@@ -30,6 +30,8 @@ namespace EasyFramework.Edit.PathConfig
         private SerializedProperty m_NotepadPath;
         private SerializedProperty m_AtlasFolder;
         private SerializedProperty m_ExtractPath;
+        private SerializedProperty m_UICodePath;
+        private SerializedProperty m_UIPrefabPath;
         private SerializedObject m_CustomSettings;
 
         GUIStyle UIStyle;
@@ -53,6 +55,8 @@ namespace EasyFramework.Edit.PathConfig
             m_NotepadPath = m_CustomSettings.FindProperty("m_NotepadPath");
             m_AtlasFolder = m_CustomSettings.FindProperty("m_AtlasFolder");
             m_ExtractPath = m_CustomSettings.FindProperty("m_ExtractPath");
+            m_UICodePath = m_CustomSettings.FindProperty("m_UICodePath");
+            m_UIPrefabPath = m_CustomSettings.FindProperty("m_UIPrefabPath");
         }
 
         public override void OnGUI(string searchContext)
@@ -62,11 +66,16 @@ namespace EasyFramework.Edit.PathConfig
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
 
+            EditorGUILayout.LabelField($"---------------{LC.Language.UnderProjectPath}---------------", SetUIStyle(Color.green, 14));
             SelectionFolderPath(LC.Language.FrameworkPath, LC.Language.PathSelect, m_FrameworkPath);
+            SelectionFolderPath(LC.Language.AtlasSavePath, LC.Language.PathSelect, m_AtlasFolder);
+            SelectionFolderPath(LC.Language.DefaultUIPrefabSavePath, LC.Language.PathSelect, m_UIPrefabPath);
+            SelectionFolderPath(LC.Language.DefaultUICodeSavePath, LC.Language.PathSelect, m_UICodePath);
+            SelectionFolderPath(LC.Language.AnimatorExtractPath, LC.Language.PathSelect, m_ExtractPath);
+
+            EditorGUILayout.LabelField($"---------------{LC.Language.NonProjectPath}---------------", SetUIStyle(Color.red, 14));
             SelectionEXEPath(LC.Language.SublimePath, LC.Language.PathSelect, new string[] { "sublime_text", "subl" }, m_SublimePath);
             SelectionEXEPath(LC.Language.NotepadPath, LC.Language.PathSelect, new string[] { "notepad" }, m_NotepadPath);
-            SelectionFolderPath(LC.Language.AtlasSavePath, LC.Language.PathSelect, m_AtlasFolder);
-            SelectionFolderPath(LC.Language.AnimatorExtractPath, LC.Language.PathSelect, m_ExtractPath);
 
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
@@ -77,7 +86,7 @@ namespace EasyFramework.Edit.PathConfig
 
         void SelectionEXEPath(string label, string btnLabel, string[] containsName, SerializedProperty property)
         {
-            EditorGUILayout.LabelField(label, UIStyle);
+            EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(property.stringValue);
             if (GUILayout.Button(btnLabel, GUILayout.Width(140f)))
@@ -109,9 +118,9 @@ namespace EasyFramework.Edit.PathConfig
 
         void SelectionFolderPath(string label, string btnLabel, SerializedProperty property)
         {
-            EditorGUILayout.LabelField(label, UIStyle);
+            EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(property.stringValue);
+            EditorGUILayout.DelayedTextField(property.stringValue);
             if (GUILayout.Button(btnLabel, GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
@@ -130,6 +139,13 @@ namespace EasyFramework.Edit.PathConfig
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
+        }
+
+        GUIStyle SetUIStyle(Color color, int fontSize = 12)
+        {
+            UIStyle.normal.textColor = color;
+            UIStyle.fontSize = fontSize;
+            return UIStyle;
         }
 
         /// <summary>
