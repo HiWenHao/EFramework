@@ -111,7 +111,7 @@ namespace YooAsset
 			if (_steps == ESteps.Unpack)
 			{
 				int failedTryAgain = Impl.DownloadFailedTryAgain;
-				var bundleInfo = ManifestTools.GetUnpackInfo(MainBundleInfo.Bundle);
+				var bundleInfo = ManifestTools.ConvertToUnpackInfo(MainBundleInfo.Bundle);
 				_unpacker = DownloadSystem.BeginDownload(bundleInfo, failedTryAgain);
 				_steps = ESteps.CheckUnpack;
 			}
@@ -146,7 +146,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EStatus.Failed;
 					LastError = $"Not found assetBundle file : {FileLoadPath}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					return;
 				}
 #endif
@@ -171,7 +171,7 @@ namespace YooAsset
 						_steps = ESteps.Done;
 						Status = EStatus.Failed;
 						LastError = $"{nameof(IDecryptionServices)} is null : {MainBundleInfo.Bundle.BundleName}";
-						EasyFramework.D.Error(LastError);
+						YooLogger.Error(LastError);
 						return;
 					}
 
@@ -220,7 +220,7 @@ namespace YooAsset
 					if (_isWaitForAsyncComplete)
 					{
 						// 强制挂起主线程（注意：该操作会很耗时）
-						EasyFramework.D.Warning("Suspend the main thread to load unity bundle.");
+						YooLogger.Warning("Suspend the main thread to load unity bundle.");
 						CacheBundle = _createRequest.assetBundle;
 					}
 					else
@@ -237,7 +237,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EStatus.Failed;
 					LastError = $"Failed to load assetBundle : {MainBundleInfo.Bundle.BundleName}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 
 					// 注意：当缓存文件的校验等级为Low的时候，并不能保证缓存文件的完整性。
 					// 在AssetBundle文件加载失败的情况下，我们需要重新验证文件的完整性！
@@ -246,7 +246,7 @@ namespace YooAsset
 						var result = CacheSystem.VerifyingRecordFile(MainBundleInfo.Bundle.PackageName, MainBundleInfo.Bundle.CacheGUID);
 						if (result != EVerifyResult.Succeed)
 						{
-							EasyFramework.D.Error($"Found possibly corrupt file ! {MainBundleInfo.Bundle.CacheGUID} Verify result : {result}");
+							YooLogger.Error($"Found possibly corrupt file ! {MainBundleInfo.Bundle.CacheGUID} Verify result : {result}");
 							CacheSystem.DiscardFile(MainBundleInfo.Bundle.PackageName, MainBundleInfo.Bundle.CacheGUID);
 						}
 					}
@@ -303,7 +303,7 @@ namespace YooAsset
 					if (_isShowWaitForAsyncError == false)
 					{
 						_isShowWaitForAsyncError = true;
-						EasyFramework.D.Error($"{nameof(WaitForAsyncComplete)} failed ! Try load bundle : {MainBundleInfo.Bundle.BundleName} from remote with sync load method !");
+						YooLogger.Error($"{nameof(WaitForAsyncComplete)} failed ! Try load bundle : {MainBundleInfo.Bundle.BundleName} from remote with sync load method !");
 					}
 					break;
 				}

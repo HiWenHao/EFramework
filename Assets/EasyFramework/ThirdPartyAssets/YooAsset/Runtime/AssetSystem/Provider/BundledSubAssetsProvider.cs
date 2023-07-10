@@ -28,19 +28,19 @@ namespace YooAsset
 			{
 				if (IsWaitForAsyncComplete)
 				{
-					DependBundleGroup.WaitForAsyncComplete();
+					DependBundles.WaitForAsyncComplete();
 					OwnerBundle.WaitForAsyncComplete();
 				}
 
-				if (DependBundleGroup.IsDone() == false)
+				if (DependBundles.IsDone() == false)
 					return;
 				if (OwnerBundle.IsDone() == false)
 					return;
 
-				if (DependBundleGroup.IsSucceed() == false)
+				if (DependBundles.IsSucceed() == false)
 				{
 					Status = EStatus.Failed;
-					LastError = DependBundleGroup.GetLastError();
+					LastError = DependBundles.GetLastError();
 					InvokeCompletion();
 					return;
 				}
@@ -50,6 +50,12 @@ namespace YooAsset
 					Status = EStatus.Failed;
 					LastError = OwnerBundle.LastError;
 					InvokeCompletion();
+					return;
+				}
+
+				if (OwnerBundle.CacheBundle == null)
+				{
+					ProcessCacheBundleException();
 					return;
 				}
 
@@ -84,7 +90,7 @@ namespace YooAsset
 					if (IsWaitForAsyncComplete)
 					{
 						// 强制挂起主线程（注意：该操作会很耗时）
-						EasyFramework.D.Warning("Suspend the main thread to load unity asset.");
+						YooLogger.Warning("Suspend the main thread to load unity asset.");
 						AllAssetObjects = _cacheRequest.allAssets;
 					}
 					else
@@ -103,7 +109,7 @@ namespace YooAsset
 						LastError = $"Failed to load sub assets : {MainAssetInfo.AssetPath} AssetType : null AssetBundle : {OwnerBundle.MainBundleInfo.Bundle.BundleName}";
 					else
 						LastError = $"Failed to load sub assets : {MainAssetInfo.AssetPath} AssetType : {MainAssetInfo.AssetType} AssetBundle : {OwnerBundle.MainBundleInfo.Bundle.BundleName}";
-                    EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 				}
 				InvokeCompletion();
 			}

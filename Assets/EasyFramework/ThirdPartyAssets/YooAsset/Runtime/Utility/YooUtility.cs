@@ -224,7 +224,7 @@ namespace YooAsset
 			}
 			catch (Exception e)
 			{
-				EasyFramework.D.Fatal(e);
+				YooLogger.Exception(e);
 				return string.Empty;
 			}
 		}
@@ -276,7 +276,7 @@ namespace YooAsset
 			}
 			catch (Exception e)
 			{
-				EasyFramework.D.Fatal(e);
+				YooLogger.Exception(e);
 				return string.Empty;
 			}
 		}
@@ -326,7 +326,7 @@ namespace YooAsset
 			}
 			catch (Exception e)
 			{
-				EasyFramework.D.Fatal(e);
+				YooLogger.Exception(e);
 				return string.Empty;
 			}
 		}

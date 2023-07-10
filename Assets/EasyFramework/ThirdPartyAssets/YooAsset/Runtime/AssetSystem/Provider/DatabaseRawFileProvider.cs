@@ -20,7 +20,7 @@ namespace YooAsset
 				{
 					Status = EStatus.Failed;
 					LastError = $"Not found asset : {MainAssetInfo.AssetPath}";
-                    EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					InvokeCompletion();
 					return;
 				}

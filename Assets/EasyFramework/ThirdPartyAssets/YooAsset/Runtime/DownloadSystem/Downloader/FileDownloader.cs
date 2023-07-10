@@ -101,13 +101,6 @@ namespace YooAsset
 				handler.removeFileOnAbort = true;
 				_webRequest.downloadHandler = handler;
 				_webRequest.disposeDownloadHandlerOnDispose = true;
-
-				if (DownloadSystem.CertificateHandlerInstance != null)
-				{
-					_webRequest.certificateHandler = DownloadSystem.CertificateHandlerInstance;
-					_webRequest.disposeCertificateHandlerOnDispose = false;
-				}
-
 				_webRequest.SendWebRequest();
 				_steps = ESteps.CheckDownload;
 			}
@@ -137,13 +130,6 @@ namespace YooAsset
 				_webRequest.disposeDownloadHandlerOnDispose = true;
 				if (fileLength > 0)
 					_webRequest.SetRequestHeader("Range", $"bytes={fileLength}-");
-
-				if (DownloadSystem.CertificateHandlerInstance != null)
-				{
-					_webRequest.certificateHandler = DownloadSystem.CertificateHandlerInstance;
-					_webRequest.disposeCertificateHandlerOnDispose = false;
-				}
-
 				_webRequest.SendWebRequest();
 				_steps = ESteps.CheckDownload;
 			}
@@ -295,7 +281,7 @@ namespace YooAsset
 					_failedTryAgain--;
 					_steps = ESteps.PrepareDownload;
 					ReportWarning();
-					EasyFramework.D.Warning($"Try again download : {_requestURL}");
+					YooLogger.Warning($"Try again download : {_requestURL}");
 				}
 			}
 		}
@@ -324,7 +310,7 @@ namespace YooAsset
 				float offset = Time.realtimeSinceStartup - _latestDownloadRealtime;
 				if (offset > _timeout)
 				{
-					EasyFramework.D.Warning($"Web file request timeout : {_requestURL}");
+					YooLogger.Warning($"Web file request timeout : {_requestURL}");
 					_webRequest.Abort();
 					_isAbort = true;
 				}

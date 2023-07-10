@@ -106,7 +106,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EStatus.Failed;
 					LastError = $"Not found assetBundle file : {FileLoadPath}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					return;
 				}
 #endif
@@ -126,7 +126,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EStatus.Failed;
 					LastError = $"WebGL not support encrypted bundle file : {MainBundleInfo.Bundle.BundleName}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					return;
 				}
 				_steps = ESteps.CheckLoadCacheFile;
@@ -144,7 +144,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EStatus.Failed;
 					LastError = $"Failed to load AssetBundle file : {MainBundleInfo.Bundle.BundleName}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 
 					// 注意：当缓存文件的校验等级为Low的时候，并不能保证缓存文件的完整性。
 					// 在AssetBundle文件加载失败的情况下，我们需要重新验证文件的完整性！
@@ -153,7 +153,7 @@ namespace YooAsset
 						var result = CacheSystem.VerifyingRecordFile(MainBundleInfo.Bundle.PackageName, MainBundleInfo.Bundle.CacheGUID);
 						if (result != EVerifyResult.Succeed)
 						{
-							EasyFramework.D.Error($"Found possibly corrupt file ! {MainBundleInfo.Bundle.CacheGUID}");
+							YooLogger.Error($"Found possibly corrupt file ! {MainBundleInfo.Bundle.CacheGUID}");
 							CacheSystem.DiscardFile(MainBundleInfo.Bundle.PackageName, MainBundleInfo.Bundle.CacheGUID);
 						}
 					}
@@ -168,8 +168,17 @@ namespace YooAsset
 			// 5. 从WEB网站获取AssetBundle文件
 			if (_steps == ESteps.LoadWebFile)
 			{
-				var hash = Hash128.Parse(MainBundleInfo.Bundle.FileHash);
-				_webRequest = UnityWebRequestAssetBundle.GetAssetBundle(FileLoadPath, hash);
+				if (CacheSystem.DisableUnityCacheOnWebGL)
+				{
+					_webRequest = UnityWebRequestAssetBundle.GetAssetBundle(FileLoadPath);
+				}
+				else
+				{
+					var hash = Hash128.Parse(MainBundleInfo.Bundle.FileHash);
+					_webRequest = UnityWebRequestAssetBundle.GetAssetBundle(FileLoadPath, hash);
+				}
+
+				DownloadSystem.SetUnityWebRequest(_webRequest);
 				_webRequest.SendWebRequest();
 				_steps = ESteps.CheckLoadWebFile;
 			}
@@ -188,7 +197,7 @@ namespace YooAsset
 				if (_webRequest.isNetworkError || _webRequest.isHttpError)
 #endif
 				{
-					EasyFramework.D.Warning($"Failed to get asset bundle from web : {FileLoadPath} Error : {_webRequest.error}");
+					YooLogger.Warning($"Failed to get asset bundle from web : {FileLoadPath} Error : {_webRequest.error}");
 					_steps = ESteps.TryLoadWebFile;
 					_tryTimer = 0;
 				}
@@ -200,7 +209,7 @@ namespace YooAsset
 						_steps = ESteps.Done;
 						Status = EStatus.Failed;
 						LastError = $"AssetBundle file is invalid : {MainBundleInfo.Bundle.BundleName}";
-						EasyFramework.D.Error(LastError);
+						YooLogger.Error(LastError);
 					}
 					else
 					{
@@ -232,7 +241,7 @@ namespace YooAsset
 			{
 				Status = EStatus.Failed;
 				LastError = $"{nameof(WaitForAsyncComplete)} failed ! WebGL platform not support sync load method !";
-				EasyFramework.D.Error(LastError);
+				YooLogger.Error(LastError);
 			}
 		}
 	}

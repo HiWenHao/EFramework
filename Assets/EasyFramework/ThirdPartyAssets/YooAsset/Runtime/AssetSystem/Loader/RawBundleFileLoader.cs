@@ -92,7 +92,7 @@ namespace YooAsset
 			if (_steps == ESteps.Unpack)
 			{
 				int failedTryAgain = Impl.DownloadFailedTryAgain;
-				var bundleInfo = ManifestTools.GetUnpackInfo(MainBundleInfo.Bundle);
+				var bundleInfo = ManifestTools.ConvertToUnpackInfo(MainBundleInfo.Bundle);
 				_unpacker = DownloadSystem.BeginDownload(bundleInfo, failedTryAgain);
 				_steps = ESteps.CheckUnpack;
 			}
@@ -166,7 +166,7 @@ namespace YooAsset
 					{
 						Status = EStatus.Failed;
 						LastError = $"WaitForAsyncComplete failed ! Try load bundle : {MainBundleInfo.Bundle.BundleName} from remote with sync load method !";
-						EasyFramework.D.Error(LastError);
+						YooLogger.Error(LastError);
 					}
 					break;
 				}

@@ -19,7 +19,7 @@ namespace YooAsset
 			if (LastestUpdateFrame > 0)
 			{
 				if (LastestUpdateFrame == Time.frameCount)
-					EasyFramework.D.Warning($"There are two {nameof(YooAssetsDriver)} in the scene. Please ensure there is always exactly one driver in the scene.");
+					YooLogger.Warning($"There are two {nameof(YooAssetsDriver)} in the scene. Please ensure there is always exactly one driver in the scene.");
 			}
 
 			LastestUpdateFrame = Time.frameCount;

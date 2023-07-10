@@ -11,6 +11,11 @@ namespace YooAsset
 		private readonly static Dictionary<string, PackageCache> _cachedDic = new Dictionary<string, PackageCache>(1000);
 
 		/// <summary>
+		/// 禁用Unity缓存系统在WebGL平台
+		/// </summary>
+		public static bool DisableUnityCacheOnWebGL = false;
+
+		/// <summary>
 		/// 初始化时的验证级别
 		/// </summary>
 		public static EVerifyLevel InitVerifyLevel { set; get; } = EVerifyLevel.Middle;
@@ -55,7 +60,7 @@ namespace YooAsset
 		/// </summary>
 		public static void RecordFile(string packageName, string cacheGUID, PackageCache.RecordWrapper wrapper)
 		{
-			//EasyFramework.D.Log($"Record file : {packageName} = {cacheGUID}");
+			//YooLogger.Log($"Record file : {packageName} = {cacheGUID}");
 			var cache = GetOrCreateCache(packageName);
 			cache.Record(cacheGUID, wrapper);
 		}
@@ -81,7 +86,7 @@ namespace YooAsset
 			}
 			catch (Exception e)
 			{
-				EasyFramework.D.Error($"Failed to delete cache file ! {e.Message}");
+				YooLogger.Error($"Failed to delete cache file ! {e.Message}");
 			}
 		}
 

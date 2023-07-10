@@ -37,9 +37,14 @@ namespace YooAsset.Editor
 
 
 		/// <summary>
-		/// 输出的根目录
+		/// 内置资源的根目录
 		/// </summary>
-		public string OutputRoot;
+		public string StreamingAssetsRoot;
+
+		/// <summary>
+		/// 构建输出的根目录
+		/// </summary>
+		public string BuildOutputRoot;
 
 		/// <summary>
 		/// 构建的平台
@@ -76,16 +81,11 @@ namespace YooAsset.Editor
 		/// 验证构建结果
 		/// </summary>
 		public bool VerifyBuildingResult = false;
-
-		/// <summary>
-		/// 自动分析冗余资源
-		/// </summary>
-		public bool AutoAnalyzeRedundancy = true;
 		
 		/// <summary>
 		/// 共享资源的打包规则
 		/// </summary>
-		public IShareAssetPackRule ShareAssetPackRule = null;
+		public ISharedPackRule SharedPackRule = null;
 
 		/// <summary>
 		/// 资源的加密接口

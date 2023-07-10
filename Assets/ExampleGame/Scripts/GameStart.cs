@@ -57,10 +57,10 @@ namespace EFExample
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);
 
             //UI进入
-            //Ui.Push(new You Class());
+            //EF.Ui.Push(new You Class());
 
             //音频播放
-            //Sources.PlayBGMByName("You bgm`s name", true);
+            //EF.Sources.PlayBGMByName("You bgm`s name", true);
         }
 
         #region RunDllCode

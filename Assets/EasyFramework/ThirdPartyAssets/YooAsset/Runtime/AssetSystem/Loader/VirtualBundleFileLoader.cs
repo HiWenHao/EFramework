@@ -65,7 +65,7 @@ namespace YooAsset
 					{
 						Status = EStatus.Failed;
 						LastError = $"WaitForAsyncComplete failed ! Try load bundle : {MainBundleInfo.Bundle.BundleName} from remote with sync load method !";
-						EasyFramework.D.Error(LastError);
+						YooLogger.Error(LastError);
 					}
 					break;
 				}

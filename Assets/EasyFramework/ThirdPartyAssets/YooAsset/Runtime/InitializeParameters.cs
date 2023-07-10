@@ -28,16 +28,22 @@ namespace YooAsset
 	public abstract class InitializeParameters
 	{
 		/// <summary>
-		/// 资源定位地址大小写不敏感
-		/// 注意：默认值为False
-		/// </summary>
-		public bool LocationToLower = false;
-
-		/// <summary>
 		/// 文件解密服务接口
 		/// </summary>
 		public IDecryptionServices DecryptionServices = null;
 
+		/// <summary>
+		/// 内置文件的根路径
+		/// 注意：当参数为空的时候会使用默认的根目录。
+		/// </summary>
+		public string BuildinRootDirectory = string.Empty;
+
+		/// <summary>
+		/// 沙盒文件的根路径
+		/// 注意：当参数为空的时候会使用默认的根目录。
+		/// </summary>
+		public string SandboxRootDirectory = string.Empty;
+		
 		/// <summary>
 		/// 资源加载每帧处理的最大时间片段
 		/// 注意：默认值为MaxValue

@@ -39,7 +39,7 @@ namespace YooAsset
 			{
 				_allCacheGUIDs = CacheSystem.GetAllCacheGUIDs(_package);
 				_fileTotalCount = _allCacheGUIDs.Count;
-				EasyFramework.D.Log($"Found all cache file count : {_fileTotalCount}");
+				YooLogger.Log($"Found all cache file count : {_fileTotalCount}");
 				_steps = ESteps.ClearAllCacheFiles;
 			}
 

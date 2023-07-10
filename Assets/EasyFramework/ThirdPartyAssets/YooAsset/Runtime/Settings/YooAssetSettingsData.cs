@@ -23,12 +23,12 @@ namespace YooAsset
 			_setting = Resources.Load<YooAssetSettings>("YooAssetSettings");
 			if (_setting == null)
 			{
-				EasyFramework.D.Log("YooAsset use default settings.");
+				YooLogger.Log("YooAsset use default settings.");
 				_setting = ScriptableObject.CreateInstance<YooAssetSettings>();
 			}
 			else
 			{
-				EasyFramework.D.Log("YooAsset use user settings.");
+				YooLogger.Log("YooAsset use user settings.");
 			}
 		}
 

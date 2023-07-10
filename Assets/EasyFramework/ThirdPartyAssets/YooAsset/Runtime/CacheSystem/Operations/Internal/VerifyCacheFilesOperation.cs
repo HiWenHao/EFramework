@@ -62,7 +62,7 @@ namespace YooAsset
 
 				// 设置同时验证的最大数
 				ThreadPool.GetMaxThreads(out int workerThreads, out int ioThreads);
-				EasyFramework.D.Log($"Work threads : {workerThreads}, IO threads : {ioThreads}");
+				YooLogger.Log($"Work threads : {workerThreads}, IO threads : {ioThreads}");
 				_verifyMaxNum = Math.Min(workerThreads, ioThreads);
 				_verifyTotalCount = fileCount;
 				if (_verifyMaxNum < 1)
@@ -82,7 +82,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Succeed;
 					float costTime = UnityEngine.Time.realtimeSinceStartup - _verifyStartTime;
-					EasyFramework.D.Log($"Verify cache files elapsed time {costTime:f1} seconds");
+					YooLogger.Log($"Verify cache files elapsed time {costTime:f1} seconds");
 				}
 
 				for (int i = _waitingList.Count - 1; i >= 0; i--)
@@ -101,7 +101,7 @@ namespace YooAsset
 					}
 					else
 					{
-						EasyFramework.D.Warning("The thread pool is failed queued.");
+						YooLogger.Warning("The thread pool is failed queued.");
 						break;
 					}
 				}
@@ -139,7 +139,7 @@ namespace YooAsset
 			{
 				_failedCount++;
 
-				EasyFramework.D.Warning($"Failed verify file and delete files : {element.FileRootPath}");
+				YooLogger.Warning($"Failed verify file and delete files : {element.FileRootPath}");
 				element.DeleteFiles();
 			}
 		}
@@ -201,7 +201,7 @@ namespace YooAsset
 					_steps = ESteps.Done;
 					Status = EOperationStatus.Succeed;
 					float costTime = UnityEngine.Time.realtimeSinceStartup - _verifyStartTime;
-					EasyFramework.D.Log($"Package verify elapsed time {costTime:f1} seconds");
+					YooLogger.Log($"Package verify elapsed time {costTime:f1} seconds");
 				}
 
 				for (int i = _waitingList.Count - 1; i >= 0; i--)
@@ -242,7 +242,7 @@ namespace YooAsset
 			{
 				_failedCount++;
 
-				EasyFramework.D.Warning($"Failed verify file and delete files : {element.FileRootPath}");
+				YooLogger.Warning($"Failed verify file and delete files : {element.FileRootPath}");
 				element.DeleteFiles();
 			}
 		}

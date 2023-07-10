@@ -36,7 +36,7 @@ namespace YooAsset
 		private void OnHandleEditorMessage(MessageEventArgs args)
 		{
 			var command = RemoteCommand.Deserialize(args.data);
-			EasyFramework.D.Log($"On handle remote command : {command.CommandType} Param : {command.CommandParam}");
+			YooLogger.Log($"On handle remote command : {command.CommandType} Param : {command.CommandParam}");
 			if (command.CommandType == (int)ERemoteCommand.SampleOnce)
 			{
 				var debugReport = YooAssets.GetDebugReport();

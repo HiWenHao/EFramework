@@ -63,7 +63,7 @@ namespace YooAsset.Editor
 				_encryptionServicesClassNames = _encryptionServicesClassTypes.Select(t => t.Name).ToList();
 
 				// 输出目录
-				string defaultOutputRoot = AssetBundleBuilderHelper.GetDefaultOutputRoot();
+				string defaultOutputRoot = AssetBundleBuilderHelper.GetDefaultBuildOutputRoot();
 				_buildOutputField = root.Q<TextField>("BuildOutput");
 				_buildOutputField.SetValueWithoutNotify(defaultOutputRoot);
 				_buildOutputField.SetEnabled(false);
@@ -266,16 +266,16 @@ namespace YooAsset.Editor
 		/// </summary>
 		private void ExecuteBuild()
 		{
-			string defaultOutputRoot = AssetBundleBuilderHelper.GetDefaultOutputRoot();
 			BuildParameters buildParameters = new BuildParameters();
-			buildParameters.OutputRoot = defaultOutputRoot;
+			buildParameters.StreamingAssetsRoot = AssetBundleBuilderHelper.GetDefaultStreamingAssetsRoot();
+			buildParameters.BuildOutputRoot = AssetBundleBuilderHelper.GetDefaultBuildOutputRoot();
 			buildParameters.BuildTarget = _buildTarget;
 			buildParameters.BuildPipeline = AssetBundleBuilderSettingData.Setting.BuildPipeline;
 			buildParameters.BuildMode = AssetBundleBuilderSettingData.Setting.BuildMode;
 			buildParameters.PackageName = AssetBundleBuilderSettingData.Setting.BuildPackage;
 			buildParameters.PackageVersion = _buildVersionField.value;
 			buildParameters.VerifyBuildingResult = true;
-			buildParameters.ShareAssetPackRule = new DefaultShareAssetPackRule();
+			buildParameters.SharedPackRule = new ZeroRedundancySharedPackRule();
 			buildParameters.EncryptionServices = CreateEncryptionServicesInstance();
 			buildParameters.CompressOption = AssetBundleBuilderSettingData.Setting.CompressOption;
 			buildParameters.OutputNameStyle = AssetBundleBuilderSettingData.Setting.OutputNameStyle;

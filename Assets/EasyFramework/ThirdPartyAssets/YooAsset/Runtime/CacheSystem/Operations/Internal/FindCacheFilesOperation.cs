@@ -45,7 +45,7 @@ namespace YooAsset
 			{
 				// BundleFiles
 				{
-					string rootPath = PersistentTools.GetCachedBundleFileFolderPath(_packageName);
+					string rootPath = PersistentTools.GetPersistent(_packageName).SandboxCacheBundleFilesRoot;
 					DirectoryInfo rootDirectory = new DirectoryInfo(rootPath);
 					if (rootDirectory.Exists)
 					{
@@ -56,7 +56,7 @@ namespace YooAsset
 
 				// RawFiles
 				{
-					string rootPath = PersistentTools.GetCachedRawFileFolderPath(_packageName);
+					string rootPath = PersistentTools.GetPersistent(_packageName).SandboxCacheRawFilesRoot;
 					DirectoryInfo rootDirectory = new DirectoryInfo(rootPath);
 					if (rootDirectory.Exists)
 					{
@@ -85,7 +85,7 @@ namespace YooAsset
 				_steps = ESteps.Done;
 				Status = EOperationStatus.Succeed;
 				float costTime = UnityEngine.Time.realtimeSinceStartup - _verifyStartTime;
-				EasyFramework.D.Log($"Find cache files elapsed time {costTime:f1} seconds");
+				YooLogger.Log($"Find cache files elapsed time {costTime:f1} seconds");
 			}
 		}
 

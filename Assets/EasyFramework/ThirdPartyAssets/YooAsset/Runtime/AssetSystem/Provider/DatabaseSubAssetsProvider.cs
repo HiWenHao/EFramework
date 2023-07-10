@@ -23,7 +23,7 @@ namespace YooAsset
 				{
 					Status = EStatus.Failed;
 					LastError = $"Not found asset : {MainAssetInfo.AssetPath}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					InvokeCompletion();
 					return;
 				}
@@ -88,7 +88,7 @@ namespace YooAsset
 						LastError = $"Failed to load sub assets : {MainAssetInfo.AssetPath} AssetType : null";
 					else
 						LastError = $"Failed to load sub assets : {MainAssetInfo.AssetPath} AssetType : {MainAssetInfo.AssetType}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 				}
 				InvokeCompletion();
 			}

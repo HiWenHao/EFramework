@@ -10,15 +10,15 @@ namespace YooAsset
 	{
 		public readonly LoadSceneMode SceneMode;
 		private readonly string _sceneName;
-		private readonly bool _activateOnLoad;
+		private readonly bool _suspendLoad;
 		private readonly int _priority;
-		private AsyncOperation _asyncOp;
+		private AsyncOperation _asyncOperation;
 
-		public BundledSceneProvider(AssetSystemImpl impl, string providerGUID, AssetInfo assetInfo, LoadSceneMode sceneMode, bool activateOnLoad, int priority) : base(impl, providerGUID, assetInfo)
+		public BundledSceneProvider(AssetSystemImpl impl, string providerGUID, AssetInfo assetInfo, LoadSceneMode sceneMode, bool suspendLoad, int priority) : base(impl, providerGUID, assetInfo)
 		{
 			SceneMode = sceneMode;
 			_sceneName = Path.GetFileNameWithoutExtension(assetInfo.AssetPath);
-			_activateOnLoad = activateOnLoad;
+			_suspendLoad = suspendLoad;
 			_priority = priority;
 		}
 		public override void Update()
@@ -36,15 +36,15 @@ namespace YooAsset
 			// 1. 检测资源包
 			if (Status == EStatus.CheckBundle)
 			{
-				if (DependBundleGroup.IsDone() == false)
+				if (DependBundles.IsDone() == false)
 					return;
 				if (OwnerBundle.IsDone() == false)
 					return;
 
-				if (DependBundleGroup.IsSucceed() == false)
+				if (DependBundles.IsSucceed() == false)
 				{
 					Status = EStatus.Failed;
-					LastError = DependBundleGroup.GetLastError();
+					LastError = DependBundles.GetLastError();
 					InvokeCompletion();
 					return;
 				}
@@ -64,11 +64,11 @@ namespace YooAsset
 			if (Status == EStatus.Loading)
 			{
 				// 注意：如果场景不存在则返回NULL
-				_asyncOp = SceneManager.LoadSceneAsync(MainAssetInfo.AssetPath, SceneMode);
-				if (_asyncOp != null)
+				_asyncOperation = SceneManager.LoadSceneAsync(MainAssetInfo.AssetPath, SceneMode);
+				if (_asyncOperation != null)
 				{
-					_asyncOp.allowSceneActivation = true;
-					_asyncOp.priority = _priority;
+					_asyncOperation.allowSceneActivation = !_suspendLoad;
+					_asyncOperation.priority = _priority;
 					SceneObject = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
 					Status = EStatus.Checking;
 				}
@@ -76,7 +76,7 @@ namespace YooAsset
 				{
 					Status = EStatus.Failed;
 					LastError = $"Failed to load scene : {_sceneName}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 					InvokeCompletion();
 				}
 			}
@@ -84,21 +84,30 @@ namespace YooAsset
 			// 3. 检测加载结果
 			if (Status == EStatus.Checking)
 			{
-				Progress = _asyncOp.progress;
-				if (_asyncOp.isDone)
+				Progress = _asyncOperation.progress;
+				if (_asyncOperation.isDone)
 				{
-					if (SceneObject.IsValid() && _activateOnLoad)
-						SceneManager.SetActiveScene(SceneObject);
-
 					Status = SceneObject.IsValid() ? EStatus.Succeed : EStatus.Failed;
 					if (Status == EStatus.Failed)
 					{
 						LastError = $"The load scene is invalid : {MainAssetInfo.AssetPath}";
-						EasyFramework.D.Error(LastError);
+						YooLogger.Error(LastError);
 					}
 					InvokeCompletion();
 				}
 			}
+		}
+
+		/// <summary>
+		/// 解除场景加载挂起操作
+		/// </summary>
+		public bool UnSuspendLoad()
+		{
+			if (_asyncOperation == null)
+				return false;
+
+			_asyncOperation.allowSceneActivation = true;
+			return true;
 		}
 	}
 }

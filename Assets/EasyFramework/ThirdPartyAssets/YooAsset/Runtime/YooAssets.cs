@@ -15,19 +15,25 @@ namespace YooAsset
 		/// <summary>
 		/// 初始化资源系统
 		/// </summary>
-		public static void Initialize()
+		/// <param name="logger">自定义日志处理</param>
+		public static void Initialize(ILogger logger = null)
 		{
 			if (_isInitialize)
-				throw new Exception($"{nameof(YooAssets)} is initialized !");
+			{
+				UnityEngine.Debug.LogWarning($"{nameof(YooAssets)} is initialized !");
+				return;
+			}
 
 			if (_isInitialize == false)
 			{
+				YooLogger.Logger = logger;
+
 				// 创建驱动器
 				_isInitialize = true;
 				_driver = new UnityEngine.GameObject($"[{nameof(YooAssets)}]");
 				_driver.AddComponent<YooAssetsDriver>();
 				UnityEngine.Object.DontDestroyOnLoad(_driver);
-				EasyFramework.D.Log($"{nameof(YooAssets)} initialize !");
+				YooLogger.Log($"{nameof(YooAssets)} initialize !");
 
 #if DEBUG
 				// 添加远程调试脚本
@@ -59,7 +65,7 @@ namespace YooAsset
 				_isInitialize = false;
 				if (_driver != null)
 					GameObject.Destroy(_driver);
-				EasyFramework.D.Log($"{nameof(YooAssets)} destroy all !");
+				YooLogger.Log($"{nameof(YooAssets)} destroy all !");
 			}
 		}
 
@@ -96,7 +102,7 @@ namespace YooAsset
 			if (HasPackage(packageName))
 				throw new Exception($"Package {packageName} already existed !");
 
-			EasyFramework.D.Log($"Create resource package : {packageName}");
+			YooLogger.Log($"Create resource package : {packageName}");
 			ResourcePackage package = new ResourcePackage(packageName);
 			_packages.Add(package);
 			return package;
@@ -110,7 +116,7 @@ namespace YooAsset
 		{
 			var package = TryGetPackage(packageName);
 			if (package == null)
-				EasyFramework.D.Error($"Not found resource package : {packageName}");
+				YooLogger.Error($"Not found resource package : {packageName}");
 			return package;
 		}
 
@@ -144,7 +150,7 @@ namespace YooAsset
 			if (package == null)
 				return;
 
-			EasyFramework.D.Log($"Destroy resource package : {packageName}");
+			YooLogger.Log($"Destroy resource package : {packageName}");
 			_packages.Remove(package);
 			package.DestroyPackage();
 
@@ -212,6 +218,21 @@ namespace YooAsset
 		}
 
 		/// <summary>
+		/// 设置下载系统参数，网络重定向次数（Unity引擎默认值32）
+		/// 注意：不支持设置为负值
+		/// </summary>
+		public static void SetDownloadSystemRedirectLimit(int redirectLimit)
+		{
+			if (redirectLimit < 0)
+			{
+				YooLogger.Warning($"Invalid param value : {redirectLimit}");
+				return;
+			}
+
+			DownloadSystem.RedirectLimit = redirectLimit;
+		}
+
+		/// <summary>
 		/// 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 		/// </summary>
 		public static void SetOperationSystemMaxTimeSlice(long milliseconds)
@@ -219,7 +240,7 @@ namespace YooAsset
 			if (milliseconds < 10)
 			{
 				milliseconds = 10;
-				EasyFramework.D.Warning($"MaxTimeSlice minimum value is 10 milliseconds.");
+				YooLogger.Warning($"MaxTimeSlice minimum value is 10 milliseconds.");
 			}
 			OperationSystem.MaxTimeSlice = milliseconds;
 		}
@@ -233,51 +254,11 @@ namespace YooAsset
 		}
 
 		/// <summary>
-		/// 设置缓存系统参数，沙盒目录的存储路径
+		/// 设置缓存系统参数，禁用缓存在WebGL平台
 		/// </summary>
-		public static void SetCacheSystemSandboxPath(string sandboxPath)
+		public static void SetCacheSystemDisableCacheOnWebGL()
 		{
-			if (string.IsNullOrEmpty(sandboxPath))
-			{
-				EasyFramework.D.Error($"Sandbox path is null or empty !");
-				return;
-			}
-
-			// 注意：需要确保没有任何资源系统起效之前才可以设置沙盒目录！
-			if (_packages.Count > 0)
-			{
-				EasyFramework.D.Error($"Please call this method {nameof(SetCacheSystemSandboxPath)} before the package is created !");
-				return;
-			}
-
-			PersistentTools.OverwriteSandboxPath(sandboxPath);
-		}
-		#endregion
-
-		#region 沙盒相关
-		/// <summary>
-		/// 获取内置文件夹名称
-		/// </summary>
-		public static string GetStreamingAssetBuildinFolderName()
-		{
-			return YooAssetSettings.StreamingAssetsBuildinFolder;
-		}
-
-		/// <summary>
-		/// 获取沙盒的根路径
-		/// </summary>
-		public static string GetSandboxRoot()
-		{
-			return PersistentTools.GetPersistentRootPath();
-		}
-
-		/// <summary>
-		/// 清空沙盒目录（需要重启APP）
-		/// </summary>
-		public static void ClearSandbox()
-		{
-			EasyFramework.D.Warning("Clear sandbox folder files, Finally, restart the application !");
-			PersistentTools.DeleteSandbox();
+			CacheSystem.DisableUnityCacheOnWebGL = true;
 		}
 		#endregion
 

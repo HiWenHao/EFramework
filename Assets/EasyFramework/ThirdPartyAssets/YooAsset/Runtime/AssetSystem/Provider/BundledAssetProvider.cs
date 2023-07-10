@@ -28,19 +28,19 @@ namespace YooAsset
 			{
 				if (IsWaitForAsyncComplete)
 				{
-					DependBundleGroup.WaitForAsyncComplete();
+					DependBundles.WaitForAsyncComplete();
 					OwnerBundle.WaitForAsyncComplete();
 				}
 
-				if (DependBundleGroup.IsDone() == false)
+				if (DependBundles.IsDone() == false)
 					return;
 				if (OwnerBundle.IsDone() == false)
 					return;
 
-				if (DependBundleGroup.IsSucceed() == false)
+				if (DependBundles.IsSucceed() == false)
 				{
 					Status = EStatus.Failed;
-					LastError = DependBundleGroup.GetLastError();
+					LastError = DependBundles.GetLastError();
 					InvokeCompletion();
 					return;
 				}
@@ -55,12 +55,7 @@ namespace YooAsset
 
 				if (OwnerBundle.CacheBundle == null)
 				{
-					if (OwnerBundle.IsDestroyed)
-						throw new System.Exception("Should never get here !");
-					Status = EStatus.Failed;
-					LastError = $"The bundle {OwnerBundle.MainBundleInfo.Bundle.BundleName} has been destroyed by unity bugs !";
-					EasyFramework.D.Error(LastError);
-					InvokeCompletion();
+					ProcessCacheBundleException();
 					return;
 				}
 
@@ -95,7 +90,7 @@ namespace YooAsset
 					if (IsWaitForAsyncComplete)
 					{
 						// 强制挂起主线程（注意：该操作会很耗时）
-						EasyFramework.D.Warning("Suspend the main thread to load unity asset.");
+						YooLogger.Warning("Suspend the main thread to load unity asset.");
 						AssetObject = _cacheRequest.asset;
 					}
 					else
@@ -114,7 +109,7 @@ namespace YooAsset
 						LastError = $"Failed to load asset : {MainAssetInfo.AssetPath} AssetType : null AssetBundle : {OwnerBundle.MainBundleInfo.Bundle.BundleName}";
 					else
 						LastError = $"Failed to load asset : {MainAssetInfo.AssetPath} AssetType : {MainAssetInfo.AssetType} AssetBundle : {OwnerBundle.MainBundleInfo.Bundle.BundleName}";
-					EasyFramework.D.Error(LastError);
+					YooLogger.Error(LastError);
 				}
 				InvokeCompletion();
 			}

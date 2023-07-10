@@ -3,7 +3,7 @@
 namespace YooAsset
 {
 	public class SceneOperationHandle : OperationHandleBase
-	{	
+	{
 		private System.Action<SceneOperationHandle> _callback;
 		internal string PackageName { set; get; }
 
@@ -51,7 +51,7 @@ namespace YooAsset
 		}
 
 		/// <summary>
-		/// 激活场景
+		/// 激活场景（当同时存在多个场景时用于切换激活场景）
 		/// </summary>
 		public bool ActivateScene()
 		{
@@ -64,7 +64,39 @@ namespace YooAsset
 			}
 			else
 			{
-				EasyFramework.D.Warning($"Scene is invalid or not loaded : {SceneObject.name}");
+				YooLogger.Warning($"Scene is invalid or not loaded : {SceneObject.name}");
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// 解除场景加载挂起操作
+		/// </summary>
+		public bool UnSuspend()
+		{
+			if (IsValidWithWarning == false)
+				return false;
+
+			if (SceneObject.IsValid())
+			{
+				if (Provider is DatabaseSceneProvider)
+				{
+					var temp = Provider as DatabaseSceneProvider;
+					return temp.UnSuspendLoad();
+				}
+				else if (Provider is BundledSceneProvider)
+				{
+					var temp = Provider as BundledSceneProvider;
+					return temp.UnSuspendLoad();
+				}
+				else
+				{
+					throw new System.NotImplementedException();
+				}
+			}
+			else
+			{
+				YooLogger.Warning($"Scene is invalid : {SceneObject.name}");
 				return false;
 			}
 		}
@@ -111,7 +143,7 @@ namespace YooAsset
 			if (IsMainScene())
 			{
 				string error = $"Cannot unload main scene. Use {nameof(YooAssets.LoadSceneAsync)} method to change the main scene !";
-				EasyFramework.D.Error(error);
+				YooLogger.Error(error);
 				var operation = new UnloadSceneOperation(error);
 				OperationSystem.StartOperation(operation);
 				return operation;

@@ -67,7 +67,7 @@ namespace YooAsset
 
 			if (_steps == ESteps.VerifyFileHash)
 			{
-				_manifestFilePath = PersistentTools.GetCacheManifestFilePath(_packageName, _packageVersion);
+				_manifestFilePath = PersistentTools.GetPersistent(_packageName).GetSandboxPackageManifestFilePath(_packageVersion);
 				if (File.Exists(_manifestFilePath) == false)
 				{
 					_steps = ESteps.Done;
@@ -126,12 +126,12 @@ namespace YooAsset
 			// 注意：如果加载沙盒内的清单报错，为了避免流程被卡住，主动把损坏的文件删除。
 			if (File.Exists(_manifestFilePath))
 			{
-				EasyFramework.D.Warning($"Failed to load cache manifest file : {Error}");
-				EasyFramework.D.Warning($"Invalid cache manifest file have been removed : {_manifestFilePath}");
+				YooLogger.Warning($"Failed to load cache manifest file : {Error}");
+				YooLogger.Warning($"Invalid cache manifest file have been removed : {_manifestFilePath}");
 				File.Delete(_manifestFilePath);
 			}
 
-			string hashFilePath = PersistentTools.GetCachePackageHashFilePath(_packageName, _packageVersion);
+			string hashFilePath = PersistentTools.GetPersistent(_packageName).GetSandboxPackageHashFilePath(_packageVersion);
 			if (File.Exists(hashFilePath))
 			{
 				File.Delete(hashFilePath);

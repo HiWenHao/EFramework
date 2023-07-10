@@ -217,14 +217,14 @@ namespace YooAsset
 			if (_steps == ESteps.CheckAppFootPrint)
 			{
 				var appFootPrint = new AppFootPrint();
-				appFootPrint.Load();
+				appFootPrint.Load(_packageName);
 
 				// 如果水印发生变化，则说明覆盖安装后首次打开游戏
 				if (appFootPrint.IsDirty())
 				{
-					PersistentTools.DeleteManifestFolder();
-					appFootPrint.Coverage();
-					EasyFramework.D.Log("Delete manifest files when application foot print dirty !");
+					PersistentTools.GetPersistent(_packageName).DeleteSandboxManifestFilesFolder();
+					appFootPrint.Coverage(_packageName);
+					YooLogger.Log("Delete manifest files when application foot print dirty !");
 				}
 				_steps = ESteps.QueryCachePackageVersion;
 			}
@@ -293,7 +293,7 @@ namespace YooAsset
 					// 注意：为了兼容MOD模式，初始化动态新增的包裹的时候，如果内置清单不存在也不需要报错！
 					_steps = ESteps.PackageCaching;
 					string error = _queryBuildinPackageVersionOp.Error;
-					EasyFramework.D.Log($"Failed to load buildin package version file : {error}");
+					YooLogger.Log($"Failed to load buildin package version file : {error}");
 				}
 			}
 
@@ -374,16 +374,16 @@ namespace YooAsset
 		/// <summary>
 		/// 读取应用程序水印
 		/// </summary>
-		public void Load()
+		public void Load(string packageName)
 		{
-			string footPrintFilePath = PersistentTools.GetAppFootPrintFilePath();
+			string footPrintFilePath = PersistentTools.GetPersistent(packageName).SandboxAppFootPrintFilePath;
 			if (File.Exists(footPrintFilePath))
 			{
 				_footPrint = FileUtility.ReadAllText(footPrintFilePath);
 			}
 			else
 			{
-				Coverage();
+				Coverage(packageName);
 			}
 		}
 
@@ -402,16 +402,16 @@ namespace YooAsset
 		/// <summary>
 		/// 覆盖掉水印
 		/// </summary>
-		public void Coverage()
+		public void Coverage(string packageName)
 		{
 #if UNITY_EDITOR
 			_footPrint = Application.version;
 #else
 			_footPrint = Application.buildGUID;
 #endif
-			string footPrintFilePath = PersistentTools.GetAppFootPrintFilePath();
+			string footPrintFilePath = PersistentTools.GetPersistent(packageName).SandboxAppFootPrintFilePath;
 			FileUtility.WriteAllText(footPrintFilePath, _footPrint);
-			EasyFramework.D.Log($"Save application foot print : {_footPrint}");
+			YooLogger.Log($"Save application foot print : {_footPrint}");
 		}
 	}
 }

@@ -160,13 +160,16 @@ namespace EasyFramework.Managers
                     };
                     break;
                 case EFPlayMode.OfflinePlayMode:
-                    initParameters = new OfflinePlayModeParameters();
+                    initParameters = new OfflinePlayModeParameters
+                    {
+                        DecryptionServices = new GameDecryptionServices()
+                    };
                     break;
                 case EFPlayMode.HostPlayMode:
                     initParameters = new HostPlayModeParameters
                     {
-                        QueryServices = new QueryStreamingAssetsFileServices(),
                         DecryptionServices = new GameDecryptionServices(),
+                        QueryServices = new GameQueryServices(),
                         DefaultHostServer = EF.Projects.ResourcesArea.InnerUrl,
                         FallbackHostServer = EF.Projects.ResourcesArea.StandbyUrl
                     };
@@ -174,25 +177,6 @@ namespace EasyFramework.Managers
             }
             yield return m_Package.InitializeAsync(initParameters);
             Run("GetStaticVersion");
-        }
-
-        private class QueryStreamingAssetsFileServices : IQueryServices
-        {
-            public bool QueryStreamingAssets(string fileName)
-            {
-                string buildinFolderName = YooAssets.GetStreamingAssetBuildinFolderName();
-                return FileExists($"{buildinFolderName}/{fileName}");
-            }
-        }
-
-        static bool FileExists(string filePath)
-        {
-            if (m_CacheData.TryGetValue(filePath, out bool result) == false)
-            {
-                result = File.Exists(Path.Combine(Application.streamingAssetsPath, filePath));
-                m_CacheData.Add(filePath, result);
-            }
-            return result;
         }
 
         // 文件解密的示例代码

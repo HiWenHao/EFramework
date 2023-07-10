@@ -41,10 +41,10 @@ namespace YooAsset
 			{
 				if (_downloader1 == null)
 				{
-					string savePath = PersistentTools.GetCachePackageHashFilePath(_packageName, _packageVersion);
+					string savePath = PersistentTools.GetPersistent(_packageName).GetSandboxPackageHashFilePath(_packageVersion);
 					string fileName = YooAssetSettingsData.GetPackageHashFileName(_packageName, _packageVersion);
 					string webURL = GetDownloadRequestURL(fileName);
-					EasyFramework.D.Log($"Beginning to download package hash file : {webURL}");
+					YooLogger.Log($"Beginning to download package hash file : {webURL}");
 					_downloader1 = new UnityWebFileRequester();
 					_downloader1.SendRequest(webURL, savePath, _timeout);
 				}
@@ -71,10 +71,10 @@ namespace YooAsset
 			{
 				if (_downloader2 == null)
 				{
-					string savePath = PersistentTools.GetCacheManifestFilePath(_packageName, _packageVersion);
+					string savePath = PersistentTools.GetPersistent(_packageName).GetSandboxPackageManifestFilePath(_packageVersion);
 					string fileName = YooAssetSettingsData.GetManifestBinaryFileName(_packageName, _packageVersion);
 					string webURL = GetDownloadRequestURL(fileName);
-					EasyFramework.D.Log($"Beginning to download manifest file : {webURL}");
+					YooLogger.Log($"Beginning to download manifest file : {webURL}");
 					_downloader2 = new UnityWebFileRequester();
 					_downloader2.SendRequest(webURL, savePath, _timeout);
 				}

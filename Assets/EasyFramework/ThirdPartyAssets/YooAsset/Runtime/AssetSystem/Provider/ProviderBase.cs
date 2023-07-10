@@ -91,7 +91,7 @@ namespace YooAsset
 
 
 		protected BundleLoaderBase OwnerBundle { private set; get; }
-		protected DependAssetBundleGroup DependBundleGroup { private set; get; }
+		protected DependAssetBundles DependBundles { private set; get; }
 		protected bool IsWaitForAsyncComplete { private set; get; } = false;
 		private readonly List<OperationHandleBase> _handles = new List<OperationHandleBase>();
 
@@ -109,9 +109,9 @@ namespace YooAsset
 				OwnerBundle.Reference();
 				OwnerBundle.AddProvider(this);
 
-				var dependBundles = impl.CreateDependAssetBundleLoaders(assetInfo);
-				DependBundleGroup = new DependAssetBundleGroup(dependBundles);
-				DependBundleGroup.Reference();
+				var dependList = impl.CreateDependAssetBundleLoaders(assetInfo);
+				DependBundles = new DependAssetBundles(dependList);
+				DependBundles.Reference();
 			}
 		}
 
@@ -133,10 +133,10 @@ namespace YooAsset
 				OwnerBundle.Release();
 				OwnerBundle = null;
 			}
-			if (DependBundleGroup != null)
+			if (DependBundles != null)
 			{
-				DependBundleGroup.Release();
-				DependBundleGroup = null;
+				DependBundles.Release();
+				DependBundles = null;
 			}
 		}
 
@@ -177,6 +177,8 @@ namespace YooAsset
 				handle = new SceneOperationHandle(this);
 			else if (typeof(T) == typeof(SubAssetsOperationHandle))
 				handle = new SubAssetsOperationHandle(this);
+			else if (typeof(T) == typeof(AllAssetsOperationHandle))
+				handle = new AllAssetsOperationHandle(this);
 			else if (typeof(T) == typeof(RawFileOperationHandle))
 				handle = new RawFileOperationHandle(this);
 			else
@@ -192,7 +194,7 @@ namespace YooAsset
 		public void ReleaseHandle(OperationHandleBase handle)
 		{
 			if (RefCount <= 0)
-                EasyFramework.D.Warning("Asset provider reference count is already zero. There may be resource leaks !");
+				YooLogger.Warning("Asset provider reference count is already zero. There may be resource leaks !");
 
 			if (_handles.Remove(handle) == false)
 				throw new System.Exception("Should never get here !");
@@ -214,7 +216,31 @@ namespace YooAsset
 			// 验证结果
 			if (IsDone == false)
 			{
-                EasyFramework.D.Warning($"WaitForAsyncComplete failed to loading : {MainAssetInfo.AssetPath}");
+				YooLogger.Warning($"WaitForAsyncComplete failed to loading : {MainAssetInfo.AssetPath}");
+			}
+		}
+
+		/// <summary>
+		/// 处理特殊异常
+		/// </summary>
+		protected void ProcessCacheBundleException()
+		{
+			if (OwnerBundle.IsDestroyed)
+				throw new System.Exception("Should never get here !");
+
+			if (OwnerBundle.MainBundleInfo.Bundle.IsRawFile)
+			{
+				Status = EStatus.Failed;
+				LastError = $"Cannot load asset bundle file using {nameof(ResourcePackage.LoadRawFileAsync)} method !";
+				YooLogger.Error(LastError);
+				InvokeCompletion();
+			}
+			else
+			{
+				Status = EStatus.Failed;
+				LastError = $"The bundle {OwnerBundle.MainBundleInfo.Bundle.BundleName} has been destroyed by unity bugs !";
+				YooLogger.Error(LastError);
+				InvokeCompletion();
 			}
 		}
 
@@ -320,7 +346,7 @@ namespace YooAsset
 			DownloadReport result = new DownloadReport();
 			result.TotalSize = (ulong)OwnerBundle.MainBundleInfo.Bundle.FileSize;
 			result.DownloadedBytes = OwnerBundle.DownloadedBytes;
-			foreach (var dependBundle in DependBundleGroup.DependBundles)
+			foreach (var dependBundle in DependBundles.DependList)
 			{
 				result.TotalSize += (ulong)dependBundle.MainBundleInfo.Bundle.FileSize;
 				result.DownloadedBytes += dependBundle.DownloadedBytes;
@@ -340,7 +366,7 @@ namespace YooAsset
 			bundleInfo.Status = OwnerBundle.Status.ToString();
 			output.Add(bundleInfo);
 
-			DependBundleGroup.GetBundleDebugInfos(output);
+			DependBundles.GetBundleDebugInfos(output);
 		}
 		#endregion
 	}
