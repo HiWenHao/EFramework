@@ -202,6 +202,10 @@ namespace EasyFramework.Managers
             {
                 m_CurrentPage = page;
                 m_CurrentObj = PageCreated(page);
+
+                m_stc_UseGO.Push(m_CurrentObj);
+                m_stc_UseUI.Push(page);
+
                 m_CurrentPage.Awake(m_CurrentObj, args);
                 m_CurrentPage.Open(args);
             }
@@ -210,14 +214,14 @@ namespace EasyFramework.Managers
                 m_CurrentObj = m_dic_ReadyGO[_readyKey];
                 m_CurrentPage = m_dic_ReadyUI[_readyKey];
 
+                m_stc_UseGO.Push(m_CurrentObj);
+                m_stc_UseUI.Push(m_CurrentPage);
+
                 m_CurrentPage.Open(args);
 
                 m_dic_ReadyUI.Remove(_readyKey);
                 m_dic_ReadyGO.Remove(_readyKey);
             }
-
-            m_stc_UseGO.Push(m_CurrentObj);
-            m_stc_UseUI.Push(m_CurrentPage);
 
             ++m_int_PageCount;
 

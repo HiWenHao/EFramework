@@ -41,6 +41,7 @@ namespace GMTest
         public override void Open(params object[] args)
         {
             D.Correct("A Open:   " + SerialId);
+			EF.Ui.Push(new UiB(), false);
         }
 
         public override void OnFocus(bool enable, params object[] args)

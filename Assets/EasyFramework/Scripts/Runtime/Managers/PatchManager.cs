@@ -124,6 +124,8 @@ namespace EasyFramework.Managers
                 m_ie_currentIE = null;
                 if (m_patchUpdater)
                     btn_MessgeBox.gameObject.SetActive(true);
+                else
+                    m_Callback?.Invoke();
                 return;
             }
 
