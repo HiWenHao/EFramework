@@ -57,47 +57,6 @@ public partial class EF
     /// <summary> 对象池管理器 </summary>
     public static GameObjectPoolManager ObjectPool => GameObjectPoolManager.Instance;
 
-    static void InitInAfterSceneLoad()
-    {
-        EasyFramework.D.Init();
-#if UNITY_EDITOR
-        ClearConsole();
-#endif
-        #region Set the game run time info
-        //Application.targetFrameRate = 60;
-        Application.runInBackground = true;
-        #endregion
-
-        #region Show platform infomation.展示平台信息
-        EasyFramework.D.Correct($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
-            $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
-            $"  GPU: {SystemInfo.graphicsDeviceName}   " +
-            $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
-            $" {Screen.width} * {Screen.height} @{Screen.currentResolution.refreshRate}Hz");
-        #endregion
-
-        EasyFramework.D.Log("======================Initialize======================");
-        //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
-
-        Timer.SleepTimeout = SleepTimeout.NeverSleep;
-        //ExampleGame.Controller.CameraControl.Instance.gameObject.AddComponent<GMTest.Test>();
-
-        //FPS展示
-        EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
-
-        //读表工具初始化
-        //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
-        //ETB.ExcelDataCacheManager.CacheAllData();
-        //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同
-        Patch.StartUpdatePatch(EFPlayMode.HostPlayMode);
-
-        //UI进入
-        //Ui.Push(new You Class());
-
-        //音频播放
-        //Sources.PlayBGMByName("You bgm`s name", true);
-    }
-
     #region Coroutine  协程
     /// <summary>
     /// 开启一个协程
