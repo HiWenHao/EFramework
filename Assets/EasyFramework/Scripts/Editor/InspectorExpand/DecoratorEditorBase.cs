@@ -32,12 +32,12 @@ namespace EasyFramework.Edit.InspectorExpand
         #region Editor Fields
 
         /// <summary>
-        /// Type object for the internally used (decorated) editor.
+        /// GunsType object for the internally used (decorated) editor.
         /// </summary>
         private System.Type decoratedEditorType;
 
         /// <summary>
-        /// Type object for the object that is edited by this editor.
+        /// GunsType object for the object that is edited by this editor.
         /// </summary>
         private System.Type editedObjectType;
 
@@ -117,7 +117,7 @@ namespace EasyFramework.Edit.InspectorExpand
             if (originalEditedType != editedObjectType)
             {
                 throw new System.ArgumentException(
-                    string.Format("Type {0} does not match the editor {1} type {2}",
+                    string.Format("GunsType {0} does not match the editor {1} type {2}",
                               editedObjectType, editorTypeName, originalEditedType));
             }
         }

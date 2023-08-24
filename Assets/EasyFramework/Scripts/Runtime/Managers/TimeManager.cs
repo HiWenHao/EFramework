@@ -41,6 +41,7 @@ namespace EasyFramework.Managers
 
         /// <summary>
         /// A power saving setting, allowing the screen to dim some time after the last active user interaction.
+        /// 省电设置，允许屏幕在最后一次活跃用户交互后一段时间变暗
         /// </summary>
         public int SleepTimeout
         {

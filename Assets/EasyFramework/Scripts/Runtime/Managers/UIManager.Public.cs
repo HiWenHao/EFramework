@@ -35,6 +35,11 @@ namespace EasyFramework.Managers
         /// </summary>
         public int PopupsMaxCount { get; set; } = 5;
 
+        /// <summary>
+        /// Open the mouse on click effect. 开启点击特效
+        /// </summary>
+        public bool OpenClickEffect { get; set; } = true;
+
         #region Page region
         #region Push
         /// <summary>

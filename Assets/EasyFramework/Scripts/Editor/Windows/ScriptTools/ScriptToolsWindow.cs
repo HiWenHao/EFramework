@@ -93,7 +93,7 @@ namespace EasyFramework.Windows
                     fixedHeight = 30
                 });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                m_typeIndex = EditorGUILayout.Popup(new GUIContent("Selection Find Type", "选择查找类型"), m_typeIndex, m_TypeContent);
+                m_typeIndex = EditorGUILayout.Popup(new GUIContent("Selection Find GunsType", "选择查找类型"), m_typeIndex, m_TypeContent);
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
                 //Dependencies

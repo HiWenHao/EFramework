@@ -191,7 +191,7 @@ namespace EasyFramework.Windows
 
                             #region Type
                             GUILayout.BeginHorizontal();
-                            GUILayout.Label("Type", GUILayout.Width(60.0f));
+                            GUILayout.Label("GunsType", GUILayout.Width(60.0f));
                             Select = (ValueType)EditorGUILayout.EnumPopup(Datas[i].DataType);
                             if (Select != Datas[i].DataType)
                             {

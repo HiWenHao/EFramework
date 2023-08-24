@@ -36,6 +36,9 @@ public partial class EF
     /// <summary> 时间管理器 </summary>
     public static TimeManager Timer => TimeManager.Instance;
 
+    /// <summary> 事件管理器 </summary>
+    public static EventManager Event => EventManager.Instance;
+
     /// <summary> 补丁更新管理器 </summary>
     public static PatchManager Patch => PatchManager.Instance;
 

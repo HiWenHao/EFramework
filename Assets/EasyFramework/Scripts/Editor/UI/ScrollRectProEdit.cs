@@ -31,7 +31,7 @@ namespace EasyFramework.Edit
             m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(new GUIContent("Content", "滑动元素"), m_Pro.content, typeof(RectTransform), true);
             m_Pro.direction = (ScrollRectPro.Direction)EditorGUILayout.EnumPopup(new GUIContent("Direction", "滚动方向"), m_Pro.direction);
             m_Pro.Lines = EditorGUILayout.IntField(new GUIContent(m_Pro.direction == ScrollRectPro.Direction.Vertical ? "Column Count" : "Row Count", "数量"), m_Pro.Lines);
-            m_Pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(new GUIContent("Movement Type", "当内容超出其容器的限制时要使用的行为的设置"), m_Pro.movementType);
+            m_Pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(new GUIContent("Movement GunsType", "当内容超出其容器的限制时要使用的行为的设置"), m_Pro.movementType);
             m_Pro.Elasticity = EditorGUILayout.FloatField(new GUIContent("Elasticity", "当内容超出滚动矩形时使用的弹性量"), m_Pro.Elasticity);
             m_Pro.Inertia = EditorGUILayout.Toggle(new GUIContent("Inertia", "移动惯性"), m_Pro.Inertia);
             m_Pro.DecelerationRate = EditorGUILayout.FloatField(new GUIContent("Deceleration Rate", "运动减慢的速度\n仅在启用惯性时使用"), m_Pro.DecelerationRate);

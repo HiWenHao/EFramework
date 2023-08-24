@@ -126,7 +126,7 @@ namespace EasyFramework.Edit.AutoBind
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Language.PathSelect))
             {
-                string folder = Path.Combine(Application.dataPath, m_ComCodePath.stringValue);
+                string folder = Application.dataPath + "/" + m_ComCodePath.stringValue;
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
@@ -134,7 +134,7 @@ namespace EasyFramework.Edit.AutoBind
                 string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "");
+                    m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
                 }
             }
             if (GUILayout.Button(LC.Language.DefaultSetting))
@@ -423,7 +423,7 @@ namespace EasyFramework.Edit.AutoBind
                 D.Error($"生成{m_Builder.name}的代码保存路径{codePath}无效");
                 return;
             }
-            codePath = $"{codePath}/{m_Builder.name}";
+            codePath = $"{codePath}{m_Builder.name}";
             if (!Directory.Exists(codePath))
             {
                 Directory.CreateDirectory(codePath);

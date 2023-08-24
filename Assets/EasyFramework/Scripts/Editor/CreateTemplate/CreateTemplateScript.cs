@@ -92,7 +92,7 @@ namespace EasyFramework.Edit
             bool append = false;
             StreamWriter _sw = new StreamWriter(fullPath, append, encoding);
 
-            _sw.WriteLine("/* ");
+            _sw.WriteLine("/*");
             _sw.WriteLine(" * ================================================");
             _sw.WriteLine(" * Describe:      This script is used to .");
             _sw.WriteLine(" * Author:        " + ProjectUtility.Project.ScriptAuthor);

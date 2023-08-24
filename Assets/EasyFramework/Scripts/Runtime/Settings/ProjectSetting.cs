@@ -186,21 +186,33 @@ namespace EasyFramework.Edit.Setting
         [Tooltip("应用名称")]
         [SerializeField]
         private string m_AppName = "EasyFramework";
+        /// <summary>
+        /// 应用名称
+        /// </summary>
         public string AppName => m_AppName;
 
         [Tooltip("保存内容时的前缀")]
         [SerializeField]
         private string m_AppPrefix = "EF_";
+        /// <summary>
+        /// 保存内容时的前缀
+        /// </summary>
         public string AppPrefix => m_AppPrefix;
 
         [Tooltip("应用版本")]
         [SerializeField]
         private string m_AppVersion = "1.0";
+        /// <summary>
+        /// 应用版本
+        /// </summary>
         public string AppVersion => m_AppVersion;
 
         [Tooltip("开发阶段")]
         [SerializeField]
         private AppStageEnum m_AppStage = AppStageEnum.Debug;
+        /// <summary>
+        /// 开发阶段
+        /// </summary>
         public AppStageEnum AppStage => m_AppStage;
 
 

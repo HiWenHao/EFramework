@@ -33,7 +33,7 @@ namespace EFExample
                 $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
                 $"  GPU: {SystemInfo.graphicsDeviceName}   " +
                 $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
-                $" {Screen.width} * {Screen.height} @{Screen.currentResolution.refreshRate}Hz");
+                Screen.currentResolution.ToString());
             #endregion
 
             EasyFramework.D.Log("======================Initialize======================");

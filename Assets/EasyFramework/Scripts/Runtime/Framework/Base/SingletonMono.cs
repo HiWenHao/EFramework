@@ -23,7 +23,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
                 if (_instance == null)
                 {
                     string[] _names = typeof(T).ToString().Split('.');
-                    _instance = new GameObject(_names[_names.Length - 1]).AddComponent<T>();
+                    _instance = new GameObject(_names[^1]).AddComponent<T>();
                 }
                 if (_instance is IManager)
                 {

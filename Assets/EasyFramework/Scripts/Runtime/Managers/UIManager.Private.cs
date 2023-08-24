@@ -39,7 +39,7 @@ namespace EasyFramework.Managers
                 UICamera.orthographicSize = UiScreenHeight / 2.0f;
                 UICamera.farClipPlane = 200.0f;
                 UICamera.cullingMask = 32;
-                UICamera.clearFlags = CameraClearFlags.SolidColor;
+                UICamera.clearFlags = CameraClearFlags.Depth;
 
                 m_Root = new GameObject("_UIRoot");
                 m_Root.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
@@ -73,7 +73,7 @@ namespace EasyFramework.Managers
 
         void IUpdate.Update(float elapse, float realElapse)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (OpenClickEffect && Input.GetMouseButtonDown(0))
             {
                 m_ClickPS.transform.transform.position = EF.Tool.ScreenPointToWorldPoint(Input.mousePosition, UICamera, 11f);
                 m_ClickPS.Play();
