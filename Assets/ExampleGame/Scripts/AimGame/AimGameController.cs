@@ -22,7 +22,7 @@ namespace AimGame
     {
         public bool InPause;
 
-
+        bool quitGame;
         bool m_MouseLeftDown;
 
         float m_RotateSpeed = 1.0f;
@@ -30,9 +30,12 @@ namespace AimGame
 
         Vector2 m_CamerRos;
 
+        ParticleSystem m_PSBolld;
+
+        GameObject m_TargetHead;
         Transform m_CameraTran, humanModel;
 
-        Gun m_Gun;
+        ESD_GunInfos gunInfo;
 
         Transform bullet, bulletHole, bulletAll;
         List<Transform> bulletMoving;
@@ -50,16 +53,18 @@ namespace AimGame
             };
             m_RotateSpeed = AimGameConfig.Instance.MouseSpeed;
 
-            m_Gun = new Standard();
+            gunInfo = new ESD_GunInfos(0);
 
             bulletAll = new GameObject("bulletAll").transform;
             bulletMoving = new List<Transform>();
             bullet = EF.Load.LoadInResources<GameObject>("Prefabs/AimGame/Bullet").transform;
-            bulletPool = new ObjectPool<Transform>(OnCreateBullet, OnGetBullet, OnReleaseBullet);
+            bulletPool = new ObjectPool<Transform>(OnCreateBullet, OnGetBullet, OnReleaseBullet, OnDisposeBullet);
             bulletHole = EF.Load.LoadInResources<GameObject>("Prefabs/AimGame/BulletHole").transform;
-            bulletHolePool = new ObjectPool<Transform>(OnCreateBulletHole, OnGetBulletHole, OnReleaseBulletHole);
+            bulletHolePool = new ObjectPool<Transform>(OnCreateBulletHole, OnGetBulletHole, OnReleaseBulletHole, OnDisposeBulletHole);
 
 
+            m_PSBolld = Instantiate(EF.Load.LoadInResources<ParticleSystem>("Prefabs/AimGame/PSBolld"));
+            m_TargetHead = Instantiate(EF.Load.LoadInResources<GameObject>("Prefabs/AimGame/TargetHead"));
             humanModel = Instantiate(EF.Load.LoadInResources<GameObject>("Prefabs/AimGame/Human")).transform;
             m_CameraTran.SetParent(humanModel);
             m_CameraTran.position = humanModel.position + Vector3.up * 0.5f;
@@ -85,7 +90,7 @@ namespace AimGame
 
             if (_rayBol && m_MouseLeftDown)
             {
-                switch (m_Gun.FireType)
+                switch ((BFireType)gunInfo.FireType)
                 {
                     case BFireType.Single:
                         OpenFier(hitInfo);
@@ -107,6 +112,8 @@ namespace AimGame
 
         void LateUpdate()
         {
+            if (quitGame)
+                return;
             BulletUpdate();
 
             humanModel.eulerAngles = Vector3.up * m_CameraTran.eulerAngles.y;
@@ -114,13 +121,26 @@ namespace AimGame
 
         void ISingleton.Quit()
         {
-            m_Gun = null;
+            m_CameraTran.SetParent(null);
             bulletHole = null;
             bulletHolePool.Clear();
             bulletHolePool.Dispose();
             bulletHolePool = null;
 
+            bullet = null;
+            bulletPool.Clear();
+            bulletPool.Dispose();
+            bulletPool = null;
+
             m_CameraTran = null;
+
+            Destroy(bulletAll.gameObject);
+            Destroy(humanModel.gameObject);
+            Destroy(m_PSBolld.gameObject);
+            Destroy(m_TargetHead);
+
+            bulletMoving.Clear();
+            bulletMoving = null;
         }
 
         public void ReStart()
@@ -130,10 +150,15 @@ namespace AimGame
 
         public void QuitGame()
         {
+            quitGame = true;
             EF.Unregister(this);
-            Destroy(humanModel.gameObject);
             Destroy(this);
             Destroy(gameObject);
+        }
+
+        public void ChangeGun(ESD_GunInfos gun)
+        {
+            gunInfo = gun;
         }
 
         #region Pool
@@ -150,6 +175,8 @@ namespace AimGame
             go.gameObject.SetActive(true);
             EF.Timer.AddCountdownEvent(.25f, delegate
             {
+                if (quitGame)
+                    return;
                 bulletPool.Release(go);
             });
             bulletMoving.Add(go);
@@ -159,6 +186,11 @@ namespace AimGame
         {
             bulletMoving.Remove(go);
             go.gameObject.SetActive(false);
+        }
+
+        void OnDisposeBullet(Transform go)
+        {
+            Destroy(go.gameObject);
         }
         #endregion
         #region Bullet Hole
@@ -174,6 +206,12 @@ namespace AimGame
             go.gameObject.SetActive(true);
             EF.Timer.AddCountdownEvent(2.0f, delegate
             {
+                if (quitGame)
+                {
+                    if (null != go)
+                        Destroy(go.gameObject);
+                    return;
+                }
                 bulletHolePool.Release(go);
             });
         }
@@ -181,6 +219,11 @@ namespace AimGame
         void OnReleaseBulletHole(Transform go)
         {
             go.gameObject.SetActive(false);
+        }
+
+        void OnDisposeBulletHole(Transform go)
+        {
+            Destroy(go.gameObject);
         }
         #endregion
         #endregion
@@ -207,6 +250,16 @@ namespace AimGame
 
                 //让弹孔与射线碰撞体的法线垂直（让弹孔总是贴在物体的每一个面的表面）
                 _bh.transform.LookAt(hitInfo.point - hitInfo.normal);
+            }
+            else if (hitInfo.collider.CompareTag("Player"))
+            {
+                if (hitInfo.collider.name.Contains("Head"))
+                {
+                    m_PSBolld.transform.position = hitInfo.collider.transform.position;
+                    m_PSBolld.Play();
+
+                    m_TargetHead.transform.position = humanModel.rotation * m_CameraTran.forward + new Vector3(Random.Range(-35f,35f), Random.Range(-2f, 2f), Random.Range(5f, 35f));
+                }
             }
         }
     }

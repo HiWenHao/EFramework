@@ -67,6 +67,8 @@ public partial class EF : MonoBehaviour
     #region Update
     private void Update()
     {
+        if (Exiting)
+            return;
         for (int i = 0; i < MgrUprCount; i++)
         {
             ManageUpdater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
@@ -163,30 +165,18 @@ public partial class EF : MonoBehaviour
         if (Exiting)
             return;
         Exiting = true;
-
-        while (--UprCount >= 0)
-        {
-            Updater.RemoveAt(UprCount);
-        }
+                
         while (--SingletonsCount >= 0)
-        {
             Singletons[SingletonsCount].Quit();
-            Singletons.RemoveAt(SingletonsCount);
-        }
+
         Updater.Clear();
         Updater = null;
         Singletons.Clear();
         Singletons = null;
 
-        while (--MgrUprCount >= 0)
-        {
-            ManageUpdater.RemoveAt(MgrUprCount);
-        }
         while (--ManagerCount >= 0)
-        {
             ManagerList[ManagerCount].Quit();
-            ManagerList.RemoveAt(ManagerCount);
-        }
+
         ManagerList.Clear();
         ManagerList = null;
         ManageUpdater.Clear();

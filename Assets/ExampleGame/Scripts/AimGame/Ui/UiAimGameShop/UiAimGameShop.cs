@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-08-24 17:06:53
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-08-24 17:49:21
+ * ModifyTime:    2023-08-30 11:03:51
  * ScriptVersion: 0.1 
  * ================================================
 */
@@ -23,70 +23,103 @@ namespace AimGame
 	{
 		/* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto
+		private Image Img_GunShowPic;
 		private RectTransform Tran_GunInfo;
 		private Text Txt_GunName;
 		private Text Txt_GunType;
-		private Text Txt_GunDescription;
 		private Text Txt_GunFireType;
 		private Text Txt_GunFiringRate;
 		private Text Txt_Magazine;
 		private Text Txt_InjuryHead;
 		private Text Txt_InjuryBody;
 		private Text Txt_InjuryLimbs;
+		private Text Txt_GunDescription;
 		private List<Button> m_AllButtons;
 		private List<ButtonPro> m_AllButtonPros;
 		#endregion Components -- Auto
 
 		int gunIndex;
 
-		Gun[] guns;
+        ESD_GunInfos[] guns;
 
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
+			Img_GunShowPic = EF.Tool.Find<Image>(obj.transform, "Img_GunShowPic");
 			Tran_GunInfo = EF.Tool.Find<RectTransform>(obj.transform, "Tran_GunInfo");
 			Txt_GunName = EF.Tool.Find<Text>(obj.transform, "Txt_GunName");
 			Txt_GunType = EF.Tool.Find<Text>(obj.transform, "Txt_GunType");
-			Txt_GunDescription = EF.Tool.Find<Text>(obj.transform, "Txt_GunDescription");
 			Txt_GunFireType = EF.Tool.Find<Text>(obj.transform, "Txt_GunFireType");
 			Txt_GunFiringRate = EF.Tool.Find<Text>(obj.transform, "Txt_GunFiringRate");
 			Txt_Magazine = EF.Tool.Find<Text>(obj.transform, "Txt_Magazine");
 			Txt_InjuryHead = EF.Tool.Find<Text>(obj.transform, "Txt_InjuryHead");
 			Txt_InjuryBody = EF.Tool.Find<Text>(obj.transform, "Txt_InjuryBody");
 			Txt_InjuryLimbs = EF.Tool.Find<Text>(obj.transform, "Txt_InjuryLimbs");
+			Txt_GunDescription = EF.Tool.Find<Text>(obj.transform, "Txt_GunDescription");
 			EF.Tool.Find<Button>(obj.transform, "Btn_Back").RegisterInListAndBindEvent(OnClickBtn_Back, ref m_AllButtons);
 			#endregion  Find components end. -- Auto
 
-			EF.Event.AddEnvet<int, bool>("MouseEnter", OnMouseEnterGunInfo);
+			EF.Event.AddEnvet<int, bool, bool>("MouseEnterEvent", OnMouseEnterGunInfo);
 			gunIndex = -1;
-			guns = new Gun[]
+			guns = new ESD_GunInfos[]
 			{
-				new Standard(),
-				new RifleAK47(),
+                new ESD_GunInfos(0),
+                new ESD_GunInfos(1),
 			};
+
+			for (int i = 1; i < guns.Length; i++)
+			{
+				Image _img = GameObject.Instantiate(Img_GunShowPic, Img_GunShowPic.transform.parent);
+				_img.color = new Color(Random.Range(0,1.0f), Random.Range(0, 1.0f), Random.Range(0, 1.0f));
+            }
+			EF.Timer.AddCountdownEvent(0.1f, delegate
+			{
+                Img_GunShowPic.transform.parent.GetComponent<GridLayoutGroup>().enabled = false;
+            });
         }
 
-		public override void Quit()
-		{
-			EF.Event.RemoveEvent<int, bool>("MouseEnter", OnMouseEnterGunInfo);
+        public override void Update(float elapse, float realElapse)
+        {
+			if (Input.GetKeyDown(KeyCode.B) || Input.GetKeyDown(KeyCode.Escape))
+			{
+				OnClickBtn_Back();
+            }
+        }
 
+        public override void Quit()
+        {
+            #region Quit Buttons.按钮 -- Auto
+            m_AllButtons.ReleaseAndRemoveEvent();
+            m_AllButtons = null;
+            m_AllButtonPros.ReleaseAndRemoveEvent();
+            m_AllButtonPros = null;
+            #endregion Buttons.按钮 -- Auto
+
+            EF.Event.RemoveEvent<int, bool, bool>("MouseEnterEvent", OnMouseEnterGunInfo);
+			guns = null;
         }
 
 
-		void OnMouseEnterGunInfo(int index, bool inAndOut)
+		void OnMouseEnterGunInfo(int index, bool inAndOut, bool down)
 		{
-			D.Correct($"index = {index}       inAndOut = {inAndOut}");
+			D.Correct($"index = {index}       inAndOut = {inAndOut}      down = {down}");
 
-			if (gunIndex == index)
+			if (inAndOut && down)
+                AimGameController.Instance.ChangeGun(guns[index]);
+
+            if (gunIndex == index)
 				return;
 
-			gunIndex = index;
+			if (!Tran_GunInfo.gameObject.activeSelf)
+                Tran_GunInfo.gameObject.SetActive(true);
+
+            gunIndex = index;
 
 			Txt_GunName.text = guns[gunIndex].Name;
-			Txt_GunType.text = guns[gunIndex].GunsType.ToString();
+			Txt_GunType.text = ((GunType)guns[gunIndex].GunsType).ToString();
             Txt_GunDescription.text = guns[gunIndex].Description;
-            Txt_GunFireType.text = guns[gunIndex].FireType.ToString();
-            Txt_GunFiringRate.text = $"{(int)(1000 / guns[gunIndex].FiringRate)}/s";
+            Txt_GunFireType.text = ((BFireType)guns[gunIndex].FireType).ToString();
+            Txt_GunFiringRate.text = $"{1000 / guns[gunIndex].FiringRate}/s";
             Txt_Magazine.text = $"{guns[gunIndex].Magazine / guns[gunIndex].TotalAmmo}";
             Txt_InjuryHead.text = $"{guns[gunIndex].InjuryHead}";
             Txt_InjuryBody.text = $"{guns[gunIndex].InjuryBody}";

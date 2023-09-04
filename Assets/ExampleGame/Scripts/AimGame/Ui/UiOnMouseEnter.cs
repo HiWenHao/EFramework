@@ -16,16 +16,21 @@ namespace AimGame
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    public class UiOnMouseEnter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class UiOnMouseEnter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 	{
+        void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+        {
+            EF.Event.CallEvent("MouseEnterEvent", transform.GetSiblingIndex(), true, true);
+        }
+
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            EF.Event.CallEvent("MouseEnter", transform.GetSiblingIndex(), true);
+            EF.Event.CallEvent("MouseEnterEvent", transform.GetSiblingIndex(), true, false);
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            EF.Event.CallEvent("MouseEnter", transform.GetSiblingIndex(), false);
+            EF.Event.CallEvent("MouseEnterEvent", transform.GetSiblingIndex(), false, false);
         }
     }
 }

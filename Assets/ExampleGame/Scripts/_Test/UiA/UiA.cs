@@ -53,10 +53,10 @@ namespace GMTest
                 D.Warning($"A to B  {item}");
             }
 
-            if (enable)
-            {
-                Camera.main.gameObject.GetComponent<Test>().enabled = true;
-            }
+            //if (enable)
+            //{
+            //    Camera.main.gameObject.GetComponent<Test>().enabled = true;
+            //}
         }
 
         public override void Close()

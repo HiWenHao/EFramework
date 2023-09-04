@@ -39,7 +39,7 @@ namespace AimGame
 		/// <summary>
 		/// 射速
 		/// </summary>
-		public abstract float FiringRate { get; }
+		public abstract int FiringRate { get; }
 
 		/// <summary>
 		/// 总弹药数量

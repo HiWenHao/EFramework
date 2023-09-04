@@ -1,7 +1,7 @@
 D:\_Projects\Unity\EFramework\ExcelFolder
-EasyFramework.Edit
+AimGame
 Xiaohei.Wang(Wenaho)
-1.8000457
-D:\_Projects\Unity\EFramework\Assets\EasyFramework\Resources\Config\LC
-D:\_Projects\Unity\EFramework\Assets\EasyFramework\Scripts\Editor\Config\LC
-false
+0.4
+D:\_Projects\Unity\EFramework\Assets\ExampleGame\Resources\JsonData\Guns
+D:\_Projects\Unity\EFramework\Assets\ExampleGame\Scripts\AimGame\GunConfig\Guns
+true

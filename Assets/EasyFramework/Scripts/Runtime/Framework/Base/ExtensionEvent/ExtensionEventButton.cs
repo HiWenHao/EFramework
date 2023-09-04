@@ -54,11 +54,10 @@ namespace EasyFramework.UI
                 return null;
 
             int _tempLength = buttons.Count;
+            
             while (--_tempLength >= 0)
-            { 
                 buttons[_tempLength].onClick.RemoveAllListeners();
-                buttons.RemoveAt(_tempLength);
-            }
+
             buttons.Clear();
             return buttons;
         }
@@ -104,11 +103,10 @@ namespace EasyFramework.UI
                 return null;
 
             int _tempLength = buttons.Count;
+
             while (--_tempLength >= 0)
-            {
                 buttons[_tempLength].onClickLeft.RemoveAllListeners();
-                buttons.RemoveAt(_tempLength);
-            }
+
             buttons.Clear();
             return buttons;
         }

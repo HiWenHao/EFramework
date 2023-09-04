@@ -77,17 +77,6 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            for (int i = m_int_timerListCount - 1; i >= 0; i--)
-            {
-                m_lst_EventTime.RemoveAt(i);
-                m_lst_TimeEventList.RemoveAt(i);
-            }
-            for (int i = m_int_countdownListCount - 1; i >= 0; i--)
-            {
-                m_lst_CountdownTime.RemoveAt(i);
-                m_lst_CountdownEventList.RemoveAt(i);
-            }
-
             m_lst_EventTime.Clear();
             m_lst_TimeEventList.Clear();
             m_int_timerListCount = 0;

@@ -24,7 +24,7 @@ namespace AimGame
 
         public override string Description => "一款高伤害的步枪，不过后座力很大";
 
-        public override float FiringRate => 77;
+        public override int FiringRate => 77;
 
         public override int TotalAmmo => 75;
 

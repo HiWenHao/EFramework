@@ -72,11 +72,8 @@ namespace EasyFramework.Managers
             m_as_BGM.clip = null;
             for (int i = m_flt_AudioTimer.Count - 1; i >= 0; i--)
             {
-                m_flt_AudioTimer.RemoveAt(i);
-                m_act_AudioCallback.RemoveAt(i);
                 AudioSource _audio = m_lst_AudioSources[i];
                 _audio.clip = null;
-                m_lst_AudioSources.RemoveAt(i);
                 Object.Destroy(_audio);
                 Object.Destroy(_audio.gameObject);
             }
@@ -87,6 +84,11 @@ namespace EasyFramework.Managers
                 Object.Destroy(_audio);
                 Object.Destroy(_audio.gameObject);
             }
+
+            m_flt_AudioTimer.Clear();
+            m_act_AudioCallback.Clear();
+            m_lst_AudioSources.Clear();
+            m_que_AudioSources.Clear();
 
             m_flt_AudioTimer = null;
             m_act_AudioCallback = null;

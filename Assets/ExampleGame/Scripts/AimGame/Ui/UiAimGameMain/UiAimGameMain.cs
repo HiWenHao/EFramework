@@ -151,8 +151,9 @@ namespace AimGame
         }
         void OnClickBtn_Back()
         {
-            EF.Ui.Pop(true);
+            EF.Ui.PopToOnlyOne(true);
 
+            SetShowOrHideWithMouse(true);
             AimGameController.Instance.QuitGame();
         }
         void OnClickBtn_Set()

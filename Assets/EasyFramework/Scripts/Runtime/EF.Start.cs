@@ -57,9 +57,6 @@ public partial class EF
     /// <summary> 文件夹管理器 </summary>
     public static FolderManager Folder => FolderManager.Instance;
 
-    /// <summary> 对象池管理器 </summary>
-    public static GameObjectPoolManager ObjectPool => GameObjectPoolManager.Instance;
-
     #region Coroutine  协程
     /// <summary>
     /// 开启一个协程

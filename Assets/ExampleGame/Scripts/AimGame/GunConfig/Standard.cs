@@ -24,7 +24,7 @@ namespace AimGame
 
         public override BFireType FireType => BFireType.Single;
 
-        public override float FiringRate => 100;
+        public override int FiringRate => 100;
 
         public override int TotalAmmo => 36;
 
