@@ -72,7 +72,7 @@ namespace EasyFramework.Managers
             m_CacheData = null;
             if (null != m_Package)
             {
-                m_Package.ClearAllCacheFilesAsync();
+                //m_Package.ClearAllCacheFilesAsync();
                 m_Package = null;
             }
 
