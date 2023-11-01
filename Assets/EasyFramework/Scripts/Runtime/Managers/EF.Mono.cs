@@ -154,10 +154,13 @@ public partial class EF : MonoBehaviour
             return;
         }
         --SingletonsCount;
-        Singletons[SingletonsCount].Quit();
+        Singletons[Singletons.IndexOf(item)].Quit();
         Singletons.Remove(item);
         if (item is IUpdate)
+        {
+            UprCount--;
             Updater.Remove(item as IUpdate);
+        }
     }
 
     static void QuitGames()
