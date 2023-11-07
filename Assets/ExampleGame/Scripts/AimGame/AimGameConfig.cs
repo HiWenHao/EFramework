@@ -18,6 +18,7 @@ namespace AimGame
     /// </summary>
     public class AimGameConfig : Singleton<AimGameConfig>, ISingleton
     {
+        public EAction<int> HitNumber;
         public EAction<float> MouseChanged;
         public bool SideswayOpen { private set;get; }
         public float MouseSpeed { get; private set; }
@@ -30,7 +31,8 @@ namespace AimGame
 
         void ISingleton.Quit()
         {
-
+            HitNumber = null;
+            MouseChanged = null;
         }
 
         /// <summary>

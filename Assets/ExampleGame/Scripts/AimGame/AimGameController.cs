@@ -259,6 +259,8 @@ namespace AimGame
                     m_PSBolld.Play();
 
                     m_TargetHead.transform.position = new Vector3(Random.Range(-15f,15f), Random.Range(-4f, -2f), Random.Range(15f, 35f));
+
+                    AimGameConfig.Instance.HitNumber.Invoke(1);
                 }
             }
         }

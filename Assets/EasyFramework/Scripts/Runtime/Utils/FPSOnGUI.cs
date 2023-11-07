@@ -20,7 +20,7 @@ namespace EasyFramework.Utils
     public class FPSOnGUI : MonoSingleton<FPSOnGUI>, ISingleton, IUpdate
     {
         //fps 显示的初始位置和大小
-        public Rect startRect = new Rect(512, 10f, 200f, 150f);
+        public Rect startRect = new Rect(0f, 150f, 200f, 80f);
         //fps UI 是否允许拖动 
         public bool allowDrag = true;
         //GUI 的样式
@@ -59,7 +59,7 @@ namespace EasyFramework.Utils
         //Window窗口
         void DoMyWindow(int windowID)
         {
-            GUI.Label(new Rect(0, 0, startRect.width, startRect.height), $"FPS {m_FpsCounter.CurrentFps}", style);
+            GUI.Label(new Rect(0, 0, startRect.width, startRect.height), $"FPS {(int)m_FpsCounter.CurrentFps}", style);
             if (allowDrag) GUI.DragWindow(new Rect(10, 10, Screen.width - 10, Screen.height - 10));
         }
     }

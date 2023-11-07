@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-08-18 15:03:40
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-08-21 17:44:46
+ * ModifyTime:    2023-11-07 17:39:06
  * ScriptVersion: 0.1 
  * ================================================
 */
@@ -23,9 +23,14 @@ namespace AimGame
     /// </summary>
     public class UiAimGameMain : UIPageBase
     {
+        int m_hitNum;
+        bool m_start;
+        float m_timer, m_timerOffset;
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto
 		private RectTransform Tran_AimMark;
+		private Text Txt_HitNumber;
+		private Text Txt_ElapsedTime;
 		private RectTransform Tran_Setting;
 		private Toggle Tog_SideswayOpen;
 		private Toggle Tog_SideswayClose;
@@ -41,14 +46,16 @@ namespace AimGame
         {
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
 			Tran_AimMark = EF.Tool.Find<RectTransform>(obj.transform, "Tran_AimMark");
+			Txt_HitNumber = EF.Tool.Find<Text>(obj.transform, "Txt_HitNumber");
+			Txt_ElapsedTime = EF.Tool.Find<Text>(obj.transform, "Txt_ElapsedTime");
 			Tran_Setting = EF.Tool.Find<RectTransform>(obj.transform, "Tran_Setting");
 			Tog_SideswayOpen = EF.Tool.Find<Toggle>(obj.transform, "Tog_SideswayOpen");
 			Tog_SideswayClose = EF.Tool.Find<Toggle>(obj.transform, "Tog_SideswayClose");
 			Ipt_MouseSpeed = EF.Tool.Find<TMP_InputField>(obj.transform, "Ipt_MouseSpeed");
 			Sld_MouseSpeed = EF.Tool.Find<Slider>(obj.transform, "Sld_MouseSpeed");
-			EF.Tool.Find<Button>(obj.transform, "Btn_Start").RegisterInListAndBindEvent(OnClickBtn_Start, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_Back").RegisterInListAndBindEvent(OnClickBtn_Back, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_Set").RegisterInListAndBindEvent(OnClickBtn_Set, ref m_AllButtons);
+			EF.Tool.Find<Button>(obj.transform, "Btn_Start").RegisterInListAndBindEvent(OnClickBtn_Start, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_CloseSet").RegisterInListAndBindEvent(OnClickBtn_CloseSet, ref m_AllButtons);
             #endregion  Find components end. -- Auto
 
@@ -67,6 +74,10 @@ namespace AimGame
             OnMouseSpeedChanging(AimGameConfig.Instance.MouseSpeed);
             Sld_MouseSpeed.onValueChanged.AddListener(OnMouseSpeedChanged);
             Ipt_MouseSpeed.onEndEdit.AddListener(OnMouseSpeedChangedDone);
+
+            m_timer = 0;
+            m_hitNum = 0;
+            AimGameConfig.Instance.HitNumber += HitNumber;
         }
 
         public override void OnFocus(bool focus, params object[] args)
@@ -79,6 +90,12 @@ namespace AimGame
 
         public override void Update(float elapse, float realElapse)
         {
+            if (m_start && (m_timerOffset += elapse) >= 1.0f)
+            {
+                m_timerOffset = 0.0f;
+                m_timer++;
+                Txt_ElapsedTime.text = m_timer.ToString();
+            }
             if (Input.GetKeyDown(KeyCode.F3))
             {
                 OnClickBtn_Set();
@@ -107,6 +124,7 @@ namespace AimGame
             m_AllButtonPros = null;
             #endregion Buttons.按钮 -- Auto
             Tog_SideswayOpen.onValueChanged.RemoveAllListeners();
+            AimGameConfig.Instance.HitNumber -= HitNumber;
         }
 
         private void OnSieswayChanged(bool arg0)
@@ -140,9 +158,18 @@ namespace AimGame
             AimGameConfig.Instance.SetMouseSpeed(value);
         }
 
+        #region Event
+        void HitNumber(int num)
+        {
+            m_hitNum += num;
+            Txt_HitNumber.text = m_hitNum.ToString();
+        }
+        #endregion
+
         #region Button event in game ui page.
         void OnClickBtn_Start()
         {
+            m_start = true;
             Btn_Start.SetActive(false);
             AimGameController.Instance.ReStart();
             SetShowOrHideWithMouse(false);
