@@ -1,78 +1,31 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to show the fps . 
+ * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2022-09-16 17:41:05
+ * CreationTime:  2023-11-14 11:12:28
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2022-09-16 17:41:05
+ * ModifyTime:    2023-11-14 11:12:28
  * ScriptVersion: 0.1
  * ===============================================
 */
 
-using UnityEngine;
-using EasyFramework;
-
 namespace EasyFramework.Utils
 {
     /// <summary>
-    /// Show the fps
+    /// FPS 计算中心
     /// </summary>
-    public class FPSOnGUI : MonoSingleton<FPSOnGUI>, ISingleton, IUpdate
-    {
-        //fps 显示的初始位置和大小
-        public Rect startRect = new Rect(0f, 150f, 200f, 80f);
-        //fps UI 是否允许拖动 
-        public bool allowDrag = true;
-        //GUI 的样式
-        private GUIStyle style;
-
-        FpsCounter m_FpsCounter;
-        void ISingleton.Init()
-        {
-            m_FpsCounter = new FpsCounter(0.5f);
-        }
-
-        void IUpdate.Update(float elapse, float realElapse)
-        {
-            m_FpsCounter.Update(elapse, realElapse);
-        }
-
-        void OnGUI()
-        {
-            if (style == null)
-            {
-                style = new GUIStyle(GUI.skin.label);
-                style.normal.textColor = Color.white;
-                style.alignment = TextAnchor.MiddleCenter;
-                style.fontSize = 40;
-            }
-
-            GUI.color = Color.white;
-            startRect = GUI.Window(0, startRect, DoMyWindow, "");
-        }
-
-        void ISingleton.Quit()
-        {
-
-        }
-
-        //Window窗口
-        void DoMyWindow(int windowID)
-        {
-            GUI.Label(new Rect(0, 0, startRect.width, startRect.height), $"FPS {(int)m_FpsCounter.CurrentFps}", style);
-            if (allowDrag) GUI.DragWindow(new Rect(10, 10, Screen.width - 10, Screen.height - 10));
-        }
-    }
-
-
     public sealed class FpsCounter
     {
-        private float m_UpdateInterval;
-        private float m_CurrentFps;
         private int m_Frames;
-        private float m_Accumulator;
         private float m_TimeLeft;
+        private float m_CurrentFps;
+        private float m_Accumulator;
+        private float m_UpdateInterval;
 
+        /// <summary>
+        /// FPS 计算中心
+        /// </summary>
+        /// <param name="updateInterval">计算间隔</param>
         public FpsCounter(float updateInterval)
         {
             if (updateInterval <= 0f)
@@ -85,6 +38,9 @@ namespace EasyFramework.Utils
             Reset();
         }
 
+        /// <summary>
+        /// 计算间隔
+        /// </summary>
         public float UpdateInterval
         {
             get
@@ -104,6 +60,9 @@ namespace EasyFramework.Utils
             }
         }
 
+        /// <summary>
+        /// 当前FPS
+        /// </summary>
         public float CurrentFps
         {
             get
@@ -112,7 +71,7 @@ namespace EasyFramework.Utils
             }
         }
 
-        public void Update(float elapseSeconds, float realElapseSeconds)
+        public void Update(float realElapseSeconds)
         {
             m_Frames++;
             m_Accumulator += realElapseSeconds;
