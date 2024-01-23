@@ -48,8 +48,8 @@ namespace EFExample
             EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
 
             //读表工具初始化
-            //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
-            //ETB.ExcelDataCacheManager.CacheAllData();
+            EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
+            AimGame.ExcelDataCacheManager.CacheAllData();
             //EasyFramework.D.Correct(ETB.EDC_Example.Get(1).name);
 
 

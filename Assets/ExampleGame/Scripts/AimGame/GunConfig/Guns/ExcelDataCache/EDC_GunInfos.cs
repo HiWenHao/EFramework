@@ -2,10 +2,10 @@
  * ================================================
  * Describe:      This is the code for the GunInfos table. 
  * Author:        Xiaohei.Wang(Wenaho)
- * CreationTime:  2023-08-28 15:10:38
+ * CreationTime:  2024-01-23 17:56:12
  * ModifyAuthor:  Xiaohei.Wang(Wenaho)
- * ModifyTime:    2023-08-28 15:10:38
- * Version:       0.40
+ * ModifyTime:    2024-01-23 17:56:12
+ * Version:       0.50
  * ===============================================
 */
 using System.Collections.Generic;
