@@ -37,6 +37,11 @@ namespace EasyFramework.Managers
         /// 联机运行模式
         /// </summary>
         HostPlayMode,
+
+        /// <summary>
+        /// WebGL运行模式
+        /// </summary>
+        WebPlayMode,
     }
 
     /// <summary>
@@ -44,7 +49,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class PatchManager : Singleton<PatchManager>, ISingleton
     {
-        EFPlayMode PlayMode = EFPlayMode.EditorSimulateMode;
+        EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
         Text m_Tips;
         Button btn_MessgeBox, btn_Done;
@@ -72,6 +77,7 @@ namespace EasyFramework.Managers
             m_CacheData = null;
             if (null != m_Package)
             {
+                //清空该包体的全部缓存
                 //m_Package.ClearAllCacheFilesAsync();
                 m_Package = null;
             }
@@ -92,7 +98,7 @@ namespace EasyFramework.Managers
         public void StartUpdatePatch(EFPlayMode mode, EAction callback = null, string packageName = "DefaultPackage")
         {
             m_CacheData = new Dictionary<string, bool>(1000);
-            PlayMode = mode;
+            PlayMode = (EPlayMode)mode;
             D.Correct($"资源系统运行模式：{mode}");
             m_Callback = callback;
             // 创建默认的资源包
@@ -153,25 +159,31 @@ namespace EasyFramework.Managers
             InitializeParameters initParameters = null;
             switch (PlayMode)
             {
-                case EFPlayMode.EditorSimulateMode:
+                case EPlayMode.EditorSimulateMode:
                     initParameters = new EditorSimulateModeParameters
                     {
-                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(m_Package.PackageName)
+                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, m_Package.PackageName)
                     };
                     break;
-                case EFPlayMode.OfflinePlayMode:
+                case EPlayMode.OfflinePlayMode:
                     initParameters = new OfflinePlayModeParameters
                     {
-                        DecryptionServices = new GameDecryptionServices()
+                        DecryptionServices = new FileStreamDecryption()
                     };
                     break;
-                case EFPlayMode.HostPlayMode:
+                case EPlayMode.HostPlayMode:
                     initParameters = new HostPlayModeParameters
                     {
-                        DecryptionServices = new GameDecryptionServices(),
-                        QueryServices = new GameQueryServices(),
-                        DefaultHostServer = EF.Projects.ResourcesArea.InnerUrl,
-                        FallbackHostServer = EF.Projects.ResourcesArea.StandbyUrl
+                        DecryptionServices = new FileStreamDecryption(),
+                        BuildinQueryServices = new GameQueryServices(),
+                        RemoteServices = new RemoteServices(EF.Projects.ResourcesArea.InnerUrl, EF.Projects.ResourcesArea.StandbyUrl)
+                    };
+                    break;
+                case EPlayMode.WebPlayMode:
+                    initParameters = new WebPlayModeParameters
+                    {
+                        BuildinQueryServices = new GameQueryServices(),
+                        RemoteServices = new RemoteServices(EF.Projects.ResourcesArea.InnerUrl, EF.Projects.ResourcesArea.StandbyUrl)
                     };
                     break;
             }
@@ -179,30 +191,90 @@ namespace EasyFramework.Managers
             Run("GetStaticVersion");
         }
 
-        // 文件解密的示例代码
-        // 注意：解密类必须配合加密类。
-        private class GameDecryptionServices : IDecryptionServices
+        /// <summary>
+        /// 远端资源地址查询服务类
+        /// </summary>
+        private class RemoteServices : IRemoteServices
         {
-            public ulong LoadFromFileOffset(DecryptFileInfo fileInfo)
+            private readonly string _defaultHostServer;
+            private readonly string _fallbackHostServer;
+
+            public RemoteServices(string defaultHostServer, string fallbackHostServer)
             {
-                return 32;
+                _defaultHostServer = defaultHostServer;
+                _fallbackHostServer = fallbackHostServer;
+            }
+            string IRemoteServices.GetRemoteMainURL(string fileName)
+            {
+                return $"{_defaultHostServer}/{fileName}";
+            }
+            string IRemoteServices.GetRemoteFallbackURL(string fileName)
+            {
+                return $"{_fallbackHostServer}/{fileName}";
+            }
+        }
+
+        /// <summary>
+        /// 资源文件流加载解密类
+        /// </summary>
+        private class FileStreamDecryption : IDecryptionServices
+        {
+            /// <summary>
+            /// 同步方式获取解密的资源包对象
+            /// 注意：加载流对象在资源包对象释放的时候会自动释放
+            /// </summary>
+            AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+            {
+                BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                managedStream = bundleStream;
+                return AssetBundle.LoadFromStream(bundleStream, fileInfo.ConentCRC, GetManagedReadBufferSize());
             }
 
-            public byte[] LoadFromMemory(DecryptFileInfo fileInfo)
+            /// <summary>
+            /// 异步方式获取解密的资源包对象
+            /// 注意：加载流对象在资源包对象释放的时候会自动释放
+            /// </summary>
+            AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
             {
-                // 如果没有内存加密方式，可以返回空
-                return null;
+                BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                managedStream = bundleStream;
+                return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.ConentCRC, GetManagedReadBufferSize());
             }
 
-            public Stream LoadFromStream(DecryptFileInfo fileInfo)
-            {
-                // 如果没有流加密方式，可以返回空
-                return null;
-            }
-
-            public uint GetManagedReadBufferSize()
+            private static uint GetManagedReadBufferSize()
             {
                 return 1024;
+            }
+        }
+
+        /// <summary>
+        /// 资源文件偏移加载解密类
+        /// </summary>
+        private class FileOffsetDecryption : IDecryptionServices
+        {
+            /// <summary>
+            /// 同步方式获取解密的资源包对象
+            /// 注意：加载流对象在资源包对象释放的时候会自动释放
+            /// </summary>
+            AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+            {
+                managedStream = null;
+                return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.ConentCRC, GetFileOffset());
+            }
+
+            /// <summary>
+            /// 异步方式获取解密的资源包对象
+            /// 注意：加载流对象在资源包对象释放的时候会自动释放
+            /// </summary>
+            AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+            {
+                managedStream = null;
+                return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.ConentCRC, GetFileOffset());
+            }
+
+            private static ulong GetFileOffset()
+            {
+                return 32;
             }
         }
         #endregion
@@ -268,8 +340,7 @@ namespace EasyFramework.Managers
         {
             int downloadingMaxNum = 10;
             int failedTryAgain = 3;
-            int timeout = 60;
-            m_Downloader = m_Package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain, timeout);
+            m_Downloader = m_Package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
 
             yield return null;
 
@@ -344,5 +415,30 @@ namespace EasyFramework.Managers
             //D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
+    }
+
+    /// <summary>
+    /// 资源文件解密流
+    /// </summary>
+    public class BundleStream : FileStream
+    {
+        public const byte KEY = 64;
+
+        public BundleStream(string path, FileMode mode, FileAccess access, FileShare share) : base(path, mode, access, share)
+        {
+        }
+        public BundleStream(string path, FileMode mode) : base(path, mode)
+        {
+        }
+
+        public override int Read(byte[] array, int offset, int count)
+        {
+            var index = base.Read(array, offset, count);
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] ^= KEY;
+            }
+            return index;
+        }
     }
 }

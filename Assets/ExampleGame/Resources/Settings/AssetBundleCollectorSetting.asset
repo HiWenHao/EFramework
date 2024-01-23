@@ -13,14 +13,16 @@ MonoBehaviour:
   m_Name: AssetBundleCollectorSetting
   m_EditorClassIdentifier: 
   ShowPackageView: 0
-  EnableAddressable: 1
-  LocationToLower: 0
-  IncludeAssetGUID: 0
-  UniqueBundleName: 1
   ShowEditorAlias: 1
+  UniqueBundleName: 1
   Packages:
   - PackageName: DefaultPackage
     PackageDesc: 
+    EnableAddressable: 0
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    IgnoreDefaultType: 1
+    AutoCollectShaders: 1
     Groups:
     - GroupName: UIPrefabs
       GroupDesc: "UI\u9884\u5236\u4EF6"

@@ -19,9 +19,9 @@ MonoBehaviour:
     m_CopyResToCommit: 0
     m_CleanCommitRes: 1
     m_ServerType: 1
-    m_InnerUrl: 
-    m_ExtraUrl: http://192.168.0.1:8080
-    m_FormalUrl: http://192.168.0.1:8080
+    m_InnerUrl: http://127.0.0.1/dashboard/_Download/v1.0
+    m_ExtraUrl: http://127.0.0.1/dashboard/_Download/v1.0
+    m_FormalUrl: http://127.0.0.1/dashboard/_Download/v1.0
     m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v1.0
   m_AppConst:
     m_AppName: EasyFramework

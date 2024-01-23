@@ -8,8 +8,6 @@
  * ScriptVersion: 0.1 
  * ================================================
 */
-using dnlib.DotNet;
-using EasyFramework;
 using EasyFramework.UI;
 using System.Collections.Generic;
 using TMPro;

@@ -21,29 +21,14 @@ namespace EasyFramework.Managers
     {
         int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("LoadManager");
 
-        private string m_DefaultPackage;
-
         private Dictionary<string, ResourcePackage> m_ResourcePackageList;
-        private Dictionary<string, List<AssetOperationHandle>> m_AssetOperationHandles;
         void ISingleton.Init()
         {
             m_ResourcePackageList = new Dictionary<string, ResourcePackage>();
-            m_AssetOperationHandles = new Dictionary<string, List<AssetOperationHandle>>();
         }
 
         void ISingleton.Quit()
         {
-            foreach (var handle in m_AssetOperationHandles)
-            {
-                for (int i = handle.Value.Count - 1; i >= 0; i--)
-                {
-                    handle.Value[i].Release();
-                    handle.Value.RemoveAt(i);
-                }
-                handle.Value.Clear();
-            }
-            m_AssetOperationHandles.Clear();
-            m_AssetOperationHandles = null;
 
             foreach (var package in m_ResourcePackageList)
             {
@@ -117,8 +102,8 @@ namespace EasyFramework.Managers
         /// </summary>
         public void ClearYooAssetMemory()
         {
-            foreach (var package in m_AssetOperationHandles)
-                YooAssets.GetPackage(package.Key).UnloadUnusedAssets();
+            foreach (var package in m_ResourcePackageList)
+                package.Value.UnloadUnusedAssets();
         }
         /// <summary>
         /// Clear the application memory for Resources.
