@@ -370,7 +370,7 @@ namespace EasyFramework.Edit.AutoBind
             if (Application.dataPath.Equals(m_PrefabPath.stringValue))
                 _path = $"{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
             else
-                _path = $"{Application.dataPath[..^7]}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
+                _path = $"{Application.dataPath/*[..^7]*/}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
 
             if (File.Exists(_path))
             {
