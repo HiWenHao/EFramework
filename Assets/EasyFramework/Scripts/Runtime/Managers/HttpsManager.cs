@@ -13,7 +13,6 @@ using LitJson;
 using System;
 using System.Text;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Managers
 {
@@ -58,7 +57,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="address">请求尾地址</param>
         /// <param name="callback">JsonData回调函数</param>
-        public void BestGet(string address, EAction<JsonData> callback)
+        public void BestGet(string address, Action<JsonData> callback)
         {
             HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Get, (originalRequest, response) =>
             {
@@ -76,7 +75,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="address">请求尾地址</param>
         /// <param name="callback">byte[]回调函数</param>
-        public void BestGet(string address, EAction<byte[]> callback)
+        public void BestGet(string address, Action<byte[]> callback)
         {
             HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Get, (originalRequest, response) =>
             {
@@ -95,7 +94,7 @@ namespace EasyFramework.Managers
         /// <param name="address">请求尾地址</param>
         /// <param name="jd">请求内容</param>
         /// <param name="callback">Texture2D回调函数</param>
-        public void BestPostTexture(string address, JsonData jd, EAction<Texture2D> callback)
+        public void BestPostTexture(string address, JsonData jd, Action<Texture2D> callback)
         {
             D.Correct("The texture path is:    " + Domain + address + jd["path"]);
             HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Post, (originalRequest, response) =>
@@ -121,7 +120,7 @@ namespace EasyFramework.Managers
         /// <param name="address">请求尾地址</param>
         /// <param name="jd">请求内容</param>
         /// <param name="callback">JsonData回调函数</param>
-        public void BestPost(string address, JsonData jd, EAction<JsonData> callback)
+        public void BestPost(string address, JsonData jd, Action<JsonData> callback)
         {
             if (null == jd)
             {
@@ -148,7 +147,7 @@ namespace EasyFramework.Managers
         /// <param name="address">请求尾地址</param>
         /// <param name="bytes">上传内容</param>
         /// <param name="callback">JsonData回调函数</param>
-        public void BestPostUpload(string address, byte[] bytes, EAction<JsonData> callback)
+        public void BestPostUpload(string address, byte[] bytes, Action<JsonData> callback)
         {
             if (null == bytes)
             {

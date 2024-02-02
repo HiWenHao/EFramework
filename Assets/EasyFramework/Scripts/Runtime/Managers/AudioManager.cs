@@ -9,8 +9,10 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
@@ -29,7 +31,7 @@ namespace EasyFramework.Managers
         Transform m_Traget;
 
         private List<float> m_flt_AudioTimer;
-        private List<EAction> m_act_AudioCallback;
+        private List<Action> m_act_AudioCallback;
         private List<AudioSource> m_lst_AudioSources;
         private Queue<AudioSource> m_que_AudioSources;
         void ISingleton.Init()
@@ -39,7 +41,7 @@ namespace EasyFramework.Managers
             m_as_BGM = m_Traget.gameObject.AddComponent<AudioSource>();
 
             m_flt_AudioTimer = new List<float>();
-            m_act_AudioCallback = new List<EAction>();
+            m_act_AudioCallback = new List<Action>();
             m_lst_AudioSources = new List<AudioSource>();
             m_que_AudioSources = new Queue<AudioSource>();
 
@@ -114,7 +116,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="clip">The effect source clip.音频的clip</param>
         /// <param name="callback">the source pla.音频播放结束的回调</param>
-        public void Play2DEffectSouceByClip(AudioClip clip, EAction callback = null)
+        public void Play2DEffectSouceByClip(AudioClip clip, Action callback = null)
         {
             PlayEffect(clip);
             m_act_AudioCallback.Add(callback);
@@ -126,7 +128,7 @@ namespace EasyFramework.Managers
         /// <param name="clip">The effect source clip.音频的clip</param>
         /// <param name="pos">The sources play position. 音频位于空间的位置</param>
         /// <param name="callback">the source pla.音频播放结束的回调</param>
-        public void Play3DEffectSouceByClip(AudioClip clip, Vector3 pos, EAction callback = null)
+        public void Play3DEffectSouceByClip(AudioClip clip, Vector3 pos, Action callback = null)
         {
             PlayEffect(clip, false, pos);
             m_act_AudioCallback.Add(callback);
@@ -137,7 +139,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="name">The effect source name.音乐名称</param>
         /// <param name="callback">the source pla.音频播放结束的回调</param>
-        public void Play2DEffectSouceByName(string name, EAction callback = null)
+        public void Play2DEffectSouceByName(string name, Action callback = null)
         {
             AudioClip clip = GetClipByName(name);
             PlayEffect(clip);
@@ -150,7 +152,7 @@ namespace EasyFramework.Managers
         /// <param name="name">The effect source name.音乐名称</param>
         /// <param name="pos">The sources play position.音频位于空间的位置</param>
         /// <param name="callback">the source pla.音频播放结束的回调</param>
-        public void Play3DEffectSouceByName(string name, Vector3 pos, EAction callback = null)
+        public void Play3DEffectSouceByName(string name, Vector3 pos, Action callback = null)
         {
             AudioClip clip = GetClipByName(name);
             PlayEffect(clip, false, pos);

@@ -1,5 +1,6 @@
 using EasyFramework;
 using EasyFramework.UI;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,7 +41,7 @@ namespace GMTest
             #region TimeManager Test
             if (false)                      //  if want to test, plase change false to true.
             {
-                EAction timeAction = () =>
+                Action timeAction = () =>
                 {
                     D.Log("TimerEvent 3f");
                 };
@@ -49,7 +50,7 @@ namespace GMTest
                 EF.Timer.AddTimeEvent(5f, () => { D.Log("TimerEvent 5f"); });
                 EF.Timer.RemoveTimeEvent(timeAction);
 
-                EAction countdownAction = () =>
+                Action countdownAction = () =>
                 {
                     D.Error("countdownEvent 4f");
                 };

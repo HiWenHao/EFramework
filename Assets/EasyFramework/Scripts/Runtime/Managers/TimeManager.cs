@@ -12,7 +12,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Managers
 {
@@ -61,7 +60,7 @@ namespace EasyFramework.Managers
         //The time and countdown timer list.
         private List<float> m_lst_EventTime, m_lst_CountdownTime;
         //The time and countdown callback list.
-        private List<EAction> m_lst_TimeEventList, m_lst_CountdownEventList;
+        private List<Action> m_lst_TimeEventList, m_lst_CountdownEventList;
 
         void ISingleton.Init()
         {
@@ -71,8 +70,8 @@ namespace EasyFramework.Managers
 
             m_lst_EventTime = new List<float>();
             m_lst_CountdownTime = new List<float>();
-            m_lst_TimeEventList = new List<EAction>();
-            m_lst_CountdownEventList = new List<EAction>();
+            m_lst_TimeEventList = new List<Action>();
+            m_lst_CountdownEventList = new List<Action>();
         }
 
         void ISingleton.Quit()
@@ -132,7 +131,7 @@ namespace EasyFramework.Managers
         /// <param name="triggeringTimer">Triggering time. 触发时间</param>
         /// <param name="timeEvent">The time event. 时间事件</param>
         /// <param name="alsoAdd">The event presence also add it. 当前时间事件存在也要继续添加</param>
-        public void AddTimeEvent(float triggeringTimer, EAction timeEvent, bool alsoAdd = false)
+        public void AddTimeEvent(float triggeringTimer, Action timeEvent, bool alsoAdd = false)
         {
             if (!alsoAdd && m_lst_TimeEventList.IndexOf(timeEvent) != -1)
             {
@@ -154,7 +153,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="timeEvent">The time event.  时间事件</param>
         /// <returns>Remove succeed return true. 删除成功会返回 true</returns>
-        public bool RemoveTimeEvent(EAction timeEvent)
+        public bool RemoveTimeEvent(Action timeEvent)
         {
             if (m_lst_TimeEventList.IndexOf(timeEvent) == -1)
             {
@@ -183,7 +182,7 @@ namespace EasyFramework.Managers
         /// <param name="countTimer">Triggering time. 触发倒计时</param>
         /// <param name="countdownEvent">The countdown event. 倒计时事件</param>
         /// <param name="alsoAdd">The event presence also add it. 当前倒计时事件存在也要继续添加</param>
-        public void AddCountdownEvent(float countTimer, EAction countdownEvent, bool alsoAdd = false)
+        public void AddCountdownEvent(float countTimer, Action countdownEvent, bool alsoAdd = false)
         {
             if (!alsoAdd && m_lst_CountdownEventList.IndexOf(countdownEvent) != -1)
             {
@@ -200,7 +199,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="countdownEvent">The countdown event. 倒计时事件</param>
         /// <returns>Remove succeed return true. 删除成功会返回 true</returns>
-        public bool RemoveCountdownEvent(EAction countdownEvent)
+        public bool RemoveCountdownEvent(Action countdownEvent)
         {
             if (m_lst_CountdownEventList.IndexOf(countdownEvent) == -1)
             {

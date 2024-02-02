@@ -9,6 +9,7 @@
  * ===============================================
 */
 using EasyFramework;
+using System;
 using UnityEngine;
 
 namespace AimGame
@@ -18,8 +19,8 @@ namespace AimGame
     /// </summary>
     public class AimGameConfig : Singleton<AimGameConfig>, ISingleton
     {
-        public EAction<int> HitNumber;
-        public EAction<float> MouseChanged;
+        public Action<int> HitNumber;
+        public Action<float> MouseChanged;
         public bool SideswayOpen { private set;get; }
         public float MouseSpeed { get; private set; }
         void ISingleton.Init()

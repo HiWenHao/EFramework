@@ -10,10 +10,12 @@
 */
 
 using EasyFramework.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 //using UnityEngine.Rendering.Universal;
 
 namespace EasyFramework.Managers
@@ -95,7 +97,7 @@ namespace EasyFramework.Managers
             UICamera = null;
         }
 
-        void Destroy(Object obj)
+        void Destroy(UnityEngine.Object obj)
         {
             Object.Destroy(obj);
         }
@@ -266,7 +268,7 @@ namespace EasyFramework.Managers
         GameObject BoxDialog;
         Text show_txt_Text, show_txt_true, show_txt_false;
         Button show_btn_CloseBG, show_btn_True, show_btn_False;
-        EAction show_actOk, show_actNo;
+        Action show_actOk, show_actNo;
 
         Queue<PopupBox> m_que_BoxPopup;
 

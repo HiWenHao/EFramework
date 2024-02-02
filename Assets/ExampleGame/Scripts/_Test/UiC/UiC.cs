@@ -10,18 +10,19 @@
 */
 using EasyFramework;
 using EasyFramework.UI;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace GMTest
 {
-	/// <summary>
-	/// Please modify the description.
-	/// </summary>
-	public class UiC : UIPageBase
+    /// <summary>
+    /// Please modify the description.
+    /// </summary>
+    public class UiC : UIPageBase
     {
-        EAction timeEvent, CountdownEvent;
+        Action timeEvent, CountdownEvent;
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto
 		private Text Txt_TotalTime;

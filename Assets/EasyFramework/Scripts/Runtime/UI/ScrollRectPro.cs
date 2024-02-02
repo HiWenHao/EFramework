@@ -171,7 +171,7 @@ namespace EasyFramework.UI
         private Bounds m_PrevViewBounds;
         private Bounds m_PrevContentBounds;
 
-        private EAction<GameObject, int> CallbackFunc;
+        private Action<GameObject, int> CallbackFunc;
 
         private RectTransform m_Rect;
         private RectTransform rectTransform
@@ -1034,7 +1034,7 @@ namespace EasyFramework.UI
         /// </summary>
         /// <param name="callback">The update event</param>
         /// <param name="maxCount">The elements list max count.</param>
-        public void InIt(EAction<GameObject, int> callback, int maxCount)
+        public void InIt(Action<GameObject, int> callback, int maxCount)
         {
             CallbackFunc = null;
             CallbackFunc = callback;

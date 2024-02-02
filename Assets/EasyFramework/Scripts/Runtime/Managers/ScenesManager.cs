@@ -9,10 +9,12 @@
  * ===============================================
 */
 
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
@@ -29,7 +31,7 @@ namespace EasyFramework.Managers
 		Text m_txt_PCTN;
 		Slider m_slid_ProgressBar;
 		AsyncOperation m_asyncOperation;
-		EAction m_act_Callback;
+		Action m_act_Callback;
         void ISingleton.Init()
         {
             LoadCanvas = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
@@ -127,7 +129,7 @@ namespace EasyFramework.Managers
         /// <param name="sceneName">The scene name. 场景名字</param>
         /// <param name="callback">The scene load callback. 场景加载回调</param>
         /// <param name="transition">The black screen transition speed. 过度黑屏速率</param>
-        public void LoadSceneWithName(string sceneName, EAction callback = null, float transition = 1.0f)
+        public void LoadSceneWithName(string sceneName, Action callback = null, float transition = 1.0f)
 		{
             if (m_bol_IsLoading)
             {

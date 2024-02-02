@@ -10,8 +10,9 @@
  */
 
 using EasyFramework.UI;
+using System;
 using UnityEngine;
-using EasyFramework;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
@@ -240,7 +241,7 @@ namespace EasyFramework.Managers
         /// <param name="okBtnText">The agreed button text info.确认按钮内容</param>
         /// <param name="noBtnText">The cancel button text info.取消按钮内容</param>
         /// <param name="openCloseBG">PageOpen the close backbround.开启背景可关闭</param>
-        public void ShowDialog(string text, EAction okEvent = null, EAction noEvent = null, string okBtnText = "OK", string noBtnText = "Cancel", bool openCloseBG = true)
+        public void ShowDialog(string text, Action okEvent = null, Action noEvent = null, string okBtnText = "OK", string noBtnText = "Cancel", bool openCloseBG = true)
         {
             show_actOk = okEvent;
             show_actNo = noEvent;

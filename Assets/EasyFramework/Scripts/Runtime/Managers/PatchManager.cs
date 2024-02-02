@@ -9,12 +9,14 @@
  * ===============================================
 */
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
@@ -60,7 +62,7 @@ namespace EasyFramework.Managers
         ResourcePackage m_Package;
         static Dictionary<string, bool> m_CacheData;
         ResourceDownloaderOperation m_Downloader;
-        EAction m_Callback;
+        Action m_Callback;
         IEnumerator m_ie_currentIE;
         Queue<IEnumerator> m_que_updaterState;
 
@@ -95,7 +97,7 @@ namespace EasyFramework.Managers
         /// <param name="mode">更新模式</param>
         /// <param name="callback">更新完成回调</param>
         /// <param name="packageName">要更新的包名</param>
-        public void StartUpdatePatch(EFPlayMode mode, EAction callback = null, string packageName = "DefaultPackage")
+        public void StartUpdatePatch(EFPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
         {
             m_CacheData = new Dictionary<string, bool>(1000);
             PlayMode = (EPlayMode)mode;
