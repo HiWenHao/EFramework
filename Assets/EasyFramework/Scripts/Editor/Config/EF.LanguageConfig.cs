@@ -83,6 +83,8 @@ namespace EasyFramework.Edit
         #region Project Setting
         /// <summary> 编辑器语言 </summary>
         public string EditorLanguage { get; }
+        /// <summary> 编辑器用户名 </summary>
+        public string EditorUser {  get; }
         /// <summary> 脚本作者名 </summary>
         public string ScriptAuthor { get; }
         /// <summary> 脚本版本号 </summary>
@@ -194,6 +196,8 @@ namespace EasyFramework.Edit
 
         public readonly string ScriptAuthor => "Script Author Name";
 
+        public readonly string EditorUser => "Editor User";
+
         public readonly string ScriptVersion => "Script Version";
 
         public readonly string UnderProjectPath => "Under The Project Path";
@@ -290,6 +294,8 @@ namespace EasyFramework.Edit
         public readonly string EditorLanguage => "EF框架面板语言";
 
         public readonly string ScriptAuthor => "脚本作者";
+
+        public readonly string EditorUser => "编辑器用户";
 
         public readonly string ScriptVersion => "脚本版本号";
 
