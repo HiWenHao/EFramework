@@ -27,7 +27,7 @@ namespace EasyFramework.UI
                 BoxObject.localPosition = Vector3.zero;
                 m_timer = .7f;
                 BoxObject.gameObject.SetActive(true);
-                EF.Timer.AddCountdownEvent(0.04f, delegate
+                EF.Timer.AddOnce(0.04f, delegate
                 {
                     m_bgHorizontal.spacing += .1f;
                 });

@@ -34,7 +34,7 @@ namespace EasyFramework.Managers
             m_target = new GameObject("UI").transform;
             m_target.SetParent(EF.Managers);
 
-            //Create ui root object.
+            //CreateTimeEvent ui root object.
             {
                 UICamera = new GameObject("_UICamera").AddComponent<Camera>();
                 UICamera.orthographic = true;

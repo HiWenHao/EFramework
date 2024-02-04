@@ -19,7 +19,7 @@ namespace GMTest
             #region Scroll Rect Pro text
             if (false)
             {
-                EF.Timer.AddCountdownEvent(1.0f, delegate
+                EF.Timer.AddOnce(1.0f, delegate
                 {
                     ScrollRectPro _roH = GameObject.Find("Scroll View Pro_H").GetComponent<ScrollRectPro>();
                     _roH.InIt(delegate (GameObject go, int idx)
@@ -39,26 +39,18 @@ namespace GMTest
 
             //GM.SourcesManager.PlayBGMByName("BGM", true);
             #region TimeManager Test
-            if (false)                      //  if want to test, plase change false to true.
+            if (false)
             {
                 Action timeAction = () =>
                 {
                     D.Log("TimerEvent 3f");
                 };
-                EF.Timer.AddTimeEvent(1f, () => { D.Log("TimerEvent 1f"); });
-                EF.Timer.AddTimeEvent(3f, timeAction);
-                EF.Timer.AddTimeEvent(5f, () => { D.Log("TimerEvent 5f"); });
-                EF.Timer.RemoveTimeEvent(timeAction);
-
-                Action countdownAction = () =>
-                {
-                    D.Error("countdownEvent 4f");
-                };
-                EF.Timer.AddCountdownEvent(2f, () => { D.Error("countdownEvent 2f"); });
-                EF.Timer.AddCountdownEvent(4f, countdownAction);
-                EF.Timer.AddCountdownEvent(6f, () => { D.Error("countdownEvent 6f"); });
-                EF.Timer.RemoveCountdownEvent(countdownAction);
-            }
+                EF.Timer.AddOnce(1f, () => { D.Log("TimerEvent 1f"); });
+                //EF.Timer.Add(1f, 0f, 1, () => { D.Log("TimerEvent 1f"); });   //上边的可以写成这样: 只做一次循环，循环前延时1s
+                int _timeId = EF.Timer.AddOnce(3f, timeAction);
+                EF.Timer.AddOnce(5f, () => { D.Log("TimerEvent 5f"); });
+                EF.Timer.RemoveAt(_timeId);
+            }//  if want to test, plase change false to true.
             #endregion
         }
         // Update is called once per frame
@@ -142,7 +134,7 @@ namespace GMTest
             if (Input.GetKeyDown(KeyCode.L))
             {
                 D.Log(EF.Timer.TotalTime + "<=== is Current time.  ");
-                EF.Timer.AddCountdownEvent(2f, () => { D.Error("countdownEvent 2f"); });
+                EF.Timer.AddOnce(2f, () => { D.Error("countdownEvent 2f"); });
             }
             #endregion
 

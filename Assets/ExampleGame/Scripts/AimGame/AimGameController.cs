@@ -173,7 +173,7 @@ namespace AimGame
         void OnGetBullet(Transform go)
         {
             go.gameObject.SetActive(true);
-            EF.Timer.AddCountdownEvent(.25f, delegate
+            EF.Timer.AddOnce(.25f, delegate
             {
                 if (quitGame)
                     return;
@@ -204,7 +204,7 @@ namespace AimGame
         void OnGetBulletHole(Transform go)
         {
             go.gameObject.SetActive(true);
-            EF.Timer.AddCountdownEvent(2.0f, delegate
+            EF.Timer.AddOnce(2.0f, delegate
             {
                 if (quitGame)
                 {

@@ -35,7 +35,7 @@ namespace EasyFramework.Managers
 
         #region Target folder operation. 目标文件夹操作
         /// <summary>
-        /// Create folder by name.创建该名字文件夹
+        /// CreateTimeEvent folder by name.创建该名字文件夹
         /// </summary>
         /// <param name="folderName">folder`s name. 文件夹名称.</param>
         public void CreatAssetsFolder(string folderName)

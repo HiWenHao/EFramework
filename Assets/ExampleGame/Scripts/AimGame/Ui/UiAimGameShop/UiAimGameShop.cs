@@ -72,7 +72,7 @@ namespace AimGame
 				Image _img = GameObject.Instantiate(Img_GunShowPic, Img_GunShowPic.transform.parent);
 				_img.color = new Color(Random.Range(0,1.0f), Random.Range(0, 1.0f), Random.Range(0, 1.0f));
             }
-			EF.Timer.AddCountdownEvent(0.1f, delegate
+			EF.Timer.AddOnce(0.1f, delegate
 			{
                 Img_GunShowPic.transform.parent.GetComponent<GridLayoutGroup>().enabled = false;
             });

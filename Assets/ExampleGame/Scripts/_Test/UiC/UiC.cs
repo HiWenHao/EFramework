@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-20 09-51-11
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-20 10-08-19
+ * ModifyTime:    2024-02-04 17:20:11
  * ScriptVersion: 0.1 
  * ================================================
 */
@@ -22,7 +22,8 @@ namespace GMTest
     /// </summary>
     public class UiC : UIPageBase
     {
-        Action timeEvent, CountdownEvent;
+        int m_TimeEventId;
+        Action timeEvent;
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto
 		private Text Txt_TotalTime;
@@ -34,22 +35,17 @@ namespace GMTest
 		public override void Awake(GameObject obj, params object[] args)
 		{
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
-			Txt_TotalTime = EF.Tool.Find<Text>(obj.transform, "Txt_TotalTime") ;
-			Sld_Timer = EF.Tool.Find<Slider>(obj.transform, "Sld_Timer") ;
+			Txt_TotalTime = EF.Tool.Find<Text>(obj.transform, "Txt_TotalTime");
+			Sld_Timer = EF.Tool.Find<Slider>(obj.transform, "Sld_Timer");
 			EF.Tool.Find<Button>(obj.transform, "Btn_QuitC").RegisterInListAndBindEvent(OnClickBtn_QuitC, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_AddTimeEvent").RegisterInListAndBindEvent(OnClickBtn_AddTimeEvent, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_RemoveTimeEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveTimeEvent, ref m_AllButtons);
-			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent1").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent1, ref m_AllButtons);
-			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent3").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent3, ref m_AllButtons);
-			EF.Tool.Find<Button>(obj.transform, "Btn_AddCountdownEvent5").RegisterInListAndBindEvent(OnClickBtn_AddCountdownEvent5, ref m_AllButtons);
-			EF.Tool.Find<Button>(obj.transform, "Btn_RemoveCountdownEvent").RegisterInListAndBindEvent(OnClickBtn_RemoveCountdownEvent, ref m_AllButtons);
             #endregion  Find components end. -- Auto
 
             D.Warning("C init" + obj.transform.childCount);
 
             Sld_Timer.onValueChanged.AddListener(EF.Timer.SetTimeScale);
             timeEvent = delegate { D.Warning("TimerEvent is done.   10f"); };
-            CountdownEvent = delegate { D.Warning("CountdownEvent is done.   3f"); };
 
             foreach (var item in args)
             {
@@ -95,30 +91,11 @@ namespace GMTest
         void OnClickBtn_AddTimeEvent()
         {
             D.Warning("Add timerEvent with 10.0f");
-            EF.Timer.AddTimeEvent(10f, timeEvent);
+            m_TimeEventId = EF.Timer.AddOnce(10f, timeEvent);
         }
         void OnClickBtn_RemoveTimeEvent()
         {
-            EF.Timer.RemoveTimeEvent(timeEvent);
-        }
-        void OnClickBtn_AddCountdownEvent1()
-        {
-            D.Log("Add countdownEvent with 1.0f");
-            EF.Timer.AddCountdownEvent(1.0f, delegate { D.Log("CountdownEvent is done.   1.0f"); });
-        }
-        void OnClickBtn_AddCountdownEvent3()
-        {
-            D.Warning("Add countdownEvent with 3.0f");
-            EF.Timer.AddCountdownEvent(3.0f, CountdownEvent);
-        }
-        void OnClickBtn_AddCountdownEvent5()
-        {
-            D.Correct("Add countdownEvent with 5.0f");
-            EF.Timer.AddCountdownEvent(5.0f, delegate { D.Correct("CountdownEvent is done.   5.0f"); });
-        }
-        void OnClickBtn_RemoveCountdownEvent()
-        {
-            EF.Timer.RemoveCountdownEvent(CountdownEvent);
+            EF.Timer.RemoveAt(m_TimeEventId);
         }
 		#endregion button event.  Do not change here.不要更改这行 -- Auto
 	}

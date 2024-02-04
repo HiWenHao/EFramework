@@ -336,7 +336,7 @@ namespace EasyFramework.Managers
 
         #region Create one downloader.创建一个下载器
         /// <summary>
-        /// Create one downloader.创建一个下载器
+        /// CreateTimeEvent one downloader.创建一个下载器
         /// </summary>
         IEnumerator CreateDownloader()
         {
