@@ -8,7 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using BestHTTP;
+
 using LitJson;
 using System;
 using System.Text;
@@ -21,6 +21,28 @@ namespace EasyFramework.Managers
     /// </summary>
     public class HttpsManager : Singleton<HttpsManager>, IManager
     {
+        int IManager.ManagerLevel => throw new NotImplementedException();
+
+        public void Init()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Quit()
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISingleton.Init()
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISingleton.Quit()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 返回码
         /// </summary>
@@ -31,7 +53,7 @@ namespace EasyFramework.Managers
             /// </summary>
             Success = 200,
         }
-
+        /*
         const string Token = "";
         const string Domain = "";
 
@@ -227,5 +249,6 @@ namespace EasyFramework.Managers
             return false;
         }
         #endregion
+        */
     }
 }

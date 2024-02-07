@@ -233,7 +233,7 @@ namespace EasyFramework.Edit.Setting
         {
             "TimeManager",
             "HttpManager",
-            "SocketManager",
+            "WebSocketManager",
             "LoadManager",
             "ToolManager",
             "SceneManager",
