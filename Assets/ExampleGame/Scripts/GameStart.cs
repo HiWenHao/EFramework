@@ -56,35 +56,36 @@ namespace EFExample
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);
 
-            #region 网络连接
             //启用网络连接，如果只有一个网络连接时，则可以不接取连接id
-            //int _wsID = EF.Socket.CreateOne("wss://echo.websocket.events", null,
-            EF.Socket.CreateOne("wss://echo.websocket.events", null, 
-                (open) =>
-                {
-                    EasyFramework.D.Log($"OnOpen: \t e:{open}");
-                },
-                (close) =>
-                {
-                    EasyFramework.D.Warning($"OnClosed: \t e:{close.Reason}");
-                },
-                (error) =>
-                {
-                    EasyFramework.D.Error($"OnError: \t e:{error.Message}");
-                },
-                (message) =>
-                {
-                    EasyFramework.D.Correct($"OnMessage:  \t e:{message.Data}");
-                }
-            );
+            if (false)
+            {
+                //int _wsID = EF.Socket.CreateOne("wss://echo.websocket.events", null,
+                EF.Socket.CreateOne("wss://echo.websocket.events", null,
+                    (open) =>
+                    {
+                        EasyFramework.D.Log($"OnOpen: \t e:{open}");
+                    },
+                    (close) =>
+                    {
+                        EasyFramework.D.Warning($"OnClosed: \t e:{close.Reason}");
+                    },
+                    (error) =>
+                    {
+                        EasyFramework.D.Error($"OnError: \t e:{error.Message}");
+                    },
+                    (message) =>
+                    {
+                        EasyFramework.D.Correct($"OnMessage:  \t e:{message.Data}");
+                    }
+                );
 
-            //EF.Socket.Connect(_wsID);
-            //EF.Socket.Send("That a message to server.", _wsID);
-            //EF.Socket.Dispose(_wsID);
-            EF.Socket.Connect();
-            EF.Socket.Send("That a message to server.");
-            EF.Socket.Dispose();
-            #endregion
+                //EF.Socket.Connect(_wsID);
+                //EF.Socket.Send("That a message to server.", _wsID);
+                //EF.Socket.Dispose(_wsID);
+                EF.Socket.Connect();
+                EF.Socket.Send("That a message to server.");
+                EF.Socket.Dispose();
+            }
 
             //UI进入
             //EF.Ui.Push(new You Class());

@@ -1,6 +1,7 @@
 ﻿/* 
  * ================================================
  * Describe:      This script is used to control the websocket managers.     Thanks to the author: psygames, can join his QQ group (1126457634) get the latest version.
+ * Describe:      Related website: https://websockets.spec.whatwg.org/
  * Author:        psygames
  * CreationTime:  2016-06-25 00:00:00
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
