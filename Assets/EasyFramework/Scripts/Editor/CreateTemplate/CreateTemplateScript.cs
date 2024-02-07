@@ -21,6 +21,7 @@ namespace EasyFramework.Edit
     class CreateTemplateScript
     {
         //脚本模板路径
+        private readonly static string GameLauncherPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/GameLauncher.cs.txt";
         private readonly static string SingleScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/SingleScript.cs.txt";
         private readonly static string TemplateScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/TemplateScript.cs.txt";
         private readonly static string MonoSingleScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/MonoSingleScript.cs.txt";
@@ -49,6 +50,15 @@ namespace EasyFramework.Edit
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewMonoSingleScript.cs",
             null, MonoSingleScriptPath);
+        }
+
+        [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
+        static void CreateGameLauncherScript()
+        {
+            CreateScriptAsset.ScriptName = "GameLauncher";
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
+            GetSelectedPathOrFallback() + "/GameLauncher.cs",
+            null, GameLauncherPath);
         }
 
         public static string GetSelectedPathOrFallback()

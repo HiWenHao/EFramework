@@ -58,10 +58,15 @@ namespace EasyFramework.Edit
         {
             Application.OpenURL("https://jq.qq.com/?_wv=1027&k=4GvMJd6w");
         }
-        [MenuItem("EFTools/About Us/Open Git Page", false, 100001)]
+        [MenuItem("EFTools/About Us/Open git page", false, 100001)]
         private static void OpenGitPage()
         {
             Application.OpenURL("https://github.com/HiWenHao/EFramework");
+        }
+        [MenuItem("EFTools/About Us/Report an iuess", false, 100002)]
+        private static void ReportAnIuess()
+        {
+            Application.OpenURL("https://github.com/HiWenHao/EFramework/issues");
         }
         #endregion
     }
