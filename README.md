@@ -16,7 +16,7 @@ Microsoft Visual Studio Professional 2022
 - [点击链接加入群聊【EF】](https://jq.qq.com/?_wv=1027&k=4GvMJd6w)
 
 ## Xmind文件
-[EasyFramework.xmind](https://github.com/HiWenHao/EFramework/blob/master/Assets/EasyFramework/Other/EF.xmind)
+[EasyFramework.xmind](https://github.com/HiWenHao/EFramework/blob/master/Assets/EasyFramework/EFAssets/Other/EasyFramework-Unity.xmind)
 统计了项目整体框架内容，随着框架再慢慢完善的同时，该文件也会被同时更新。
 
 ## 推荐仓库
