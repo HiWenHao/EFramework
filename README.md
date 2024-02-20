@@ -27,6 +27,3 @@ Microsoft Visual Studio Professional 2022
    
 **[HybridCLR](https://github.com/focus-creative-games/hybridclr)**   
     一个特性完整、零成本、高性能、低内存的近乎完美的Unity全平台原生c#热更方案   
-   
-**[Deer_GameFramework_Wolong](https://github.com/It-Life/Deer_GameFramework_Wolong)**   
-    基于GameFramework框架衍生的一个wolong热更框架（HybridCLR(wolong)），实现除GameFramework库底层代码以及更新流程逻辑层代码，其余流程及义务层代码全部热更。
