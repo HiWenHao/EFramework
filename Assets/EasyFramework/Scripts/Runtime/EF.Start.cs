@@ -52,7 +52,7 @@ public partial class EF
     public static ScenesManager Scenes => ScenesManager.Instance;
 
     /// <summary> 网络Socket管理器 </summary>
-    public static WebSocketManager Socket => WebSocketManager.Instance;
+    public static SocketManager Socket => SocketManager.Instance;
 
     /// <summary> 文件夹管理器 </summary>
     public static FolderManager Folder => FolderManager.Instance;
