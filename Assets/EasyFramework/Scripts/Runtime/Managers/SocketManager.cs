@@ -47,11 +47,18 @@ namespace EasyFramework.Managers
         /// <param name="onIncompleteFrame">Called when an incomplete frame received. No attempt will be made to reassemble these fragments internally, and no reference are stored after this event to this frame.  当接收到不完整帧时调用。不会尝试在内部重新组装这些片段，并且在此事件之后不会存储对该帧的引用。</param>
         public WebSocket CreateAndOpenWebSocket(Uri uri, OnWebSocketOpenDelegate onOpen = null, OnWebSocketMessageDelegate onMessage = null,
             OnWebSocketBinaryDelegate onBinary = null, OnWebSocketClosedDelegate onClosed = null, OnWebSocketErrorDelegate onError = null,
-            OnWebSocketErrorDescriptionDelegate onErrorDescription = null, OnWebSocketIncompleteFrameDelegate onIncompleteFrame = null
+            OnWebSocketErrorDescriptionDelegate onErrorDescription = null
+#if (!UNITY_WEBGL || UNITY_EDITOR)
+            , OnWebSocketIncompleteFrameDelegate onIncompleteFrame = null
+#endif
             )
         {
             WebSocket _ws = new WebSocket(uri);
-            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription, onIncompleteFrame);
+            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
+#if (!UNITY_WEBGL || UNITY_EDITOR)
+                , onIncompleteFrame
+#endif
+                );
             return _ws;
         }
 
@@ -74,12 +81,23 @@ namespace EasyFramework.Managers
         /// <param name="extensions">Optional IExtensions implementations. 可选IExtensions实现</param>
         public WebSocket CreateAndOpenWebSocket(Uri uri, string origin, string protocol, OnWebSocketOpenDelegate onOpen = null,
             OnWebSocketMessageDelegate onMessage = null, OnWebSocketBinaryDelegate onBinary = null, OnWebSocketClosedDelegate onClosed = null,
-            OnWebSocketErrorDelegate onError = null, OnWebSocketErrorDescriptionDelegate onErrorDescription = null,
-            OnWebSocketIncompleteFrameDelegate onIncompleteFrame = null, params BestHTTP.WebSocket.Extensions.IExtension[] extensions
+            OnWebSocketErrorDelegate onError = null, OnWebSocketErrorDescriptionDelegate onErrorDescription = null
+#if (!UNITY_WEBGL || UNITY_EDITOR)
+            , OnWebSocketIncompleteFrameDelegate onIncompleteFrame = null,
+            params BestHTTP.WebSocket.Extensions.IExtension[] extensions
+#endif
             )
         {
-            WebSocket _ws = new WebSocket(uri, origin, protocol, extensions);
-            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription, onIncompleteFrame);
+            WebSocket _ws = new WebSocket(uri, origin, protocol
+                #if (!UNITY_WEBGL || UNITY_EDITOR)
+                , extensions
+                #endif
+                );
+            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
+#if (!UNITY_WEBGL || UNITY_EDITOR)
+                , onIncompleteFrame
+#endif
+                );
             return _ws;
         }
 
@@ -110,7 +128,10 @@ namespace EasyFramework.Managers
 
         void Register(WebSocket ws, OnWebSocketOpenDelegate onOpen, OnWebSocketMessageDelegate onMessage,
             OnWebSocketBinaryDelegate onBinary, OnWebSocketClosedDelegate onClosed, OnWebSocketErrorDelegate onError,
-            OnWebSocketErrorDescriptionDelegate onErrorDescription, OnWebSocketIncompleteFrameDelegate onIncompleteFrame
+            OnWebSocketErrorDescriptionDelegate onErrorDescription
+#if (!UNITY_WEBGL || UNITY_EDITOR)
+            , OnWebSocketIncompleteFrameDelegate onIncompleteFrame
+#endif
             )
         {
 #if !BESTHTTP_DISABLE_PROXY && !UNITY_WEBGL
@@ -124,7 +145,9 @@ namespace EasyFramework.Managers
             ws.OnClosed += onClosed;
             ws.OnError += onError;
             ws.OnErrorDesc += onErrorDescription;
+#if (!UNITY_WEBGL || UNITY_EDITOR)
             ws.OnIncompleteFrame += onIncompleteFrame;
+#endif
             ws.Open();
             Count++;
             m_WebSocketList.Add(ws);
@@ -139,7 +162,9 @@ namespace EasyFramework.Managers
             ws.OnClosed = null;
             ws.OnError = null;
             ws.OnErrorDesc = null;
+#if (!UNITY_WEBGL || UNITY_EDITOR)
             ws.OnIncompleteFrame = null;
+#endif
         }
     }
 }
