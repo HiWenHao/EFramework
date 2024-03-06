@@ -52,6 +52,43 @@ namespace EFExample
             //AimGame.ExcelDataCacheManager.CacheAllData();
             //EasyFramework.D.Correct(ETB.EDC_Example.Get(1).name);
 
+            //网络部分，还待完善
+            if (false)
+            {
+                BestHTTP.WebSocket.WebSocket _ws = EF.Socket.CreateAndOpenWebSocket(
+                    new System.Uri("wss://echo.websocket.events"),
+                    onOpen: (ws) =>
+                    {
+                        EasyFramework.D.Log("Socket onOpen !!!");
+                    },
+                    onMessage: (ws, msg) =>
+                    {
+                        EasyFramework.D.Log("Socket onMessage !!!   msg = " + msg);
+                    },
+                    onBinary: (ws, bytes) =>
+                    {
+                        EasyFramework.D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
+                    },
+                    onError: (ws, error) =>
+                    {
+                        EasyFramework.D.Error("Socket onError !!!   error = " + error);
+                    },
+                    onClosed: (ws, code, msg) =>
+                    {
+                        EasyFramework.D.Log("Socket onClosed !!!");
+                    },
+                    onErrorDescription: null,
+                    onIncompleteFrame: null
+                );
+                EF.Timer.AddOnce(1.0f, delegate
+                {
+                    _ws.Send("Hello gamer..");
+                });
+                EF.Timer.AddOnce(3.0f, delegate
+                {
+                    EF.Socket.DisposeDesignation(_ws);
+                });
+            }
 
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);

@@ -44,35 +44,43 @@ namespace PleaseModify
             //    //EF.Scenes.LoadSceneWithName("");
             //});
             
-            //启用网络连接，如果只有一个网络连接时，则可以不接取连接id
+            //网络部分，还待完善
             if (false)
             {
-                //int _wsID = EF.Socket.CreateOne("wss://echo.websocket.events", null,
-                EF.Socket.CreateOne("wss://echo.websocket.events", null,
-                    (open) =>
+                BestHTTP.WebSocket.WebSocket _ws = EF.Socket.CreateAndOpenWebSocket(
+                    new System.Uri("wss://echo.websocket.events"),
+                    onOpen: (ws) =>
                     {
-                        EasyFramework.D.Log($"OnOpen: \t e:{open}");
+                        EasyFramework.D.Log("Socket onOpen !!!");
                     },
-                    (close) =>
+                    onMessage: (ws, msg) =>
                     {
-                        EasyFramework.D.Warning($"OnClosed: \t e:{close.Reason}");
+                        EasyFramework.D.Log("Socket onMessage !!!   msg = " + msg);
                     },
-                    (error) =>
+                    onBinary: (ws, bytes) =>
                     {
-                        EasyFramework.D.Error($"OnError: \t e:{error.Message}");
+                        EasyFramework.D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
                     },
-                    (message) =>
+                    onError: (ws, error) =>
                     {
-                        EasyFramework.D.Correct($"OnMessage:  \t e:{message.Data}");
-                    }
+                        EasyFramework.D.Error("Socket onError !!!   error = " + error);
+                    },
+                    onClosed: (ws, code, msg) =>
+                    {
+                        EasyFramework.D.Log("Socket onClosed !!!");
+                    },
+                    onErrorDescription: null,
+                    onIncompleteFrame: null
                 );
-
-                //EF.Socket.Connect(_wsID);
-                //EF.Socket.Send("That a message to server.", _wsID);
-                //EF.Socket.Dispose(_wsID);
-                EF.Socket.Connect();
-                EF.Socket.Send("That a message to server.");
-                EF.Socket.Dispose();
+                EF.Timer.AddOnce(1.0f, delegate
+                {
+                    _ws.Send("Hello gamer..");
+                });
+                EF.Timer.AddOnce(3.0f, delegate
+                {
+                    EF.Socket.DisposeDesignation(_ws);
+                    _ws = null;
+                });
             }
 
             //UI进入
