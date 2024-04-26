@@ -24,13 +24,15 @@ namespace EasyFramework.UI
             {
             }
 
-            public BindData(string name, Component bindCom)
+            public BindData(string realName, string scriptName, Component bindCom)
             {
-                Name = name;
+                RealName = realName;
+                ScriptName = scriptName;
                 BindCom = bindCom;
             }
 
-            public string Name;
+            public string RealName;
+            public string ScriptName;
             public Component BindCom;
         }
 
@@ -53,5 +55,11 @@ namespace EasyFramework.UI
 
         [SerializeField]
         private string m_PrefabPath;
+
+        [SerializeField]
+        private bool m_SortByType = true;
+
+        [SerializeField]
+        private bool m_SortByNameLength = true;
     }
 }

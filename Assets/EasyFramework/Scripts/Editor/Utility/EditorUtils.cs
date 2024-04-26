@@ -82,7 +82,36 @@ namespace EasyFramework.Edit
         /// </summary>
         public static string RemovePunctuation(string str)
         {
-            return Regex.Replace(str, "[ \\[ \\] \\^ \\-_*×――(^)（）{}/【】$%~!@#$…&%￥—+=<>《》!！??？:：•`·、。，；,.;\"‘’“”-]", "");
+            return Regex.Replace(str, "[ \\[ \\] \\^ \\-*×――(^)（）{}/【】$%~!@#$…&%￥—+=<>《》!！??？:：•`·、。，；,.;'\"‘’“”-]", "");
+        }
+
+        /// <summary>
+        /// 按字符长度排序
+        /// </summary>
+        /// <param name="nameLength">名字长度</param>
+        /// <param name="strList">要对比的名字列表</param>
+        /// <param name="startIndex">起始索引</param>
+        /// <param name="endIndex">结束索引</param>
+        /// <returns>所在位置的索引值</returns>
+        public static int GetIndexWithLengthSort(int nameLength, System.Collections.Generic.List<string> strList, int startIndex, int endIndex)
+        {
+            if (endIndex < 0)
+                return 0;
+
+            int _endIndex = endIndex;
+            if (strList.Count < endIndex)
+            {
+                _endIndex = strList.Count - 1;
+                D.Warning("The parameter [ endIndex ] greater than array length, will be limited to array length minus one.");
+            }
+            for (int i = startIndex; i < _endIndex; i++)
+            {
+                if (nameLength < strList[i].Length)
+                {
+                    return i;
+                }
+            }
+            return _endIndex;
         }
 
         #endregion
