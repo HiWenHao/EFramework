@@ -16,7 +16,7 @@ namespace PleaseModify
 #endif
 
             #region Show platform infomation.展示平台信息
-            EasyFramework.D.Correct($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
+            EasyFramework.D.Emphasize($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
                 $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
                 $"  GPU: {SystemInfo.graphicsDeviceName}   " +
                 $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +

@@ -15,6 +15,6 @@ MonoBehaviour:
   m_AtlasFolder: Assets/EasyFramework/Resources/Texture/
   m_Objects:
   - {fileID: 102900000, guid: 03e10486aab84544e9ea941131a424c9, type: 3}
-  m_Atlas:
-  - {fileID: 4343727234628468602, guid: 4172a03f3fabd5d46a0d66a4b5e9b52e, type: 2}
+  - {fileID: 102900000, guid: 004c23ac746877d48ac730bc5d8a72bd, type: 3}
+  m_Atlas: []
   m_SpriteInfos: []

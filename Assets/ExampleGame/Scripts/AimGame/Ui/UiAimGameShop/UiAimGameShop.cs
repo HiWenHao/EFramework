@@ -102,7 +102,7 @@ namespace AimGame
 
 		void OnMouseEnterGunInfo(int index, bool inAndOut, bool down)
 		{
-			D.Correct($"index = {index}       inAndOut = {inAndOut}      down = {down}");
+			D.Emphasize($"index = {index}       inAndOut = {inAndOut}      down = {down}");
 
 			if (inAndOut && down)
                 AimGameController.Instance.ChangeGun(guns[index]);

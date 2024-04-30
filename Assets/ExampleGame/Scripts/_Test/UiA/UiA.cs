@@ -36,12 +36,12 @@ namespace GMTest
 			EF.Tool.Find<Button>(obj.transform, "Btn_StartAimGame").RegisterInListAndBindEvent(OnClickBtn_StartAimGame, ref m_AllButtons);
             #endregion  Find components end. -- Auto
 
-            D.Correct("A :   " + SerialId);
+            D.Emphasize("A :   " + SerialId);
         }
 
         public override void Open(params object[] args)
         {
-            D.Correct("A Open:   " + SerialId);
+            D.Emphasize("A Open:   " + SerialId);
             //EF.Ui.Push(new UiB(), false);
         }
 

@@ -37,6 +37,10 @@ namespace EasyFramework.Edit.AutoBind
         private SerializedProperty m_DeleteScript;
 
         private AutoBindSetting m_Setting;
+
+        private bool m_sortByType;
+        private bool m_sortByNameLength;
+
         private List<string> m_TempFiledNames;
         private List<string> m_TempComponentTypeNames;
         private Dictionary<string, int> m_ComponentsName;
@@ -64,6 +68,23 @@ namespace EasyFramework.Edit.AutoBind
             m_TempFiledNames = new List<string>();
             m_TempComponentTypeNames = new List<string>();
             m_ComponentsName = new Dictionary<string, int>();
+
+            m_sortByType = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
+            m_sortByNameLength = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+            m_SortByType.boolValue = m_sortByType;
+            m_SortByNameLength.boolValue = m_sortByNameLength;
+        }
+
+        private void OnDisable()
+        {
+            m_TempFiledNames.Clear();
+            m_ComponentsName.Clear();
+            m_TempComponentTypeNames.Clear();
+
+            m_Setting = null;
+            m_TempFiledNames = null;
+            m_ComponentsName = null;
+            m_TempComponentTypeNames = null;
         }
 
         public override void OnInspectorGUI()
@@ -161,8 +182,18 @@ namespace EasyFramework.Edit.AutoBind
         {
             GUILayout.Space(12.0f);
             GUILayout.BeginHorizontal();
-            m_SortByType.boolValue = GUILayout.Toggle(m_SortByType.boolValue, "按类型排序");
-            m_SortByNameLength.boolValue = GUILayout.Toggle(m_SortByNameLength.boolValue, "外加名字长度");
+            m_sortByType = GUILayout.Toggle(m_sortByType, LC.Language.SortByType);
+            if (m_sortByType != m_SortByType.boolValue)
+            {
+                m_SortByType.boolValue = m_sortByType;
+                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", m_sortByType ? 1 : 0);
+            }
+            m_sortByNameLength = GUILayout.Toggle(m_sortByNameLength, LC.Language.SortByNameLength);
+            if (m_sortByNameLength != m_SortByNameLength.boolValue)
+            {
+                m_SortByNameLength.boolValue = m_sortByNameLength;
+                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", m_sortByNameLength ? 1 : 0);
+            }
             GUILayout.EndHorizontal();
             if (GUILayout.Button(LC.Language.AutoBindingComponents))
             {

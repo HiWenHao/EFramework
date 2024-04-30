@@ -13,7 +13,8 @@ using System;
 namespace EasyFramework
 {
     /// <summary>
-    /// The event trigger with on value changed. 值改变触发器
+    /// The event trigger with on value changed.
+	/// <para>值改变触发器</para>
     /// </summary>
     public class BindableProperty<T> where T : IEquatable<T>
 	{

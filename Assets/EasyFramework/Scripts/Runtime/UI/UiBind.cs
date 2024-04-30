@@ -57,9 +57,9 @@ namespace EasyFramework.UI
         private string m_PrefabPath;
 
         [SerializeField]
-        private bool m_SortByType = true;
+        private bool m_SortByType;
 
         [SerializeField]
-        private bool m_SortByNameLength = true;
+        private bool m_SortByNameLength;
     }
 }

@@ -23,14 +23,26 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ScenesManager : Singleton<ScenesManager>, IManager
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("ScenesManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
+
         bool m_bol_IsLoading;
 		float m_flt_transition = 1.0f;
-		Transform LoadCanvas;
-		Image m_img_BG;
-		Text m_txt_PCTN;
+
+        Image m_img_BG;
+        Text m_txt_PCTN;
+        Transform LoadCanvas;
 		Slider m_slid_ProgressBar;
 		AsyncOperation m_asyncOperation;
+
 		Action m_act_Callback;
         void ISingleton.Init()
         {

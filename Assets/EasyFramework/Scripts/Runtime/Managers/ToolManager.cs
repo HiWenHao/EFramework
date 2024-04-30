@@ -18,10 +18,21 @@ namespace EasyFramework.Managers
 {
     /// <summary>
     /// To help other managers.
+    /// <para>工具管理器</para>
     /// </summary>
     public class ToolManager : Singleton<ToolManager>, IManager
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("ToolManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
+
         void ISingleton.Init()
         {
             m_screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
@@ -34,11 +45,15 @@ namespace EasyFramework.Managers
 
         #region Related to find.  查找相关
         /// <summary>
-        /// Recursive search transform with name. 根据名字递归查找
+        /// Recursive search transform with name. 
+        /// <para>根据名字递归查找</para>
         /// </summary>
-        /// <param name="parent">Want to find object`s parent. 想要查找物体的父级</param>
-        /// <param name="name">object name. 对象名字</param>
-        /// <returns></returns>
+        /// <param name="parent">Want to find object`s parent. 
+        /// <para>想要查找物体的父级</para></param>
+        /// <param name="name">object name. 
+        /// <para>对象名字</para></param>
+        /// <returns>Get the find object.
+        /// <para>获取查找对象</para></returns>
         public Transform Find(Transform parent, string name)
         {
             Transform _target = parent.Find(name);
@@ -57,12 +72,17 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Recursive search transform with name. 根据名字递归查找类型
+        /// Recursive search transform with name. 
+        /// <para>根据名字递归查找类型</para>
         /// </summary>
-        /// <typeparam name="T">The component type with T. T类型组件</typeparam>
-        /// <param name="parent">Want to find object`s parent. 想要查找物体的父级</param>
-        /// <param name="name">object name. 对象名字</param>
-        /// <returns></returns>
+        /// <typeparam name="T">The component type with T. 
+        /// <para>T类型组件</para></typeparam>
+        /// <param name="parent">Want to find object`s parent. 
+        /// <para>想要查找物体的父级</para></param>
+        /// <param name="name">object name. 
+        /// <para>对象名字</para></param>
+        /// <returns>Get the component with type of T. 
+        /// <para> 获取T类型的对象</para></returns>
         public T Find<T>(Transform parent, string name) where T : Component
         {
             Transform _target = parent.Find(name);
@@ -92,37 +112,42 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Related to audio. 音频相关
+
         /// <summary>
-        /// Audio clipto byte stream data.音频文件转字节流数据
+        /// Audio clipto byte stream data.
+        /// <para>音频文件转字节流数据</para>
         /// </summary>
-        /// <returns>byte[]</returns>
+        /// <param name="clip">Audio clip data<para>音频数据</para></param>
+        /// <returns>The byte[] for audio clip. 
+        /// <para>音频的字节数据</para></returns>
         public byte[] AudioClipToBytes(AudioClip clip)
         {
-            float[] samples = new float[clip.samples];
+            float[] _samples = new float[clip.samples];
 
-            clip.GetData(samples, 0);
+            clip.GetData(_samples, 0);
 
-            short[] intData = new short[samples.Length];
+            short[] _intData = new short[_samples.Length];
 
-            byte[] bytesData = new byte[samples.Length * 2];
+            byte[] _bytesData = new byte[_samples.Length * 2];
 
-            int rescaleFactor = 32767;
+            int _rescaleFactor = 32767;
 
-            for (int i = 0; i < samples.Length; i++)
+            for (int i = 0; i < _samples.Length; i++)
             {
-                intData[i] = (short)(samples[i] * rescaleFactor);
-                byte[] byteArr = new byte[2];
-                byteArr = BitConverter.GetBytes(intData[i]);
-                byteArr.CopyTo(bytesData, i * 2);
+                _intData[i] = (short)(_samples[i] * _rescaleFactor);
+                byte[] _byteArr = new byte[2];
+                _byteArr = BitConverter.GetBytes(_intData[i]);
+                _byteArr.CopyTo(_bytesData, i * 2);
             }
-            return bytesData;
+            return _bytesData;
         }
 
         /// <summary>
-        ///  Byte stream data to audio clip.字节流数据转音频文件
+        ///  Byte stream data to audio clip.
+        ///  <para>字节流数据转音频文件</para>
         /// </summary>
-        /// <param name="data">The byte stream.字节流数据</param>
-        /// <returns>AudioClip.</returns>
+        /// <param name="data">The byte stream.<para>字节流数据</para></param>
+        /// <returns>AudioClip.<para>音频数据</para></returns>
         public AudioClip BytesToAudioClip(byte[] data)
         {
             float[] _clipData = new float[data.Length / 2];
@@ -138,9 +163,11 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        ///  Float array to audio clip.单精度浮点型数组转音频文件
+        ///  Float array to audio clip.
+        ///  <para>单精度浮点型数组转音频文件</para>
         /// </summary>
-        /// <param name="data">The byte stream.字节流数据</param>
+        /// <param name="data">The byte stream.
+        /// <para>字节流数据</para></param>
         /// <returns>AudioClip.</returns>
         public AudioClip FloatArrayToAudioClip(float[] data)
         {
@@ -163,10 +190,12 @@ namespace EasyFramework.Managers
         const int BlockSize_16Bit = 2;
         /// <summary>
         /// Load the audio clip with unity data path.
-        /// 通过路径加载音频文件
+        /// <para>通过路径加载音频文件</para>
         /// </summary>
-        /// <param name="filePath">The local file path. 文件路径</param>
-        /// <param name="name">the file name, please bring the suffix, eg: .wav  文件名字，请带着后缀,例如: .wav</param>
+        /// <param name="filePath">The local file path. 
+        /// <para>文件路径</para></param>
+        /// <param name="name">the file name, please bring the suffix, eg: .wav
+        /// <para>文件名字，请带着后缀,例如: .wav</para></param>
         public AudioClip GetAudioClipWithPath(string filePath, string name)
         {
             if (!filePath.StartsWith(Application.persistentDataPath) && !filePath.StartsWith(Application.dataPath))
@@ -178,16 +207,26 @@ namespace EasyFramework.Managers
             return ByteArrayToAudioClip(fileBytes, name);
         }
 
+        /// <summary>
+        /// Get one audio clip with byte array
+        /// <para>根据字节数据获取音频文件</para>
+        /// </summary>
+        /// <param name="fileBytes">Byte[] - A byte array
+        /// <para>一个字节数组</para></param>
+        /// <param name="name"> Audio clip name for byte array.
+        /// <para>被创建音频的名字</para></param>
+        /// <returns></returns>
+        /// <exception cref="Exception">不支持位深度</exception>
         public AudioClip ByteArrayToAudioClip(byte[] fileBytes, string name)
         {
             int subchunk1 = BitConverter.ToInt32(fileBytes, 16);
-            UInt16 audioFormat = BitConverter.ToUInt16(fileBytes, 20);
+            ushort audioFormat = BitConverter.ToUInt16(fileBytes, 20);
             // NB: Only uncompressed PCM wav files are supported.
             string formatCode = FormatCode(audioFormat);
             Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
-            UInt16 channels = BitConverter.ToUInt16(fileBytes, 22);
+            ushort channels = BitConverter.ToUInt16(fileBytes, 22);
             int sampleRate = BitConverter.ToInt32(fileBytes, 24);
-            UInt16 bitDepth = BitConverter.ToUInt16(fileBytes, 34);
+            ushort bitDepth = BitConverter.ToUInt16(fileBytes, 34);
             int headerOffset = 16 + 4 + subchunk1 + 4;
             int subchunk2 = BitConverter.ToInt32(fileBytes, headerOffset);
             float[] data = bitDepth switch
@@ -203,7 +242,7 @@ namespace EasyFramework.Managers
             return audioClip;
         }
 
-        #region wav file bytes to Unity AudioClip conversion methods
+        #region wav file bytes to Unity AudioClip conversion methods wav文件字节到Unity AudioClip的转换方法
         private float[] Convert8BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
             int wavSize = BitConverter.ToInt32(source, headerOffset);
@@ -283,12 +322,18 @@ namespace EasyFramework.Managers
         }
         #endregion
 
+        /// <summary>
+        /// Make one audio clip convert to byte array.
+        /// <para>使一个音频文件转换为字节数组</para>
+        /// </summary>
+        /// <param name="audioClip">音频文件</param>
+        /// <returns>Byte array<para>字节数组</para></returns>
         public byte[] AudioClipToByteArray(AudioClip audioClip)
         {
             MemoryStream stream = new MemoryStream();
             const int headerSize = 44;
             // get bit depth
-            UInt16 bitDepth = 16; //BitDepth (audioClip);
+            ushort bitDepth = 16; //BitDepth (audioClip);
                                   // NB: Only supports 16 bit
                                   //Debug.AssertFormat (bitDepth == 16, "Only converting 16 bit is currently supported. The audio clip data is {0} bit.", bitDepth);
                                   // total file size = 44 bytes for header format and audioClip.samples * factor due to float to Int16 / sbyte conversion
@@ -324,7 +369,7 @@ namespace EasyFramework.Managers
             Debug.AssertFormat(count == total, "Unexpected wav descriptor byte count: {0} == {1}", count, total);
             return count;
         }
-        private int WriteFileFormat(ref MemoryStream stream, int channels, int sampleRate, UInt16 bitDepth)
+        private int WriteFileFormat(ref MemoryStream stream, int channels, int sampleRate, ushort bitDepth)
         {
             int count = 0;
             int total = 24;
@@ -332,21 +377,21 @@ namespace EasyFramework.Managers
             count += WriteBytesToMemoryStream(ref stream, id, "FMT_ID");
             int subchunk1Size = 16; // 24 - 8
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(subchunk1Size), "SUBCHUNK_SIZE");
-            UInt16 audioFormat = 1;
+            ushort audioFormat = 1;
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(audioFormat), "AUDIO_FORMAT");
-            UInt16 numChannels = Convert.ToUInt16(channels);
+            ushort numChannels = Convert.ToUInt16(channels);
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(numChannels), "CHANNELS");
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(sampleRate), "SAMPLE_RATE");
             int byteRate = sampleRate * channels * BytesPerSample(bitDepth);
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(byteRate), "BYTE_RATE");
-            UInt16 blockAlign = Convert.ToUInt16(channels * BytesPerSample(bitDepth));
+            ushort blockAlign = Convert.ToUInt16(channels * BytesPerSample(bitDepth));
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(blockAlign), "BLOCK_ALIGN");
             count += WriteBytesToMemoryStream(ref stream, BitConverter.GetBytes(bitDepth), "BITS_PER_SAMPLE");
             // Validate format
             Debug.AssertFormat(count == total, "Unexpected wav fmt byte count: {0} == {1}", count, total);
             return count;
         }
-        private int WriteFileData(ref MemoryStream stream, AudioClip audioClip, UInt16 bitDepth)
+        private int WriteFileData(ref MemoryStream stream, AudioClip audioClip, ushort bitDepth)
         {
             int count = 0;
             int total = 8;
@@ -394,20 +439,22 @@ namespace EasyFramework.Managers
 
         /// <summary>
         /// Calculates the bit depth of an AudioClip
+        /// <para>计算音频文件的位深度</para>
         /// </summary>
-        /// <returns>The bit depth. Should be 8 or 16 or 32 bit.</returns>
-        /// <param name="audioClip">Audio clip.</param>
-        public UInt16 BitDepth(AudioClip audioClip)
+        /// <returns>The bit depth. Should be 8 or 16 or 32 bit.
+        /// <para>位深度, 应该是8位，16位或32位</para></returns>
+        /// <param name="audioClip">Audio clip.<para>音频文件</para></param>
+        public ushort BitDepth(AudioClip audioClip)
         {
-            UInt16 bitDepth = Convert.ToUInt16(audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
+            ushort bitDepth = Convert.ToUInt16(audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
             Debug.AssertFormat(bitDepth == 8 || bitDepth == 16 || bitDepth == 32, "Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth);
             return bitDepth;
         }
-        private int BytesPerSample(UInt16 bitDepth)
+        private int BytesPerSample(ushort bitDepth)
         {
             return bitDepth / 8;
         }
-        private string FormatCode(UInt16 code)
+        private string FormatCode(ushort code)
         {
             switch (code)
             {

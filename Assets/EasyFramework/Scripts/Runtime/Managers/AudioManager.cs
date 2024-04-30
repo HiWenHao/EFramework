@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:        The class is source manager.
+ * Describe:        The class is source m_managerLevel.
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-14:33:01
  * ModifyAuthor:    Xiaohei.Wang(Wenhao)
@@ -21,7 +21,14 @@ namespace EasyFramework.Managers
     /// </summary>
     public class AudioManager : Singleton<AudioManager>, IManager, IUpdate
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("SourceManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel { get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
         private bool isPausing;
         private bool isMute;
         private AudioSource m_as_BGM;

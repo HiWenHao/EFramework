@@ -50,21 +50,21 @@ namespace GMTest
 			Sld_Volum.onValueChanged.AddListener(OnVolumChanged);
 
 
-            D.Correct("B :   " + SerialId);
+            D.Emphasize("B :   " + SerialId);
         }
 
         public override void OnFocus(bool isPause, params object[] args)
         {
-            D.Correct("B pause:      " + isPause);
+            D.Emphasize("B pause:      " + isPause);
             foreach (var item in args)
             {
-                D.Correct($"B enter  {item}");
+                D.Emphasize($"B enter  {item}");
             }
         }
 
         public override void Quit()
         {
-            D.Correct("B quit" + SerialId);
+            D.Emphasize("B quit" + SerialId);
             #region Quit Buttons.按钮 -- Auto
             m_AllButtons.ReleaseAndRemoveEvent();
 			m_AllButtons = null;

@@ -29,7 +29,7 @@ namespace EFExample
             #endregion
 
             #region Show platform infomation.展示平台信息
-            EasyFramework.D.Correct($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
+            EasyFramework.D.Emphasize($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
                 $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
                 $"  GPU: {SystemInfo.graphicsDeviceName}   " +
                 $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
@@ -50,7 +50,7 @@ namespace EFExample
             //读表工具初始化
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
             //AimGame.ExcelDataCacheManager.CacheAllData();
-            //EasyFramework.D.Correct(ETB.EDC_Example.Get(1).name);
+            //EasyFramework.D.Emphasize(ETB.EDC_Example.Get(1).name);
 
             //网络部分，还待完善
             if (false)

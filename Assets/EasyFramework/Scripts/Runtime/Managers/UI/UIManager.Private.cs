@@ -1,6 +1,6 @@
 /* 
  * ================================================
- * Describe:      The class is ui page manager
+ * Describe:      The class is ui page m_managerLevel
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-03-02 18:00:58
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
@@ -22,7 +22,16 @@ namespace EasyFramework.Managers
 {
     public partial class UIManager : Singleton<UIManager>, IManager, IUpdate
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("UIManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
 
         private readonly string pageBaseObjectName = "UIPages";
         private readonly string showBoxBaseObjectName = "UIShowBox";

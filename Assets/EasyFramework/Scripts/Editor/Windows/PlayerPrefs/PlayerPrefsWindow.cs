@@ -67,7 +67,7 @@ namespace EasyFramework.Windows
                 {
                     foreach (var item in GetAllKeysInWindows())
                     {
-                        D.Correct(item);
+                        D.Emphasize(item);
                         Datas.Add(new PlayerPrefsData()
                         {
                             Key = item,
@@ -355,7 +355,7 @@ namespace EasyFramework.Windows
             {
                 RegistryKey _user = Registry.CurrentUser;
                 RegistryKey _registry = _user.CreateSubKey($"Software\\Unity\\UnityEditor\\{PlayerSettings.companyName}\\{PlayerSettings.productName}");
-                //D.Correct(_unityRegedit);
+                //D.Emphasize(_unityRegedit);
                 string[] _names = _registry.GetValueNames();
                 for (int i = 0; i < _names.Length; i++)
                 {

@@ -778,8 +778,10 @@ namespace EasyFramework.UI
         protected GameObject GetPoolsObj()
         {
             GameObject cell = null;
-            if (m_ElementsPool.Count > 0) cell = m_ElementsPool.Pop();
-            if (cell == null) cell = Instantiate(this.Elemental) as GameObject;
+            if (m_ElementsPool.Count > 0)
+                cell = m_ElementsPool.Pop();
+            if (cell == null)
+                cell = Instantiate(Elemental);
 
             cell.transform.SetParent(content.transform);
             cell.transform.localScale = Vector3.one;
@@ -1046,6 +1048,12 @@ namespace EasyFramework.UI
 
             RectTransform cellRectTrans = Elemental.GetComponent<RectTransform>();
             cellRectTrans.pivot = new Vector2(0f, 1f);
+            cellRectTrans.anchorMax = new Vector2(0f, 1f);
+            Vector2 _v2 = cellRectTrans.sizeDelta;
+            if (_v2.x == 0)
+                cellRectTrans.sizeDelta = new Vector2(Screen.width, _v2.y);
+            if (_v2.y == 0)
+                cellRectTrans.sizeDelta = new Vector2(_v2.x, Screen.height);
             CheckAnchor(cellRectTrans);
             cellRectTrans.anchoredPosition = Vector2.zero;
 

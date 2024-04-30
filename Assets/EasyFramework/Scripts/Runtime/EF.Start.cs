@@ -4,7 +4,7 @@
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-01-14:33:01
  * ModifyAuthor:    Xiaohei.Wang(Wenhao)
- * ModifyTime:      2022-05-01-14:33:01
+ * ModifyTime:      2024-04-28-15:32:44
  * Version:         1.0
  * ===============================================
  */
@@ -15,46 +15,46 @@ using UnityEngine;
 
 public partial class EF
 {
-    /// <summary> 场景中的EF对象 </summary>
+    /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }
 
-    /// <summary> 场景中单例父节点 </summary>
+    /// <summary> The singleton parent node in the scenario.<para>场景中单例父节点</para></summary>
     public static Transform Singleton { get; private set; }
 
-    /// <summary> 项目配置资源 </summary>
+    /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
     public static ProjectSetting Projects { get; private set; }
 
-    /// <summary> UI管理器 </summary>
+    /// <summary> UI manager.<para>UI管理器</para></summary>
     public static UIManager Ui => UIManager.Instance;
 
-    /// <summary> 通用工具管理器 </summary>
+    /// <summary> Universal tools manager.<para>通用工具管理器</para></summary>
     public static ToolManager Tool => ToolManager.Instance;
 
-    /// <summary> 资源管理器 </summary>
+    /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
     public static LoadManager Load => LoadManager.Instance;
 
-    /// <summary> 时间管理器 </summary>
+    /// <summary> Time manager.<para>时间管理器</para></summary>
     public static TimeManager Timer => TimeManager.Instance;
 
-    /// <summary> 事件管理器 </summary>
+    /// <summary> Event manager.<para>事件管理器</para></summary>
     public static EventManager Event => EventManager.Instance;
 
-    /// <summary> 补丁更新管理器 </summary>
+    /// <summary> Patch update manager.<para>补丁更新管理器</para></summary>
     public static PatchManager Patch => PatchManager.Instance;
 
-    /// <summary> 音频管理器 </summary>
+    /// <summary> Audio manager.<para>音频管理器</para></summary>
     public static AudioManager Audio => AudioManager.Instance;
 
-    /// <summary> 网络HTTP管理器 </summary>
+    /// <summary> Network (HTTP) manager.<para>网络HTTP管理器</para></summary>
     public static HttpsManager Https => HttpsManager.Instance;
 
-    /// <summary> 场景管理器 </summary>
+    /// <summary> Scene manager.<para>场景管理器</para></summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
 
-    /// <summary> 网络Socket管理器 </summary>
+    /// <summary> Network (Socket) manager.<para>网络Socket管理器</para></summary>
     public static SocketManager Socket => SocketManager.Instance;
 
-    /// <summary> 文件夹管理器 </summary>
+    /// <summary> Folder manager.<para>文件夹管理器</para></summary>
     public static FolderManager Folder => FolderManager.Instance;
 
     #region Coroutine  协程

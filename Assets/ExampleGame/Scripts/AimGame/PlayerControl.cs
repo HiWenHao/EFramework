@@ -44,7 +44,7 @@ namespace AimGame
 
             radius = 0.35f;
 
-            D.Correct(LayerMask.GetMask("Player"));
+            D.Emphasize(LayerMask.GetMask("Player"));
         }
 		
 		void Update()

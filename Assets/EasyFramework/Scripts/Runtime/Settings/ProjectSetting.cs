@@ -238,7 +238,7 @@ namespace EasyFramework.Edit.Setting
             "ToolManager",
             "SceneManager",
             "ObjectToolManager",
-            "SourceManager",
+            "AudioManager",
             "FolderManager",
             "UIManager",
         };

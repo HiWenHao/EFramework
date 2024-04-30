@@ -21,7 +21,17 @@ namespace EasyFramework.Managers
     /// </summary>
     public class FolderManager : Singleton<FolderManager>, IManager
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("FolderManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
+
         private string m_AssetsPath;
         void ISingleton.Init()
         {

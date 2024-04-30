@@ -10,7 +10,7 @@
 */
 using System;
 
-namespace EasyFramework
+namespace EasyFramework.Managers.Utility
 {
     /// <summary>
     /// 时间管理器管理的时间事件

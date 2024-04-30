@@ -75,7 +75,7 @@ namespace YooAsset
             }
             else
             {
-                D.Fatal(exception);
+                D.Exception(exception);
             }
         }
     }

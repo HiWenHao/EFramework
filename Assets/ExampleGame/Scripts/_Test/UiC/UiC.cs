@@ -54,7 +54,7 @@ namespace GMTest
 
 
 
-            D.Correct("C :   " + SerialId);
+            D.Emphasize("C :   " + SerialId);
         }
 
         public override void OnFocus(bool isPause, params object[] args)

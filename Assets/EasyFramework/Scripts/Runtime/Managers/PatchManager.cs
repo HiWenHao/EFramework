@@ -101,7 +101,7 @@ namespace EasyFramework.Managers
         {
             m_CacheData = new Dictionary<string, bool>(1000);
             PlayMode = (EPlayMode)mode;
-            D.Correct($"资源系统运行模式：{mode}");
+            D.Emphasize($"资源系统运行模式：{mode}");
             m_Callback = callback;
             // 创建默认的资源包
             m_Package = YooAssets.CreatePackage(packageName);
@@ -123,7 +123,7 @@ namespace EasyFramework.Managers
         #region Run progress. 跑更新流程
         void Run(string nextState)
         {
-            //D.Correct($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
+            //D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
 
             if (null != m_ie_currentIE)
                 EF.StopCoroutines(m_ie_currentIE);

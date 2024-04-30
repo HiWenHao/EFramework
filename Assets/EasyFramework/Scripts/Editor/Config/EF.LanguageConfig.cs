@@ -133,6 +133,10 @@ namespace EasyFramework.Edit
         public string BindingGenerate { get; }
         /// <summary> 卸载绑定脚本 </summary>
         public string UnloadBindingScripts { get; }
+        /// <summary> 按类型排序 </summary>
+        public string SortByType {  get; }
+        /// <summary> 按名字长度排序 </summary>
+        public string SortByNameLength {  get; }
 
         #endregion
 
@@ -238,6 +242,10 @@ namespace EasyFramework.Edit
 
         public readonly string UnloadBindingScripts => "  Unload scripts after the UI created";
 
+        public readonly string SortByType => "Sort by component type";
+
+        public readonly string SortByNameLength => "Sort by name length";
+
         public readonly string Atlas => "Atlas";
 
         public readonly string AtlasPath => "Atlas Path";
@@ -336,6 +344,10 @@ namespace EasyFramework.Edit
         public readonly string BindingGenerate => "确定生成";
 
         public readonly string UnloadBindingScripts => "  生成UI后卸载该脚本";
+
+        public readonly string SortByType => "按类型排序";
+
+        public readonly string SortByNameLength => "按名字长度排序";
 
         public readonly string Atlas => "图集";
 

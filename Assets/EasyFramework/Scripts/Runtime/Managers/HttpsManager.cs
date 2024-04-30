@@ -21,8 +21,16 @@ namespace EasyFramework.Managers
     /// </summary>
     public class HttpsManager : Singleton<HttpsManager>, IManager
     {
-        int IManager.ManagerLevel => throw new NotImplementedException();
-
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
         public void Init()
         {
             throw new NotImplementedException();
@@ -118,7 +126,7 @@ namespace EasyFramework.Managers
         /// <param name="callback">Texture2D回调函数</param>
         public void BestPostTexture(string address, JsonData jd, Action<Texture2D> callback)
         {
-            D.Correct("The texture path is:    " + Domain + address + jd["path"]);
+            D.Emphasize("The texture path is:    " + Domain + address + jd["path"]);
             HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Post, (originalRequest, response) =>
             {
                 if (!CheckRequestError(response))

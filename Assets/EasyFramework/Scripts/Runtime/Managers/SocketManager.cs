@@ -17,7 +17,16 @@ namespace EasyFramework.Managers
 {
     public class SocketManager : Singleton<SocketManager>, IManager
     {
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("SocketManager");
+        int m_managerLevel = -99;
+        int IManager.ManagerLevel
+        {
+            get
+            {
+                if (m_managerLevel < -1)
+                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
+                return m_managerLevel;
+            }
+        }
 
         private int Count;
         private List<WebSocket> m_WebSocketList;

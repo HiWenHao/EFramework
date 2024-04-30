@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:        The class is ui page manager.
+ * Describe:        The class is ui page m_managerLevel.
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-01 14:33:01
  * ModifyAuthor:    Xiaohei.Wang(Wenhao)

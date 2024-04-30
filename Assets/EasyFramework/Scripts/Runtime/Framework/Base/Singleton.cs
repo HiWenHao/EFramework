@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        The class singleton base.
  * Author:          Xiaohei.Wang(Wenhao)
@@ -14,7 +14,11 @@ using EasyFramework;
 public abstract class Singleton<T> where T : class, ISingleton
 {
     protected Singleton() { }
-
+    /// <summary>
+    /// Current type name
+    /// <para>当前类型名字</para>
+    /// </summary>
+    public string Name = typeof(T).Name;
     public static T Instance => m_Instance;
     private static readonly T m_Instance = new Lazy<T>(delegate
     {
