@@ -9,6 +9,10 @@
  * ===============================================
 */
 
+using System;
+using System.IO;
+using UnityEditor;
+
 namespace EasyFramework.Edit
 {
     public enum ELanguage
@@ -18,7 +22,7 @@ namespace EasyFramework.Edit
     }
     /// <summary>
     /// The language config in editor panel.
-    /// 编辑器面板下的语言配置
+    /// <para>编辑器面板下的语言配置</para>
     /// </summary>
     public static class LC
     {
@@ -38,14 +42,52 @@ namespace EasyFramework.Edit
                         new English(),
                         new Chinese(),
                     };
+                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
                 }
 
                 if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
+                {
+                    ChangeLanguage(m_currentIndex, ProjectUtility.Project.LanguageIndex);
                     m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                }
 
                 return m_languages[m_currentIndex];
             }
         }
+
+        #region ChangeLanguage
+        /*
+         * Change the relevant description language under the Settings panel.
+         * 改变设置面板下的相关说明语言
+         */
+        static void ChangeLanguage(int nowIndex, int nextIndex)
+        {
+            string _lcPath = Path.Combine(ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Config/");
+            string _path = Path.Combine(UnityEngine.Application.dataPath, _lcPath);
+            string _nameNow = GetNameWithIndex(nowIndex);
+            string _nameNext = GetNameWithIndex(nextIndex);
+
+            try
+            {
+                File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs"));
+                File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs.meta"));
+                File.Copy(Path.Combine(_path, $"{_nameNext}~/LanguagAttribute.cs"), Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs"));
+            }
+            catch (Exception ex)
+            {
+                D.Exception("发生错误: " + ex.Message);
+            }
+            AssetDatabase.Refresh();
+        }
+        static string GetNameWithIndex(int index)
+        {
+            return index switch
+            {
+                1 => "Chinese",
+                _ => "English",
+            };
+        }
+        #endregion
     }
 
     public interface ILanguageBase
@@ -78,6 +120,44 @@ namespace EasyFramework.Edit
         public string Overwrite { get; }
         /// <summary> 默认设置 </summary>
         public string DefaultSetting { get; }
+        #endregion
+
+        #region SystemInfo
+        /// <summary> 操作系统 </summary>
+        public string OperatingSystem { get; }
+        /// <summary> 系统内存 </summary>
+        public string SystemMemorySize { get; }
+        /// <summary> 处理器 </summary>
+        public string ProcessorType { get; }
+        /// <summary> 处理器数量 </summary>
+        public string ProcessorCount { get; }
+
+        /// <summary> 显卡 </summary>
+        public string GraphicsDeviceName { get; }
+        /// <summary> 显卡类型 </summary>
+        public string GraphicsDeviceType { get; }
+        /// <summary> 显存 </summary>
+        public string GraphicsMemorySize { get; }
+        /// <summary> 显卡标识 </summary>
+        public string GraphicsDeviceID { get; }
+        /// <summary> 显卡供应商 </summary>
+        public string GraphicsDeviceVendor { get; }
+        /// <summary> 显卡供应商标识码 </summary>
+        public string GraphicsDeviceVendorID { get; }
+
+        /// <summary> 设备模式 </summary>
+        public string DeviceModel { get; }
+        /// <summary> 设备名称 </summary>
+        public string DeviceName { get; }
+        /// <summary> 设备类型 </summary>
+        public string DeviceType { get; }
+        /// <summary> 设备标识 </summary>
+        public string DeviceUniqueIdentifier { get; }
+
+        /// <summary> DPI </summary>
+        public string ScreenDpi { get; }
+        /// <summary> 分辨率 </summary>
+        public string ScreenCurrentResolution { get; }
         #endregion
 
         #region Project Setting
@@ -196,6 +276,38 @@ namespace EasyFramework.Edit
 
         public readonly string DefaultSetting => "Default Setting";
 
+        public readonly string OperatingSystem => "Operating system name with version: ";
+
+        public readonly string SystemMemorySize => "Amount of system memory present: ";
+
+        public readonly string ProcessorType => "Processor name: ";
+
+        public readonly string ProcessorCount => "Number of processors present: ";
+
+        public readonly string GraphicsDeviceName => "The name of the graphics device: ";
+
+        public readonly string GraphicsDeviceType => "The graphics API type used by the graphics device: ";
+
+        public readonly string GraphicsMemorySize => "Amount of video memory present: ";
+
+        public readonly string GraphicsDeviceID => "The identifier code of the graphics device: ";
+
+        public readonly string GraphicsDeviceVendor => "The vendor of the graphics device: ";
+
+        public readonly string GraphicsDeviceVendorID => "The identifier code of the graphics device vendor: ";
+
+        public readonly string DeviceModel => "The model of the device: ";
+
+        public readonly string DeviceName => "The user defined name of the device: ";
+
+        public readonly string DeviceType => "Returns the kind of device the application is running on: ";
+
+        public readonly string DeviceUniqueIdentifier => "A unique device identifier: ";
+
+        public readonly string ScreenDpi => "The current DPI of the device: ";
+
+        public readonly string ScreenCurrentResolution => "The current screen resolution: ";
+
         public readonly string EditorLanguage => "EF Editor Language";
 
         public readonly string ScriptAuthor => "Script Author Name";
@@ -299,6 +411,38 @@ namespace EasyFramework.Edit
 
         public readonly string DefaultSetting => "默认设置";
 
+        public readonly string OperatingSystem => "操作系统：";
+
+        public readonly string SystemMemorySize => "系统内存：";
+
+        public readonly string ProcessorType => "处理器：";
+
+        public readonly string ProcessorCount => "处理器数量：";
+
+        public readonly string GraphicsDeviceName => "显卡：";
+
+        public readonly string GraphicsDeviceType => "显卡类型：";
+
+        public readonly string GraphicsMemorySize => "显存：";
+
+        public readonly string GraphicsDeviceID => "显卡标识：";
+
+        public readonly string GraphicsDeviceVendor => "显卡供应商：";
+
+        public readonly string GraphicsDeviceVendorID => "显卡供应商标识码：";
+
+        public readonly string DeviceModel => "设备模式：";
+
+        public readonly string DeviceName => "设备名称：";
+
+        public readonly string DeviceType => "设备类型：";
+
+        public readonly string DeviceUniqueIdentifier => "设备标识：";
+
+        public readonly string ScreenDpi => "屏幕当前DPI：";
+
+        public readonly string ScreenCurrentResolution => "分辨率：";
+
         public readonly string EditorLanguage => "EF框架面板语言";
 
         public readonly string ScriptAuthor => "脚本作者";
@@ -315,7 +459,7 @@ namespace EasyFramework.Edit
 
         public readonly string SublimePath => "Sublime文件路径：";
 
-        public readonly string NotepadPath => ",Notepad++文件路径：";
+        public readonly string NotepadPath => "Notepad++文件路径：";
 
         public readonly string AtlasSavePath => "图集保存路径：";
 

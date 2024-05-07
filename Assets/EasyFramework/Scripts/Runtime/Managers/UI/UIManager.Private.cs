@@ -174,7 +174,7 @@ namespace EasyFramework.Managers
 
         private GameObject PageCreated(UIPageBase page)
         {
-            GameObject _uiObj = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + page.GetType().Name));
+            GameObject _uiObj = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + page.GetType().Name));
             _uiObj.transform.SetParent(pageBaseObject);
             RectTransform _rect = _uiObj.GetComponent<RectTransform>();
             _rect.anchorMax = Vector2.one;
@@ -286,7 +286,7 @@ namespace EasyFramework.Managers
             showBoxBaseObject = new GameObject(showBoxBaseObjectName).transform;
             showBoxBaseObject.SetParent(m_Root.transform, false);
 
-            BoxDialog = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "Box_Dialog"), showBoxBaseObject);
+            BoxDialog = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "Box_Dialog"), showBoxBaseObject);
             show_btn_CloseBG = BoxDialog.transform.Find("btn_CloseBG").GetComponent<Button>();
             show_txt_Text = BoxDialog.transform.Find("img_ShowBG/txt_Text").GetComponent<Text>();
             show_btn_True = BoxDialog.transform.Find("img_ShowBG/btn_True").GetComponent<Button>();

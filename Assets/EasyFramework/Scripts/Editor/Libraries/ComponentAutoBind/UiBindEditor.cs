@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-13 16:46:15
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-04-26 16:11:44
+ * ModifyTime:    2024-04-26 16:11:44
  * ScriptVersion: 0.2
  * ===============================================
 */
@@ -527,6 +527,7 @@ namespace EasyFramework.Edit.AutoBind
             }
 
             int _btnIndex = -1;
+            bool _hasTmp = false;
             bool _hasButton = false;
             bool _hasOtherComs = false;
             List<string> _otherNameLst = new List<string>();
@@ -538,7 +539,11 @@ namespace EasyFramework.Edit.AutoBind
             for (int i = 0; i < m_Builder.BindDatas.Count; i++)
             {
                 Type _type = m_Builder.BindDatas[i].BindCom.GetType();
-                if (_type == typeof(ButtonPro))
+                if (!_hasTmp && (_type.Name.Contains("TMP_") || _type.Name.Contains("TMPrp_") || _type.Name.Equals("TextMeshPro")))
+                {
+                    _hasTmp = true;
+                }
+                else if (_type == typeof(ButtonPro))
                 {
                     _hasButton = true;
                     _ButtonProNameLst.Add(m_Builder.BindDatas[i].RealName);
@@ -564,11 +569,13 @@ namespace EasyFramework.Edit.AutoBind
                 using StreamWriter sw = new StreamWriter(filePath);
                 sw.WriteLine(GetFileHead());
 
+                sw.WriteLine("using EasyFramework;");
                 sw.WriteLine("using EasyFramework.UI;");
                 sw.WriteLine("using System.Collections.Generic;");
+                if (_hasTmp)
+                    sw.WriteLine("using TMPro;");
                 sw.WriteLine("using UnityEngine;");
                 sw.WriteLine("using UnityEngine.UI;");
-                sw.WriteLine("using EasyFramework;");
 
                 if (!string.IsNullOrEmpty(m_Builder.Namespace))
                     sw.WriteLine($"\nnamespace {m_Builder.Namespace}" + "\n{");

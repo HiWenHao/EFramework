@@ -32,12 +32,12 @@ namespace EasyFramework.Edit.Setting
         private string m_ScriptVersion = "0.1";
         public string ScriptVersion => m_ScriptVersion;
 
-        [Header("出包资源存放地")]
+        [Header(LanguagAttribute.ResourcesArea)]
         [SerializeField]
         private ResourcesArea m_ResourcesArea;
         public ResourcesArea ResourcesArea => m_ResourcesArea;
 
-        [Header("项目常量")]
+        [Header(LanguagAttribute.AppConst)]
         [SerializeField]
         private AppConstConfig m_AppConst;
         public AppConstConfig AppConst => m_AppConst;
@@ -138,41 +138,39 @@ namespace EasyFramework.Edit.Setting
     [Serializable]
     public class ResourcesArea
     {
-        [Header("Copy the built AB resource to the uploaded resource directory")]
-        [Tooltip("复制构建的AB资源到上传资源目录")]
+        [Header(LanguagAttribute.CopyResToCommit)]
         [SerializeField] private bool m_CopyResToCommit = false;
         public bool CopyResToCommit => m_CopyResToCommit;
 
-        [Header("Whether to clean up old resources uploaded to the server directory when building resources")]
-        [Tooltip("是否在构建资源的时候清理上传到服务端目录的老资源")]
+        [Header(LanguagAttribute.CleanCommitPathRes)]
         [SerializeField] private bool m_CleanCommitRes = true;
         public bool CleanCommitPathRes => m_CleanCommitRes;
 
-        [Header("服务器类型")]
+        [Header(LanguagAttribute.ServerType)]
         [SerializeField] private ServerTypeEnum m_ServerType = ServerTypeEnum.Intranet;
         public ServerTypeEnum ServerType => m_ServerType;
 
-        [Header("内网资源地址")]
+        [Header(LanguagAttribute.InnerUrl)]
         [SerializeField]
-        private string m_InnerUrl = "http://192.168.0.1:8080";
+        private string m_InnerUrl = "http://127.0.0.1:8080";
         /// <summary> 内网资源地址 </summary>
         public string InnerUrl => m_InnerUrl;
 
-        [Header("外网资源地址")]
+        [Header(LanguagAttribute.ExtraUrl)]
         [SerializeField]
-        private string m_ExtraUrl = "http://192.168.0.1:8080";
+        private string m_ExtraUrl = "http://127.0.0.1:8080";
         /// <summary> 外网资源地址 </summary>
         public string ExtraUrl => m_ExtraUrl;
 
-        [Header("正式资源地址")]
+        [Header(LanguagAttribute.FormalUrl)]
         [SerializeField]
-        private string m_FormalUrl = "http://192.168.0.1:8080";
+        private string m_FormalUrl = "http://127.0.0.1:8080";
         /// <summary> 正式资源地址 </summary>
         public string FormalUrl => m_FormalUrl;
 
-        [Header("备用服务器")]
+        [Header(LanguagAttribute.StandbyUrl)]
         [SerializeField]
-        private string m_StandbyUrl = "http://192.168.0.1:8080";
+        private string m_StandbyUrl = "http://127.0.0.1:8080";
         /// <summary> 备用资源地址 </summary>
         public string StandbyUrl => m_StandbyUrl;
     }
@@ -183,7 +181,7 @@ namespace EasyFramework.Edit.Setting
     [Serializable]
     public class AppConstConfig
     {
-        [Tooltip("应用名称")]
+        [Header(LanguagAttribute.AppName)]
         [SerializeField]
         private string m_AppName = "EasyFramework";
         /// <summary>
@@ -191,7 +189,7 @@ namespace EasyFramework.Edit.Setting
         /// </summary>
         public string AppName => m_AppName;
 
-        [Tooltip("保存内容时的前缀")]
+        [Header(LanguagAttribute.AppPrefix)]
         [SerializeField]
         private string m_AppPrefix = "EF_";
         /// <summary>
@@ -199,7 +197,7 @@ namespace EasyFramework.Edit.Setting
         /// </summary>
         public string AppPrefix => m_AppPrefix;
 
-        [Tooltip("应用版本")]
+        [Header(LanguagAttribute.AppVersion)]
         [SerializeField]
         private string m_AppVersion = "1.0";
         /// <summary>
@@ -207,7 +205,7 @@ namespace EasyFramework.Edit.Setting
         /// </summary>
         public string AppVersion => m_AppVersion;
 
-        [Tooltip("开发阶段")]
+        [Header(LanguagAttribute.AppStage)]
         [SerializeField]
         private AppStageEnum m_AppStage = AppStageEnum.Debug;
         /// <summary>
@@ -216,18 +214,17 @@ namespace EasyFramework.Edit.Setting
         public AppStageEnum AppStage => m_AppStage;
 
 
-        [Header("UI prefabs path in the resource folder.//  Resources 下存放 UI面板 的路径")]
+        [Header(LanguagAttribute.UIPrefabsPath)]
         [SerializeField]
         private string m_UIPath= "Prefabs/UI/";
-        public string UIPath => m_UIPath;
+        public string UIPrefabsPath => m_UIPath;
 
-        [Header("Audio path in the resource folder.//  Resources 下存放 AudioClip 的路径")]
+        [Header(LanguagAttribute.AudioPath)]
         [SerializeField]
         private string m_AudioPath = "Sources/";
         public string AudioPath => m_AudioPath;
 
-        [Header("From top to bottom, the more forward the update, the more backward the exit.")]
-        [Tooltip("自上而下，更新越靠前，退出越靠后")]
+        [Header(LanguagAttribute.ManagerLevel)]
         [SerializeField]
         private List<string> m_ManagerLevel = new List<string>()
         {

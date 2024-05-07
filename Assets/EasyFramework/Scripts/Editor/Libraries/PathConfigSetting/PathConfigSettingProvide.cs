@@ -66,14 +66,14 @@ namespace EasyFramework.Edit.PathConfig
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
 
-            EditorGUILayout.LabelField($"---------------{LC.Language.UnderProjectPath}---------------", SetUIStyle(Color.green, 14));
+            EditorGUILayout.LabelField($"--------------- {LC.Language.UnderProjectPath} ---------------", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
             SelectionFolderPath(LC.Language.FrameworkPath, LC.Language.PathSelect, m_FrameworkPath);
             SelectionFolderPath(LC.Language.AtlasSavePath, LC.Language.PathSelect, m_AtlasFolder);
             SelectionFolderPath(LC.Language.DefaultUIPrefabSavePath, LC.Language.PathSelect, m_UIPrefabPath);
             SelectionFolderPath(LC.Language.DefaultUICodeSavePath, LC.Language.PathSelect, m_UICodePath);
             SelectionFolderPath(LC.Language.AnimatorExtractPath, LC.Language.PathSelect, m_ExtractPath);
 
-            EditorGUILayout.LabelField($"---------------{LC.Language.NonProjectPath}---------------", SetUIStyle(Color.red, 14));
+            EditorGUILayout.LabelField($"--------------- {LC.Language.NonProjectPath} ---------------", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
             SelectionEXEPath(LC.Language.SublimePath, LC.Language.PathSelect, new string[] { "sublime_text", "subl" }, m_SublimePath);
             SelectionEXEPath(LC.Language.NotepadPath, LC.Language.PathSelect, new string[] { "notepad" }, m_NotepadPath);
 

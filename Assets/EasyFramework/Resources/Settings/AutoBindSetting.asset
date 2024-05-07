@@ -11,60 +11,62 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
   m_Name: AutoBindSetting
-  m_EditorClassIdentifier: Assembly-CSharp-Editor:EasyFramework.Framework.Core:AutoBindGlobalSetting
-  m_Namespace: EFExample
-  m_ComCodePath: D:/_Projects/Unity/EFramework/Assets
-  m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
+  m_EditorClassIdentifier: 
+  m_Namespace: PleaseChangeTheNamespace
   m_RulePrefixes:
-  - Prefixe: Tran
-    FullContent: Transform
-  - Prefixe: OAnim
-    FullContent: Animation
-  - Prefixe: NAnim
-    FullContent: Animator
-  - Prefixe: Rect
-    FullContent: RectTransform
-  - Prefixe: Canvas
-    FullContent: Canvas
-  - Prefixe: Group
-    FullContent: CanvasGroup
-  - Prefixe: VGroup
-    FullContent: VerticalLayoutGroup
-  - Prefixe: HGroup
-    FullContent: HorizontalLayoutGroup
-  - Prefixe: GGroup
-    FullContent: GridLayoutGroup
-  - Prefixe: TGroup
-    FullContent: ToggleGroup
   - Prefixe: Btn
     FullContent: Button
   - Prefixe: BtnP
     FullContent: ButtonPro
+  - Prefixe: Canvas
+    FullContent: Canvas
+  - Prefixe: Drop
+    FullContent: Dropdown
+  - Prefixe: DropTmp
+    FullContent: TMP_Dropdown
+  - Prefixe: Group
+    FullContent: CanvasGroup
+  - Prefixe: GGroup
+    FullContent: GridLayoutGroup
+  - Prefixe: HGroup
+    FullContent: HorizontalLayoutGroup
   - Prefixe: Img
     FullContent: Image
-  - Prefixe: RImg
-    FullContent: RawImage
-  - Prefixe: Txt
-    FullContent: Text
-  - Prefixe: TxtM
-    FullContent: TextMeshProUGUI
   - Prefixe: Ipt
+    FullContent: InputField
+  - Prefixe: IptTmp
     FullContent: TMP_InputField
-  - Prefixe: Sld
-    FullContent: Slider
   - Prefixe: Mask
     FullContent: Mask
+  - Prefixe: Map
+    FullContent: RadarMap
   - Prefixe: Mask2D
     FullContent: RectMask2D
-  - Prefixe: Tog
-    FullContent: Toggle
+  - Prefixe: NAnim
+    FullContent: Animator
+  - Prefixe: OAnim
+    FullContent: Animation
+  - Prefixe: RImg
+    FullContent: RawImage
+  - Prefixe: Rect
+    FullContent: RectTransform
+  - Prefixe: Sld
+    FullContent: Slider
   - Prefixe: Sbar
     FullContent: Scrollbar
   - Prefixe: SRct
     FullContent: ScrollRect
   - Prefixe: SRctP
     FullContent: ScrollRectPro
-  - Prefixe: Drop
-    FullContent: Dropdown
-  - Prefixe: Map
-    FullContent: RadarMap
+  - Prefixe: Tran
+    FullContent: Transform
+  - Prefixe: Txt
+    FullContent: Text
+  - Prefixe: TxtTmp
+    FullContent: TextMeshProUGUI
+  - Prefixe: Tog
+    FullContent: Toggle
+  - Prefixe: TGroup
+    FullContent: ToggleGroup
+  - Prefixe: VGroup
+    FullContent: VerticalLayoutGroup

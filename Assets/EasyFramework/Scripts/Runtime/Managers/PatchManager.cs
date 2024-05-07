@@ -371,7 +371,7 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator BeginDownload()
         {
-            m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPath + "PatchUpdater")).transform;
+            m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
             m_updaterSlider = m_patchUpdater.Find("Slider").GetComponent<Slider>();
             m_Tips = m_patchUpdater.Find("Slider/txt_Tips").GetComponent<Text>();
             btn_MessgeBox = m_patchUpdater.Find("btn_MessgeBox").GetComponent<Button>();

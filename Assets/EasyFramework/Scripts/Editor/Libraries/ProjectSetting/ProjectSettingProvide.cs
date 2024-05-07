@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-14 11:49:37
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-14 11:49:37
+ * ModifyTime:    2024-05-07 15:50:37
  * ScriptVersion: 0.1
  * ===============================================
 */
@@ -25,6 +25,7 @@ namespace EasyFramework.Edit.Setting
         private const string m_HeaderName = "EF/Project Setting";
         private static readonly string m_EFProjectSettingPath = ProjectUtility.Path.FrameworkPath + "Resources/Settings/ProjectSetting.asset";
 
+        int m_languageIndex;
         string m_EditorUser;
         Vector2 m_ComputerInfoScroll;
 
@@ -52,15 +53,23 @@ namespace EasyFramework.Edit.Setting
             var _type = userInfo.GetType();
             var p = _type.GetProperty("displayName");
             m_EditorUser = (string)p.GetValue(userInfo);
+
+            m_languageIndex = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            m_LanguageIndex.intValue = m_languageIndex;
         }
 
         public override void OnGUI(string searchContext)
         {
             base.OnGUI(searchContext);
-            SystemInfo();
+            SystemInfos();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            m_LanguageIndex.intValue = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Language.EditorLanguage, (ELanguage)m_LanguageIndex.intValue);
+            m_languageIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Language.EditorLanguage, (ELanguage)m_LanguageIndex.intValue);
+            if (m_languageIndex != m_LanguageIndex.intValue)
+            {
+                m_LanguageIndex.intValue = m_languageIndex;
+                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
+            }
             EditorGUILayout.LabelField(LC.Language.EditorUser, m_EditorUser);
             m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Language.ScriptAuthor, m_ScriptAuthor.stringValue);
             m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Language.ScriptVersion, m_ScriptVersion.stringValue);
@@ -99,41 +108,32 @@ namespace EasyFramework.Edit.Setting
         /// <summary>
         /// 系统信息
         /// </summary>
-        private void SystemInfo()
+        private void SystemInfos()
         {
-            GUI.enabled = true;
+            m_ComputerInfoScroll = EditorGUILayout.BeginScrollView(m_ComputerInfoScroll, "Box", GUILayout.Height(210));
 
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(GUILayout.Height(2)), default);
-
-            m_ComputerInfoScroll = GUILayout.BeginScrollView(m_ComputerInfoScroll);
-
-            GUILayout.BeginVertical("Box");
-
-            GUILayout.Label("操作系统：" + UnityEngine.SystemInfo.operatingSystem);
-            GUILayout.Label("系统内存：" + UnityEngine.SystemInfo.systemMemorySize + "MB");
-            GUILayout.Label("处理器：" + UnityEngine.SystemInfo.processorType);
-            GUILayout.Label("处理器数量：" + UnityEngine.SystemInfo.processorCount);
-            GUILayout.Space(14);
-            GUILayout.Label("显卡：" + UnityEngine.SystemInfo.graphicsDeviceName);
-            GUILayout.Label("显卡类型：" + UnityEngine.SystemInfo.graphicsDeviceType);
-            GUILayout.Label("显存：" + UnityEngine.SystemInfo.graphicsMemorySize + "MB");
-            GUILayout.Label("显卡标识：" + UnityEngine.SystemInfo.graphicsDeviceID);
-            GUILayout.Label("显卡供应商：" + UnityEngine.SystemInfo.graphicsDeviceVendor);
-            GUILayout.Label("显卡供应商标识码：" + UnityEngine.SystemInfo.graphicsDeviceVendorID);
-            GUILayout.Space(14);
-            GUILayout.Label("设备模式：" + UnityEngine.SystemInfo.deviceModel);
-            GUILayout.Label("设备名称：" + UnityEngine.SystemInfo.deviceName);
-            GUILayout.Label("设备类型：" + UnityEngine.SystemInfo.deviceType);
-            GUILayout.Label("设备标识：" + UnityEngine.SystemInfo.deviceUniqueIdentifier);
-
-            GUILayout.Label("DPI：" + Screen.dpi);
-            GUILayout.Label("分辨率：" + Screen.currentResolution.ToString());
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-
-
-            GUILayout.FlexibleSpace();
-
+            GUILayout.Label("---------------------------------------------------------------------------------------");
+            GUILayout.Label(LC.Language.OperatingSystem + SystemInfo.operatingSystem);
+            GUILayout.Label(LC.Language.SystemMemorySize + SystemInfo.systemMemorySize + "MB");
+            GUILayout.Label(LC.Language.ProcessorType + SystemInfo.processorType);
+            GUILayout.Label(LC.Language.ProcessorType + SystemInfo.processorCount);
+            GUILayout.Label("---------------------------------------------------------------------------------------");
+            GUILayout.Label(LC.Language.GraphicsDeviceName + SystemInfo.graphicsDeviceName);
+            GUILayout.Label(LC.Language.GraphicsDeviceType + SystemInfo.graphicsDeviceType);
+            GUILayout.Label(LC.Language.GraphicsMemorySize + SystemInfo.graphicsMemorySize + "MB");
+            GUILayout.Label(LC.Language.GraphicsDeviceID + SystemInfo.graphicsDeviceID);
+            GUILayout.Label(LC.Language.GraphicsDeviceVendor + SystemInfo.graphicsDeviceVendor);
+            GUILayout.Label(LC.Language.GraphicsDeviceVendorID + SystemInfo.graphicsDeviceVendorID);
+            GUILayout.Label("---------------------------------------------------------------------------------------");
+            GUILayout.Label(LC.Language.DeviceModel + SystemInfo.deviceModel);
+            GUILayout.Label(LC.Language.DeviceName + SystemInfo.deviceName);
+            GUILayout.Label(LC.Language.DeviceType + SystemInfo.deviceType);
+            GUILayout.Label(LC.Language.DeviceUniqueIdentifier + SystemInfo.deviceUniqueIdentifier);
+            GUILayout.Label("---------------------------------------------------------------------------------------");
+            GUILayout.Label(LC.Language.ScreenDpi + Screen.dpi);
+            GUILayout.Label(LC.Language.ScreenCurrentResolution + Screen.currentResolution.ToString());
+            GUILayout.Label("---------------------------------------------------------------------------------------");
+            EditorGUILayout.EndScrollView();
         }
     }
 }

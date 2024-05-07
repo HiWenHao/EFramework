@@ -271,7 +271,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                _popup = new PopupBox(Object.Instantiate(EF.Load.LoadInResources<Transform>(EF.Projects.AppConst.UIPath + "Box_Popup"), showBoxBaseObject));
+                _popup = new PopupBox(Object.Instantiate(EF.Load.LoadInResources<Transform>(EF.Projects.AppConst.UIPrefabsPath + "Box_Popup"), showBoxBaseObject));
             }
 
             _popup.TextInfo = text;
