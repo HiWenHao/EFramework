@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
   m_Name: AutoBindSetting
   m_EditorClassIdentifier: 
-  m_Namespace: PleaseChangeTheNamespace
+  m_Namespace: EFExample
   m_RulePrefixes:
   - Prefixe: Btn
     FullContent: Button

@@ -49,8 +49,9 @@ namespace EFExample
 
             //读表工具初始化
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
-            //AimGame.ExcelDataCacheManager.CacheAllData();
-            //EasyFramework.D.Emphasize(ETB.EDC_Example.Get(1).name);
+            //ExcelDataCacheManager.CacheAllData();
+            //for (int i = 0; i < EDC_Example.Ids.Length; i++)
+            //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
 
             //网络部分，还待完善
             if (false)

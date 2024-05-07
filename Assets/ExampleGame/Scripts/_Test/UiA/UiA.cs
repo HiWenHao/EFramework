@@ -33,7 +33,6 @@ namespace GMTest
 			#region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
 			EF.Tool.Find<Button>(obj.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
 			EF.Tool.Find<Button>(obj.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
-			EF.Tool.Find<Button>(obj.transform, "Btn_StartAimGame").RegisterInListAndBindEvent(OnClickBtn_StartAimGame, ref m_AllButtons);
             #endregion  Find components end. -- Auto
 
             D.Emphasize("A :   " + SerialId);
@@ -52,11 +51,6 @@ namespace GMTest
             {
                 D.Warning($"A to B  {item}");
             }
-
-            //if (enable)
-            //{
-            //    Camera.main.gameObject.GetComponent<Test>().enabled = true;
-            //}
         }
 
         public override void Close()
@@ -82,10 +76,6 @@ namespace GMTest
         void OnClickBtn_Quit()
         {
             EF.QuitGame();
-        }
-		void OnClickBtn_StartAimGame()
-        {
-            EF.Ui.Push(new AimGame.UiAimGameMain());
         }
         #endregion button event.  Do not change here.不要更改这行 -- Auto
     }
