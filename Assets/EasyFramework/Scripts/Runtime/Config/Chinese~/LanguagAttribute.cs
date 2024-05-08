@@ -10,8 +10,16 @@
 */
 namespace EasyFramework.Edit
 {
-    internal struct LanguagAttribute
+    public struct LanguagAttribute
     {
+        #region ProjectSetting - 项目设置
+        public const string ScriptAuthor = "脚本作者名。";
+        public const string ScriptVersion = "脚本版本号。";
+        public const string LanguageIndex = "框架显示语言索引。";
+        public const string RendererPipline = "框架渲染管线索引。";
+
+        #endregion
+
         #region AppConst - 项目常量
         public const string AppConst = "项目常量设置。";
 
@@ -40,5 +48,20 @@ namespace EasyFramework.Edit
 
         #endregion
 
+        #region PathConfigSetting - 路径配置
+        public const string FrameworkPath = "框架在工程下的路径。";
+        public const string AtlasFolder = "图集在工程下的路径。";
+        public const string ExtractPath = "动画压缩后在工程下的路径。";
+        public const string UIPrefabPath = "UI预制件保存在工程下的路径。";
+        public const string UICodePath = "UI脚本保存在工程下的路径。";
+        
+        public const string SublimePath = "Sublime在系统中的路径。";
+        public const string NotepadPath = "Notepad在系统中的路径。";
+        #endregion
+
+        #region AutoBindSetting - UI自动绑定配置
+        public const string Namespace = "默认命名空间。";
+        public const string RulePrefixes = "组件的缩略名字映射。";
+        #endregion
     }
 }

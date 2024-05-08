@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TaskCount: 7
   Mark: 01010000000100
-  Enabled: 00000000000000
+  Enabled: 00000000000001
   Progress: 00000000000000000000000000000000000000000000000000000000
   Title:
   - "\u66F4\u65B0YooAsset\u5230\u6700\u65B0\u7248\u672C\uFF08\u957F\u671F\u4EFB\u52A1\uFF09"
@@ -23,7 +23,7 @@ MonoBehaviour:
   - "\u91CD\u5199LoadManager"
   - "\u589E\u52A0\u4F7F\u7528\u6837\u4F8B"
   - "\u4E3A\u6846\u67B6\u589E\u52A0UpdateManager"
-  - "\u7F16\u8F91\u5668\u4E0B\u8BED\u8A00\u5207\u6362"
+  - "\u7EF4\u62A4\u6846\u67B6\u663E\u793A\u8BED\u8A00\u5207\u6362"
   Description:
   - 
   - 

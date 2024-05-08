@@ -22,13 +22,15 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 默认命名空间
         /// </summary>
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.Namespace)]
         private string m_Namespace = "PleaseChangeTheNamespace";
+        /// <summary> 默认命名空间 </summary>
+        public string Namespace => m_Namespace;
 
         /// <summary>
         /// 组件的缩略名字映射
         /// </summary>
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.RulePrefixes)]
         private List<RulePrefixe> m_RulePrefixes = new List<RulePrefixe>()
         {
             new RulePrefixe("Btn","Button"),
@@ -60,15 +62,7 @@ namespace EasyFramework.Edit.AutoBind
             new RulePrefixe("TGroup","ToggleGroup"),
             new RulePrefixe("VGroup","VerticalLayoutGroup"),
         };
-
-        /// <summary>
-        /// 默认命名空间
-        /// </summary>
-        public string Namespace => m_Namespace;
-
-        /// <summary>
-        /// 组件的缩略名字映射
-        /// </summary>
+        /// <summary> 组件的缩略名字映射 </summary>
         public List<RulePrefixe> RulePrefixes => m_RulePrefixes;
     }
 }

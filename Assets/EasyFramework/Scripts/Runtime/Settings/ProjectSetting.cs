@@ -20,25 +20,27 @@ namespace EasyFramework.Edit.Setting
     [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 200)]
     public class ProjectSetting : ScriptableObject
     {
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.LanguageIndex)]
         private int m_LanguageIndex;
         public int LanguageIndex => m_LanguageIndex;
 
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.RendererPipline)]
+        private int m_RendererPipline;
+        public int RendererPipline => m_RendererPipline;
+
+        [SerializeField, Header(LanguagAttribute.ScriptAuthor)]
         private string m_ScriptAuthor = "Default";
         public string ScriptAuthor => m_ScriptAuthor;
 
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.ScriptVersion)]
         private string m_ScriptVersion = "0.1";
         public string ScriptVersion => m_ScriptVersion;
 
-        [Header(LanguagAttribute.ResourcesArea)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.ResourcesArea)]
         private ResourcesArea m_ResourcesArea;
         public ResourcesArea ResourcesArea => m_ResourcesArea;
 
-        [Header(LanguagAttribute.AppConst)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AppConst)]
         private AppConstConfig m_AppConst;
         public AppConstConfig AppConst => m_AppConst;
 
@@ -81,6 +83,15 @@ namespace EasyFramework.Edit.Setting
         //public string ConfigFolderName { get { return m_ConfigFolderName; } }
     }
 
+    /// <summary>
+    /// 渲染管线类型
+    /// </summary>
+    public enum RenderingTypeEnum
+    {
+        BuiltIn = 0,
+        URP,
+        //HDRP_Pending
+    }
 
     /// <summary>
     /// 服务器类型
@@ -123,10 +134,6 @@ namespace EasyFramework.Edit.Setting
         /// </summary>
         Beta = 3,
         /// <summary>
-        /// 后期版本 与发布版本没多大差别
-        /// </summary>
-        Rc = 4,
-        /// <summary>
         /// 发布版本
         /// </summary>
         Release = 5
@@ -138,38 +145,34 @@ namespace EasyFramework.Edit.Setting
     [Serializable]
     public class ResourcesArea
     {
-        [Header(LanguagAttribute.CopyResToCommit)]
-        [SerializeField] private bool m_CopyResToCommit = false;
+        [SerializeField, Header(LanguagAttribute.CopyResToCommit)] 
+        private bool m_CopyResToCommit = false;
         public bool CopyResToCommit => m_CopyResToCommit;
 
-        [Header(LanguagAttribute.CleanCommitPathRes)]
-        [SerializeField] private bool m_CleanCommitRes = true;
+        [SerializeField, Header(LanguagAttribute.CleanCommitPathRes)]
+        private bool m_CleanCommitRes = true;
         public bool CleanCommitPathRes => m_CleanCommitRes;
 
-        [Header(LanguagAttribute.ServerType)]
-        [SerializeField] private ServerTypeEnum m_ServerType = ServerTypeEnum.Intranet;
+        [SerializeField, Header(LanguagAttribute.ServerType)]
+        private ServerTypeEnum m_ServerType = ServerTypeEnum.Intranet;
         public ServerTypeEnum ServerType => m_ServerType;
 
-        [Header(LanguagAttribute.InnerUrl)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.InnerUrl)]
         private string m_InnerUrl = "http://127.0.0.1:8080";
         /// <summary> 内网资源地址 </summary>
         public string InnerUrl => m_InnerUrl;
 
-        [Header(LanguagAttribute.ExtraUrl)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.ExtraUrl)]
         private string m_ExtraUrl = "http://127.0.0.1:8080";
         /// <summary> 外网资源地址 </summary>
         public string ExtraUrl => m_ExtraUrl;
 
-        [Header(LanguagAttribute.FormalUrl)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.FormalUrl)]
         private string m_FormalUrl = "http://127.0.0.1:8080";
         /// <summary> 正式资源地址 </summary>
         public string FormalUrl => m_FormalUrl;
 
-        [Header(LanguagAttribute.StandbyUrl)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.StandbyUrl)]
         private string m_StandbyUrl = "http://127.0.0.1:8080";
         /// <summary> 备用资源地址 </summary>
         public string StandbyUrl => m_StandbyUrl;
@@ -181,32 +184,28 @@ namespace EasyFramework.Edit.Setting
     [Serializable]
     public class AppConstConfig
     {
-        [Header(LanguagAttribute.AppName)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AppName)]
         private string m_AppName = "EasyFramework";
         /// <summary>
         /// 应用名称
         /// </summary>
         public string AppName => m_AppName;
 
-        [Header(LanguagAttribute.AppPrefix)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AppPrefix)]
         private string m_AppPrefix = "EF_";
         /// <summary>
         /// 保存内容时的前缀
         /// </summary>
         public string AppPrefix => m_AppPrefix;
 
-        [Header(LanguagAttribute.AppVersion)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AppVersion)]
         private string m_AppVersion = "1.0";
         /// <summary>
         /// 应用版本
         /// </summary>
         public string AppVersion => m_AppVersion;
 
-        [Header(LanguagAttribute.AppStage)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AppStage)]
         private AppStageEnum m_AppStage = AppStageEnum.Debug;
         /// <summary>
         /// 开发阶段
@@ -214,18 +213,15 @@ namespace EasyFramework.Edit.Setting
         public AppStageEnum AppStage => m_AppStage;
 
 
-        [Header(LanguagAttribute.UIPrefabsPath)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.UIPrefabsPath)]
         private string m_UIPath= "Prefabs/UI/";
         public string UIPrefabsPath => m_UIPath;
 
-        [Header(LanguagAttribute.AudioPath)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.AudioPath)]
         private string m_AudioPath = "Sources/";
         public string AudioPath => m_AudioPath;
 
-        [Header(LanguagAttribute.ManagerLevel)]
-        [SerializeField]
+        [SerializeField, Header(LanguagAttribute.ManagerLevel)]
         private List<string> m_ManagerLevel = new List<string>()
         {
             "TimeManager",

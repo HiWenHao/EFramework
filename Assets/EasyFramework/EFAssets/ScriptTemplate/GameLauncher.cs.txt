@@ -37,6 +37,12 @@ namespace PleaseModify
             //FPS展示
             EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
 
+            //读表工具初始化
+            //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
+            //ExcelDataCacheManager.CacheAllData();
+            //for (int i = 0; i < EDC_Example.Ids.Length; i++)
+            //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
+
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, delegate
             //{

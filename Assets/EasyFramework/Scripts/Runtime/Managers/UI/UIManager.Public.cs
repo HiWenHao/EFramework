@@ -48,7 +48,7 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
         /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
-        public UIPageBase Push(UIPageBase page,  params object[] args)
+        public UIPageBase Push(UIPageBase page, params object[] args)
         {
             if (page == m_CurrentPage)
             {
@@ -73,7 +73,7 @@ namespace EasyFramework.Managers
             }
             return PageOpen(page, hideCurrent, args);
         }
-        
+
         /// <summary>
         /// Push to next ui page.进入下个页面
         /// </summary>
@@ -243,6 +243,8 @@ namespace EasyFramework.Managers
         /// <param name="openCloseBG">PageOpen the close backbround.开启背景可关闭</param>
         public void ShowDialog(string text, Action okEvent = null, Action noEvent = null, string okBtnText = "OK", string noBtnText = "Cancel", bool openCloseBG = true)
         {
+            if (!m_ShowboxInit)
+                ShowBoxInit();
             show_actOk = okEvent;
             show_actNo = noEvent;
 
@@ -264,6 +266,8 @@ namespace EasyFramework.Managers
         /// <param name="backgroundColor">The color with background. 背景颜色</param>
         public void ShowPopup(string text, float backgroundAlpha = .85f, Color textColor = default, Color backgroundColor = default)
         {
+            if (!m_ShowboxInit)
+                ShowBoxInit();
             PopupBox _popup;
             if (PopupsMaxCount == m_que_BoxPopup.Count)
             {

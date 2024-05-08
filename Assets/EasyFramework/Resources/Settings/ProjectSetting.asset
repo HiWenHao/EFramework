@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ProjectSetting
   m_EditorClassIdentifier: 
   m_LanguageIndex: 1
+  m_RendererPipline: 0
   m_ScriptAuthor: Xiaohei.Wang(Wenhao)
   m_ScriptVersion: 0.1
   m_ResourcesArea:
@@ -24,7 +25,7 @@ MonoBehaviour:
     m_FormalUrl: http://127.0.0.1/dashboard/_Download/v1.0
     m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v1.0
   m_AppConst:
-    m_AppName: EasyFramework
+    m_AppName: EFramework
     m_AppPrefix: EF_
     m_AppVersion: 1.0
     m_AppStage: 1

@@ -25,8 +25,9 @@ namespace EasyFramework.Edit.Setting
         private const string m_HeaderName = "EF/Project Setting";
         private static readonly string m_EFProjectSettingPath = ProjectUtility.Path.FrameworkPath + "Resources/Settings/ProjectSetting.asset";
 
-        int m_languageIndex;
         string m_EditorUser;
+        int m_languageIndex;
+        int m_rendererPipline;
         Vector2 m_ComputerInfoScroll;
 
         private SerializedObject m_SettingPanel;
@@ -35,6 +36,7 @@ namespace EasyFramework.Edit.Setting
         private SerializedProperty m_ScriptVersion;
         private SerializedProperty m_ResourcesArea;
         private SerializedProperty m_AppConstConfig;
+        private SerializedProperty m_RendererPipline;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
@@ -45,6 +47,7 @@ namespace EasyFramework.Edit.Setting
             m_ScriptVersion = m_SettingPanel.FindProperty("m_ScriptVersion");
             m_ResourcesArea = m_SettingPanel.FindProperty("m_ResourcesArea");
             m_AppConstConfig = m_SettingPanel.FindProperty("m_AppConst");
+            m_RendererPipline = m_SettingPanel.FindProperty("m_RendererPipline");
 
             var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
             var m = type.GetMethod("GetUserInfo");
@@ -56,6 +59,8 @@ namespace EasyFramework.Edit.Setting
 
             m_languageIndex = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             m_LanguageIndex.intValue = m_languageIndex;
+            m_rendererPipline = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
+            m_RendererPipline.intValue = m_rendererPipline;
         }
 
         public override void OnGUI(string searchContext)
@@ -64,12 +69,20 @@ namespace EasyFramework.Edit.Setting
             SystemInfos();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
+
             m_languageIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Language.EditorLanguage, (ELanguage)m_LanguageIndex.intValue);
             if (m_languageIndex != m_LanguageIndex.intValue)
             {
                 m_LanguageIndex.intValue = m_languageIndex;
                 PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
             }
+
+            m_rendererPipline = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Language.RenderingType, (RenderingTypeEnum)m_RendererPipline.intValue);
+            if (m_rendererPipline != m_RendererPipline.intValue)
+            {
+                ChangedRendererPipline();
+            }
+
             EditorGUILayout.LabelField(LC.Language.EditorUser, m_EditorUser);
             m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Language.ScriptAuthor, m_ScriptAuthor.stringValue);
             m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Language.ScriptVersion, m_ScriptVersion.stringValue);
@@ -134,6 +147,41 @@ namespace EasyFramework.Edit.Setting
             GUILayout.Label(LC.Language.ScreenCurrentResolution + Screen.currentResolution.ToString());
             GUILayout.Label("---------------------------------------------------------------------------------------");
             EditorGUILayout.EndScrollView();
+        }
+
+        /// <summary>
+        /// 改变渲染管线
+        /// </summary>
+        private void ChangedRendererPipline()
+        {
+            if (m_rendererPipline == 1)
+            {
+                string _path = Path.Combine(Application.dataPath[..^7], "Packages/manifest.json");
+                string _manifest = File.ReadAllText(_path);
+
+                if (!_manifest.Contains("com.unity.render-pipelines.universal"))
+                {
+                    if (EditorUtility.DisplayDialog(LC.Language.Error, LC.Language.ResourcePackageAbsent, LC.Language.Import, LC.Language.Cancel))
+                    {
+                        EditorApplication.ExecuteMenuItem("Window/Package Manager");
+                    }
+                    return;
+                }
+            }
+
+            m_RendererPipline.intValue = m_rendererPipline;
+            PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", m_rendererPipline);
+
+            string _uiPath = Path.Combine(Application.dataPath, ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Managers/UI/UIManager.Private.cs");
+            string[] _contentsArray = File.ReadAllLines(_uiPath);
+
+            _contentsArray[18] = m_rendererPipline == 0 ? _contentsArray[18].Insert(0, "//") : _contentsArray[18].Replace("//", "");
+            for (int i = 57; i < 60; i++)
+            {
+                _contentsArray[i] = m_rendererPipline == 0 ? _contentsArray[i].Insert(16, "//") : _contentsArray[i].Replace("//", "");
+            }
+
+            File.WriteAllLines(_uiPath, _contentsArray);
         }
     }
 }

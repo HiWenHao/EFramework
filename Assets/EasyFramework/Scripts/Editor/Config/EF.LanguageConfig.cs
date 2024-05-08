@@ -42,13 +42,16 @@ namespace EasyFramework.Edit
                         new English(),
                         new Chinese(),
                     };
-                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                    m_currentIndex = UnityEngine.PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 }
 
                 if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
                 {
-                    ChangeLanguage(m_currentIndex, ProjectUtility.Project.LanguageIndex);
-                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                    if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
+                    {
+                        ChangeLanguage(m_currentIndex, ProjectUtility.Project.LanguageIndex);
+                        m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                    }
                 }
 
                 return m_languages[m_currentIndex];
@@ -75,7 +78,7 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                D.Exception("发生错误: " + ex.Message);
+                D.Exception(ex.Message);
             }
             AssetDatabase.Refresh();
         }
@@ -120,6 +123,12 @@ namespace EasyFramework.Edit
         public string Overwrite { get; }
         /// <summary> 默认设置 </summary>
         public string DefaultSetting { get; }
+        /// <summary> 错误 </summary>
+        public string Error { get; }
+        /// <summary> 缺少相关资源包 </summary>
+        public string ResourcePackageAbsent { get; }
+        /// <summary> 导入 </summary>
+        public string Import { get; }
         #endregion
 
         #region SystemInfo
@@ -169,6 +178,8 @@ namespace EasyFramework.Edit
         public string ScriptAuthor { get; }
         /// <summary> 脚本版本号 </summary>
         public string ScriptVersion { get; }
+        /// <summary> 渲染类型 </summary>
+        public string RenderingType { get; }
         #endregion
 
         #region Path Config Setting
@@ -276,6 +287,12 @@ namespace EasyFramework.Edit
 
         public readonly string DefaultSetting => "Default Setting";
 
+        public readonly string Error => "Error";
+
+        public readonly string ResourcePackageAbsent => "The related resource pack does not exist or is missing in the project. Import it first.";
+
+        public readonly string Import => "Import";
+
         public readonly string OperatingSystem => "Operating system name with version: ";
 
         public readonly string SystemMemorySize => "Amount of system memory present: ";
@@ -315,6 +332,8 @@ namespace EasyFramework.Edit
         public readonly string EditorUser => "Editor User";
 
         public readonly string ScriptVersion => "Script Version";
+
+        public readonly string RenderingType => "Rendering pipeline type";
 
         public readonly string UnderProjectPath => "Under The Project Path";
 
@@ -411,6 +430,12 @@ namespace EasyFramework.Edit
 
         public readonly string DefaultSetting => "默认设置";
 
+        public readonly string Error => "错误";
+
+        public readonly string ResourcePackageAbsent => "项目中不存在或缺少相关资源包，请先引入。";
+
+        public readonly string Import => "导入";
+
         public readonly string OperatingSystem => "操作系统：";
 
         public readonly string SystemMemorySize => "系统内存：";
@@ -450,6 +475,8 @@ namespace EasyFramework.Edit
         public readonly string EditorUser => "编辑器用户";
 
         public readonly string ScriptVersion => "脚本版本号";
+
+        public readonly string RenderingType => "渲染管线类型";
 
         public readonly string UnderProjectPath => "在项目路径下";
 

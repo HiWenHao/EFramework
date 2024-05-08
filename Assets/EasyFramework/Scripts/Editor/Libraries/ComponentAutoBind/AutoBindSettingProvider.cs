@@ -56,9 +56,9 @@ namespace EasyFramework.Edit.AutoBind
 
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField(LC.Language.SetRulePrefixes);
+            //EditorGUILayout.LabelField(LC.Language.SetRulePrefixes);
             EditorGUILayout.PropertyField(m_RulePrefixes);
-            EditorGUILayout.Space(20);
+            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
             m_CustomSettings.ApplyModifiedProperties();

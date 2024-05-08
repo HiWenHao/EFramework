@@ -10,8 +10,16 @@
 */
 namespace EasyFramework.Edit
 {
-    internal struct LanguagAttribute
-    {        
+    public struct LanguagAttribute
+    {
+        #region ProjectSetting - 项目设置
+        public const string ScriptAuthor = "The script author.";
+        public const string ScriptVersion = "The script version.";
+        public const string LanguageIndex = "The frame displays the language index.";
+        public const string RendererPipline = "The framework renderer pipeline index.";
+
+        #endregion
+
         #region AppConst - 项目常量
         public const string AppConst = "Project constant settings.";
 
@@ -38,7 +46,22 @@ namespace EasyFramework.Edit
         public const string FormalUrl = "Official resource address.";
         public const string StandbyUrl = "Standby resource server address.";
 
+        #endregion
 
+        #region PathConfigSetting - 路径配置
+        public const string FrameworkPath = "The path of the framework under engineering.";
+        public const string AtlasFolder = "The path of the atlas under Engineering.";
+        public const string ExtractPath = "Animation path under project after compression.";
+        public const string UIPrefabPath = "The path where the UI prefab is saved under the project.";
+        public const string UICodePath = "The path where the UI scripts will be saved under the project.";
+        
+        public const string SublimePath = "Sublime's path on your system.";
+        public const string NotepadPath = "Notepad's path on your system.";
+        #endregion
+
+        #region AutoBindSetting - UI自动绑定配置
+        public const string Namespace = "Default namespace.";
+        public const string RulePrefixes = "Component rule Settings.";
         #endregion
     }
 }

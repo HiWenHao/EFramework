@@ -36,7 +36,6 @@ namespace EasyFramework.Managers
         private readonly string pageBaseObjectName = "UIPages";
         private readonly string showBoxBaseObjectName = "UIShowBox";
         private Transform m_target, pageBaseObject, showBoxBaseObject;
-        private ParticleSystem m_ClickPS;
         private GameObject m_Root;
         void ISingleton.Init()
         {
@@ -74,22 +73,10 @@ namespace EasyFramework.Managers
                 _eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
                 _eventSystem.transform.parent = m_target;
             }
-
-            PageInit();
-            ShowBoxInit();
-
-            m_ClickPS = Object.Instantiate(EF.Load.LoadInResources<ParticleSystem>("Prefabs/ClickEffect"));
-            m_ClickPS.transform.SetParent(m_target, false);
         }
 
         void IUpdate.Update(float elapse, float realElapse)
         {
-            if (OpenClickEffect && Input.GetMouseButtonDown(0))
-            {
-                m_ClickPS.transform.transform.position = EF.Tool.ScreenPointToWorldPoint(Input.mousePosition, UICamera, 11f);
-                m_ClickPS.Play();
-            }
-
             PageUpdate(elapse, realElapse);
             ShowBoxUpdate();
         }
@@ -99,19 +86,17 @@ namespace EasyFramework.Managers
             PageExit();
             ShowBoxQuit();
 
-            Destroy(m_ClickPS.gameObject);
-            m_ClickPS = null;
-
             Destroy(UICamera.gameObject);
             UICamera = null;
         }
 
-        void Destroy(UnityEngine.Object obj)
+        void Destroy(Object obj)
         {
             Object.Destroy(obj);
         }
 
         #region Page
+        bool m_PageInit;
         int m_int_Serial;
         int m_int_PageCount;
         GameObject m_CurrentObj;
@@ -141,10 +126,16 @@ namespace EasyFramework.Managers
         }
         void PageUpdate(float elapse, float realElapse)
         {
+            if (!m_PageInit)
+                return;
+
             m_CurrentPage?.Update(elapse, realElapse);
         }
         void PageExit()
         {
+            if (!m_PageInit)
+                return;
+
             while (m_stc_UseUI.Count != 0)
             {
                 m_stc_UseUI.Pop().Quit();
@@ -193,6 +184,11 @@ namespace EasyFramework.Managers
         }
         private UIPageBase PageOpen(UIPageBase page, bool hideCurrent, params object[] args)
         {
+            if (!m_PageInit)
+            {
+                m_PageInit = true;
+                PageInit();
+            }
             if (null != m_CurrentPage)
             {
                 m_CurrentPage.OnFocus(false);
@@ -274,6 +270,7 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Show box
+        bool m_ShowboxInit;
         GameObject BoxDialog;
         Text show_txt_Text, show_txt_true, show_txt_false;
         Button show_btn_CloseBG, show_btn_True, show_btn_False;
@@ -317,16 +314,19 @@ namespace EasyFramework.Managers
         }
         void ShowBoxUpdate()
         {
-            if (null != m_que_BoxPopup)
+            if (!m_ShowboxInit)
+                return;
+
+            foreach (var popup in m_que_BoxPopup)
             {
-                foreach (var popup in m_que_BoxPopup)
-                {
-                    popup.Update();
-                }
+                popup.Update();
             }
         }
         void ShowBoxQuit()
         {
+            if (!m_ShowboxInit)
+                return;
+
             while (0 != m_que_BoxPopup.Count)
             {
                 PopupBox _popup = m_que_BoxPopup.Dequeue();
