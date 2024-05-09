@@ -9,6 +9,7 @@
  * ===============================================
 */
 
+using EasyFramework.Edit;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -49,17 +50,6 @@ namespace EasyFramework.Windows
 
             GUIStyle m_buttonStyle;
 
-            readonly GUIContent[] m_TypeContent = new[]
-            {
-                new GUIContent("Script Dependencies", "脚本依赖项"),
-                new GUIContent("Script Missing", "丢失脚本的对象")
-            };
-            readonly GUIContent[] m_OptContents = new[]
-            {
-                new GUIContent("In Active Scenes", "在活动场景中"),
-                new GUIContent("On Prefabs", "为预制件")
-            };
-
             [MenuItem("EFTools/Assets/Script Tools &F", priority = 10)]
             private static void OpenWindow()
             {
@@ -85,7 +75,7 @@ namespace EasyFramework.Windows
                 };
                 #endregion
 
-                EditorGUILayout.LabelField(new GUIContent("Script Tools", "脚本工具"), new GUIStyle("label")
+                EditorGUILayout.LabelField(LC.Language.Stw_Title, new GUIStyle("label")
                 {
                     fontStyle = FontStyle.Bold,
                     fontSize = 16,
@@ -93,22 +83,28 @@ namespace EasyFramework.Windows
                     fixedHeight = 30
                 });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                m_typeIndex = EditorGUILayout.Popup(new GUIContent("Selection Find GunsType", "选择查找类型"), m_typeIndex, m_TypeContent);
+                m_typeIndex = EditorGUILayout.Popup(LC.Language.Stw_SelectionFindType,
+                    m_typeIndex, 
+                    new[]
+                    {
+                        LC.Language.Stw_ScriptDependencies,
+                        LC.Language.Stw_ScriptMissing,
+                    });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
                 //Dependencies
                 if (m_typeIndex == 0)
                 {
-                    targetComponent = (MonoScript)EditorGUILayout.ObjectField(new GUIContent("Select Target Script", "选择查询脚本"), targetComponent, typeof(MonoScript), false);
+                    targetComponent = (MonoScript)EditorGUILayout.ObjectField(LC.Language.Stw_SelectionTargetScript, targetComponent, typeof(MonoScript), false);
 
                     EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                    m_ShouldRecurse = EditorGUILayout.ToggleLeft(new GUIContent("Recurse Dependencies    (Warning: Very Slow)", "递归查找, 非常慢"), m_ShouldRecurse);
-                    if (GUILayout.Button(new GUIContent("Find Dependencies", "查找脚本依赖项")))
+                    m_ShouldRecurse = EditorGUILayout.ToggleLeft(LC.Language.Stw_RecurseDependencies, m_ShouldRecurse);
+                    if (GUILayout.Button(LC.Language.Stw_FindDependencies))
                     {
                         ActionSearchForComponent();
                     }
                     if (m_DependenciesMaxCount != 0)
-                        EditorGUILayout.LabelField(new GUIContent($"Dependencies Count:  [ {m_DependenciesMaxCount} ] ", "依赖数量"));
+                        EditorGUILayout.LabelField($"{LC.Language.Stw_DependenciesCount}  [ {m_DependenciesMaxCount} ] ");
 
                     DependenciesListInfoShow();
                 }
@@ -116,11 +112,15 @@ namespace EasyFramework.Windows
                 else
                 {
                     EditorGUILayout.BeginHorizontal();
-                    if (GUILayout.Button(new GUIContent("Find", "查找")))
+                    if (GUILayout.Button(LC.Language.Find))
                     {
                         MissingFind();
                     }
-                    m_MissingOpt = EditorGUILayout.Popup(m_MissingOpt, m_OptContents);
+                    m_MissingOpt = EditorGUILayout.Popup(m_MissingOpt, new string[]
+                        {
+                            LC.Language.Stw_InAllActivityScenarios,
+                            LC.Language.Stw_OnAllPrefabs
+                        });
                     if (m_MissingOpt != m_MissingTempOpt)
                     {
                         m_MissingTempOpt = m_MissingOpt;
@@ -128,7 +128,7 @@ namespace EasyFramework.Windows
                     }
                     EditorGUILayout.EndHorizontal();
                     if (m_MinssingMaxCount != 0)
-                        EditorGUILayout.LabelField(new GUIContent($"Missing Count:  [ {m_MinssingMaxCount} ] ", "丢失数量"));
+                        EditorGUILayout.LabelField($"{LC.Language.Stw_MissingCount}  [ {m_MinssingMaxCount} ] ");
                     EditorGUILayout.Space();
 
                     MissingListInfoShow();
@@ -143,7 +143,7 @@ namespace EasyFramework.Windows
 
                 if (m_DependenciesMaxCount == 0)
                 {
-                    EditorGUILayout.LabelField(new GUIContent("No matches found.", "未找到匹配项"));
+                    EditorGUILayout.LabelField(LC.Language.Stw_NoMatchesFound);
                 }
                 else
                 {
@@ -161,7 +161,7 @@ namespace EasyFramework.Windows
                         EditorGUILayout.EndHorizontal();
                     }
                     EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("----- The End -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+                    EditorGUILayout.LabelField($"----- {LC.Language.End} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
                     EditorGUILayout.Space(18f);
 
                     EditorGUILayout.EndScrollView();
@@ -214,7 +214,7 @@ namespace EasyFramework.Windows
                     return;
 
                 m_MissingScroll = EditorGUILayout.BeginScrollView(m_MissingScroll);
-                for (int i = 0; i < m_MinssingMaxCount - 1; i++)
+                for (int i = 0; i < m_MinssingMaxCount; i++)
                 {
                     Info _info = m_Entries[i];
                     if (!_info.Target)
@@ -223,7 +223,7 @@ namespace EasyFramework.Windows
                         continue;
                     }
                     EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
-                    if (GUILayout.Button((_info.LayersCount == 0 ? " [ Root Object ]  >>> " : $" Root [ {_info.ParentName} ]   {_info.LayersCount} Layers  >>> ")
+                    if (GUILayout.Button((_info.LayersCount == 0 ? $" [ {LC.Language.Stw_RootObject} ]  >>> " : $" {LC.Language.Stw_TargetRootObject} [ {_info.ParentName} ]   {_info.LayersCount} {LC.Language.Stw_TargetLayers}  >>> ")
                         + _info.DetailsPath, ChangedColor(_info.LayersCount == 0), GUILayout.Height(25f)))
                     {
                         EditorGUIUtility.PingObject(_info.Target);
@@ -236,7 +236,7 @@ namespace EasyFramework.Windows
                     MissingFind();
                 }
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("----- The End -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+                EditorGUILayout.LabelField($"----- {LC.Language.End} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
                 EditorGUILayout.Space(18f);
                 EditorGUILayout.EndScrollView();
             }

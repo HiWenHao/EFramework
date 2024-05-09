@@ -4,11 +4,12 @@
  * Author:        罐子（Lawliet）
  * CreationTime:  2023-05-16 14:21:29
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-05-16 14:21:29
+ * ModifyTime:    2024-05-09 10:28:29
  * ScriptVersion: 0.1
  * ===============================================
 */
 
+using EasyFramework.Edit;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -159,10 +160,10 @@ namespace EasyFramework.Windows
                 switch (info.MissType)
                 {
                     case MissType.missLeft:
-                        m_MissRight.AppendLine("左边缺少该物体，或位置不同");
+                        m_MissRight.AppendLine(LC.Language.Pc_MissObjectLeft);
                         break;
                     case MissType.missRight:
-                        m_MissLeft.AppendLine("右边缺少该物体，或位置不同");
+                        m_MissLeft.AppendLine(LC.Language.Pc_MissObjectRight);
                         break;
                     default:
                         break;
@@ -178,14 +179,14 @@ namespace EasyFramework.Windows
                         case MissType.missLeft:
                             if (m_MissLeft.Length == 0)
                             {
-                                m_MissLeft.AppendLine("Lost:\n");
+                                m_MissLeft.AppendLine($"{LC.Language.Lost}:\n");
                             }
                             m_MissLeft.AppendLine(item.Name);
                             break;
                         case MissType.missRight:
                             if (m_MissRight.Length == 0)
                             {
-                                m_MissRight.AppendLine("Lost:\n");
+                                m_MissRight.AppendLine($"{LC.Language.Lost}:\n");
                             }
                             m_MissRight.AppendLine(item.Name);
                             break;
@@ -230,7 +231,7 @@ namespace EasyFramework.Windows
             {
                 EditorGUILayout.BeginHorizontal(new GUIStyle("ToolBar"));
 
-                if (GUILayout.Button("Compare", m_ToolButtonStyle, GUILayout.Width(80.0f)))
+                if (GUILayout.Button(LC.Language.Compare, m_ToolButtonStyle, GUILayout.Width(80.0f)))
                 {
                     Compare();
                 }
@@ -239,9 +240,9 @@ namespace EasyFramework.Windows
 
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, "Show Equal\n显示一致的"), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, LC.Language.Pc_ShowEqual), m_ToolButtonStyle, GUILayout.Width(30.0f));
 
-                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, "Show Solo\n显示单一的"), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, LC.Language.Pc_ShowMiss), m_ToolButtonStyle, GUILayout.Width(30.0f));
 
                     if (check.changed)
                     {
@@ -283,11 +284,13 @@ namespace EasyFramework.Windows
             private void MissComponents()
             {
                 if (m_MissComponent)
+                {
+                    GUILayout.Space(EditorGUIUtility.singleLineHeight);
                     return;
-                
+                }
                 EditorGUILayout.BeginHorizontal("box");
-                GUILayout.Label(new GUIContent(m_MissLeft.ToString(), "和右边相较缺少内容"), ChangedLabel(true), GUILayout.ExpandWidth(true));
-                GUILayout.Label(new GUIContent(m_MissRight.ToString(), "和左边相较缺少内容"), ChangedLabel(false), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(m_MissLeft.ToString(), LC.Language.Pc_MissContentsLeft), ChangedLabel(true), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(m_MissRight.ToString(), LC.Language.Pc_MissContentsRight), ChangedLabel(false), GUILayout.ExpandWidth(true));
                 EditorGUILayout.EndHorizontal();
             }
 

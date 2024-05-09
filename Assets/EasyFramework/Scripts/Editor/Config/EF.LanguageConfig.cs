@@ -129,6 +129,14 @@ namespace EasyFramework.Edit
         public string ResourcePackageAbsent { get; }
         /// <summary> 导入 </summary>
         public string Import { get; }
+        /// <summary> 查找 </summary>
+        public string Find { get; }
+        /// <summary> 结束 </summary>
+        public string End { get; }
+        /// <summary> 丢失 </summary>
+        public string Lost { get; }
+        /// <summary> 对比 </summary>
+        public string Compare { get; }
         #endregion
 
         #region SystemInfo
@@ -259,6 +267,57 @@ namespace EasyFramework.Edit
         /// <summary> 图集已存在，是否覆盖？ </summary>
         public string AtlasExistAlsoOverwrite { get; }
         #endregion
+
+        #region ScriptToolsWindow
+        /// <summary> 脚本工具 - 标题 </summary>
+        public string Stw_Title { get; }
+        /// <summary> 脚本工具 - 选择查找类型 </summary>
+        public string Stw_SelectionFindType { get; }
+        /// <summary> 脚本工具 -  依赖该脚本的预制件 </summary>
+        public string Stw_ScriptDependencies{ get; }
+        /// <summary> 脚本工具 - 丢失脚本的对象 </summary>
+        public string Stw_ScriptMissing{ get; }
+        /// <summary> 脚本工具 - 选择查询脚本</summary>
+        public string Stw_SelectionTargetScript { get; }
+        /// <summary> 脚本工具 - 递归查找 </summary>
+        public string Stw_RecurseDependencies{ get; }
+        /// <summary> 脚本工具 - 查找脚本依赖项 </summary>
+        public string Stw_FindDependencies{ get; }
+        /// <summary> 脚本工具 - 依赖数量 </summary>
+        public string Stw_DependenciesCount{ get; }
+        /// <summary> 脚本工具 - 在所有活动场景中 </summary>
+        public string Stw_InAllActivityScenarios{ get; }
+        /// <summary> 脚本工具 - 在全部预制件上 </summary>
+        public string Stw_OnAllPrefabs{ get; }
+        /// <summary> 脚本工具 - 丢失数量 </summary>
+        public string Stw_MissingCount{ get; }
+        /// <summary> 脚本工具 - 未找到匹配项 </summary>
+        public string Stw_NoMatchesFound { get; }
+        /// <summary> 脚本工具 - 根 </summary>
+        public string Stw_RootObject{ get; }
+        /// <summary> 脚本工具 - 根对象 </summary>
+        public string Stw_TargetRootObject { get; }
+        /// <summary> 脚本工具 - 层数 </summary>
+        public string Stw_TargetLayers { get; }
+
+
+        #endregion
+
+        #region PrefabsCompare
+        /// <summary> 预制件对比 - 左边缺少该物体，或位置不同 </summary>
+        public string Pc_MissObjectLeft { get; }
+        /// <summary> 预制件对比 - 右边缺少该物体，或位置不同 </summary>
+        public string Pc_MissObjectRight { get; }
+        /// <summary> 预制件对比 - 左边内容缺失 </summary>
+        public string Pc_MissContentsLeft { get; }
+        /// <summary> 预制件对比 - 右边内容缺失 </summary>
+        public string Pc_MissContentsRight { get; }
+        /// <summary> 预制件对比 - 显示一致的 </summary>
+        public string Pc_ShowEqual { get; }
+        /// <summary> 预制件对比 - 显示单一的 </summary>
+        public string Pc_ShowMiss { get; }
+        
+        #endregion
     }
 
     public struct English : ILanguageBase
@@ -292,6 +351,14 @@ namespace EasyFramework.Edit
         public readonly string ResourcePackageAbsent => "The related resource pack does not exist or is missing in the project. Import it first.";
 
         public readonly string Import => "Import";
+
+        public readonly string Find => "Find";
+
+        public readonly string End => "End";
+
+        public readonly string Lost => "Lost";
+
+        public readonly string Compare => "Compare";
 
         public readonly string OperatingSystem => "Operating system name with version: ";
 
@@ -402,6 +469,48 @@ namespace EasyFramework.Edit
         public readonly string AtlasExistInCollection => "Atlas already exists in the current collector. Check it!";
 
         public readonly string AtlasExistAlsoOverwrite => "Atlas already exists. Whether to overwrite?";
+
+        public readonly string Stw_Title => "Script Tools";
+
+        public readonly string Stw_SelectionFindType => "Selection find type: ";
+
+        public readonly string Stw_ScriptDependencies => "Prefab that relies on this script";
+
+        public readonly string Stw_ScriptMissing => "Script Missing";
+
+        public readonly string Stw_SelectionTargetScript => "Selection Target Script: ";
+
+        public readonly string Stw_RecurseDependencies => "Recurse Dependencies.    (Warning: Very slow with too many resources)";
+
+        public readonly string Stw_InAllActivityScenarios => "In All Activity Scenes";
+
+        public readonly string Stw_OnAllPrefabs => "On All Prefabs";
+
+        public readonly string Stw_FindDependencies => "Find Dependencies";
+
+        public readonly string Stw_DependenciesCount => "Dependencies count: ";
+
+        public readonly string Stw_MissingCount => "Missing count: ";
+
+        public readonly string Stw_NoMatchesFound => "No matches found.";
+
+        public readonly string Stw_RootObject => "Root";
+
+        public readonly string Stw_TargetRootObject => "Target Root";
+
+        public readonly string Stw_TargetLayers => "Layer";
+
+        public readonly string Pc_MissObjectLeft => "The left object is missing, or in a different position.";
+
+        public readonly string Pc_MissObjectRight => "The right object is missing, or in a different position";
+
+        public readonly string Pc_MissContentsLeft => "The content on the left is missing";
+
+        public readonly string Pc_MissContentsRight => "The content on the right is missing";
+
+        public readonly string Pc_ShowEqual => "Display consistent";
+
+        public readonly string Pc_ShowMiss => "Display a single";
     }
 
     public struct Chinese : ILanguageBase
@@ -435,6 +544,14 @@ namespace EasyFramework.Edit
         public readonly string ResourcePackageAbsent => "项目中不存在或缺少相关资源包，请先引入。";
 
         public readonly string Import => "导入";
+
+        public readonly string Find => "查找";
+
+        public readonly string End => "结束";
+
+        public readonly string Lost => "丢失";
+
+        public readonly string Compare => "对比";
 
         public readonly string OperatingSystem => "操作系统：";
 
@@ -545,5 +662,47 @@ namespace EasyFramework.Edit
         public readonly string AtlasExistInCollection => "当前收集器中已经存在图集，请检查！";
 
         public readonly string AtlasExistAlsoOverwrite => "  图集已存在，是否覆盖？";
+        
+        public readonly string Stw_Title => "脚本工具";
+
+        public readonly string Stw_SelectionFindType => "选择查找类型：";
+
+        public readonly string Stw_ScriptDependencies => "依赖该脚本的预制件";
+
+        public readonly string Stw_ScriptMissing => "丢失脚本的对象";
+
+        public readonly string Stw_SelectionTargetScript => "选择目标脚本：";
+
+        public readonly string Stw_RecurseDependencies => "递归查找, 资源过多时非常慢。";
+
+        public readonly string Stw_InAllActivityScenarios => "在所有活动场景中";
+
+        public readonly string Stw_OnAllPrefabs => "在全部预制件上";
+
+        public readonly string Stw_FindDependencies => "查找脚本依赖项";
+
+        public readonly string Stw_DependenciesCount => "依赖数量：";
+
+        public readonly string Stw_MissingCount => "丢失数量：";
+
+        public readonly string Stw_NoMatchesFound => "未找到匹配项。";
+
+        public readonly string Stw_RootObject => "根";
+
+        public readonly string Stw_TargetRootObject => "根目标";
+
+        public readonly string Stw_TargetLayers => "层";
+
+        public readonly string Pc_MissObjectLeft => "左边缺少该物体，或位置不同。";
+
+        public readonly string Pc_MissObjectRight => "右边缺少该物体，或位置不同。";
+
+        public readonly string Pc_MissContentsLeft => "左边缺失内容";
+
+        public readonly string Pc_MissContentsRight => "右边缺失内容";
+
+        public readonly string Pc_ShowEqual => "显示一致的";
+
+        public readonly string Pc_ShowMiss => "显示单一的";
     }
 }
