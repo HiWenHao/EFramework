@@ -98,7 +98,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         SearchField searchField;
 #endif
 
-        [MenuItem("EFTools/Assets/PlayerPrefs Editor", false, 3000)]
+        [MenuItem("EFTools/Assets/PlayerPrefs Editor &D", false, 3000)]
         private static void Init()
         {
             // Get existing open window or if none, make a new one:
@@ -372,6 +372,10 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                         // Remove the _h193410979 style suffix used on PlayerPref keys in Windows registry
                         int index = key.LastIndexOf("_");
+                        if (index == -1)
+                        {
+                            continue;
+                        }
                         key = key.Remove(index, key.Length - index);
 
                         // Get the value from the registry
@@ -657,6 +661,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                 // The full key is the key that's actually stored in PlayerPrefs
                 string fullKey = activePlayerPrefs[i].Key;
 
+                if (null == fullKey)
+                {
+                    continue;
+                }
                 // Display key is used so in the case of encrypted keys, we display the decrypted version instead (in
                 // auto-decrypt mode).
                 string displayKey = fullKey;

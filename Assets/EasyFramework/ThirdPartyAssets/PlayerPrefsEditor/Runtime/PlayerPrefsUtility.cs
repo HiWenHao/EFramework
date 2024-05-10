@@ -20,15 +20,10 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// </summary>
         public static bool IsEncryptedKey(string key)
         {
-            // Encrypted keys use a special prefix
-            if (key.StartsWith(KEY_PREFIX))
-            {
-                return true;
-            }
-            else
-            {
+            if (string.IsNullOrEmpty(key) || !key.StartsWith(KEY_PREFIX))
                 return false;
-            }
+            // Encrypted keys use a special prefix
+            return true;
         }
 
         /// <summary>
