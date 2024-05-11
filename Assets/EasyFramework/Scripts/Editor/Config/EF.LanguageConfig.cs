@@ -42,7 +42,7 @@ namespace EasyFramework.Edit
                         new English(),
                         new Chinese(),
                     };
-                    m_currentIndex = UnityEngine.PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+                    m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 }
 
                 if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
@@ -109,12 +109,16 @@ namespace EasyFramework.Edit
 
         /// <summary> 确认按钮 </summary>
         public string Ok { get; }
+        /// <summary> 确认按钮 </summary>
+        public string Yes { get; }
         /// <summary> 取消按钮 </summary>
         public string Cancel { get; }
         /// <summary> 确认删除 </summary>
         public string ConfirmDelete { get; }
         /// <summary> 清除全部 </summary>
         public string ClearAll { get; }
+        /// <summary> 删除 </summary>
+        public string Delete { get; }
         /// <summary> 删除全部 </summary>
         public string DeleteAll { get; }
         /// <summary> 提示 </summary>
@@ -137,6 +141,26 @@ namespace EasyFramework.Edit
         public string Lost { get; }
         /// <summary> 对比 </summary>
         public string Compare { get; }
+        /// <summary> 添加 </summary>
+        public string Add { get; }
+        /// <summary> 键 </summary>
+        public string Key { get; }
+        /// <summary> 值 </summary>
+        public string Value { get; }
+        /// <summary> 类型 </summary>
+        public string Type { get; }
+        /// <summary> 数量 </summary>
+        public string Count { get; }
+        /// <summary> 加密 </summary>
+        public string Encrypt { get; }
+        /// <summary> 更多选择 </summary>
+        public string MoreOptions { get; }
+        /// <summary> 预设、偏好 </summary>
+        public string Preferences { get; }
+        /// <summary> 强制保存 </summary>
+        public string ForceSave { get; }
+        /// <summary> 创建自定义 </summary>
+        public string CreateCustom { get; }
         #endregion
 
         #region SystemInfo
@@ -316,7 +340,25 @@ namespace EasyFramework.Edit
         public string Pc_ShowEqual { get; }
         /// <summary> 预制件对比 - 显示单一的 </summary>
         public string Pc_ShowMiss { get; }
-        
+
+        #endregion
+
+        #region PlayerPrefsEditor
+        /// <summary> 存档数据 - 导入提示 </summary>
+        public string Ppe_ImportHint { get; }
+        /// <summary> 存档数据 - 游戏存档数据 </summary>
+        public string Ppe_PlayerPrefs { get; }
+        /// <summary> 存档数据 - 编辑器存档数据 </summary>
+        public string Ppe_EditorPrefs{ get; }
+        /// <summary> 存档数据 - 自动解密 </summary>
+        public string Ppe_AutoDecryption{ get; }
+        /// <summary> 存档数据 - 删除全部的提示 </summary>
+        public string Ppe_DeleteAllHint { get; }
+        /// <summary> 存档数据 - 动态密钥 </summary>
+        public string Ppe_ActiveKey{ get; }
+        /// <summary> 存档数据 - 创建自定义提示 </summary>
+        public string Ppe_CreateCustomHint{ get; }
+
         #endregion
     }
 
@@ -332,11 +374,15 @@ namespace EasyFramework.Edit
 
         public readonly string Ok => "Ok";
 
+        public readonly string Yes => "Yes";
+
         public readonly string Cancel => "Cancel";
 
         public readonly string ConfirmDelete => "Confirm Deletion";
 
         public readonly string ClearAll => "Clear All";
+
+        public readonly string Delete => "Delete";
 
         public readonly string DeleteAll => "Delete All";
 
@@ -359,6 +405,26 @@ namespace EasyFramework.Edit
         public readonly string Lost => "Lost";
 
         public readonly string Compare => "Compare";
+
+        public readonly string Add => "Add";
+
+        public readonly string Key => "Key";
+
+        public readonly string Value => "Value";
+
+        public readonly string Type => "Type";
+
+        public readonly string Count => "Count";
+
+        public readonly string Encrypt => "Encrypt";
+
+        public readonly string MoreOptions => "More Options";
+
+        public readonly string Preferences => "Preferences";
+
+        public readonly string ForceSave => "Force Save";
+
+        public readonly string CreateCustom => "Create Custom";
 
         public readonly string OperatingSystem => "Operating system name with version: ";
 
@@ -511,6 +577,21 @@ namespace EasyFramework.Edit
         public readonly string Pc_ShowEqual => "Display consistent";
 
         public readonly string Pc_ShowMiss => "Display a single";
+
+        public readonly string Ppe_ImportHint => "Import PlayerPrefs from another project.\nAlso useful if you change product or company name";
+
+        public readonly string Ppe_PlayerPrefs => "Player Prefs";
+
+        public readonly string Ppe_EditorPrefs => "Editor Prefs";
+
+        public readonly string Ppe_AutoDecryption => "Auto-Decryption";
+
+        public readonly string Ppe_DeleteAllHint => "Are you sure you want to delete all preferences?";
+        
+        public readonly string Ppe_ActiveKey => "Active Key";
+
+        public readonly string Ppe_CreateCustomHint => "Generate a script file in your project specifying a unique key to use.";
+
     }
 
     public struct Chinese : ILanguageBase
@@ -525,11 +606,15 @@ namespace EasyFramework.Edit
 
         public readonly string Ok => "好的";
 
+        public readonly string Yes => "是的";
+
         public readonly string Cancel => "取消";
 
         public readonly string ConfirmDelete => "确认删除";
 
         public readonly string ClearAll => "清除全部";
+
+        public readonly string Delete => "删除";
 
         public readonly string DeleteAll => "删除全部";
 
@@ -552,6 +637,26 @@ namespace EasyFramework.Edit
         public readonly string Lost => "丢失";
 
         public readonly string Compare => "对比";
+
+        public readonly string Add => "添加";
+
+        public readonly string Key => "键";
+
+        public readonly string Value => "值";
+
+        public readonly string Type => "类型";
+
+        public readonly string Count => "数量";
+
+        public readonly string Encrypt => "加密";
+
+        public readonly string MoreOptions => "更多设置";
+
+        public readonly string Preferences => "预设";
+
+        public readonly string ForceSave => "强制保存";
+
+        public readonly string CreateCustom => "创建自定义";
 
         public readonly string OperatingSystem => "操作系统：";
 
@@ -704,5 +809,21 @@ namespace EasyFramework.Edit
         public readonly string Pc_ShowEqual => "显示一致的";
 
         public readonly string Pc_ShowMiss => "显示单一的";
+
+        public readonly string Ppe_ImportHint => "从另一个项目导入存储数据。\n如果你更换了公司或产品，填写下边的信息将对你很有帮助。";
+
+        public readonly string Ppe_PlayerPrefs => "游戏存储数据";
+
+        public readonly string Ppe_EditorPrefs => "编辑器数据存储";
+
+        public readonly string Ppe_AutoDecryption => "自动-解密";
+
+        public readonly string Ppe_DeleteAllHint => "你确定你想要删除全部存档预设？";
+
+        public readonly string Ppe_ActiveKey => "动态密钥";
+
+        public readonly string Ppe_CreateCustomHint => "在项目中生成一个脚本文件，指定要使用的唯一密钥。";
+
+
     }
 }

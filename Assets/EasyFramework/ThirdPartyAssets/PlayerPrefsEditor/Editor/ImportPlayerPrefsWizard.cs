@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using EasyFramework.Edit;
+using UnityEditor;
 using UnityEngine;
 
 namespace Sabresaurus.PlayerPrefsEditor
@@ -25,7 +26,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         protected override bool DrawWizardGUI()
         {
-            GUILayout.Label("Import PlayerPrefs from another project, also useful if you change product or company name", EditorStyles.wordWrappedLabel);
+            GUILayout.Label(LC.Language.Ppe_ImportHint, EditorStyles.wordWrappedLabel);
             EditorGUILayout.Separator();
             return base.DrawWizardGUI();
         }

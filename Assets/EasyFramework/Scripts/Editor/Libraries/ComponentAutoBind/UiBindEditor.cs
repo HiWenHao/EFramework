@@ -69,8 +69,8 @@ namespace EasyFramework.Edit.AutoBind
             m_TempComponentTypeNames = new List<string>();
             m_ComponentsName = new Dictionary<string, int>();
 
-            m_sortByType = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
-            m_sortByNameLength = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+            m_sortByType = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
+            m_sortByNameLength = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             m_SortByType.boolValue = m_sortByType;
             m_SortByNameLength.boolValue = m_sortByNameLength;
         }
@@ -186,13 +186,13 @@ namespace EasyFramework.Edit.AutoBind
             if (m_sortByType != m_SortByType.boolValue)
             {
                 m_SortByType.boolValue = m_sortByType;
-                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", m_sortByType ? 1 : 0);
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", m_sortByType ? 1 : 0);
             }
             m_sortByNameLength = GUILayout.Toggle(m_sortByNameLength, LC.Language.SortByNameLength);
             if (m_sortByNameLength != m_SortByNameLength.boolValue)
             {
                 m_SortByNameLength.boolValue = m_sortByNameLength;
-                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", m_sortByNameLength ? 1 : 0);
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", m_sortByNameLength ? 1 : 0);
             }
             GUILayout.EndHorizontal();
             if (GUILayout.Button(LC.Language.AutoBindingComponents))

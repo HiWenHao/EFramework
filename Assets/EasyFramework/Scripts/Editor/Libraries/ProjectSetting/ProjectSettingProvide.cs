@@ -57,9 +57,9 @@ namespace EasyFramework.Edit.Setting
             var p = _type.GetProperty("displayName");
             m_EditorUser = (string)p.GetValue(userInfo);
 
-            m_languageIndex = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            m_languageIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             m_LanguageIndex.intValue = m_languageIndex;
-            m_rendererPipline = PlayerPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
+            m_rendererPipline = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
             m_RendererPipline.intValue = m_rendererPipline;
         }
 
@@ -74,7 +74,7 @@ namespace EasyFramework.Edit.Setting
             if (m_languageIndex != m_LanguageIndex.intValue)
             {
                 m_LanguageIndex.intValue = m_languageIndex;
-                PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
             }
 
             m_rendererPipline = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Language.RenderingType, (RenderingTypeEnum)m_RendererPipline.intValue);
@@ -170,7 +170,7 @@ namespace EasyFramework.Edit.Setting
             }
 
             m_RendererPipline.intValue = m_rendererPipline;
-            PlayerPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", m_rendererPipline);
+            EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", m_rendererPipline);
 
             string _uiPath = Path.Combine(Application.dataPath, ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Managers/UI/UIManager.Private.cs");
             string[] _contentsArray = File.ReadAllLines(_uiPath);

@@ -17,6 +17,7 @@ namespace EasyFramework.Edit
         public const string ScriptVersion = "脚本版本号。";
         public const string LanguageIndex = "框架显示语言索引。";
         public const string RendererPipline = "框架渲染管线索引。";
+
         #endregion
 
         #region AppConst - 项目常量
@@ -53,13 +54,14 @@ namespace EasyFramework.Edit
         public const string ExtractPath = "动画压缩后在工程下的路径。";
         public const string UIPrefabPath = "UI预制件保存在工程下的路径。";
         public const string UICodePath = "UI脚本保存在工程下的路径。";
+        
         public const string SublimePath = "Sublime在系统中的路径。";
         public const string NotepadPath = "Notepad在系统中的路径。";
         #endregion
 
         #region AutoBindSetting - UI自动绑定配置
         public const string Namespace = "默认命名空间。";
-        public const string RulePrefixes = "组件的规则设置。";
+        public const string RulePrefixes = "组件的缩略名字映射。";
         #endregion
     }
 }
