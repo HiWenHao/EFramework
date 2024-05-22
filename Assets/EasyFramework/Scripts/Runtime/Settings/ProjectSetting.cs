@@ -225,14 +225,15 @@ namespace EasyFramework.Edit.Setting
         private List<string> m_ManagerLevel = new List<string>()
         {
             "TimeManager",
-            "HttpManager",
-            "WebSocketManager",
-            "LoadManager",
             "ToolManager",
-            "SceneManager",
-            "ObjectToolManager",
-            "AudioManager",
+            "EventManager",
+            "HttpManager",
+            "SocketManager",
             "FolderManager",
+            "LoadManager",
+            "SceneManager",
+            "AudioManager",
+            "PatchManager",
             "UIManager",
         };
         public List<string> ManagerLevels => m_ManagerLevel;

@@ -40,8 +40,17 @@ namespace EasyFramework.Windows
             [MenuItem("Assets/EF/Prefabs Compare", false, 20)]
             static void PrefabsCompares()
             {
+                if (Selection.count > 2)
+                {
+                    D.Warning("The prefabs comparison tool can only compare two at a time.."); 
+                    return;
+                }
                 var gameObjects = Selection.gameObjects;
-
+                if (Selection.count != 0 && gameObjects.Length == 0)
+                {
+                    D.Warning("Need select the type of gameObject.");
+                    return;
+                }
                 if (gameObjects.Length == 1)
                     ComparePrefab(gameObjects[0], null);
                 else

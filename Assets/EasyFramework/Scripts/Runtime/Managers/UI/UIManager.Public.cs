@@ -27,27 +27,25 @@ namespace EasyFramework.Managers
         public Camera UICamera { get; private set; }
 
         /// <summary>
-        /// UI界面数量
+        /// Number of UI page
+        /// <para>UI界面数量</para>
         /// </summary>
         public int UiPageCount => m_int_PageCount;
 
         /// <summary>
-        /// The popups count.弹出窗口的最大数量
+        /// The popups count.<para>弹出窗口的最大数量</para>
         /// </summary>
         public int PopupsMaxCount { get; set; } = 5;
-
-        /// <summary>
-        /// Open the mouse on click effect. 开启点击特效
-        /// </summary>
-        public bool OpenClickEffect { get; set; } = true;
 
         #region Page region
         #region Push
         /// <summary>
-        /// Push to next ui page.进入下个页面
+        /// Push to next ui page.
+        /// <para>进入下个页面</para>
         /// </summary>
-        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(UIPageBase page, params object[] args)
         {
             if (page == m_CurrentPage)
@@ -59,11 +57,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Push to next ui page.进入下个页面
+        /// Push to next ui page.
+        /// <para>进入下个页面</para>
         /// </summary>
-        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (page == m_CurrentPage)
@@ -75,11 +75,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Push to next ui page.进入下个页面
+        /// Push to next ui page.
+        /// <para>进入下个页面</para>
         /// </summary>
-        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
-        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.<para>该页面如果存在，则重复创建</para></param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(bool repeatCreated, UIPageBase page, params object[] args)
         {
             if (!repeatCreated && page == m_CurrentPage)
@@ -91,12 +93,14 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Push to next ui page.进入下个页面
+        /// Push to next ui page.
+        /// <para>进入下个页面</para>
         /// </summary>
-        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
-        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.<para>该页面如果存在，则重复创建</para></param>
+        /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(bool repeatCreated, UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (!repeatCreated && page == m_CurrentPage)
@@ -110,10 +114,12 @@ namespace EasyFramework.Managers
 
         #region PopAndPushTo
         /// <summary>
-        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// Pop current ui page, and push next ui page.
+        /// <para>退出当前页面并进入下一页面</para>
         /// </summary>
-        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(UIPageBase page, params object[] args)
         {
             if (page == m_CurrentPage)
@@ -126,11 +132,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// Pop current ui page, and push next ui page.
+        /// <para>退出当前页面并进入下一页面</para>
         /// </summary>
-        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (page == m_CurrentPage)
@@ -143,11 +151,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// Pop current ui page, and push next ui page.
+        /// <para>退出当前页面并进入下一页面</para>
         /// </summary>
-        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
-        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.<para>该页面如果存在，则重复创建</para></param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, params object[] args)
         {
             if (!repeatCreated && page == m_CurrentPage)
@@ -160,13 +170,15 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Pop current ui page, and push next ui page.退出当前页面并进入下一页面
+        /// Pop current ui page, and push next ui page.
+        /// <para>退出当前页面并进入下一页面</para>
         /// </summary>
-        /// <param name="repeatCreated">If the page exists, repeat the creation.该页面如果存在，则重复创建</param>
-        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.下个页面需要存在于相关路径下，并且名字要与类名相同</param>
-        /// <param name="destroy">Destroy current ui page.销毁当前界面.</param>
-        /// <param name="hideCurrent">Hide current ui page.隐藏当前界面.</param>
-        /// <param name="args">Send this params to next ui page.给要进入的页面 传递该参数</param>
+        /// <param name="repeatCreated">If the page exists, repeat the creation.<para>该页面如果存在，则重复创建</para></param>
+        /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
+        /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
+        /// <param name="destroy">Destroy current ui page.<para>销毁当前界面</para></param>
+        /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面.</para></param>
+        /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, bool destroy, bool hideCurrent, params object[] args)
         {
             if (!repeatCreated && page == m_CurrentPage)
@@ -181,30 +193,33 @@ namespace EasyFramework.Managers
 
         #region Pop
         /// <summary>
-        /// Pop current ui page.退出当前页面
+        /// Pop current ui page.
+        /// <para>退出当前页面</para>
         /// </summary>
-        /// <param name="args"> Send this params to last ui page. 给前一个页面传递参数</param>
+        /// <param name="args"> Send this params to last ui page. <para>给前一个页面传递参数</para></param>
         public void Pop(params object[] args)
         {
             PageClose(false, args);
         }
 
         /// <summary>
-        /// Pop current ui page.退出当前页面
+        /// Pop current ui page.
+        /// <para>退出当前页面</para>
         /// </summary>
-        /// <param name="destroy">Destroy current ui page.销毁当前界面.</param>
-        /// <param name="args"> Send this params to last ui page. 给前一个页面传递参数</param>
+        /// <param name="destroy">Destroy current ui page.<para>销毁当前界面</para></param>
+        /// <param name="args"> Send this params to last ui page.  <para>给前一个页面传递参数</para></param>
         public void Pop(bool destroy, params object[] args)
         {
             PageClose(destroy, args);
         }
 
         /// <summary>
-        /// Pop current ui page.退出当前页面
+        /// Pop current ui page.
+        /// <para>退出当前页面</para>
         /// </summary>
-        /// <param name="count">Number of consecutively quit ui page.连续退出页面的数量</param>
-        /// <param name="destroy">Destroy current ui page.销毁当前界面.</param>
-        /// <param name="args"> Pass parameters to the page you are going to jump to. 给即将跳转到的页面传递参数</param>
+        /// <param name="count">Number of consecutively quit ui page.<para>连续退出页面的数量</para></param>
+        /// <param name="destroy">Destroy current ui page.<para>销毁当前界面.</para></param>
+        /// <param name="args"> Pass parameters to the page you are going to jump to. <para>给即将跳转到的页面传递参数</para></param>
         public void Pop(int count, bool destroy = false, params object[] args)
         {
             do
@@ -215,10 +230,11 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Pop to only has one page.退出到只剩一个界面
+        /// Pop to only has one page.
+        /// <para>退出到只剩一个界面</para>
         /// </summary>
-        /// <param name="destroy">Destroy current ui page.销毁当前界面.</param>
-        /// <param name="args"> Send this params to home ui page. 给主页面传递参数</param>
+        /// <param name="destroy">Destroy current ui page.<para>销毁当前界面.</para></param>
+        /// <param name="args"> Send this params to home ui page. <para>给主页面传递参数</para></param>
         public void PopToOnlyOne(bool destroy = false, params object[] args)
         {
             while (m_int_PageCount > 2)
@@ -233,14 +249,15 @@ namespace EasyFramework.Managers
 
         #region Show box region
         /// <summary>
-        /// The dialog board.确认弹窗
+        /// The dialog board.
+        /// <para>确认弹窗</para>
         /// </summary>
-        /// <param name="text">Show text info.展示内容</param>
-        /// <param name="okEvent">The agreed action.确定按钮</param>
-        /// <param name="noEvent">The cancel action.取消按钮</param>
-        /// <param name="okBtnText">The agreed button text info.确认按钮内容</param>
-        /// <param name="noBtnText">The cancel button text info.取消按钮内容</param>
-        /// <param name="openCloseBG">PageOpen the close backbround.开启背景可关闭</param>
+        /// <param name="text">Show text info.<para>展示内容</para></param>
+        /// <param name="okEvent">The agreed action.<para>确定按钮</para></param>
+        /// <param name="noEvent">The cancel action.<para>取消按钮</para></param>
+        /// <param name="okBtnText">The agreed button text info.<para>确认按钮内容</para></param>
+        /// <param name="noBtnText">The cancel button text info.<para>取消按钮内容</para></param>
+        /// <param name="openCloseBG">PageOpen the close backbround.<para>开启背景可关闭</para></param>
         public void ShowDialog(string text, Action okEvent = null, Action noEvent = null, string okBtnText = "OK", string noBtnText = "Cancel", bool openCloseBG = true)
         {
             if (!m_ShowboxInit)
@@ -258,12 +275,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Show the popup info borad.展示弹窗面板
+        /// Show the popup info borad.
+        /// <para>展示弹窗面板</para>
         /// </summary>
-        /// <param name="text">The show info. 展示的信息</param>
-        /// <param name="backgroundAlpha">The alpha with background.背景的透明度</param>
-        /// <param name="textColor">The color with text. 文字颜色</param>
-        /// <param name="backgroundColor">The color with background. 背景颜色</param>
+        /// <param name="text">The show info. <para>展示的信息</para></param>
+        /// <param name="backgroundAlpha">The alpha with background.<para>背景的透明度</para></param>
+        /// <param name="textColor">The color with text. <para>文字颜色</para></param>
+        /// <param name="backgroundColor">The color with background. <para>背景颜色</para></param>
         public void ShowPopup(string text, float backgroundAlpha = .85f, Color textColor = default, Color backgroundColor = default)
         {
             if (!m_ShowboxInit)

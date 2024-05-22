@@ -107,10 +107,11 @@ namespace EasyFramework.Managers
 
         #region Play
         /// <summary>
-        /// Play bgm by name.通过名字播放背景音乐
+        /// Play bgm by name.
+        /// <para>通过名字播放背景音乐</para>
         /// </summary>
-        /// <param name="name">the bgm name.音乐名称</param>
-        /// <param name="isLoop">the bgm is loop.是否循环</param>
+        /// <param name="name">the bgm name.<para>音乐名称</para></param>
+        /// <param name="isLoop">the bgm is loop.<para>是否循环</para></param>
         public void PlayBGMByName(string name, bool isLoop = false)
         {
             if (IsPlayingBGM(name)) return;
@@ -119,10 +120,11 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Play effect source by clip.通过clip播放特效声音
+        /// Play effect source by clip.
+        /// <para>通过clip播放特效声音</para>
         /// </summary>
-        /// <param name="clip">The effect source clip.音频的clip</param>
-        /// <param name="callback">the source pla.音频播放结束的回调</param>
+        /// <param name="clip">The effect source clip.<para>音频的clip</para></param>
+        /// <param name="callback">The completion callback for source played.<para>音频播放结束的回调</para></param>
         public void Play2DEffectSouceByClip(AudioClip clip, Action callback = null)
         {
             PlayEffect(clip);
@@ -130,11 +132,12 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Play effect source by clip.通过clip播放音乐
+        /// Play effect source by clip.
+        /// <para>通过clip播放音乐</para>
         /// </summary>
-        /// <param name="clip">The effect source clip.音频的clip</param>
-        /// <param name="pos">The sources play position. 音频位于空间的位置</param>
-        /// <param name="callback">the source pla.音频播放结束的回调</param>
+        /// <param name="clip">The effect source clip.<para>音频的clip</para></param>
+        /// <param name="pos">The sources play position. <para>音频位于空间的位置</para></param>
+        /// <param name="callback">The completion callback for source played.<para>音频播放结束的回调</para></param>
         public void Play3DEffectSouceByClip(AudioClip clip, Vector3 pos, Action callback = null)
         {
             PlayEffect(clip, false, pos);
@@ -142,10 +145,11 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Play effect source by name.通过名字播放特效声音
+        /// Play effect source by name.
+        /// <para>通过名字播放特效声音</para>
         /// </summary>
-        /// <param name="name">The effect source name.音乐名称</param>
-        /// <param name="callback">the source pla.音频播放结束的回调</param>
+        /// <param name="name">The effect source name.<para>音乐名称</para></param>
+        /// <param name="callback">The completion callback for source played.<para>音频播放结束的回调</para></param>
         public void Play2DEffectSouceByName(string name, Action callback = null)
         {
             AudioClip clip = GetClipByName(name);
@@ -154,11 +158,12 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Play effect source by name.通过名字播放音乐
+        /// Play effect source by name.
+        /// <para>通过名字播放特效声音</para>
         /// </summary>
-        /// <param name="name">The effect source name.音乐名称</param>
-        /// <param name="pos">The sources play position.音频位于空间的位置</param>
-        /// <param name="callback">the source pla.音频播放结束的回调</param>
+        /// <param name="name">The effect source name.<para>音乐名称</para></param>
+        /// <param name="pos">The sources play position.<para>音频位于空间的位置</para></param>
+        /// <param name="callback">The completion callback for source played.<para>音频播放结束的回调</para></param>
         public void Play3DEffectSouceByName(string name, Vector3 pos, Action callback = null)
         {
             AudioClip clip = GetClipByName(name);
@@ -169,7 +174,8 @@ namespace EasyFramework.Managers
 
         #region Set
         /// <summary>
-        /// Pause the all audio. 暂停全部声音
+        /// Pause the all audio. 
+        /// <para>暂停全部声音</para>
         /// </summary>
         public void PauseAll()
         {
@@ -180,7 +186,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// UnPause the all audio.解除暂停
+        /// UnPause the all audio.
+        /// <para>解除暂停</para>
         /// </summary>
         public void UnPauseAll()
         {
@@ -191,7 +198,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Set all audio source mute.设置静音
+        /// Set all audio source mute.
+        /// <para>设置静音</para>
         /// </summary>
         /// <param name="isSetMute"></param>
         public void MuteAll(bool isSetMute)
@@ -205,7 +213,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Stop BGM.停止背景音乐
+        /// Stop BGM.
+        /// <para>停止背景音乐</para>
         /// </summary>
         public void StopBGM()
         {
@@ -213,7 +222,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Stop a effect audio source by name.通过名字停止播放
+        /// Stop a effect audio source by name.
+        /// <para>通过名字停止播放</para>
         /// </summary>
         public void StopEffectSourceByName(string effectName)
         {
@@ -229,7 +239,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Stop a effect audio source by clip.通过clip停止播放
+        /// Stop a effect audio source by clip.
+        /// <para>通过clip停止播放</para>
         /// </summary>
         public void StopEffectSourceByClip(AudioClip clip)
         {
@@ -245,7 +256,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Stop all effect audio source.所有音效停止播放
+        /// Stop all effect audio source.
+        /// <para>所有音效停止播放</para>
         /// </summary>
         public void StopAllEffectSources()
         {
@@ -257,7 +269,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Set all audio source stop.全部停止播放
+        /// Set all audio source stop.
+        /// <para>全部停止播放</para>
         /// </summary>
         public void StopAll()
         {
@@ -268,7 +281,8 @@ namespace EasyFramework.Managers
 
         #region Get
         /// <summary>
-        /// Judge the bgm is playing by name.
+        /// Determine whether the current audio is playing.
+        /// <para>判断当前音频是否在播放中</para>
         /// </summary>
         public bool IsPlayingBGM(string bgmName)
         {
@@ -281,7 +295,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Judge the effect source is playing by name.
+        /// Determine whether the current effect source is playing. 
+        /// <para>判断当前特效音频是否在播放中</para>
         /// </summary>
         public bool IsPlayingEffectSouce(string effectSourceName)
         {
@@ -297,7 +312,8 @@ namespace EasyFramework.Managers
 
         #region Volume
         /// <summary>
-        /// Set the bgm volume. value by 0 to 1.设置背景音量大小
+        /// Set the bgm volume. value by 0 to 1.
+        /// <para>设置背景音量大小。取值为0 ~ 1</para>
         /// </summary>
         public void SetBgmVolum(float volume)
         {
@@ -307,7 +323,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Set the effect volume. value by 0 to 1.设置音效音量大小
+        /// Set the effect volume. value by 0 to 1.
+        /// <para>设置效果音量。取值为0 ~ 1</para>
         /// </summary>
         public void SetEffectVolum(float volume)
         {
@@ -316,7 +333,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Get the bgm volume.获取背景音量大小
+        /// Get the bgm volume.
+        /// <para>获取背景音量大小</para>
         /// </summary>
         public float GetBgmVolume()
         {
@@ -324,7 +342,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Get the effect volume.获取音效音量大小
+        /// Get the effect volume.
+        /// <para>获取音效音量大小</para>
         /// </summary>
         /// <returns></returns>
         public float GetEffectVolume()

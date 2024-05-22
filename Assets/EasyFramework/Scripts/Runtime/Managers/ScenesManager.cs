@@ -127,20 +127,22 @@ namespace EasyFramework.Managers
 			m_bol_IsLoading = false;
 			EF.StopCoroutines(LoadScene());
 		}
-		#endregion
+        #endregion
 
-		#region PUBLIC
-		/// <summary>
-		/// Get current scene name.获取当前场景名字
-		/// </summary>
-		public string CurrentScene { get; private set; }
+        #region PUBLIC
+        /// <summary>
+        /// Get current scene name.
+        /// <para>获取当前场景名字</para>
+        /// </summary>
+        public string CurrentScene { get; private set; }
 
         /// <summary>
-        /// Load scene with name.通过名字加载场景
+        /// Load scene with name.
+        /// <para>通过名字加载场景</para>
         /// </summary>
-        /// <param name="sceneName">The scene name. 场景名字</param>
-        /// <param name="callback">The scene load callback. 场景加载回调</param>
-        /// <param name="transition">The black screen transition speed. 过度黑屏速率</param>
+        /// <param name="sceneName">The scene name. <para>场景名字</para></param>
+        /// <param name="callback">The scene load callback. <para>场景加载回调</para></param>
+        /// <param name="transition">The black screen transition speed. <para>过度黑屏速率</para></param>
         public void LoadSceneWithName(string sceneName, Action callback = null, float transition = 1.0f)
 		{
             if (m_bol_IsLoading)
@@ -168,10 +170,11 @@ namespace EasyFramework.Managers
 
 
         /// <summary>
-        /// Load scene with name.通过名字直接加载场景,无过度动画
+        /// Load scene with name.
+        /// <para>通过名字直接加载场景,无过度动画</para>
         /// </summary>
-        /// <param name="sceneName">The scene name. 场景名字</param>
-        /// <param name="callback">The scene load callback. 场景加载回调</param>
+        /// <param name="sceneName">The scene name. <para>场景名字</para></param>
+        /// <param name="callback">The scene load callback. <para>场景加载回调</para></param>
         public void LoadSceneWithNameNow(string sceneName, System.Action callback = null)
         {
             if (m_bol_IsLoading)

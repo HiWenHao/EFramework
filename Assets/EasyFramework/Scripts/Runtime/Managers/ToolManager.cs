@@ -601,7 +601,7 @@ namespace EasyFramework.Managers
         }
     }
     /// <summary>
-    /// The screen orientation type.屏幕方向类型
+    /// The screen orientation type.<para>屏幕方向类型</para>
     /// </summary>
     public enum OrientationType
     {
@@ -624,7 +624,7 @@ namespace EasyFramework.Managers
     }
 
     /// <summary>
-    /// 位置类型
+    /// Position type.<para>位置类型</para>
     /// </summary>
     public enum PositionOrientationType
     {

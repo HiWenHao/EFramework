@@ -59,14 +59,16 @@ public partial class EF
 
     #region Coroutine  协程
     /// <summary>
-    /// 开启一个协程
+    /// Start a coroutine.
+    /// <para>开启一个协程</para>
     /// </summary>
     public static Coroutine StartCoroutines(IEnumerator coroutine)
     {
         return m_monoEF.StartCoroutine(coroutine);
     }
     /// <summary>
-    /// 开启一个协程
+    /// Start a coroutine.
+    /// <para>开启一个协程</para>
     /// </summary>
     public static Coroutine StartCoroutines(string coroutine, object value)
     {
@@ -75,29 +77,32 @@ public partial class EF
         return m_monoEF.StartCoroutine(coroutine, value);
     }
     /// <summary>
-    /// 停止一个协程
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
     /// </summary>
     public static void StopCoroutines(Coroutine coroutine)
     {
         m_monoEF.StopCoroutine(coroutine);
     }
     /// <summary>
-    /// 停止一个协程
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
     /// </summary>
     public static void StopCoroutines(IEnumerator coroutine)
     {
         m_monoEF.StopCoroutine(coroutine);
     }
     /// <summary>
-    /// 停止一个协程
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
     /// </summary>
     public static void StopCoroutines(string methodName)
     {
         m_monoEF.StopCoroutine(methodName);
     }
     /// <summary>
-    /// 停止所有协程,谨慎使用
-    /// Be prudent to use
+    /// Stop all coroutines and use with caution.
+    /// <para>停止所有协程, 谨慎使用</para>
     /// </summary>
     public static void StopAllCoroutine()
     {
@@ -106,7 +111,8 @@ public partial class EF
     #endregion
 
     /// <summary>
-    /// 清理内存
+    /// Clear memory
+    /// <para>清理内存</para>
     /// </summary>
     public static void ClearMemory()
     {
@@ -115,7 +121,8 @@ public partial class EF
     }
 
     /// <summary>
-    /// 退出游戏
+    /// Quit Game
+    /// <para>退出游戏</para>
     /// </summary>
     public static void QuitGame()
     {

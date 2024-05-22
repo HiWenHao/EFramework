@@ -19,12 +19,14 @@ namespace EasyFramework.Managers
     public class TimeManager : Singleton<TimeManager>, IManager, IUpdate
     {
         /// <summary>
-        /// Globally unique time.全局唯一时间
+        /// Globally unique time.
+        /// <para>全局唯一时间</para>
         /// </summary>
         public float TotalTime => m_GlobalTime;
 
         /// <summary>
-        /// Get current time.获取当前时间
+        /// Get current time.
+        /// <para>获取当前时间</para>
         /// </summary>
         public string CurrentTime => DateTime.Now.ToString("yyyy-MM-dd-HH:mm:ss");
 
@@ -152,41 +154,44 @@ namespace EasyFramework.Managers
         #region Public function
         #region Time event
         /// <summary>
-        /// Add an event that is executed only once. 增加只执行一次的计时事件
+        /// Add an event that is executed only once. 
+        /// <para>增加只执行一次的计时事件</para>
         /// </summary>
-        /// <param name="delayTime">延时时间</param>
+        /// <param name="delayTime">Delay time.<para>延时时间</para></param>
         /// <param name="callback">回调</param>
-        /// <returns>The event id. 事件ID </returns>
+        /// <returns>The event id. <para>事件ID</para> </returns>
         public int AddOnce(float delayTime, Action callback)
         {
             return CreateTimeEvent(delayTime, 0, 1, callback);
         }
         /// <summary>
-        /// Add a timing event. 增加一次计时事件
+        /// Add a timing event. <para>增加一次计时事件</para>
         /// <para>If the event needs to be executed repeatedly, you can set the number of cycles to 0 or -1.</para>
         /// <para>如果事件需要一直重复执行，则可以设置循环次数为0或者-1</para>
         /// </summary>
-        /// <param name="firstDelayTime">Execution of the first delay. 执行第一次前的延时</param>
+        /// <param name="firstDelayTime">Execution of the first delay. <para>执行第一次前的延时</para></param>
         /// <param name="cycleTime">循环间隔</param>
         /// <param name="cycleCount">循环次数</param>
         /// <param name="callback">回调</param>
-        /// <returns>The event id. 事件ID</returns>
+        /// <returns>The event id. <para>事件ID</para></returns>
         public int Add(float firstDelayTime, float cycleTime, int cycleCount, Action callback)
         {
             return CreateTimeEvent(firstDelayTime, cycleTime, cycleCount, callback);
         }
 
         /// <summary>
-        /// Delete one of then events. 删除其中一个
+        /// Delete one of then events. 
+        /// <para>删除其中一个</para>
         /// </summary>
-        /// <param name="timeId">The event id. 事件ID</param>
+        /// <param name="timeId">The event id. <para>事件ID</para></param>
         public void RemoveAt(int timeId)
         {
             m_RemovedEvents.Add(timeId);
         }
 
         /// <summary>
-        /// Delete the all events.删除全部事件
+        /// Delete the all events.
+        /// <para>删除全部事件</para>
         /// </summary>
         public void RemoveAll()
         {
@@ -200,9 +205,10 @@ namespace EasyFramework.Managers
 
         #region Time scale
         /// <summary>
-        /// Setting time scale.设置时间速率
+        /// Setting time scale.
+        /// <para>设置时间速率</para>
         /// </summary>
-        /// <param name="scale">Between 0.0f ~ 4.0f. 在0~4之间</param>
+        /// <param name="scale">Between 0.0f ~ 4.0f. <para>在0~4之间</para></param>
         public void SetTimeScale(float scale)
         {
             if (scale < 0.0f || scale > 4.0f)

@@ -40,138 +40,215 @@ namespace EasyFramework.Managers
             m_EventCenter = null;
         }
 
-        public void AddEnvet(string actionName, Action action)
+        /// <summary>
+        /// Added a event
+        /// <para>增加一个事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event executing action.<para>事件执行函数</para></param>
+        public void AddEvent(string eventName, Action action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp).AddAction(action);
             }
             else
             {
-                m_EventCenter.Add(actionName, new EventHelp(action));
+                m_EventCenter.Add(eventName, new EventHelp(action));
             }
         }
-        public void AddEnvet<T1>(string actionName, Action<T1> action)
+
+        /// <summary>
+        /// Added a event
+        /// <para>增加一个事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event executing action.<para>事件执行函数</para></param>
+        public void AddEvent<T1>(string eventName, Action<T1> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1>).AddAction(action);
             }
             else
             {
-                m_EventCenter.Add(actionName, new EventHelp<T1>(action));
+                m_EventCenter.Add(eventName, new EventHelp<T1>(action));
             }
         }
-        public void AddEnvet<T1, T2>(string actionName, Action<T1, T2> action)
+
+        /// <summary>
+        /// Added a event
+        /// <para>增加一个事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event executing action.<para>事件执行函数</para></param>
+        public void AddEvent<T1, T2>(string eventName, Action<T1, T2> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2>).AddAction(action);
             }
             else
             {
-                m_EventCenter.Add(actionName, new EventHelp<T1, T2>(action));
+                m_EventCenter.Add(eventName, new EventHelp<T1, T2>(action));
             }
         }
-        public void AddEnvet<T1, T2, T3>(string actionName, Action<T1, T2, T3> action)
+
+        /// <summary>
+        /// Added a event
+        /// <para>增加一个事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event executing action.<para>事件执行函数</para></param>
+        public void AddEvent<T1, T2, T3>(string eventName, Action<T1, T2, T3> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2, T3>).AddAction(action);
             }
             else
             {
-                m_EventCenter.Add(actionName, new EventHelp<T1, T2, T3>(action));
+                m_EventCenter.Add(eventName, new EventHelp<T1, T2, T3>(action));
             }
         }
 
-        public void CallEvent(string actionName)
+        /// <summary>
+        /// Call the event by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        public void CallEvent(string eventName)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp)?.Call();
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法执行！");
+                D.Log($"未找到{eventName}事件，无法执行！");
             }
         }
-        public void CallEvent<T>(string actionName, T value)
+
+        /// <summary>
+        /// Call the event by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        public void CallEvent<T>(string eventName, T value)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T>)?.Call(value);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法执行！");
+                D.Log($"未找到{eventName}事件，无法执行！");
             }
         }
-        public void CallEvent<T1, T2>(string actionName, T1 value1, T2 value2)
+
+        /// <summary>
+        /// Call the event by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        public void CallEvent<T1, T2>(string eventName, T1 value1, T2 value2)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2>)?.Call(value1, value2);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法执行！");
+                D.Log($"未找到{eventName}事件，无法执行！");
             }
         }
-        public void CallEvent<T1, T2, T3>(string actionName, T1 value1, T2 value2, T3 value3)
+
+        /// <summary>
+        /// Call the event by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        public void CallEvent<T1, T2, T3>(string eventName, T1 value1, T2 value2, T3 value3)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2, T3>)?.Call(value1, value2, value3);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法执行！");
+                D.Log($"未找到{eventName}事件，无法执行！");
             }
         }
 
-        public void RemoveEvent(string actionName, Action action)
+        /// <summary>
+        /// Remove the event function by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event function.<para>事件函数</para></param>
+        public void RemoveEvent(string eventName, Action action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp).Remove(action);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法移除！");
+                D.Log($"未找到{eventName}事件，无法移除！");
             }
         }
-        public void RemoveEvent<T1>(string actionName, Action<T1> action)
+
+        /// <summary>
+        /// Remove the event function by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event function.<para>事件函数</para></param>
+        public void RemoveEvent<T1>(string eventName, Action<T1> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1>).Remove(action);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法移除！");
+                D.Log($"未找到{eventName}事件，无法移除！");
             }
         }
-        public void RemoveEvent<T1, T2>(string actionName, Action<T1, T2> action)
+
+        /// <summary>
+        /// Remove the event function by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event function.<para>事件函数</para></param>
+        public void RemoveEvent<T1, T2>(string eventName, Action<T1, T2> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2>).Remove(action);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法移除！");
+                D.Log($"未找到{eventName}事件，无法移除！");
             }
         }
-        public void RemoveEvent<T1, T2, T3>(string actionName, Action<T1, T2, T3> action)
+
+        /// <summary>
+        /// Remove the event function by name
+        /// <para>通过名字调用事件</para>
+        /// </summary>
+        /// <param name="eventName">The event name.<para>事件名称</para></param>
+        /// <param name="action">The event function.<para>事件函数</para></param>
+        public void RemoveEvent<T1, T2, T3>(string eventName, Action<T1, T2, T3> action)
         {
-            if (m_EventCenter.TryGetValue(actionName, out var e))
+            if (m_EventCenter.TryGetValue(eventName, out var e))
             {
                 (e as EventHelp<T1, T2, T3>).Remove(action);
             }
             else
             {
-                D.Log($"未找到{actionName}事件，无法移除！");
+                D.Log($"未找到{eventName}事件，无法移除！");
             }
         }
     }

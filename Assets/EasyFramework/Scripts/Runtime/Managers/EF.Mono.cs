@@ -14,7 +14,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// The game managers master controller.游戏管理器总控制器.
+/// The game managers master controller.
+/// <para>游戏管理器总控制器</para>
 /// </summary>
 public partial class EF : MonoBehaviour
 {
@@ -90,6 +91,11 @@ public partial class EF : MonoBehaviour
     static List<IUpdate> ManageUpdater;
     static List<IUpdate> Updater;
     static List<ISingleton> Singletons;
+
+    /// <summary>
+    /// Register a singleton
+    /// <para>注册一个单例</para>
+    /// </summary>
     public static void Register(ISingleton item)
     {
         if (item is IUpdate)
@@ -98,8 +104,13 @@ public partial class EF : MonoBehaviour
             Updater.Add(item as IUpdate);
         }
         SingletonsCount++;
-        Singletons.Add(item);        
+        Singletons.Add(item);
     }
+
+    /// <summary>
+    /// Register a manager
+    /// <para>注册一个管理器</para>
+    /// </summary>
     public static void Register(IManager item)
     {
         ManagerCount++;
@@ -146,6 +157,11 @@ public partial class EF : MonoBehaviour
             MgrUprCount++;
         }
     }
+
+    /// <summary>
+    /// Unregister a manager
+    /// <para>注销一个单例</para>
+    /// </summary>
     public static void Unregister(ISingleton item)
     {
         if (item is IManager)

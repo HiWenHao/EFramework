@@ -58,10 +58,10 @@ namespace EasyFramework.Managers
 
         /// <summary>
         /// Load the object in resources folder.
-        /// 加载资源文件夹中的对象
+        /// <para>加载资源文件夹中的对象</para>
         /// </summary>
-        /// <param name="pathName">The object path in resources folder.对象在文件夹中的路径</param>
-        /// <returns>Return the object typeof T. 返回T类型的对象</returns>
+        /// <param name="pathName">The object path in resources folder.<para>对象在文件夹中的路径</para></param>
+        /// <returns>Return the object typeof T. <para>返回T类型的对象</para></returns>
         public T LoadInResources<T>(string pathName) where T : Object
         {
             return Resources.Load<T>(pathName);
@@ -98,7 +98,7 @@ namespace EasyFramework.Managers
         #region ClearMemory
         /// <summary>
         /// Clear the application all memory.
-        /// 清理应用程序内存
+        /// <para>清理应用程序内存</para>
         /// </summary>
         public void ClearAllMemory()
         {
@@ -107,7 +107,7 @@ namespace EasyFramework.Managers
         }
         /// <summary>
         /// Clear the application memory for YooAsset.
-        /// 清理应用程序中,YooAsset下引用计数为 0 的资源
+        /// <para>清理应用程序中,YooAsset下引用计数为 0 的资源</para>
         /// </summary>
         public void ClearYooAssetMemory()
         {
@@ -116,7 +116,7 @@ namespace EasyFramework.Managers
         }
         /// <summary>
         /// Clear the application memory for Resources.
-        /// 清理应用程序中 Resources 资源
+        /// <para>清理应用程序中 Resources 资源</para>
         /// </summary>
         public void ClearResourcesMemory()
         {

@@ -45,9 +45,10 @@ namespace EasyFramework.Managers
 
         #region Target folder operation. 目标文件夹操作
         /// <summary>
-        /// CreateTimeEvent folder by name.创建该名字文件夹
+        /// CreateTimeEvent folder by name.
+        /// <para>创建该名字文件夹</para>
         /// </summary>
-        /// <param name="folderName">folder`s name. 文件夹名称.</param>
+        /// <param name="folderName">folder`s name. <para>文件夹名称</para></param>
         public void CreatAssetsFolder(string folderName)
         {
             string path = m_AssetsPath + folderName;
@@ -55,9 +56,10 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Delete folder and children by name.删除该名字文件夹下的所有子文件夹
+        /// Delete folder and children by name.
+        /// <para>删除该名字文件夹下的所有子文件夹</para>
         /// </summary>
-        /// <param name="folderName">folder`s name. 文件夹名称.</param>
+        /// <param name="folderName">folder`s name. <para>文件夹名称</para></param>
         public void DeleteAssetsFolder(string folderName)
         {
             string path = m_AssetsPath + folderName;
@@ -73,9 +75,10 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Check the folder exist.检查文件夹是否存在.
+        /// Check the folder exist.
+        /// <para>检查文件夹是否存在</para>
         /// </summary>
-        /// <param name="folderName">folder`s name. 文件夹名称</param>
+        /// <param name="folderName">folder`s name. <para>文件夹名称</para></param>
         /// <returns></returns>
         public bool CheckFolderExist(string folderName)
         {
@@ -86,12 +89,13 @@ namespace EasyFramework.Managers
         #region Files operations. 文件操作
         #region Create file. 创建文件
         /// <summary>
-        /// 创建文件
+        /// Create a file.
+        /// <para>创建文件</para>
         /// </summary>
-        /// <param name="path">保存文件的路径</param>
-        /// <param name="bytes">文件的字节数组</param>
-        /// <param name="callback">创建完成后的回调</param>
-        /// <param name="md5">当前要下载文件的MD5</param>
+        /// <param name="path">The path to save the file<para>保存文件的路径</para></param>
+        /// <param name="bytes">Byte array of the file.<para>文件的字节数组</para></param>
+        /// <param name="callback">The created callback is complete<para>创建完成后的回调</para></param>
+        /// <param name="md5">MD5 of the file currently being downloaded<para>当前要下载文件的MD5</para></param>
         internal static void CreateFile(string path, byte[] bytes, Action callback = null, string md5 = default)
         {
             bool exist = false;
@@ -107,12 +111,13 @@ namespace EasyFramework.Managers
 
         #region Comparison MD5. MD5比对
         /// <summary>
-        /// 比对MD5，判断是否需要替换文件
+        /// Check MD5 to see if you need to replace the file
+        /// <para>比对MD5，判断是否需要替换文件</para>
         /// </summary>
-        /// <param name="filePath">已存在的文件路径</param>
-        /// <param name="newDate">需要比对的新下载数据</param>
-        /// <param name="md5">可用来做对比的MD5</param>
-        /// <returns>两个文件MD5是否相同</returns>
+        /// <param name="filePath">Path to an existing file<para>已存在的文件路径</para></param>
+        /// <param name="newDate">Newly downloaded data to be compared<para>需要比对的新下载数据</para></param>
+        /// <param name="md5">MD5 can be used for comparison<para>可用来做对比的MD5</para></param>
+        /// <returns>Whether two files MD5 are the same<para>两个文件MD5是否相同</para></returns>
         internal static bool ComparisonMD5(string filePath, byte[] newDate = null, string md5 = null)
         {
             try

@@ -33,12 +33,13 @@ MonoBehaviour:
     m_AudioPath: Sources/
     m_ManagerLevel:
     - TimeManager
+    - ToolManager
+    - EventManager
     - HttpManager
     - SocketManager
-    - LoadManager
-    - ToolManager
-    - SceneManager
-    - ObjectToolManager
-    - SourceManager
     - FolderManager
+    - LoadManager
+    - SceneManager
+    - AudioManager
+    - PatchManager
     - UIManager

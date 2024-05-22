@@ -92,11 +92,12 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// 开始更新补丁
+        /// Start update patch.
+        /// <para>开始更新补丁</para>
         /// </summary>
-        /// <param name="mode">更新模式</param>
-        /// <param name="callback">更新完成回调</param>
-        /// <param name="packageName">要更新的包名</param>
+        /// <param name="mode">Refresh scheme.<para>更新模式</para></param>
+        /// <param name="callback">Update the completion callback.<para>更新完成回调</para></param>
+        /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
         public void StartUpdatePatch(EFPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
         {
             m_CacheData = new Dictionary<string, bool>(1000);
