@@ -9,6 +9,9 @@
  * ===============================================
  */
 
+#if !BESTHTTP_DISABLE_PROXY && !UNITY_WEBGL
+using BestHTTP;
+#endif
 using BestHTTP.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -102,9 +105,9 @@ namespace EasyFramework.Managers
             )
         {
             WebSocket _ws = new WebSocket(uri, origin, protocol
-                #if (!UNITY_WEBGL || UNITY_EDITOR)
+#if (!UNITY_WEBGL || UNITY_EDITOR)
                 , extensions
-                #endif
+#endif
                 );
             Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
 #if (!UNITY_WEBGL || UNITY_EDITOR)

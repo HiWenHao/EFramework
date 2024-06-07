@@ -98,7 +98,7 @@ namespace YooAsset
 
             // 创建新的下载器	
             DownloaderBase newDownloader = null;
-            //YooLogger.Log($"Beginning to download bundle : {bundleInfo.Bundle.BundleName} URL : {bundleInfo.RemoteMainURL}");
+            YooLogger.Log($"Beginning to download bundle : {bundleInfo.Bundle.BundleName} URL : {bundleInfo.RemoteMainURL}");
 #if UNITY_WEBGL
             if (bundleInfo.Bundle.Buildpipeline == EDefaultBuildPipeline.RawFileBuildPipeline.ToString())
             {
