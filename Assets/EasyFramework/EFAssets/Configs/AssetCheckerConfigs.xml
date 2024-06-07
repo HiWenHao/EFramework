@@ -1,0 +1,16 @@
+<CheckerConfigs>
+  <Model MaxBones="60" MaxTriangs="5000" />
+  <Effect MaxMatrials="15" MaxParticles="500" />
+  <Common>
+    <ScoreNames ScoreName_0="完 美" />
+    <ScoreNames ScoreName_1="优 秀" />
+    <ScoreNames ScoreName_2="合 格" />
+    <ScoreNames ScoreName_3="超 标" />
+    <ScoreNames ScoreName_4="想起飞?" />
+    <ScoreColors ScoreColor_0="0,1,0" />
+    <ScoreColors ScoreColor_1="1,0.85,0" />
+    <ScoreColors ScoreColor_2="1,0.5,0" />
+    <ScoreColors ScoreColor_3="1,0.4,0.4" />
+    <ScoreColors ScoreColor_4="0.6,0,0" />
+  </Common>
+</CheckerConfigs>

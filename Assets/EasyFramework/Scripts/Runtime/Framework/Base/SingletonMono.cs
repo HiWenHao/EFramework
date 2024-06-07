@@ -14,6 +14,10 @@ using UnityEngine;
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton, new()
 {
     protected MonoSingleton() { }
+    /// Current type name
+    /// <para>当前类型名字</para>
+    /// </summary>
+    public string Name = typeof(T).Name;
     private static T _instance;
     public static T Instance {
         get{

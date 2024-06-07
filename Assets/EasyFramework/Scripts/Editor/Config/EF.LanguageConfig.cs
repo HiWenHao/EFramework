@@ -27,8 +27,10 @@ namespace EasyFramework.Edit
     public static class LC
     {
         static bool m_init;
-        static int m_currentIndex = -1;
-        static ILanguageBase[] m_languages;
+        static int m_currentIndex;
+        static ILanguageBase m_languages;
+        static English m_English;
+        static Chinese m_Chinese;
 
         public static ILanguageBase Language
         {
@@ -37,12 +39,8 @@ namespace EasyFramework.Edit
                 if (!m_init)
                 {
                     m_init = true;
-                    m_languages = new ILanguageBase[]
-                    {
-                        new English(),
-                        new Chinese(),
-                    };
                     m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+                    m_languages = CreateLanguage(m_currentIndex);
                 }
 
                 if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
@@ -51,14 +49,60 @@ namespace EasyFramework.Edit
                     {
                         ChangeLanguage(m_currentIndex, ProjectUtility.Project.LanguageIndex);
                         m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                        m_languages = CreateLanguage(m_currentIndex);
                     }
                 }
 
-                return m_languages[m_currentIndex];
+                return m_languages;
             }
         }
 
+        #region Combine
+        public static string Combine(string text1, string text2)
+        {
+            if (m_currentIndex == 1)
+                return text1 + text2;
+            else
+                return $"{text1} {text2}";
+        }
+        public static string Combine(string text1, string text2, string text3)
+        {
+            if (m_currentIndex == 1)
+                return text1 + text2 + text3;
+            else
+                return $"{text1} {text2} {text3}";
+        }
+        public static string Combine(string text1, string text2, string text3, string text4)
+        {
+            if (m_currentIndex == 1)
+                return text1 + text2 + text3 + text4;
+            else
+                return $"{text1} {text2} {text3} {text4}";
+        }
+        #endregion
+
         #region ChangeLanguage
+        /*
+         * Change the relevant description language.
+         * 改变说明语言
+         */
+        static ILanguageBase CreateLanguage(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    m_English = new English();
+                    return m_English;
+                case 1:
+                    m_Chinese = new Chinese();
+                    return m_Chinese;
+                default:
+                    D.Exception("There's a serious problem with the language system. Check it..!!!!!!!!!!!!!!!!!!!!");
+                    break;
+            }
+            return null;
+        }
+
         /*
          * Change the relevant description language under the Settings panel.
          * 改变设置面板下的相关说明语言
@@ -161,6 +205,82 @@ namespace EasyFramework.Edit
         public string ForceSave { get; }
         /// <summary> 创建自定义 </summary>
         public string CreateCustom { get; }
+        /// <summary> 贴图、图片 </summary>
+        public string Texture { get; }
+        /// <summary> 模型 </summary>
+        public string Model { get; }
+        /// <summary> 特效 </summary>
+        public string Effects { get; }
+        /// <summary> 配置 </summary>
+        public string Config { get; }
+        /// <summary> 总览 </summary>
+        public string Overview { get; }
+        /// <summary> 设置 </summary>
+        public string Settings { get; }
+        /// <summary> 刷新 </summary>
+        public string Refresh { get; }
+        /// <summary> 详情 </summary>
+        public string Details { get; }
+        /// <summary> 筛选 </summary>
+        public string Filtrate { get; }
+        /// <summary> 名称 </summary>
+        public string Name { get; }
+        /// <summary> 宽度 </summary>
+        public string Width { get; }
+        /// <summary> 高度 </summary>
+        public string Height { get; }
+        /// <summary> 资源类型 </summary>
+        public string ResourceType { get; }
+        /// <summary> 最大尺寸 </summary>
+        public string MaxSize { get; }
+        /// <summary> 内存消耗 </summary>
+        public string Memory { get; }
+        /// <summary> 压缩格式 </summary>
+        public string Compression { get; }
+        /// <summary> 对齐至 </summary>
+        public string AlignAt { get; }
+        /// <summary> 稍等 </summary>
+        public string Holdon { get; }
+        /// <summary> 重置 </summary>
+        public string Reset { get; }
+        /// <summary> 保存 </summary>
+        public string Save { get; }
+        /// <summary> 正在处理中 </summary>
+        public string BeingProcessed { get; }
+        /// <summary> 信息 </summary>
+        public string Information { get; }
+        /// <summary> 颜色 </summary>
+        public string Color { get; }
+        /// <summary> 分数 </summary>
+        public string Score { get; }
+        /// <summary> 顶点数 </summary>
+        public string Vertex { get; }
+        /// <summary> 三角面 </summary>
+        public string Triangular { get; }
+        /// <summary> 骨骼数 </summary>
+        public string BoneCount { get; }
+        /// <summary> 尺寸 </summary>
+        public string Size { get; }
+        /// <summary> 绘制次数 </summary>
+        public string DrawCall { get; }
+        /// <summary> 粒子 </summary>
+        public string Particle { get; }
+        /// <summary> 资产 </summary>
+        public string Assets { get; }
+        /// <summary> 描述 </summary>
+        public string Description { get; }
+        /// <summary> 文件 </summary>
+        public string File { get; }
+        /// <summary> 目录 </summary>
+        public string Catalogue { get; }
+        /// <summary> 查询 </summary>
+        public string Query { get; }
+        /// <summary> 清空 </summary>
+        public string Clear { get; }
+        /// <summary> 加载 </summary>
+        public string Load { get; }
+        /// <summary> 加载 </summary>
+        public string Open { get; }
         #endregion
 
         #region SystemInfo
@@ -205,7 +325,7 @@ namespace EasyFramework.Edit
         /// <summary> 编辑器语言 </summary>
         public string EditorLanguage { get; }
         /// <summary> 编辑器用户名 </summary>
-        public string EditorUser {  get; }
+        public string EditorUser { get; }
         /// <summary> 脚本作者名 </summary>
         public string ScriptAuthor { get; }
         /// <summary> 脚本版本号 </summary>
@@ -257,9 +377,9 @@ namespace EasyFramework.Edit
         /// <summary> 卸载绑定脚本 </summary>
         public string UnloadBindingScripts { get; }
         /// <summary> 按类型排序 </summary>
-        public string SortByType {  get; }
+        public string SortByType { get; }
         /// <summary> 按名字长度排序 </summary>
-        public string SortByNameLength {  get; }
+        public string SortByNameLength { get; }
 
         #endregion
 
@@ -298,27 +418,27 @@ namespace EasyFramework.Edit
         /// <summary> 脚本工具 - 选择查找类型 </summary>
         public string Stw_SelectionFindType { get; }
         /// <summary> 脚本工具 -  依赖该脚本的预制件 </summary>
-        public string Stw_ScriptDependencies{ get; }
+        public string Stw_ScriptDependencies { get; }
         /// <summary> 脚本工具 - 丢失脚本的对象 </summary>
-        public string Stw_ScriptMissing{ get; }
+        public string Stw_ScriptMissing { get; }
         /// <summary> 脚本工具 - 选择查询脚本</summary>
         public string Stw_SelectionTargetScript { get; }
         /// <summary> 脚本工具 - 递归查找 </summary>
-        public string Stw_RecurseDependencies{ get; }
+        public string Stw_RecurseDependencies { get; }
         /// <summary> 脚本工具 - 查找脚本依赖项 </summary>
-        public string Stw_FindDependencies{ get; }
+        public string Stw_FindDependencies { get; }
         /// <summary> 脚本工具 - 依赖数量 </summary>
-        public string Stw_DependenciesCount{ get; }
+        public string Stw_DependenciesCount { get; }
         /// <summary> 脚本工具 - 在所有活动场景中 </summary>
-        public string Stw_InAllActivityScenarios{ get; }
+        public string Stw_InAllActivityScenarios { get; }
         /// <summary> 脚本工具 - 在全部预制件上 </summary>
-        public string Stw_OnAllPrefabs{ get; }
+        public string Stw_OnAllPrefabs { get; }
         /// <summary> 脚本工具 - 丢失数量 </summary>
-        public string Stw_MissingCount{ get; }
+        public string Stw_MissingCount { get; }
         /// <summary> 脚本工具 - 未找到匹配项 </summary>
         public string Stw_NoMatchesFound { get; }
         /// <summary> 脚本工具 - 根 </summary>
-        public string Stw_RootObject{ get; }
+        public string Stw_RootObject { get; }
         /// <summary> 脚本工具 - 根对象 </summary>
         public string Stw_TargetRootObject { get; }
         /// <summary> 脚本工具 - 层数 </summary>
@@ -349,16 +469,29 @@ namespace EasyFramework.Edit
         /// <summary> 存档数据 - 游戏存档数据 </summary>
         public string Ppe_PlayerPrefs { get; }
         /// <summary> 存档数据 - 编辑器存档数据 </summary>
-        public string Ppe_EditorPrefs{ get; }
+        public string Ppe_EditorPrefs { get; }
         /// <summary> 存档数据 - 自动解密 </summary>
-        public string Ppe_AutoDecryption{ get; }
+        public string Ppe_AutoDecryption { get; }
         /// <summary> 存档数据 - 删除全部的提示 </summary>
         public string Ppe_DeleteAllHint { get; }
         /// <summary> 存档数据 - 动态密钥 </summary>
-        public string Ppe_ActiveKey{ get; }
+        public string Ppe_ActiveKey { get; }
         /// <summary> 存档数据 - 创建自定义提示 </summary>
-        public string Ppe_CreateCustomHint{ get; }
+        public string Ppe_CreateCustomHint { get; }
 
+        #endregion
+
+        #region AssetCheckerWindow
+        /// <summary> 多级贴图 </summary>
+        public string MipMaps { get; }
+        /// <summary> 模型最大骨骼数量 </summary>
+        public string ModelMaxBones { get; }
+        /// <summary> 模型最大三角面数 </summary>
+        public string ModelMaxTriangs { get; }
+        /// <summary> 效果最大材质数 </summary>
+        public string EffectMaxMatrials { get; }
+        /// <summary> 效果最大粒子数 </summary>
+        public string EffectMaxParticles { get; }
         #endregion
     }
 
@@ -425,6 +558,82 @@ namespace EasyFramework.Edit
         public readonly string ForceSave => "Force Save";
 
         public readonly string CreateCustom => "Create Custom";
+
+        public readonly string Texture => "Texture";
+
+        public readonly string Model => "Model";
+
+        public readonly string Effects => "Effects";
+
+        public readonly string Config => "Config";
+
+        public readonly string Refresh => "Refresh";
+
+        public readonly string Details => "Details";
+
+        public readonly string Filtrate => "Filtrate";
+
+        public readonly string Name => "Name";
+
+        public readonly string Width => "Width";
+
+        public readonly string Height => "Height";
+
+        public readonly string ResourceType => "Resource Type";
+
+        public readonly string Overview => "Overview";
+
+        public readonly string Settings => "Settings";
+
+        public readonly string MaxSize => "Max Size";
+
+        public readonly string Memory => "Memory";
+
+        public readonly string Compression => "Compression";
+
+        public readonly string AlignAt => "Align At";
+
+        public readonly string Holdon => "Hold On";
+
+        public readonly string Reset => "Reset";
+
+        public readonly string Save => "Save";
+
+        public readonly string Information => "Information";
+
+        public readonly string Color => "Color";
+
+        public readonly string Score => "Score";
+
+        public readonly string Vertex => "Vertex";
+
+        public readonly string Triangular => "Triangular";
+
+        public readonly string BoneCount => "Bone count";
+
+        public readonly string Size => "Size";
+
+        public readonly string DrawCall => "DrawCall";
+
+        public readonly string Particle => "Particle";
+
+        public readonly string Assets => "Assets";
+
+        public readonly string Description => "Description";
+
+        public readonly string File => "File";
+
+        public readonly string Catalogue => "Catalogue";
+
+        public readonly string Query => "Query";
+
+        public readonly string Clear => "Clear";
+
+        public readonly string Load => "Load";
+
+        public readonly string Open => "Open";
+
+        public readonly string BeingProcessed => "Being processed...";
 
         public readonly string OperatingSystem => "Operating system name with version: ";
 
@@ -587,10 +796,22 @@ namespace EasyFramework.Edit
         public readonly string Ppe_AutoDecryption => "Auto-Decryption";
 
         public readonly string Ppe_DeleteAllHint => "Are you sure you want to delete all preferences?";
-        
+
         public readonly string Ppe_ActiveKey => "Active Key";
 
         public readonly string Ppe_CreateCustomHint => "Generate a script file in your project specifying a unique key to use.";
+
+        public readonly string MipMaps => "MipMaps";
+
+        public readonly string ModelMaxBones => "Model max bones";
+
+        public readonly string ModelMaxTriangs => "Model max triangs";
+
+        public readonly string EffectMaxMatrials => "Effect max matrials";
+
+        public readonly string EffectMaxParticles => "Effect max particles";
+
+
 
     }
 
@@ -657,6 +878,82 @@ namespace EasyFramework.Edit
         public readonly string ForceSave => "强制保存";
 
         public readonly string CreateCustom => "创建自定义";
+
+        public readonly string Refresh => "刷新";
+
+        public readonly string Details => "详情";
+
+        public readonly string Filtrate => "筛选";
+
+        public readonly string Name => "名称";
+
+        public readonly string Width => "宽度";
+
+        public readonly string Height => "高度";
+
+        public readonly string ResourceType => "资源类型";
+
+        public readonly string Texture => "纹理贴图";
+
+        public readonly string Model => "模型";
+
+        public readonly string Effects => "特效";
+
+        public readonly string Config => "配置";
+
+        public readonly string Overview => "总览";
+
+        public readonly string Settings => "设置";
+
+        public readonly string MaxSize => "最大尺寸";
+
+        public readonly string Memory => "内存";
+
+        public readonly string Compression => "压缩";
+
+        public readonly string AlignAt => "对齐";
+
+        public readonly string Holdon => "稍等";
+
+        public readonly string Reset => "重置";
+
+        public readonly string Save => "保存";
+
+        public readonly string Information => "信息";
+
+        public readonly string Color => "颜色";
+
+        public readonly string Score => "分数";
+
+        public readonly string Vertex => "顶点数";
+
+        public readonly string Triangular => "三角面数";
+
+        public readonly string BoneCount => "骨骼数";
+
+        public readonly string Size => "尺寸";
+
+        public readonly string DrawCall => "绘制次数";
+
+        public readonly string Particle => "粒子";
+
+        public readonly string Assets => "资产";
+
+        public readonly string Description => "描述";
+
+        public readonly string File => "文件";
+
+        public readonly string Catalogue => "目录";
+
+        public readonly string Query => "查询";
+
+        public readonly string Clear => "清空";
+
+        public readonly string Load => "加载";
+
+        public readonly string Open => "打开";
+
+        public readonly string BeingProcessed => "正在处理中...";
 
         public readonly string OperatingSystem => "操作系统：";
 
@@ -767,7 +1064,7 @@ namespace EasyFramework.Edit
         public readonly string AtlasExistInCollection => "当前收集器中已经存在图集，请检查！";
 
         public readonly string AtlasExistAlsoOverwrite => "  图集已存在，是否覆盖？";
-        
+
         public readonly string Stw_Title => "脚本工具";
 
         public readonly string Stw_SelectionFindType => "选择查找类型：";
@@ -824,6 +1121,15 @@ namespace EasyFramework.Edit
 
         public readonly string Ppe_CreateCustomHint => "在项目中生成一个脚本文件，指定要使用的唯一密钥。";
 
+        public readonly string MipMaps => "多级贴图";
+
+        public readonly string ModelMaxBones => "模型最大骨骼数量";
+
+        public readonly string ModelMaxTriangs => "模型最大三角面数";
+
+        public readonly string EffectMaxMatrials => "特效最大材质数";
+
+        public readonly string EffectMaxParticles => "特效最大粒子数";
 
     }
 }

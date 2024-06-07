@@ -11,15 +11,17 @@
 
 using LitJson;
 using System;
+using System.Collections;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace EasyFramework.Managers
 {
     /// <summary>
     /// Client get data in server.
     /// </summary>
-    public class HttpsManager : Singleton<HttpsManager>, IManager
+    public class HttpsManager : MonoSingleton<HttpsManager>, IManager
     {
         int m_managerLevel = -99;
         int IManager.ManagerLevel
@@ -31,37 +33,9 @@ namespace EasyFramework.Managers
                 return m_managerLevel;
             }
         }
-        public void Init()
-        {
-            throw new NotImplementedException();
-        }
 
-        public void Quit()
-        {
-            throw new NotImplementedException();
-        }
 
-        void ISingleton.Init()
-        {
-            throw new NotImplementedException();
-        }
 
-        void ISingleton.Quit()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 返回码
-        /// </summary>
-        enum CallbackCode
-        {
-            /// <summary>
-            /// 成功
-            /// </summary>
-            Success = 200,
-        }
-        /*
         const string Token = "";
         const string Domain = "";
 
@@ -69,8 +43,6 @@ namespace EasyFramework.Managers
         const string SendFiles = "multipart/form-data";
         const string GetFiles = "application/x-www-form-urlencoded";
 
-        int IManager.ManagerLevel => EF.Projects.AppConst.ManagerLevels.IndexOf("HttpManager");
-
         void ISingleton.Init()
         {
 
@@ -78,46 +50,55 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-
+            StopAllCoroutines();
         }
 
+        /// <summary>
+        /// 获取请求
+        /// </summary>
+        /// <param name="address">请求尾地址</param>
+        /// <param name="callback">回调函数</param>
+        public void Get(string address, Action<string> callback)
+        {
+            StartCoroutine(GetFunc(address, callback));
+        }
+
+        /// <summary>
+        /// 获取请求
+        /// </summary>
+        /// <param name="address">请求尾地址</param>
+        /// <param name="callback">回调函数</param>
+        public void Get(string address, Action<byte[]> callback)
+        {
+            StartCoroutine(GetFunc(address, callback));
+        }
+
+        IEnumerator GetFunc(string address, Action<string> callback)
+        {
+            using UnityWebRequest _uwr = UnityWebRequest.Get(address);
+
+            yield return _uwr.SendWebRequest();
+
+            if (_uwr.result == UnityWebRequest.Result.Success)
+                callback?.Invoke(_uwr.downloadHandler.text);
+            else
+                D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
+        }
+        IEnumerator GetFunc(string address, Action<byte[]> callback)
+        {
+            using UnityWebRequest _uwr = UnityWebRequest.Get(address);
+
+            yield return _uwr.SendWebRequest();
+
+            if (_uwr.result == UnityWebRequest.Result.Success)
+                callback?.Invoke(_uwr.downloadHandler.data);
+            else
+                D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
+        }
+
+
+        /*
         #region BestHttp
-        /// <summary>
-        /// 基于Best的Get请求
-        /// </summary>
-        /// <param name="address">请求尾地址</param>
-        /// <param name="callback">JsonData回调函数</param>
-        public void BestGet(string address, Action<JsonData> callback)
-        {
-            HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Get, (originalRequest, response) =>
-            {
-                if (!CheckRequestError(response) && OnRequestFinished(response.DataAsText, out JsonData backJson))
-                {
-                    callback?.Invoke(backJson);
-                }
-            });
-            D.Log($"{address}");
-            SetHeader(request).Send();
-        }
-
-        /// <summary>
-        /// 基于Best的Get请求
-        /// </summary>
-        /// <param name="address">请求尾地址</param>
-        /// <param name="callback">byte[]回调函数</param>
-        public void BestGet(string address, Action<byte[]> callback)
-        {
-            HTTPRequest request = new HTTPRequest(new Uri(Domain + address), HTTPMethods.Get, (originalRequest, response) =>
-            {
-                if (!CheckRequestError(response))
-                {
-                    callback?.Invoke(response.Data);
-                }
-            });
-            D.Log($"{address}");
-            SetHeader(request).Send();
-        }
-
         /// <summary>
         /// 基于Best的Post的获取图片请求
         /// </summary>
@@ -208,55 +189,8 @@ namespace EasyFramework.Managers
             request.AddHeader("User-Token", Token);
             return request;
         }
-
-        /// <summary>
-        /// 检查请求是否错误
-        /// </summary>
-        /// <param name="response">响应</param>
-        /// <returns>请求有错误时，返回True</returns>
-        bool CheckRequestError(HTTPResponse response)
-        {
-            if (response.StatusCode == 200)
-            {
-                return false;
-            }
-            if (response.StatusCode == 500)
-            {
-                D.Error("The server error, please called the server programmer..   ..");
-            }
-            else if (response.StatusCode == 400)
-            {
-                D.Error("The deta error, please check you data information. If you sure data nothing wrong, called the server programmer. ");
-            }
-            else
-            {
-                D.Error(response.StatusCode + "  --  " + response.Message);
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 当请求完成时，检测实际内容
-        /// </summary>
-        bool OnRequestFinished(string jdText, out JsonData backJson)
-        {
-            D.Log(jdText);
-            JsonData _jd = JsonMapper.ToObject(jdText);
-
-            CallbackCode _code = (CallbackCode)(int)_jd["code"];
-            switch (_code)
-            {
-                case CallbackCode.Success:
-                    backJson = _jd["data"];
-                    return true;
-                default:
-                    D.Error($"Current code [{(int)_code}] is not setting in project, please called server!!!!!!!!!!!!!!!!! The server back message is {_jd["msg"]}");
-                    break;
-            }
-            backJson = null;
-            return false;
-        }
         #endregion
         */
+
     }
 }
