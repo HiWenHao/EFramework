@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-15 16:22:01
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-05-11 11:09:32
- * ScriptVersion: 0.1
+ * ModifyTime:    2024-06-07 11:29:07
+ * ScriptVersion: 0.2
  * ===============================================
 */
 using UnityEditor;
@@ -34,7 +34,7 @@ namespace EasyFramework.Edit.TaskList
         GUIStyle m_HighlightMarkStyle;
 
         Color[] m_ContentColors;
-        GUIContent[] UIPopupContents;
+        string[] UIPopupContents;
 
         private void Awake()
         {
@@ -49,7 +49,7 @@ namespace EasyFramework.Edit.TaskList
                 }
             };
 
-            m_DeleteStyle = new GUIStyle("Button");
+            m_DeleteStyle = new GUIStyle("Button"); 
             m_DeleteStyle.normal.textColor = new Color(0.4f, 0f, 0f);
             m_DeleteStyle.hover.textColor = new Color(0.4f, 0f, 0f);
             m_DeleteStyle.active.textColor = new Color(0.4f, 0f, 0f);
@@ -65,17 +65,17 @@ namespace EasyFramework.Edit.TaskList
                 wordWrap = true
             };
 
-            UIPopupContents = new GUIContent[]
+            UIPopupContents = new string[]
             {
-                new GUIContent("Doing", "正在做"),
-                new GUIContent("Done", "已完成"),
-                new GUIContent("Timeout", "超时"),
-                new GUIContent("Abandon", "遗弃")
+                LC.Language.Doing,
+                LC.Language.Done,
+                LC.Language.Timeout,
+                LC.Language.Abandon
             };
 
             m_ContentColors = new Color[]
             {
-                new Color(1f, 1f, 0f),
+                Color.yellow,
                 Color.green,
                 Color.red,
                 Color.gray
@@ -96,12 +96,12 @@ namespace EasyFramework.Edit.TaskList
         {
             serializedObject.Update();
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField(new GUIContent("Task List", "任务清单"), m_HeadStyle);
+            EditorGUILayout.LabelField(new GUIContent(LC.Combine(LC.Language.Task, LC.Language.List)), m_HeadStyle);
 
             ShowListInfo();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            if (GUILayout.Button(new GUIContent("+Add Task", "增加任务")))
+            if (GUILayout.Button(LC.Combine(LC.Language.Add, LC.Language.Task)))
             {
                 Mark.InsertArrayElementAtIndex(TaskCount.intValue);
                 Title.InsertArrayElementAtIndex(TaskCount.intValue);
@@ -112,17 +112,17 @@ namespace EasyFramework.Edit.TaskList
                 Progress.GetArrayElementAtIndex(TaskCount.intValue).intValue = 0;
                 Mark.GetArrayElementAtIndex(TaskCount.intValue).boolValue = false;
                 Enabled.GetArrayElementAtIndex(TaskCount.intValue).boolValue = true;
-                Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = "Title 标题";
-                Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = "Please fill in the task description.请填写任务描述";
+                Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Language.Title;
+                Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Language.Tlp_TaskDesc;
 
                 TaskCount.intValue++;
             }
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(new GUIContent("Remove All", "删除所有任务")))
+            if (GUILayout.Button(LC.Language.RemoveAll))
             {
-                if (0 != TaskCount.intValue && EditorUtility.DisplayDialog("Delete Task", "Remove all tasks.\n删除全部任务", "OK"))
+                if (0 != TaskCount.intValue && EditorUtility.DisplayDialog(LC.Combine(LC.Language.Delete, LC.Language.Task), LC.Combine(LC.Language.RemoveAll, LC.Language.Task), LC.Language.Ok))
                 {
                     TaskCount.intValue = 0;
                     Mark.ClearArray();
@@ -154,7 +154,7 @@ namespace EasyFramework.Edit.TaskList
                     EditorGUILayout.BeginVertical("AvatarMappingBox");
 
                     EditorGUILayout.BeginHorizontal();
-                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(new GUIContent("Progress", "任务进度"),
+                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Language.Progress,
                         selectedValue: Progress.GetArrayElementAtIndex(i).intValue,
                         displayedOptions: UIPopupContents,
                         optionValues: new int[] { 0, 1, 2, 3 },
@@ -162,8 +162,8 @@ namespace EasyFramework.Edit.TaskList
                         );
                     GUILayout.Space(15f);
                     if (GUILayout.Button(Mark.GetArrayElementAtIndex(i).boolValue ?
-                        new GUIContent("Cancel Mark", "取消标记") :
-                        new GUIContent("Highlight Mark", "突出标记"),
+                        LC.Combine(LC.Language.Cancel, LC.Language.Mark) :
+                        LC.Combine(LC.Language.Highlight, LC.Language.Mark),
                         m_HighlightMarkStyle)
                         )
                     {
@@ -174,7 +174,7 @@ namespace EasyFramework.Edit.TaskList
                     Description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(Description.GetArrayElementAtIndex(i).stringValue, m_DescriptionStyle);
 
                     EditorGUILayout.BeginHorizontal();
-                    if (i != 0 && GUILayout.Button(new GUIContent("Move Up", "上移")))
+                    if (i != 0 && GUILayout.Button(LC.Language.MoveUp))
                     {
                         Mark.MoveArrayElement(i, i - 1);
                         Enabled.MoveArrayElement(i, i - 1);
@@ -182,7 +182,7 @@ namespace EasyFramework.Edit.TaskList
                         Title.MoveArrayElement(i, i - 1);
                         Description.MoveArrayElement(i, i - 1);
                     }
-                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(new GUIContent("Move Down", "下移")))
+                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(LC.Language.MoveDown))
                     {
                         Mark.MoveArrayElement(i, i + 1);
                         Enabled.MoveArrayElement(i, i + 1);
@@ -190,7 +190,7 @@ namespace EasyFramework.Edit.TaskList
                         Title.MoveArrayElement(i, i + 1);
                         Description.MoveArrayElement(i, i + 1);
                     }
-                    if (GUILayout.Button(new GUIContent("Delete Task", "删除任务"), m_DeleteStyle))
+                    if (GUILayout.Button(LC.Combine(LC.Language.Delete, LC.Language.Task), m_DeleteStyle))
                     {
                         Mark.DeleteArrayElementAtIndex(i);
                         Enabled.DeleteArrayElementAtIndex(i);

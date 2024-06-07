@@ -79,6 +79,13 @@ namespace EasyFramework.Edit
             else
                 return $"{text1} {text2} {text3} {text4}";
         }
+        public static string Combine(string text1, string text2, string text3, string text4, string text5)
+        {
+            if (m_currentIndex == 1)
+                return text1 + text2 + text3 + text4 + text5;
+            else
+                return $"{text1} {text2} {text3} {text4} {text5}";
+        }
         #endregion
 
         #region ChangeLanguage
@@ -151,136 +158,183 @@ namespace EasyFramework.Edit
         public string PathSelecteErrorContent { get; }
         #endregion
 
-        /// <summary> 确认按钮 </summary>
+        /// <summary> 确认按钮 </summary> 
         public string Ok { get; }
-        /// <summary> 确认按钮 </summary>
-        public string Yes { get; }
-        /// <summary> 取消按钮 </summary>
-        public string Cancel { get; }
-        /// <summary> 确认删除 </summary>
-        public string ConfirmDelete { get; }
-        /// <summary> 清除全部 </summary>
-        public string ClearAll { get; }
-        /// <summary> 删除 </summary>
-        public string Delete { get; }
-        /// <summary> 删除全部 </summary>
-        public string DeleteAll { get; }
-        /// <summary> 提示 </summary>
-        public string Hints { get; }
-        /// <summary> 覆写 </summary>
-        public string Overwrite { get; }
-        /// <summary> 默认设置 </summary>
-        public string DefaultSetting { get; }
-        /// <summary> 错误 </summary>
-        public string Error { get; }
-        /// <summary> 缺少相关资源包 </summary>
-        public string ResourcePackageAbsent { get; }
-        /// <summary> 导入 </summary>
-        public string Import { get; }
-        /// <summary> 查找 </summary>
-        public string Find { get; }
-        /// <summary> 结束 </summary>
-        public string End { get; }
-        /// <summary> 丢失 </summary>
-        public string Lost { get; }
-        /// <summary> 对比 </summary>
-        public string Compare { get; }
+        /// <summary> 向上 </summary> 
+        public string Up { get; }
+        //==========================================================================    3
         /// <summary> 添加 </summary>
         public string Add { get; }
+        /// <summary> 结束 </summary>
+        public string End { get; }
         /// <summary> 键 </summary>
         public string Key { get; }
-        /// <summary> 值 </summary>
-        public string Value { get; }
+        /// <summary> 确认按钮 </summary>
+        public string Yes { get; }
+        //==========================================================================    4
+        /// <summary> 完成 </summary>
+        public string Done { get; }
+        /// <summary> 向下 </summary>
+        public string Down { get; }
+        /// <summary> 查找 </summary>
+        public string Find { get; }
+        /// <summary> 文件 </summary>
+        public string File { get; }
+        /// <summary> 丢失 </summary>
+        public string Lost { get; }
+        /// <summary> 加载 </summary>
+        public string Load { get; }
+        /// <summary> 列表 </summary>
+        public string List { get; }
+        /// <summary> 标记 </summary>
+        public string Mark { get; }
+        /// <summary> 名称 </summary>
+        public string Name { get; }
+        /// <summary> 加载 </summary>
+        public string Open { get; }
+        /// <summary> 保存 </summary>
+        public string Save { get; }
+        /// <summary> 尺寸 </summary>
+        public string Size { get; }
+        /// <summary> 任务 </summary>
+        public string Task { get; }
         /// <summary> 类型 </summary>
         public string Type { get; }
+        //==========================================================================    5
         /// <summary> 数量 </summary>
         public string Count { get; }
+        /// <summary> 清空 </summary>
+        public string Clear { get; }
+        /// <summary> 颜色 </summary>
+        public string Color { get; }
+        /// <summary> 正在做 </summary>
+        public string Doing { get; }
+        /// <summary> 错误 </summary>
+        public string Error { get; }
+        /// <summary> 提示 </summary>
+        public string Hints { get; }
+        /// <summary> 模型 </summary>
+        public string Model { get; }
+        /// <summary> 查询 </summary>
+        public string Query { get; }
+        /// <summary> 重置 </summary>
+        public string Reset { get; }
+        /// <summary> 分数 </summary>
+        public string Score { get; }
+        /// <summary> 标题、题目 </summary>
+        public string Title { get; }
+        /// <summary> 值 </summary>
+        public string Value { get; }
+        /// <summary> 宽度 </summary>
+        public string Width { get; }
+        //==========================================================================    6
+        /// <summary> 资产 </summary>
+        public string Assets { get; }
+        /// <summary> 配置 </summary>
+        public string Config { get; }
+        /// <summary> 取消按钮 </summary>
+        public string Cancel { get; }
+        /// <summary> 删除 </summary>
+        public string Delete { get; }
+        /// <summary> 高度 </summary>
+        public string Height { get; }
+        /// <summary> 稍等 </summary>
+        public string Holdon { get; }
+        /// <summary> 导入 </summary>
+        public string Import { get; }
+        /// <summary> 内存消耗 </summary>
+        public string Memory { get; }
+        /// <summary> 提升、上移 </summary>
+        public string MoveUp { get; }
+        /// <summary> 删除 </summary>
+        public string Remove { get; }
+        /// <summary> 顶点数 </summary>
+        public string Vertex { get; }
+        //==========================================================================    7
+        /// <summary> 对齐至 </summary>
+        public string AlignAt { get; }
+        /// <summary> 放弃、遗弃 </summary>
+        public string Abandon { get; }
+        /// <summary> 对比 </summary>
+        public string Compare { get; }
+        /// <summary> 详情 </summary>
+        public string Details { get; }
         /// <summary> 加密 </summary>
         public string Encrypt { get; }
+        /// <summary> 特效 </summary>
+        public string Effects { get; }
+        /// <summary> 最大尺寸 </summary>
+        public string MaxSize { get; }
+        /// <summary> 下移、后退 </summary>
+        public string MoveDown { get; }
+        /// <summary> 刷新 </summary>
+        public string Refresh { get; }
+        /// <summary> 贴图、图片 </summary>
+        public string Texture { get; }
+        /// <summary> 超时 </summary>
+        public string Timeout { get; }
+        //==========================================================================    8
+        /// <summary> 清除全部 </summary>
+        public string ClearAll { get; }
+        /// <summary> 绘制次数 </summary>
+        public string DrawCall { get; }
+        /// <summary> 筛选 </summary>
+        public string Filtrate { get; }
+        /// <summary> 总览 </summary>
+        public string Overview { get; }
+        /// <summary> 粒子 </summary>
+        public string Particle { get; }
+        /// <summary> 进展、进度、任务进度 </summary>
+        public string Progress { get; }
+        /// <summary> 设置 </summary>
+        public string Settings { get; }
+        //==========================================================================    9
+        /// <summary> 骨骼数 </summary>
+        public string BoneCount { get; }
+        /// <summary> 目录 </summary>
+        public string Catalogue { get; }
+        /// <summary> 删除全部 </summary>
+        public string DeleteAll { get; }
+        /// <summary> 强调、突出 </summary>
+        public string Highlight { get; }
+        /// <summary> 删除全部 </summary>
+        public string RemoveAll { get; }
+        /// <summary> 强制保存 </summary>
+        public string ForceSave { get; }
+        /// <summary> 覆写 </summary>
+        public string Overwrite { get; }
+        //==========================================================================    10
+        /// <summary> 三角面 </summary>
+        public string Triangular { get; }
+        //==========================================================================    11
+        /// <summary> 压缩格式 </summary>
+        public string Compression { get; }
+        /// <summary> 描述 </summary>
+        public string Description { get; }
         /// <summary> 更多选择 </summary>
         public string MoreOptions { get; }
         /// <summary> 预设、偏好 </summary>
         public string Preferences { get; }
-        /// <summary> 强制保存 </summary>
-        public string ForceSave { get; }
-        /// <summary> 创建自定义 </summary>
-        public string CreateCustom { get; }
-        /// <summary> 贴图、图片 </summary>
-        public string Texture { get; }
-        /// <summary> 模型 </summary>
-        public string Model { get; }
-        /// <summary> 特效 </summary>
-        public string Effects { get; }
-        /// <summary> 配置 </summary>
-        public string Config { get; }
-        /// <summary> 总览 </summary>
-        public string Overview { get; }
-        /// <summary> 设置 </summary>
-        public string Settings { get; }
-        /// <summary> 刷新 </summary>
-        public string Refresh { get; }
-        /// <summary> 详情 </summary>
-        public string Details { get; }
-        /// <summary> 筛选 </summary>
-        public string Filtrate { get; }
-        /// <summary> 名称 </summary>
-        public string Name { get; }
-        /// <summary> 宽度 </summary>
-        public string Width { get; }
-        /// <summary> 高度 </summary>
-        public string Height { get; }
-        /// <summary> 资源类型 </summary>
-        public string ResourceType { get; }
-        /// <summary> 最大尺寸 </summary>
-        public string MaxSize { get; }
-        /// <summary> 内存消耗 </summary>
-        public string Memory { get; }
-        /// <summary> 压缩格式 </summary>
-        public string Compression { get; }
-        /// <summary> 对齐至 </summary>
-        public string AlignAt { get; }
-        /// <summary> 稍等 </summary>
-        public string Holdon { get; }
-        /// <summary> 重置 </summary>
-        public string Reset { get; }
-        /// <summary> 保存 </summary>
-        public string Save { get; }
-        /// <summary> 正在处理中 </summary>
-        public string BeingProcessed { get; }
         /// <summary> 信息 </summary>
         public string Information { get; }
-        /// <summary> 颜色 </summary>
-        public string Color { get; }
-        /// <summary> 分数 </summary>
-        public string Score { get; }
-        /// <summary> 顶点数 </summary>
-        public string Vertex { get; }
-        /// <summary> 三角面 </summary>
-        public string Triangular { get; }
-        /// <summary> 骨骼数 </summary>
-        public string BoneCount { get; }
-        /// <summary> 尺寸 </summary>
-        public string Size { get; }
-        /// <summary> 绘制次数 </summary>
-        public string DrawCall { get; }
-        /// <summary> 粒子 </summary>
-        public string Particle { get; }
-        /// <summary> 资产 </summary>
-        public string Assets { get; }
-        /// <summary> 描述 </summary>
-        public string Description { get; }
-        /// <summary> 文件 </summary>
-        public string File { get; }
-        /// <summary> 目录 </summary>
-        public string Catalogue { get; }
-        /// <summary> 查询 </summary>
-        public string Query { get; }
-        /// <summary> 清空 </summary>
-        public string Clear { get; }
-        /// <summary> 加载 </summary>
-        public string Load { get; }
-        /// <summary> 加载 </summary>
-        public string Open { get; }
+        //==========================================================================    12
+        /// <summary> 创建自定义 </summary>
+        public string CreateCustom { get; }
+        /// <summary> 资源类型 </summary>
+        public string ResourceType { get; }
+        //==========================================================================    13
+        /// <summary> 确认删除 </summary>
+        public string ConfirmDelete { get; }
+        //==========================================================================    14
+        /// <summary> 正在处理中 </summary>
+        public string BeingProcessed { get; }
+        /// <summary> 默认设置 </summary>
+        public string DefaultSetting { get; }
+        //==========================================================================    20
+        /// <summary> 缺少相关资源包 </summary>
+        public string ResourcePackageAbsent { get; }
+
+
         #endregion
 
         #region SystemInfo
@@ -493,6 +547,13 @@ namespace EasyFramework.Edit
         /// <summary> 效果最大粒子数 </summary>
         public string EffectMaxParticles { get; }
         #endregion
+
+        #region TaskListPanel
+        /// <summary>
+        /// 任务列表的任务描述
+        /// </summary>
+        public string Tlp_TaskDesc {  get; }
+        #endregion
     }
 
     public struct English : ILanguageBase
@@ -632,6 +693,38 @@ namespace EasyFramework.Edit
         public readonly string Load => "Load";
 
         public readonly string Open => "Open";
+
+        public readonly string Done => "Done";
+
+        public readonly string List => "List";
+
+        public readonly string Mark => "Mark";
+
+        public readonly string Task => "Task";
+
+        public readonly string Doing => "Doing";
+
+        public readonly string Title => "Title";
+
+        public readonly string Remove => "Remove";
+
+        public readonly string Abandon => "Abandon";
+
+        public readonly string Timeout => "Timeout";
+
+        public readonly string Progress => "Progress";
+
+        public readonly string RemoveAll => "RemoveAll";
+
+        public readonly string Up => "Up";
+
+        public readonly string Down => "Down";
+
+        public readonly string MoveUp => "Move Up";
+
+        public readonly string MoveDown => "Move Down";
+
+        public readonly string Highlight => "Highlight";
 
         public readonly string BeingProcessed => "Being processed...";
 
@@ -811,8 +904,7 @@ namespace EasyFramework.Edit
 
         public readonly string EffectMaxParticles => "Effect max particles";
 
-
-
+        public readonly string Tlp_TaskDesc => "Please fill in the task description. ";
     }
 
     public struct Chinese : ILanguageBase
@@ -952,6 +1044,38 @@ namespace EasyFramework.Edit
         public readonly string Load => "加载";
 
         public readonly string Open => "打开";
+
+        public readonly string Done => "完成";
+
+        public readonly string List => "列表";
+
+        public readonly string Mark => "标记";
+
+        public readonly string Task => "任务";
+
+        public readonly string Doing => "正在做";
+
+        public readonly string Title => "标题";
+
+        public readonly string Remove => "删除";
+
+        public readonly string Abandon => "放弃";
+
+        public readonly string Timeout => "超时";
+
+        public readonly string Progress => "进度";
+
+        public readonly string RemoveAll => "删除全部";
+
+        public readonly string Up => "向上";
+
+        public readonly string Down => "向下";
+
+        public readonly string MoveUp => "上移";
+
+        public readonly string MoveDown => "下移";
+
+        public readonly string Highlight => "突出";
 
         public readonly string BeingProcessed => "正在处理中...";
 
@@ -1131,5 +1255,6 @@ namespace EasyFramework.Edit
 
         public readonly string EffectMaxParticles => "特效最大粒子数";
 
+        public readonly string Tlp_TaskDesc => "请填写任务描述。";
     }
 }
