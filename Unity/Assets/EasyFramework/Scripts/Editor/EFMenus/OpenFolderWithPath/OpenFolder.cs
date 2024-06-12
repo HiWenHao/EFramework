@@ -51,7 +51,13 @@ namespace EFExample
         [MenuItem("EFTools/Open Folder/ExcelFolder", priority = 1005)]
         public static void OpenExcelFolderPath()
         {
-            Application.OpenURL("file://" + Application.dataPath + "/../ExcelFolder");
+            Application.OpenURL("file://" + Application.dataPath + "/../../ExcelFolder");
+        }
+
+        [MenuItem("EFTools/Open Folder/Luban", priority = 1005)]
+        public static void OpenLubanToolsFolderPath()
+        {
+            Application.OpenURL("file://" + Application.dataPath + "/../../Luban");
         }
     }
 }
