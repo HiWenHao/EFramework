@@ -31,45 +31,43 @@ namespace EasyFramework.Managers
         }
         private bool isPausing;
         private bool isMute;
-        private AudioSource m_as_BGM;
-        private float m_flt_BgmVolumScale = 1f;
-        private float m_flt_EffectVolume = 1.0f;
+        private AudioSource m_bGM;
+        private float m_bgmVolumScale = 1f;
+        private float m_effectVolume = 1.0f;
 
         Transform m_Traget;
 
-        private List<float> m_flt_AudioTimer;
-        private List<Action> m_act_AudioCallback;
-        private List<AudioSource> m_lst_AudioSources;
-        private Queue<AudioSource> m_que_AudioSources;
+        private List<Action> m_audioCallback;
+        private List<AudioSource> m_audioInUse;
+        private Queue<AudioSource> m_audioCanUse;
         void ISingleton.Init()
         {
             m_Traget = new GameObject("Source").transform;
             m_Traget.SetParent(EF.Managers);
-            m_as_BGM = m_Traget.gameObject.AddComponent<AudioSource>();
+            m_bGM = m_Traget.gameObject.AddComponent<AudioSource>();
 
-            m_flt_AudioTimer = new List<float>();
-            m_act_AudioCallback = new List<Action>();
-            m_lst_AudioSources = new List<AudioSource>();
-            m_que_AudioSources = new Queue<AudioSource>();
+            m_audioCallback = new List<Action>();
+            m_audioInUse = new List<AudioSource>();
+            m_audioCanUse = new Queue<AudioSource>();
 
             if (PlayerPrefs.HasKey(EF.Projects.AppConst.AppPrefix + "bgmVolum"))
-                m_flt_BgmVolumScale = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum");
+                m_bgmVolumScale = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum");
             if (PlayerPrefs.HasKey(EF.Projects.AppConst.AppPrefix + "effectVolum"))
-                m_flt_EffectVolume = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum");
+                m_effectVolume = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum");
 
-            m_as_BGM.playOnAwake = true;
-            m_as_BGM.loop = true;
-            m_as_BGM.volume = m_flt_BgmVolumScale;
+            m_bGM.playOnAwake = true;
+            m_bGM.loop = true;
+            m_bGM.volume = m_bgmVolumScale;
         }
 
         void IUpdate.Update(float elapse, float realElapse)
         {
             if (isPausing) 
                 return;
-            for (int i = 0; i < m_flt_AudioTimer.Count; i++)
+            for (int i = 0; i < m_audioInUse.Count; i++)
             {
-                if ((m_flt_AudioTimer[i] - m_lst_AudioSources[i].time) >= 0.06f) continue;
-                if (!m_lst_AudioSources[i].isPlaying || m_lst_AudioSources[i].loop) continue;
+                //if ((m_flt_AudioTimer[i] - m_lst_AudioSources[i].time) >= 0.06f) continue;
+                if (m_audioInUse[i].isPlaying || m_audioInUse[i].loop) continue;
 
                 StopEffectExCallbcak(i);
             }
@@ -78,31 +76,29 @@ namespace EasyFramework.Managers
         void ISingleton.Quit()
         {
             isPausing = true;
-            m_as_BGM.clip = null;
-            for (int i = m_flt_AudioTimer.Count - 1; i >= 0; i--)
+            m_bGM.clip = null;
+            for (int i = m_audioInUse.Count - 1; i >= 0; i--)
             {
-                AudioSource _audio = m_lst_AudioSources[i];
+                AudioSource _audio = m_audioInUse[i];
                 _audio.clip = null;
                 Object.Destroy(_audio);
                 Object.Destroy(_audio.gameObject);
             }
-            for (int i = m_que_AudioSources.Count - 1; i >= 0; i--)
+            for (int i = m_audioCanUse.Count - 1; i >= 0; i--)
             {
-                AudioSource _audio = m_que_AudioSources.Dequeue();
+                AudioSource _audio = m_audioCanUse.Dequeue();
                 _audio.clip = null;
                 Object.Destroy(_audio);
                 Object.Destroy(_audio.gameObject);
             }
 
-            m_flt_AudioTimer.Clear();
-            m_act_AudioCallback.Clear();
-            m_lst_AudioSources.Clear();
-            m_que_AudioSources.Clear();
+            m_audioCallback.Clear();
+            m_audioInUse.Clear();
+            m_audioCanUse.Clear();
 
-            m_flt_AudioTimer = null;
-            m_act_AudioCallback = null;
-            m_lst_AudioSources = null;
-            m_que_AudioSources = null;
+            m_audioCallback = null;
+            m_audioInUse = null;
+            m_audioCanUse = null;
         }
 
         #region Play
@@ -128,7 +124,7 @@ namespace EasyFramework.Managers
         public void Play2DEffectSouceByClip(AudioClip clip, Action callback = null)
         {
             PlayEffect(clip);
-            m_act_AudioCallback.Add(callback);
+            m_audioCallback.Add(callback);
         }
 
         /// <summary>
@@ -141,7 +137,7 @@ namespace EasyFramework.Managers
         public void Play3DEffectSouceByClip(AudioClip clip, Vector3 pos, Action callback = null)
         {
             PlayEffect(clip, false, pos);
-            m_act_AudioCallback.Add(callback);
+            m_audioCallback.Add(callback);
         }
 
         /// <summary>
@@ -154,7 +150,7 @@ namespace EasyFramework.Managers
         {
             AudioClip clip = GetClipByName(name);
             PlayEffect(clip);
-            m_act_AudioCallback.Add(callback);
+            m_audioCallback.Add(callback);
         }
 
         /// <summary>
@@ -168,7 +164,7 @@ namespace EasyFramework.Managers
         {
             AudioClip clip = GetClipByName(name);
             PlayEffect(clip, false, pos);
-            m_act_AudioCallback.Add(callback);
+            m_audioCallback.Add(callback);
         }
         #endregion
 
@@ -179,8 +175,8 @@ namespace EasyFramework.Managers
         /// </summary>
         public void PauseAll()
         {
-            m_as_BGM.Pause();
-            foreach (var item in m_lst_AudioSources)
+            m_bGM.Pause();
+            foreach (var item in m_audioInUse)
                 item.Pause();
             isPausing = true;
         }
@@ -191,8 +187,8 @@ namespace EasyFramework.Managers
         /// </summary>
         public void UnPauseAll()
         {
-            m_as_BGM.UnPause();
-            foreach (var item in m_lst_AudioSources)
+            m_bGM.UnPause();
+            foreach (var item in m_audioInUse)
                 item.UnPause();
             isPausing = false;
         }
@@ -205,10 +201,10 @@ namespace EasyFramework.Managers
         public void MuteAll(bool isSetMute)
         {
             isMute = isSetMute;
-            m_as_BGM.mute = isSetMute;
-            for (int i = 0, imax = m_lst_AudioSources.Count; i < imax; i++)
+            m_bGM.mute = isSetMute;
+            for (int i = 0, imax = m_audioInUse.Count; i < imax; i++)
             {
-                m_lst_AudioSources[i].mute = isSetMute;
+                m_audioInUse[i].mute = isSetMute;
             }
         }
 
@@ -218,7 +214,7 @@ namespace EasyFramework.Managers
         /// </summary>
         public void StopBGM()
         {
-            m_as_BGM.Stop();
+            m_bGM.Stop();
         }
 
         /// <summary>
@@ -227,11 +223,11 @@ namespace EasyFramework.Managers
         /// </summary>
         public void StopEffectSourceByName(string effectName)
         {
-            for (int i = m_lst_AudioSources.Count - 1; i >= 0; i--)
+            for (int i = m_audioInUse.Count - 1; i >= 0; i--)
             {
-                if (m_lst_AudioSources[i].isPlaying && m_lst_AudioSources[i].clip.name == effectName)
+                if (m_audioInUse[i].isPlaying && m_audioInUse[i].clip.name == effectName)
                 {
-                    m_lst_AudioSources[i].Stop();
+                    m_audioInUse[i].Stop();
                     StopEffectExCallbcak(i);
                     return;
                 }
@@ -244,11 +240,11 @@ namespace EasyFramework.Managers
         /// </summary>
         public void StopEffectSourceByClip(AudioClip clip)
         {
-            for (int i = m_lst_AudioSources.Count - 1; i >= 0; i--)
+            for (int i = m_audioInUse.Count - 1; i >= 0; i--)
             {
-                if (m_lst_AudioSources[i].isPlaying && m_lst_AudioSources[i].clip == clip)
+                if (m_audioInUse[i].isPlaying && m_audioInUse[i].clip == clip)
                 {
-                    m_lst_AudioSources[i].Stop();
+                    m_audioInUse[i].Stop();
                     StopEffectExCallbcak(i);
                     return;
                 }
@@ -261,9 +257,9 @@ namespace EasyFramework.Managers
         /// </summary>
         public void StopAllEffectSources()
         {
-            for (int i = m_lst_AudioSources.Count - 1; i >= 0; i--)
+            for (int i = m_audioInUse.Count - 1; i >= 0; i--)
             {
-                m_lst_AudioSources[i].Stop();
+                m_audioInUse[i].Stop();
                 StopEffectExCallbcak(i);
             }
         }
@@ -274,7 +270,7 @@ namespace EasyFramework.Managers
         /// </summary>
         public void StopAll()
         {
-            m_as_BGM.Stop();
+            m_bGM.Stop();
             StopAllEffectSources();
         }
         #endregion
@@ -286,9 +282,9 @@ namespace EasyFramework.Managers
         /// </summary>
         public bool IsPlayingBGM(string bgmName)
         {
-            if (m_as_BGM.isPlaying)
+            if (m_bGM.isPlaying)
             {
-                return m_as_BGM.clip.name == bgmName;
+                return m_bGM.clip.name == bgmName;
             }
 
             return false;
@@ -300,9 +296,9 @@ namespace EasyFramework.Managers
         /// </summary>
         public bool IsPlayingEffectSouce(string effectSourceName)
         {
-            for (int i = 0; i < m_lst_AudioSources.Count; i++)
+            for (int i = 0; i < m_audioInUse.Count; i++)
             {
-                var audio = m_lst_AudioSources[i];
+                var audio = m_audioInUse[i];
                 if (audio.isPlaying && audio.clip.name == effectSourceName)
                     return true;
             }
@@ -317,9 +313,9 @@ namespace EasyFramework.Managers
         /// </summary>
         public void SetBgmVolum(float volume)
         {
-            m_flt_BgmVolumScale = volume;
-            m_as_BGM.volume = m_flt_BgmVolumScale;
-            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum", m_flt_BgmVolumScale);
+            m_bgmVolumScale = volume;
+            m_bGM.volume = m_bgmVolumScale;
+            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum", m_bgmVolumScale);
         }
 
         /// <summary>
@@ -328,8 +324,8 @@ namespace EasyFramework.Managers
         /// </summary>
         public void SetEffectVolum(float volume)
         {
-            m_flt_EffectVolume = volume;
-            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum", m_flt_EffectVolume);
+            m_effectVolume = volume;
+            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum", m_effectVolume);
         }
 
         /// <summary>
@@ -338,7 +334,7 @@ namespace EasyFramework.Managers
         /// </summary>
         public float GetBgmVolume()
         {
-            return m_flt_BgmVolumScale;
+            return m_bgmVolumScale;
         }
 
         /// <summary>
@@ -348,17 +344,17 @@ namespace EasyFramework.Managers
         /// <returns></returns>
         public float GetEffectVolume()
         {
-            return m_flt_EffectVolume;
+            return m_effectVolume;
         }
         #endregion
 
         #region PRIVATE FUNCTION
         private void PlayBGM(AudioClip clip, bool isLoop)
         {
-            m_as_BGM.loop = isLoop;
-            m_as_BGM.clip = clip;
-            m_as_BGM.mute = isMute;
-            m_as_BGM.Play();
+            m_bGM.loop = isLoop;
+            m_bGM.clip = clip;
+            m_bGM.mute = isMute;
+            m_bGM.Play();
         }
 
         private void PlayEffect(AudioClip clip, bool loop = false, Vector3 pos = default)
@@ -366,31 +362,29 @@ namespace EasyFramework.Managers
             if (clip == null) return;
 
             AudioSource audioSrc = GetOneAudioSourceToUse();
-            m_lst_AudioSources.Add(audioSrc);
-            m_flt_AudioTimer.Add(clip.length);
+            m_audioInUse.Add(audioSrc);
             audioSrc.transform.localPosition = pos;
             audioSrc.loop = loop;
             audioSrc.clip = clip;
-            audioSrc.volume = m_flt_EffectVolume;
+            audioSrc.volume = m_effectVolume;
             audioSrc.mute = isMute;
             audioSrc.Play();
         }
 
         private void StopEffectExCallbcak(int index)
         {
-            m_act_AudioCallback[index]?.Invoke();
-            m_lst_AudioSources[index].gameObject.SetActive(false);
-            m_que_AudioSources.Enqueue(m_lst_AudioSources[index]);
-            m_flt_AudioTimer.RemoveAt(index);
-            m_lst_AudioSources.RemoveAt(index);
-            m_act_AudioCallback.RemoveAt(index);
+            m_audioCallback[index]?.Invoke();
+            m_audioInUse[index].gameObject.SetActive(false);
+            m_audioCanUse.Enqueue(m_audioInUse[index]);
+            m_audioInUse.RemoveAt(index);
+            m_audioCallback.RemoveAt(index);
         }
 
         private AudioSource GetOneAudioSourceToUse()
         {
             AudioSource _audioSource;
-            if (m_que_AudioSources.Count != 0)
-                _audioSource = m_que_AudioSources.Dequeue();
+            if (m_audioCanUse.Count != 0)
+                _audioSource = m_audioCanUse.Dequeue();
             else
                 _audioSource = CreateAudioSource();
             _audioSource.gameObject.SetActive(true);

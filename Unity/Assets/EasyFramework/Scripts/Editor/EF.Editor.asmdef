@@ -1,0 +1,19 @@
+{
+    "name": "EF.Editer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5796a4f593192714cbff2c4360722388",
+        "GUID:2373f786d14518f44b0f475db77ba4de",
+        "GUID:819eb555a9518b940aac77f138a990d0",
+        "GUID:3479095eef6310e448f34d9fd03d8df9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

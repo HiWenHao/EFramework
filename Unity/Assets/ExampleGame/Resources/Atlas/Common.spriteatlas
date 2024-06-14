@@ -38,8 +38,26 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 9bb6b0017eb79df4b8e5d0f7172ffd48, type: 3}
+  - {fileID: 21300000, guid: 8e56132289b76fd4b9cdf3c63dfb942f, type: 3}
+  - {fileID: 21300000, guid: 62dc6d43e9c3a5c418d9c55a1e31cdab, type: 3}
+  - {fileID: 21300000, guid: 48bc2a17e1777854cb84b56a1f35a35e, type: 3}
+  - {fileID: 21300000, guid: a6121457074aabc418684caf3e73841f, type: 3}
+  - {fileID: 21300000, guid: e20f4248ef95e72428bbef70aa061cc5, type: 3}
+  - {fileID: 21300000, guid: a174c0d85530bc745b591ad14356fd33, type: 3}
+  - {fileID: 21300000, guid: 0cae4f1a4619cbf4f8bc6980d6f8e046, type: 3}
+  - {fileID: 21300000, guid: 3336723d37a4bdb45a3f2f4cde9146f3, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - CommonArrow_01
+  - CommonArrows
+  - CommonFalse
+  - CommonSquareBorder
+  - CommonTrue
+  - CommonImage
+  - CommonCircleBorder
+  - CommonCircle
+  - CommonArrow_02
   m_RenderDataMap: {}
   m_Tag: Common
   m_IsVariant: 0

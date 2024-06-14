@@ -15,14 +15,6 @@ namespace PleaseModify
             EF.ClearConsole();
 #endif
 
-            #region Show platform infomation.展示平台信息
-            EasyFramework.D.Emphasize($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
-                $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
-                $"  GPU: {SystemInfo.graphicsDeviceName}   " +
-                $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
-                Screen.currentResolution.ToString());
-            #endregion
-
             EasyFramework.D.Log("======================Initialize======================");
             //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
 
@@ -103,6 +95,21 @@ namespace PleaseModify
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");        //数据需要放到Resources文件夹中
             //ExcelDataCacheManager.CacheAllData();     //之后缓存全部数据到项目中
 
+            
+            #region Luban
+            //var tablesCtor = typeof(cfg.Tables).GetConstructors()[0];
+            //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
+            //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
+            //System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
+            //    new System.Func<string, ByteBuf>(LoadByteBuf)
+            //    : new System.Func<string, JSONNode>(LoadJson);
+            //cfg.Tables tables = (cfg.Tables)tablesCtor.Invoke(new object[] { loader });
+
+            //foreach (var item in tables.TbItem.DataList)
+            //{
+            //    EasyFramework.D.Warning("reward:\t" + item.ToString());
+            //}
+            #endregion
 
         }
 
@@ -124,6 +131,21 @@ namespace PleaseModify
         //    };
         //    yield return _handle;
         //}
+        #endregion
+
+        
+        #region Luban
+        /*
+        JSONNode LoadJson(string file)
+        {
+            return JSON.Parse(System.IO.File.ReadAllText($"{Application.dataPath}/Luban/Json/{file}.json", System.Text.Encoding.UTF8));
+        }
+
+        ByteBuf LoadByteBuf(string file)
+        {
+            return new ByteBuf(System.IO.File.ReadAllBytes($"{Application.dataPath}/Luban/Json/{file}.bytes"));
+        }
+        */
         #endregion
     }
 }

@@ -38,8 +38,28 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 992b7820fa0417240b7e74a946cbb2c0, type: 3}
+  - {fileID: 21300000, guid: d6ddbb80b2e539542962bfa0860146e7, type: 3}
+  - {fileID: 21300000, guid: f0d381b1bc42b8647832bd7414a3f2cb, type: 3}
+  - {fileID: 21300000, guid: b60f6822e0e393c40932772d23950221, type: 3}
+  - {fileID: 21300000, guid: 759c3f546b369f848bdbad6ad2d10af5, type: 3}
+  - {fileID: 21300000, guid: 1948d7161077e9543a96efe1f2fe1f52, type: 3}
+  - {fileID: 21300000, guid: a0900327f2f9be042a07948de09dfa4f, type: 3}
+  - {fileID: 21300000, guid: 2be08f49f499a9e4ca7f3922546ad551, type: 3}
+  - {fileID: 21300000, guid: 023c989bd377fc2418ab08362985407f, type: 3}
+  - {fileID: 21300000, guid: a912bacb4e1177c46b221ff65ee400f3, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - CommonSearch
+  - CommonResize
+  - CommonFold
+  - CommonError
+  - CommonHide
+  - CommonInfo
+  - CommonCollapse
+  - CommonResizeV
+  - CommonWarning
+  - CommonClear
   m_RenderDataMap: {}
   m_Tag: IngameDebugConsole
   m_IsVariant: 0

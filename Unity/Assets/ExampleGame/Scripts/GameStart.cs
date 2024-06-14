@@ -8,9 +8,9 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using Luban;
 using SimpleJSON;
-using System.IO;
 using UnityEngine;
 
 namespace EFExample
@@ -140,14 +140,14 @@ namespace EFExample
         #endregion
 
         #region Luban
-        private static JSONNode LoadJson(string file)
+        JSONNode LoadJson(string file)
         {
-            return JSON.Parse(File.ReadAllText($"{Application.dataPath}/Luban/Json/{file}.json", System.Text.Encoding.UTF8));
+            return JSON.Parse(System.IO.File.ReadAllText($"{Application.dataPath}/Luban/Json/{file}.json", System.Text.Encoding.UTF8));
         }
 
-        private static ByteBuf LoadByteBuf(string file)
+        ByteBuf LoadByteBuf(string file)
         {
-            return new ByteBuf(File.ReadAllBytes($"{Application.dataPath}/Luban/Json/{file}.bytes"));
+            return new ByteBuf(System.IO.File.ReadAllBytes($"{Application.dataPath}/Luban/Json/{file}.bytes"));
         }
         #endregion
     }
