@@ -187,3 +187,5 @@
 *.hw filter=lfs diff=lfs merge=lfs -text
 *.sh filter=lfs diff=lfs merge=lfs -text
 *.dwlt filter=lfs diff=lfs merge=lfs -text
+*.conf filter=lfs diff=lfs merge=lfs -text
+*.sbn filter=lfs diff=lfs merge=lfs -text
