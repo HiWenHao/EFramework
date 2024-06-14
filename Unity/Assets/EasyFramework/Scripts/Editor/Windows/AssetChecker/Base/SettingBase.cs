@@ -23,7 +23,7 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal abstract class SettingBase
     {
-        internal string AssetDesc = LC.Combine(LC.Language.Assets, LC.Language.Description);
+        internal string AssetDesc = LC.Combine("Assets", "Description");
 
         /// <summary>
         /// 目录
@@ -96,7 +96,7 @@ namespace EasyFramework.Windows.AssetChecker
         internal override void OnGUI()
         {
             GUILayout.Label("MipMaps", GUILayout.Width(100F));
-            MipMaps = GUILayout.Toggle(MipMaps, LC.Language.Open);
+            MipMaps = GUILayout.Toggle(MipMaps, LC.Combine("Open"));
         }
 
         internal override void Write(XmlDocument doc, XmlElement ele)
@@ -132,9 +132,9 @@ namespace EasyFramework.Windows.AssetChecker
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(30);
-            MaxTriangs = EditorGUILayout.IntSlider(LC.Language.ModelMaxTriangs, MaxTriangs, 1, AssetsCheckerConfig.ModelMaxTriangs);
+            MaxTriangs = EditorGUILayout.IntSlider(LC.Combine("Model", "Max", "Triangular", "Count"), MaxTriangs, 1, AssetsCheckerConfig.ModelMaxTriangs);
             GUILayout.FlexibleSpace();
-            MaxBones = EditorGUILayout.IntSlider(LC.Language.ModelMaxBones, MaxBones, 1, AssetsCheckerConfig.ModelMaxBones);
+            MaxBones = EditorGUILayout.IntSlider(LC.Combine("Model", "Max", "Bone", "Count"), MaxBones, 1, AssetsCheckerConfig.ModelMaxBones);
             GUILayout.EndHorizontal();
         }
 
@@ -175,9 +175,9 @@ namespace EasyFramework.Windows.AssetChecker
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(30);
-            MaxMatrials = EditorGUILayout.IntSlider(LC.Language.EffectMaxMatrials, MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
+            MaxMatrials = EditorGUILayout.IntSlider(LC.Combine("Effects", "Max", "Matrials", "Count"), MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
             GUILayout.FlexibleSpace();
-            MaxParticels = EditorGUILayout.IntSlider(LC.Language.EffectMaxParticles, MaxParticels, 1, AssetsCheckerConfig.EffectMaxParticles);
+            MaxParticels = EditorGUILayout.IntSlider(LC.Combine("Effects", "Max", "Particle", "Count"), MaxParticels, 1, AssetsCheckerConfig.EffectMaxParticles);
             GUILayout.EndHorizontal();
         }
 

@@ -37,11 +37,11 @@ namespace EasyFramework.Windows.AssetChecker
         internal void OnGUI()
         {
             EditorGUILayout.Separator();
-            GUILayout.Label(LC.Combine(LC.Language.Config, LC.Language.Query, LC.Language.Settings));
+            GUILayout.Label(LC.Combine("Config", "Query", "Settings"));
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(LC.Combine(LC.Language.Clear, LC.Language.Config, LC.Language.File), "ButtonLeft", GUILayout.Width(120)))
+            if (GUILayout.Button(LC.Combine("Clear", "Config", "File"), "ButtonLeft", GUILayout.Width(120)))
             {
                 if (File.Exists(m_FilePath))
                 {
@@ -50,9 +50,9 @@ namespace EasyFramework.Windows.AssetChecker
                     AssetDatabase.Refresh();
                 }
             }
-            if (GUILayout.Button(LC.Combine(LC.Language.Load, LC.Language.Config, LC.Language.File), "ButtonRight", GUILayout.Width(120)))
+            if (GUILayout.Button(LC.Combine("Load", "Config", "File"), "ButtonRight", GUILayout.Width(120)))
             {
-                m_FilePath = EditorUtility.OpenFilePanel(LC.Language.Open, Application.dataPath, "xml");
+                m_FilePath = EditorUtility.OpenFilePanel(LC.Combine("Open"), Application.dataPath, "xml");
                 if (File.Exists(m_FilePath))
                 {
                     Settings.Clear();
@@ -89,18 +89,18 @@ namespace EasyFramework.Windows.AssetChecker
 
             EditorGUILayout.Separator();
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(LC.Language.Save, LC.Language.Config, LC.Language.File)))
+            if (GUILayout.Button(LC.Combine("Save", "Config", "File")))
             {
                 if (string.IsNullOrEmpty(m_FilePath))
                 {
-                    string _filePath = EditorUtility.SaveFilePanel(LC.Language.Save, Application.dataPath, "new checker file", "xml");
+                    string _filePath = EditorUtility.SaveFilePanel(LC.Combine("Save"), Application.dataPath, "new checker file", "xml");
                     m_FilePath = _filePath.Replace(Application.dataPath, "Assets");
                 }
                 if (!string.IsNullOrEmpty(m_FilePath))
                     SaveSettingRule(m_FilePath);
                 AssetDatabase.Refresh();
             }
-            if (GUILayout.Button(LC.Combine(LC.Language.Add, LC.Language.Config)))
+            if (GUILayout.Button(LC.Combine("Add", "Config")))
             {
                 T msb = new T();
                 msb.Folder.Add("Assets");
@@ -149,14 +149,14 @@ namespace EasyFramework.Windows.AssetChecker
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Space(30);
-                    GUILayout.Label(LC.Combine(LC.Language.Assets, LC.Language.Description), GUILayout.Width(120F));
+                    GUILayout.Label(LC.Combine("Assets", "Description"), GUILayout.Width(120F));
                     modelSetting.AssetDesc = GUILayout.TextField(modelSetting.AssetDesc);
                     GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(30);
-                        if (GUILayout.Button(LC.Combine(LC.Language.File, LC.Language.Catalogue), GUILayout.Width(120F)))
+                        if (GUILayout.Button(LC.Combine("File", "Catalogue"), GUILayout.Width(120F)))
                             modelSetting.Folder.Add(string.Empty);
 
                         GUILayout.BeginVertical();
@@ -166,7 +166,7 @@ namespace EasyFramework.Windows.AssetChecker
                             GUILayout.TextField(modelSetting.Folder[i]);
                             if (GUILayout.Button("...", GUILayout.Width(30f)))
                             {
-                                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, Application.dataPath, "");
+                                string path = EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), Application.dataPath, "");
                                 string _rep = path.Replace(Application.dataPath, "Assets");
                                 if (!modelSetting.Folder.Contains(_rep))
                                     modelSetting.Folder[i] = _rep;

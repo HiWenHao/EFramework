@@ -58,7 +58,7 @@ namespace EasyFramework.Edit.SpriteTools
 
             ShowSprites();
 
-            if (GUILayout.Button(LC.Language.PackPreview, GUILayout.Width(100f)))
+            if (GUILayout.Button(LC.Combine("Overview"), GUILayout.Width(100f)))
             {
                 Pack();
             }
@@ -80,15 +80,15 @@ namespace EasyFramework.Edit.SpriteTools
         void SelectPath()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Language.AtlasPath, GUILayout.Width(130f));
+            EditorGUILayout.LabelField(LC.Combine("Atlas", "Path"), GUILayout.Width(130f));
             EditorGUILayout.LabelField(new GUIContent(AtlasFolder.stringValue));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(LC.Language.PathSelect))
+                if (GUILayout.Button(LC.Combine("Select", "Path")))
                 {
-                    string _path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, Application.dataPath, "");
+                    string _path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), Application.dataPath, "");
                     if (string.IsNullOrEmpty(_path))
                     {
                         if (string.IsNullOrEmpty(AtlasFolder.stringValue))
@@ -97,7 +97,7 @@ namespace EasyFramework.Edit.SpriteTools
                     else
                         AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path) + "/";
                 }
-                if (GUILayout.Button(LC.Language.PathDefault))
+                if (GUILayout.Button(LC.Combine("Default", "Path")))
                 {
                     AtlasFolder.stringValue = m_FrameworkAtlasFolder;
                 }
@@ -109,7 +109,7 @@ namespace EasyFramework.Edit.SpriteTools
         #region Show Atlas
         void ShowObjectsAndAtlas()
         {
-            m_Atlas = EditorGUILayout.Foldout(m_Atlas, LC.Language.Atlas + $"\t({m_Target.Atlas.Count})");
+            m_Atlas = EditorGUILayout.Foldout(m_Atlas, LC.Combine("Atlas") + $"\t({m_Target.Atlas.Count})");
             if (m_Atlas)
             {
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
@@ -121,14 +121,9 @@ namespace EasyFramework.Edit.SpriteTools
                         EditorGUILayout.LabelField(m_Target.Atlas[i].name, GUILayout.MinWidth(30f), GUILayout.MaxWidth(150f));
                         EditorGUILayout.ObjectField(m_Target.Atlas[i], typeof(Sprite), false);
 
-                        if (GUILayout.Button(new GUIContent("X", LC.Language.AtlasXButtonTips)))
+                        if (GUILayout.Button("X"))
                         {
-                            ClearSpriteInfoWithIndex(i);
-                            ClearAtlasWithIndex(i);
-                        }
-                        if (GUILayout.Button(new GUIContent(LC.Language.AtlasDelButton, LC.Language.AtlasDelButtonTips)))
-                        {
-                            if (EditorUtility.DisplayDialog(LC.Language.AtlasDelButton, LC.Language.ConfirmDelete + m_Target.Atlas[i].name + LC.Language.Atlas, LC.Language.Ok))
+                            if (EditorUtility.DisplayDialog(LC.Combine("Delete"), LC.Combine("Confirm", "Delete") + m_Target.Atlas[i].name + LC.Combine("Atlas"), LC.Combine("Ok")))
                             {
                                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(m_Target.Atlas[i]));
                                 ClearSpriteInfoWithIndex(i);
@@ -142,14 +137,14 @@ namespace EasyFramework.Edit.SpriteTools
             }
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(new GUIContent(LC.Language.ClearAll, LC.Language.AtlasClearAllTips)))
+            if (GUILayout.Button(LC.Combine("Clear", "All")))
             {
                 ClearAllAtlas();
                 ClearSpriteInfos();
                 AssetDatabase.Refresh();
             }
 
-            if (GUILayout.Button(new GUIContent(LC.Language.DeleteAll, LC.Language.AtlasDeleteAllTips)))
+            if (GUILayout.Button(LC.Combine("Delete", "All")))
             {
                 for (int i = m_Target.Atlas.Count - 1; i >= 0; i--)
                     AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(m_Target.Atlas[i]));
@@ -170,7 +165,7 @@ namespace EasyFramework.Edit.SpriteTools
                 if (i == HasPreview.Count)
                     HasPreview.Add(false);
 
-                HasPreview[i] = EditorGUILayout.Foldout(HasPreview[i], new GUIContent(m_Target.SpriteInfos[i].SpriteList.Count + "\t" + LC.Language.Atlas + " - " + m_Target.SpriteInfos[i].FolderName));
+                HasPreview[i] = EditorGUILayout.Foldout(HasPreview[i], new GUIContent(m_Target.SpriteInfos[i].SpriteList.Count + "\t" + LC.Combine("Atlas") + " - " + m_Target.SpriteInfos[i].FolderName));
                 if (HasPreview[i] && i < m_Target.SpriteInfos.Count)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -194,8 +189,8 @@ namespace EasyFramework.Edit.SpriteTools
         void CrateTheAtlas()
         {
             EditorGUILayout.BeginHorizontal();
-            m_AllOverwrite = EditorGUILayout.ToggleLeft(new GUIContent(LC.Language.Overwrite, LC.Language.AtlasOverwriteTips), m_AllOverwrite, GUILayout.MaxWidth(100f));
-            if (GUILayout.Button(LC.Language.CreateAtlas ))
+            m_AllOverwrite = EditorGUILayout.ToggleLeft(LC.Combine("Overwrite"), m_AllOverwrite, GUILayout.MaxWidth(100f));
+            if (GUILayout.Button(LC.Combine("Create", "Atlas")))
             {
                 CreateAtlas();
             }
@@ -206,13 +201,13 @@ namespace EasyFramework.Edit.SpriteTools
             ClearAllAtlas();
             if (string.IsNullOrEmpty(AtlasFolder.stringValue))
             {
-                EditorUtility.DisplayDialog(LC.Language.Hints, LC.Language.AtlasSelectFolder, LC.Language.Ok);
+                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("Select", "Atlas", "Folder"), LC.Combine("Ok"));
                 return;
             }
 
             if (m_Target.TargetObjects.Find(_ => _ is SpriteAtlas) != null)
             {
-                EditorUtility.DisplayDialog(LC.Language.Hints, LC.Language.AtlasExistInCollection, LC.Language.Ok);
+                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("SC_AtlasExistInCollection"), LC.Combine("Ok"));
                 return;
             }
 
@@ -237,7 +232,7 @@ namespace EasyFramework.Edit.SpriteTools
                 bool _result = false;
                 if (!m_AllOverwrite && File.Exists(_atlas))
                 {
-                    _result = EditorUtility.DisplayDialog(LC.Language.Hints, m_Target.TargetObjects[i].name + LC.Language.AtlasExistAlsoOverwrite,LC.Language.Ok, LC.Language.Cancel);
+                    _result = EditorUtility.DisplayDialog(LC.Combine("Hints"), m_Target.TargetObjects[i].name + LC.Combine("SC_AtlasExistAlsoOverwrite"), LC.Combine("Ok"), LC.Combine("Cancel"));
                     if (!_result)
                     {
                         bool _hasSA = false;

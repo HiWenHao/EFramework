@@ -48,16 +48,16 @@ namespace EFExample
             Application.OpenURL("file://" + Application.temporaryCachePath);
         }
 
-        [MenuItem("EFTools/Open Folder/ExcelFolder", priority = 1005)]
+        [MenuItem("EFTools/Open Folder/Excel", priority = 2000)]
         public static void OpenExcelFolderPath()
         {
             Application.OpenURL("file://" + Application.dataPath + "/../../ExcelFolder");
         }
 
-        [MenuItem("EFTools/Open Folder/Luban", priority = 1005)]
+        [MenuItem("EFTools/Open Folder/Luban", priority = 2001)]
         public static void OpenLubanToolsFolderPath()
         {
-            Application.OpenURL("file://" + Application.dataPath + "/../../Luban");
+            Application.OpenURL("file://" + Application.dataPath + "/../../Tools/LubanTools");
         }
     }
 }

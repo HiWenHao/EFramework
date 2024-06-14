@@ -70,22 +70,22 @@ namespace EasyFramework.Edit.Setting
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
-            m_languageIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Language.EditorLanguage, (ELanguage)m_LanguageIndex.intValue);
+            m_languageIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Combine("Editor", "Language"), (ELanguage)m_LanguageIndex.intValue);
             if (m_languageIndex != m_LanguageIndex.intValue)
             {
                 m_LanguageIndex.intValue = m_languageIndex;
                 EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
             }
 
-            m_rendererPipline = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Language.RenderingType, (RenderingTypeEnum)m_RendererPipline.intValue);
+            m_rendererPipline = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Combine("Rendering", "Type"), (RenderingTypeEnum)m_RendererPipline.intValue);
             if (m_rendererPipline != m_RendererPipline.intValue)
             {
                 ChangedRendererPipline();
             }
 
-            EditorGUILayout.LabelField(LC.Language.EditorUser, m_EditorUser);
-            m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Language.ScriptAuthor, m_ScriptAuthor.stringValue);
-            m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Language.ScriptVersion, m_ScriptVersion.stringValue);
+            EditorGUILayout.LabelField(LC.Combine("Editor", "User"), m_EditorUser);
+            m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Author"), m_ScriptAuthor.stringValue);
+            m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Version"), m_ScriptVersion.stringValue);
             EditorGUILayout.PropertyField(m_AppConstConfig);
             EditorGUILayout.PropertyField(m_ResourcesArea);
             EditorGUILayout.Space(20);
@@ -126,25 +126,25 @@ namespace EasyFramework.Edit.Setting
             m_ComputerInfoScroll = EditorGUILayout.BeginScrollView(m_ComputerInfoScroll, "Box", GUILayout.Height(210));
 
             GUILayout.Label("---------------------------------------------------------------------------------------");
-            GUILayout.Label(LC.Language.OperatingSystem + SystemInfo.operatingSystem);
-            GUILayout.Label(LC.Language.SystemMemorySize + SystemInfo.systemMemorySize + "MB");
-            GUILayout.Label(LC.Language.ProcessorType + SystemInfo.processorType);
-            GUILayout.Label(LC.Language.ProcessorType + SystemInfo.processorCount);
+            GUILayout.Label($"{LC.Combine("Operating", "System")}: {SystemInfo.operatingSystem}");
+            GUILayout.Label($"{LC.Combine("System", "Memory", "Size")}: {SystemInfo.systemMemorySize} MB");
+            GUILayout.Label($"{LC.Combine("CPU", "Name")}: {SystemInfo.processorType}");
+            GUILayout.Label($"{LC.Combine("CPU", "Count")}: {SystemInfo.processorCount}");
             GUILayout.Label("---------------------------------------------------------------------------------------");
-            GUILayout.Label(LC.Language.GraphicsDeviceName + SystemInfo.graphicsDeviceName);
-            GUILayout.Label(LC.Language.GraphicsDeviceType + SystemInfo.graphicsDeviceType);
-            GUILayout.Label(LC.Language.GraphicsMemorySize + SystemInfo.graphicsMemorySize + "MB");
-            GUILayout.Label(LC.Language.GraphicsDeviceID + SystemInfo.graphicsDeviceID);
-            GUILayout.Label(LC.Language.GraphicsDeviceVendor + SystemInfo.graphicsDeviceVendor);
-            GUILayout.Label(LC.Language.GraphicsDeviceVendorID + SystemInfo.graphicsDeviceVendorID);
+            GUILayout.Label($"{LC.Combine("GPU", "Name")}: {SystemInfo.graphicsDeviceName}");
+            GUILayout.Label($"{LC.Combine("GPU", "Type")}: {SystemInfo.graphicsDeviceType}");
+            GUILayout.Label($"{LC.Combine("GPU", "Memory", "Size")}: {SystemInfo.graphicsMemorySize} MB");
+            GUILayout.Label($"{LC.Combine("GPU", "Id")}: {SystemInfo.graphicsDeviceID}");
+            GUILayout.Label($"{LC.Combine("GPU", "Vendor")}: {SystemInfo.graphicsDeviceVendor}");
+            GUILayout.Label($"{LC.Combine("GPU", "Vendor", "Id")}: {SystemInfo.graphicsDeviceVendorID}");
             GUILayout.Label("---------------------------------------------------------------------------------------");
-            GUILayout.Label(LC.Language.DeviceModel + SystemInfo.deviceModel);
-            GUILayout.Label(LC.Language.DeviceName + SystemInfo.deviceName);
-            GUILayout.Label(LC.Language.DeviceType + SystemInfo.deviceType);
-            GUILayout.Label(LC.Language.DeviceUniqueIdentifier + SystemInfo.deviceUniqueIdentifier);
+            GUILayout.Label($"{LC.Combine("Device", "Version")}: {SystemInfo.deviceModel}");
+            GUILayout.Label($"{LC.Combine("Device", "Name")}: {SystemInfo.deviceName}");
+            GUILayout.Label($"{LC.Combine("Device", "Type")}: {SystemInfo.deviceType}");
+            GUILayout.Label($"{LC.Combine("Device", "Id")}: {SystemInfo.deviceUniqueIdentifier}");
             GUILayout.Label("---------------------------------------------------------------------------------------");
-            GUILayout.Label(LC.Language.ScreenDpi + Screen.dpi);
-            GUILayout.Label(LC.Language.ScreenCurrentResolution + Screen.currentResolution.ToString());
+            GUILayout.Label($"{LC.Combine("Screen", "Current")} Dpi: {Screen.dpi}");
+            GUILayout.Label($"{LC.Combine("Screen", "Resolution")}: {Screen.currentResolution}");
             GUILayout.Label("---------------------------------------------------------------------------------------");
             EditorGUILayout.EndScrollView();
         }
@@ -161,7 +161,7 @@ namespace EasyFramework.Edit.Setting
 
                 if (!_manifest.Contains("com.unity.render-pipelines.universal"))
                 {
-                    if (EditorUtility.DisplayDialog(LC.Language.Error, LC.Language.ResourcePackageAbsent, LC.Language.Import, LC.Language.Cancel))
+                    if (EditorUtility.DisplayDialog(LC.Combine("Error"), LC.Combine("Related ", "Resource", "Package", "Lost"), LC.Combine("Import"), LC.Combine("Cancel")))
                     {
                         EditorApplication.ExecuteMenuItem("Window/Package Manager");
                     }

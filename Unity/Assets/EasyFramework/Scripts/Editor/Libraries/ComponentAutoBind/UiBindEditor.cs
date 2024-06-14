@@ -112,38 +112,40 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawSetting()
         {
             EditorGUILayout.BeginHorizontal();
-            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Language.ScriptNamespace, m_Namespace.stringValue);
-            if (GUILayout.Button(LC.Language.DefaultSetting))
+            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Namespace"), m_Namespace.stringValue);
+            if (GUILayout.Button(LC.Combine("Default", "Settings")))
             {
                 m_Namespace.stringValue = m_Setting.Namespace;
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(LC.Language.ScriptClassName, m_Builder.gameObject.name + LC.Language.ScriptClassNameTips);
+            EditorGUILayout.TextField(LC.Combine("Script", "Class", "Name"), m_Builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.Space(12f, true);
 
-            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ? LC.Language.NoCreatedUIPrefabSavePath : LC.Language.CreatedUIPrefabSavePath);
+            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ?
+                LC.Combine("No", "Create") + " UI " + LC.Combine("Prefab", "Save", "Path") : 
+                LC.Combine("Create") + " UI " + LC.Combine("Prefab", "Save", "Path"));
             if (m_CreatePrefab.boolValue)
             {
                 EditorGUILayout.LabelField(m_PrefabPath.stringValue);
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(LC.Language.PathSelect))
+                if (GUILayout.Button(LC.Combine("Select", "Path")))
                 {
                     string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
                     if (!Directory.Exists(folder))
                     {
                         folder = Application.dataPath;
                     }
-                    string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
+                    string path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), folder, "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
                     }
                 }
-                if (GUILayout.Button(LC.Language.DefaultSetting))
+                if (GUILayout.Button(LC.Combine("Default", "Settings")))
                 {
                     m_PrefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
                 }
@@ -151,23 +153,23 @@ namespace EasyFramework.Edit.AutoBind
             }
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField(LC.Language.DefaultUICodeSavePath);
+            EditorGUILayout.LabelField(LC.Combine("Default") + " UI " + LC.Combine("Code", "Save", "Path"));
             EditorGUILayout.LabelField(m_ComCodePath.stringValue);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Language.PathSelect))
+            if (GUILayout.Button(LC.Combine("Select", "Path")))
             {
                 string folder = Application.dataPath + "/" + m_ComCodePath.stringValue;
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
                 }
-                string path = EditorUtility.OpenFolderPanel(LC.Language.PathSelect, folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
                 }
             }
-            if (GUILayout.Button(LC.Language.DefaultSetting))
+            if (GUILayout.Button(LC.Combine("Default", "Settings")))
             {
                 m_ComCodePath.stringValue = ProjectUtility.Path.UICodePath;
             }
@@ -182,20 +184,20 @@ namespace EasyFramework.Edit.AutoBind
         {
             GUILayout.Space(12.0f);
             GUILayout.BeginHorizontal();
-            m_sortByType = GUILayout.Toggle(m_sortByType, LC.Language.SortByType);
+            m_sortByType = GUILayout.Toggle(m_sortByType, LC.Combine("By", "Type", "Sort"));
             if (m_sortByType != m_SortByType.boolValue)
             {
                 m_SortByType.boolValue = m_sortByType;
                 EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", m_sortByType ? 1 : 0);
             }
-            m_sortByNameLength = GUILayout.Toggle(m_sortByNameLength, LC.Language.SortByNameLength);
+            m_sortByNameLength = GUILayout.Toggle(m_sortByNameLength, LC.Combine("By", "Name", "Length", "Sort"));
             if (m_sortByNameLength != m_SortByNameLength.boolValue)
             {
                 m_SortByNameLength.boolValue = m_sortByNameLength;
                 EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", m_sortByNameLength ? 1 : 0);
             }
             GUILayout.EndHorizontal();
-            if (GUILayout.Button(LC.Language.AutoBindingComponents))
+            if (GUILayout.Button(LC.Combine("Auto", "Bind", "Component")))
             {
                 AutoBindComponent();
             }
@@ -246,10 +248,10 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawStartBind()
         {
             GUILayout.Space(24f);
-            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, LC.Language.UnloadBindingScripts);
+            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, LC.Combine("Unload", "Script"));
 
             GUILayout.Space(12f);
-            if (GUILayout.Button(LC.Language.BindingGenerate, GUILayout.Height(25.0f)))
+            if (GUILayout.Button(LC.Combine("Bind", "Create"), GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
                 if (m_CreatePrefab.boolValue)
@@ -680,7 +682,7 @@ namespace EasyFramework.Edit.AutoBind
 
                     if (str.Contains("namespace"))
                     {
-                        if(_isFirstNameSpace)
+                        if (_isFirstNameSpace)
                             _isFirstNameSpace = false;
                         else
                         {

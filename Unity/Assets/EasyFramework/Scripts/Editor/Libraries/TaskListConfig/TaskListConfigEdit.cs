@@ -33,8 +33,20 @@ namespace EasyFramework.Edit.TaskList
         GUIStyle m_TaskTitleMarkStyle;
         GUIStyle m_HighlightMarkStyle;
 
-        Color[] m_ContentColors;
-        string[] UIPopupContents;
+        readonly Color[] m_ContentColors = new Color[]
+        {
+            Color.yellow,
+            Color.green,
+            Color.red,
+            Color.gray
+        };
+        readonly string[] UIPopupContents = new string[]
+        {
+            LC.Combine("Doing"),
+            LC.Combine("Done"),
+            LC.Combine("Timeout"),
+            LC.Combine("Abandon")
+        };
 
         private void Awake()
         {
@@ -65,21 +77,7 @@ namespace EasyFramework.Edit.TaskList
                 wordWrap = true
             };
 
-            UIPopupContents = new string[]
-            {
-                LC.Language.Doing,
-                LC.Language.Done,
-                LC.Language.Timeout,
-                LC.Language.Abandon
-            };
-
-            m_ContentColors = new Color[]
-            {
-                Color.yellow,
-                Color.green,
-                Color.red,
-                Color.gray
-            };
+            //UIPopupContents;
         }
 
         private void OnEnable()
@@ -96,12 +94,12 @@ namespace EasyFramework.Edit.TaskList
         {
             serializedObject.Update();
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField(new GUIContent(LC.Combine(LC.Language.Task, LC.Language.List)), m_HeadStyle);
+            EditorGUILayout.LabelField(new GUIContent(LC.Combine("Task", "List")), m_HeadStyle);
 
             ShowListInfo();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            if (GUILayout.Button(LC.Combine(LC.Language.Add, LC.Language.Task)))
+            if (GUILayout.Button(LC.Combine("Add", "Task")))
             {
                 Mark.InsertArrayElementAtIndex(TaskCount.intValue);
                 Title.InsertArrayElementAtIndex(TaskCount.intValue);
@@ -112,17 +110,17 @@ namespace EasyFramework.Edit.TaskList
                 Progress.GetArrayElementAtIndex(TaskCount.intValue).intValue = 0;
                 Mark.GetArrayElementAtIndex(TaskCount.intValue).boolValue = false;
                 Enabled.GetArrayElementAtIndex(TaskCount.intValue).boolValue = true;
-                Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Language.Title;
-                Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Language.Tlp_TaskDesc;
+                Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Combine("Title");
+                Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Combine("Task", "Description");
 
                 TaskCount.intValue++;
             }
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(LC.Language.RemoveAll))
+            if (GUILayout.Button(LC.Combine("Remove", "All")))
             {
-                if (0 != TaskCount.intValue && EditorUtility.DisplayDialog(LC.Combine(LC.Language.Delete, LC.Language.Task), LC.Combine(LC.Language.RemoveAll, LC.Language.Task), LC.Language.Ok))
+                if (0 != TaskCount.intValue && EditorUtility.DisplayDialog(LC.Combine("Delete", "Task"), LC.Combine("Remove", "All", "Task"), LC.Combine("Ok")))
                 {
                     TaskCount.intValue = 0;
                     Mark.ClearArray();
@@ -154,7 +152,7 @@ namespace EasyFramework.Edit.TaskList
                     EditorGUILayout.BeginVertical("AvatarMappingBox");
 
                     EditorGUILayout.BeginHorizontal();
-                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Language.Progress,
+                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Combine("Progress"),
                         selectedValue: Progress.GetArrayElementAtIndex(i).intValue,
                         displayedOptions: UIPopupContents,
                         optionValues: new int[] { 0, 1, 2, 3 },
@@ -162,8 +160,8 @@ namespace EasyFramework.Edit.TaskList
                         );
                     GUILayout.Space(15f);
                     if (GUILayout.Button(Mark.GetArrayElementAtIndex(i).boolValue ?
-                        LC.Combine(LC.Language.Cancel, LC.Language.Mark) :
-                        LC.Combine(LC.Language.Highlight, LC.Language.Mark),
+                        LC.Combine("Cancel", "Mark") :
+                        LC.Combine("Highlight", "Mark"),
                         m_HighlightMarkStyle)
                         )
                     {
@@ -174,7 +172,7 @@ namespace EasyFramework.Edit.TaskList
                     Description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(Description.GetArrayElementAtIndex(i).stringValue, m_DescriptionStyle);
 
                     EditorGUILayout.BeginHorizontal();
-                    if (i != 0 && GUILayout.Button(LC.Language.MoveUp))
+                    if (i != 0 && GUILayout.Button(LC.Combine("MoveUp")))
                     {
                         Mark.MoveArrayElement(i, i - 1);
                         Enabled.MoveArrayElement(i, i - 1);
@@ -182,7 +180,7 @@ namespace EasyFramework.Edit.TaskList
                         Title.MoveArrayElement(i, i - 1);
                         Description.MoveArrayElement(i, i - 1);
                     }
-                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(LC.Language.MoveDown))
+                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(LC.Combine("MoveDown")))
                     {
                         Mark.MoveArrayElement(i, i + 1);
                         Enabled.MoveArrayElement(i, i + 1);
@@ -190,7 +188,7 @@ namespace EasyFramework.Edit.TaskList
                         Title.MoveArrayElement(i, i + 1);
                         Description.MoveArrayElement(i, i + 1);
                     }
-                    if (GUILayout.Button(LC.Combine(LC.Language.Delete, LC.Language.Task), m_DeleteStyle))
+                    if (GUILayout.Button(LC.Combine("Delete", "Task"), m_DeleteStyle))
                     {
                         Mark.DeleteArrayElementAtIndex(i);
                         Enabled.DeleteArrayElementAtIndex(i);

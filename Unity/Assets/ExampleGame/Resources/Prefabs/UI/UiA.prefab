@@ -229,24 +229,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BindDatas:
-  - RealName: 
-    ScriptName: 
+  - RealName: Btn_ToB
+    ScriptName: Btn_ToB
     BindCom: {fileID: 8961536179098024215}
-  - RealName: 
-    ScriptName: 
+  - RealName: Btn_Quit
+    ScriptName: Btn_Quit
     BindCom: {fileID: 6871867135336465635}
-  - RealName: 
-    ScriptName: 
-    BindCom: {fileID: 0}
   m_BindComs:
   - {fileID: 8961536179098024215}
   - {fileID: 6871867135336465635}
-  - {fileID: 0}
   m_Namespace: EFExample
   m_ComCodePath: Assets/ExampleGame/Scripts/_Test/
   m_DeleteScript: 0
-  m_CreatePrefab: 0
-  m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
+  m_CreatePrefab: 1
+  m_PrefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
   m_SortByType: 1
   m_SortByNameLength: 1
 --- !u!1 &5967752919626689131

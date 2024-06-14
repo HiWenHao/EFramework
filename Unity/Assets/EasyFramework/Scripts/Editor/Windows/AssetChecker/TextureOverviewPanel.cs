@@ -39,14 +39,14 @@ namespace EasyFramework.Windows.AssetChecker
             m_SettingMap = new Dictionary<string, TextureSetting>();
             ObjectInfoList = new string[]
             {
-                LC.Combine(LC.Language.Texture, LC.Language.Name),
-                LC.Language.ResourceType,
-                LC.Language.Width,
-                LC.Language.Height,
+                LC.Combine("Texture", "Name"),
+                LC.Combine("Resource", "Type"),
+                LC.Combine("Width"),
+                LC.Combine("Height"),
                 "MipMaps",
-                LC.Language.MaxSize,
-                LC.Language.Compression,
-                LC.Language.Memory,
+                LC.Combine("Max","Size"),
+                LC.Combine("Compression"),
+                LC.Combine("Memory"),
             };
 
             base.Initialize();
@@ -135,7 +135,7 @@ namespace EasyFramework.Windows.AssetChecker
                 for (int i = 0; i < childFiles.Length; i++)
                 {
                     _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Language.Holdon, LC.Language.Holdon, _curFileIndex / _count);
+                    EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("Holdon"), _curFileIndex / _count);
                     TextureInformation asset = GetTextureInformation(childFiles[i]);
                     asset.AssetDesc = msb.AssetDesc;
                     m_ShowTextureInfo.Add(asset);
@@ -195,7 +195,7 @@ namespace EasyFramework.Windows.AssetChecker
 
         protected override void BeforeTheRefreshButton()
         {
-            if (GUILayout.Button(LC.Combine(LC.Language.AlignAt, "MipMaps"), GUILayout.Width(130)))
+            if (GUILayout.Button(LC.Combine("AlignAt") + "MipMaps", GUILayout.Width(130)))
             {
                 SwitchMipMaps();
             }
@@ -216,7 +216,7 @@ namespace EasyFramework.Windows.AssetChecker
 
             for (int i = 0; i < _textures.Count; i++)
             {
-                EditorUtility.DisplayProgressBar(LC.Language.Holdon, LC.Language.BeingProcessed, i / (float)_textures.Count);
+                EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("BeingProcessed"), i / (float)_textures.Count);
                 TextureImporter texImp = AssetImporter.GetAtPath(_textures[i].FilePath) as TextureImporter;
                 texImp.mipmapEnabled = m_SettingMap[_textures[i].AssetDesc].MipMaps;
                 _textures[i].MipMaps = m_SettingMap[_textures[i].AssetDesc].MipMaps;

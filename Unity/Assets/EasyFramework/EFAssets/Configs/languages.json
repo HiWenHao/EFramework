@@ -1,0 +1,1289 @@
+[
+  {
+    "name": "S",
+    "desc": "分隔符",
+    "array": [
+      " "
+    ]
+  },
+  {
+    "name": "All",
+    "desc": "全部",
+    "array": [
+      "All",
+      "全部"
+    ]
+  },
+  {
+    "name": "Add",
+    "desc": "添加",
+    "array": [
+      "Add",
+      "添加"
+    ]
+  },
+  {
+    "name": "Auto",
+    "desc": "自动",
+    "array": [
+      "Auto",
+      "自动"
+    ]
+  },
+  {
+    "name": "Atlas",
+    "desc": "图集",
+    "array": [
+      "Atlas",
+      "图集"
+    ]
+  },
+  {
+    "name": "Author",
+    "desc": "作者",
+    "array": [
+      "Author",
+      "作者"
+    ]
+  },
+  {
+    "name": "Assets",
+    "desc": "资源",
+    "array": [
+      "Assets",
+      "资源"
+    ]
+  },
+  {
+    "name": "Active",
+    "desc": "积极的、动态",
+    "array": [
+      "Active",
+      "动态"
+    ]
+  },
+  {
+    "name": "Absent",
+    "desc": "缺失",
+    "array": [
+      "Absent",
+      "缺失"
+    ]
+  },
+  {
+    "name": "Animat",
+    "desc": "动画",
+    "array": [
+      "Animat",
+      "动画"
+    ]
+  },
+  {
+    "name": "AlignAt",
+    "desc": "对齐",
+    "array": [
+      "AlignAt",
+      "对齐"
+    ]
+  },
+  {
+    "name": "Activity",
+    "desc": "活动的",
+    "array": [
+      "Activity",
+      "活动"
+    ]
+  },
+  {
+    "name": "Abandon",
+    "desc": "放弃",
+    "array": [
+      "Abandon",
+      "放弃"
+    ]
+  },
+  {
+    "name": "By",
+    "desc": "按照",
+    "array": [
+      "By",
+      "按"
+    ]
+  },
+  {
+    "name": "Bind",
+    "desc": "绑定",
+    "array": [
+      "Bind",
+      "绑定"
+    ]
+  },
+  {
+    "name": "Bone",
+    "desc": "骨骼",
+    "array": [
+      "Bone",
+      "骨骼"
+    ]
+  },
+  {
+    "name": "BeingProcessed",
+    "desc": "正在处理中...",
+    "array": [
+      "Being processed...",
+      "正在处理中..."
+    ]
+  },
+  {
+    "name": "CPU",
+    "desc": "计算机处理器",
+    "array": [
+      "CPU",
+      "处理器"
+    ]
+  },
+  {
+    "name": "Code",
+    "desc": "代码",
+    "array": [
+      "Code",
+      "代码"
+    ]
+  },
+  {
+    "name": "Clear",
+    "desc": "清空",
+    "array": [
+      "Clear",
+      "清空"
+    ]
+  },
+  {
+    "name": "Class",
+    "desc": "类",
+    "array": [
+      "Class",
+      "类"
+    ]
+  },
+  {
+    "name": "Color",
+    "desc": "颜色",
+    "array": [
+      "Color",
+      "颜色"
+    ]
+  },
+  {
+    "name": "Count",
+    "desc": "数量",
+    "array": [
+      "Count",
+      "数量"
+    ]
+  },
+  {
+    "name": "Cancel",
+    "desc": "取消",
+    "array": [
+      "Cancel",
+      "取消"
+    ]
+  },
+  {
+    "name": "Config",
+    "desc": "配置",
+    "array": [
+      "Config",
+      "配置"
+    ]
+  },
+  {
+    "name": "Create",
+    "desc": "创建",
+    "array": [
+      "Create",
+      "创建"
+    ]
+  },
+  {
+    "name": "Confirm",
+    "desc": "确认",
+    "array": [
+      "Confirm",
+      "确认"
+    ]
+  },
+  {
+    "name": "Custom",
+    "desc": "自定义",
+    "array": [
+      "Custom",
+      "自定义"
+    ]
+  },
+  {
+    "name": "Current",
+    "desc": "当前",
+    "array": [
+      "Current",
+      "当前"
+    ]
+  },
+  {
+    "name": "Content",
+    "desc": "内容",
+    "array": [
+      "Content",
+      "内容"
+    ]
+  },
+  {
+    "name": "Compare",
+    "desc": "对比",
+    "array": [
+      "Compare",
+      "对比"
+    ]
+  },
+  {
+    "name": "Catalogue",
+    "desc": "目录",
+    "array": [
+      "Catalogue",
+      "目录"
+    ]
+  },
+  {
+    "name": "Consistency",
+    "desc": "一致的",
+    "array": [
+      "Consistency",
+      "一致"
+    ]
+  },
+  {
+    "name": "Component",
+    "desc": "组件",
+    "array": [
+      "Component",
+      "组件"
+    ]
+  },
+  {
+    "name": "Compression",
+    "desc": "压缩",
+    "array": [
+      "Compression",
+      "压缩"
+    ]
+  },
+  {
+    "name": "Done",
+    "desc": "完成",
+    "array": [
+      "Done",
+      "完成"
+    ]
+  },
+  {
+    "name": "Down",
+    "desc": "向下",
+    "array": [
+      "Down",
+      "向下"
+    ]
+  },
+  {
+    "name": "Doing",
+    "desc": "正在做",
+    "array": [
+      "Doing",
+      "正在做"
+    ]
+  },
+  {
+    "name": "Delete",
+    "desc": "删除",
+    "array": [
+      "Delete",
+      "删除"
+    ]
+  },
+  {
+    "name": "Details",
+    "desc": "详情",
+    "array": [
+      "Details",
+      "详情"
+    ]
+  },
+  {
+    "name": "Device",
+    "desc": "设备",
+    "array": [
+      "Device",
+      "设备"
+    ]
+  },
+  {
+    "name": "Display",
+    "desc": "显示",
+    "array": [
+      "Display",
+      "显示"
+    ]
+  },
+  {
+    "name": "Default",
+    "desc": "默认",
+    "array": [
+      "Default",
+      "默认"
+    ]
+  },
+  {
+    "name": "Different",
+    "desc": "不同、差异",
+    "array": [
+      "Different",
+      "不同"
+    ]
+  },
+  {
+    "name": "DrawCall",
+    "desc": "绘制次数",
+    "array": [
+      "DrawCall",
+      "绘制次数"
+    ]
+  },
+  {
+    "name": "Decryption",
+    "desc": "解密",
+    "array": [
+      "Decryption",
+      "解密"
+    ]
+  },
+  {
+    "name": "Description",
+    "desc": "描述",
+    "array": [
+      "Description",
+      "描述"
+    ]
+  },
+  {
+    "name": "End",
+    "desc": "结束",
+    "array": [
+      "End",
+      "结束"
+    ]
+  },
+  {
+    "name": "Error",
+    "desc": "错误",
+    "array": [
+      "Error",
+      "错误"
+    ]
+  },
+  {
+    "name": "Editor",
+    "desc": "编辑器",
+    "array": [
+      "Editor",
+      "编辑器"
+    ]
+  },
+  {
+    "name": "Effects",
+    "desc": "特效",
+    "array": [
+      "Effects",
+      "特效"
+    ]
+  },
+  {
+    "name": "Extract",
+    "desc": "提取",
+    "array": [
+      "Extract",
+      "提取"
+    ]
+  },
+  {
+    "name": "Encrypt",
+    "desc": "加密",
+    "array": [
+      "Encrypt",
+      "加密"
+    ]
+  },
+  {
+    "name": "EditorPrefs",
+    "desc": "编辑器数据存档",
+    "array": [
+      "Editor Prefs",
+      "编辑器数据存档"
+    ]
+  },
+  {
+    "name": "File",
+    "desc": "文件",
+    "array": [
+      "File",
+      "文件"
+    ]
+  },
+  {
+    "name": "Find",
+    "desc": "查找",
+    "array": [
+      "Find",
+      "查找"
+    ]
+  },
+  {
+    "name": "Force",
+    "desc": "强制",
+    "array": [
+      "Force",
+      "强制"
+    ]
+  },
+  {
+    "name": "Found",
+    "desc": "找到",
+    "array": [
+      "Found",
+      "找到"
+    ]
+  },
+  {
+    "name": "Filtrate",
+    "desc": "筛选",
+    "array": [
+      "Filtrate",
+      "筛选"
+    ]
+  },
+  {
+    "name": "Framework",
+    "desc": "框架",
+    "array": [
+      "Framework",
+      "框架"
+    ]
+  },
+  {
+    "name": "GPU",
+    "desc": "计算器显卡、图形处理器",
+    "array": [
+      "GPU",
+      "显卡"
+    ]
+  },
+  {
+    "name": "Have",
+    "desc": "拥有、具备",
+    "array": [
+      "Have",
+      "拥有、具备"
+    ]
+  },
+  {
+    "name": "Hints",
+    "desc": "提示",
+    "array": [
+      "Hints",
+      "提示"
+    ]
+  },
+  {
+    "name": "Height",
+    "desc": "高度",
+    "array": [
+      "Height",
+      "高度"
+    ]
+  },
+  {
+    "name": "Holdon",
+    "desc": "继续、等一等",
+    "array": [
+      "Holdon",
+      "继续"
+    ]
+  },
+  {
+    "name": "Highlight",
+    "desc": "强调",
+    "array": [
+      "Highlight",
+      "强调"
+    ]
+  },
+  {
+    "name": "In",
+    "desc": "在...里",
+    "array": [
+      "In",
+      "在"
+    ]
+  },
+  {
+    "name": "Is",
+    "desc": "是",
+    "array": [
+      "Is",
+      "是"
+    ]
+  },
+  {
+    "name": "Id",
+    "desc": "标识id",
+    "array": [
+      "id",
+      "标识"
+    ]
+  },
+  {
+    "name": "Import",
+    "desc": "导入",
+    "array": [
+      "Import",
+      "导入"
+    ]
+  },
+  {
+    "name": "Information",
+    "desc": "信息",
+    "array": [
+      "Information",
+      "信息"
+    ]
+  },
+  {
+    "name": "Key",
+    "desc": "键",
+    "array": [
+      "Key",
+      "键"
+    ]
+  },
+  {
+    "name": "List",
+    "desc": "列表",
+    "array": [
+      "List",
+      "列表"
+    ]
+  },
+  {
+    "name": "Left",
+    "desc": "左边",
+    "array": [
+      "Left",
+      "左边"
+    ]
+  },
+  {
+    "name": "Lost",
+    "desc": "丢失",
+    "array": [
+      "Lost",
+      "丢失"
+    ]
+  },
+  {
+    "name": "Load",
+    "desc": "加载",
+    "array": [
+      "Load",
+      "加载"
+    ]
+  },
+  {
+    "name": "Layer",
+    "desc": "层",
+    "array": [
+      "Layer",
+      "层"
+    ]
+  },
+  {
+    "name": "Length",
+    "desc": "长、长度",
+    "array": [
+      "Length",
+      "长度"
+    ]
+  },
+  {
+    "name": "Language",
+    "desc": "语言",
+    "array": [
+      "Language",
+      "语言"
+    ]
+  },
+  {
+    "name": "Max",
+    "desc": "最大",
+    "array": [
+      "Max",
+      "最大"
+    ]
+  },
+  {
+    "name": "Mark",
+    "desc": "标记",
+    "array": [
+      "Mark",
+      "标记"
+    ]
+  },
+  {
+    "name": "More",
+    "desc": "更多",
+    "array": [
+      "More",
+      "更多"
+    ]
+  },
+  {
+    "name": "Match",
+    "desc": "匹配项",
+    "array": [
+      "Match",
+      "匹配项"
+    ]
+  },
+  {
+    "name": "Model",
+    "desc": "模型",
+    "array": [
+      "Model",
+      "模型"
+    ]
+  },
+  {
+    "name": "Missing",
+    "desc": "缺失",
+    "array": [
+      "Missing",
+      "缺失"
+    ]
+  },
+  {
+    "name": "Matrials",
+    "desc": "材质球",
+    "array": [
+      "Matrials",
+      "材质"
+    ]
+  },
+  {
+    "name": "Memory",
+    "desc": "内存",
+    "array": [
+      "Memory",
+      "内存"
+    ]
+  },
+  {
+    "name": "MoveUp",
+    "desc": "上移",
+    "array": [
+      "MoveUp",
+      "上移"
+    ]
+  },
+  {
+    "name": "MoveDown",
+    "desc": "下移",
+    "array": [
+      "MoveDown",
+      "下移"
+    ]
+  },
+  {
+    "name": "No",
+    "desc": "不",
+    "array": [
+      "No",
+      "不"
+    ]
+  },
+  {
+    "name": "Non",
+    "desc": "非",
+    "array": [
+      "Non",
+      "非"
+    ]
+  },
+  {
+    "name": "Not",
+    "desc": "没",
+    "array": [
+      "Not",
+      "没"
+    ]
+  },
+  {
+    "name": "Name",
+    "desc": "名称",
+    "array": [
+      "Name",
+      "名称"
+    ]
+  },
+  {
+    "name": "Namespace",
+    "desc": "命名空间",
+    "array": [
+      "Namespace",
+      "命名空间"
+    ]
+  },
+  {
+    "name": "Ok",
+    "desc": "好的",
+    "array": [
+      "Ok",
+      "好的"
+    ]
+  },
+  {
+    "name": "Or",
+    "desc": "或",
+    "array": [
+      "or",
+      "或"
+    ]
+  },
+  {
+    "name": "Of",
+    "desc": ".....的",
+    "array": [
+      "of",
+      "的"
+    ]
+  },
+  {
+    "name": "Open",
+    "desc": "打开",
+    "array": [
+      "Open",
+      "打开"
+    ]
+  },
+  {
+    "name": "Object",
+    "desc": "对象、物体",
+    "array": [
+      "Object",
+      "对象"
+    ]
+  },
+  {
+    "name": "Options",
+    "desc": "选项",
+    "array": [
+      "Options",
+      "选项"
+    ]
+  },
+  {
+    "name": "Overview",
+    "desc": "总览",
+    "array": [
+      "Overview",
+      "总览"
+    ]
+  },
+  {
+    "name": "Overwrite",
+    "desc": "覆写",
+    "array": [
+      "Overwrite",
+      "覆写"
+    ]
+  },
+  {
+    "name": "Operating",
+    "desc": "操作",
+    "array": [
+      "Operating",
+      "操作"
+    ]
+  },
+  {
+    "name": "Path",
+    "desc": "路径",
+    "array": [
+      "Path",
+      "路径"
+    ]
+  },
+  {
+    "name": "Pack",
+    "desc": "打包",
+    "array": [
+      "Pack",
+      "打包"
+    ]
+  },
+  {
+    "name": "Prefab",
+    "desc": "预制件",
+    "array": [
+      "Prefab",
+      "预制件"
+    ]
+  },
+  {
+    "name": "Project",
+    "desc": "项目",
+    "array": [
+      "Project",
+      "项目"
+    ]
+  },
+  {
+    "name": "Particle",
+    "desc": "粒子",
+    "array": [
+      "Particle",
+      "粒子"
+    ]
+  },
+  {
+    "name": "Position",
+    "desc": "位置",
+    "array": [
+      "Position",
+      "位置"
+    ]
+  },
+  {
+    "name": "Package",
+    "desc": "包",
+    "array": [
+      "Package",
+      "包"
+    ]
+  },
+  {
+    "name": "Progress",
+    "desc": "进度",
+    "array": [
+      "Progress",
+      "进度"
+    ]
+  },
+  {
+    "name": "PlayerPrefs",
+    "desc": "游戏存档",
+    "array": [
+      "PlayerPrefs",
+      "游戏存档"
+    ]
+  },
+  {
+    "name": "Preferences",
+    "desc": "预设、偏好",
+    "array": [
+      "Preferences",
+      "预设"
+    ]
+  },
+  {
+    "name": "Query",
+    "desc": "查询",
+    "array": [
+      "Query",
+      "查询"
+    ]
+  },
+  {
+    "name": "Rely",
+    "desc": "依赖",
+    "array": [
+      "Rely",
+      "依赖"
+    ]
+  },
+  {
+    "name": "Root",
+    "desc": "根",
+    "array": [
+      "Root",
+      "根"
+    ]
+  },
+  {
+    "name": "Right",
+    "desc": "右边",
+    "array": [
+      "Right",
+      "右边"
+    ]
+  },
+  {
+    "name": "Reset",
+    "desc": "重置",
+    "array": [
+      "Reset",
+      "重置"
+    ]
+  },
+  {
+    "name": "Related",
+    "desc": "相关",
+    "array": [
+      "Related",
+      "相关"
+    ]
+  },
+  {
+    "name": "Refresh",
+    "desc": "刷新",
+    "array": [
+      "Refresh",
+      "刷新"
+    ]
+  },
+  {
+    "name": "Remove",
+    "desc": "去除、解除",
+    "array": [
+      "Remove",
+      "删除"
+    ]
+  },
+  {
+    "name": "Resource",
+    "desc": "资源",
+    "array": [
+      "Resource",
+      "资源"
+    ]
+  },
+  {
+    "name": "Rendering",
+    "desc": "渲染",
+    "array": [
+      "Rendering",
+      "渲染"
+    ]
+  },
+  {
+    "name": "Resolution",
+    "desc": "分辨率",
+    "array": [
+      "Resolution",
+      "分辨率"
+    ]
+  },
+  {
+    "name": "Size",
+    "desc": "尺寸",
+    "array": [
+      "Size",
+      "尺寸"
+    ]
+  },
+  {
+    "name": "Sort",
+    "desc": "排序",
+    "array": [
+      "Sort",
+      "排序"
+    ]
+  },
+  {
+    "name": "Save",
+    "desc": "保存",
+    "array": [
+      "Save",
+      "保存"
+    ]
+  },
+  {
+    "name": "Score",
+    "desc": "分数",
+    "array": [
+      "Score",
+      "分数"
+    ]
+  },
+  {
+    "name": "Scene",
+    "desc": "场景",
+    "array": [
+      "Scene",
+      "场景"
+    ]
+  },
+  {
+    "name": "Script",
+    "desc": "脚本",
+    "array": [
+      "Script",
+      "脚本"
+    ]
+  },
+  {
+    "name": "Screen",
+    "desc": "屏幕",
+    "array": [
+      "Screen",
+      "屏幕"
+    ]
+  },
+  {
+    "name": "Select",
+    "desc": "选择",
+    "array": [
+      "Select",
+      "选择"
+    ]
+  },
+  {
+    "name": "System",
+    "desc": "系统",
+    "array": [
+      "System",
+      "系统"
+    ]
+  },
+  {
+    "name": "Simplex",
+    "desc": "单一的",
+    "array": [
+      "Simplex",
+      "单一的"
+    ]
+  },
+  {
+    "name": "Settings",
+    "desc": "设置",
+    "array": [
+      "Settings",
+      "设置"
+    ]
+  },
+  {
+    "name": "This",
+    "desc": "这个",
+    "array": [
+      "This",
+      "这个"
+    ]
+  },
+  {
+    "name": "Tips",
+    "desc": "提示、便签",
+    "array": [
+      "Tips",
+      "便签"
+    ]
+  },
+  {
+    "name": "Task",
+    "desc": "任务",
+    "array": [
+      "Task",
+      "任务"
+    ]
+  },
+    {
+    "name": "Tool",
+    "desc": "工具",
+    "array": [
+      "Tool",
+      "工具"
+    ]
+  },
+  {
+    "name": "Type",
+    "desc": "类型",
+    "array": [
+      "Type",
+      "类型"
+    ]
+  },
+  {
+    "name": "Title",
+    "desc": "标题",
+    "array": [
+      "Title",
+      "标题"
+    ]
+  },
+  {
+    "name": "Target",
+    "desc": "目标",
+    "array": [
+      "Target",
+      "目标"
+    ]
+  },
+  {
+    "name": "Texture",
+    "desc": "材质、贴图",
+    "array": [
+      "Texture",
+      "纹理贴图"
+    ]
+  },
+  {
+    "name": "Timeout",
+    "desc": "超时",
+    "array": [
+      "Timeout",
+      "超时"
+    ]
+  },
+  {
+    "name": "Triangular",
+    "desc": "三角面",
+    "array": [
+      "Triangular",
+      "三角面"
+    ]
+  },
+  {
+    "name": "Up",
+    "desc": "向上",
+    "array": [
+      "Up",
+      "向上"
+    ]
+  },
+  {
+    "name": "User",
+    "desc": "用户",
+    "array": [
+      "User",
+      "用户"
+    ]
+  },
+  {
+    "name": "Under",
+    "desc": "之下",
+    "array": [
+      "Under",
+      "之下"
+    ]
+  },
+  {
+    "name": "Unload",
+    "desc": "卸载",
+    "array": [
+      "Unload",
+      "卸载"
+    ]
+  },
+  {
+    "name": "Value",
+    "desc": "值",
+    "array": [
+      "Value",
+      "值"
+    ]
+  },
+  {
+    "name": "Vertex",
+    "desc": "顶点数",
+    "array": [
+      "Vertex",
+      "顶点数"
+    ]
+  },
+  {
+    "name": "Vendor",
+    "desc": "供应商",
+    "array": [
+      "Vendor",
+      "供应商"
+    ]
+  },
+  {
+    "name": "Version",
+    "desc": "版本",
+    "array": [
+      "Version",
+      "版本"
+    ]
+  },
+  {
+    "name": "Width",
+    "desc": "宽度",
+    "array": [
+      "Width",
+      "宽度"
+    ]
+  },
+  {
+    "name": "Yes",
+    "desc": "是的",
+    "array": [
+      "Yes",
+      "是的"
+    ]
+  },
+  {
+    "name": "SC_AtlasExistInCollection",
+    "desc": "当前收集器中已经存在图集，请检查！",
+    "array": [
+      "Atlas already exists in the current collector. Check it!",
+      "当前收集器中已经存在图集，请检查！"
+    ]
+  },
+  {
+    "name": "SC_AtlasExistAlsoOverwrite",
+    "desc": "图集已存在，是否覆盖？",
+    "array": [
+      "Atlas already exists. Whether to overwrite?",
+      "  图集已存在，是否覆盖？"
+    ]
+  },
+  {
+    "name": "Ppe_ImportHint",
+    "desc": "存档数据 - 导入提示",
+    "array": [
+      "Import PlayerPrefs from another project.\\nAlso useful if you change product or company name",
+      "从另一个项目导入存储数据。\\n如果你更换了公司或产品，填写下边的信息将对你很有帮助。"
+    ]
+  },
+  {
+    "name": "Ppe_DeleteAllHint",
+    "desc": "存档数据 - 删除全部的提示",
+    "array": [
+      "Are you sure you want to delete all preferences?",
+      "你确定你想要删除全部存档预设？"
+    ]
+  },
+  {
+    "name": "Ppe_CreateCustomHint",
+    "desc": "存档数据 - 创建自定义提示",
+    "array": [
+      "Generate a script file in your project specifying a unique key to use.",
+      "在项目中生成一个脚本文件，指定要使用的唯一密钥。"
+    ]
+  },
+  {
+    "name": "Stw_RecurseDependencies",
+    "desc": "递归查找, 资源过多时非常慢。",
+    "array": [
+      "Recurse Dependencies.    (Warning: Very slow with too many resources)",
+      "递归查找, 资源过多时非常慢。"
+    ]
+  }
+]

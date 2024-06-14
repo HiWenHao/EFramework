@@ -23,8 +23,7 @@ namespace EasyFramework.Edit
         [MenuItem("EFTools/Other Tools/Excel To Byte File", false, 20000)]
         private static void StartETB()
         {
-            string _path = Application.dataPath.Substring(0, Application.dataPath.IndexOf("Assets"));            
-            StartEXE(_path + "ExcelToByteFIle", "ExcelToByteFile.exe");
+            StartEXE(Application.dataPath + "/../../Tools/ExcelToByteFIle", "ExcelToByteFile.exe");
         }
 
         /// <summary>

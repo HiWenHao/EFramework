@@ -66,16 +66,16 @@ namespace EasyFramework.Edit.PathConfig
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
             EditorGUILayout.Space(20);
 
-            EditorGUILayout.LabelField($"--------------- {LC.Language.UnderProjectPath} ---------------", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
-            SelectionFolderPath(LC.Language.FrameworkPath, LC.Language.PathSelect, m_FrameworkPath);
-            SelectionFolderPath(LC.Language.AtlasSavePath, LC.Language.PathSelect, m_AtlasFolder);
-            SelectionFolderPath(LC.Language.DefaultUIPrefabSavePath, LC.Language.PathSelect, m_UIPrefabPath);
-            SelectionFolderPath(LC.Language.DefaultUICodeSavePath, LC.Language.PathSelect, m_UICodePath);
-            SelectionFolderPath(LC.Language.AnimatorExtractPath, LC.Language.PathSelect, m_ExtractPath);
+            EditorGUILayout.LabelField($"--------------- {LC.Combine("In", "Project", "Path", "Under")} ---------------", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
+            SelectionFolderPath(LC.Combine("Framework","Path"), m_FrameworkPath);
+            SelectionFolderPath(LC.Combine("Atlas", "Save", "Path"), m_AtlasFolder);
+            SelectionFolderPath(LC.Combine("Default") + "UI" + LC.Combine("Prefab", "Save", "Path"), m_UIPrefabPath);
+            SelectionFolderPath(LC.Combine("Default") + "UI" + LC.Combine("Code", "Save", "Path"), m_UICodePath);
+            SelectionFolderPath(LC.Combine("Animat", "Extract", "Path"), m_ExtractPath);
 
-            EditorGUILayout.LabelField($"--------------- {LC.Language.NonProjectPath} ---------------", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
-            SelectionEXEPath(LC.Language.SublimePath, LC.Language.PathSelect, new string[] { "sublime_text", "subl" }, m_SublimePath);
-            SelectionEXEPath(LC.Language.NotepadPath, LC.Language.PathSelect, new string[] { "notepad" }, m_NotepadPath);
+            EditorGUILayout.LabelField($"--------------- {LC.Combine("Non", "Project", "Path")} ---------------", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
+            SelectionEXEPath("Sublime" + LC.Combine("Path"), new string[] { "sublime_text", "subl" }, m_SublimePath);
+            SelectionEXEPath("Notepad" + LC.Combine("Path"), new string[] { "notepad" }, m_NotepadPath);
 
             if (!changeCheckScope.changed) return;
             m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
@@ -84,17 +84,17 @@ namespace EasyFramework.Edit.PathConfig
             AssetDatabase.Refresh();
         }
 
-        void SelectionEXEPath(string label, string btnLabel, string[] containsName, SerializedProperty property)
+        void SelectionEXEPath(string label, string[] containsName, SerializedProperty property)
         {
             EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(property.stringValue);
-            if (GUILayout.Button(btnLabel, GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
                 if (!Directory.Exists(folder))
                     folder = Application.dataPath;
-                string path = EditorUtility.OpenFilePanel(btnLabel, folder, "exe");
+                string path = EditorUtility.OpenFilePanel(LC.Combine("Path", "Select"), folder, "exe");
                 if (!string.IsNullOrEmpty(path))
                 {
                     bool _exit = false;
@@ -109,26 +109,26 @@ namespace EasyFramework.Edit.PathConfig
                     if (_exit)
                         property.stringValue = path;
                     else
-                        EditorUtility.DisplayDialog(LC.Language.PathSelecteError, LC.Language.PathSelecteErrorContent, LC.Language.Ok);
+                        EditorUtility.DisplayDialog(LC.Combine("Path", "Select", "Error"), LC.Combine("Path", "Select", "Error", "Count"), LC.Combine("Ok"));
                 }
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
         }
 
-        void SelectionFolderPath(string label, string btnLabel, SerializedProperty property)
+        void SelectionFolderPath(string label, SerializedProperty property)
         {
             EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.DelayedTextField(property.stringValue);
-            if (GUILayout.Button(btnLabel, GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
                 }
-                string path = EditorUtility.OpenFolderPanel(btnLabel, folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     if (path.Equals(Application.dataPath))

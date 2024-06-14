@@ -38,12 +38,12 @@ namespace EasyFramework.Windows.AssetChecker
 
             ObjectInfoList = new string[]
             {
-                LC.Combine(LC.Language.Effects, LC.Language.Name),
-                LC.Language.ResourceType,
+                LC.Combine("Effects", "Name"),
+                LC.Combine("Resource", "Type"),
                 "DrawCall",
-                LC.Language.Texture + LC.Language.Count,
-                LC.Language.Particle + LC.Language.Count,
-                LC.Language.Score
+                LC.Combine("Texture", "Count"),
+                LC.Combine("Particle", "Count"),
+                LC.Combine("Score"),
             };
             base.Initialize();
         }
@@ -126,7 +126,7 @@ namespace EasyFramework.Windows.AssetChecker
                 for (int i = 0; i < childFiles.Length; i++)
                 {
                     _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Language.Holdon, LC.Language.BeingProcessed, _curFileIndex / _count);
+                    EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("BeingProcessed"), _curFileIndex / _count);
                     EffectInformation _effect = ParseEffectAsset(childFiles[i]);
                     _effect.AssetDesc = msb.AssetDesc;
 

@@ -33,7 +33,7 @@ namespace EasyFramework.Windows.AssetChecker
         /// <summary>
         /// 标签
         /// </summary>
-        protected string[] Tabs = new string[] { LC.Language.Overview, LC.Language.Settings, };
+        protected string[] Tabs = new string[] { LC.Combine("Overview"), LC.Combine("Settings"), };
 
         /// <summary>
         /// 筛选器
@@ -99,10 +99,10 @@ namespace EasyFramework.Windows.AssetChecker
             }
 
             EditorGUILayout.Separator();
-            GUILayout.Label(LC.Combine(LC.Language.File, LC.Language.Details));
+            GUILayout.Label(LC.Combine("File", "Details"));
             EditorGUILayout.BeginHorizontal();
             {
-                GUILayout.Label($"{LC.Language.Filtrate}: ");
+                GUILayout.Label($"{LC.Combine("Filtrate")}: ");
                 FiltrateIndex = EditorGUILayout.Popup(FiltrateIndex, Filtrates);
                 if (m_OldFiltrateIndex != FiltrateIndex)
                 {
@@ -111,13 +111,13 @@ namespace EasyFramework.Windows.AssetChecker
                 }
 
                 if (0 != ListCount)
-                    GUILayout.Label($"{LC.Language.Count}: {ListCount}");
+                    GUILayout.Label($"{LC.Combine("Count")}: {ListCount}");
 
                 GUILayout.FlexibleSpace();
 
                 BeforeTheRefreshButton();
 
-                if (GUILayout.Button(LC.Language.Refresh, GUILayout.Width(80)))
+                if (GUILayout.Button(LC.Combine("Refresh"), GUILayout.Width(80)))
                 {
                     m_ScrollPos = Vector2.zero;
                     Refresh();

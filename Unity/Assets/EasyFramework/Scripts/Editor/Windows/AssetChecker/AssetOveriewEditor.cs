@@ -66,10 +66,10 @@ namespace EasyFramework.Windows.AssetChecker
         {
             int _newTab = m_TabIndex;
             GUILayout.BeginHorizontal();
-            if (GUILayout.Toggle(_newTab == 0, LC.Language.Texture, "ButtonLeft")) _newTab = 0;
-            if (GUILayout.Toggle(_newTab == 1, LC.Language.Model, "ButtonMid")) _newTab = 1;
-            if (GUILayout.Toggle(_newTab == 2, LC.Language.Effects, "ButtonMid")) _newTab = 2;
-            if (GUILayout.Toggle(_newTab == 3, LC.Language.Settings, "ButtonRight")) _newTab = 3;
+            if (GUILayout.Toggle(_newTab == 0, LC.Combine("Texture"), "ButtonLeft")) _newTab = 0;
+            if (GUILayout.Toggle(_newTab == 1, LC.Combine("Model"), "ButtonMid")) _newTab = 1;
+            if (GUILayout.Toggle(_newTab == 2, LC.Combine("Effects"), "ButtonMid")) _newTab = 2;
+            if (GUILayout.Toggle(_newTab == 3, LC.Combine("Settings"), "ButtonRight")) _newTab = 3;
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
