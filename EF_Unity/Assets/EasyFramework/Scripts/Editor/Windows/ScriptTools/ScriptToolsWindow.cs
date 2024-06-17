@@ -50,7 +50,7 @@ namespace EasyFramework.Windows
 
             GUIStyle m_buttonStyle;
 
-            [MenuItem("EFTools/Assets/Script Tools &F", priority = 10)]
+            [MenuItem("EFTools/Assets/Script Tools", priority = 10)]
             private static void OpenWindow()
             {
                 ScriptToolsWindow window = GetWindow<ScriptToolsWindow>(false, "Script Tools");
