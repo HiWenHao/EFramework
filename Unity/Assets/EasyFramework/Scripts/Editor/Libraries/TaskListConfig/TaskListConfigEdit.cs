@@ -33,20 +33,8 @@ namespace EasyFramework.Edit.TaskList
         GUIStyle m_TaskTitleMarkStyle;
         GUIStyle m_HighlightMarkStyle;
 
-        readonly Color[] m_ContentColors = new Color[]
-        {
-            Color.yellow,
-            Color.green,
-            Color.red,
-            Color.gray
-        };
-        readonly string[] UIPopupContents = new string[]
-        {
-            LC.Combine("Doing"),
-            LC.Combine("Done"),
-            LC.Combine("Timeout"),
-            LC.Combine("Abandon")
-        };
+        Color[] m_ContentColors;
+        string[] UIPopupContents;
 
         private void Awake()
         {
@@ -77,7 +65,20 @@ namespace EasyFramework.Edit.TaskList
                 wordWrap = true
             };
 
-            //UIPopupContents;
+            UIPopupContents = new string[]
+            {
+                LC.Combine("Doing"),
+                LC.Combine("Done"),
+                LC.Combine("Timeout"),
+                LC.Combine("Abandon")
+            };
+            m_ContentColors = new Color[]
+            {
+                Color.yellow,
+                Color.green,
+                Color.red,
+                Color.gray
+            };
         }
 
         private void OnEnable()

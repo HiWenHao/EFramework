@@ -8,11 +8,9 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using System;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Edit
 {
@@ -27,7 +25,7 @@ namespace EasyFramework.Edit
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="assetsPath">资源路径</param>
-        public static T GetSingletonAssetsByResources<T>(string assetsPath) where T : ScriptableObject, new()
+        public static T GetSingletonAssetsByResources<T>(string assetsPath) where T : ScriptableObject
         {
             string assetType = typeof(T).Name;
 #if UNITY_EDITOR
@@ -38,7 +36,7 @@ namespace EasyFramework.Edit
                 {
                     D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {UnityEditor.AssetDatabase.GUIDToAssetPath(assetPath)}");
                 }
-                throw new Exception($"Not allow has multi type. 不能有多个 {assetType}");
+                D.Exception($"Not allow has multi type. 不能有多个 {assetType}");
             }
 #endif
             T customGlobalSettings = Resources.Load<T>(assetsPath);

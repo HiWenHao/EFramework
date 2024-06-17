@@ -28,20 +28,12 @@ namespace EasyFramework.Edit
     /// </summary>
     internal static class LC
     {
-        static bool m_init;
         static int m_currentIndex;
         static string m_Separator;
         static Dictionary<string, List<string>> m_Dictionary;
 
         static void LoadLanguage()
         {
-            if (!m_init)
-            {
-                m_init = true;
-                m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-
-            }
-
             if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
             {
                 if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
@@ -53,6 +45,7 @@ namespace EasyFramework.Edit
 
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
+                m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 JsonData _jd = JsonMapper.ToObject(File.ReadAllText($"{ProjectUtility.Path.FrameworkPath}/EFAssets/Configs/languages.json"));
                 m_Dictionary = new Dictionary<string, List<string>>();
                 m_Dictionary.Clear();
@@ -114,7 +107,10 @@ namespace EasyFramework.Edit
             {
                 File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs"));
                 File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs.meta"));
-                File.Copy(Path.Combine(_path, $"{_nameNext}~/LanguagAttribute.cs"), Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs"));
+                if (!File.Exists(Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs")))
+                {
+                    File.Copy(Path.Combine(_path, $"{_nameNext}~/LanguagAttribute.cs"), Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs"));
+                }
             }
             catch (Exception ex)
             {
