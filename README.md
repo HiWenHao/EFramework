@@ -24,6 +24,16 @@ Microsoft Visual Studio Professional 2022
 **[YooAsset](https://github.com/tuyoogame/YooAsset)**   
   YooAsset是一套用于Unity3D的资源管理系统，用于帮助研发团队快速部署和交付游戏。   
   它可以满足商业化游戏的各类需求，并且经历多款百万DAU游戏产品的验证   
-   
-**[HybridCLR](https://github.com/focus-creative-games/hybridclr)**   
-    一个特性完整、零成本、高性能、低内存的近乎完美的Unity全平台原生c#热更方案   
+
+
+***[代码哲学](https://code-philosophy.com)***
+  让开发者专注于创造更有乐趣的游戏
+  下边两个都是源自于该公司，提升自我技术、期待有一天可以加入他们！
+
+  **[HybridCLR](https://github.com/focus-creative-games/hybridclr)**   
+      一个特性完整、零成本、高性能、低内存的近乎完美的Unity全平台原生c#热更方案     
+     
+  **[Luban](https://luban.doc.code-philosophy.com)**   
+      一个强大、易用、优雅、稳定的游戏配置解决方案
+
+    
