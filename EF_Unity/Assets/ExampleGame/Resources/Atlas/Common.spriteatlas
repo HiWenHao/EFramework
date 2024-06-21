@@ -48,6 +48,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a174c0d85530bc745b591ad14356fd33, type: 3}
   - {fileID: 21300000, guid: 0cae4f1a4619cbf4f8bc6980d6f8e046, type: 3}
   - {fileID: 21300000, guid: 3336723d37a4bdb45a3f2f4cde9146f3, type: 3}
+  - {fileID: 21300000, guid: 18e6e74e7e5d742ba8d9c60cc08fb40d, type: 3}
   m_PackedSpriteNamesToIndex:
   - CommonArrow_01
   - CommonArrows
@@ -58,6 +59,7 @@ SpriteAtlas:
   - CommonCircleBorder
   - CommonCircle
   - CommonArrow_02
+  - CommonLoding
   m_RenderDataMap: {}
   m_Tag: Common
   m_IsVariant: 0

@@ -11,6 +11,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -37,6 +39,7 @@ namespace EasyFramework.Edit.Setting
         private SerializedProperty m_ResourcesArea;
         private SerializedProperty m_AppConstConfig;
         private SerializedProperty m_RendererPipline;
+        private SerializedProperty m_AppConstManagerList;
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
@@ -48,19 +51,44 @@ namespace EasyFramework.Edit.Setting
             m_ResourcesArea = m_SettingPanel.FindProperty("m_ResourcesArea");
             m_AppConstConfig = m_SettingPanel.FindProperty("m_AppConst");
             m_RendererPipline = m_SettingPanel.FindProperty("m_RendererPipline");
+            m_AppConstManagerList = m_AppConstConfig.FindPropertyRelative("m_ManagerLevel");
 
-            var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
-            var m = type.GetMethod("GetUserInfo");
-            var instance = type.GetProperty("instance");
-            var userInfo = m.Invoke(instance.GetValue(null), null);
-            var _type = userInfo.GetType();
-            var p = _type.GetProperty("displayName");
-            m_EditorUser = (string)p.GetValue(userInfo);
+            var _Type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
+            MethodInfo m = _Type.GetMethod("GetUserInfo");
+            PropertyInfo instance = _Type.GetProperty("instance");
+            var _userInfo = m.Invoke(instance.GetValue(null), null);
+            var _type = _userInfo.GetType();
+            PropertyInfo _p = _type.GetProperty("displayName");
+            m_EditorUser = (string)_p.GetValue(_userInfo);
 
             m_languageIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             m_LanguageIndex.intValue = m_languageIndex;
             m_rendererPipline = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
             m_RendererPipline.intValue = m_rendererPipline;
+
+
+            List<string> _managerNameList = new List<string>();
+            for (int i = 0; i < m_AppConstManagerList.arraySize; i++)
+            {
+                _managerNameList.Add(m_AppConstManagerList.GetArrayElementAtIndex(i).stringValue);
+            }
+
+            bool _changed = false;
+            TypeCache.TypeCollection _collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
+            for (int i = 0; i < _collection.Count; i++)
+            {
+                if (!_managerNameList.Contains(_collection[i].Name))
+                {
+                    _changed = true;
+                    int _cot = _managerNameList.Count;
+                    m_AppConstManagerList.InsertArrayElementAtIndex(_cot);
+                    m_AppConstManagerList.GetArrayElementAtIndex(_cot).stringValue = _collection[i].Name;
+                }
+            }
+            if (_changed)
+            {
+                m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
 
         public override void OnGUI(string searchContext)
@@ -89,6 +117,8 @@ namespace EasyFramework.Edit.Setting
             EditorGUILayout.PropertyField(m_AppConstConfig);
             EditorGUILayout.PropertyField(m_ResourcesArea);
             EditorGUILayout.Space(20);
+
+
             if (!changeCheckScope.changed) return;
             m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
         }

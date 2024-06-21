@@ -227,13 +227,12 @@ namespace EasyFramework.Edit.Setting
             "TimeManager",
             "ToolManager",
             "EventManager",
-            "HttpManager",
+            "HttpsManager",
             "SocketManager",
             "FolderManager",
             "LoadManager",
-            "SceneManager",
+            "ScenesManager",
             "AudioManager",
-            "PatchManager",
             "UIManager",
         };
         public List<string> ManagerLevels => m_ManagerLevel;

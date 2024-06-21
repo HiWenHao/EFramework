@@ -35,6 +35,7 @@ namespace EasyFramework.Edit.AutoBind
         private SerializedProperty m_PrefabPath;
         private SerializedProperty m_CreatePrefab;
         private SerializedProperty m_DeleteScript;
+        private SerializedProperty m_PackUpBindList;
 
         private AutoBindSetting m_Setting;
 
@@ -57,6 +58,7 @@ namespace EasyFramework.Edit.AutoBind
             m_ComCodePath = serializedObject.FindProperty("m_ComCodePath");
             m_CreatePrefab = serializedObject.FindProperty("m_CreatePrefab");
             m_DeleteScript = serializedObject.FindProperty("m_DeleteScript");
+            m_PackUpBindList = serializedObject.FindProperty("m_PackUpBindList");
             m_SortByNameLength = serializedObject.FindProperty("m_SortByNameLength");
 
             m_Namespace.stringValue = string.IsNullOrEmpty(m_Namespace.stringValue) ? m_Setting.Namespace : m_Namespace.stringValue;
@@ -69,6 +71,7 @@ namespace EasyFramework.Edit.AutoBind
             m_TempComponentTypeNames = new List<string>();
             m_ComponentsName = new Dictionary<string, int>();
 
+            m_PackUpBindList.boolValue = true;
             m_sortByType = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
             m_sortByNameLength = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             m_SortByType.boolValue = m_sortByType;
@@ -126,8 +129,9 @@ namespace EasyFramework.Edit.AutoBind
             EditorGUILayout.Space(12f, true);
 
             m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ?
-                LC.Combine("No", "Create") + " UI " + LC.Combine("Prefab", "Save", "Path") : 
-                LC.Combine("Create") + " UI " + LC.Combine("Prefab", "Save", "Path"));
+                LC.Combine("Create") + " UI " + LC.Combine("Prefab") : 
+                LC.Combine("No", "Create") + " UI " + LC.Combine("Prefab"))
+                ;
             if (m_CreatePrefab.boolValue)
             {
                 EditorGUILayout.LabelField(m_PrefabPath.stringValue);
@@ -211,34 +215,38 @@ namespace EasyFramework.Edit.AutoBind
         {
             int needDeleteIndex = -1;
 
-            EditorGUILayout.BeginVertical();
-            SerializedProperty property;
-
-            for (int i = 0; i < m_BindDatas.arraySize; i++)
+            m_PackUpBindList.boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(m_PackUpBindList.boolValue, m_PackUpBindList.boolValue ? LC.Combine("Close", "List") : LC.Combine("Open", "List"));
+            if (m_PackUpBindList.boolValue)
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
-                property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("ScriptName");
-                EditorGUILayout.PrefixLabel(property.stringValue);
-                property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
-                property.objectReferenceValue = EditorGUILayout.ObjectField(property.objectReferenceValue, typeof(Component), true);
+                EditorGUILayout.BeginVertical();
+                SerializedProperty property;
 
-                if (GUILayout.Button("X"))
+                for (int i = 0; i < m_BindDatas.arraySize; i++)
                 {
-                    //将元素下标添加进删除list
-                    needDeleteIndex = i;
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
+                    property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("ScriptName");
+                    EditorGUILayout.PrefixLabel(property.stringValue);
+                    property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
+                    property.objectReferenceValue = EditorGUILayout.ObjectField(property.objectReferenceValue, typeof(Component), true);
+
+                    if (GUILayout.Button("X"))
+                    {
+                        //将元素下标添加进删除list
+                        needDeleteIndex = i;
+                    }
+                    EditorGUILayout.EndHorizontal();
                 }
-                EditorGUILayout.EndHorizontal();
-            }
 
-            //删除data
-            if (needDeleteIndex != -1)
-            {
-                m_BindDatas.DeleteArrayElementAtIndex(needDeleteIndex);
-                SyncBindComs();
-            }
+                //删除data
+                if (needDeleteIndex != -1)
+                {
+                    m_BindDatas.DeleteArrayElementAtIndex(needDeleteIndex);
+                    SyncBindComs();
+                }
 
-            EditorGUILayout.EndVertical();
+                EditorGUILayout.EndVertical();
+            }
         }
 
         /// <summary>

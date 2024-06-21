@@ -35,11 +35,10 @@ MonoBehaviour:
     - TimeManager
     - ToolManager
     - EventManager
-    - HttpManager
+    - HttpsManager
     - SocketManager
     - FolderManager
     - LoadManager
-    - SceneManager
+    - ScenesManager
     - AudioManager
-    - PatchManager
     - UIManager

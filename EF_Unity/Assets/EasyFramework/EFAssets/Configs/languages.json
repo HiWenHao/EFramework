@@ -176,6 +176,14 @@
     ]
   },
   {
+    "name": "Close",
+    "desc": "关闭",
+    "array": [
+      "Close",
+      "关闭"
+    ]
+  },
+  {
     "name": "Count",
     "desc": "数量",
     "array": [

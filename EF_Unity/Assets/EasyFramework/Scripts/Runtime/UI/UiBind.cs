@@ -57,6 +57,9 @@ namespace EasyFramework.UI
         private string m_PrefabPath;
 
         [SerializeField]
+        private bool m_PackUpBindList;
+
+        [SerializeField]
         private bool m_SortByType;
 
         [SerializeField]
