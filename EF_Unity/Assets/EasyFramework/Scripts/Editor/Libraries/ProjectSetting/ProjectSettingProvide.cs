@@ -114,7 +114,27 @@ namespace EasyFramework.Edit.Setting
             EditorGUILayout.LabelField(LC.Combine("Editor", "User"), m_EditorUser);
             m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Author"), m_ScriptAuthor.stringValue);
             m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Version"), m_ScriptVersion.stringValue);
+
             EditorGUILayout.PropertyField(m_AppConstConfig);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(LC.Combine("Reset", "Project", "Settings")))
+            {
+                ResetManagerLevel();
+
+                string _name = Application.dataPath.Split('/')[^2];
+                m_AppConstConfig.FindPropertyRelative("m_AppName").stringValue = _name;
+                m_AppConstConfig.FindPropertyRelative("m_AppPrefix").stringValue = _name + "_";
+                m_AppConstConfig.FindPropertyRelative("m_AppVersion").stringValue = "1.0";
+                m_AppConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
+                m_AppConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
+            }
+            if (GUILayout.Button(LC.Combine("Only", "Reset", "Manager", "Level")))
+            {
+                ResetManagerLevel();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(6);
             EditorGUILayout.PropertyField(m_ResourcesArea);
             EditorGUILayout.Space(20);
 
@@ -212,6 +232,29 @@ namespace EasyFramework.Edit.Setting
             }
 
             File.WriteAllLines(_uiPath, _contentsArray);
+        }
+
+        /// <summary>
+        /// 重置管理者级别
+        /// </summary>
+        private void ResetManagerLevel()
+        {
+            m_AppConstManagerList.ClearArray();
+            for (int i = 0; i < 10; i++)
+            {
+                m_AppConstManagerList.InsertArrayElementAtIndex(0);
+            }
+            m_AppConstManagerList.GetArrayElementAtIndex(0).stringValue = "TimeManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(1).stringValue = "ToolManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(2).stringValue = "EventManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(3).stringValue = "HttpsManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(4).stringValue = "SocketManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(5).stringValue = "FolderManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(6).stringValue = "LoadManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(7).stringValue = "ScenesManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
+            m_AppConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
+
         }
     }
 }

@@ -114,14 +114,18 @@ public partial class EF : MonoBehaviour
     public static void Register(IManager item)
     {
         ManagerCount++;
-        int mgr = item.ManagerLevel;
-        if (ManagerList.Count == 0)
+
+        int _level = Projects.AppConst.ManagerLevels.IndexOf(item.GetType().Name);
+
+        if (_level == -1 || ManagerList.Count == 0)
+        {
             ManagerList.Add(item);
+        }
         else
         {
             for (int i = ManagerList.Count - 1; i >= 0; i--)
             {
-                if (ManagerList[i].ManagerLevel < mgr)
+                if (_level > Projects.AppConst.ManagerLevels.IndexOf(ManagerList[i].GetType().Name))
                 {
                     ManagerList.Insert(i + 1, item);
                     break;
@@ -142,7 +146,8 @@ public partial class EF : MonoBehaviour
             {
                 for (int i = ManageUpdater.Count - 1; i >= 0; i--)
                 {
-                    if ((ManageUpdater[i] as IManager).ManagerLevel < mgr)
+                    
+                    if (_level > Projects.AppConst.ManagerLevels.IndexOf(ManageUpdater[i].GetType().Name))
                     {
                         ManageUpdater.Insert(i + 1, item as IUpdate);
                         break;
@@ -166,7 +171,7 @@ public partial class EF : MonoBehaviour
     {
         if (item is IManager)
         {
-            EasyFramework.D.Error("You should not unregister this singleton, bescause is a manager.");
+            D.Error("You should not unregister this singleton, bescause is a manager.");
             return;
         }
         --SingletonsCount;

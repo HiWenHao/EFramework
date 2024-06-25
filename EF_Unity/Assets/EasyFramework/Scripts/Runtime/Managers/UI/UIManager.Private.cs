@@ -22,17 +22,6 @@ namespace EasyFramework.Managers
 {
     public partial class UIManager : Singleton<UIManager>, IManager, IUpdate
     {
-        int m_managerLevel = -99;
-        int IManager.ManagerLevel
-        {
-            get
-            {
-                if (m_managerLevel < -1)
-                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
-                return m_managerLevel;
-            }
-        }
-
         private readonly string pageBaseObjectName = "UIPages";
         private readonly string showBoxBaseObjectName = "UIShowBox";
         private Transform m_target, pageBaseObject, showBoxBaseObject;

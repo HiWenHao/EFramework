@@ -22,17 +22,6 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ToolManager : Singleton<ToolManager>, IManager
     {
-        int m_managerLevel = -99;
-        int IManager.ManagerLevel
-        {
-            get
-            {
-                if (m_managerLevel < -1)
-                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
-                return m_managerLevel;
-            }
-        }
-
         void ISingleton.Init()
         {
             m_screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);

@@ -23,17 +23,6 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ScenesManager : Singleton<ScenesManager>, IManager
     {
-        int m_managerLevel = -99;
-        int IManager.ManagerLevel
-        {
-            get
-            {
-                if (m_managerLevel < -1)
-                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
-                return m_managerLevel;
-            }
-        }
-
         bool m_bol_IsLoading;
 		float m_flt_transition = 1.0f;
 

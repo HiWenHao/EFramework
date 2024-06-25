@@ -19,17 +19,6 @@ namespace EasyFramework.Managers
     /// </summary>
     public class LoadManager : Singleton<LoadManager>, IManager
     {
-        int m_managerLevel = -99;
-        int IManager.ManagerLevel
-        {
-            get
-            {
-                if (m_managerLevel < -1)
-                    m_managerLevel = EF.Projects.AppConst.ManagerLevels.IndexOf(Name);
-                return m_managerLevel;
-            }
-        }
-
         private Dictionary<string, ResourcePackage> m_ResourcePackageList;
         void ISingleton.Init()
         {

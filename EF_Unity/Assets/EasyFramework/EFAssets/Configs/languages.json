@@ -624,6 +624,14 @@
     ]
   },
   {
+    "name": "Level",
+    "desc": "级别",
+    "array": [
+      "Level",
+      "级别"
+    ]
+  },
+  {
     "name": "Length",
     "desc": "长、长度",
     "array": [
@@ -685,6 +693,14 @@
     "array": [
       "Missing",
       "缺失"
+    ]
+  },
+  {
+    "name": "Manager",
+    "desc": "管理者",
+    "array": [
+      "Manager",
+      "管理者"
     ]
   },
   {
@@ -789,6 +805,14 @@
     "array": [
       "Open",
       "打开"
+    ]
+  },
+  {
+    "name": "Only",
+    "desc": "仅仅、只",
+    "array": [
+      "Only",
+      "只"
     ]
   },
   {
