@@ -1,6 +1,6 @@
 set WORKSPACE=../..
 set CONF_ROOT=.
-set UNITY_ASSETS_PATH=%WORKSPACE%\Unity\Assets\Luban
+set UNITY_ASSETS_PATH=%WORKSPACE%\EF_Unity\Assets\Luban
 set LUBAN_DLL=%CONF_ROOT%\LubanRelease\Luban.dll
 set LUBAN_CONFIG=%CONF_ROOT%\DataTables\luban.conf
 

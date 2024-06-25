@@ -9,13 +9,13 @@
 
 using Luban;
 
-namespace cfg
+namespace EasyFramework
 {
-public partial class Tables
+public partial class LC
 {
     public Example.TbItem TbItem {get; }
 
-    public Tables(System.Func<string, ByteBuf> loader)
+    public LC(System.Func<string, ByteBuf> loader)
     {
         TbItem = new Example.TbItem(loader("example_tbitem"));
         ResolveRef();

@@ -10,7 +10,7 @@
 using Luban;
 
 
-namespace cfg.Example
+namespace EasyFramework.Example
 {
 public partial class TbItem
 {
@@ -38,7 +38,7 @@ public partial class TbItem
     public Example.Item Get(int key) => _dataMap[key];
     public Example.Item this[int key] => _dataMap[key];
 
-    public void ResolveRef(Tables tables)
+    public void ResolveRef(LC tables)
     {
         foreach(var _v in _dataList)
         {

@@ -97,13 +97,13 @@ namespace EFExample
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);
 
-            var tablesCtor = typeof(cfg.Tables).GetConstructors()[0];
+            var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
             // 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
             System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
                 new System.Func<string, ByteBuf>(LoadByteBuf)
                 : new System.Func<string, JSONNode>(LoadJson);
-            cfg.Tables tables = (cfg.Tables)tablesCtor.Invoke(new object[] { loader });
+            EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
 
             foreach (var item in tables.TbItem.DataList)
             {

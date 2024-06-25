@@ -9,7 +9,7 @@
 
 
 
-namespace cfg.Example
+namespace EasyFramework.Example
 { 
     public enum EQuality
     {

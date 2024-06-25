@@ -10,7 +10,7 @@
 using Luban;
 
 
-namespace cfg.Example
+namespace EasyFramework.Example
 {
 public sealed partial class ItemExchange : Luban.BeanBase
 {
@@ -37,7 +37,7 @@ public sealed partial class ItemExchange : Luban.BeanBase
     public const int __ID__ = -530683750;
     public override int GetTypeId() => __ID__;
 
-    public  void ResolveRef(Tables tables)
+    public  void ResolveRef(LC tables)
     {
         
         
