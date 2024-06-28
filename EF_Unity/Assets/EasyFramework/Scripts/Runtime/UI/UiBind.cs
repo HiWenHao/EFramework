@@ -20,17 +20,6 @@ namespace EasyFramework.UI
         [Serializable]
         public class BindData
         {
-            public BindData()
-            {
-            }
-
-            public BindData(string realName, string scriptName, Component bindCom)
-            {
-                RealName = realName;
-                ScriptName = scriptName;
-                BindCom = bindCom;
-            }
-
             public string RealName;
             public string ScriptName;
             public Component BindCom;

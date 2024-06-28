@@ -527,7 +527,7 @@ namespace EasyFramework.Edit.AutoBind
             //codePath = Path.Combine(Application.dataPath, codePath);
             if (!Directory.Exists(codePath))
             {
-                D.Error($"生成{m_Builder.name}的代码保存路径{codePath}无效");
+                D.Exception($"生成{m_Builder.name}的代码保存路径{codePath}无效");
                 return;
             }
             codePath = $"{codePath}{m_Builder.name}";
@@ -537,9 +537,9 @@ namespace EasyFramework.Edit.AutoBind
             }
 
             int _btnIndex = -1;
-            bool _hasTmp = false;
             bool _hasButton = false;
             bool _hasOtherComs = false;
+            List<string> _namespace = new List<string>();
             List<string> _otherNameLst = new List<string>();
             List<string> _ButtonNameLst = new List<string>();
             List<string> _ButtonProNameLst = new List<string>();
@@ -549,11 +549,12 @@ namespace EasyFramework.Edit.AutoBind
             for (int i = 0; i < m_Builder.BindDatas.Count; i++)
             {
                 Type _type = m_Builder.BindDatas[i].BindCom.GetType();
-                if (!_hasTmp && (_type.Name.Contains("TMP_") || _type.Name.Contains("TMPrp_") || _type.Name.Equals("TextMeshPro")))
-                {
-                    _hasTmp = true;
-                }
-                else if (_type == typeof(ButtonPro))
+
+                string _ns = _type.Namespace;
+                if (!_namespace.Contains(_ns))
+                    _namespace.Add(_ns);
+
+                if (_type == typeof(ButtonPro))
                 {
                     _hasButton = true;
                     _ButtonProNameLst.Add(m_Builder.BindDatas[i].RealName);
@@ -579,13 +580,18 @@ namespace EasyFramework.Edit.AutoBind
                 using StreamWriter sw = new StreamWriter(filePath);
                 sw.WriteLine(GetFileHead());
 
-                sw.WriteLine("using EasyFramework;");
-                sw.WriteLine("using EasyFramework.UI;");
-                sw.WriteLine("using System.Collections.Generic;");
-                if (_hasTmp)
-                    sw.WriteLine("using TMPro;");
-                sw.WriteLine("using UnityEngine;");
-                sw.WriteLine("using UnityEngine.UI;");
+                sw.WriteLine("\nusing EasyFramework;");
+                if (!_namespace.Contains("EasyFramework.UI"))
+                    sw.WriteLine("using EasyFramework.UI;");
+
+                if (_hasButton)
+                    sw.WriteLine("using System.Collections.Generic;");
+
+                if (!_namespace.Contains("UnityEngine"))
+                    sw.WriteLine("using UnityEngine;");
+
+                for (int i = 0; i < _namespace.Count; i++)
+                    sw.WriteLine($"using {_namespace[i]};");
 
                 if (!string.IsNullOrEmpty(m_Builder.Namespace))
                     sw.WriteLine($"\nnamespace {m_Builder.Namespace}" + "\n{");

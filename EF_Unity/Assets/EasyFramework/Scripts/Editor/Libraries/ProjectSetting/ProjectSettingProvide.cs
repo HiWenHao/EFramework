@@ -66,29 +66,7 @@ namespace EasyFramework.Edit.Setting
             m_rendererPipline = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
             m_RendererPipline.intValue = m_rendererPipline;
 
-
-            List<string> _managerNameList = new List<string>();
-            for (int i = 0; i < m_AppConstManagerList.arraySize; i++)
-            {
-                _managerNameList.Add(m_AppConstManagerList.GetArrayElementAtIndex(i).stringValue);
-            }
-
-            bool _changed = false;
-            TypeCache.TypeCollection _collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
-            for (int i = 0; i < _collection.Count; i++)
-            {
-                if (!_managerNameList.Contains(_collection[i].Name))
-                {
-                    _changed = true;
-                    int _cot = _managerNameList.Count;
-                    m_AppConstManagerList.InsertArrayElementAtIndex(_cot);
-                    m_AppConstManagerList.GetArrayElementAtIndex(_cot).stringValue = _collection[i].Name;
-                }
-            }
-            if (_changed)
-            {
-                m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
-            }
+            FindAllManager();
         }
 
         public override void OnGUI(string searchContext)
@@ -255,6 +233,35 @@ namespace EasyFramework.Edit.Setting
             m_AppConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
             m_AppConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
 
+        }
+
+        /// <summary>
+        /// 查找全部管理器
+        /// </summary>
+        private void FindAllManager()
+        {
+            List<string> _managerNameList = new List<string>();
+            for (int i = 0; i < m_AppConstManagerList.arraySize; i++)
+            {
+                _managerNameList.Add(m_AppConstManagerList.GetArrayElementAtIndex(i).stringValue);
+            }
+
+            bool _changed = false;
+            TypeCache.TypeCollection _collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
+            for (int i = 0; i < _collection.Count; i++)
+            {
+                if (!_managerNameList.Contains(_collection[i].Name))
+                {
+                    _changed = true;
+                    int _cot = _managerNameList.Count;
+                    m_AppConstManagerList.InsertArrayElementAtIndex(_cot);
+                    m_AppConstManagerList.GetArrayElementAtIndex(_cot).stringValue = _collection[i].Name;
+                }
+            }
+            if (_changed)
+            {
+                m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
     }
 }
