@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AtlasFolder: Assets/ExampleGame/Resources/Atlas/
   m_Objects:
-  - {fileID: 102900000, guid: 03e10486aab84544e9ea941131a424c9, type: 3}
-  - {fileID: 102900000, guid: 004c23ac746877d48ac730bc5d8a72bd, type: 3}
+  - {fileID: 102900000, guid: 24dd9c859be3bd64bbe73026414a471a, type: 3}
   m_Atlas:
-  - {fileID: 4343727234628468602, guid: fee16fd3517a8644aad16590f24d112f, type: 2}
+  - {fileID: 4343727234628468602, guid: 4317d629080806a45a3af762134e6eb1, type: 2}
   m_SpriteInfos: []

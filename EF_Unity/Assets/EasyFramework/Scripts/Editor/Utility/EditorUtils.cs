@@ -34,15 +34,16 @@ namespace EasyFramework.Edit
             {
                 foreach (var assetPath in globalAssetPaths)
                 {
-                    D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {UnityEditor.AssetDatabase.GUIDToAssetPath(assetPath)}");
+                    D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {AssetDatabase.GUIDToAssetPath(assetPath)}");
                 }
                 D.Exception($"Not allow has multi type. 不能有多个 {assetType}");
             }
 #endif
-            T customGlobalSettings = Resources.Load<T>(assetsPath);
+            string _assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
+            T customGlobalSettings = AssetDatabase.LoadAssetAtPath<T>(_assetPath);
             if (customGlobalSettings == null)
             {
-                D.Error($"Don`t find asset. 没找到 {assetType} asset，自动创建创建一个:{assetsPath}.");
+                D.Exception($"Don`t find asset. 没找到 {assetType} asset，需要创建一个:{assetsPath}.");
                 return null;
             }
 

@@ -23,7 +23,7 @@ namespace EasyFramework.Edit.PathConfig
     public class PathConfigSettingProvide : SettingsProvider
     {
         private const string m_HeaderName = "EF/Path Config Setting";
-        private static readonly string EFOptimalSettingPath = ProjectUtility.Path.FrameworkPath + "Resources/Settings/PathConfigSetting.asset";
+        private static readonly string EFOptimalSettingPath = ProjectUtility.Path.FrameworkPath + "EFAssets/Settings/PathConfigSetting.asset";
 
         private SerializedProperty m_FrameworkPath;
         private SerializedProperty m_SublimePath;

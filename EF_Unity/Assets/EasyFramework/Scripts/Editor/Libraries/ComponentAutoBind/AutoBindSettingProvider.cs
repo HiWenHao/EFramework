@@ -23,7 +23,7 @@ namespace EasyFramework.Edit.AutoBind
         /// <summary>
         /// 自动绑定全局设置路径
         /// </summary>
-        static string m_AutoBindSettingPath = ProjectUtility.Path.FrameworkPath + "Resources/Settings/AutoBindSetting.asset";
+        static string m_AutoBindSettingPath = ProjectUtility.Path.FrameworkPath + "EFAssets/Settings/AutoBindSetting.asset";
         
         /// <summary>
         /// 在设置中的标题名称
