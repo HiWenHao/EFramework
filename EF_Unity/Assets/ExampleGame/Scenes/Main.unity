@@ -246,6 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 135dec46bd568ca4e8d693838b013a85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  StartWebSocket: 0
 --- !u!4 &1277489186
 Transform:
   m_ObjectHideFlags: 0

@@ -14,7 +14,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using EasyFramework;
 
-namespace GMTest
+namespace EFExample
 {
 	/// <summary>
 	/// Please modify the description.

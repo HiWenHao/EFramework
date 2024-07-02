@@ -182,6 +182,11 @@ public partial class EF : MonoBehaviour
             UprCount--;
             Updater.Remove(item as IUpdate);
         }
+        if (item is MonoBehaviour _mono)
+        {
+            Destroy(_mono.gameObject);
+            Destroy(_mono);
+        }
     }
 
     static void QuitGames()

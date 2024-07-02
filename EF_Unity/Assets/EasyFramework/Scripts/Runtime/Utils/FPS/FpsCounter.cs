@@ -9,7 +9,7 @@
  * ===============================================
 */
 
-namespace EasyFramework.Utils
+namespace EasyFramework
 {
     /// <summary>
     /// FPS 计算中心

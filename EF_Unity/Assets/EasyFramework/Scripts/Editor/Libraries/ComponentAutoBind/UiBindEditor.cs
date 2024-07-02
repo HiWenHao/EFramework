@@ -65,17 +65,17 @@ namespace EasyFramework.Edit.AutoBind
             m_PrefabPath.stringValue = string.IsNullOrEmpty(m_PrefabPath.stringValue) ? ProjectUtility.Path.UIPrefabPath : m_PrefabPath.stringValue;
             m_ComCodePath.stringValue = string.IsNullOrEmpty(m_ComCodePath.stringValue) ? ProjectUtility.Path.UICodePath : m_ComCodePath.stringValue;
 
-            serializedObject.ApplyModifiedProperties();
-
             m_TempFiledNames = new List<string>();
             m_TempComponentTypeNames = new List<string>();
             m_ComponentsName = new Dictionary<string, int>();
 
-            m_PackUpBindList.boolValue = true;
             m_sortByType = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
             m_sortByNameLength = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             m_SortByType.boolValue = m_sortByType;
             m_SortByNameLength.boolValue = m_sortByNameLength;
+            m_PackUpBindList.boolValue = true;
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void OnDisable()

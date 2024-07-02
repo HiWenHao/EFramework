@@ -1,3 +1,4 @@
+using EasyFramework;
 using Luban;
 using SimpleJSON;
 using UnityEngine;
@@ -29,7 +30,13 @@ namespace PleaseModify
             EF.Timer.SleepTimeout = SleepTimeout.NeverSleep;
 
             //FPS展示
-            EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
+            FPSOnGUI.Instance.allowDrag = true;
+                        
+            // 当然，你也可以随时卸载你不需要的单例
+            EF.Timer.AddOnce(2.0f, delegate
+            {
+                EF.Unregister(FPSOnGUI.Instance);
+            });
 
             //读表工具初始化
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");

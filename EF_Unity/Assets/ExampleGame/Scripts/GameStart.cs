@@ -9,6 +9,7 @@
  * ===============================================
 */
 
+using EasyFramework;
 using Luban;
 using SimpleJSON;
 using UnityEngine;
@@ -20,9 +21,10 @@ namespace EFExample
     /// </summary>
     public class GameStart : MonoBehaviour
     {
+        public bool StartWebSocket;
         private void Start()
         {
-            EasyFramework.D.Init();
+            D.Init();
 #if UNITY_EDITOR
             EF.ClearConsole();
 #endif
@@ -31,24 +33,19 @@ namespace EFExample
             Application.runInBackground = true;
             #endregion
 
-            #region Show platform infomation.展示平台信息
-            EasyFramework.D.Emphasize($"CPU: {SystemInfo.processorType}({SystemInfo.processorCount}cores核心数)   " +
-                $"  RAM = {Mathf.RoundToInt(SystemInfo.systemMemorySize / 1024f)}G     " +
-                $"  GPU: {SystemInfo.graphicsDeviceName}   " +
-                $"  VRAM = {Mathf.RoundToInt(SystemInfo.graphicsMemorySize / 1024f)}G        " +
-                Screen.currentResolution.ToString());
-            #endregion
-
-            EasyFramework.D.Log("======================Initialize======================");
+            D.Log("======================Initialize======================");
             //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
 
             EF.Timer.SleepTimeout = SleepTimeout.NeverSleep;
 
-
-            Camera.main.gameObject.AddComponent<GMTest.Test>();
-
             //FPS展示
-            EasyFramework.Utils.FPSOnGUI.Instance.allowDrag = true;
+            FPSOnGUI.Instance.AllowDrag = true;
+
+            //当然，你也可以随时卸载你不需要的单例
+            //EF.Timer.AddOnce(2.0f, delegate
+            //{
+            //    EF.Unregister(FPSOnGUI.Instance);
+            //});
 
             //读表工具初始化
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
@@ -57,29 +54,29 @@ namespace EFExample
             //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
 
             //网络部分，还待完善
-            if (false)
+            if (StartWebSocket)
             {
                 BestHTTP.WebSocket.WebSocket _ws = EF.Socket.CreateAndOpenWebSocket(
                     new System.Uri("wss://echo.websocket.events"),
                     onOpen: (ws) =>
                     {
-                        EasyFramework.D.Log("Socket onOpen !!!");
+                        D.Log("Socket onOpen !!!");
                     },
                     onMessage: (ws, msg) =>
                     {
-                        EasyFramework.D.Log("Socket onMessage !!!   msg = " + msg);
+                        D.Log("Socket onMessage !!!   msg = " + msg);
                     },
                     onBinary: (ws, bytes) =>
                     {
-                        EasyFramework.D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
+                        D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
                     },
                     onError: (ws, error) =>
                     {
-                        EasyFramework.D.Error("Socket onError !!!   error = " + error);
+                        D.Error("Socket onError !!!   error = " + error);
                     },
                     onClosed: (ws, code, msg) =>
                     {
-                        EasyFramework.D.Log("Socket onClosed !!!");
+                        D.Log("Socket onClosed !!!");
                     },
                     onErrorDescription: null,
                     onIncompleteFrame: null
@@ -97,21 +94,21 @@ namespace EFExample
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);
 
-            var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
-            var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
-            // 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
-            System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
-                new System.Func<string, ByteBuf>(LoadByteBuf)
-                : new System.Func<string, JSONNode>(LoadJson);
-            EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
+            //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
+            //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
+            //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
+            //System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
+            //    new System.Func<string, ByteBuf>(LoadByteBuf)
+            //    : new System.Func<string, JSONNode>(LoadJson);
+            //EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
 
-            foreach (var item in tables.TbItem.DataList)
-            {
-                EasyFramework.D.Warning("reward:\t" + item.ToString());
-            }
+            //foreach (var item in tables.TbItem.DataList)
+            //{
+            //    EasyFramework.D.Warning("reward:\t" + item.ToString());
+            //}
 
             //UI进入
-            //EF.Ui.Push(new You Class());
+            EF.Ui.Push(new UiA());
 
             //音频播放
             //EF.Sources.PlayBGMByName("You bgm`s name", true);

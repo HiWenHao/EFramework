@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Utils
+namespace EasyFramework
 {
     /// <summary>
     /// Show the fps
@@ -19,15 +19,16 @@ namespace EasyFramework.Utils
     public class FPSOnGUI : MonoSingleton<FPSOnGUI>, ISingleton, IUpdate
     {
         //fps 显示的初始位置和大小
-        public Rect startRect = new Rect(0f, 150f, 200f, 80f);
+        Rect m_startRect;
         //fps UI 是否允许拖动 
-        public bool allowDrag = true;
+        public bool AllowDrag;
         //GUI 的样式
         private GUIStyle style;
 
         FpsCounter m_FpsCounter;
         void ISingleton.Init()
         {
+            m_startRect = new Rect(0f, 150f, 200f, 80f);
             m_FpsCounter = new FpsCounter(0.5f);
         }
 
@@ -47,19 +48,20 @@ namespace EasyFramework.Utils
             }
 
             GUI.color = Color.white;
-            startRect = GUI.Window(0, startRect, DoMyWindow, "");
+            m_startRect = GUI.Window(0, m_startRect, DoMyWindow, "");
         }
 
         void ISingleton.Quit()
         {
-
+            style = null;
+            m_FpsCounter = null;
         }
 
         //Window窗口
         void DoMyWindow(int windowID)
         {
-            GUI.Label(new Rect(0, 0, startRect.width, startRect.height), $"FPS {(int)m_FpsCounter.CurrentFps}", style);
-            if (allowDrag) GUI.DragWindow(new Rect(10, 10, Screen.width - 10, Screen.height - 10));
+            GUI.Label(new Rect(0, 0, m_startRect.width, m_startRect.height), $"FPS {(int)m_FpsCounter.CurrentFps}", style);
+            if (AllowDrag) GUI.DragWindow(new Rect(10, 10, Screen.width - 10, Screen.height - 10));
         }
     }
 }

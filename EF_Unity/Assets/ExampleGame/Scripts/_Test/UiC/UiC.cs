@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GMTest
+namespace EFExample
 {
     /// <summary>
     /// Please modify the description.
