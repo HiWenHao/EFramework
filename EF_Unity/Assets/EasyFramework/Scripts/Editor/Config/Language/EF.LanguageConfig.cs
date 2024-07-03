@@ -88,7 +88,12 @@ namespace EasyFramework.Edit
         {
             LoadLanguage();
             return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}{m_Separator}{m_Dictionary[text4][m_currentIndex]}{m_Separator}{m_Dictionary[text5][m_currentIndex]}";
-        }        
+        }
+        public static string Combine(string text1, string text2, string text3, string text4, string text5, string text6)
+        {
+            LoadLanguage();
+            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}{m_Separator}{m_Dictionary[text4][m_currentIndex]}{m_Separator}{m_Dictionary[text5][m_currentIndex]}{m_Separator}{m_Dictionary[text6][m_currentIndex]}";
+        }
         #endregion
 
         #region ChangeLanguage

@@ -148,15 +148,8 @@ public class Slideshow : UIBehaviour, IBeginDragHandler, IInitializePotentialDra
 
     public void resizeChildren()
     {
-        Vector2 delta;
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            delta = new Vector2(mCellSize.x + mSpacing.x, 0);
-        }
-        else
-        {
-            delta = new Vector2(0, mCellSize.y + mSpacing.y);
-        }
+        Vector2 delta = MMoveAxisType == AxisType.Horizontal ? new Vector2(mCellSize.x + mSpacing.x, 0) : new Vector2(0, mCellSize.y + mSpacing.y);
+
         for (int i = 0; i < CellCount; i++)
         {
             var t = GetChild(viewRectTran, i);

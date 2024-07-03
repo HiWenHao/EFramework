@@ -28,6 +28,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1695732527381130097}
   m_RootOrder: 0
@@ -104,6 +105,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1695732526582195837}
   m_Father: {fileID: 0}
@@ -152,14 +154,14 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
-  SideCount: 3
-  MinDistance: 50
-  MaxDistance: 200
-  EachPercent:
+  m_sideCount: 3
+  m_minDistance: 0
+  m_maxDistance: 200
+  m_InitialRadian: 0
+  m_EachPercent:
   - 1
   - 1
   - 1
-  InitialRadian: 0
 --- !u!114 &1695732527381130098
 MonoBehaviour:
   m_ObjectHideFlags: 0

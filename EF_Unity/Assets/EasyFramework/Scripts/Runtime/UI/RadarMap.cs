@@ -4,10 +4,11 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-06 16:08:49
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-06 16:08:49
- * ScriptVersion: 0.1
+ * ModifyTime:    2024-07-03 15:43:49
+ * ScriptVersion: 0.2
  * ===============================================
 */
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,175 +20,147 @@ namespace EasyFramework.UI
     public class RadarMap : Image
     {
         /// <summary>
-        /// 雷达图边数, 
-        /// 当设置小于3时设置失效
+        /// The min distance of a vertex from the center.
+        /// <para>顶点到中心的最小距离</para>
         /// </summary>
-        [Header("雷达图边数，当设置小于3时设置失效")]
-        public int SideCount = 6;
+        public float MinDistance
+        {
+            get
+            {
+                return m_minDistance;
+            }
+            set
+            {
+                if (m_minDistance != value)
+                {
+                    m_minDistance = Mathf.Clamp(value, 0.0f, m_maxDistance);
+                    ChangedAndUpdate();
+                }
+            }
+        }
 
         /// <summary>
-        /// 顶点与中心的最小距离
+        /// The max distance of a vertex from the center.
+        /// <para>顶点到中心的最大距离</para>
         /// </summary>
-        [Header("顶点与中心的最小距离")]
-        public float MinDistance = 5;
+        public float MaxDistance => m_maxDistance;
 
         /// <summary>
-        /// 顶点与中心的最大距离
+        /// Update the number of vertices of the radar map.
+        /// <para>雷达图的顶点数</para>
         /// </summary>
-        [Header("顶点与中心的最大距离")]
-        public float MaxDistance = 50;
+        public int VertexCount 
+        { 
+            get
+            {
+                return m_vertexCount;
+            }
+            set
+            {
+                if (m_vertexCount != value)
+                {
+                    float[] _tempArray = new float[value];
+                    if (m_vertexCount > value)
+                    {
+                        Array.Copy(m_EachPercent, _tempArray, value);
+                        m_EachPercent = _tempArray;
+                    }
+                    else
+                    {
+                        Array.Copy(m_EachPercent, _tempArray, m_vertexCount);
+                        for (int i = m_vertexCount; i < value; i++)
+                            _tempArray[i] = 0;
 
-        /// <summary>
-        /// 每一边数的大小（0~1表示的百分比）
-        /// </summary>
-        [Header("每一边数的大小（0~1表示的百分比）")]
-        public float[] EachPercent;
+                        m_EachPercent = _tempArray;
+                    }
+                    m_vertexCount = value;
+                    ChangedAndUpdate();
+                }
+            }
+        }
 
-        /// <summary>
-        /// 第一个顶点的起始弧度。默认从正右方开始
-        /// </summary>
-        [Header("第一个顶点的起始弧度。默认从正右方开始")]
-        public float InitialRadian = 0;//第一个顶点的起始弧度。默认从正右方开始。
-
-        private bool m_isFirst = true;
-        private int m_sideCount;
+        [SerializeField]
+        private int m_vertexCount = 3;
+        [SerializeField]
         private float m_minDistance;
+        [SerializeField]
         private float m_maxDistance;
+        [SerializeField]
+        private float m_InitialRadian = 0;
+        [SerializeField]
+        private float[] m_EachPercent;
+
         private Vector3[] m_innerPositions;//雷达图最内圈的点
         private Vector3[] m_exteriorPositions;//雷达图最外圈的点
-        private RectTransform m_selfTransform;//自身大小
-
+        RectTransform m_selfTransform;
         protected override void Awake()
         {
-            if (null == EachPercent)
+            if (null == m_EachPercent)
             {
-                EachPercent = new float[m_sideCount];
+                m_EachPercent = new float[m_vertexCount];
             }
-            SetMaxDistance();
+
+            SetVerticesDirty();
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)
-        {            
-            if (m_isFirst)
-            {
-                m_isFirst = !m_isFirst;
-                return;
-            }
+        {
             vh.Clear();//清除原信息
 
-            InitPositions();
-            AddVertex(vh);
-            AddTriangles(vh);
-        }
+            if (null == m_selfTransform)
+            {
+                m_selfTransform = GetComponent<RectTransform>();
+                m_maxDistance = (m_selfTransform.sizeDelta.x <= m_selfTransform.sizeDelta.y ? m_selfTransform.sizeDelta.x : m_selfTransform.sizeDelta.y) / 2.0f;
+            }
 
-        private void Update()
-        {
-            SetSideCount();
-            SetMinDistance();
-        }
+            m_innerPositions = new Vector3[m_vertexCount];
+            m_exteriorPositions = new Vector3[m_vertexCount];
+            float _tempRadian = m_InitialRadian;
+            float _radiamDelta = 2 * Mathf.PI / m_vertexCount;
 
-        /// <summary>
-        /// Initialize the points positions in radar map.
-        /// 初始化雷达图最内圈和最外圈的点
-        /// </summary>
-        private void InitPositions()
-        {
-            SetMaxDistance();
-            m_innerPositions = new Vector3[m_sideCount];
-            m_exteriorPositions = new Vector3[m_sideCount];
-            float _tempRadian = InitialRadian;
-            float _radiamDelta = 2 * Mathf.PI / m_sideCount;//每两个相邻顶点相差的弧度
-
-            for (int i = 0; i < m_sideCount; i++)
+            vh.AddVert(Vector3.zero, color, Vector2.zero);
+            for (int i = 0; i < m_vertexCount; i++)
             {
                 m_innerPositions[i] = new Vector3(m_minDistance * Mathf.Cos(_tempRadian), m_minDistance * Mathf.Sin(_tempRadian), 0);
                 m_exteriorPositions[i] = new Vector3(m_maxDistance * Mathf.Cos(_tempRadian), m_maxDistance * Mathf.Sin(_tempRadian), 0);
                 _tempRadian += _radiamDelta;
-            }
-        }
 
-        /// <summary>
-        /// Added the vertex count.
-        /// 添加形成三角面片用的顶点数量
-        /// </summary>
-        private void AddVertex(VertexHelper vh)
-        {
-            vh.AddVert(Vector3.zero, color, Vector2.zero);//添加轴心点位置为第一个顶点
-            for (int i = 0; i < m_sideCount; i++)
-            {
                 //通过在最内点和最外点间差值得到雷达图顶点实际位置，并添加到为vh的顶点。由于并没有图案，最后一项的uv坐标就随便填了。
-                vh.AddVert(Vector3.Lerp(m_innerPositions[i], m_exteriorPositions[i], EachPercent[i]), color, Vector2.zero);
+                vh.AddVert(Vector3.Lerp(m_innerPositions[i], m_exteriorPositions[i], m_EachPercent[i]), color, Vector2.zero);
             }
-        }
 
-        /// <summary>
-        /// Added the triangles count.
-        /// 添加三角面片
-        /// </summary>
-        private void AddTriangles(VertexHelper vh)
-        {
-            for (int i = 0; i < m_sideCount - 1; i++)
+            for (int i = 0; i < m_vertexCount - 1; i++)
             {
                 vh.AddTriangle(0, i + 1, i + 2);
             }
-            vh.AddTriangle(0, m_sideCount, 1);
+            vh.AddTriangle(0, m_vertexCount, 1);
         }
 
-        #region Set value with changed public property.
         /// <summary>
-        /// Set size count.
-        /// 设置雷达图边数
+        /// Set the value by index.
+        /// <para>根据索引更改具体值</para>
         /// </summary>
-        private void SetSideCount()
+        /// <param name="index">索引值</param>
+        /// <param name="value">具体值</param>
+        /// <param name="forceUpdate">Force update, if the one-time change information is more, it is recommended to call the UpdateRadarMap function actively to update.
+        /// <para>强制更新，如果一次性更改信息较多，推荐主动调用 UpdateRadarMap 函数更新</para></param>
+        public void ChangedInfoByIndex(int index, float value, bool forceUpdate = false)
         {
-            if (m_sideCount == SideCount || SideCount < 3)
+            if (index >= m_vertexCount)
                 return;
+            m_EachPercent[index] = value;
 
-            m_sideCount = SideCount;
-            float[] _temp = new float[m_sideCount];
+            if (forceUpdate)
+                ChangedAndUpdate();
+        }
 
-            int _tempLength = EachPercent.Length >= m_sideCount ? m_sideCount : EachPercent.Length;
-
-            for (int i = 0; i < _tempLength; i++)
-            {
-                _temp[i] = EachPercent[i];
-            }
-            for (int i = m_sideCount - 1; i >= _tempLength; i--)
-            {
-                _temp[i] = 1;
-            }
-            EachPercent = _temp;
+        /// <summary>
+        /// Update the radar map;
+        /// <para>更新雷达图</para>
+        /// </summary>
+        public void ChangedAndUpdate()
+        {
             SetVerticesDirty();
         }
-
-        /// <summary>
-        /// Set min distance between the vertex and the center.
-        /// 设置顶点到中心点的最小距离
-        /// </summary>
-        private void SetMinDistance()
-        {
-            if (m_minDistance == MinDistance)
-                return;
-            m_minDistance = MinDistance;
-            SetVerticesDirty();
-        }
-
-        /// <summary>
-        /// Set max distance between the vertex and the center.
-        /// 设置顶点到中心点的最大距离
-        /// </summary>
-        private void SetMaxDistance()
-        {
-            if (null == m_selfTransform)
-            {
-                m_selfTransform = GetComponent<RectTransform>();
-            }
-            MaxDistance = (m_selfTransform.sizeDelta.x <= m_selfTransform.sizeDelta.y ? m_selfTransform.sizeDelta.x : m_selfTransform.sizeDelta.y) / 2.0f;
-            if (m_maxDistance != MaxDistance)
-            {
-                m_maxDistance = MaxDistance;
-            }
-        }
-        #endregion
     }
 }

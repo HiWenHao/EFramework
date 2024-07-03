@@ -192,6 +192,14 @@
     ]
   },
   {
+    "name": "Center",
+    "desc": "中心",
+    "array": [
+      "Center",
+      "中心"
+    ]
+  },
+  {
     "name": "Cancel",
     "desc": "取消",
     "array": [
@@ -352,6 +360,14 @@
     ]
   },
   {
+    "name": "Distance",
+    "desc": "距离",
+    "array": [
+      "Distance",
+      "距离"
+    ]
+  },
+  {
     "name": "Different",
     "desc": "不同、差异",
     "array": [
@@ -389,6 +405,14 @@
     "array": [
       "End",
       "结束"
+    ]
+  },
+  {
+    "name": "Edges",
+    "desc": "边数",
+    "array": [
+      "Edges",
+      "边数"
     ]
   },
   {
@@ -616,6 +640,14 @@
     ]
   },
   {
+    "name": "Limit",
+    "desc": "限制",
+    "array": [
+      "Limit",
+      "限制"
+    ]
+  },
+  {
     "name": "Layer",
     "desc": "层",
     "array": [
@@ -645,6 +677,14 @@
     "array": [
       "Language",
       "语言"
+    ]
+  },
+  {
+    "name": "Min",
+    "desc": "最小",
+    "array": [
+      "Min",
+      "最小"
     ]
   },
   {
@@ -992,6 +1032,14 @@
     ]
   },
   {
+    "name": "Radian",
+    "desc": "弧度",
+    "array": [
+      "Radian",
+      "弧度"
+    ]
+  },
+  {
     "name": "Remove",
     "desc": "去除、解除",
     "array": [
@@ -1005,6 +1053,14 @@
     "array": [
       "Resource",
       "资源"
+    ]
+  },
+  {
+    "name": "RadarMap",
+    "desc": "雷达图",
+    "array": [
+      "RadarMap",
+      "雷达图"
     ]
   },
   {
@@ -1109,6 +1165,14 @@
     "array": [
       "Settings",
       "设置"
+    ]
+  },
+  {
+    "name": "To",
+    "desc": "到",
+    "array": [
+      "To",
+      "到"
     ]
   },
   {
@@ -1233,10 +1297,10 @@
   },
   {
     "name": "Vertex",
-    "desc": "顶点数",
+    "desc": "顶点",
     "array": [
       "Vertex",
-      "顶点数"
+      "顶点"
     ]
   },
   {
@@ -1253,6 +1317,14 @@
     "array": [
       "Version",
       "版本"
+    ]
+  },
+  {
+    "name": "With",
+    "desc": "对于",
+    "array": [
+      "With",
+      "对于"
     ]
   },
   {

@@ -40,7 +40,7 @@ namespace EasyFramework.Windows.AssetChecker
             {
                 LC.Combine("Model", "Name"),
                 LC.Combine("Resource", "Type"),
-                LC.Combine("Vertex"),
+                LC.Combine("Vertex", "Count"),
                 LC.Combine("Triangular"),
                 LC.Combine("Bone","Count"),
                 LC.Combine("Model", "Size"),

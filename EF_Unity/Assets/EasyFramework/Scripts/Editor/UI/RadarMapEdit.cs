@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-06 16:18:25
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-06 16:18:25
+ * ModifyTime:    2024-07-03 15:45:25
  * ScriptVersion: 0.1
  * ===============================================
 */
@@ -21,38 +21,51 @@ namespace EasyFramework.Edit
     [CanEditMultipleObjects]
     public class RadarMapEdit : UnityEditor.UI.ImageEditor
     {
-        SerializedProperty _sideCount;
-        SerializedProperty _minDistance;
-        SerializedProperty _eachPercent;
-        SerializedProperty _initialRadian;
+        SerializedProperty m_vertexCount;
+        SerializedProperty m_minDistance;
+        SerializedProperty m_maxDistance;
+        SerializedProperty m_eachPercent;
+        SerializedProperty m_initialRadian;
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            _sideCount = serializedObject.FindProperty("SideCount");
-            _minDistance = serializedObject.FindProperty("MinDistance");
-            _eachPercent = serializedObject.FindProperty("EachPercent");
-            _initialRadian = serializedObject.FindProperty("InitialRadian");
+            m_vertexCount = serializedObject.FindProperty("m_vertexCount");
+            m_minDistance = serializedObject.FindProperty("m_minDistance");
+            m_maxDistance = serializedObject.FindProperty("m_maxDistance");
+            m_eachPercent = serializedObject.FindProperty("m_EachPercent");
+            m_initialRadian = serializedObject.FindProperty("m_InitialRadian");
+            serializedObject.ApplyModifiedProperties();
         }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+            EditorGUILayout.Space();
 
-            serializedObject.Update();
+            m_minDistance.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Min", "Distance", "Limit"), m_minDistance.floatValue), 0f, m_maxDistance.floatValue);
+            EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(_sideCount);
-            EditorGUILayout.PropertyField(_minDistance);
-            EditorGUILayout.PropertyField(_eachPercent, true);
-            EditorGUILayout.PropertyField(_initialRadian);
+            m_vertexCount.intValue = Mathf.Clamp(EditorGUILayout.IntField(LC.Combine("RadarMap", "Vertex", "Count"), m_vertexCount.intValue), 3, int.MaxValue);
+            EditorGUILayout.Space();
 
-            RadarMap radar = target as RadarMap;
+            EditorGUILayout.PropertyField(m_eachPercent, new GUIContent(LC.Combine("Vertex" ,"To" ,"Center" ,"Of" ,"Distance")), true);
+            EditorGUILayout.Space();
 
+            m_initialRadian.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Radian"), m_initialRadian.floatValue), 0f, 6.2832f);
 
-            serializedObject.ApplyModifiedProperties();
             if (GUI.changed)
             {
-                EditorUtility.SetDirty(target);
+                for (int i = m_eachPercent.arraySize - 1; i >= 0; i--)
+                {
+                    float _floatValue = m_eachPercent.GetArrayElementAtIndex(i).floatValue;
+                    m_eachPercent.GetArrayElementAtIndex(i).floatValue = Mathf.Clamp01(_floatValue);
+                }
+                if (m_eachPercent.arraySize != m_vertexCount.intValue)
+                    m_eachPercent.arraySize = m_vertexCount.intValue;
+
+                serializedObject.ApplyModifiedProperties();
+                EditorUtility.SetDirty((RadarMap)target);
             }
         }
     }
