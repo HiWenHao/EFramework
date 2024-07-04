@@ -17,6 +17,9 @@ namespace EasyFramework.UI
     /// <summary>
     /// Radar map with image.
     /// </summary>
+    [AddComponentMenu("UI/Radar Map", 104)]
+    [RequireComponent(typeof(Mask))]
+    [RequireComponent(typeof(CanvasRenderer))]
     public class RadarMap : Image
     {
         /// <summary>

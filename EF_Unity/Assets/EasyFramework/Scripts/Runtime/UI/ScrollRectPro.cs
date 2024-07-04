@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace EasyFramework.UI
 {
@@ -27,10 +26,11 @@ namespace EasyFramework.UI
     [ExecuteAlways]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
-    public class ScrollRectPro : UIBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IScrollHandler, ICanvasElement, ILayoutGroup
+    public class ScrollRectPro : UIBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IScrollHandler
     {
         /// <summary>
         /// A setting for which behavior to use when content moves beyond the confines of its container.
+        /// <para>当内容超出其容器的范围时使用的行为设置。</para>
         /// </summary>
         public enum MovementType
         {
@@ -50,67 +50,117 @@ namespace EasyFramework.UI
             Clamped,
         }
 
-        /// <summary>
-        /// Set the scrolling be enabled with direction
-        /// </summary>
-        public enum Direction
-        {
-            Horizontal,
-            Vertical
-        }
+        public AxisType direction = AxisType.Vertical;
 
-        /// <summary>
-        /// Scrolling be enabled with direction
-        /// </summary>
-        public Direction direction = Direction.Vertical;
-
-        /// <summary>
-        /// The behavior to use when the content moves beyond the scroll rect.
-        /// </summary>
         public MovementType movementType = MovementType.Elastic;
 
         /// <summary>
-        /// The content that can be scrolled. It should be a child of the GameObject with ScrollRectPro on it.
+        /// The content that can be scrolled. It should be a child of the GameObject.
+        /// <para>可滚动的内容。它应该是滚动视图的子对象，上面有ScrollRectPro。</para>
         /// </summary>
         public RectTransform content;
 
         /// <summary>
         /// The elemental of content that can be scrolled.
+        /// <para>滚动内容的元素</para>
         /// </summary>
         public GameObject Elemental;
 
         /// <summary>
-        /// The scroll view can auto integer docking
+        /// Current scroll view pro element max count.
+        /// <para>当前滚动视图元素的最大计数。</para>
         /// </summary>
-        public bool AutoDocking = true;
+        public int ElementMaxCount => m_MaxElementalCount;
 
         /// <summary>
-        /// When the scroll view moves slow than this value able to dock.
-        /// </summary>
-        public float DockVelocity = 20f;
-
-        /// <summary>
-        /// Should movement inertia be enabled?
+        /// The current velocity of the content.
+        /// <para>当前的滚动速度</para>
         /// </summary>
         /// <remarks>
-        /// Inertia means that the scrollrect content will keep scrolling for a while after being dragged. It gradually slows down according to the decelerationRate.
+        /// The velocity is defined in units per second.
+        /// <para>速度的单位是每秒。</para>
         /// </remarks>
-        public bool Inertia = true;
+        public Vector2 Velocity { get { return m_Velocity; } set { m_Velocity = value; } }
 
         /// <summary>
-        /// Current scroll view pro element max count.
+        /// The scroll position as a Vector2 between (0,0) and (1,1) with (0,0) being the lower left corner.
+        /// <para>滚动位置，介于(0,0)和(1,1)之间，其中(0,0)是左下角。</para>
         /// </summary>
-        public int ElementMaxCount => m_MaxCount;
+        public Vector2 NormalizedPosition
+        {
+            get
+            {
+                return new Vector2(HorizontalNormalizedPosition, VerticalNormalizedPosition);
+            }
+            set
+            {
+                SetNormalizedPosition(value.x, 0);
+                SetNormalizedPosition(value.y, 1);
+            }
+        }
 
         /// <summary>
-        /// When the direction is vertical, the value is several columns.Conversely the direction is horizontal, the value is several rows.
+        /// The horizontal scroll position as a value between 0 and 1, with 0 being at the left.
+        /// <para>水平滚动位置为0到1之间的值，0表示左侧。</para>
         /// </summary>
-        public int Lines = 1;
+        public float HorizontalNormalizedPosition
+        {
+            get
+            {
+                UpdateBounds();
+                if ((m_ContentBounds.size.x <= m_ViewBounds.size.x) || Mathf.Approximately(m_ContentBounds.size.x, m_ViewBounds.size.x))
+                    return (m_ViewBounds.min.x > m_ContentBounds.min.x) ? 1 : 0;
+                return (m_ViewBounds.min.x - m_ContentBounds.min.x) / (m_ContentBounds.size.x - m_ViewBounds.size.x);
+            }
+            set
+            {
+                SetNormalizedPosition(value, 0);
+            }
+        }
+
+        /// <summary>
+        /// The vertical scroll position as a value between 0 and 1, with 0 being at the bottom.
+        /// <para>垂直滚动位置为0到1之间的值，0表示底部。</para>
+        /// </summary>
+        public float VerticalNormalizedPosition
+        {
+            get
+            {
+                UpdateBounds();
+                if ((m_ContentBounds.size.y <= m_ViewBounds.size.y) || Mathf.Approximately(m_ContentBounds.size.y, m_ViewBounds.size.y))
+                    return (m_ViewBounds.min.y > m_ContentBounds.min.y) ? 1 : 0;
+
+                return (m_ViewBounds.min.y - m_ContentBounds.min.y) / (m_ContentBounds.size.y - m_ViewBounds.size.y);
+            }
+            set
+            {
+                SetNormalizedPosition(value, 1);
+            }
+        }
+
+        private ScrollRectPro() { }
+
+        #region SerializeField
+        [SerializeField]
+        int m_Lines = 1;
+
+        [SerializeField]
+        bool m_Inertia = true;
+
+        [SerializeField]
+        float m_DockSpeed = 20f;
+
+        [SerializeField]
+        bool m_AutoDocking = false;
+
+        [SerializeField]
+        int m_MaxCount = 10;
 
         /// <summary>
         /// The amount of elasticity to use when the content moves beyond the scroll rect.
         /// </summary>
-        public float Elasticity = 0.1f;
+        [SerializeField]
+        float m_Elasticity = 0.1f;
 
         /// <summary>
         /// The rate at which movement slows down.
@@ -119,7 +169,8 @@ namespace EasyFramework.UI
         /// <remarks>
         /// The deceleration rate is the speed reduction per second. A value of 0.5 halves the speed each second. The default is 0.135. The deceleration rate is only used when inertia is enabled.
         /// </remarks>
-        public float DecelerationRate = 0.135f;
+        [SerializeField]
+        float m_DecelerationRate = 0.135f;
 
         /// <summary>
         /// The sensitivity to scroll wheel and track pad scroll events.
@@ -127,26 +178,22 @@ namespace EasyFramework.UI
         /// <remarks>
         /// Higher values indicate higher sensitivity.
         /// </remarks>
-        public float ScrollSensitivity = 1.0f;
+        [SerializeField]
+        float m_ScrollSensitivity = 1.0f;
 
         /// <summary>
         /// Horizontal and vertical spacing
         /// </summary>
-        public Vector2Int Spacing = Vector2Int.zero;
+        [SerializeField]
+        Vector2Int m_Spacing = new Vector2Int(10, 10);
 
-        /// <summary>
-        /// The current velocity of the content.
-        /// </summary>
-        /// <remarks>
-        /// The velocity is defined in units per second.
-        /// </remarks>
-        public Vector2 velocity { get { return m_Velocity; } set { m_Velocity = value; } }
+        #endregion
 
-
-        private int m_MaxCount = -1;
+        #region Local Field
         private int m_MinIndex = -1;
         private int m_MaxIndex = -1;
         private int m_CurrentIndex = -1;
+        private int m_MaxElementalCount = -1;
 
         private float m_ElementWidth;
         private float m_ElementHeight;
@@ -156,252 +203,44 @@ namespace EasyFramework.UI
         private bool m_Dragging;
         private bool m_Scrolling;
         private bool m_Inited = false;
-        private bool m_ClearList = false;
-        [NonSerialized] private bool m_HasRebuiltLayout = false;
-
-        private Vector2 m_Velocity;
-        private Vector2 m_PrevPosition = Vector2.zero;
-        private Vector2 m_ContentStartPosition = Vector2.zero;
-        private Vector2 m_PointerStartLocalCursor = Vector2.zero;// The offset from handle position to mouse down position
-
-        private readonly Vector3[] m_Corners = new Vector3[4];
 
         private Bounds m_ViewBounds;
         private Bounds m_ContentBounds;
         private Bounds m_PrevViewBounds;
         private Bounds m_PrevContentBounds;
 
-        private Action<GameObject, int> CallbackFunc;
+        private Vector2 m_Velocity;
+        private Vector2 m_PrevPosition = Vector2.zero;
+        private Vector2 m_ContentStartPosition = Vector2.zero;
+        private Vector2 m_PointerStartLocalCursor = Vector2.zero;
 
-        private RectTransform m_Rect;
-        private RectTransform rectTransform
+        private Vector3[] m_Corners = new Vector3[4];
+
+        private RectTransform m_rect;
+        private RectTransform m_Rect
         {
             get
             {
-                if (m_Rect == null)
-                    m_Rect = GetComponent<RectTransform>();
-                return m_Rect;
+                if (m_rect == null)
+                    m_rect = GetComponent<RectTransform>();
+                return m_rect;
             }
         }
-        private RectTransform ViewRect => (RectTransform)transform;
 
-        private DrivenRectTransformTracker m_Tracker;
-
-        /// <summary>
-        /// Record the coordinates and game object of the object 
-        /// </summary>
         private struct ElementInfo
         {
-            public Vector3 pos;
-            public GameObject obj;
+            public Vector3 Postation;
+            public GameObject Element;
         };
-
-        /// <summary>
-        /// The scroll view pro elements information.
-        /// </summary>
-        private ElementInfo[] m_ElementInfos;
-
-        /// <summary>
-        /// The scroll view pro elements pool.
-        /// </summary>
+        private ElementInfo[] m_ElementInfosArray;
         private Stack<GameObject> m_ElementsPool;
 
-        protected ScrollRectPro()
-        { }
+        private Action<GameObject, int> CallbackFunc;
+        #endregion
 
-        public virtual void Rebuild(CanvasUpdate executing)
-        {
-            if (executing == CanvasUpdate.PostLayout)
-            {
-                UpdateBounds();
-                UpdatePrevData();
-
-                m_HasRebuiltLayout = true;
-            }
-        }
-
-        public virtual void LayoutComplete()
-        { }
-
-        public virtual void GraphicUpdateComplete()
-        { }
-
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-
-            CanvasUpdateRegistry.RegisterCanvasElementForLayoutRebuild(this);
-            SetDirty();
-        }
-
-        protected override void OnDisable()
-        {
-            CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild(this);
-            m_Dragging = false;
-            m_Scrolling = false;
-            m_HasRebuiltLayout = false;
-            m_Tracker.Clear();
-            m_Velocity = Vector2.zero;
-            CallbackFunc = null;
-            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
-            base.OnDisable();
-        }
-        
-        protected override void OnDestroy()
-        {
-            CallbackFunc = null;
-            m_Velocity = Vector2.zero;
-            base.OnDestroy();
-        }
-
-        /// <summary>
-        /// See member in base class.
-        /// </summary>
         public override bool IsActive()
         {
             return base.IsActive() && content != null;
-        }
-
-        private void EnsureLayoutHasRebuilt()
-        {
-            if (!m_HasRebuiltLayout && !CanvasUpdateRegistry.IsRebuildingLayout())
-                Canvas.ForceUpdateCanvases();
-        }
-
-        /// <summary>
-        /// Sets the velocity to zero on both axes so the content stops moving.
-        /// </summary>
-        public virtual void StopMovement()
-        {
-            m_Velocity = Vector2.zero;
-        }
-
-        public virtual void OnScroll(PointerEventData data)
-        {
-            if (!IsActive())
-                return;
-
-            EnsureLayoutHasRebuilt();
-            UpdateBounds();
-
-            Vector2 delta = data.scrollDelta;
-            // Down is positive for scroll events, while in UI system up is positive.
-            delta.y *= -1;
-            if (direction == Direction.Vertical)
-            {
-                if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
-                    delta.y = delta.x;
-                delta.x = 0;
-            }
-            if (direction == Direction.Horizontal)
-            {
-                if (Mathf.Abs(delta.y) > Mathf.Abs(delta.x))
-                    delta.x = delta.y;
-                delta.y = 0;
-            }
-
-            if (data.IsScrolling())
-                m_Scrolling = true;
-
-            Vector2 position = content.anchoredPosition;
-            position += delta * ScrollSensitivity;
-            if (movementType == MovementType.Clamped)
-                position += CalculateOffset(position - content.anchoredPosition);
-
-            SetContentAnchoredPosition(position);
-            UpdateBounds();
-        }
-
-        public virtual void OnInitializePotentialDrag(PointerEventData eventData)
-        {
-            if (eventData.button != PointerEventData.InputButton.Left)
-                return;
-
-            m_Velocity = Vector2.zero;
-        }
-
-        /// <summary>
-        /// Handling for when the content is beging being dragged.
-        /// </summary>
-        public virtual void OnBeginDrag(PointerEventData eventData)
-        {
-            if (eventData.button != PointerEventData.InputButton.Left)
-                return;
-
-            if (!IsActive())
-                return;
-
-            UpdateBounds();
-
-            m_PointerStartLocalCursor = Vector2.zero;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(ViewRect, eventData.position, eventData.pressEventCamera, out m_PointerStartLocalCursor);
-            m_ContentStartPosition = content.anchoredPosition;
-            m_Dragging = true;
-        }
-
-        /// <summary>
-        /// Handling for when the content has finished being dragged.
-        /// </summary>
-        public virtual void OnEndDrag(PointerEventData eventData)
-        {
-            if (eventData.button != PointerEventData.InputButton.Left)
-                return;
-
-            m_Dragging = false;
-        }
-
-        /// <summary>
-        /// Handling for when the content is dragged.
-        /// </summary>
-        public virtual void OnDrag(PointerEventData eventData)
-        {
-            if (!m_Dragging)
-                return;
-
-            if (eventData.button != PointerEventData.InputButton.Left)
-                return;
-
-            if (!IsActive())
-                return;
-
-            Vector2 localCursor;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(ViewRect, eventData.position, eventData.pressEventCamera, out localCursor))
-                return;
-
-            UpdateBounds();
-
-            var pointerDelta = localCursor - m_PointerStartLocalCursor;
-            Vector2 position = m_ContentStartPosition + pointerDelta;
-
-            // Offset to get content into place in the view.
-            Vector2 offset = CalculateOffset(position - content.anchoredPosition);
-            position += offset;
-            if (movementType == MovementType.Elastic)
-            {
-                if (offset.x != 0)
-                    position.x = position.x - RubberDelta(offset.x, m_ViewBounds.size.x);
-                if (offset.y != 0)
-                    position.y = position.y - RubberDelta(offset.y, m_ViewBounds.size.y);
-            }
-
-            SetContentAnchoredPosition(position);
-        }
-
-        /// <summary>
-        /// Sets the anchored position of the content.
-        /// </summary>
-        protected virtual void SetContentAnchoredPosition(Vector2 position)
-        {
-            if (direction == Direction.Vertical)
-                position.x = content.anchoredPosition.x;
-            if (direction == Direction.Horizontal)
-                position.y = content.anchoredPosition.y;
-
-            if (position != content.anchoredPosition)
-            {
-                content.anchoredPosition = position;
-                UpdateBounds();
-            }
         }
 
         protected virtual void LateUpdate()
@@ -409,7 +248,6 @@ namespace EasyFramework.UI
             if (!content)
                 return;
 
-            EnsureLayoutHasRebuilt();
             UpdateBounds();
             float deltaTime = Time.unscaledDeltaTime;
             Vector2 offset = CalculateOffset(Vector2.zero);
@@ -421,7 +259,7 @@ namespace EasyFramework.UI
                 if (movementType == MovementType.Elastic && offset[_axis] != 0)
                 {
                     float speed = m_Velocity[_axis];
-                    float smoothTime = Elasticity;
+                    float smoothTime = m_Elasticity;
                     if (m_Scrolling)
                         smoothTime *= 3.0f;
                     position[_axis] = Mathf.SmoothDamp(content.anchoredPosition[_axis], content.anchoredPosition[_axis] + offset[_axis], ref speed, smoothTime, Mathf.Infinity, deltaTime);
@@ -430,9 +268,9 @@ namespace EasyFramework.UI
                     m_Velocity[_axis] = speed;
                 }
                 // Else move content according to velocity with deceleration applied.
-                else if (Inertia)
+                else if (m_Inertia)
                 {
-                    m_Velocity[_axis] *= Mathf.Pow(DecelerationRate, deltaTime);
+                    m_Velocity[_axis] *= Mathf.Pow(m_DecelerationRate, deltaTime);
                     if (Mathf.Abs(m_Velocity[_axis]) < 1)
                         m_Velocity[_axis] = 0;
                     position[_axis] += m_Velocity[_axis] * deltaTime;
@@ -452,7 +290,7 @@ namespace EasyFramework.UI
                 SetContentAnchoredPosition(position);
             }
 
-            if (m_Dragging && Inertia)
+            if (m_Dragging && m_Inertia)
             {
                 Vector3 newVelocity = (content.anchoredPosition - m_PrevPosition) / deltaTime;
                 m_Velocity = Vector3.Lerp(m_Velocity, newVelocity, deltaTime * 10);
@@ -461,28 +299,28 @@ namespace EasyFramework.UI
             if (m_ViewBounds != m_PrevViewBounds || m_ContentBounds != m_PrevContentBounds || content.anchoredPosition != m_PrevPosition)
             {
                 UISystemProfilerApi.AddMarker("ScrollRectPro.value", this);
-                UpdateCheck(normalizedPosition);
+                UpdateCheck(NormalizedPosition);
                 UpdatePrevData();
             }
 
-            if (!m_Dragging && AutoDocking)
+            if (!m_Dragging && m_AutoDocking)
             {
                 float _va = m_Velocity[(int)direction];
-                if (Mathf.Abs(_va) <= DockVelocity && Mathf.Abs(_va) != 0)
+                if (Mathf.Abs(_va) <= m_DockSpeed && Mathf.Abs(_va) != 0)
                 {
-                    StopMovement();
+                    m_Velocity = Vector2.zero;
                     if (_va < 0)
                     {
-                        if (direction == Direction.Horizontal)
+                        if (direction == AxisType.Horizontal)
                             GoToElementPosWithIndex(m_CurrentIndex - m_MaxIndex);
                         else
                             GoToElementPosWithIndex(m_CurrentIndex + 1);
                     }
                     else
                     {
-                        if (direction == Direction.Horizontal)
+                        if (direction == AxisType.Horizontal)
                             GoToElementPosWithIndex(m_CurrentIndex + 1);
-                        else 
+                        else
                             GoToElementPosWithIndex(m_CurrentIndex - m_MaxIndex);
                     }
                 }
@@ -490,8 +328,131 @@ namespace EasyFramework.UI
             m_Scrolling = false;
         }
 
+        protected override void OnDisable()
+        {
+            m_Dragging = false;
+            m_Scrolling = false;
+            CallbackFunc = null;
+            m_Velocity = Vector2.zero;
+        }
+
+        void IScrollHandler.OnScroll(PointerEventData data)
+        {
+            if (!IsActive())
+                return;
+
+            UpdateBounds();
+
+            Vector2 delta = data.scrollDelta;
+            // Down is positive for scroll events, while in UI system up is positive.
+            delta.y *= -1;
+            if (direction == AxisType.Vertical)
+            {
+                if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+                    delta.y = delta.x;
+                delta.x = 0;
+            }
+            if (direction == AxisType.Horizontal)
+            {
+                if (Mathf.Abs(delta.y) > Mathf.Abs(delta.x))
+                    delta.x = delta.y;
+                delta.y = 0;
+            }
+
+            if (data.IsScrolling())
+                m_Scrolling = true;
+
+            Vector2 position = content.anchoredPosition;
+            position += delta * m_ScrollSensitivity;
+            if (movementType == MovementType.Clamped)
+                position += CalculateOffset(position - content.anchoredPosition);
+
+            SetContentAnchoredPosition(position);
+            UpdateBounds();
+        }
+
+        #region Drag Handler
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left)
+                return;
+
+            if (!IsActive())
+                return;
+
+            UpdateBounds();
+
+            m_PointerStartLocalCursor = Vector2.zero;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(((RectTransform)transform), eventData.position, eventData.pressEventCamera, out m_PointerStartLocalCursor);
+            m_ContentStartPosition = content.anchoredPosition;
+            m_Dragging = true;
+        }
+
+        void IDragHandler.OnDrag(PointerEventData eventData)
+        {
+            if (!m_Dragging)
+                return;
+
+            if (eventData.button != PointerEventData.InputButton.Left)
+                return;
+
+            if (!IsActive())
+                return;
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(((RectTransform)transform), eventData.position, eventData.pressEventCamera, out Vector2 localCursor))
+                return;
+
+            UpdateBounds();
+
+            var _pointerDelta = localCursor - m_PointerStartLocalCursor;
+            Vector2 _position = m_ContentStartPosition + _pointerDelta;
+
+            // Offset to get content into place in the view.
+            Vector2 _offset = CalculateOffset(_position - content.anchoredPosition);
+            _position += _offset;
+            if (movementType == MovementType.Elastic)
+            {
+                if (_offset.x != 0)
+                    _position.x = _position.x - RubberDelta(_offset.x, m_ViewBounds.size.x);
+                if (_offset.y != 0)
+                    _position.y = _position.y - RubberDelta(_offset.y, m_ViewBounds.size.y);
+            }
+
+            SetContentAnchoredPosition(_position);
+        }
+
+        void IEndDragHandler.OnEndDrag(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left)
+                return;
+
+            m_Dragging = false;
+        }
+
+        #endregion
+
+        #region Private Fcuntion
+        /// <summary>
+        /// Sets the anchored position of the content.
+        /// <para>设置内容的锚定位置。</para>
+        /// </summary>
+        protected virtual void SetContentAnchoredPosition(Vector2 position)
+        {
+            if (direction == AxisType.Vertical)
+                position.x = content.anchoredPosition.x;
+            if (direction == AxisType.Horizontal)
+                position.y = content.anchoredPosition.y;
+
+            if (position != content.anchoredPosition)
+            {
+                content.anchoredPosition = position;
+                UpdateBounds();
+            }
+        }
+
         /// <summary>
         /// Helper function to update the previous data fields on a ScrollRectPro. Call this before you change data in the ScrollRectPro.
+        /// <para>在ScrollRectPro上更新之前的数据字段的辅助函数。在更改ScrollRectPro中的数据之前调用它。</para>
         /// </summary>
         protected void UpdatePrevData()
         {
@@ -504,66 +465,13 @@ namespace EasyFramework.UI
         }
 
         /// <summary>
-        /// The scroll position as a Vector2 between (0,0) and (1,1) with (0,0) being the lower left corner.
-        /// </summary>
-        public Vector2 normalizedPosition
-        {
-            get
-            {
-                return new Vector2(horizontalNormalizedPosition, verticalNormalizedPosition);
-            }
-            set
-            {
-                SetNormalizedPosition(value.x, 0);
-                SetNormalizedPosition(value.y, 1);
-            }
-        }
-
-        /// <summary>
-        /// The horizontal scroll position as a value between 0 and 1, with 0 being at the left.
-        /// </summary>
-        public float horizontalNormalizedPosition
-        {
-            get
-            {
-                UpdateBounds();
-                if ((m_ContentBounds.size.x <= m_ViewBounds.size.x) || Mathf.Approximately(m_ContentBounds.size.x, m_ViewBounds.size.x))
-                    return (m_ViewBounds.min.x > m_ContentBounds.min.x) ? 1 : 0;
-                return (m_ViewBounds.min.x - m_ContentBounds.min.x) / (m_ContentBounds.size.x - m_ViewBounds.size.x);
-            }
-            set
-            {
-                SetNormalizedPosition(value, 0);
-            }
-        }
-
-        /// <summary>
-        /// The vertical scroll position as a value between 0 and 1, with 0 being at the bottom.
-        /// </summary>
-        public float verticalNormalizedPosition
-        {
-            get
-            {
-                UpdateBounds();
-                if ((m_ContentBounds.size.y <= m_ViewBounds.size.y) || Mathf.Approximately(m_ContentBounds.size.y, m_ViewBounds.size.y))
-                    return (m_ViewBounds.min.y > m_ContentBounds.min.y) ? 1 : 0;
-
-                return (m_ViewBounds.min.y - m_ContentBounds.min.y) / (m_ContentBounds.size.y - m_ViewBounds.size.y);
-            }
-            set
-            {
-                SetNormalizedPosition(value, 1);
-            }
-        }
-
-        /// <summary>
         /// >Set the horizontal or vertical scroll position as a value between 0 and 1, with 0 being at the left or at the bottom.
+        /// <para>将水平或垂直滚动位置设置为0到1之间的值，0表示左侧或底部。</para>
         /// </summary>
-        /// <param name="value">The position to set, between 0 and 1.</param>
-        /// <param name="axis">The axis to set: 0 for horizontal, 1 for vertical.</param>
+        /// <param name="value">The position to set, between 0 and 1.<para>要设置的位置，在0到1之间。</para></param>
+        /// <param name="axis">The axis to set: 0 for horizontal, 1 for vertical.<para>要设置的轴:0表示水平，1表示垂直。</para></param>
         protected virtual void SetNormalizedPosition(float value, int axis)
         {
-            EnsureLayoutHasRebuilt();
             UpdateBounds();
             // How much the content is larger than the view.
             float hiddenLength = m_ContentBounds.size[axis] - m_ViewBounds.size[axis];
@@ -587,41 +495,13 @@ namespace EasyFramework.UI
             return (1 - (1 / ((Mathf.Abs(overStretching) * 0.55f / viewSize) + 1))) * viewSize * Mathf.Sign(overStretching);
         }
 
-        protected override void OnRectTransformDimensionsChange()
-        {
-            SetDirty();
-        }
-
-        /// <summary>
-        /// Called by the layout system.
-        /// </summary>
-        public virtual void CalculateLayoutInputHorizontal() { }
-
-        /// <summary>
-        /// Called by the layout system.
-        /// </summary>
-        public virtual void CalculateLayoutInputVertical() { }
-
-        #region Called by the layout system
-        public virtual void SetLayoutHorizontal()
-        {
-            m_Tracker.Clear();
-
-        }
-
-        public virtual void SetLayoutVertical()
-        {
-            m_ViewBounds = new Bounds(ViewRect.rect.center, ViewRect.rect.size);
-            m_ContentBounds = GetBounds();
-        }
-        #endregion
-
         /// <summary>
         /// Calculate the bounds the ScrollRectPro should be using.
+        /// <para>计算ScrollRectPro应该使用的边界。</para>
         /// </summary>
         protected void UpdateBounds()
         {
-            m_ViewBounds = new Bounds(ViewRect.rect.center, ViewRect.rect.size);
+            m_ViewBounds = new Bounds(((RectTransform)transform).rect.center, ((RectTransform)transform).rect.size);
             m_ContentBounds = GetBounds();
 
             if (content == null)
@@ -657,15 +537,22 @@ namespace EasyFramework.UI
                 if (delta.sqrMagnitude > float.Epsilon)
                 {
                     contentPos = content.anchoredPosition + delta;
-                    if (direction == Direction.Vertical)
+                    if (direction == AxisType.Vertical)
                         contentPos.x = content.anchoredPosition.x;
-                    if (direction == Direction.Horizontal)
+                    if (direction == AxisType.Horizontal)
                         contentPos.y = content.anchoredPosition.y;
                     AdjustBounds(ref m_ViewBounds, ref contentPivot, ref contentSize, ref contentPos);
                 }
             }
         }
 
+        /// <summary>
+        /// 调整范围
+        /// </summary>
+        /// <param name="viewBounds">视图边界</param>
+        /// <param name="contentPivot">内容中心点</param>
+        /// <param name="contentSize">内容尺寸</param>
+        /// <param name="contentPos">内容位置</param>
         void AdjustBounds(ref Bounds viewBounds, ref Vector2 contentPivot, ref Vector3 contentSize, ref Vector3 contentPos)
         {
             // Make sure content bounds are at least as large as view by adding padding if not.
@@ -688,23 +575,23 @@ namespace EasyFramework.UI
             }
         }
 
+        /// <summary>
+        /// 获取范围
+        /// </summary>
+        /// <returns></returns>
         private Bounds GetBounds()
         {
             if (content == null)
                 return new Bounds();
             content.GetWorldCorners(m_Corners);
-            var viewWorldToLocalMatrix = ViewRect.worldToLocalMatrix;
-            return InternalGetBounds(m_Corners, ref viewWorldToLocalMatrix);
-        }
+            var viewWorldToLocalMatrix = ((RectTransform)transform).worldToLocalMatrix;
 
-        Bounds InternalGetBounds(Vector3[] corners, ref Matrix4x4 viewWorldToLocalMatrix)
-        {
             var vMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             var vMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 
             for (int j = 0; j < 4; j++)
             {
-                Vector3 v = viewWorldToLocalMatrix.MultiplyPoint3x4(corners[j]);
+                Vector3 v = viewWorldToLocalMatrix.MultiplyPoint3x4(m_Corners[j]);
                 vMin = Vector3.Min(v, vMin);
                 vMax = Vector3.Max(v, vMax);
             }
@@ -714,6 +601,9 @@ namespace EasyFramework.UI
             return bounds;
         }
 
+        /// <summary>
+        /// 计算偏移量
+        /// </summary>
         private Vector2 CalculateOffset(Vector2 delta)
         {
             Vector2 offset = Vector2.zero;
@@ -723,7 +613,7 @@ namespace EasyFramework.UI
             Vector2 min = m_ContentBounds.min;
             Vector2 max = m_ContentBounds.max;
 
-            if (direction == Direction.Horizontal)
+            if (direction == AxisType.Horizontal)
             {
                 min.x += delta.x;
                 max.x += delta.x;
@@ -736,7 +626,7 @@ namespace EasyFramework.UI
                 else if (maxOffset > 0.001f)
                     offset.x = maxOffset;
             }
-            if (direction == Direction.Vertical)
+            if (direction == AxisType.Vertical)
             {
                 min.y += delta.y;
                 max.y += delta.y;
@@ -753,45 +643,26 @@ namespace EasyFramework.UI
         }
 
         /// <summary>
-        /// Override to alter or add to the code that keeps the appearance of the scroll rect synced with its data.
+        /// 从对象池中获取一个对象
         /// </summary>
-        protected void SetDirty()
-        {
-            if (!IsActive())
-                return;
-
-            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
-        }
-
-        /// <summary>
-        /// Override to alter or add to the code that caches data to avoid repeated heavy operations.
-        /// </summary>
-        protected void SetDirtyCaching()
-        {
-            if (!IsActive())
-                return;
-
-            CanvasUpdateRegistry.RegisterCanvasElementForLayoutRebuild(this);
-            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
-        }
-
         protected GameObject GetPoolsObj()
         {
-            GameObject cell = null;
+            GameObject _go = null;
             if (m_ElementsPool.Count > 0)
-                cell = m_ElementsPool.Pop();
-            if (cell == null)
-                cell = Instantiate(Elemental);
+                _go = m_ElementsPool.Pop();
+            if (_go == null)
+                _go = Instantiate(Elemental);
 
-            cell.transform.SetParent(content.transform);
-            cell.transform.localScale = Vector3.one;
-            SetActive(cell, true);
+            _go.transform.SetParent(content.transform);
+            _go.transform.localScale = Vector3.one;
+            SetActive(_go, true);
 
-            return cell;
+            return _go;
         }
 
         /// <summary>
         /// Set the element push the pool.
+        /// <para>回收一个元素对象</para>
         /// </summary>
         protected void SetPoolsObj(GameObject element)
         {
@@ -804,6 +675,7 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// Set active with the element.
+        /// <para>设置元素可见状态</para>
         /// </summary>
         protected void SetActive(GameObject obj, bool isActive)
         {
@@ -815,10 +687,11 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// Check the anchor is right.
+        /// <para>检查锚点是否正确。</para>
         /// </summary>
         private void CheckAnchor(RectTransform rt)
         {
-            if (direction == Direction.Vertical)
+            if (direction == AxisType.Vertical)
             {
                 if (!((rt.anchorMin == new Vector2(0, 1) && rt.anchorMax == new Vector2(0, 1)) ||
                       (rt.anchorMin == new Vector2(0, 1) && rt.anchorMax == new Vector2(1, 1))))
@@ -840,25 +713,26 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// When the scroll update the view.
+        /// <para>当滚动时更新视图</para>
         /// </summary>
         private void UpdateCheck(Vector2 v2)
         {
-            if (m_ElementInfos == null) return;
+            if (m_ElementInfosArray == null) return;
 
-            int _count = m_ElementInfos.Length;
+            int _count = m_ElementInfosArray.Length;
             for (int i = 0, length = _count; i < length; i++)
             {
-                ElementInfo _element = m_ElementInfos[i];
-                GameObject obj = _element.obj;
-                Vector3 pos = _element.pos;
-                float rangePos = direction == Direction.Vertical ? pos.y : pos.x;
+                ElementInfo _element = m_ElementInfosArray[i];
+                GameObject obj = _element.Element;
+                Vector3 pos = _element.Postation;
+                float rangePos = direction == AxisType.Vertical ? pos.y : pos.x;
 
                 if (IsOutRange(rangePos))
                 {
                     if (obj != null)
                     {
                         SetPoolsObj(obj);
-                        m_ElementInfos[i].obj = null;
+                        m_ElementInfosArray[i].Element = null;
                     }
                 }
                 else
@@ -868,7 +742,7 @@ namespace EasyFramework.UI
                         GameObject cell = GetPoolsObj();
                         cell.transform.localPosition = pos;
                         //cell.name = i.ToString();
-                        m_ElementInfos[i].obj = cell;
+                        m_ElementInfosArray[i].Element = cell;
                         CallbackFunction(cell, i);
                     }
                 }
@@ -877,21 +751,22 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// Check whether it is out of the display range
+        /// <para>检查是否超出显示范围</para>
         /// </summary>
-        /// <param name="pos">The element position</param>
+        /// <param name="pos">The element position. <para>元素位置</para></param>
         protected bool IsOutRange(float pos)
         {
             Vector3 listP = content.anchoredPosition;
-            if (direction == Direction.Vertical)
+            if (direction == AxisType.Vertical)
             {
-                if (pos + listP.y > m_ElementHeight || pos + listP.y < -rectTransform.rect.height)
+                if (pos + listP.y > m_ElementHeight || pos + listP.y < -m_Rect.rect.height)
                 {
                     return true;
                 }
             }
             else
             {
-                if (pos + listP.x < -m_ElementWidth || pos + listP.x > rectTransform.rect.width)
+                if (pos + listP.x < -m_ElementWidth || pos + listP.x > m_Rect.rect.width)
                 {
                     return true;
                 }
@@ -902,32 +777,33 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// Show the list with new count.
+        /// <para>用新数据更新列表</para>
         /// </summary>
         void ShowList(int num)
         {
             m_MinIndex = -1;
             m_MaxIndex = -1;
 
-            if (direction == Direction.Vertical)
+            if (direction == AxisType.Vertical)
             {
-                float contentSize = (Spacing.y + m_ElementHeight) * Mathf.CeilToInt((float)num / Lines);
+                float contentSize = (m_Spacing.y + m_ElementHeight) * Mathf.CeilToInt((float)num / m_Lines);
                 m_ContentHeight = contentSize;
                 m_ContentWidth = content.sizeDelta.x;
-                contentSize = contentSize < rectTransform.rect.height ? rectTransform.rect.height : contentSize;
+                contentSize = contentSize < m_Rect.rect.height ? m_Rect.rect.height : contentSize;
                 content.sizeDelta = new Vector2(m_ContentWidth, contentSize);
-                if (num != m_MaxCount)
+                if (num != m_MaxElementalCount)
                 {
                     content.anchoredPosition = new Vector2(content.anchoredPosition.x, 0);
                 }
             }
             else
             {
-                float contentSize = (Spacing.x + m_ElementWidth) * Mathf.CeilToInt((float)num / Lines);
+                float contentSize = (m_Spacing.x + m_ElementWidth) * Mathf.CeilToInt((float)num / m_Lines);
                 m_ContentWidth = contentSize;
                 m_ContentHeight = content.sizeDelta.x;
-                contentSize = contentSize < rectTransform.rect.width ? rectTransform.rect.width : contentSize;
+                contentSize = contentSize < m_Rect.rect.width ? m_Rect.rect.width : contentSize;
                 content.sizeDelta = new Vector2(contentSize, m_ContentHeight);
-                if (num != m_MaxCount)
+                if (num != m_MaxElementalCount)
                 {
                     content.anchoredPosition = new Vector2(0, content.anchoredPosition.y);
                 }
@@ -937,72 +813,72 @@ namespace EasyFramework.UI
 
             if (m_Inited)
             {
-                lastEndIndex = num - m_MaxCount > 0 ? m_MaxCount : num;
-                lastEndIndex = m_ClearList ? 0 : lastEndIndex;
+                lastEndIndex = num - m_MaxElementalCount > 0 ? m_MaxElementalCount : num;
+                //lastEndIndex = m_ClearList ? 0 : lastEndIndex;
 
-                int count = m_ClearList ? m_ElementInfos.Length : m_MaxCount;
+                int count = m_MaxElementalCount;
                 for (int i = lastEndIndex; i < count; i++)
                 {
-                    if (m_ElementInfos[i].obj != null)
+                    if (m_ElementInfosArray[i].Element != null)
                     {
-                        SetPoolsObj(m_ElementInfos[i].obj);
-                        m_ElementInfos[i].obj = null;
+                        SetPoolsObj(m_ElementInfosArray[i].Element);
+                        m_ElementInfosArray[i].Element = null;
                     }
                 }
             }
 
-            ElementInfo[] _tempCellInfos = m_ElementInfos;
-            m_ElementInfos = new ElementInfo[num];
+            ElementInfo[] _tempCellInfos = m_ElementInfosArray;
+            m_ElementInfosArray = new ElementInfo[num];
 
             for (int i = 0; i < num; i++)
             {
-                if (m_MaxCount != -1 && i < lastEndIndex)
+                if (m_MaxElementalCount != -1 && i < lastEndIndex)
                 {
-                    ElementInfo _ei = _tempCellInfos[i];
+                    ElementInfo _ei = _tempCellInfos.Length > i ? _tempCellInfos[i] : new ElementInfo();
 
-                    float rPos = direction == Direction.Vertical ? _ei.pos.y : _ei.pos.x;
+                    float rPos = direction == AxisType.Vertical ? _ei.Postation.y : _ei.Postation.x;
                     if (!IsOutRange(rPos))
                     {
                         m_MinIndex = m_MinIndex == -1 ? i : m_MinIndex;
                         m_MaxIndex = i;
 
-                        if (_ei.obj == null)
+                        if (_ei.Element == null)
                         {
-                            _ei.obj = GetPoolsObj();
+                            _ei.Element = GetPoolsObj();
                         }
 
-                        _ei.obj.transform.GetComponent<RectTransform>().localPosition = _ei.pos;
-                        //_ei.obj.name = i.ToString();
-                        _ei.obj.SetActive(true);
+                        _ei.Element.transform.GetComponent<RectTransform>().localPosition = _ei.Postation;
+                        _ei.Element.name = i.ToString();
+                        _ei.Element.SetActive(true);
 
-                        CallbackFunction(_ei.obj, i);
+                        CallbackFunction(_ei.Element, i);
                     }
                     else
                     {
-                        SetPoolsObj(_ei.obj);
-                        _ei.obj = null;
+                        SetPoolsObj(_ei.Element);
+                        _ei.Element = null;
                     }
 
-                    m_ElementInfos[i] = _ei;
+                    m_ElementInfosArray[i] = _ei;
                     continue;
                 }
 
                 ElementInfo _element = new ElementInfo();
 
-                if (direction == Direction.Vertical)
+                if (direction == AxisType.Vertical)
                 {
-                    _element.pos = new Vector3(m_ElementWidth * (i % Lines) + Spacing.x * (i % Lines), -(m_ElementHeight * Mathf.FloorToInt(i / Lines) + Spacing.y * Mathf.FloorToInt(i / Lines)), 0);
+                    _element.Postation = new Vector3(m_ElementWidth * (i % m_Lines) + m_Spacing.x * (i % m_Lines), -(m_ElementHeight * Mathf.FloorToInt(i / m_Lines) + m_Spacing.y * Mathf.FloorToInt(i / m_Lines)), 0);
                 }
                 else
                 {
-                    _element.pos = new Vector3(m_ElementWidth * Mathf.FloorToInt(i / Lines) + Spacing.x * Mathf.FloorToInt(i / Lines), -(m_ElementHeight * (i % Lines) + Spacing.y * (i % Lines)), 0);
+                    _element.Postation = new Vector3(m_ElementWidth * Mathf.FloorToInt(i / m_Lines) + m_Spacing.x * Mathf.FloorToInt(i / m_Lines), -(m_ElementHeight * (i % m_Lines) + m_Spacing.y * (i % m_Lines)), 0);
                 }
 
-                float cellPos = direction == Direction.Vertical ? _element.pos.y : _element.pos.x;
+                float cellPos = direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
                 if (IsOutRange(cellPos))
                 {
-                    _element.obj = null;
-                    m_ElementInfos[i] = _element;
+                    _element.Element = null;
+                    m_ElementInfosArray[i] = _element;
                     continue;
                 }
 
@@ -1010,20 +886,22 @@ namespace EasyFramework.UI
                 m_MaxIndex = i;
 
                 GameObject cell = GetPoolsObj();
-                cell.GetComponent<RectTransform>().localPosition = _element.pos;
+                cell.GetComponent<RectTransform>().localPosition = _element.Postation;
                 //cell.name = i.ToString();
 
-                _element.obj = cell;
-                m_ElementInfos[i] = _element;
+                _element.Element = cell;
+                m_ElementInfosArray[i] = _element;
 
                 CallbackFunction(cell, i);
             }
             m_MaxCount = num;
+            m_MaxElementalCount = num;
             m_Inited = true;
         }
 
         /// <summary>
         /// The callback event with elements list update.
+        /// <para>更新元素列表的回调事件。</para>
         /// </summary>
         protected void CallbackFunction(GameObject obj, int index)
         {
@@ -1031,11 +909,14 @@ namespace EasyFramework.UI
             m_CurrentIndex = index;
         }
 
+        #endregion
+
         /// <summary>
         /// Initialize the scroll view pro.
+        /// <para>初始化滚动视图</para>
         /// </summary>
-        /// <param name="callback">The update event</param>
-        /// <param name="maxCount">The elements list max count.</param>
+        /// <param name="callback">The update event. <para>更新回调函数</para></param>
+        /// <param name="maxCount">The elements list max count. <para>最大元素数量</para></param>
         public void InIt(Action<GameObject, int> callback, int maxCount)
         {
             CallbackFunc = null;
@@ -1070,16 +951,18 @@ namespace EasyFramework.UI
 
         /// <summary>
         /// Changed the lines of Scroll view pro.
+        /// <para>更改行/列数</para>
         /// </summary>
-        /// <param name="maxCount">Max count.</param>
+        /// <param name="maxCount">Max count. <para>最大行/列数</para></param>
         public void ChangedLinesNumber(int maxCount)
         {
+            if (!m_Inited) return;
             ShowList(maxCount);
         }
 
-        #region Arrive at designated position
         /// <summary>
         /// restore to the original position with index 0
+        /// <para>恢复到索引为0的原始位置</para>
         /// </summary>
         public void GoToStartLine()
         {
@@ -1087,81 +970,36 @@ namespace EasyFramework.UI
         }
 
         /// <summary>
-        /// Go to position with element index.通过index定位到某一单元格的坐标位置
+        /// Go to position with element index.
+        /// <para>通过索引定位到某一单元格的坐标位置</para>
         /// </summary>
         /// <param name="index">The element index. 索引ID</param>
         public void GoToElementPosWithIndex(int index)
         {
-            if (null == m_ElementInfos || m_ElementInfos.Length == 0) return;
+            if (null == m_ElementInfosArray || m_ElementInfosArray.Length == 0) return;
 
-            int theFirstIndex = index - index % Lines;
+            int theFirstIndex = index - index % m_Lines;
             var tmpIndex = theFirstIndex + m_MaxIndex;
 
-            int theLastIndex = tmpIndex > m_MaxCount - 1 ? m_MaxCount - 1 : tmpIndex;
+            int theLastIndex = tmpIndex > m_MaxElementalCount - 1 ? m_MaxElementalCount - 1 : tmpIndex;
 
-            if (theLastIndex == m_MaxCount - 1)
+            if (theLastIndex == m_MaxElementalCount - 1)
             {
-                var shortOfNum = m_MaxCount % Lines == 0 ? 0 : Lines - m_MaxCount % Lines;
+                var shortOfNum = m_MaxElementalCount % m_Lines == 0 ? 0 : m_Lines - m_MaxElementalCount % m_Lines;
                 theFirstIndex = theLastIndex - m_MaxIndex + shortOfNum;
             }
 
-            Vector2 newPos = m_ElementInfos[theFirstIndex].pos;
-            if (direction == Direction.Vertical)
+            Vector2 newPos = m_ElementInfosArray[theFirstIndex].Postation;
+            if (direction == AxisType.Vertical)
             {
-                var posY = index <= Lines ? -newPos.y : -newPos.y - Spacing.y;
+                var posY = index <= m_Lines ? -newPos.y : -newPos.y - m_Spacing.y;
                 content.anchoredPosition = new Vector2(content.anchoredPosition.x, posY);
             }
             else
             {
-                var posX = index <= Lines ? -newPos.x : -newPos.x + Spacing.x;
+                var posX = index <= m_Lines ? -newPos.x : -newPos.x + m_Spacing.x;
                 content.anchoredPosition = new Vector2(posX, content.anchoredPosition.y);
             }
         }
-        #endregion
-
-        #region Update the elements list.
-        /// <summary>
-        /// Update the list.
-        /// </summary>
-        public void UpdateList()
-        {
-            for (int i = 0, length = m_ElementInfos.Length; i < length; i++)
-            {
-                ElementInfo _element = m_ElementInfos[i];
-                if (_element.obj != null)
-                {
-                    float rangePos = direction == Direction.Vertical ? _element.pos.y : _element.pos.x;
-                    if (!IsOutRange(rangePos))
-                    {
-                        CallbackFunction(_element.obj, i);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Update the element with index.
-        /// </summary>
-        /// <param name="index">The element index.</param>
-        public void UpdateElement(int index)
-        {
-            ElementInfo _element = m_ElementInfos[index - 1];
-            if (_element.obj != null)
-            {
-                float rangePos = direction == Direction.Vertical ? _element.pos.y : _element.pos.x;
-                if (!IsOutRange(rangePos))
-                {
-                    CallbackFunction(_element.obj, index - 1);
-                }
-            }
-        }
-        #endregion
-
-#if UNITY_EDITOR
-        protected override void OnValidate()
-        {
-            SetDirtyCaching();
-        }
-#endif
     }
 }

@@ -1,269 +1,143 @@
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using System;
-using UnityEngine;
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2023-04-10 15:11:01
+ * ModifyAuthor:  Xiaohei.Wang(Wenhao)
+ * ModifyTime:    2024-07-04 09:28:55
+ * ScriptVersion: 0.2
+ * ===============================================
+*/
 
-/// <summary>
-/// 图片轮播组件
-/// </summary>
-public class Slideshow : UIBehaviour, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, ICanvasElement
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+
+namespace EasyFramework.UI
 {
     /// <summary>
-    /// 滚动方向H or V
+    /// 轮播图、幻灯片
     /// </summary>
-    public enum AxisType
+    [AddComponentMenu("UI/Slideshow", 103)]
+    [RequireComponent(typeof(CanvasRenderer))]
+    [RequireComponent(typeof(UnityEngine.UI.Mask))]
+    [RequireComponent(typeof(UnityEngine.UI.Image))]
+    public class Slideshow : UIBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        Horizontal,
-        Vertical
-    }
+        [SerializeField]
+        private AxisType m_MoveAxis;
 
-    /// <summary>
-    /// 图片轮播方向
-    /// </summary>
-    public enum LoopDirType
-    {
-        RightOrUp = -1,
-        LeftOrDown = 1,
-    }
+        [SerializeField]
+        private LoopDirectionType m_LoopDirection = LoopDirectionType.LeftOrDown;
 
-    /// <summary>
-    /// 子物体size
-    /// </summary>
-    public Vector2 mCellSize;
+        [SerializeField]
+        private bool m_CanDrag = false;
 
-    /// <summary>
-    /// 子物体间隔
-    /// </summary>
-    public Vector2 mSpacing;
+        [SerializeField]
+        private bool m_AutoLoop = true;
 
-    /// <summary>
-    /// 方向
-    /// </summary>
-    public AxisType MMoveAxisType;
+        [SerializeField]
+        private int m_SpacingTime = 150;
 
-    /// <summary>
-    /// 轮播方向-- 1为向左移动，-1为向右移动
-    /// </summary>
-    public LoopDirType mLoopDirType = LoopDirType.LeftOrDown;
+        [SerializeField]
+        private float m_LoopSpaceTime = 1;
 
-    /// <summary>
-    /// Tween时的步数
-    /// </summary>
-    [Range(1, 500)]
-    public int mTweenStepNum = 150;
+        [SerializeField]
+        private Vector2 m_Spacing = new Vector2(10, 10);
 
-    /// <summary>
-    /// 自动轮播
-    /// </summary>
-    public bool mAutoLoop = false;
+        [SerializeField]
+        private Vector2 m_ElementSize = new Vector2(100, 100);
+        public UnityEvent<int> OnIndexChanged { get; set; }
 
-    /// <summary>
-    /// 可否拖动
-    /// </summary>
-    public bool mDrag = false;
+        /// <summary>
+        /// 当前处于正中的元素
+        /// </summary>
+        public int CurrentIndex => m_index;
 
-    /// <summary>
-    /// 下一次播放间隔时间
-    /// </summary>
-    public float mLoopSpaceTime = 1;
+        /// <summary>
+        /// 元素总数
+        /// </summary>
+        public int ElementCount => m_elementCount;
 
-    /// <summary>
-    /// 位于正中的子元素变化的事件,参数为index
-    /// </summary>
-    [HideInInspector]
-    public Action<int> mOnIndexChange;
-    /// <summary>
-    /// 当前处于正中的元素
-    /// </summary>
-    public int CurrentIndex
-    {
-        get
+        private int m_index = 0;
+        private int m_preIndex = 0;
+        private int m_currentStep = 0;
+        private int m_elementCount = 0;
+        private float currTimeDelta = 0;
+        private bool m_Dragging = false;
+        private bool m_IsNormalizing = false;
+        private bool contentCheckCache = true;
+
+        private Vector2 m_PrePos;
+        private Vector2 m_CurrentPos;
+        private RectTransform header;
+        private RectTransform viewRectTran;
+
+        protected override void Awake()
         {
-            return m_index;
+            m_elementCount = transform.childCount;
+            viewRectTran = GetComponent<RectTransform>();
+            header = GetChild(0);
         }
-    }
 
-    private bool m_Dragging = false;
-    private bool m_IsNormalizing = false;
-    private Vector2 m_CurrentPos;
-    private int m_currentStep = 0;
-    private RectTransform viewRectTran;
-    private Vector2 m_PrePos;
-    private int m_index = 0, m_preIndex = 0;
-    private RectTransform header;
-    private bool contentCheckCache = true;
-
-    private float currTimeDelta = 0;
-    private float viewRectXMin
-    {
-        get
+        protected override void OnEnable()
         {
-            Vector3[] v = new Vector3[4];
-            viewRectTran.GetWorldCorners(v);
-            return v[0].x;
-        }
-    }
-    private float viewRectXMax
-    {
-        get
-        {
-            Vector3[] v = new Vector3[4];
-            viewRectTran.GetWorldCorners(v);
-            return v[3].x;
-        }
-    }
-    private float viewRectYMin
-    {
-        get
-        {
-            Vector3[] v = new Vector3[4];
-            viewRectTran.GetWorldCorners(v);
-            return v[0].y;
-        }
-    }
-    private float viewRectYMax
-    {
-        get
-        {
-            Vector3[] v = new Vector3[4];
-            viewRectTran.GetWorldCorners(v);
-            return v[2].y;
-        }
-    }
-
-    public int CellCount
-    {
-        get
-        {
-            return transform.childCount;
-        }
-    }
-    protected override void Awake()
-    {
-        viewRectTran = GetComponent<RectTransform>();
-        header = GetChild(viewRectTran, 0);
-    }
-
-
-
-    public void resizeChildren()
-    {
-        Vector2 delta = MMoveAxisType == AxisType.Horizontal ? new Vector2(mCellSize.x + mSpacing.x, 0) : new Vector2(0, mCellSize.y + mSpacing.y);
-
-        for (int i = 0; i < CellCount; i++)
-        {
-            var t = GetChild(viewRectTran, i);
-            if (t)
+            ResizeChildren();
+            if (!ContentIsLongerThanSelf())
+                return;
+            
+            int s;
+            do
             {
-                t.localPosition = delta * i;
-                t.sizeDelta = mCellSize;
-            }
+                s = GetBoundaryState();
+                LoopElement(s);
+            } while (s != 0);
+            
         }
-        m_IsNormalizing = false;
-        m_CurrentPos = Vector2.zero;
-        m_currentStep = 0;
-    }
-    /// <summary>
-    /// 加子物体到当前列表的最后面
-    /// </summary>
-    /// <param name="t"></param>
-    public virtual void AddChild(RectTransform t)
-    {
-        if (t != null)
+
+        protected virtual void Update()
         {
-            t.SetParent(viewRectTran, false);
-            t.SetAsLastSibling();
-            Vector2 delta;
-            if (MMoveAxisType == AxisType.Horizontal)
-            {
-                delta = new Vector2(mCellSize.x + mSpacing.x, 0);
-            }
-            else
-            {
-                delta = new Vector2(0, mCellSize.y + mSpacing.y);
-            }
-            if (CellCount == 0)
-            {
-                t.localPosition = Vector3.zero;
-                header = t;
-            }
-            else
-            {
-                t.localPosition = delta + (Vector2)GetChild(viewRectTran, CellCount - 1).localPosition;
-            }
-        }
-    }
-    protected override void OnEnable()
-    {
-        base.OnEnable();
+            if (!ContentIsLongerThanSelf())
+                return;
 
-        mOnIndexChange += OnChangeIndex;
-
-        resizeChildren();
-        //return;
-        if (Application.isPlaying)
-        {
-            if (ContentIsLongerThanRect())
-            {
-                int s;
-                do
-                {
-                    s = GetBoundaryState();
-                    LoopCell(s);
-                } while (s != 0);
-            }
-        }
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-        mOnIndexChange -= OnChangeIndex;
-
-    }
-
-    protected virtual void Update()
-    {
-        if (ContentIsLongerThanRect())
-        {
-            //实现在必要时loop子元素
-            if (Application.isPlaying)
-            {
-                int s = GetBoundaryState();
-                LoopCell(s);
-            }
+            int s = GetBoundaryState();
+            LoopElement(s);
             //缓动回指定位置
-            if (m_IsNormalizing && EnsureListCanAdjust())
+            if (m_IsNormalizing && !m_Dragging)
             {
-                if (m_currentStep == mTweenStepNum)
+                if (m_currentStep == m_SpacingTime)
                 {
                     m_IsNormalizing = false;
                     m_currentStep = 0;
                     m_CurrentPos = Vector2.zero;
                     return;
                 }
-                Vector2 delta = m_CurrentPos / mTweenStepNum;
+                Vector2 delta = m_CurrentPos / m_SpacingTime;
                 m_currentStep++;
-                TweenToCorrect(-delta);
+
+                foreach (RectTransform i in viewRectTran)
+                {
+                    i.localPosition -= (Vector3)delta;
+                }
             }
             //自动loop
-            if (mAutoLoop && !m_IsNormalizing && EnsureListCanAdjust())
+            if (m_AutoLoop && !m_IsNormalizing && !m_Dragging)
             {
                 currTimeDelta += Time.deltaTime;
-                if (currTimeDelta > mLoopSpaceTime)
+                if (currTimeDelta > m_LoopSpaceTime)
                 {
                     currTimeDelta = 0;
-                    MoveToIndex(m_index + (int)mLoopDirType);
+                    MoveToIndex(m_index + (int)m_LoopDirection);
                 }
             }
             //检测index是否变化
-            if (MMoveAxisType == AxisType.Horizontal)
+            if (m_MoveAxis == AxisType.Horizontal)
             {
-                m_index = (int)(header.localPosition.x / (mCellSize.x + mSpacing.x - 1));
+                m_index = (int)(header.localPosition.x / (m_ElementSize.x + m_Spacing.x - 1));
             }
             else
             {
-                m_index = (int)(header.localPosition.y / (mCellSize.y + mSpacing.y - 1));
+                m_index = (int)(header.localPosition.y / (m_ElementSize.y + m_Spacing.y - 1));
             }
             if (m_index <= 0)
             {
@@ -271,285 +145,269 @@ public class Slideshow : UIBehaviour, IBeginDragHandler, IInitializePotentialDra
             }
             else
             {
-                m_index = CellCount - m_index;
+                m_index = ElementCount - m_index;
             }
             if (m_index != m_preIndex)
             {
-                if (mOnIndexChange != null)
-                {
-                    mOnIndexChange(m_index);
-                }
+                OnIndexChanged?.Invoke(m_index);
             }
             m_preIndex = m_index;
-        }
-    }
-    public virtual void OnBeginDrag(PointerEventData eventData)
-    {
-        if (!mDrag || !contentCheckCache)
-        {
-            return;
-        }
-        Vector2 vector;
-        if (((eventData.button == PointerEventData.InputButton.Left) && this.IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(this.viewRectTran, eventData.position, eventData.pressEventCamera, out vector))
-        {
-            this.m_Dragging = true;
-            m_PrePos = vector;
-        }
-    }
 
-    public virtual void OnInitializePotentialDrag(PointerEventData eventData)
-    {
-        if (!mDrag)
-        {
-            return;
         }
-        return;
-    }
 
-    public virtual void OnDrag(PointerEventData eventData)
-    {
-        if (!mDrag || !contentCheckCache)
+        #region Drag Handler
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            return;
+            if (!m_CanDrag || !contentCheckCache)
+            {
+                return;
+            }
+            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
+            {
+                m_Dragging = true;
+                m_PrePos = vector;
+            }
         }
-        Vector2 vector;
-        if (((eventData.button == PointerEventData.InputButton.Left) && this.IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(this.viewRectTran, eventData.position, eventData.pressEventCamera, out vector))
+
+        void IDragHandler.OnDrag(PointerEventData eventData)
         {
+            if (!m_CanDrag || !contentCheckCache)
+            {
+                return;
+            }
+            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
+            {
+                m_IsNormalizing = false;
+                m_CurrentPos = Vector2.zero;
+                m_currentStep = 0;
+
+                Vector2 vector2 = vector - m_PrePos;
+                if (m_MoveAxis == AxisType.Horizontal)
+                    vector2.y = 0;
+                else
+                    vector2.x = 0;
+
+                foreach (RectTransform i in viewRectTran)
+                {
+                    i.localPosition += (Vector3)vector2;
+                }
+
+                m_PrePos = vector;
+            }
+        }
+
+        void IEndDragHandler.OnEndDrag(PointerEventData eventData)
+        {
+            if (!m_CanDrag || !contentCheckCache)
+            {
+                return;
+            }
+            m_Dragging = false;
+            m_IsNormalizing = true;
+            m_CurrentPos = CalcCorrectDeltaPos();
+            m_currentStep = 0;
+        }
+        #endregion
+
+        #region Private Function
+        /// <summary>
+        /// Resize the elements
+        /// <para>调整元素尺寸</para>
+        /// </summary>
+        private void ResizeChildren()
+        {
+            Vector2 delta = m_MoveAxis == AxisType.Horizontal ? new Vector2(m_ElementSize.x + m_Spacing.x, 0) : new Vector2(0, m_ElementSize.y + m_Spacing.y);
+
+            for (int i = 0; i < ElementCount; i++)
+            {
+                var t = GetChild(i);
+                if (t)
+                {
+                    t.localPosition = delta * i;
+                    t.sizeDelta = m_ElementSize;
+                }
+            }
             m_IsNormalizing = false;
             m_CurrentPos = Vector2.zero;
             m_currentStep = 0;
-            Vector2 vector2 = vector - this.m_PrePos;
-            Vector2 vec = CalculateOffset(vector2);
-            this.SetContentPosition(vec);
-            m_PrePos = vector;
         }
-    }
-    /// <summary>
-    /// 移动到指定索引
-    /// </summary>
-    /// <param name="ind"></param>
-    public virtual void MoveToIndex(int ind)
-    {
-        if (m_IsNormalizing)
-        {
-            return;
-        }
-        if (ind == m_index)
-        {
-            return;
-        }
-        this.m_IsNormalizing = true;
-        Vector2 offset;
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            offset = new Vector2(mCellSize.x + mSpacing.x, 0);
-        }
-        else
-        {
-            offset = new Vector2(0, mCellSize.y + mSpacing.y);
-        }
-        var delta = CalcCorrectDeltaPos();
-        int vindex = m_index;
-        m_CurrentPos = delta + offset * (ind - vindex);
-        m_currentStep = 0;
-    }
-    private Vector2 CalculateOffset(Vector2 delta)
-    {
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            delta.y = 0;
-        }
-        else
-        {
-            delta.x = 0;
-        }
-        return delta;
-    }
-    private void SetContentPosition(Vector2 position)
-    {
-        foreach (RectTransform i in viewRectTran)
-        {
-            i.localPosition += (Vector3)position;
-        }
-        return;
-    }
 
-    public virtual void OnEndDrag(PointerEventData eventData)
-    {
-        if (!mDrag || !contentCheckCache)
+        /// <summary>
+        /// Whether the content is larger than itself
+        /// <para>内容是否比自身范围大</para>
+        /// </summary>
+        private bool ContentIsLongerThanSelf()
         {
-            return;
-        }
-        this.m_Dragging = false;
-        this.m_IsNormalizing = true;
-        m_CurrentPos = CalcCorrectDeltaPos();
-        m_currentStep = 0;
-    }
-
-    public virtual void Rebuild(CanvasUpdate executing)
-    {
-        return;
-    }
-    /// <summary>
-    /// List是否处于可自由调整状态
-    /// </summary>
-    /// <returns></returns>
-    public virtual bool EnsureListCanAdjust()
-    {
-        return !m_Dragging && ContentIsLongerThanRect();
-    }
-    /// <summary>
-    /// 内容是否比显示范围大
-    /// </summary>
-    /// <returns></returns>
-    public virtual bool ContentIsLongerThanRect()
-    {
-        float contentLen;
-        float rectLen;
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            contentLen = CellCount * (mCellSize.x + mSpacing.x) - mSpacing.x;
-            rectLen = viewRectTran.rect.xMax - viewRectTran.rect.xMin;
-        }
-        else
-        {
-            contentLen = CellCount * (mCellSize.y + mSpacing.y) - mSpacing.y;
-            rectLen = viewRectTran.rect.yMax - viewRectTran.rect.yMin;
-        }
-        contentCheckCache = contentLen > rectLen;
-        return contentCheckCache;
-    }
-    /// <summary>
-    /// 检测边界情况，分为0未触界，-1左(下)触界，1右(上)触界
-    /// </summary>
-    /// <returns></returns>
-    public virtual int GetBoundaryState()
-    {
-        RectTransform left;
-        RectTransform right;
-        left = GetChild(viewRectTran, 0);
-        right = GetChild(viewRectTran, CellCount - 1);
-        Vector3[] l = new Vector3[4];
-        left.GetWorldCorners(l);
-        Vector3[] r = new Vector3[4];
-        right.GetWorldCorners(r);
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            if (l[0].x >= viewRectXMin)
+            float _contentLen;
+            float _rectLen;
+            if (m_MoveAxis == AxisType.Horizontal)
             {
-                return -1;
-            }
-            else if (r[3].x < viewRectXMax)
-            {
-                return 1;
-            }
-        }
-        else
-        {
-            if (l[0].y >= viewRectYMin)
-            {
-                return -1;
-            }
-            else if (r[1].y < viewRectYMax)
-            {
-                return 1;
-            }
-        }
-        return 0;
-    }
-    /// <summary>
-    /// Loop列表，分为-1把最右(上)边一个移到最左(下)边，1把最左(下)边一个移到最右(上)边
-    /// </summary>
-    /// <param name="dir"></param>
-    protected virtual void LoopCell(int dir)
-    {
-        if (dir == 0)
-        {
-            return;
-        }
-        RectTransform MoveCell;
-        RectTransform Tarborder;
-        Vector2 TarPos;
-        if (dir == 1)
-        {
-            MoveCell = GetChild(viewRectTran, 0);
-            Tarborder = GetChild(viewRectTran, CellCount - 1);
-            MoveCell.SetSiblingIndex(CellCount - 1);
-        }
-        else
-        {
-            Tarborder = GetChild(viewRectTran, 0);
-            MoveCell = GetChild(viewRectTran, CellCount - 1);
-            MoveCell.SetSiblingIndex(0);
-        }
-        if (MMoveAxisType == AxisType.Horizontal)
-        {
-            TarPos = Tarborder.localPosition + new Vector3((mCellSize.x + mSpacing.x) * dir, 0, 0);
-        }
-        else
-        {
-            TarPos = (Vector2)Tarborder.localPosition + new Vector2(0, (mCellSize.y + mSpacing.y) * dir);
-        }
-        MoveCell.localPosition = TarPos;
-    }
-    /// <summary>
-    /// 计算一个最近的正确位置
-    /// </summary>
-    /// <returns></returns>
-    public virtual Vector2 CalcCorrectDeltaPos()
-    {
-        Vector2 delta = Vector2.zero;
-        float distance = float.MaxValue;
-        foreach (RectTransform i in viewRectTran)
-        {
-            var td = Mathf.Abs(i.localPosition.x) + Mathf.Abs(i.localPosition.y);
-            if (td <= distance)
-            {
-                distance = td;
-                delta = i.localPosition;
+                _contentLen = ElementCount * (m_ElementSize.x + m_Spacing.x) - m_Spacing.x;
+                _rectLen = viewRectTran.rect.xMax - viewRectTran.rect.xMin;
             }
             else
             {
-                break;
+                _contentLen = ElementCount * (m_ElementSize.y + m_Spacing.y) - m_Spacing.y;
+                _rectLen = viewRectTran.rect.yMax - viewRectTran.rect.yMin;
             }
+            contentCheckCache = _contentLen > _rectLen;
+            return contentCheckCache;
         }
-        return delta;
-    }
-    /// <summary>
-    /// 移动指定增量
-    /// </summary>
-    protected virtual void TweenToCorrect(Vector2 delta)
-    {
-        foreach (RectTransform i in viewRectTran)
+
+        /// <summary>
+        /// Boundary cases are detected and divided into 0 not touching the boundary, -1 left (bottom) touching the boundary, and 1 right (top) touching the boundary.
+        /// <para>检测边界情况，分为0未触界，-1左(下)触界，1右(上)触界</para>
+        /// </summary>
+        private int GetBoundaryState()
         {
-            i.localPosition += (Vector3)delta;
-        }
-    }
+            RectTransform _left;
+            RectTransform _right;
+            _left = GetChild(0);
+            _right = GetChild(ElementCount - 1);
 
-    private static RectTransform GetChild(RectTransform parent, int index)
-    {
-        if (parent == null || index >= parent.childCount)
+            Vector3[] _leftV3 = new Vector3[4];
+            Vector3[] _rightV3 = new Vector3[4];
+            _left.GetWorldCorners(_leftV3);
+            _right.GetWorldCorners(_rightV3);
+
+            if (m_MoveAxis == AxisType.Horizontal)
+            {
+                if (_leftV3[0].x >= GetWorldCorners(0, AxisType.Horizontal))
+                {
+                    return -1;
+                }
+                else if (_rightV3[3].x < GetWorldCorners(3, AxisType.Horizontal))
+                {
+                    return 1;
+                }
+            }
+            else
+            {
+                if (_leftV3[0].y >= GetWorldCorners(0, AxisType.Vertical))
+                {
+                    return -1;
+                }
+                else if (_rightV3[1].y < GetWorldCorners(2, AxisType.Vertical))
+                {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Get the corners of the calculated rectangle in world space.
+        /// <para>在世界空间中获得计算的矩形的角。</para>
+        /// </summary>
+        /// <param name="rect">Corner index.  <para>角索引</para></param>
+        /// <param name="axis">Axis type.  <para>轴向</para></param>
+        private float GetWorldCorners(int rect, AxisType axis)
         {
-            return null;
+            Vector3[] _v3 = new Vector3[4];
+            viewRectTran.GetWorldCorners(_v3);
+            return axis == AxisType.Horizontal ? _v3[rect].x : _v3[rect].y;
         }
-        return parent.GetChild(index) as RectTransform;
-    }
 
-    public void LayoutComplete()
-    {
-    }
+        /// <summary>
+        /// 循环列表元素
+        /// </summary>
+        private void LoopElement(int dir)
+        {
+            if (dir == 0)
+                return;
 
-    public void GraphicUpdateComplete()
-    {
-    }
+            RectTransform _moveCell;
+            RectTransform _tarborder;
+            Vector2 _tarPos;
 
-    /// <summary>
-    /// 当前中心位置index回调
-    /// </summary>
-    /// <param name="index"></param>
-    public void OnChangeIndex(int index)
-    {
-        Debug.Log(index + "    is   index");
-    }
+            if (dir == 1)
+            {
+                _moveCell = GetChild(0);
+                _tarborder = GetChild(ElementCount - 1);
+                _moveCell.SetSiblingIndex(ElementCount - 1);
+            }
+            else
+            {
+                _moveCell = GetChild(ElementCount - 1);
+                _tarborder = GetChild(0);
+                _moveCell.SetSiblingIndex(0);
+            }
 
+            if (m_MoveAxis == AxisType.Horizontal)
+                _tarPos = _tarborder.localPosition + new Vector3((m_ElementSize.x + m_Spacing.x) * dir, 0, 0);
+            else
+                _tarPos = (Vector2)_tarborder.localPosition + new Vector2(0, (m_ElementSize.y + m_Spacing.y) * dir);
+
+            _moveCell.localPosition = _tarPos;
+        }
+
+        /// <summary>
+        /// Calculate the correct position for the current loop.
+        /// <para>计算当前循环的正确位置</para>
+        /// </summary>
+        private Vector2 CalcCorrectDeltaPos()
+        {
+            Vector2 _v2 = Vector2.zero;
+            float _dis = float.MaxValue;
+            foreach (RectTransform i in viewRectTran)
+            {
+                var td = Mathf.Abs(i.localPosition.x) + Mathf.Abs(i.localPosition.y);
+                if (td <= _dis)
+                {
+                    _dis = td;
+                    _v2 = i.localPosition;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return _v2;
+        }
+
+        /// <summary>
+        /// Retrieve child element by index.
+        /// <para>通过索引检索子元素</para>
+        /// </summary>
+        private RectTransform GetChild(int index)
+        {
+            if (index >= m_elementCount)
+            {
+                return null;
+            }
+            return transform.GetChild(index) as RectTransform;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 移动到指定索引
+        /// </summary>
+        /// <param name="ind"></param>
+        public void MoveToIndex(int ind)
+        {
+            if (m_IsNormalizing)
+            {
+                return;
+            }
+            if (ind == m_index)
+            {
+                return;
+            }
+            this.m_IsNormalizing = true;
+            Vector2 offset;
+            if (m_MoveAxis == AxisType.Horizontal)
+            {
+                offset = new Vector2(m_ElementSize.x + m_Spacing.x, 0);
+            }
+            else
+            {
+                offset = new Vector2(0, m_ElementSize.y + m_Spacing.y);
+            }
+            var delta = CalcCorrectDeltaPos();
+            int vindex = m_index;
+            m_CurrentPos = delta + offset * (ind - vindex);
+            m_currentStep = 0;
+        }
+    }
 }

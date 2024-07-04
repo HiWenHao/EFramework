@@ -32,6 +32,14 @@
     ]
   },
   {
+    "name": "Axis",
+    "desc": "轴",
+    "array": [
+      "Axis",
+      "轴"
+    ]
+  },
+  {
     "name": "Atlas",
     "desc": "图集",
     "array": [
@@ -136,6 +144,14 @@
     ]
   },
   {
+    "name": "Can",
+    "desc": "可以",
+    "array": [
+      "Can",
+      "可以"
+    ]
+  },
+  {
     "name": "CPU",
     "desc": "计算机处理器",
     "array": [
@@ -232,6 +248,14 @@
     ]
   },
   {
+    "name": "Column",
+    "desc": "列",
+    "array": [
+      "Column",
+      "列"
+    ]
+  },
+  {
     "name": "Custom",
     "desc": "自定义",
     "array": [
@@ -312,6 +336,22 @@
     ]
   },
   {
+    "name": "Drag",
+    "desc": "拖动",
+    "array": [
+      "Drag",
+      "拖动"
+    ]
+  },
+  {
+    "name": "Dock",
+    "desc": "停靠",
+    "array": [
+      "Dock",
+      "停靠"
+    ]
+  },
+  {
     "name": "Doing",
     "desc": "正在做",
     "array": [
@@ -368,6 +408,14 @@
     ]
   },
   {
+    "name": "Direction",
+    "desc": "方向",
+    "array": [
+      "Direction",
+      "方向"
+    ]
+  },
+  {
     "name": "Different",
     "desc": "不同、差异",
     "array": [
@@ -397,6 +445,14 @@
     "array": [
       "Description",
       "描述"
+    ]
+  },
+  {
+    "name": "Deceleration",
+    "desc": "减速",
+    "array": [
+      "Deceleration",
+      "减速"
     ]
   },
   {
@@ -432,6 +488,22 @@
     ]
   },
   {
+    "name": "Enable",
+    "desc": "启动",
+    "array": [
+      "Enable",
+      "启动"
+    ]
+  },
+  {
+    "name": "Element",
+    "desc": "元素",
+    "array": [
+      "Element",
+      "元素"
+    ]
+  },
+  {
     "name": "Effects",
     "desc": "特效",
     "array": [
@@ -453,6 +525,14 @@
     "array": [
       "Encrypt",
       "加密"
+    ]
+  },
+  {
+    "name": "Elasticity",
+    "desc": "弹性",
+    "array": [
+      "Elasticity",
+      "弹性"
     ]
   },
   {
@@ -576,19 +656,19 @@
     ]
   },
   {
-    "name": "Id",
-    "desc": "标识id",
-    "array": [
-      "id",
-      "标识"
-    ]
-  },
-  {
     "name": "Import",
     "desc": "导入",
     "array": [
       "Import",
       "导入"
+    ]
+  },
+  {
+    "name": "Inertia",
+    "desc": "惯性",
+    "array": [
+      "Inertia",
+      "惯性"
     ]
   },
   {
@@ -637,6 +717,14 @@
     "array": [
       "Load",
       "加载"
+    ]
+  },
+  {
+    "name": "Loop",
+    "desc": "循环",
+    "array": [
+      "Loop",
+      "循环"
     ]
   },
   {
@@ -712,6 +800,14 @@
     ]
   },
   {
+    "name": "Move",
+    "desc": "移动",
+    "array": [
+      "Move",
+      "移动"
+    ]
+  },
+  {
     "name": "Match",
     "desc": "匹配项",
     "array": [
@@ -725,6 +821,14 @@
     "array": [
       "Model",
       "模型"
+    ]
+  },
+  {
+    "name": "Mouse",
+    "desc": "鼠标",
+    "array": [
+      "Mouse",
+      "鼠标"
     ]
   },
   {
@@ -984,6 +1088,22 @@
     ]
   },
   {
+    "name": "Row",
+    "desc": "行",
+    "array": [
+      "Row",
+      "行"
+    ]
+  },
+  {
+    "name": "Rate",
+    "desc": "比率",
+    "array": [
+      "Rate",
+      "比率"
+    ]
+  },
+  {
     "name": "Rely",
     "desc": "依赖",
     "array": [
@@ -1104,6 +1224,14 @@
     ]
   },
   {
+    "name": "Scrol",
+    "desc": "滚动",
+    "array": [
+      "Scrol",
+      "滚动"
+    ]
+  },
+  {
     "name": "Score",
     "desc": "分数",
     "array": [
@@ -1117,6 +1245,14 @@
     "array": [
       "Scene",
       "场景"
+    ]
+  },
+  {
+    "name": "Speed",
+    "desc": "速度、只表示大小，不涉及方向",
+    "array": [
+      "Speed",
+      "速度"
     ]
   },
   {
@@ -1152,6 +1288,14 @@
     ]
   },
   {
+    "name": "Spacing",
+    "desc": "间距",
+    "array": [
+      "Spacing",
+      "间距"
+    ]
+  },
+  {
     "name": "Simplex",
     "desc": "单一的",
     "array": [
@@ -1168,11 +1312,27 @@
     ]
   },
   {
+    "name": "Sensitivity",
+    "desc": "灵敏度",
+    "array": [
+      "Sensitivity",
+      "灵敏度"
+    ]
+  },
+  {
     "name": "To",
     "desc": "到",
     "array": [
       "To",
       "到"
+    ]
+  },
+  {
+    "name": "Time",
+    "desc": "时间",
+    "array": [
+      "Time",
+      "时间"
     ]
   },
   {
@@ -1317,6 +1477,14 @@
     "array": [
       "Version",
       "版本"
+    ]
+  },
+  {
+    "name": "Velocity",
+    "desc": "速度、包含了方向的信息",
+    "array": [
+      "Velocity",
+      "速度"
     ]
   },
   {

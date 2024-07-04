@@ -109,3 +109,6 @@ MonoBehaviour:
   m_DeleteScript: 0
   m_CreatePrefab: 1
   m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
+  m_PackUpBindList: 1
+  m_SortByType: 0
+  m_SortByNameLength: 1

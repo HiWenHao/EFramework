@@ -42,6 +42,11 @@ namespace EasyFramework.Edit
         {
             CreateUIObject(menuCommand, "Scroll View Pro");
         }
+        [MenuItem("GameObject/UI/EF/Slideshow", false, 44)]
+        static void CreateUISlideshow(MenuCommand menuCommand)
+        {
+            CreateUIObject(menuCommand, "Slideshow");
+        }
 
 
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)

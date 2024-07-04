@@ -26,46 +26,43 @@ namespace EasyFramework.UI
     {
         protected ButtonPro() { }
 
-        [Serializable]
-        public class ButtonClickedEvent : UnityEvent { }
-
         [FormerlySerializedAs("onClickLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_OnClickLeft = new ButtonClickedEvent();
+        private UnityEvent m_OnClickLeft = new UnityEvent();
 
         [FormerlySerializedAs("onClickRight")]
         [SerializeField]
-        private ButtonClickedEvent m_OnClickRight = new ButtonClickedEvent();
+        private UnityEvent m_OnClickRight = new UnityEvent();
 
         [FormerlySerializedAs("onLongPressLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onLongPressLeft = new ButtonClickedEvent();
+        private UnityEvent m_onLongPressLeft = new UnityEvent();
 
         [FormerlySerializedAs("onDoubleClickLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onDoubleClickLeft = new ButtonClickedEvent();
+        private UnityEvent m_onDoubleClickLeft = new UnityEvent();
 
         [FormerlySerializedAs("onKeepPressLeft")]
         [SerializeField]
-        private ButtonClickedEvent m_onKeepPressLeft = new ButtonClickedEvent();
+        private UnityEvent m_onKeepPressLeft = new UnityEvent();
 
-        public ButtonClickedEvent onClickLeft
+        public UnityEvent onClickLeft
         {
             get { return m_OnClickLeft; }
         }
-        public ButtonClickedEvent onClickRight
+        public UnityEvent onClickRight
         {
             get { return m_OnClickRight; }
         }
-        public ButtonClickedEvent onDoubleClickLeft
+        public UnityEvent onDoubleClickLeft
         {
             get { return m_onDoubleClickLeft; }
         }
-        public ButtonClickedEvent onLongPressLeft
+        public UnityEvent onLongPressLeft
         {
             get { return m_onLongPressLeft; }
         }
-        public ButtonClickedEvent onKeepPressLeft
+        public UnityEvent onKeepPressLeft
         {
             get { return m_onKeepPressLeft; }
         }
@@ -85,15 +82,6 @@ namespace EasyFramework.UI
             m_clickCount = 0;
             m_onEventTrigger = true;
             m_clickStartTime = default;
-        }
-
-        private void Press()
-        {
-            if (!IsActive() || !IsInteractable())
-                return;
-            Debug.LogWarning("sssssssssssssssss");
-            UISystemProfilerApi.AddMarker("Button.onClick", this);
-            m_OnClickLeft.Invoke();
         }
 
         private void Update()

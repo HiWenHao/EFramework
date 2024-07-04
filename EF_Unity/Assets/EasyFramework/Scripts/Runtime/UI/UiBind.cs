@@ -15,6 +15,7 @@ using UnityEngine;
 namespace EasyFramework.UI
 {
     [DisallowMultipleComponent]
+    [AddComponentMenu("UI/UiBind", 100)]
     public class UiBind : MonoBehaviour
     {
         [Serializable]
