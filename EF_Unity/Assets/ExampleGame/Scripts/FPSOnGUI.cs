@@ -4,14 +4,15 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-09-16 17:41:05
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2022-09-16 17:41:05
+ * ModifyTime:    2024-07-05 17:17:30
  * ScriptVersion: 0.1
  * ===============================================
 */
 
+using EasyFramework;
 using UnityEngine;
 
-namespace EasyFramework
+namespace EFExample
 {
     /// <summary>
     /// Show the fps
@@ -39,14 +40,7 @@ namespace EasyFramework
 
         void OnGUI()
         {
-            if (style == null)
-            {
-                style = new GUIStyle(GUI.skin.label);
-                style.normal.textColor = Color.white;
-                style.alignment = TextAnchor.MiddleCenter;
-                style.fontSize = 40;
-            }
-
+            if (null == m_FpsCounter) return;
             GUI.color = Color.white;
             m_startRect = GUI.Window(0, m_startRect, DoMyWindow, "");
         }
@@ -60,6 +54,13 @@ namespace EasyFramework
         //Window窗口
         void DoMyWindow(int windowID)
         {
+            if (style == null)
+            {
+                style = new GUIStyle(GUI.skin.label);
+                style.normal.textColor = Color.white;
+                style.alignment = TextAnchor.MiddleCenter;
+                style.fontSize = 40;
+            }
             GUI.Label(new Rect(0, 0, m_startRect.width, m_startRect.height), $"FPS {(int)m_FpsCounter.CurrentFps}", style);
             if (AllowDrag) GUI.DragWindow(new Rect(10, 10, Screen.width - 10, Screen.height - 10));
         }
