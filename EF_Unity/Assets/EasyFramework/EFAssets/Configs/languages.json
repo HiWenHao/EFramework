@@ -656,6 +656,14 @@
     ]
   },
   {
+    "name": "Init",
+    "desc": "初始化",
+    "array": [
+      "Init",
+      "初始化"
+    ]
+  },
+  {
     "name": "Import",
     "desc": "导入",
     "array": [

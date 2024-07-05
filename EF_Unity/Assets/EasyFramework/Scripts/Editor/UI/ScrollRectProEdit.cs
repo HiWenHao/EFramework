@@ -30,7 +30,6 @@ namespace EasyFramework.Edit
         SerializedProperty m_Elasticity;
         SerializedProperty m_AutoDocking;
         SerializedProperty m_DecelerationRate;
-        SerializedProperty m_ScrollSensitivity;
 
         private void OnEnable()
         {
@@ -43,14 +42,12 @@ namespace EasyFramework.Edit
             m_Elasticity = serializedObject.FindProperty("m_Elasticity");
             m_AutoDocking = serializedObject.FindProperty("m_AutoDocking");
             m_DecelerationRate = serializedObject.FindProperty("m_DecelerationRate");
-            m_ScrollSensitivity = serializedObject.FindProperty("m_ScrollSensitivity");
         }
 
         public override void OnInspectorGUI()
         {
             m_Pro = target as ScrollRectPro;
 
-            EditorGUILayout.LabelField(new GUIContent("Importance Notice", "重要提示"), new GUIContent("Please initialize with code", "请在代码中初始化"));
             EditorGUILayout.Separator();
             m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine("Scrol", "Content"), m_Pro.content, typeof(RectTransform), true);
             m_Pro.direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine("Scrol", "Direction"), m_Pro.direction);
@@ -66,7 +63,6 @@ namespace EasyFramework.Edit
             if (m_Inertia.boolValue)
             {
                 m_DecelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine("Deceleration", "Rate"), m_DecelerationRate.floatValue);
-                m_ScrollSensitivity.floatValue = EditorGUILayout.FloatField(LC.Combine("Mouse", "Scrol", "Sensitivity"), m_ScrollSensitivity.floatValue);
             }
             EditorGUILayout.Separator();
 
@@ -74,11 +70,11 @@ namespace EasyFramework.Edit
             m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine("Element"), m_Pro.Elemental, typeof(GameObject), true);
             EditorGUILayout.Separator();
 
-            //m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Dock"), m_AutoDocking.boolValue);
-            //if (m_AutoDocking.boolValue)
-            //{
-            //    m_DockSpeed.floatValue = EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), m_DockSpeed.floatValue);
-            //}
+            m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Dock"), m_AutoDocking.boolValue);
+            if (m_AutoDocking.boolValue)
+            {
+                m_DockSpeed.floatValue = EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), m_DockSpeed.floatValue);
+            }
             if (GUI.changed)
             { 
                 serializedObject.ApplyModifiedProperties();
