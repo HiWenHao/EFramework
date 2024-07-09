@@ -30,8 +30,7 @@ namespace EasyFramework.Managers
 
             foreach (var package in m_ResourcePackageList)
             {
-                package.Value.ForceUnloadAllAssets();
-                package.Value.UnloadUnusedAssets();
+                package.Value.UnloadAllAssetsAsync();
             }
             m_ResourcePackageList.Clear();
             m_ResourcePackageList = null;
@@ -101,7 +100,7 @@ namespace EasyFramework.Managers
         public void ClearYooAssetMemory()
         {
             foreach (var package in m_ResourcePackageList)
-                package.Value.UnloadUnusedAssets();
+                package.Value.UnloadUnusedAssetsAsync();
         }
         /// <summary>
         /// Clear the application memory for Resources.

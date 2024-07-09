@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace YooAsset
 {
-    internal sealed class BundledSceneProvider : ProviderBase
+    internal sealed class BundledSceneProvider : ProviderOperation
     {
         public readonly LoadSceneMode SceneMode;
         private AsyncOperation _asyncOperation;
@@ -35,28 +35,20 @@ namespace YooAsset
             // 1. 检测资源包
             if (_steps == ESteps.CheckBundle)
             {
-                if (IsWaitForAsyncComplete)
-                {
-                    DependBundles.WaitForAsyncComplete();
-                    OwnerBundle.WaitForAsyncComplete();
-                }
-
-                if (DependBundles.IsDone() == false)
+                if (LoadDependBundleFileOp.IsDone == false)
                     return;
-                if (OwnerBundle.IsDone() == false)
+                if (LoadBundleFileOp.IsDone == false)
                     return;
 
-                if (DependBundles.IsSucceed() == false)
+                if (LoadDependBundleFileOp.Status != EOperationStatus.Succeed)
                 {
-                    string error = DependBundles.GetLastError();
-                    InvokeCompletion(error, EOperationStatus.Failed);
+                    InvokeCompletion(LoadDependBundleFileOp.Error, EOperationStatus.Failed);
                     return;
                 }
 
-                if (OwnerBundle.Status != BundleLoaderBase.EStatus.Succeed)
+                if (LoadBundleFileOp.Status != EOperationStatus.Succeed)
                 {
-                    string error = OwnerBundle.LastError;
-                    InvokeCompletion(error, EOperationStatus.Failed);
+                    InvokeCompletion(LoadBundleFileOp.Error, EOperationStatus.Failed);
                     return;
                 }
 
@@ -66,7 +58,7 @@ namespace YooAsset
             // 2. 加载场景
             if (_steps == ESteps.Loading)
             {
-                if (IsWaitForAsyncComplete || IsForceDestroyComplete)
+                if (IsWaitForAsyncComplete)
                 {
                     // 注意：场景同步加载方法不会立即加载场景，而是在下一帧加载。
                     LoadSceneParameters parameters = new LoadSceneParameters(SceneMode);
@@ -99,7 +91,7 @@ namespace YooAsset
             {
                 if (_asyncOperation != null)
                 {
-                    if (IsWaitForAsyncComplete || IsForceDestroyComplete)
+                    if (IsWaitForAsyncComplete)
                     {
                         // 场景加载无法强制异步转同步
                         YooLogger.Error("The scene is loading asyn !");

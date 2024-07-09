@@ -108,7 +108,8 @@ namespace EasyFramework.Managers
             PlayMode = (EPlayMode)mode;
             D.Emphasize($"资源系统运行模式：{mode}");
             m_Callback = callback;
-            if (!YooAssets.ContainsPackage(packageName))
+            m_Package = YooAssets.TryGetPackage(packageName);
+            if (m_Package == null)
             {
                 // 创建默认的资源包
                 m_Package = YooAssets.CreatePackage(packageName);
@@ -183,39 +184,54 @@ namespace EasyFramework.Managers
         #region Setting config Initialize.初始化更新设置
         IEnumerator Initialize()
         {
-            InitializeParameters initParameters = null;
+            InitializeParameters _initParameters = null;
             switch (PlayMode)
             {
                 case EPlayMode.EditorSimulateMode:
-                    initParameters = new EditorSimulateModeParameters
+                    var _simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, m_Package.PackageName);
+                    _initParameters = new EditorSimulateModeParameters
                     {
-                        SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, m_Package.PackageName)
+                        EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(_simulateBuildResult)
                     };
                     break;
                 case EPlayMode.OfflinePlayMode:
-                    initParameters = new OfflinePlayModeParameters
+                    _initParameters = new OfflinePlayModeParameters
                     {
-                        DecryptionServices = new FileStreamDecryption()
+                        BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters()
                     };
                     break;
                 case EPlayMode.HostPlayMode:
-                    initParameters = new HostPlayModeParameters
+                    _initParameters = new HostPlayModeParameters
                     {
-                        DecryptionServices = new FileStreamDecryption(),
-                        BuildinQueryServices = new GameQueryServices(),
-                        RemoteServices = new RemoteServices(EF.Projects.ResourcesArea.InnerUrl, EF.Projects.ResourcesArea.StandbyUrl)
+                        BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters(),
+                        CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters
+                        (
+                            new RemoteServices(
+                                EF.Projects.ResourcesArea.InnerUrl,
+                                EF.Projects.ResourcesArea.StandbyUrl
+                            )
+                        )
                     };
                     break;
                 case EPlayMode.WebPlayMode:
-                    initParameters = new WebPlayModeParameters
+                    _initParameters = new WebPlayModeParameters
                     {
-                        BuildinQueryServices = new GameQueryServices(),
-                        RemoteServices = new RemoteServices(EF.Projects.ResourcesArea.InnerUrl, EF.Projects.ResourcesArea.StandbyUrl)
+                        WebFileSystemParameters = FileSystemParameters.CreateDefaultWebFileSystemParameters()
                     };
                     break;
             }
-            yield return m_Package.InitializeAsync(initParameters);
-            Run("GetStaticVersion");
+
+            InitializationOperation _initializationOperation = m_Package.InitializeAsync(_initParameters);
+            yield return _initializationOperation;
+
+            if (_initializationOperation.Status != EOperationStatus.Succeed)
+            {
+                D.Error(_initializationOperation.Error);
+            }
+            else
+            {
+                Run("GetStaticVersion");
+            }
         }
 
         /// <summary>
@@ -254,7 +270,7 @@ namespace EasyFramework.Managers
             {
                 BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 managedStream = bundleStream;
-                return AssetBundle.LoadFromStream(bundleStream, fileInfo.ConentCRC, GetManagedReadBufferSize());
+                return AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
             }
 
             /// <summary>
@@ -265,7 +281,7 @@ namespace EasyFramework.Managers
             {
                 BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 managedStream = bundleStream;
-                return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.ConentCRC, GetManagedReadBufferSize());
+                return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
             }
 
             private static uint GetManagedReadBufferSize()
@@ -286,7 +302,7 @@ namespace EasyFramework.Managers
             AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
             {
                 managedStream = null;
-                return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.ConentCRC, GetFileOffset());
+                return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
             }
 
             /// <summary>
@@ -296,7 +312,7 @@ namespace EasyFramework.Managers
             AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
             {
                 managedStream = null;
-                return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.ConentCRC, GetFileOffset());
+                return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
             }
 
             private static ulong GetFileOffset()
@@ -312,7 +328,7 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator GetStaticVersion()
         {
-            var operation = m_Package.UpdatePackageVersionAsync();
+            var operation = m_Package.RequestPackageVersionAsync();
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
@@ -344,10 +360,6 @@ namespace EasyFramework.Managers
 
             if (operation.Status == EOperationStatus.Succeed)
             {
-                //更新成功
-                //注意：保存资源版本号作为下次默认启动的版本!
-                operation.SavePackageVersion();
-
                 //拿到配置信息接下来去获取热更资源
                 Run("CreateDownloader");
             }

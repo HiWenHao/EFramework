@@ -71,29 +71,28 @@ namespace YooAsset
                 Status = EOperationStatus.Succeed;
             }
         }
+        internal override void InternalWaitForAsyncComplete()
+        {
+            while (true)
+            {
+                // 等待句柄完成
+                if (_handle != null)
+                    _handle.WaitForAsyncComplete();
+
+                if (ExecuteWhileDone())
+                {
+                    _steps = ESteps.Done;
+                    break;
+                }
+            }
+        }
 
         /// <summary>
         /// 取消实例化对象操作
         /// </summary>
         public void Cancel()
         {
-            if (IsDone == false)
-            {
-                _steps = ESteps.Done;
-                Status = EOperationStatus.Failed;
-                Error = $"User cancelled !";
-            }
-        }
-
-        /// <summary>
-        /// 等待异步实例化结束
-        /// </summary>
-        public void WaitForAsyncComplete()
-        {
-            if (_steps == ESteps.Done)
-                return;
-            _handle.WaitForAsyncComplete();
-            InternalOnUpdate();
+            SetAbort();
         }
 
         internal static GameObject InstantiateInternal(UnityEngine.Object assetObject, bool setPositionAndRotation, Vector3 position, Quaternion rotation, Transform parent, bool worldPositionStays)

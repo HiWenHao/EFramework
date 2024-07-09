@@ -6,7 +6,7 @@ using YooAsset;
 /// <summary>
 /// 资源文件查询服务类
 /// </summary>
-public class GameQueryServices : IBuildinQueryServices
+public class GameQueryServices
 {
     /// <summary>
     /// 查询内置文件的时候，是否比对文件哈希值

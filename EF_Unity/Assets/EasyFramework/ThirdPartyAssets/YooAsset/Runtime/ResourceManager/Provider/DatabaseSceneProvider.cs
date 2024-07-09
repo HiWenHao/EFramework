@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace YooAsset
 {
-    internal sealed class DatabaseSceneProvider : ProviderBase
+    internal sealed class DatabaseSceneProvider : ProviderOperation
     {
         public readonly LoadSceneMode SceneMode;
         private bool _suspendLoadMode;
@@ -36,18 +36,12 @@ namespace YooAsset
             // 1. 检测资源包
             if (_steps == ESteps.CheckBundle)
             {
-                if (IsWaitForAsyncComplete)
-                {
-                    OwnerBundle.WaitForAsyncComplete();
-                }
-
-                if (OwnerBundle.IsDone() == false)
+                if (LoadBundleFileOp.IsDone == false)
                     return;
 
-                if (OwnerBundle.Status != BundleLoaderBase.EStatus.Succeed)
+                if (LoadBundleFileOp.Status != EOperationStatus.Succeed)
                 {
-                    string error = OwnerBundle.LastError;
-                    InvokeCompletion(error, EOperationStatus.Failed);
+                    InvokeCompletion(LoadBundleFileOp.Error, EOperationStatus.Failed);
                     return;
                 }
 
@@ -57,7 +51,7 @@ namespace YooAsset
             // 2. 加载资源对象
             if (_steps == ESteps.Loading)
             {
-                if (IsWaitForAsyncComplete || IsForceDestroyComplete)
+                if (IsWaitForAsyncComplete)
                 {
                     LoadSceneParameters loadSceneParameters = new LoadSceneParameters(SceneMode);
                     SceneObject = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(MainAssetInfo.AssetPath, loadSceneParameters);
@@ -88,7 +82,7 @@ namespace YooAsset
             {
                 if (_asyncOperation != null)
                 {
-                    if (IsWaitForAsyncComplete || IsForceDestroyComplete)
+                    if (IsWaitForAsyncComplete)
                     {
                         // 场景加载无法强制异步转同步
                         YooLogger.Error("The scene is loading asyn !");

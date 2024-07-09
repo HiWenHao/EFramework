@@ -13,6 +13,48 @@ MonoBehaviour:
   m_Name: AssetBundleCollectorSetting
   m_EditorClassIdentifier: 
   ShowPackageView: 0
-  ShowEditorAlias: 0
+  ShowEditorAlias: 1
   UniqueBundleName: 0
-  Packages: []
+  Packages:
+  - PackageName: DefaultPackage
+    PackageDesc: Test
+    EnableAddressable: 0
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 0
+    IgnoreRuleName: NormalIgnoreRule
+    Groups:
+    - GroupName: Texture
+      GroupDesc: 
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/ExampleGame/Resources/Texture/Freeui
+        CollectorGUID: 24dd9c859be3bd64bbe73026414a471a
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/ExampleGame/Resources/Texture/Game
+        CollectorGUID: 05074d4bbefd4e344b0aaa4abe171500
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: Audio
+      GroupDesc: 
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/ExampleGame/Resources/Sources
+        CollectorGUID: 97adeb34d337f4a40967cd3f992053b7
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 

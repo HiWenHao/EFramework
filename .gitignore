@@ -10,3 +10,5 @@ Temp/
 .vsconfig
 *.sln
 yoo/
+EF_Unity/Assets/StreamingAssets/
+EF_Unity/Assets/StreamingAssets.meta
