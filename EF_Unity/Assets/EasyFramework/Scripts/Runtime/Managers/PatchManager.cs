@@ -140,7 +140,7 @@ namespace EasyFramework.Managers
         #region Run progress. 跑更新流程
         void Run(string nextState)
         {
-            D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
+            //D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
 
             if (null != m_ie_currentIE)
                 EF.StopCoroutines(m_ie_currentIE);
