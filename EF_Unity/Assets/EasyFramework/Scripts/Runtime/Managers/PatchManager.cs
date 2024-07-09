@@ -4,11 +4,12 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-10-19 10:31:31
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-02-01 10:31:31
+ * ModifyTime:    2024-07-09 15:38:31
  * ScriptVersion: 0.1
  * ===============================================
 */
 
+using EasyFramework.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,15 +54,20 @@ namespace EasyFramework.Managers
     {
         EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
-        Text m_Tips;
-        Button btn_MessgeBox, btn_Done;
-        Slider m_updaterSlider;
         Transform m_patchUpdater;
+        RectTransform Tran_Updater;
+        RectTransform Tran_HintsBox;
+        RectTransform Tran_MessgeBox;
+        Text Txt_Hints;
+        Text Txt_UpdaterTips;
+        Slider Sld_UpdaterSlider;
+        List<Button> m_AllButtons;
 
         string m_packageVersion;
         ResourcePackage m_Package;
-        static Dictionary<string, bool> m_CacheData;
+        Dictionary<string, bool> m_CacheData;
         ResourceDownloaderOperation m_Downloader;
+
         Action m_Callback;
         IEnumerator m_ie_currentIE;
         Queue<IEnumerator> m_que_updaterState;
@@ -75,8 +81,6 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            m_CacheData.Clear();
-            m_CacheData = null;
             if (null != m_Package)
             {
                 //清空该包体的全部缓存
@@ -104,17 +108,28 @@ namespace EasyFramework.Managers
             PlayMode = (EPlayMode)mode;
             D.Emphasize($"资源系统运行模式：{mode}");
             m_Callback = callback;
-            // 创建默认的资源包
-            m_Package = YooAssets.CreatePackage(packageName);
+            if (!YooAssets.ContainsPackage(packageName))
+            {
+                // 创建默认的资源包
+                m_Package = YooAssets.CreatePackage(packageName);
 
-            //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-            YooAssets.SetDefaultPackage(m_Package);
-            EF.Load.AddResourcePackage(m_Package);
+                //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
+                YooAssets.SetDefaultPackage(m_Package);
+                EF.Load.AddResourcePackage(m_Package);
+            }
+            else
+            {
+                m_Package = YooAssets.GetPackage(packageName);
+            }
 
             m_que_updaterState.Clear();
-            m_que_updaterState.Enqueue(Initialize());
-            m_que_updaterState.Enqueue(GetStaticVersion());
-            m_que_updaterState.Enqueue(GetManifest());
+            if (m_Package.InitializeStatus != EOperationStatus.Succeed)
+            {
+                m_que_updaterState.Enqueue(Initialize());
+                m_que_updaterState.Enqueue(GetStaticVersion());
+                m_que_updaterState.Enqueue(GetManifest());
+            }
+
             m_que_updaterState.Enqueue(CreateDownloader());
             m_que_updaterState.Enqueue(BeginDownload());
 
@@ -124,7 +139,7 @@ namespace EasyFramework.Managers
         #region Run progress. 跑更新流程
         void Run(string nextState)
         {
-            //D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
+            D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
 
             if (null != m_ie_currentIE)
                 EF.StopCoroutines(m_ie_currentIE);
@@ -132,7 +147,7 @@ namespace EasyFramework.Managers
             {
                 m_ie_currentIE = null;
                 if (m_patchUpdater)
-                    btn_MessgeBox.gameObject.SetActive(true);
+                    Tran_MessgeBox.gameObject.SetActive(true);
                 else
                     m_Callback?.Invoke();
                 return;
@@ -144,15 +159,24 @@ namespace EasyFramework.Managers
 
         void UpdateDone()
         {
-            m_Tips = null;
-            m_updaterSlider = null;
-            btn_MessgeBox.onClick.RemoveAllListeners();
-            btn_Done.onClick.RemoveAllListeners();
-            btn_MessgeBox = null;
-            btn_Done = null;
+            Txt_Hints = null;
+            Tran_Updater = null;
+            Tran_HintsBox = null;
+            Tran_MessgeBox = null;
+            Txt_UpdaterTips = null;
+            Sld_UpdaterSlider = null;
+
+            m_AllButtons.ReleaseAndRemoveEvent();
+            m_AllButtons = null;
+
             Object.Destroy(m_patchUpdater.gameObject);
             m_patchUpdater = null;
             m_Callback?.Invoke();
+
+            m_CacheData.Clear();
+            m_CacheData = null;
+            m_Callback = null;
+            m_Package = null;
         }
         #endregion
 
@@ -353,15 +377,19 @@ namespace EasyFramework.Managers
             }
             else
             {
-                // 注意：开发者需要在下载前检测磁盘空间不足
-                EF.Ui.ShowDialog($"一共发现了{m_Downloader.TotalDownloadCount}个资源，总大小为{(int)(m_Downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
-                    okEvent: delegate
-                    {
-                        Run("BeginDownload");
-                    },
-                    okBtnText: "下载",
-                    noBtnText: "取消"
-                );
+                if (null == m_patchUpdater)
+                {
+                    m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
+
+                    Txt_Hints = EF.Tool.Find<Text>(m_patchUpdater, "Txt_Hints");
+                    Tran_Updater = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_Updater");
+                    Tran_HintsBox = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_HintsBox");
+                    Tran_MessgeBox = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_MessgeBox");
+                    EF.Tool.Find<Button>(m_patchUpdater, "Btn_True").RegisterInListAndBindEvent(OnClickBtn_True, ref m_AllButtons);
+                    EF.Tool.Find<Button>(m_patchUpdater, "Btn_False").RegisterInListAndBindEvent(UpdateDone, ref m_AllButtons);
+                }
+
+                Txt_Hints.text = $"一共发现了{m_Downloader.TotalDownloadCount}个资源，总大小为{(int)(m_Downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
             }
         }
         #endregion
@@ -372,13 +400,13 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator BeginDownload()
         {
-            m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
-            m_updaterSlider = m_patchUpdater.Find("Slider").GetComponent<Slider>();
-            m_Tips = m_patchUpdater.Find("Slider/txt_Tips").GetComponent<Text>();
-            btn_MessgeBox = m_patchUpdater.Find("btn_MessgeBox").GetComponent<Button>();
-            btn_Done = m_patchUpdater.Find("btn_MessgeBox/Frame/btn_Done").GetComponent<Button>();
-            btn_MessgeBox.onClick.AddListener(UpdateDone);
-            btn_Done.onClick.AddListener(UpdateDone);
+            if (null == Txt_UpdaterTips)
+            {
+                Txt_UpdaterTips = EF.Tool.Find<Text>(m_patchUpdater, "Txt_UpdaterTips");
+                Sld_UpdaterSlider = EF.Tool.Find<Slider>(m_patchUpdater, "Sld_UpdaterSlider");
+
+                EF.Tool.Find<Button>(m_patchUpdater, "Btn_Done").RegisterInListAndBindEvent(UpdateDone, ref m_AllButtons);
+            }
 
             //注册下载回调
             m_Downloader.OnDownloadErrorCallback = OnDownloadErrorFunction;
@@ -403,11 +431,11 @@ namespace EasyFramework.Managers
         }
         private void OnDownloadProgressUpdateFunction(int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes)
         {
-            m_updaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
+            Sld_UpdaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
 
             string currentSizeMB = (currentDownloadBytes / 1048576f).ToString("f1");
             string totalSizeMB = (totalDownloadBytes / 1048576f).ToString("f1");
-            m_Tips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
+            Txt_UpdaterTips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
         }
         private void OnStartDownloadFileFunction(string fileName, long sizeBytes)
         {
@@ -418,6 +446,13 @@ namespace EasyFramework.Managers
             //D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
+
+        void OnClickBtn_True()
+        {
+            Tran_Updater.gameObject.SetActive(true);
+            Tran_HintsBox.gameObject.SetActive(false);
+            Run("BeginDownload");
+        }
     }
 
     /// <summary>

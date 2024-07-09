@@ -22,6 +22,8 @@ namespace EasyFramework.UI
     [RequireComponent(typeof(CanvasRenderer))]
     public class RadarMap : Image
     {
+        private RadarMap() { }
+
         /// <summary>
         /// The min distance of a vertex from the center.
         /// <para>顶点到中心的最小距离</para>

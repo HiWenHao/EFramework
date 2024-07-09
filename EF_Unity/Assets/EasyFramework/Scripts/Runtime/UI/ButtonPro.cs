@@ -24,7 +24,7 @@ namespace EasyFramework.UI
     [RequireComponent(typeof(CanvasRenderer))]
     public class ButtonPro : Selectable
     {
-        protected ButtonPro() { }
+        private ButtonPro() { }
 
         [FormerlySerializedAs("onClickLeft")]
         [SerializeField]

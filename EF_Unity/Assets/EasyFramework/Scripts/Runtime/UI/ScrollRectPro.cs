@@ -28,6 +28,8 @@ namespace EasyFramework.UI
     [RequireComponent(typeof(RectTransform))]
     public class ScrollRectPro : UIBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
+        private ScrollRectPro() { }
+
         /// <summary>
         /// A setting for which behavior to use when content moves beyond the confines of its container.
         /// <para>当内容超出其容器的范围时使用的行为设置。</para>
@@ -138,7 +140,6 @@ namespace EasyFramework.UI
             }
         }
 
-        private ScrollRectPro() { }
 
         #region SerializeField
         [SerializeField]

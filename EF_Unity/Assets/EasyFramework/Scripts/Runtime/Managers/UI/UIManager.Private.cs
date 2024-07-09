@@ -10,7 +10,6 @@
 */
 
 using EasyFramework.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -22,10 +21,25 @@ namespace EasyFramework.Managers
 {
     public partial class UIManager : Singleton<UIManager>, IManager, IUpdate
     {
-        private readonly string pageBaseObjectName = "UIPages";
-        private readonly string showBoxBaseObjectName = "UIShowBox";
-        private Transform m_target, pageBaseObject, showBoxBaseObject;
-        private GameObject m_Root;
+        private const string PAGE_BASE_OBJECT_NAME = "Page_Base";
+
+        int m_Serial;
+        int m_PageCount;
+        bool m_PageInit;
+
+        GameObject m_Root;
+        Transform m_target;
+        Transform m_pageBaseObject;
+
+        GameObject m_CurrentObj;
+        UIPageBase m_CurrentPage;
+
+        Stack<UIPageBase> m_UseUIStack;
+        Stack<GameObject> m_UseGOStack;
+
+        Dictionary<int, UIPageBase> m_ReadyUIDic;
+        Dictionary<int, GameObject> m_ReadyGODic;
+
         void ISingleton.Init()
         {
             m_target = new GameObject("UI").transform;
@@ -66,17 +80,24 @@ namespace EasyFramework.Managers
 
         void IUpdate.Update(float elapse, float realElapse)
         {
-            PageUpdate(elapse, realElapse);
-            ShowBoxUpdate();
+            if (!m_PageInit)
+                return;
+
+            m_CurrentPage?.Update(elapse, realElapse);
         }
 
         void ISingleton.Quit()
         {
             PageExit();
-            ShowBoxQuit();
 
             Destroy(UICamera.gameObject);
             UICamera = null;
+
+            Destroy(m_Root);
+            Destroy(m_target.gameObject);
+
+            m_Root = null;
+            m_target = null;
         }
 
         void Destroy(Object obj)
@@ -84,78 +105,62 @@ namespace EasyFramework.Managers
             Object.Destroy(obj);
         }
 
-        #region Page
-        bool m_PageInit;
-        int m_int_Serial;
-        int m_int_PageCount;
-        GameObject m_CurrentObj;
-        UIPageBase m_CurrentPage;
-
-        Stack<UIPageBase> m_stc_UseUI;
-        Stack<GameObject> m_stc_UseGO;
-
-        Dictionary<int, UIPageBase> m_dic_ReadyUI;
-        Dictionary<int, GameObject> m_dic_ReadyGO;
-
         void PageInit()
         {
-            RectTransform _rect = new GameObject(pageBaseObjectName).AddComponent<RectTransform>();
-            pageBaseObject = _rect.transform;
-            pageBaseObject.SetParent(m_Root.transform, false);
-            pageBaseObject.localPosition = Vector3.zero;
+            RectTransform _rect = new GameObject(PAGE_BASE_OBJECT_NAME).AddComponent<RectTransform>();
+            m_pageBaseObject = _rect.transform;
+            m_pageBaseObject.SetParent(m_Root.transform, false);
+            m_pageBaseObject.localPosition = Vector3.zero;
             _rect.anchorMin = Vector3.zero;
             _rect.anchorMax = Vector3.one;
             _rect.sizeDelta = Vector2.zero;
             _rect.localScale = Vector2.one;
 
-            m_stc_UseUI = new Stack<UIPageBase>();
-            m_stc_UseGO = new Stack<GameObject>();
-            m_dic_ReadyUI = new Dictionary<int, UIPageBase>();
-            m_dic_ReadyGO = new Dictionary<int, GameObject>();
+            m_UseUIStack = new Stack<UIPageBase>();
+            m_UseGOStack = new Stack<GameObject>();
+            m_ReadyUIDic = new Dictionary<int, UIPageBase>();
+            m_ReadyGODic = new Dictionary<int, GameObject>();
         }
-        void PageUpdate(float elapse, float realElapse)
-        {
-            if (!m_PageInit)
-                return;
 
-            m_CurrentPage?.Update(elapse, realElapse);
-        }
         void PageExit()
         {
             if (!m_PageInit)
                 return;
 
-            while (m_stc_UseUI.Count != 0)
+            while (m_UseUIStack.Count != 0)
             {
-                m_stc_UseUI.Pop().Quit();
-                Destroy(m_stc_UseGO.Pop());
+                m_UseUIStack.Pop().Quit();
+                Destroy(m_UseGOStack.Pop());
             }
 
-            int[] keyArr = m_dic_ReadyGO.Keys.ToArray();
+            int[] keyArr = m_ReadyGODic.Keys.ToArray();
 
             for (int i = 0; i < keyArr.Length; i++)
             {
-                m_dic_ReadyUI[keyArr[i]].Quit();
-                Destroy(m_dic_ReadyGO[keyArr[i]]);
-                m_dic_ReadyUI.Remove(keyArr[i]);
-                m_dic_ReadyGO.Remove(keyArr[i]);
+                m_ReadyUIDic[keyArr[i]].Quit();
+                Destroy(m_ReadyGODic[keyArr[i]]);
+                m_ReadyUIDic.Remove(keyArr[i]);
+                m_ReadyGODic.Remove(keyArr[i]);
             }
 
-            m_dic_ReadyUI.Clear();
-            m_dic_ReadyGO.Clear();
-            m_dic_ReadyUI = null;
-            m_dic_ReadyGO = null;
+            m_ReadyUIDic.Clear();
+            m_ReadyGODic.Clear();
+            m_ReadyUIDic = null;
+            m_ReadyGODic = null;
 
-            m_stc_UseUI.Clear();
-            m_stc_UseGO.Clear();
-            m_stc_UseUI = null;
-            m_stc_UseGO = null;
+            m_UseUIStack.Clear();
+            m_UseGOStack.Clear();
+            m_UseUIStack = null;
+            m_UseGOStack = null;
+
+            Destroy(m_pageBaseObject.gameObject);
+            m_pageBaseObject = null;
         }
 
         private GameObject PageCreated(UIPageBase page)
         {
             GameObject _uiObj = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + page.GetType().Name));
-            _uiObj.transform.SetParent(pageBaseObject);
+            _uiObj.transform.SetParent(m_pageBaseObject);
             RectTransform _rect = _uiObj.GetComponent<RectTransform>();
             _rect.anchorMax = Vector2.one;
             _rect.anchorMin = Vector2.zero;
@@ -163,7 +168,7 @@ namespace EasyFramework.Managers
             _rect.anchoredPosition = Vector2.zero;
             _rect.localScale = Vector2.one;
             _uiObj.name = page.GetType().Name;
-            page.SerialId = m_int_Serial++;
+            page.SerialId = m_Serial++;
 
             Canvas _cv = _uiObj.GetComponent<Canvas>();
             _cv.overrideSorting = true;
@@ -171,6 +176,7 @@ namespace EasyFramework.Managers
 
             return _uiObj;
         }
+
         private UIPageBase PageOpen(UIPageBase page, bool hideCurrent, params object[] args)
         {
             if (!m_PageInit)
@@ -185,9 +191,9 @@ namespace EasyFramework.Managers
             }
 
             int _readyKey = -1;
-            foreach (KeyValuePair<int, GameObject> item in m_dic_ReadyGO)
+            foreach (KeyValuePair<int, GameObject> item in m_ReadyGODic)
             {
-                if (item.Value.name == page.GetType().Name)
+                if (item.Value.name.Equals(page.GetType().Name))
                 {
                     _readyKey = item.Key;
                     break;
@@ -199,38 +205,39 @@ namespace EasyFramework.Managers
                 m_CurrentPage = page;
                 m_CurrentObj = PageCreated(page);
 
-                m_stc_UseGO.Push(m_CurrentObj);
-                m_stc_UseUI.Push(page);
+                m_UseGOStack.Push(m_CurrentObj);
+                m_UseUIStack.Push(page);
 
                 m_CurrentPage.Awake(m_CurrentObj, args);
                 m_CurrentPage.Open(args);
             }
             else
             {
-                m_CurrentObj = m_dic_ReadyGO[_readyKey];
-                m_CurrentPage = m_dic_ReadyUI[_readyKey];
+                m_CurrentObj = m_ReadyGODic[_readyKey];
+                m_CurrentPage = m_ReadyUIDic[_readyKey];
 
-                m_stc_UseGO.Push(m_CurrentObj);
-                m_stc_UseUI.Push(m_CurrentPage);
+                m_UseGOStack.Push(m_CurrentObj);
+                m_UseUIStack.Push(m_CurrentPage);
 
                 m_CurrentPage.Open(args);
 
-                m_dic_ReadyUI.Remove(_readyKey);
-                m_dic_ReadyGO.Remove(_readyKey);
+                m_ReadyUIDic.Remove(_readyKey);
+                m_ReadyGODic.Remove(_readyKey);
             }
 
-            ++m_int_PageCount;
+            ++m_PageCount;
 
             m_CurrentObj.SetActive(true);
             return m_CurrentPage;
         }
+
         private void PageClose(bool destroy = false, params object[] args)
         {
-            if (m_int_PageCount <= 0)
+            if (m_PageCount <= 0)
                 return;
 
-            UIPageBase _ui = m_stc_UseUI.Pop();
-            GameObject _go = m_stc_UseGO.Pop();
+            UIPageBase _ui = m_UseUIStack.Pop();
+            GameObject _go = m_UseGOStack.Pop();
 
             _ui.Close();
             if (destroy)
@@ -241,103 +248,20 @@ namespace EasyFramework.Managers
             else
             {
                 _go.SetActive(false);
-                m_dic_ReadyUI.Add(_ui.SerialId, _ui);
-                m_dic_ReadyGO.Add(_ui.SerialId, _go);
+                m_ReadyUIDic.Add(_ui.SerialId, _ui);
+                m_ReadyGODic.Add(_ui.SerialId, _go);
             }
 
             m_CurrentPage = null;
 
-            if (--m_int_PageCount > 0)
+            if (--m_PageCount > 0)
             {
-                m_CurrentObj = m_stc_UseGO.Peek();
-                m_CurrentPage = m_stc_UseUI.Peek();
+                m_CurrentObj = m_UseGOStack.Peek();
+                m_CurrentPage = m_UseUIStack.Peek();
 
                 m_CurrentObj.SetActive(true);
                 m_CurrentPage.OnFocus(true, args);
             }
         }
-        #endregion
-
-        #region Show box
-        bool m_ShowboxInit;
-        GameObject BoxDialog;
-        Text show_txt_Text, show_txt_true, show_txt_false;
-        Button show_btn_CloseBG, show_btn_True, show_btn_False;
-        Action show_actOk, show_actNo;
-
-        Queue<PopupBox> m_que_BoxPopup;
-
-        void ShowBoxInit()
-        {
-            showBoxBaseObject = new GameObject(showBoxBaseObjectName).transform;
-            showBoxBaseObject.SetParent(m_Root.transform, false);
-
-            BoxDialog = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "Box_Dialog"), showBoxBaseObject);
-            show_btn_CloseBG = BoxDialog.transform.Find("btn_CloseBG").GetComponent<Button>();
-            show_txt_Text = BoxDialog.transform.Find("img_ShowBG/txt_Text").GetComponent<Text>();
-            show_btn_True = BoxDialog.transform.Find("img_ShowBG/btn_True").GetComponent<Button>();
-            show_btn_False = BoxDialog.transform.Find("img_ShowBG/btn_False").GetComponent<Button>();
-            show_txt_true = show_btn_True.transform.Find("txt_true").GetComponent<Text>();
-            show_txt_false = show_btn_False.transform.Find("txt_false").GetComponent<Text>();
-
-            show_btn_CloseBG.onClick.RemoveAllListeners();
-            show_btn_True.onClick.RemoveAllListeners();
-            show_btn_False.onClick.RemoveAllListeners();
-            show_btn_CloseBG.onClick.AddListener(delegate
-            {
-                BoxDialog.SetActive(false);
-            });
-            show_btn_True.onClick.AddListener(delegate
-            {
-                BoxDialog.SetActive(false);
-                show_actOk?.Invoke();
-            });
-            show_btn_False.onClick.AddListener(delegate
-            {
-                BoxDialog.SetActive(false);
-                show_actNo?.Invoke();
-            });
-            BoxDialog.SetActive(false);
-
-            m_que_BoxPopup = new Queue<PopupBox>();
-        }
-        void ShowBoxUpdate()
-        {
-            if (!m_ShowboxInit)
-                return;
-
-            foreach (var popup in m_que_BoxPopup)
-            {
-                popup.Update();
-            }
-        }
-        void ShowBoxQuit()
-        {
-            if (!m_ShowboxInit)
-                return;
-
-            while (0 != m_que_BoxPopup.Count)
-            {
-                PopupBox _popup = m_que_BoxPopup.Dequeue();
-                _popup.OnDestory();
-            }
-            m_que_BoxPopup.Clear();
-            m_que_BoxPopup = null;
-
-            show_actOk = show_actNo = null;
-            show_btn_CloseBG.onClick.RemoveAllListeners();
-            show_btn_True.onClick.RemoveAllListeners();
-            show_btn_False.onClick.RemoveAllListeners();
-            show_btn_CloseBG = show_btn_True = show_btn_False = null;
-            show_txt_Text = show_txt_false = show_txt_true = null;
-
-            Destroy(BoxDialog);
-            BoxDialog = null;
-            Destroy(pageBaseObject.gameObject);
-            Destroy(showBoxBaseObject.gameObject);
-            pageBaseObject = showBoxBaseObject = null;
-        }
-        #endregion
-
     }
 }

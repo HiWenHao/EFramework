@@ -24,6 +24,8 @@ namespace EasyFramework.UI
     [RequireComponent(typeof(UnityEngine.UI.Image))]
     public class Slideshow : UIBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        private Slideshow() { }
+
         [SerializeField]
         private AxisType m_MoveAxis;
 

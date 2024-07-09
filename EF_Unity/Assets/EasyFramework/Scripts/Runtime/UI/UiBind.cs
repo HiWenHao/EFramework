@@ -18,6 +18,8 @@ namespace EasyFramework.UI
     [AddComponentMenu("UI/UiBind", 100)]
     public class UiBind : MonoBehaviour
     {
+        private UiBind() { }
+
         [Serializable]
         public class BindData
         {

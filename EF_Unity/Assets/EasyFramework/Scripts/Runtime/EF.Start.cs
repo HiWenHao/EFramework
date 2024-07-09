@@ -13,7 +13,7 @@ using EasyFramework.Managers;
 using System.Collections;
 using UnityEngine;
 
-public partial class EF
+public sealed partial class EF
 {
     /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }

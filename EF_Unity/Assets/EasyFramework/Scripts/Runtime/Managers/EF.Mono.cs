@@ -15,10 +15,12 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// The game managers master controller.
-/// <para>游戏管理器总控制器</para>
+/// <para>游戏管理器总控</para>
 /// </summary>
-public partial class EF : MonoBehaviour
+public sealed partial class EF : MonoBehaviour
 {
+    private EF() { }
+
     #region Skip logo
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
     private static void BeforeSplashScreen()

@@ -203,13 +203,15 @@ namespace EasyFramework.Edit.Setting
             string _uiPath = Path.Combine(Application.dataPath, ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Managers/UI/UIManager.Private.cs");
             string[] _contentsArray = File.ReadAllLines(_uiPath);
 
-            _contentsArray[18] = m_rendererPipline == 0 ? _contentsArray[18].Insert(0, "//") : _contentsArray[18].Replace("//", "");
-            for (int i = 57; i < 60; i++)
+            _contentsArray[17] = m_rendererPipline == 0 ? _contentsArray[17].Insert(0, "//") : _contentsArray[17].Replace("//", "");
+            for (int i = 60; i < 63; i++)
             {
                 _contentsArray[i] = m_rendererPipline == 0 ? _contentsArray[i].Insert(16, "//") : _contentsArray[i].Replace("//", "");
             }
 
             File.WriteAllLines(_uiPath, _contentsArray);
+
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
