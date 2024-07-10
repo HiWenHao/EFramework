@@ -16,6 +16,10 @@ namespace EasyFramework.Managers.Utility
     /// </summary>
     public interface IEventHelp
 	{
-
-	}
+        /// <summary>
+        /// The params number.
+        /// <para>参数个数</para>
+        /// </summary>
+        int ParamsNumber {  get; }
+    }
 }

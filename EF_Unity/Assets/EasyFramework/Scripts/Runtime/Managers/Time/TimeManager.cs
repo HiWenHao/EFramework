@@ -60,42 +60,26 @@ namespace EasyFramework.Managers
         void ISingleton.Init()
         {
             m_GlobalTime = 0.0f;
-            TimeEventInit();
+
+            m_RemovedEvents = new List<int>();
+            m_AddedEvents = new List<TimeEvent>();
+            m_Events = new Dictionary<int, TimeEvent>();
         }
 
         void ISingleton.Quit()
         {
-            TimeEventQuit();
+            m_Events.Clear();
+            m_AddedEvents.Clear();
+            m_RemovedEvents.Clear();
+            m_Events = null;
+            m_AddedEvents = null;
+            m_RemovedEvents = null;
         }
 
         void IUpdate.Update(float elapse, float realElapse)
         {
             m_GlobalTime += elapse;
-            TimeEventUpdate(elapse);
-        }
 
-        #region Time event
-        void TimeEventInit()
-        {
-            m_RemovedEvents = new List<int>();
-            m_AddedEvents = new List<TimeEvent>();
-            m_Events = new Dictionary<int, TimeEvent>();
-        }
-        int CreateTimeEvent(float firstDelayTime, float cycleTime, int cycleCount, Action callback)
-        {
-            m_KeyIndex++;
-            m_AddedEvents.Add(new TimeEvent()
-            {
-                Id = m_KeyIndex,
-                DelayTime = firstDelayTime,
-                CycleCount = cycleCount,
-                CycleTime = cycleTime,
-                EndCallback = callback
-            });
-            return m_KeyIndex;
-        }
-        void TimeEventUpdate(float elapse)
-        {
             if ((m_HandleCount = m_AddedEvents.Count) != 0)
             {
                 for (int i = 0; i < m_HandleCount; i++)
@@ -129,16 +113,29 @@ namespace EasyFramework.Managers
                 m_RemovedEvents.Clear();
             }
         }
-        void TimeEventQuit()
+
+        /// <summary>
+        /// Create a time event
+        /// <para>创建一个时间事件</para>
+        /// </summary>
+        /// <param name="firstDelayTime">第一次处理延时</param>
+        /// <param name="cycleTime">每次循环时间</param>
+        /// <param name="cycleCount">循环次数</param>
+        /// <param name="callback">回调</param>
+        /// <returns>时间事件ID</returns>
+        int CreateTimeEvent(float firstDelayTime, float cycleTime, int cycleCount, Action callback)
         {
-            m_Events.Clear();
-            m_AddedEvents.Clear();
-            m_RemovedEvents.Clear();
-            m_Events = null;
-            m_AddedEvents = null;
-            m_RemovedEvents = null;
+            m_KeyIndex++;
+            m_AddedEvents.Add(new TimeEvent()
+            {
+                Id = m_KeyIndex,
+                DelayTime = firstDelayTime,
+                CycleCount = cycleCount,
+                CycleTime = cycleTime,
+                EndCallback = callback
+            });
+            return m_KeyIndex;
         }
-        #endregion
 
         #region Public function
         #region Time event

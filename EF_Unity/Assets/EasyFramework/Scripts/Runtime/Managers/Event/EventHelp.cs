@@ -14,10 +14,16 @@ namespace EasyFramework.Managers.Utility
 {
     public class EventHelp : IEventHelp
     {
+        public int ParamsNumber => 0;
+
         private event Action m_Action;
         public EventHelp(Action action)
         {
             m_Action = action;
+        }
+        ~EventHelp()
+        {
+            m_Action = null;
         }
         public void AddAction(Action action)
         {
@@ -34,10 +40,16 @@ namespace EasyFramework.Managers.Utility
     }
     public class EventHelp<T1> : IEventHelp
     {
+        public int ParamsNumber => 1;
+
         private event Action<T1> m_Action;
         public EventHelp(Action<T1> action)
         {
             m_Action = action;
+        }
+        ~EventHelp()
+        {
+            m_Action = null;
         }
         public void AddAction(Action<T1> action)
         {
@@ -54,10 +66,16 @@ namespace EasyFramework.Managers.Utility
     }
     public class EventHelp<T1, T2> : IEventHelp
     {
+        public int ParamsNumber => 2;
+
         private event Action<T1, T2> m_Action;
         public EventHelp(Action<T1, T2> action)
         {
             m_Action = action;
+        }
+        ~EventHelp()
+        {
+            m_Action = null;
         }
         public void AddAction(Action<T1, T2> action)
         {
@@ -74,10 +92,16 @@ namespace EasyFramework.Managers.Utility
     }
     public class EventHelp<T1, T2, T3> : IEventHelp
     {
+        public int ParamsNumber => 3;
+
         private event Action<T1, T2, T3> m_Action;
         public EventHelp(Action<T1, T2, T3> action)
         {
             m_Action = action;
+        }
+        ~EventHelp()
+        {
+            m_Action = null;
         }
         public void AddAction(Action<T1, T2, T3> action)
         {

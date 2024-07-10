@@ -22,6 +22,7 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ToolManager : Singleton<ToolManager>, IManager
     {
+        Vector3 m_screenHalf;
         void ISingleton.Init()
         {
             m_screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
@@ -166,12 +167,12 @@ namespace EasyFramework.Managers
         }
         private float byteFileToFloat(byte first, byte second)
         {
-            short s;
+            short _sot;
             if (BitConverter.IsLittleEndian)
-                s = (short)(second << 8 | first);
+                _sot = (short)(second << 8 | first);
             else
-                s = (short)(first << 8 | second);
-            return s / 32768.0f;
+                _sot = (short)(first << 8 | second);
+            return _sot / 32768.0f;
         }
 
         #region WAV
@@ -192,8 +193,8 @@ namespace EasyFramework.Managers
                 D.Warning("This only supports files that are stored using Unity's Application data path. \nTo load bundled resources use 'Resources.Load(\"filename\") typeof(AudioClip)' method. \nhttps://docs.unity3d.com/ScriptReference/Resources.Load.html");
                 return null;
             }
-            byte[] fileBytes = File.ReadAllBytes(filePath + "/" + name);
-            return ByteArrayToAudioClip(fileBytes, name);
+            byte[] _fileBytes = File.ReadAllBytes(filePath + "/" + name);
+            return ByteArrayToAudioClip(_fileBytes, name);
         }
 
         /// <summary>
@@ -208,106 +209,106 @@ namespace EasyFramework.Managers
         /// <exception cref="Exception">不支持位深度</exception>
         public AudioClip ByteArrayToAudioClip(byte[] fileBytes, string name)
         {
-            int subchunk1 = BitConverter.ToInt32(fileBytes, 16);
-            ushort audioFormat = BitConverter.ToUInt16(fileBytes, 20);
+            int _subchunk1 = BitConverter.ToInt32(fileBytes, 16);
+            ushort _audioFormat = BitConverter.ToUInt16(fileBytes, 20);
             // NB: Only uncompressed PCM wav files are supported.
-            string formatCode = FormatCode(audioFormat);
-            Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
-            ushort channels = BitConverter.ToUInt16(fileBytes, 22);
-            int sampleRate = BitConverter.ToInt32(fileBytes, 24);
-            ushort bitDepth = BitConverter.ToUInt16(fileBytes, 34);
-            int headerOffset = 16 + 4 + subchunk1 + 4;
-            int subchunk2 = BitConverter.ToInt32(fileBytes, headerOffset);
-            float[] data = bitDepth switch
+            string _formatCode = FormatCode(_audioFormat);
+            Debug.AssertFormat(_audioFormat == 1 || _audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", _audioFormat, _formatCode);
+            ushort _channels = BitConverter.ToUInt16(fileBytes, 22);
+            int _sampleRate = BitConverter.ToInt32(fileBytes, 24);
+            ushort _bitDepth = BitConverter.ToUInt16(fileBytes, 34);
+            int _headerOffset = 16 + 4 + _subchunk1 + 4;
+            int _subchunk2 = BitConverter.ToInt32(fileBytes, _headerOffset);
+            float[] _data = _bitDepth switch
             {
-                8 => Convert8BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2),
-                16 => Convert16BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2),
-                24 => Convert24BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2),
-                32 => Convert32BitByteArrayToAudioClipData(fileBytes, headerOffset, subchunk2),
-                _ => throw new Exception(bitDepth + " bit depth is not supported."),
+                8 => Convert8BitByteArrayToAudioClipData(fileBytes, _headerOffset, _subchunk2),
+                16 => Convert16BitByteArrayToAudioClipData(fileBytes, _headerOffset, _subchunk2),
+                24 => Convert24BitByteArrayToAudioClipData(fileBytes, _headerOffset, _subchunk2),
+                32 => Convert32BitByteArrayToAudioClipData(fileBytes, _headerOffset, _subchunk2),
+                _ => throw new Exception(_bitDepth + " bit depth is not supported."),
             };
-            AudioClip audioClip = AudioClip.Create(name, data.Length, channels, sampleRate, false);
-            audioClip.SetData(data, 0);
-            return audioClip;
+            AudioClip _audioClip = AudioClip.Create(name, _data.Length, _channels, _sampleRate, false);
+            _audioClip.SetData(_data, 0);
+            return _audioClip;
         }
 
         #region wav file bytes to Unity AudioClip conversion methods wav文件字节到Unity AudioClip的转换方法
         private float[] Convert8BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
-            int wavSize = BitConverter.ToInt32(source, headerOffset);
+            int _wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
-            float[] data = new float[wavSize];
-            sbyte maxValue = sbyte.MaxValue;
-            int i = 0;
-            while (i < wavSize)
+            Debug.AssertFormat(_wavSize > 0 && _wavSize == dataSize, "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", _wavSize, dataSize, headerOffset);
+            float[] _data = new float[_wavSize];
+            sbyte _maxValue = sbyte.MaxValue;
+            int _idx = 0;
+            while (_idx < _wavSize)
             {
-                data[i] = (float)source[i] / maxValue;
-                ++i;
+                _data[_idx] = (float)source[_idx] / _maxValue;
+                ++_idx;
             }
-            return data;
+            return _data;
         }
         private float[] Convert16BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
-            int wavSize = BitConverter.ToInt32(source, headerOffset);
+            int _wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
-            int x = sizeof(Int16); // block size = 2
-            int convertedSize = wavSize / x;
-            float[] data = new float[convertedSize];
-            Int16 maxValue = Int16.MaxValue;
-            int offset = 0;
-            int i = 0;
-            while (i < convertedSize)
+            Debug.AssertFormat(_wavSize > 0 && _wavSize == dataSize, "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", _wavSize, dataSize, headerOffset);
+            int _x = sizeof(Int16); // block size = 2
+            int _convertedSize = _wavSize / _x;
+            float[] _data = new float[_convertedSize];
+            Int16 _maxValue = Int16.MaxValue;
+            int _offset = 0;
+            int _idx = 0;
+            while (_idx < _convertedSize)
             {
-                offset = i * x + headerOffset;
-                data[i] = (float)BitConverter.ToInt16(source, offset) / maxValue;
-                ++i;
+                _offset = _idx * _x + headerOffset;
+                _data[_idx] = (float)BitConverter.ToInt16(source, _offset) / _maxValue;
+                ++_idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
-            return data;
+            Debug.AssertFormat(_data.Length == _convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", _data.Length, _convertedSize);
+            return _data;
         }
         private float[] Convert24BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
-            int wavSize = BitConverter.ToInt32(source, headerOffset);
+            int _wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
-            int x = 3; // block size = 3
-            int convertedSize = wavSize / x;
-            int maxValue = Int32.MaxValue;
-            float[] data = new float[convertedSize];
-            byte[] block = new byte[sizeof(int)]; // using a 4 byte block for copying 3 bytes, then copy bytes with 1 offset
-            int offset = 0;
-            int i = 0;
-            while (i < convertedSize)
+            Debug.AssertFormat(_wavSize > 0 && _wavSize == dataSize, "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", _wavSize, dataSize, headerOffset);
+            int _x = 3; // block size = 3
+            int _convertedSize = _wavSize / _x;
+            int _maxValue = Int32.MaxValue;
+            float[] _data = new float[_convertedSize];
+            byte[] _block = new byte[sizeof(int)]; // using a 4 byte block for copying 3 bytes, then copy bytes with 1 offset
+            int _offset = 0;
+            int _idx = 0;
+            while (_idx < _convertedSize)
             {
-                offset = i * x + headerOffset;
-                Buffer.BlockCopy(source, offset, block, 1, x);
-                data[i] = (float)BitConverter.ToInt32(block, 0) / maxValue;
-                ++i;
+                _offset = _idx * _x + headerOffset;
+                Buffer.BlockCopy(source, _offset, _block, 1, _x);
+                _data[_idx] = (float)BitConverter.ToInt32(_block, 0) / _maxValue;
+                ++_idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
-            return data;
+            Debug.AssertFormat(_data.Length == _convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", _data.Length, _convertedSize);
+            return _data;
         }
         private float[] Convert32BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
-            int wavSize = BitConverter.ToInt32(source, headerOffset);
+            int _wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
-            int x = sizeof(float); // block size = 4
-            int convertedSize = wavSize / x;
-            Int32 maxValue = Int32.MaxValue;
-            float[] data = new float[convertedSize];
-            int offset = 0;
-            int i = 0;
-            while (i < convertedSize)
+            Debug.AssertFormat(_wavSize > 0 && _wavSize == dataSize, "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", _wavSize, dataSize, headerOffset);
+            int _x = sizeof(float); // block size = 4
+            int _convertedSize = _wavSize / _x;
+            Int32 _maxValue = Int32.MaxValue;
+            float[] _data = new float[_convertedSize];
+            int _offset = 0;
+            int _idx = 0;
+            while (_idx < _convertedSize)
             {
-                offset = i * x + headerOffset;
-                data[i] = (float)BitConverter.ToInt32(source, offset) / maxValue;
-                ++i;
+                _offset = _idx * _x + headerOffset;
+                _data[_idx] = (float)BitConverter.ToInt32(source, _offset) / _maxValue;
+                ++_idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
-            return data;
+            Debug.AssertFormat(_data.Length == _convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", _data.Length, _convertedSize);
+            return _data;
         }
         #endregion
 
@@ -467,12 +468,11 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Related to screen.屏幕相关
-        Vector3 m_screenHalf;
-
         /// <summary>
-        /// Set screen orientation.   设置屏幕朝向
+        /// Set screen orientation.   
+        /// <para>设置屏幕朝向</para>
         /// </summary>
-        /// <param name="isPortrait">set to portrait? 设为竖屏?</param>
+        /// <param name="isPortrait">set to portrait? <para>设为竖屏?</para></param>
         public void ChangeScreenOrientation(OrientationType orientation)
         {
             Screen.autorotateToPortrait = false;
@@ -497,24 +497,27 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Screen position to world point.屏幕坐标转世界坐标
+        /// Screen position to world point.
+        /// <para>屏幕坐标转世界坐标</para>
         /// </summary>
-        /// <param name="screenPoint">screen point.  屏幕坐标，一般为Input.mousePosition</param>
-        /// <param name="camera"> The camera to use to lookover .用来观察的相机.</param>
-        /// <param name="planeZ">Position with z axial.Z轴位置. </param>
+        /// <param name="screenPoint">screen point.<para>屏幕坐标，一般为Input.mousePosition</para></param>
+        /// <param name="camera"> The camera to use to lookover . <para>用来观察的相机.</para></param>
+        /// <param name="planeZ">Position with z axial.<para>Z轴位置. </para></param>
         /// <returns></returns>
         public Vector3 ScreenPointToWorldPoint(Vector2 screenPoint, Camera camera, float planeZ)
         {
-            Vector3 position = new Vector3(screenPoint.x, screenPoint.y, planeZ);
-            Vector3 worldPoint = camera.ScreenToWorldPoint(position);
-            return worldPoint;
+            Vector3 _position = new Vector3(screenPoint.x, screenPoint.y, planeZ);
+            Vector3 _worldPoint = camera.ScreenToWorldPoint(_position);
+            return _worldPoint;
         }
 
         /// <summary>
-        /// Get the mouse position in screen. 获取鼠标在屏幕的坐标位置
+        /// Get the mouse position in screen. 
+        /// <para>获取鼠标在屏幕的坐标位置</para>
         /// </summary>
-        /// <param name="center">Start at the center of the screen.以屏幕中央开始</param>
-        /// <returns>Current mouse position. 当前鼠标位置</returns>
+        /// <param name="center">Start at the center of the screen.
+        /// <para>以屏幕中央开始</para></param>
+        /// <returns>Current mouse position. <para>当前鼠标位置</para></returns>
         public Vector2 GetMousePosInScreen(bool center = true)
         {
             if (center)
@@ -524,10 +527,13 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Get the position orientation with screen center.获取对于屏幕中心的位置方向
+        /// Get the position orientation with screen center.
+        /// <para>获取对于屏幕中心的位置方向</para>
         /// </summary>
-        /// <param name="v2">Current position. 当前坐标</param>
-        /// <returns>Position orientation. 位置方向</returns>
+        /// <param name="v2">Current position. 
+        /// <para>当前坐标</para></param>
+        /// <returns>Position orientation. 
+        /// <para>位置方向</para></returns>
         public PositionOrientationType GetOrientationWithScreenCenter(Vector2 v2)
         {
             if (v2.x > m_screenHalf.x || v2.x < -m_screenHalf.x || v2.y > m_screenHalf.y || v2.y < -m_screenHalf.y)
@@ -550,7 +556,8 @@ namespace EasyFramework.Managers
 
 
         /// <summary>
-        /// Determine whether to re-enter the sector area.判断是否在扇形范围
+        /// Determine whether to re-enter the sector area.
+        /// <para>判断是否在扇形范围</para>
         /// </summary>
         /// <param name="observer">观察者</param>
         /// <param name="target">被观察目标</param>
@@ -571,7 +578,8 @@ namespace EasyFramework.Managers
         }
 
         /// <summary>
-        /// Uesr the camera shot a texture2d.通过摄像机截取一张图片
+        /// Uesr the camera shot a texture2d.
+        /// <para>通过摄像机截取一张图片</para>
         /// </summary>
         /// <param name="camera">截图片的相机</param>
         /// <param name="width">宽</param>
@@ -579,18 +587,20 @@ namespace EasyFramework.Managers
         /// <returns>Texture2D</returns>
         public Texture2D Screenshots(Camera camera, int width, int height)
         {
-            RenderTexture rt = new RenderTexture(width, height, 16);
-            camera.targetTexture = rt;
+            RenderTexture _rt = new RenderTexture(width, height, 16);
+            camera.targetTexture = _rt;
             camera.Render();
-            RenderTexture.active = rt;
-            Texture2D t = new Texture2D(width, height);
-            t.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            t.Apply();
-            return t;
+            RenderTexture.active = _rt;
+            Texture2D _tex2D = new Texture2D(width, height);
+            _tex2D.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            _tex2D.Apply();
+            return _tex2D;
         }
     }
+
     /// <summary>
-    /// The screen orientation type.<para>屏幕方向类型</para>
+    /// The screen orientation type.
+    /// <para>屏幕方向类型</para>
     /// </summary>
     public enum OrientationType
     {
@@ -613,7 +623,8 @@ namespace EasyFramework.Managers
     }
 
     /// <summary>
-    /// Position type.<para>位置类型</para>
+    /// Position type.
+    /// <para>位置类型</para>
     /// </summary>
     public enum PositionOrientationType
     {

@@ -4,8 +4,8 @@
  * Author:        Qian.cao
  * CreationTime:  2023-05-26 14:15:44
  * ModifyAuthor:  Qian.cao
- * ModifyTime:    2023-05-26 14:15:44
- * ScriptVersion: 0.1
+ * ModifyTime:    2024-07-10 16:02:26
+ * ScriptVersion: 0.3
  * ===============================================
 */
 
@@ -17,6 +17,21 @@ namespace EasyFramework.Managers
 {
     public class EventManager : Singleton<EventManager>, IManager
     {
+        /// <summary>
+        /// 操作类型
+        /// </summary>
+        enum OperationType
+        {
+            /// <summary> 增加 </summary>
+            Add,
+            /// <summary> 调用 </summary>
+            Call,
+            /// <summary> 删除 </summary>
+            Remove,
+            /// <summary> 释放 </summary>
+            Release
+        }
+
         Dictionary<string, IEventHelp> m_EventCenter;
         void ISingleton.Init()
         {
@@ -29,6 +44,54 @@ namespace EasyFramework.Managers
             m_EventCenter = null;
         }
 
+        #region Private Function
+        /// <summary>
+        /// When event not found.
+        /// <para>当事件没找到</para>
+        /// </summary>
+        /// <param name="eventName">事件名</param>
+        /// <param name="operation">操作类型</param>
+        void EventNotFound(string eventName, OperationType operation)
+        {
+            if (0 == EF.Projects.LanguageIndex)
+                D.Log($"Event [ {eventName} ] not found. Unable to {operation}.");
+            else
+                D.Log($"未找到事件 [ {eventName} ] 。 无法 {GetChinese(operation)}.");
+        }
+
+        /// <summary>
+        /// When params number error.
+        /// <para>当参数数量错误</para>
+        /// </summary>
+        /// <param name="eventName">事件名</param>
+        /// <param name="par1">本身支持的参数数量</param>
+        /// <param name="par2">调用操作的参数数量</param>
+        /// <param name="operation">操作类型</param>
+        void ParamsNumberError(string eventName, int par1, int par2, OperationType operation)
+        {
+            if (0 == EF.Projects.LanguageIndex)
+                D.Warning($"Event [ {eventName} ] takes {par1} arguments, but the function you're {operation} requires {par2} ! Try another name.");
+            else
+                D.Warning($"事件 [ {eventName} ] 支持 {par1} 个参数，而你 {GetChinese(operation)} 的函数需要 {par2} 个参数！换个名字试试。");
+        }
+
+        /// <summary>
+        /// 获取中文
+        /// </summary>
+        /// <param name="operation">操作类型</param>
+        string GetChinese(OperationType operation)
+        {
+            return operation switch
+            {
+                OperationType.Add => "增加",
+                OperationType.Call => "调用",
+                OperationType.Remove => "删除",
+                OperationType.Release => "释放",
+                _ => "",
+            };
+        }
+        #endregion
+
         /// <summary>
         /// Added a event
         /// <para>增加一个事件</para>
@@ -39,7 +102,12 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp).AddAction(action);
+                if (e.ParamsNumber == 0)
+                {
+                    (e as EventHelp).AddAction(action);
+                }
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 0, OperationType.Add);
             }
             else
             {
@@ -57,7 +125,12 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1>).AddAction(action);
+                if (e.ParamsNumber == 1)
+                {
+                    (e as EventHelp<T1>).AddAction(action);
+                }
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 1, OperationType.Add);
             }
             else
             {
@@ -75,7 +148,12 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2>).AddAction(action);
+                if (e.ParamsNumber == 2)
+                {
+                    (e as EventHelp<T1, T2>).AddAction(action);
+                }
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 2, OperationType.Add);
             }
             else
             {
@@ -93,7 +171,12 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2, T3>).AddAction(action);
+                if (e.ParamsNumber == 3)
+                {
+                    (e as EventHelp<T1, T2, T3>).AddAction(action);
+                }
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 3, OperationType.Add);
             }
             else
             {
@@ -110,12 +193,15 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp)?.Call();
+                if (e.ParamsNumber == 0)
+                {
+                    (e as EventHelp)?.Call();
+                }
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 0, OperationType.Call);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法执行！");
-            }
+                EventNotFound(eventName, OperationType.Call);
         }
 
         /// <summary>
@@ -127,12 +213,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T>)?.Call(value);
+                if (e.ParamsNumber == 1)
+                    (e as EventHelp<T>)?.Call(value);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 1, OperationType.Call);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法执行！");
-            }
+                EventNotFound(eventName, OperationType.Call);
         }
 
         /// <summary>
@@ -144,12 +231,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2>)?.Call(value1, value2);
+                if (e.ParamsNumber == 2)
+                    (e as EventHelp<T1, T2>)?.Call(value1, value2);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 2, OperationType.Call);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法执行！");
-            }
+                EventNotFound(eventName, OperationType.Call);
         }
 
         /// <summary>
@@ -161,12 +249,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2, T3>)?.Call(value1, value2, value3);
+                if (e.ParamsNumber == 3)
+                    (e as EventHelp<T1, T2, T3>)?.Call(value1, value2, value3);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 3, OperationType.Call);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法执行！");
-            }
+                EventNotFound(eventName, OperationType.Call);
         }
 
         /// <summary>
@@ -179,12 +268,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp).Remove(action);
+                if (e.ParamsNumber == 0)
+                    (e as EventHelp).Remove(action);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 0, OperationType.Remove);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法移除！");
-            }
+                EventNotFound(eventName, OperationType.Remove);
         }
 
         /// <summary>
@@ -197,12 +287,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1>).Remove(action);
+                if (e.ParamsNumber == 1)
+                    (e as EventHelp<T1>).Remove(action);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 1, OperationType.Remove);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法移除！");
-            }
+                EventNotFound(eventName, OperationType.Remove);
         }
 
         /// <summary>
@@ -215,12 +306,13 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2>).Remove(action);
+                if (e.ParamsNumber == 2)
+                    (e as EventHelp<T1, T2>).Remove(action);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 2, OperationType.Remove);
             }
             else
-            {
-                D.Log($"未找到{eventName}事件，无法移除！");
-            }
+                EventNotFound(eventName, OperationType.Remove);
         }
 
         /// <summary>
@@ -233,12 +325,29 @@ namespace EasyFramework.Managers
         {
             if (m_EventCenter.TryGetValue(eventName, out var e))
             {
-                (e as EventHelp<T1, T2, T3>).Remove(action);
+                if (e.ParamsNumber == 3)
+                    (e as EventHelp<T1, T2, T3>).Remove(action);
+                else
+                    ParamsNumberError(eventName, e.ParamsNumber, 3, OperationType.Remove);
             }
             else
+                EventNotFound(eventName, OperationType.Remove);
+        }
+
+        /// <summary>
+        /// Release the event by name.
+        /// <para>根据名字释放事件</para>
+        /// </summary>
+        /// <param name="eventName">事件名</param>
+        public void ReleaseEvent(string eventName)
+        {
+            if (m_EventCenter.ContainsKey(eventName))
             {
-                D.Log($"未找到{eventName}事件，无法移除！");
+                m_EventCenter[eventName] = null;
+                m_EventCenter.Remove(eventName);
             }
+            else
+                EventNotFound(eventName, OperationType.Release);
         }
     }
 }
