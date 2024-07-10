@@ -31,6 +31,8 @@ namespace UnityEditor.Build.Pipeline.Tasks
 
 #if TUANJIE_1_0_OR_NEWER
             buildTasks.Add(new CreateBuiltInShadersBundle(builtInShaderBundleName));
+#else
+            //buildTasks.Add(new CreateBuiltInBundle(builtInShaderBundleName));
 #endif
 
             buildTasks.Add(new PostDependencyCallback());

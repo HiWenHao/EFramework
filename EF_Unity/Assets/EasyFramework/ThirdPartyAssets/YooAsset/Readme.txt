@@ -1,1 +1,0 @@
-更新时，注意StreamingAssetsHelper该文件夹不能删除
