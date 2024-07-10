@@ -189,7 +189,7 @@ namespace EasyFramework.Edit.Setting
 
                 if (!_manifest.Contains("com.unity.render-pipelines.universal"))
                 {
-                    if (EditorUtility.DisplayDialog(LC.Combine("Error"), LC.Combine("Related ", "Resource", "Package", "Lost"), LC.Combine("Import"), LC.Combine("Cancel")))
+                    if (EditorUtility.DisplayDialog(LC.Combine("Error"), LC.Combine("Related", "Resource", "Package", "Lost"), LC.Combine("Import"), LC.Combine("Cancel")))
                     {
                         EditorApplication.ExecuteMenuItem("Window/Package Manager");
                     }
