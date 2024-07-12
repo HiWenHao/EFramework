@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-01-28 11:23:34
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-01-28 11:23:34
- * ScriptVersion: 0.1
+ * ModifyTime:    2024-07-12 17:49:32
+ * ScriptVersion: 0.2
  * ===============================================
 */
 using System;
@@ -51,8 +51,54 @@ namespace EasyFramework.UI
             /// </summary>
             Clamped,
         }
+        
+        /// <summary>
+        /// Current scrolling direction
+        /// <para>当前滚动方向</para>
+        /// </summary>
+        public AxisType Direction {
+            get
+            {
+                return m_direction;
+            }
+            set
+            {
+                m_direction = value;
+                if (!m_Inited && m_HasScrollbar && m_Scrollbar)
+                {
+                    RectTransform _rect = m_Scrollbar.GetComponent<RectTransform>();
+                    if (m_direction == AxisType.Vertical)
+                    {
+                        m_Scrollbar.SetDirection(ScrollbarPro.Direction.BottomToTop, true);
 
-        public AxisType direction = AxisType.Vertical;
+                        _rect.anchorMin = Vector2.right;
+                        _rect.anchorMax = Vector2.one;
+                        _rect.pivot = new Vector2(1f, 0.5f);
+                        _rect.sizeDelta = new Vector2(20f, 0);
+                    }
+                    else
+                    {
+                        m_Scrollbar.SetDirection(ScrollbarPro.Direction.LeftToRight, true);
+
+                        _rect.anchorMin = Vector2.zero;
+                        _rect.anchorMax = new Vector2(1f, 0f);
+                        _rect.pivot = Vector2.zero;
+                        _rect.sizeDelta = new Vector2(0, 20f);
+                    }
+                }
+                if (!m_Inited && content)
+                {
+                    if (m_direction == AxisType.Vertical)
+                    {
+                        content.sizeDelta = new Vector2(-20f, 0f);
+                    }
+                    else
+                    {
+                        content.sizeDelta = new Vector2(0f, -20f);
+                    }
+                }
+            }
+        }
 
         public MovementType movementType = MovementType.Elastic;
 
@@ -157,6 +203,9 @@ namespace EasyFramework.UI
         [SerializeField]
         int m_MaxCount = 10;
 
+        [SerializeField]
+        bool m_HasScrollbar = false;
+
         /// <summary>
         /// The amount of elasticity to use when the content moves beyond the scroll rect.
         /// </summary>
@@ -178,7 +227,9 @@ namespace EasyFramework.UI
         /// </summary>
         [SerializeField]
         Vector2Int m_Spacing = new Vector2Int(10, 10);
-
+        
+        [SerializeField]
+        ScrollbarPro m_Scrollbar;
         #endregion
 
         #region Local Field
@@ -193,9 +244,10 @@ namespace EasyFramework.UI
         private float m_ContentOffset;
 
         private bool m_CanDock;
-        private bool m_InScroll;
+        private bool m_InScrolling;
         private bool m_Dragging;
         private bool m_Inited = false;
+        private bool m_OnScrollBarDarg;
 
         private Bounds m_ViewBounds;
         private Bounds m_ContentBounds;
@@ -210,6 +262,9 @@ namespace EasyFramework.UI
         private Vector2 m_PointerStartLocalCursor = Vector2.zero;
 
         private Vector3[] m_Corners = new Vector3[4];
+
+        [SerializeField]
+        private AxisType m_direction;
 
         private RectTransform m_Rect;
 
@@ -233,79 +288,84 @@ namespace EasyFramework.UI
         {
             if (!Application.isPlaying) return;
             m_Rect = GetComponent<RectTransform>();
+
+            if (m_HasScrollbar && m_Scrollbar)
+            {
+                m_Scrollbar.onValueChanged.AddListener(SetScrollbarProNormalizedPosition);
+                m_Scrollbar.onScrollDrag.AddListener(OnScrollbarProDragChanged);
+            }
             InIt(null, m_MaxCount);
+            UpdateScrollbarProPostation(Vector2.zero);
         }
 
         protected virtual void LateUpdate()
         {
-            if (!Application.isPlaying || !content || !m_InScroll)
+            if (!Application.isPlaying || !content || (!m_InScrolling && m_OnScrollBarDarg))
                 return;
 
-            UpdateBounds();
             float deltaTime = Time.unscaledDeltaTime;
             Vector2 offset = CalculateOffset(Vector2.zero);
-            if (!m_Dragging && (offset != Vector2.zero || m_Velocity != Vector2.zero))
+            if (deltaTime > 0.0f)
             {
-                int _axis = (int)direction;
-                Vector2 position = content.anchoredPosition;
-                // Apply spring physics if movement is elastic and content has an offset from the view.
-                if (movementType == MovementType.Elastic && offset[_axis] != 0)
+                if (!m_Dragging && (offset != Vector2.zero || m_Velocity != Vector2.zero))
                 {
-                    float speed = m_Velocity[_axis];
-                    position[_axis] = Mathf.SmoothDamp(content.anchoredPosition[_axis], content.anchoredPosition[_axis] + offset[_axis], ref speed, m_Elasticity, Mathf.Infinity, deltaTime);
-                    if (Mathf.Abs(speed) < 1)
+                    int _axis = (int)m_direction;
+                    Vector2 position = content.anchoredPosition;
+                    // Apply spring physics if movement is elastic and content has an offset from the view.
+                    if (movementType == MovementType.Elastic && offset[_axis] != 0)
                     {
-                        speed = 0;
-                        m_InScroll = false;
+                        float speed = m_Velocity[_axis];
+                        position[_axis] = Mathf.SmoothDamp(content.anchoredPosition[_axis], content.anchoredPosition[_axis] + offset[_axis], ref speed, m_Elasticity, Mathf.Infinity, deltaTime);
+
+                        float _end = position[_axis] >= 0 ? 1.0f : 5.0f;
+
+                        if (speed < _end)
+                        {
+                            speed = 0;
+                            m_InScrolling = false;
+                        }
+
+                        m_Velocity[_axis] = speed;
+                        m_CanDock = false;
                     }
-                    m_Velocity[_axis] = speed;
-                    m_CanDock = false;
-                }
-                // Else move content according to velocity with deceleration applied.
-                else if (m_Inertia)
-                {
-                    m_Velocity[_axis] *= Mathf.Pow(m_DecelerationRate, deltaTime);
-                    if (Mathf.Abs(m_Velocity[_axis]) < 1)
+                    // Else move content according to velocity with deceleration applied.
+                    else if (m_Inertia)
+                    {
+                        m_Velocity[_axis] *= Mathf.Pow(m_DecelerationRate, deltaTime);
+                        if (Mathf.Abs(m_Velocity[_axis]) < 3.0f)
+                            OnScrollEnd();
+                        position[_axis] += m_Velocity[_axis] * deltaTime;
+                    }
+                    // If we have neither elaticity or friction, there shouldn't be any velocity.
+                    else
                         OnScrollEnd();
-                    position[_axis] += m_Velocity[_axis] * deltaTime;
-                }
-                // If we have neither elaticity or friction, there shouldn't be any velocity.
-                else
-                    OnScrollEnd();
 
-                if (movementType == MovementType.Clamped)
+                    if (movementType == MovementType.Clamped)
+                    {
+                        offset = CalculateOffset(position - content.anchoredPosition);
+                        position += offset;
+                    }
+
+                    SetContentAnchoredPosition(position);
+                }
+
+                if (m_Dragging && m_Inertia)
                 {
-                    offset = CalculateOffset(position - content.anchoredPosition);
-                    position += offset;
+                    Vector3 newVelocity = (content.anchoredPosition - m_PrevPosition) / deltaTime;
+                    m_Velocity = Vector3.Lerp(m_Velocity, newVelocity, deltaTime * 10);
                 }
-
-                SetContentAnchoredPosition(position);
-            }
-
-            if (m_Dragging && m_Inertia)
-            {
-                Vector3 newVelocity = (content.anchoredPosition - m_PrevPosition) / deltaTime;
-                m_Velocity = Vector3.Lerp(m_Velocity, newVelocity, deltaTime * 10);
             }
 
             if (m_ViewBounds != m_PrevViewBounds || m_ContentBounds != m_PrevContentBounds || content.anchoredPosition != m_PrevPosition)
             {
-                UpdateCheck(NormalizedPosition);
+                UpdateScrollbarProPostation(offset);
+                UpdateCheck();
                 UpdatePrevData();
             }
 
-            if (!m_Dragging && m_AutoDocking && m_Velocity == Vector2.zero && m_CanDock)
+            if (!m_Dragging && m_AutoDocking && m_Velocity == Vector2.zero && m_CanDock && !m_OnScrollBarDarg)
             {
-                SetContentAnchoredPosition(m_DockSpeed * Time.deltaTime * m_OnEndOffset + content.anchoredPosition);
-                Vector2 _disV2 = m_ContentEndPostation - content.anchoredPosition;
-                float _dis = MathF.Abs(direction == AxisType.Horizontal ? _disV2.x : _disV2.y);
-                if (_dis <= m_ContentOffset)
-                    m_ContentOffset = _dis;
-                else
-                {
-                    content.anchoredPosition = m_ContentEndPostation;
-                    m_InScroll = false;
-                }
+                Docking();
             }
         }
 
@@ -316,6 +376,11 @@ namespace EasyFramework.UI
             m_Dragging = false;
             m_CallbackFunc = null;
             m_Velocity = Vector2.zero;
+            if (m_HasScrollbar && m_Scrollbar)
+            {
+                m_Scrollbar.onValueChanged.RemoveListener(SetScrollbarProNormalizedPosition);
+                m_Scrollbar.onScrollDrag.RemoveListener(OnScrollbarProDragChanged);
+            }
         }
 
         #region Drag Handler
@@ -333,7 +398,7 @@ namespace EasyFramework.UI
             RectTransformUtility.ScreenPointToLocalPointInRectangle(((RectTransform)transform), eventData.position, eventData.pressEventCamera, out m_PointerStartLocalCursor);
             m_ContentStartPosition = content.anchoredPosition;
             m_Dragging = true;
-            m_InScroll = true;
+            m_InScrolling = true;
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
@@ -384,14 +449,14 @@ namespace EasyFramework.UI
         /// Sets the anchored position of the content.
         /// <para>设置内容的锚定位置。</para>
         /// </summary>
-        void SetContentAnchoredPosition(Vector2 position)
+        void SetContentAnchoredPosition(Vector2 position, bool refresh = true)
         {
-            if (direction == AxisType.Vertical)
+            if (m_direction == AxisType.Vertical)
                 position.x = content.anchoredPosition.x;
-            if (direction == AxisType.Horizontal)
+            if (m_direction == AxisType.Horizontal)
                 position.y = content.anchoredPosition.y;
 
-            if (position != content.anchoredPosition)
+            if (position != content.anchoredPosition && refresh)
             {
                 content.anchoredPosition = position;
                 UpdateBounds();
@@ -485,9 +550,9 @@ namespace EasyFramework.UI
                 if (delta.sqrMagnitude > float.Epsilon)
                 {
                     contentPos = content.anchoredPosition + delta;
-                    if (direction == AxisType.Vertical)
+                    if (m_direction == AxisType.Vertical)
                         contentPos.x = content.anchoredPosition.x;
-                    if (direction == AxisType.Horizontal)
+                    if (m_direction == AxisType.Horizontal)
                         contentPos.y = content.anchoredPosition.y;
                     AdjustBounds(ref m_ViewBounds, ref contentPivot, ref contentSize, ref contentPos);
                 }
@@ -561,7 +626,7 @@ namespace EasyFramework.UI
             Vector2 min = m_ContentBounds.min;
             Vector2 max = m_ContentBounds.max;
 
-            if (direction == AxisType.Horizontal)
+            if (m_direction == AxisType.Horizontal)
             {
                 min.x += delta.x;
                 max.x += delta.x;
@@ -639,7 +704,7 @@ namespace EasyFramework.UI
         /// </summary>
         void CheckAnchor(RectTransform rt)
         {
-            if (direction == AxisType.Vertical)
+            if (m_direction == AxisType.Vertical)
             {
                 if (!((rt.anchorMin == new Vector2(0, 1) && rt.anchorMax == new Vector2(0, 1)) ||
                       (rt.anchorMin == new Vector2(0, 1) && rt.anchorMax == new Vector2(1, 1))))
@@ -663,7 +728,7 @@ namespace EasyFramework.UI
         /// When the scroll update the view.
         /// <para>当滚动时更新视图</para>
         /// </summary>
-        void UpdateCheck(Vector2 v2)
+        void UpdateCheck()
         {
             if (m_ElementInfosArray == null) return;
 
@@ -673,7 +738,7 @@ namespace EasyFramework.UI
                 ElementInfo _element = m_ElementInfosArray[i];
                 GameObject obj = _element.Element;
                 Vector3 pos = _element.Postation;
-                float rangePos = direction == AxisType.Vertical ? pos.y : pos.x;
+                float rangePos = m_direction == AxisType.Vertical ? pos.y : pos.x;
 
                 if (IsOutRange(rangePos))
                 {
@@ -705,7 +770,7 @@ namespace EasyFramework.UI
         bool IsOutRange(float pos)
         {
             Vector3 listP = content.anchoredPosition;
-            if (direction == AxisType.Vertical)
+            if (m_direction == AxisType.Vertical)
             {
                 if (pos + listP.y > m_ElementHeight || pos + listP.y < -m_Rect.rect.height)
                 {
@@ -730,27 +795,26 @@ namespace EasyFramework.UI
         void OnScrollEnd()
         {
             m_CanDock = true;
-            m_Velocity[(int)direction] = 0;
+            m_Velocity = Vector2.zero;
 
             float _everySize;
-            m_OnEndOffset = Vector2.zero;
-            if (direction == AxisType.Horizontal)
+            if (m_direction == AxisType.Horizontal)
             {
                 _everySize = m_ElementWidth + m_Spacing.x;
-                m_OnEndOffset.x = content.anchoredPosition.x % _everySize;
-                m_OnEndOffset.x = m_OnEndOffset.x > (_everySize / 2.0f) ? _everySize - m_OnEndOffset.x : -m_OnEndOffset.x;
+                m_ContentOffset = content.anchoredPosition.x % _everySize;
+                m_ContentOffset = m_ContentOffset > (_everySize / 2.0f) ? _everySize - m_ContentOffset : -m_ContentOffset;
+                m_OnEndOffset = new Vector2(m_ContentOffset, 0);
 
-                m_ContentOffset = m_OnEndOffset.x;
             }
             else
             {
                 _everySize = m_ElementHeight + m_Spacing.y;
-                m_OnEndOffset.y = content.anchoredPosition.y % _everySize;
-                m_OnEndOffset.y = m_OnEndOffset.y > (_everySize / 2.0f) ? _everySize - m_OnEndOffset.y : -m_OnEndOffset.y;
-
-                m_ContentOffset = m_OnEndOffset.y;
+                m_ContentOffset = content.anchoredPosition.y % _everySize;
+                m_ContentOffset = m_ContentOffset > (_everySize / 2.0f) ? _everySize - m_ContentOffset : -m_ContentOffset;
+                m_OnEndOffset = new Vector2(0, m_ContentOffset);
             }
             m_ContentEndPostation = content.anchoredPosition + m_OnEndOffset;
+            m_ContentOffset = m_direction == AxisType.Horizontal ? m_OnEndOffset.x : m_OnEndOffset.y;
         }
 
         /// <summary>
@@ -762,7 +826,7 @@ namespace EasyFramework.UI
             m_MinIndex = -1;
             m_MaxIndex = -1;
 
-            if (direction == AxisType.Vertical)
+            if (m_direction == AxisType.Vertical)
             {
                 float contentSize = (m_Spacing.y + m_ElementHeight) * Mathf.CeilToInt((float)num / m_Lines);
                 m_ContentHeight = contentSize;
@@ -814,7 +878,7 @@ namespace EasyFramework.UI
                 {
                     ElementInfo _ei = _tempCellInfos.Length > i ? _tempCellInfos[i] : new ElementInfo();
 
-                    float rPos = direction == AxisType.Vertical ? _ei.Postation.y : _ei.Postation.x;
+                    float rPos = m_direction == AxisType.Vertical ? _ei.Postation.y : _ei.Postation.x;
                     if (!IsOutRange(rPos))
                     {
                         m_MinIndex = m_MinIndex == -1 ? i : m_MinIndex;
@@ -843,7 +907,7 @@ namespace EasyFramework.UI
 
                 ElementInfo _element = new ElementInfo();
 
-                if (direction == AxisType.Vertical)
+                if (m_direction == AxisType.Vertical)
                 {
                     _element.Postation = new Vector3(m_ElementWidth * (i % m_Lines) + m_Spacing.x * (i % m_Lines), -(m_ElementHeight * Mathf.FloorToInt(i / m_Lines) + m_Spacing.y * Mathf.FloorToInt(i / m_Lines)), 0);
                 }
@@ -852,7 +916,7 @@ namespace EasyFramework.UI
                     _element.Postation = new Vector3(m_ElementWidth * Mathf.FloorToInt(i / m_Lines) + m_Spacing.x * Mathf.FloorToInt(i / m_Lines), -(m_ElementHeight * (i % m_Lines) + m_Spacing.y * (i % m_Lines)), 0);
                 }
 
-                float cellPos = direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
+                float cellPos = m_direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
                 if (IsOutRange(cellPos))
                 {
                     _element.Element = null;
@@ -884,6 +948,76 @@ namespace EasyFramework.UI
         void CallbackFunction(GameObject obj, int index)
         {
             m_CallbackFunc?.Invoke(obj, index);
+        }
+
+        /// <summary>
+        /// 停靠
+        /// </summary>
+        void Docking()
+        {
+            Vector2 _v2 = (m_direction == AxisType.Horizontal ? Vector2.right : Vector2.up) * m_ContentOffset;
+            content.anchoredPosition += m_DockSpeed * Time.deltaTime * _v2;
+            UpdateBounds();
+
+            Vector2 _disV2 = m_ContentEndPostation - content.anchoredPosition;
+            if (MathF.Abs(m_direction == AxisType.Horizontal ? _disV2.x : _disV2.y) <= 2.0f)
+            {
+                content.anchoredPosition = m_ContentEndPostation;
+                m_InScrolling = false;
+                m_CanDock = false;
+            }
+        }
+
+        /// <summary>
+        /// 设置滑动条位置
+        /// </summary>
+        void SetScrollbarProNormalizedPosition(float value)
+        {
+            SetNormalizedPosition(value, (int)m_direction);
+            UpdateCheck();
+
+        }
+
+        /// <summary>
+        /// 当滑动条发生变化时
+        /// </summary>
+        void OnScrollbarProDragChanged(bool drag)
+        {
+            m_OnScrollBarDarg = drag;
+            if (m_OnScrollBarDarg)
+            {
+                m_CanDock = false;
+                m_InScrolling = false;
+            }
+        }
+
+        /// <summary>
+        /// Update scrollbar pro postation.
+        /// <para>更新滑动条位置</para>
+        /// </summary>
+        void UpdateScrollbarProPostation(Vector2 offset)
+        {
+            if (m_OnScrollBarDarg || !m_HasScrollbar || !m_Scrollbar)
+                return;
+
+            if (m_direction == AxisType.Horizontal)
+            {
+                if (m_ContentBounds.size.x > 0)
+                    m_Scrollbar.size = Mathf.Clamp01((m_ViewBounds.size.x - Mathf.Abs(offset.x)) / m_ContentBounds.size.x);
+                else 
+                    m_Scrollbar.size = 1;
+
+                m_Scrollbar.value = HorizontalNormalizedPosition;
+            }
+            else
+            {
+                if (m_ContentBounds.size.y > 0)
+                    m_Scrollbar.size = Mathf.Clamp01((m_ViewBounds.size.y - Mathf.Abs(offset.y)) / m_ContentBounds.size.y);
+                else
+                    m_Scrollbar.size = 1;
+
+                m_Scrollbar.value = VerticalNormalizedPosition;
+            }
         }
 
         #endregion
@@ -960,7 +1094,7 @@ namespace EasyFramework.UI
             }
 
             Vector2 newPos = m_ElementInfosArray[theFirstIndex].Postation;
-            if (direction == AxisType.Vertical)
+            if (m_direction == AxisType.Vertical)
             {
                 var posY = index <= m_Lines ? -newPos.y : -newPos.y - m_Spacing.y;
                 content.anchoredPosition = new Vector2(content.anchoredPosition.x, posY);
@@ -994,7 +1128,7 @@ namespace EasyFramework.UI
                 ElementInfo _element = m_ElementInfosArray[i];
                 if (_element.Element != null)
                 {
-                    float rangePos = direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
+                    float rangePos = m_direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
                     if (!IsOutRange(rangePos))
                     {
                         CallbackFunction(_element.Element, i);
@@ -1013,7 +1147,7 @@ namespace EasyFramework.UI
             ElementInfo _element = m_ElementInfosArray[index];
             if (_element.Element != null)
             {
-                float rangePos = direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
+                float rangePos = m_direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
                 if (!IsOutRange(rangePos))
                 {
                     CallbackFunction(_element.Element, index);

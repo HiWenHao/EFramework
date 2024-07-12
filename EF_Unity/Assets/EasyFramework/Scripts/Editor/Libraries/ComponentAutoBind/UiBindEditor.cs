@@ -75,6 +75,9 @@ namespace EasyFramework.Edit.AutoBind
             m_SortByNameLength.boolValue = m_sortByNameLength;
             m_PackUpBindList.boolValue = true;
 
+            m_ComCodePath.stringValue = ProjectUtility.Path.UICodePath;
+            m_PrefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
+
             serializedObject.ApplyModifiedProperties();
         }
 

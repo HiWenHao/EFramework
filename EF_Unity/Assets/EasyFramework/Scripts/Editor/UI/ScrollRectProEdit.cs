@@ -26,9 +26,12 @@ namespace EasyFramework.Edit
         SerializedProperty m_Inertia;
         SerializedProperty m_Spacing;
         SerializedProperty m_MaxCount;
+        SerializedProperty m_Scrollbar;
         SerializedProperty m_DockSpeed;
+        SerializedProperty m_direction;
         SerializedProperty m_Elasticity;
         SerializedProperty m_AutoDocking;
+        SerializedProperty m_HasScrollbar;
         SerializedProperty m_DecelerationRate;
 
         private void OnEnable()
@@ -38,9 +41,12 @@ namespace EasyFramework.Edit
             m_Inertia = serializedObject.FindProperty("m_Inertia");
             m_Spacing = serializedObject.FindProperty("m_Spacing");
             m_MaxCount = serializedObject.FindProperty("m_MaxCount");
+            m_Scrollbar = serializedObject.FindProperty("m_Scrollbar");
             m_DockSpeed = serializedObject.FindProperty("m_DockSpeed");
+            m_direction = serializedObject.FindProperty("m_direction");
             m_Elasticity = serializedObject.FindProperty("m_Elasticity");
             m_AutoDocking = serializedObject.FindProperty("m_AutoDocking");
+            m_HasScrollbar = serializedObject.FindProperty("m_HasScrollbar");
             m_DecelerationRate = serializedObject.FindProperty("m_DecelerationRate");
         }
 
@@ -50,8 +56,8 @@ namespace EasyFramework.Edit
 
             EditorGUILayout.Separator();
             m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine("Scrol", "Content"), m_Pro.content, typeof(RectTransform), true);
-            m_Pro.direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine("Scrol", "Direction"), m_Pro.direction);
-            m_Lines.intValue = EditorGUILayout.IntField(LC.Combine(m_Pro.direction == AxisType.Vertical ? "Column" : "Row", "Count"), m_Lines.intValue);
+            m_Pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine("Scrol", "Direction"), m_Pro.Direction);
+            m_Lines.intValue = EditorGUILayout.IntField(LC.Combine(m_Pro.Direction == AxisType.Vertical ? "Column" : "Row", "Count"), m_Lines.intValue);
             m_MaxCount.intValue = EditorGUILayout.IntField(LC.Combine("Max", "Element", "Count"), m_MaxCount.intValue);
             EditorGUILayout.Separator();
              
@@ -73,10 +79,19 @@ namespace EasyFramework.Edit
             m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Dock"), m_AutoDocking.boolValue);
             if (m_AutoDocking.boolValue)
             {
-                m_DockSpeed.floatValue = EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), m_DockSpeed.floatValue);
+                m_DockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), m_DockSpeed.floatValue), 0.1f, float.MaxValue);
             }
+            EditorGUILayout.Separator();
+
+            m_HasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine("Have", "Scrollbar"), m_HasScrollbar.boolValue);
+            if (m_HasScrollbar.boolValue)
+            {
+                m_Scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine("Scrollbar"), m_Scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
+            }
+
             if (GUI.changed)
-            { 
+            {
+                m_direction.enumValueFlag = (int)m_Pro.Direction;
                 serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(m_Pro);
             }

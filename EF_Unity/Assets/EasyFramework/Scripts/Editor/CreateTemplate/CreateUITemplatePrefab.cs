@@ -47,6 +47,11 @@ namespace EasyFramework.Edit
         {
             CreateUIObject(menuCommand, "Slideshow");
         }
+        [MenuItem("GameObject/UI/EF/About Bind", false, 999)]
+        static void CreateUIBind(MenuCommand menuCommand)
+        {
+            SettingsService.OpenProjectSettings("EF/Auto Bind Setting");
+        }
 
 
         static GameObject CreateUIObject(MenuCommand menuCommand, string prefabName)

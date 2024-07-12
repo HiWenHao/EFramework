@@ -604,7 +604,7 @@
     "desc": "拥有、具备",
     "array": [
       "Have",
-      "拥有、具备"
+      "拥有"
     ]
   },
   {
@@ -1325,6 +1325,14 @@
     "array": [
       "Settings",
       "设置"
+    ]
+  },
+  {
+    "name": "Scrollbar",
+    "desc": "滑动条",
+    "array": [
+      "Scrollbar",
+      "滑动条"
     ]
   },
   {

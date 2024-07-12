@@ -105,10 +105,10 @@ MonoBehaviour:
   BindDatas: []
   m_BindComs: []
   m_Namespace: EFExample
-  m_ComCodePath: D:/_Projects/Unity/EFramework/Assets
+  m_ComCodePath: Assets/ExampleGame/Scripts/_Test/
   m_DeleteScript: 0
   m_CreatePrefab: 1
-  m_PrefabPath: D:/_Projects/Unity/EFramework/Assets
+  m_PrefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
   m_PackUpBindList: 1
-  m_SortByType: 0
+  m_SortByType: 1
   m_SortByNameLength: 1
