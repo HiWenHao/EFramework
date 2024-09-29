@@ -47,22 +47,22 @@ namespace EasyFramework.Edit
 
         public override void OnInspectorGUI() 
         {
-            m_ElementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine("Element", "Size"), m_ElementSize.vector2Value);
-            m_Spacing.vector2Value = EditorGUILayout.Vector2Field(LC.Combine("Spacing"), m_Spacing.vector2Value);
+            m_ElementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(new Lc[] { Lc.Element, Lc.Size }), m_ElementSize.vector2Value);
+            m_Spacing.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(Lc.Spacing), m_Spacing.vector2Value);
             EditorGUILayout.Space();
-            m_MoveAxis.enumValueFlag = (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine("Loop", "Axis"), (AxisType)m_MoveAxis.enumValueFlag);
+            m_MoveAxis.enumValueFlag = (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Axis }), (AxisType)m_MoveAxis.enumValueFlag);
 
             EditorGUILayout.Space();
-            m_AutoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Loop"), m_AutoLoop.boolValue);
+            m_AutoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Loop }), m_AutoLoop.boolValue);
             if (m_AutoLoop.boolValue)
             {
-                m_LoopDirection.enumValueFlag = (int)(LoopDirectionType)EditorGUILayout.EnumPopup(LC.Combine("Loop", "Direction"), (LoopDirectionType)m_LoopDirection.enumValueFlag);
-                m_LoopSpaceTime.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Loop", "Spacing", "Time"), m_LoopSpaceTime.floatValue), 0f, float.MaxValue);
-                m_SpacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine("Spacing", "Time"), m_SpacingTime.intValue, 0, 60000);
+                m_LoopDirection.enumValueFlag = (int)(LoopDirectionType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Direction}), (LoopDirectionType)m_LoopDirection.enumValueFlag);
+                m_LoopSpaceTime.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Loop, Lc.Spacing, Lc.Time }), m_LoopSpaceTime.floatValue), 0f, float.MaxValue);
+                m_SpacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Spacing, Lc.Time }), m_SpacingTime.intValue, 0, 60000);
             }
 
             EditorGUILayout.Space();
-            m_CanDrag.boolValue = EditorGUILayout.Toggle(LC.Combine("Can", "Drag"), m_CanDrag.boolValue);
+            m_CanDrag.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Can, Lc.Drag }), m_CanDrag.boolValue);
 
             if (GUI.changed)
             {

@@ -94,8 +94,6 @@ namespace EasyFramework.Managers
 
                 if ((timer.PassedTime += elapse) >= timer.DelayTime + timer.CycleTime)
                 {
-                    //执行
-                    timer.EndCallback?.Invoke();
                     timer.PassedTime = 0.0f;
                     timer.DelayTime = 0.0f;
                     if (--timer.CycleCount == 0)
@@ -103,13 +101,19 @@ namespace EasyFramework.Managers
                         timer.IsCompleted = true;
                         m_RemovedEvents.Add(timer.Id);
                     }
+                    //执行
+                    timer.EndCallback?.Invoke(timer.IsCompleted);
                 }
             }
 
             if ((m_HandleCount = m_RemovedEvents.Count) != 0)
             {
                 for (int i = 0; i < m_HandleCount; i++)
-                    m_Events.Remove(m_RemovedEvents[i]);
+                {
+                    int _idx = m_RemovedEvents[i];
+                    if (m_Events.ContainsKey(_idx))
+                        m_Events.Remove(m_RemovedEvents[i]);
+                }
                 m_RemovedEvents.Clear();
             }
         }
@@ -123,7 +127,7 @@ namespace EasyFramework.Managers
         /// <param name="cycleCount">循环次数</param>
         /// <param name="callback">回调</param>
         /// <returns>时间事件ID</returns>
-        int CreateTimeEvent(float firstDelayTime, float cycleTime, int cycleCount, Action callback)
+        int CreateTimeEvent(float firstDelayTime, float cycleTime, int cycleCount, Action<bool> callback)
         {
             m_KeyIndex++;
             m_AddedEvents.Add(new TimeEvent()
@@ -144,9 +148,9 @@ namespace EasyFramework.Managers
         /// <para>增加只执行一次的计时事件</para>
         /// </summary>
         /// <param name="delayTime">Delay time.<para>延时时间</para></param>
-        /// <param name="callback">回调</param>
+        /// <param name="callback">回调 参数: 是否结束</param>
         /// <returns>The event id. <para>事件ID</para> </returns>
-        public int AddOnce(float delayTime, Action callback)
+        public int AddOnce(float delayTime, Action<bool> callback)
         {
             return CreateTimeEvent(delayTime, 0, 1, callback);
         }
@@ -158,9 +162,9 @@ namespace EasyFramework.Managers
         /// <param name="firstDelayTime">Execution of the first delay. <para>执行第一次前的延时</para></param>
         /// <param name="cycleTime">循环间隔</param>
         /// <param name="cycleCount">循环次数</param>
-        /// <param name="callback">回调</param>
+        /// <param name="callback">回调 参数: 是否结束</param>
         /// <returns>The event id. <para>事件ID</para></returns>
-        public int Add(float firstDelayTime, float cycleTime, int cycleCount, Action callback)
+        public int Add(float firstDelayTime, float cycleTime, int cycleCount, Action<bool> callback)
         {
             return CreateTimeEvent(firstDelayTime, cycleTime, cycleCount, callback);
         }
@@ -172,6 +176,9 @@ namespace EasyFramework.Managers
         /// <param name="timeId">The event id. <para>事件ID</para></param>
         public void RemoveAt(int timeId)
         {
+            if (timeId < 0)
+                return;
+
             m_RemovedEvents.Add(timeId);
         }
 

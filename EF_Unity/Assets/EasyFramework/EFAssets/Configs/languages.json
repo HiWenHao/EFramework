@@ -576,6 +576,14 @@
     ]
   },
   {
+    "name": "Folder",
+    "desc": "文件夹",
+    "array": [
+      "Folder",
+      "文件夹"
+    ]
+  },
+  {
     "name": "Filtrate",
     "desc": "筛选",
     "array": [

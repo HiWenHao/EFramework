@@ -38,13 +38,13 @@ namespace EasyFramework.Windows.AssetChecker
 
             ObjectInfoList = new string[]
             {
-                LC.Combine("Model", "Name"),
-                LC.Combine("Resource", "Type"),
-                LC.Combine("Vertex", "Count"),
-                LC.Combine("Triangular"),
-                LC.Combine("Bone","Count"),
-                LC.Combine("Model", "Size"),
-                LC.Combine("Score")
+                LC.Combine(new Lc[] { Lc.Model, Lc.Name }),
+                LC.Combine(new Lc[] { Lc.Resource, Lc.Type }),
+                LC.Combine(new Lc[] { Lc.Vertex, Lc.Count }),
+                LC.Combine(Lc.Triangular),
+                LC.Combine(new Lc[] { Lc.Bone, Lc.Count }),
+                LC.Combine(new Lc[] { Lc.Model, Lc.Size }),
+                LC.Combine(Lc.Score)
             };
             base.Initialize();
         }
@@ -125,7 +125,7 @@ namespace EasyFramework.Windows.AssetChecker
                 for (int i = 0; i < childFiles.Length; i++)
                 {
                     _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("BeingProcessed"), _curFileIndex / _count);
+                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), _curFileIndex / _count);
                     ModelInformation mb = ParseModel(childFiles[i]);
                     mb.AssetDesc = msb.AssetDesc;
 

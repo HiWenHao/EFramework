@@ -58,7 +58,7 @@ namespace EasyFramework.Edit.SpriteTools
 
             ShowSprites();
 
-            if (GUILayout.Button(LC.Combine("Overview"), GUILayout.Width(100f)))
+            if (GUILayout.Button(LC.Combine(Lc.Overview), GUILayout.Width(100f)))
             {
                 Pack();
             }
@@ -80,15 +80,15 @@ namespace EasyFramework.Edit.SpriteTools
         void SelectPath()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine("Atlas", "Path"), GUILayout.Width(130f));
+            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Atlas, Lc.Path }), GUILayout.Width(130f));
             EditorGUILayout.LabelField(new GUIContent(AtlasFolder.stringValue));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(LC.Combine("Select", "Path")))
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
                 {
-                    string _path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), Application.dataPath, "");
+                    string _path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), Application.dataPath, "");
                     if (string.IsNullOrEmpty(_path))
                     {
                         if (string.IsNullOrEmpty(AtlasFolder.stringValue))
@@ -97,7 +97,7 @@ namespace EasyFramework.Edit.SpriteTools
                     else
                         AtlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path) + "/";
                 }
-                if (GUILayout.Button(LC.Combine("Default", "Path")))
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Path })))
                 {
                     AtlasFolder.stringValue = m_FrameworkAtlasFolder;
                 }
@@ -109,7 +109,7 @@ namespace EasyFramework.Edit.SpriteTools
         #region Show Atlas
         void ShowObjectsAndAtlas()
         {
-            m_Atlas = EditorGUILayout.Foldout(m_Atlas, LC.Combine("Atlas") + $"\t({m_Target.Atlas.Count})");
+            m_Atlas = EditorGUILayout.Foldout(m_Atlas, LC.Combine(Lc.Atlas) + $"\t({m_Target.Atlas.Count})");
             if (m_Atlas)
             {
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
@@ -123,7 +123,7 @@ namespace EasyFramework.Edit.SpriteTools
 
                         if (GUILayout.Button("X"))
                         {
-                            if (EditorUtility.DisplayDialog(LC.Combine("Delete"), LC.Combine("Confirm", "Delete") + m_Target.Atlas[i].name + LC.Combine("Atlas"), LC.Combine("Ok")))
+                            if (EditorUtility.DisplayDialog(LC.Combine(Lc.Delete), LC.Combine(new Lc[] { Lc.Confirm, Lc.Delete }) + m_Target.Atlas[i].name + LC.Combine(Lc.Atlas), LC.Combine(Lc.Ok)))
                             {
                                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(m_Target.Atlas[i]));
                                 ClearSpriteInfoWithIndex(i);
@@ -137,14 +137,14 @@ namespace EasyFramework.Edit.SpriteTools
             }
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Clear", "All")))
+            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Clear, Lc.All })))
             {
                 ClearAllAtlas();
                 ClearSpriteInfos();
                 AssetDatabase.Refresh();
             }
 
-            if (GUILayout.Button(LC.Combine("Delete", "All")))
+            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.All })))
             {
                 for (int i = m_Target.Atlas.Count - 1; i >= 0; i--)
                     AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(m_Target.Atlas[i]));
@@ -165,7 +165,7 @@ namespace EasyFramework.Edit.SpriteTools
                 if (i == HasPreview.Count)
                     HasPreview.Add(false);
 
-                HasPreview[i] = EditorGUILayout.Foldout(HasPreview[i], new GUIContent(m_Target.SpriteInfos[i].SpriteList.Count + "\t" + LC.Combine("Atlas") + " - " + m_Target.SpriteInfos[i].FolderName));
+                HasPreview[i] = EditorGUILayout.Foldout(HasPreview[i], new GUIContent(m_Target.SpriteInfos[i].SpriteList.Count + "\t" + LC.Combine(Lc.Atlas) + " - " + m_Target.SpriteInfos[i].FolderName));
                 if (HasPreview[i] && i < m_Target.SpriteInfos.Count)
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -189,8 +189,8 @@ namespace EasyFramework.Edit.SpriteTools
         void CrateTheAtlas()
         {
             EditorGUILayout.BeginHorizontal();
-            m_AllOverwrite = EditorGUILayout.ToggleLeft(LC.Combine("Overwrite"), m_AllOverwrite, GUILayout.MaxWidth(100f));
-            if (GUILayout.Button(LC.Combine("Create", "Atlas")))
+            m_AllOverwrite = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Overwrite), m_AllOverwrite, GUILayout.MaxWidth(100f));
+            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Create, Lc.Atlas })))
             {
                 CreateAtlas();
             }
@@ -201,13 +201,13 @@ namespace EasyFramework.Edit.SpriteTools
             ClearAllAtlas();
             if (string.IsNullOrEmpty(AtlasFolder.stringValue))
             {
-                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("Select", "Atlas", "Folder"), LC.Combine("Ok"));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), LC.Combine(new Lc[] { Lc.Select, Lc.Atlas, Lc.Folder }), LC.Combine(Lc.Ok));
                 return;
             }
 
             if (m_Target.TargetObjects.Find(_ => _ is SpriteAtlas) != null)
             {
-                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("SC_AtlasExistInCollection"), LC.Combine("Ok"));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), LC.Combine(Lc.SC_AtlasExistInCollection), LC.Combine(Lc.Ok));
                 return;
             }
 
@@ -232,7 +232,7 @@ namespace EasyFramework.Edit.SpriteTools
                 bool _result = false;
                 if (!m_AllOverwrite && File.Exists(_atlas))
                 {
-                    _result = EditorUtility.DisplayDialog(LC.Combine("Hints"), m_Target.TargetObjects[i].name + LC.Combine("SC_AtlasExistAlsoOverwrite"), LC.Combine("Ok"), LC.Combine("Cancel"));
+                    _result = EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), m_Target.TargetObjects[i].name + LC.Combine(Lc.SC_AtlasExistAlsoOverwrite), LC.Combine(Lc.Ok), LC.Combine(Lc.Cancel));
                     if (!_result)
                     {
                         bool _hasSA = false;

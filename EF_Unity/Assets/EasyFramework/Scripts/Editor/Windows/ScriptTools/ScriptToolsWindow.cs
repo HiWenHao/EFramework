@@ -75,7 +75,7 @@ namespace EasyFramework.Windows
                 };
                 #endregion
 
-                EditorGUILayout.LabelField(LC.Combine("Script", "Tool"), new GUIStyle("label")
+                EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Script, Lc.Tool }), new GUIStyle("label")
                 {
                     fontStyle = FontStyle.Bold,
                     fontSize = 16,
@@ -83,28 +83,28 @@ namespace EasyFramework.Windows
                     fixedHeight = 30
                 });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                m_typeIndex = EditorGUILayout.Popup(LC.Combine("Select", "Find", "Type"),
+                m_typeIndex = EditorGUILayout.Popup(LC.Combine(new Lc[] { Lc.Select, Lc.Find, Lc.Type }),
                     m_typeIndex, 
                     new[]
                     {
-                        LC.Combine("Rely", "This", "Script", "Of", "Prefab"),
-                        LC.Combine("Lost", "Script", "Of", "Object"),
+                        LC.Combine(new Lc[]{ Lc.Rely, Lc.This, Lc.Script, Lc.Of, Lc.Prefab }),
+                        LC.Combine(new Lc[]{ Lc.Lost, Lc.Script, Lc.Of, Lc.Object }),
                     });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
                 //Dependencies
                 if (m_typeIndex == 0)
                 {
-                    targetComponent = (MonoScript)EditorGUILayout.ObjectField(LC.Combine("Select", "Target", "Script"), targetComponent, typeof(MonoScript), false);
+                    targetComponent = (MonoScript)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Select, Lc.Target, Lc.Script }), targetComponent, typeof(MonoScript), false);
 
                     EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                    m_ShouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine("Stw_RecurseDependencies"), m_ShouldRecurse);
-                    if (GUILayout.Button(LC.Combine("Find", "Script", "Rely")))
+                    m_ShouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), m_ShouldRecurse);
+                    if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Find, Lc.Script, Lc.Rely })))
                     {
                         ActionSearchForComponent();
                     }
                     if (m_DependenciesMaxCount != 0)
-                        EditorGUILayout.LabelField($"{LC.Combine("Rely", "Count")}:  [ {m_DependenciesMaxCount} ] ");
+                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Rely, Lc.Count })}:  [ {m_DependenciesMaxCount} ] ");
 
                     DependenciesListInfoShow();
                 }
@@ -112,14 +112,14 @@ namespace EasyFramework.Windows
                 else
                 {
                     EditorGUILayout.BeginHorizontal();
-                    if (GUILayout.Button(LC.Combine("Find")))
+                    if (GUILayout.Button(LC.Combine(Lc.Find)))
                     {
                         MissingFind();
                     }
                     m_MissingOpt = EditorGUILayout.Popup(m_MissingOpt, new string[]
                         {
-                            LC.Combine("In", "All", "Activity", "Scene"),
-                            LC.Combine("In", "All", "Prefab")
+                            LC.Combine(new Lc[]{ Lc.In, Lc.All, Lc.Activity, Lc.Scene }),
+                            LC.Combine(new Lc[]{ Lc.In, Lc.All, Lc.Prefab })
                         });
                     if (m_MissingOpt != m_MissingTempOpt)
                     {
@@ -128,7 +128,7 @@ namespace EasyFramework.Windows
                     }
                     EditorGUILayout.EndHorizontal();
                     if (m_MinssingMaxCount != 0)
-                        EditorGUILayout.LabelField($"{LC.Combine("Lost", "Count")}:  [ {m_MinssingMaxCount} ] ");
+                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Lost, Lc.Count })}:  [ {m_MinssingMaxCount} ] ");
                     EditorGUILayout.Space();
 
                     MissingListInfoShow();
@@ -143,7 +143,7 @@ namespace EasyFramework.Windows
 
                 if (m_DependenciesMaxCount == 0)
                 {
-                    EditorGUILayout.LabelField(LC.Combine("Not", "Found", "Match"));
+                    EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Not, Lc.Found, Lc.Match }));
                 }
                 else
                 {
@@ -161,7 +161,7 @@ namespace EasyFramework.Windows
                         EditorGUILayout.EndHorizontal();
                     }
                     EditorGUILayout.Space();
-                    EditorGUILayout.LabelField($"----- {LC.Combine("End")} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+                    EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
                     EditorGUILayout.Space(18f);
 
                     EditorGUILayout.EndScrollView();
@@ -223,7 +223,7 @@ namespace EasyFramework.Windows
                         continue;
                     }
                     EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
-                    if (GUILayout.Button((_info.LayersCount == 0 ? $" [ {LC.Combine("Root")} ]  >>> " : $" {LC.Combine("Root", "Target")} [ {_info.ParentName} ]   {_info.LayersCount} {LC.Combine("Layer")}  >>> ")
+                    if (GUILayout.Button((_info.LayersCount == 0 ? $" [ {LC.Combine(Lc.Root)} ]  >>> " : $" {LC.Combine(new Lc[] { Lc.Root, Lc.Target })} [ {_info.ParentName} ]   {_info.LayersCount} {LC.Combine(Lc.Layer)}  >>> ")
                         + _info.DetailsPath, ChangedColor(_info.LayersCount == 0), GUILayout.Height(25f)))
                     {
                         EditorGUIUtility.PingObject(_info.Target);
@@ -236,7 +236,7 @@ namespace EasyFramework.Windows
                     MissingFind();
                 }
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField($"----- {LC.Combine("End")} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+                EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
                 EditorGUILayout.Space(18f);
                 EditorGUILayout.EndScrollView();
             }

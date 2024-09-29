@@ -13,6 +13,7 @@ using LitJson;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEditor;
 
 namespace EasyFramework.Edit
@@ -30,7 +31,7 @@ namespace EasyFramework.Edit
     {
         static int m_currentIndex;
         static string m_Separator;
-        static Dictionary<string, List<string>> m_Dictionary;
+        static Dictionary<string, string> m_Dictionary;
 
         static void LoadLanguage()
         {
@@ -47,52 +48,34 @@ namespace EasyFramework.Edit
             {
                 m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 JsonData _jd = JsonMapper.ToObject(File.ReadAllText($"{ProjectUtility.Path.FrameworkPath}/EFAssets/Configs/languages.json"));
-                m_Dictionary = new Dictionary<string, List<string>>();
+                m_Dictionary = new Dictionary<string, string>();
                 m_Dictionary.Clear();
 
                 for (int i = 0; i < _jd.Count; i++)
                 {
-                    m_Dictionary.Add(_jd[i]["name"].ToString(), new List<string>
-                    {
-                        _jd[i]["array"][0].ToString(),
-                        _jd[i]["array"][1].ToString()
-                    });
+                    m_Dictionary.Add(_jd[i]["name"].ToString(), _jd[i]["array"][m_currentIndex].ToString());
                 }
 
-                m_Separator = m_Dictionary["S"][m_currentIndex];
+                m_Separator = m_Dictionary["S"];
             }
         }
 
         #region Combine
-        public static string Combine(string text1)
+        public static string Combine(Lc lc)
         {
             LoadLanguage();
-            return m_Dictionary[text1][m_currentIndex];
+            return m_Dictionary[lc.ToString()];
         }
-        public static string Combine(string text1, string text2)
+        public static string Combine(Lc[] lc)
         {
             LoadLanguage();
-            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}";
-        }
-        public static string Combine(string text1, string text2, string text3)
-        {
-            LoadLanguage();
-            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}";
-        }
-        public static string Combine(string text1, string text2, string text3, string text4)
-        {
-            LoadLanguage();
-            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}{m_Separator}{m_Dictionary[text4][m_currentIndex]}";
-        }
-        public static string Combine(string text1, string text2, string text3, string text4, string text5)
-        {
-            LoadLanguage();
-            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}{m_Separator}{m_Dictionary[text4][m_currentIndex]}{m_Separator}{m_Dictionary[text5][m_currentIndex]}";
-        }
-        public static string Combine(string text1, string text2, string text3, string text4, string text5, string text6)
-        {
-            LoadLanguage();
-            return $"{m_Dictionary[text1][m_currentIndex]}{m_Separator}{m_Dictionary[text2][m_currentIndex]}{m_Separator}{m_Dictionary[text3][m_currentIndex]}{m_Separator}{m_Dictionary[text4][m_currentIndex]}{m_Separator}{m_Dictionary[text5][m_currentIndex]}{m_Separator}{m_Dictionary[text6][m_currentIndex]}";
+
+            StringBuilder _sb = new StringBuilder();
+            for (int i = 0; i < lc.Length; i++)
+            {
+                _sb.Append($"{m_Dictionary[lc[i].ToString()]}{m_Separator}");
+            }
+            return _sb.ToString();
         }
         #endregion
 
@@ -132,5 +115,27 @@ namespace EasyFramework.Edit
             };
         }
         #endregion
+
+        [MenuItem("EFTools/Settings/Update Language Config", priority = 2001)]
+        static void UpdateLanguageConfig()
+        {
+            m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            JsonData _jd = JsonMapper.ToObject(File.ReadAllText($"{ProjectUtility.Path.FrameworkPath}/EFAssets/Configs/languages.json"));
+
+            StringBuilder _sb = new StringBuilder();
+            _sb.AppendLine("namespace EasyFramework.Edit\n{");
+            _sb.AppendLine("\t/// <summary> This script is used to set the editor panel language <summary>");
+            _sb.AppendLine("\tpublic enum Lc\n\t{");
+
+            for (int i = 0; i < _jd.Count; i++)
+            {
+                _sb.AppendLine($"\t\t/// <summary> {_jd[i]["desc"]} </summary>");
+                _sb.AppendLine($"\t\t{_jd[i]["name"]},");
+            }
+            _sb.AppendLine("\t}\n}");
+
+            File.WriteAllText($"{ProjectUtility.Path.FrameworkPath}/Scripts/Editor/Config/Language/EF.LanguageEnum.cs", _sb.ToString());
+            AssetDatabase.Refresh();
+        }
     }
 }

@@ -50,7 +50,7 @@ namespace EasyFramework.Edit.AutoBind
 
             EditorGUILayout.Space();
 
-            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Combine("Default","Script", "Namespace"), m_Namespace.stringValue);
+            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Default, Lc.Script, Lc.Namespace }), m_Namespace.stringValue);
 
             EditorGUILayout.Space();
 

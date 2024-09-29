@@ -30,6 +30,6 @@ namespace EasyFramework.Managers.Utility
         /// <summary> 循环次数 </summary>
         public int CycleCount;
 		/// <summary> 事件结束后的回调 </summary>
-		public Action EndCallback;
+		public Action<bool> EndCallback;
     }
 }

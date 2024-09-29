@@ -12,7 +12,6 @@
 using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
-using static UnityEngine.ParticleSystem;
 
 namespace EasyFramework.Windows.AssetChecker
 {
@@ -35,25 +34,25 @@ namespace EasyFramework.Windows.AssetChecker
         internal override void OnGUI()
         {
             base.OnGUI();
-            m_OpenModel = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenModel, LC.Combine("Model", "Information", "Settings"));
+            m_OpenModel = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenModel, LC.Combine(new Lc[] { Lc.Model, Lc.Information, Lc.Settings} ));
             if (m_OpenModel)
             {
-                AssetsCheckerConfig.ModelMaxBones = DrawIntInfo("      " + LC.Combine("Model", "Max", "Bone"), AssetsCheckerConfig.ModelMaxBones, 60);
-                AssetsCheckerConfig.ModelMaxTriangs = DrawIntInfo("      " + LC.Combine("Model", "Max", "Triangular"), AssetsCheckerConfig.ModelMaxTriangs, 50000);
+                AssetsCheckerConfig.ModelMaxBones = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Model, Lc.Max, Lc.Bone} ), AssetsCheckerConfig.ModelMaxBones, 60);
+                AssetsCheckerConfig.ModelMaxTriangs = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Model, Lc.Max, Lc.Triangular} ), AssetsCheckerConfig.ModelMaxTriangs, 50000);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Separator();
 
-            m_OpenEffect = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenEffect, LC.Combine("Effects", "Information", "Settings"));
+            m_OpenEffect = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenEffect, LC.Combine(new Lc[] { Lc.Effects, Lc.Information, Lc.Settings} ));
             if (m_OpenEffect)
             {
-                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine("Effects", "Max", "Matrials"), AssetsCheckerConfig.EffectMaxMatrials, 15);
-                AssetsCheckerConfig.EffectMaxParticles = DrawIntInfo("      " + LC.Combine("Effects", "Max", "Particle"), AssetsCheckerConfig.EffectMaxParticles, 1000);
+                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Matrials} ), AssetsCheckerConfig.EffectMaxMatrials, 15);
+                AssetsCheckerConfig.EffectMaxParticles = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Particle} ), AssetsCheckerConfig.EffectMaxParticles, 1000);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Separator();
 
-            m_OpenColor = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenColor, LC.Combine("Score", "Color", "Settings"));
+            m_OpenColor = EditorGUILayout.BeginFoldoutHeaderGroup(m_OpenColor, LC.Combine(new Lc[] { Lc.Score, Lc.Color, Lc.Settings} ));
             if (m_OpenColor)
             {
                 AssetsCheckerConfig.ScoreColors[0] = DrawColorInfo("      " + AssetsCheckerConfig.ScoreNames[0], AssetsCheckerConfig.ScoreColors[0], Color.green);
@@ -67,7 +66,7 @@ namespace EasyFramework.Windows.AssetChecker
 
         protected override void BeforeTheRefreshButton()
         {
-            if (GUILayout.Button(LC.Combine("Save", "Config"), GUILayout.Width(80f)))
+            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Save, Lc.Config} ), GUILayout.Width(80f)))
             {
                 AssetsCheckerConfig.SaveConfig();
                 AssetDatabase.Refresh();
@@ -91,7 +90,7 @@ namespace EasyFramework.Windows.AssetChecker
             EditorGUILayout.BeginHorizontal();
             int _bones = EditorGUILayout.IntField("   " + infoText, value);
             EditorGUILayout.Space(10f, false);
-            if (GUILayout.Button(LC.Combine("Reset"), GUILayout.Width(80f)))
+            if (GUILayout.Button(LC.Combine(Lc.Reset), GUILayout.Width(80f)))
             {
                 _bones = defaultValue;
             }
@@ -116,7 +115,7 @@ namespace EasyFramework.Windows.AssetChecker
             EditorGUILayout.BeginHorizontal();
             Color _color = EditorGUILayout.ColorField("   " + infoText, value);
             EditorGUILayout.Space(10f, false);
-            if (GUILayout.Button(LC.Combine("Reset"), GUILayout.Width(80f)))
+            if (GUILayout.Button(LC.Combine(Lc.Reset), GUILayout.Width(80f)))
             {
                 _color = defaultValue;
             }

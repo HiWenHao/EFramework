@@ -55,38 +55,38 @@ namespace EasyFramework.Edit
             m_Pro = target as ScrollRectPro;
 
             EditorGUILayout.Separator();
-            m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine("Scrol", "Content"), m_Pro.content, typeof(RectTransform), true);
-            m_Pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine("Scrol", "Direction"), m_Pro.Direction);
-            m_Lines.intValue = EditorGUILayout.IntField(LC.Combine(m_Pro.Direction == AxisType.Vertical ? "Column" : "Row", "Count"), m_Lines.intValue);
-            m_MaxCount.intValue = EditorGUILayout.IntField(LC.Combine("Max", "Element", "Count"), m_MaxCount.intValue);
+            m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), m_Pro.content, typeof(RectTransform), true);
+            m_Pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scrol, Lc.Direction }), m_Pro.Direction);
+            m_Lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { m_Pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), m_Lines.intValue);
+            m_MaxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), m_MaxCount.intValue);
             EditorGUILayout.Separator();
              
-            m_Pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(LC.Combine("Move", "Type"), m_Pro.movementType);
-            m_Elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine("Elasticity"), m_Elasticity.floatValue);
+            m_Pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Move, Lc.Type }), m_Pro.movementType);
+            m_Elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine(Lc.Elasticity), m_Elasticity.floatValue);
             EditorGUILayout.Separator();
 
-            m_Inertia.boolValue = EditorGUILayout.Toggle(LC.Combine("Enable", "Inertia"), m_Inertia.boolValue);
+            m_Inertia.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Enable, Lc.Inertia }), m_Inertia.boolValue);
             if (m_Inertia.boolValue)
             {
-                m_DecelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine("Deceleration", "Rate"), m_DecelerationRate.floatValue);
+                m_DecelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Deceleration, Lc.Rate} ), m_DecelerationRate.floatValue);
             }
             EditorGUILayout.Separator();
 
-            m_Spacing.vector2IntValue = EditorGUILayout.Vector2IntField(LC.Combine("Spacing"), m_Spacing.vector2IntValue);
-            m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine("Element"), m_Pro.Elemental, typeof(GameObject), true);
+            m_Spacing.vector2IntValue = EditorGUILayout.Vector2IntField(LC.Combine(Lc.Spacing), m_Spacing.vector2IntValue);
+            m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine(Lc.Element), m_Pro.Elemental, typeof(GameObject), true);
             EditorGUILayout.Separator();
 
-            m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Dock"), m_AutoDocking.boolValue);
+            m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Dock} ), m_AutoDocking.boolValue);
             if (m_AutoDocking.boolValue)
             {
-                m_DockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), m_DockSpeed.floatValue), 0.1f, float.MaxValue);
+                m_DockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Dock, Lc.Speed} ), m_DockSpeed.floatValue), 0.1f, float.MaxValue);
             }
             EditorGUILayout.Separator();
 
-            m_HasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine("Have", "Scrollbar"), m_HasScrollbar.boolValue);
+            m_HasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Have, Lc.Scrollbar} ), m_HasScrollbar.boolValue);
             if (m_HasScrollbar.boolValue)
             {
-                m_Scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine("Scrollbar"), m_Scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
+                m_Scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine(Lc.Scrollbar), m_Scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
             }
 
             if (GUI.changed)

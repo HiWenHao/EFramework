@@ -23,7 +23,7 @@ namespace EFExample
     public class UiC : UIPageBase
     {
         int m_TimeEventId;
-        Action timeEvent;
+        Action<bool> timeEvent;
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto
 		private Text Txt_TotalTime;
@@ -45,7 +45,7 @@ namespace EFExample
             D.Warning("C init" + obj.transform.childCount);
 
             Sld_Timer.onValueChanged.AddListener(EF.Timer.SetTimeScale);
-            timeEvent = delegate { D.Warning("TimerEvent is done.   10f"); };
+            timeEvent = (bol) => { D.Warning("TimerEvent is done.   10f"); };
 
             foreach (var item in args)
             {

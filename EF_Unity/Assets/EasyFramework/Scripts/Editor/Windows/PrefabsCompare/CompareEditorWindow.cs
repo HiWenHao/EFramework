@@ -169,10 +169,10 @@ namespace EasyFramework.Windows
                 switch (info.MissType)
                 {
                     case MissType.missLeft:
-                        m_MissRight.AppendLine(LC.Combine("Left", "Missing", "Object") + ", " + LC.Combine("Or", "Position", "Different"));
+                        m_MissRight.AppendLine(LC.Combine(new Lc[] { Lc.Left, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
                         break;
                     case MissType.missRight:
-                        m_MissLeft.AppendLine(LC.Combine("Right", "Missing", "Object") + ", " + LC.Combine("Or", "Position", "Different"));
+                        m_MissLeft.AppendLine(LC.Combine(new Lc[] { Lc.Right, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
                         break;
                     default:
                         break;
@@ -188,14 +188,14 @@ namespace EasyFramework.Windows
                         case MissType.missLeft:
                             if (m_MissLeft.Length == 0)
                             {
-                                m_MissLeft.AppendLine($"{LC.Combine("Lost")}:\n");
+                                m_MissLeft.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
                             }
                             m_MissLeft.AppendLine(item.Name);
                             break;
                         case MissType.missRight:
                             if (m_MissRight.Length == 0)
                             {
-                                m_MissRight.AppendLine($"{LC.Combine("Lost")}:\n");
+                                m_MissRight.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
                             }
                             m_MissRight.AppendLine(item.Name);
                             break;
@@ -240,7 +240,7 @@ namespace EasyFramework.Windows
             {
                 EditorGUILayout.BeginHorizontal(new GUIStyle("ToolBar"));
 
-                if (GUILayout.Button(LC.Combine("Compare"), m_ToolButtonStyle, GUILayout.Width(80.0f)))
+                if (GUILayout.Button(LC.Combine(Lc.Compare), m_ToolButtonStyle, GUILayout.Width(80.0f)))
                 {
                     Compare();
                 }
@@ -249,9 +249,9 @@ namespace EasyFramework.Windows
 
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, LC.Combine("Display", "Consistency")), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, LC.Combine(new Lc[] { Lc.Display, Lc.Consistency })), m_ToolButtonStyle, GUILayout.Width(30.0f));
 
-                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, LC.Combine("Display", "Simplex")), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, LC.Combine(new Lc[] { Lc.Display, Lc.Simplex })), m_ToolButtonStyle, GUILayout.Width(30.0f));
 
                     if (check.changed)
                     {
@@ -298,8 +298,8 @@ namespace EasyFramework.Windows
                     return;
                 }
                 EditorGUILayout.BeginHorizontal("box");
-                GUILayout.Label(new GUIContent(m_MissLeft.ToString(), LC.Combine("Left", "Lost", "Content")), ChangedLabel(true), GUILayout.ExpandWidth(true));
-                GUILayout.Label(new GUIContent(m_MissRight.ToString(), LC.Combine("Right", "Lost", "Content")), ChangedLabel(false), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(m_MissLeft.ToString(), LC.Combine(new Lc[] { Lc.Left, Lc.Lost, Lc.Content })), ChangedLabel(true), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(m_MissRight.ToString(), LC.Combine(new Lc[] { Lc.Right, Lc.Lost, Lc.Content })), ChangedLabel(false), GUILayout.ExpandWidth(true));
                 EditorGUILayout.EndHorizontal();
             }
 

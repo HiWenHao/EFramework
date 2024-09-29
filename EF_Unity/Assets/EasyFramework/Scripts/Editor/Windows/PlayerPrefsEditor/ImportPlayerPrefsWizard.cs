@@ -26,7 +26,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         protected override bool DrawWizardGUI()
         {
-            GUILayout.Label(LC.Combine("Ppe_ImportHint"), EditorStyles.wordWrappedLabel);
+            GUILayout.Label(LC.Combine(Lc.Ppe_ImportHint), EditorStyles.wordWrappedLabel);
             EditorGUILayout.Separator();
             return base.DrawWizardGUI();
         }
