@@ -894,7 +894,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 EditorGUILayout.BeginHorizontal();
                 newEntryIsEncrypted = GUILayout.Toggle(newEntryIsEncrypted, LC.Combine(Lc.Encrypt));
 
-                newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float, Lc.int, Lc.string" });
+                newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string" });
 
                 EditorGUILayout.EndHorizontal();
 
