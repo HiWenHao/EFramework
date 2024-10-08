@@ -52,6 +52,26 @@ namespace EasyFramework.Managers
     /// </summary>
     public class PatchManager : Singleton<PatchManager>, ISingleton
     {
+        /// <summary>
+        /// The patch update flow.
+        /// <para>补丁更新流程</para>
+        /// </summary>
+        enum EUpdateFlow
+        {
+            /// <summary> 初始化 </summary>
+            Initialize,
+            /// <summary> 获取版本 </summary>
+            GetStaticVersion,
+            /// <summary> 获取配置信息 </summary>
+            GetManifestInfo,
+            /// <summary> 创建下载 </summary>
+            CreateDownloader,
+            /// <summary> 开始下载 </summary>
+            BeginDownload,
+            /// <summary> 更新完成 </summary>
+            Done
+        }
+
         EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
         Transform m_patchUpdater;
@@ -134,17 +154,17 @@ namespace EasyFramework.Managers
             m_que_updaterState.Enqueue(CreateDownloader());
             m_que_updaterState.Enqueue(BeginDownload());
 
-            Run("Initialize");
+            Run(EUpdateFlow.Initialize);
         }
 
         #region Run progress. 跑更新流程
-        void Run(string nextState)
+        void Run(EUpdateFlow nextFlow)
         {
-            //D.Emphasize($"Next state is {nextState}       IEnumerator.Count = {m_que_updaterState.Count}");
+            //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {m_que_updaterState.Count}");
 
             if (null != m_ie_currentIE)
                 EF.StopCoroutines(m_ie_currentIE);
-            if (nextState.Equals("Done") || m_que_updaterState.Count <= 0)
+            if (nextFlow.Equals(EUpdateFlow.Done) || m_que_updaterState.Count <= 0)
             {
                 m_ie_currentIE = null;
                 if (m_patchUpdater)
@@ -236,7 +256,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                Run("GetStaticVersion");
+                Run(EUpdateFlow.GetStaticVersion);
             }
         }
 
@@ -365,7 +385,7 @@ namespace EasyFramework.Managers
                 D.Log($"Updated package Version : {packageVersion}");
 
                 //拿到版本号接下来去获取Manifest信息     GetManifestInfo
-                Run("GetManifestInfo");
+                Run(EUpdateFlow.GetManifestInfo);
             }
             else
             {
@@ -387,7 +407,7 @@ namespace EasyFramework.Managers
             if (operation.Status == EOperationStatus.Succeed)
             {
                 //拿到配置信息接下来去获取热更资源
-                Run("CreateDownloader");
+                Run(EUpdateFlow.CreateDownloader);
             }
             else
             {
@@ -411,7 +431,7 @@ namespace EasyFramework.Managers
 
             if (m_Downloader.TotalDownloadCount == 0)
             {
-                Run("Done");
+                Run(EUpdateFlow.Done);
             }
             else
             {
@@ -460,7 +480,7 @@ namespace EasyFramework.Managers
             if (m_Downloader.Status != EOperationStatus.Succeed)
                 yield break;
 
-            Run("Done");
+            Run(EUpdateFlow.Done);
         }
 
         private void OnDownloadErrorFunction(string fileName, string error)
@@ -489,7 +509,7 @@ namespace EasyFramework.Managers
         {
             Tran_Updater.gameObject.SetActive(true);
             Tran_HintsBox.gameObject.SetActive(false);
-            Run("BeginDownload");
+            Run(EUpdateFlow.BeginDownload);
         }
     }
 
