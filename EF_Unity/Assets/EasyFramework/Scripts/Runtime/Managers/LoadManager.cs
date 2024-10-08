@@ -55,10 +55,18 @@ namespace EasyFramework.Managers
             return Resources.Load<T>(pathName);
         }
 
-        //public T LoadInYooAsset<T>()
-        //{
-        //
-        //}
+        public RawFileHandle LoadInYooAsset(string pathName, string packageName = "DefaultPackage")
+        {
+            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            {
+                return package.LoadRawFileAsync(pathName);
+            }
+            else
+            {
+                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
+                return null;
+            }
+        }
 
         public void LoadSceneAsyncInYooAsset(string pathName, string packageName = "DefaultPackage")
         {

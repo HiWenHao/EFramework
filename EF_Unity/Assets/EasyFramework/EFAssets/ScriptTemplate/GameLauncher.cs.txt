@@ -11,32 +11,31 @@ namespace PleaseModify
     /// </summary>
     public class GameLauncher : MonoBehaviour
     {
+        public bool StartWebSocket;
         private void Start()
         {
-            EasyFramework.D.Init();
+            D.Init();
 #if UNITY_EDITOR
             EF.ClearConsole();
 #endif
-
-            EasyFramework.D.Log("======================Initialize======================");
-            //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
-
             #region Set the game run time info
             //Application.targetFrameRate = 60;
             Application.runInBackground = true;
             #endregion
 
-            //放置多久后屏幕变暗
+            D.Log("======================Initialize======================");
+            //在这里写初始化内容，音频播放、首页UI进入、数据初始化、各类管理器初始化都可以在此
+
             EF.Timer.SleepTimeout = SleepTimeout.NeverSleep;
 
             //FPS展示
-            FPSOnGUI.Instance.allowDrag = true;
-                        
-            // 当然，你也可以随时卸载你不需要的单例
-            EF.Timer.AddOnce(2.0f, delegate
-            {
-                EF.Unregister(FPSOnGUI.Instance);
-            });
+            FPSOnGUI.Instance.AllowDrag = true;
+
+            //当然，你也可以随时卸载你不需要的单例
+            //EF.Timer.AddOnce(2.0f, delegate
+            //{
+            //    EF.Unregister(FPSOnGUI.Instance);
+            //});
 
             //读表工具初始化
             //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");
@@ -44,37 +43,30 @@ namespace PleaseModify
             //for (int i = 0; i < EDC_Example.Ids.Length; i++)
             //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
 
-            //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
-            //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, delegate
-            //{
-            //    //热更结束后
-            //    //EF.Scenes.LoadSceneWithName("");
-            //});
-            
             //网络部分，还待完善
-            if (false)
+            if (StartWebSocket)
             {
                 BestHTTP.WebSocket.WebSocket _ws = EF.Socket.CreateAndOpenWebSocket(
                     new System.Uri("wss://echo.websocket.events"),
                     onOpen: (ws) =>
                     {
-                        EasyFramework.D.Log("Socket onOpen !!!");
+                        D.Log("Socket onOpen !!!");
                     },
                     onMessage: (ws, msg) =>
                     {
-                        EasyFramework.D.Log("Socket onMessage !!!   msg = " + msg);
+                        D.Log("Socket onMessage !!!   msg = " + msg);
                     },
                     onBinary: (ws, bytes) =>
                     {
-                        EasyFramework.D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
+                        D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
                     },
                     onError: (ws, error) =>
                     {
-                        EasyFramework.D.Error("Socket onError !!!   error = " + error);
+                        D.Error("Socket onError !!!   error = " + error);
                     },
                     onClosed: (ws, code, msg) =>
                     {
-                        EasyFramework.D.Log("Socket onClosed !!!");
+                        D.Log("Socket onClosed !!!");
                     },
                     onErrorDescription: null,
                     onIncompleteFrame: null
@@ -86,26 +78,13 @@ namespace PleaseModify
                 EF.Timer.AddOnce(3.0f, delegate
                 {
                     EF.Socket.DisposeDesignation(_ws);
-                    _ws = null;
                 });
             }
 
-            //UI进入
-            //EF.Ui.Push(new You Class());
+            //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
+            //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, callback: LoadMetadataForAOTAssemblies);
 
-            //音频播放
-            //EF.Audio.PlayBGMByName("You bgm`s name", true);     //需要先在Project Setting中配置路径
-            //EF.Audio.Play2DEffectSouceByClip();
 
-            //协程启动与关闭都通过EF
-            //EF.StartCoroutines(LoadMetadataForAOTAssemblies());
-
-            //读表工具初始化
-            //EasyFramework.ExcelTool.ExcelDataManager.Init("JsonData");        //数据需要放到Resources文件夹中
-            //ExcelDataCacheManager.CacheAllData();     //之后缓存全部数据到项目中
-
-            
-            #region Luban
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
             //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
@@ -113,38 +92,41 @@ namespace PleaseModify
             //    new System.Func<string, ByteBuf>(LoadByteBuf)
             //    : new System.Func<string, JSONNode>(LoadJson);
             //EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
-            //
+
             //foreach (var item in tables.TbItem.DataList)
             //{
             //    EasyFramework.D.Warning("reward:\t" + item.ToString());
             //}
-            #endregion
 
+            //UI进入
+            EF.Ui.Push(new UiA());
+
+            //音频播放
+            //EF.Sources.PlayBGMByName("You bgm`s name", true);
         }
 
-        #region RunDllCode      代码热更相关
+        #region RunDllCode
         /// <summary>
         /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
         /// 一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
         /// </summary>
-        //System.Collections.IEnumerator LoadMetadataForAOTAssemblies()
-        //{
-        //    YooAsset.RawFileOperationHandle _handle = m_Package.LoadRawFileAsync("ExampleGame.dll");
-        //    _handle.Completed += delegate
-        //    {
-        //        byte[] dllBytes = _handle.GetRawFileData();
-        //        System.Reflection.Assembly hotUpdateAss = System.Reflection.Assembly.Load(dllBytes);
-        //        System.Type type = hotUpdateAss.GetType("EFExample.APPMain");//找不到类型，加命名空间试试
-        //        System.Reflection.MethodInfo _info = type.GetMethod("Run");
-        //        _info.Invoke(null, null);
-        //    };
-        //    yield return _handle;
-        //}
+        void LoadMetadataForAOTAssemblies()
+        {
+            YooAsset.RawFileHandle _handle = EF.Load.LoadInYooAsset("Your code dll file path...");
+            _handle.Completed += delegate
+            {
+                byte[] _dllBytes = _handle.GetRawFileData();            
+                System.Reflection.Assembly _hotUpdateAss = System.Reflection.Assembly.Load(_dllBytes);
+            
+                System.Type _type = _hotUpdateAss.GetType("YouNamespace.YouClassName");//找不到类型，加命名空间试试
+                System.Reflection.MethodInfo _info = _type.GetMethod("You function name");
+                _info.Invoke(null, null);
+            };
+        }
+
         #endregion
 
-        
         #region Luban
-        /*
         JSONNode LoadJson(string file)
         {
             return JSON.Parse(System.IO.File.ReadAllText($"{Application.dataPath}/Luban/Json/{file}.json", System.Text.Encoding.UTF8));
@@ -154,7 +136,6 @@ namespace PleaseModify
         {
             return new ByteBuf(System.IO.File.ReadAllBytes($"{Application.dataPath}/Luban/Json/{file}.bytes"));
         }
-        */
         #endregion
     }
 }

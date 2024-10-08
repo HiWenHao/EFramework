@@ -92,7 +92,8 @@ namespace EFExample
             }
 
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
-            //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode);
+            //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, callback: LoadMetadataForAOTAssemblies);
+
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
@@ -115,25 +116,24 @@ namespace EFExample
         }
 
         #region RunDllCode
-        /*
         /// <summary>
         /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
         /// 一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
         /// </summary>
-        IEnumerator LoadMetadataForAOTAssemblies()
+        void LoadMetadataForAOTAssemblies()
         {
-            YooAsset.RawFileOperationHandle _handle = m_Package.LoadRawFileAsync("ExampleGame.dll");
+            YooAsset.RawFileHandle _handle = EF.Load.LoadInYooAsset("Your code dll file path...");
             _handle.Completed += delegate
             {
-                byte[] dllBytes = _handle.GetRawFileData();
-                System.Reflection.Assembly hotUpdateAss = System.Reflection.Assembly.Load(dllBytes);
-                System.Type type = hotUpdateAss.GetType("EFExample.APPMain");//找不到类型，加命名空间试试
-                System.Reflection.MethodInfo _info = type.GetMethod("Run");
+                byte[] _dllBytes = _handle.GetRawFileData();            
+                System.Reflection.Assembly _hotUpdateAss = System.Reflection.Assembly.Load(_dllBytes);
+            
+                System.Type _type = _hotUpdateAss.GetType("YouNamespace.YouClassName");//找不到类型，加命名空间试试
+                System.Reflection.MethodInfo _info = _type.GetMethod("You function name");
                 _info.Invoke(null, null);
             };
-            yield return _handle;
         }
-        */
+
         #endregion
 
         #region Luban

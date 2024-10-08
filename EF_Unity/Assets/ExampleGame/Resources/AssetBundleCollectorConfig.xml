@@ -9,5 +9,8 @@
     <Group GroupActiveRule="EnableGroup" GroupName="Audio" GroupDesc="" AssetTags="">
       <Collector CollectPath="Assets/ExampleGame/Resources/Sources" CollectGUID="97adeb34d337f4a40967cd3f992053b7" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
     </Group>
+    <Group GroupActiveRule="EnableGroup" GroupName="Code" GroupDesc="" AssetTags="">
+      <Collector CollectPath="Assets/AssetsHotfix" CollectGUID="937b0593a409953408bd4efba83fba28" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+    </Group>
   </Package>
 </root>
