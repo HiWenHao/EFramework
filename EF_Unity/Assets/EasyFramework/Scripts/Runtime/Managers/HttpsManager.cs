@@ -9,19 +9,17 @@
  * ===============================================
 */
 
-using LitJson;
 using System;
 using System.Collections;
-using System.Text;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace EasyFramework.Managers
 {
     /// <summary>
-    /// Client get data in server.
+    /// HTTP request manager.
+    /// HTTP 请求管理器
     /// </summary>
-    public class HttpsManager : MonoSingleton<HttpsManager>, IManager
+    public class HttpsManager : Singleton<HttpsManager>, IManager
     {
         const string Token = "";
         const string Domain = "";
@@ -37,52 +35,46 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            StopAllCoroutines();
+
         }
 
         /// <summary>
-        /// 获取请求
+        /// Get请求
         /// </summary>
         /// <param name="address">请求尾地址</param>
         /// <param name="callback">回调函数</param>
-        public void Get(string address, Action<string> callback)
-        {
-            StartCoroutine(GetFunc(address, callback));
-        }
+        public void Get(string address, Action<DownloadHandler> callback) => EF.StartCoroutines(GetFunc(address, callback));
 
         /// <summary>
-        /// 获取请求
+        /// Post请求
         /// </summary>
         /// <param name="address">请求尾地址</param>
         /// <param name="callback">回调函数</param>
-        public void Get(string address, Action<byte[]> callback)
-        {
-            StartCoroutine(GetFunc(address, callback));
-        }
+        public void Post(string address, Action<DownloadHandler> callback) => EF.StartCoroutines(PostFunc(address, callback));
 
-        IEnumerator GetFunc(string address, Action<string> callback)
+        IEnumerator GetFunc(string address, Action<DownloadHandler> callback)
         {
             using UnityWebRequest _uwr = UnityWebRequest.Get(address);
 
             yield return _uwr.SendWebRequest();
 
             if (_uwr.result == UnityWebRequest.Result.Success)
-                callback?.Invoke(_uwr.downloadHandler.text);
+                callback?.Invoke(_uwr.downloadHandler);
             else
                 D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
         }
-        IEnumerator GetFunc(string address, Action<byte[]> callback)
+
+        IEnumerator PostFunc(string address, Action<DownloadHandler> callback)
         {
-            using UnityWebRequest _uwr = UnityWebRequest.Get(address);
+            using UnityWebRequest _uwr = UnityWebRequest.Post(address, address);
 
             yield return _uwr.SendWebRequest();
 
             if (_uwr.result == UnityWebRequest.Result.Success)
-                callback?.Invoke(_uwr.downloadHandler.data);
+                callback?.Invoke(_uwr.downloadHandler);
             else
                 D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
         }
-
 
         /*
         #region BestHttp
