@@ -97,6 +97,11 @@ namespace YooAsset
         /// 自定义参数：断点续传下载器关注的错误码
         /// </summary>
         public List<long> ResumeDownloadResponseCodes { private set; get; } = null;
+
+        /// <summary>
+        ///  自定义参数：解密方法类
+        /// </summary>
+        public IDecryptionServices DecryptionServices { private set; get; }
         #endregion
 
 
@@ -200,37 +205,44 @@ namespace YooAsset
 
             if (_loadedStream.TryGetValue(bundle.BundleGUID, out Stream managedStream))
             {
-                managedStream.Close();
-                managedStream.Dispose();
+                if (managedStream != null)
+                {
+                    managedStream.Close();
+                    managedStream.Dispose();
+                }
                 _loadedStream.Remove(bundle.BundleGUID);
             }
         }
 
         public virtual void SetParameter(string name, object value)
         {
-            if (name == "REMOTE_SERVICES")
+            if (name == FileSystemParametersDefine.REMOTE_SERVICES)
             {
                 RemoteServices = (IRemoteServices)value;
             }
-            else if (name == "FILE_VERIFY_LEVEL")
+            else if (name == FileSystemParametersDefine.FILE_VERIFY_LEVEL)
             {
                 FileVerifyLevel = (EFileVerifyLevel)value;
             }
-            else if (name == "APPEND_FILE_EXTENSION")
+            else if (name == FileSystemParametersDefine.APPEND_FILE_EXTENSION)
             {
                 AppendFileExtension = (bool)value;
             }
-            else if (name == "RAW_FILE_BUILD_PIPELINE")
+            else if (name == FileSystemParametersDefine.RAW_FILE_BUILD_PIPELINE)
             {
                 RawFileBuildPipeline = (bool)value;
             }
-            else if (name == "RESUME_DOWNLOAD_MINMUM_SIZE")
+            else if (name == FileSystemParametersDefine.RESUME_DOWNLOAD_MINMUM_SIZE)
             {
                 ResumeDownloadMinimumSize = (long)value;
             }
-            else if (name == "RESUME_DOWNLOAD_RESPONSE_CODES")
+            else if (name == FileSystemParametersDefine.RESUME_DOWNLOAD_RESPONSE_CODES)
             {
                 ResumeDownloadResponseCodes = (List<long>)value;
+            }
+            else if (name == FileSystemParametersDefine.DECRYPTION_SERVICES)
+            {
+                DecryptionServices = (IDecryptionServices)value;
             }
             else
             {
@@ -308,16 +320,56 @@ namespace YooAsset
             if (Exists(bundle) == false)
                 return null;
 
-            string filePath = GetCacheFileLoadPath(bundle);
-            return FileUtility.ReadAllBytes(filePath);
+            if (bundle.Encrypted)
+            {
+                if (DecryptionServices == null)
+                {
+                    YooLogger.Error($"The {nameof(IDecryptionServices)} is null !");
+                    return null;
+                }
+
+                string filePath = GetCacheFileLoadPath(bundle);
+                var fileInfo = new DecryptFileInfo()
+                {
+                    BundleName = bundle.BundleName,
+                    FileLoadCRC = bundle.UnityCRC,
+                    FileLoadPath = filePath,
+                };
+                return DecryptionServices.ReadFileData(fileInfo);
+            }
+            else
+            {
+                string filePath = GetCacheFileLoadPath(bundle);
+                return FileUtility.ReadAllBytes(filePath);
+            }
         }
         public virtual string ReadFileText(PackageBundle bundle)
         {
             if (Exists(bundle) == false)
                 return null;
 
-            string filePath = GetCacheFileLoadPath(bundle);
-            return FileUtility.ReadAllText(filePath);
+            if (bundle.Encrypted)
+            {
+                if (DecryptionServices == null)
+                {
+                    YooLogger.Error($"The {nameof(IDecryptionServices)} is null !");
+                    return null;
+                }
+
+                string filePath = GetCacheFileLoadPath(bundle);
+                var fileInfo = new DecryptFileInfo()
+                {
+                    BundleName = bundle.BundleName,
+                    FileLoadCRC = bundle.UnityCRC,
+                    FileLoadPath = filePath,
+                };
+                return DecryptionServices.ReadFileText(fileInfo);
+            }
+            else
+            {
+                string filePath = GetCacheFileLoadPath(bundle);
+                return FileUtility.ReadAllText(filePath);
+            }
         }
 
         #region 内部方法
@@ -527,6 +579,42 @@ namespace YooAsset
         public List<string> GetAllCachedBundleGUIDs()
         {
             return _wrappers.Keys.ToList();
+        }
+
+        /// <summary>
+        /// 加载加密资源文件
+        /// </summary>
+        public AssetBundle LoadEncryptedAssetBundle(PackageBundle bundle)
+        {
+            string filePath = GetCacheFileLoadPath(bundle);
+            var fileInfo = new DecryptFileInfo()
+            {
+                BundleName = bundle.BundleName,
+                FileLoadCRC = bundle.UnityCRC,
+                FileLoadPath = filePath,
+            };
+
+            var assetBundle = DecryptionServices.LoadAssetBundle(fileInfo, out var managedStream);
+            _loadedStream.Add(bundle.BundleGUID, managedStream);
+            return assetBundle;
+        }
+
+        /// <summary>
+        /// 加载加密资源文件
+        /// </summary>
+        public AssetBundleCreateRequest LoadEncryptedAssetBundleAsync(PackageBundle bundle)
+        {
+            string filePath = GetCacheFileLoadPath(bundle);
+            var fileInfo = new DecryptFileInfo()
+            {
+                BundleName = bundle.BundleName,
+                FileLoadCRC = bundle.UnityCRC,
+                FileLoadPath = filePath,
+            };
+
+            var createRequest = DecryptionServices.LoadAssetBundleAsync(fileInfo, out var managedStream);
+            _loadedStream.Add(bundle.BundleGUID, managedStream);
+            return createRequest;
         }
         #endregion
     }

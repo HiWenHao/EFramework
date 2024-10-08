@@ -8,13 +8,24 @@ namespace YooAsset
 {
     internal sealed class DatabaseSceneProvider : ProviderOperation
     {
-        public readonly LoadSceneMode SceneMode;
-        private bool _suspendLoadMode;
+        public readonly LoadSceneParameters LoadSceneParams;    
         private AsyncOperation _asyncOperation;
+        private bool _suspendLoadMode;
 
-        public DatabaseSceneProvider(ResourceManager manager, string providerGUID, AssetInfo assetInfo, LoadSceneMode sceneMode, bool suspendLoad) : base(manager, providerGUID, assetInfo)
+        /// <summary>
+        /// 场景加载模式
+        /// </summary>
+        public LoadSceneMode SceneMode
         {
-            SceneMode = sceneMode;
+            get
+            {
+                return LoadSceneParams.loadSceneMode;
+            }
+        }
+
+        public DatabaseSceneProvider(ResourceManager manager, string providerGUID, AssetInfo assetInfo, LoadSceneParameters loadSceneParams, bool suspendLoad) : base(manager, providerGUID, assetInfo)
+        {
+            LoadSceneParams = loadSceneParams;
             SceneName = Path.GetFileNameWithoutExtension(assetInfo.AssetPath);
             _suspendLoadMode = suspendLoad;
         }
@@ -53,14 +64,12 @@ namespace YooAsset
             {
                 if (IsWaitForAsyncComplete)
                 {
-                    LoadSceneParameters loadSceneParameters = new LoadSceneParameters(SceneMode);
-                    SceneObject = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(MainAssetInfo.AssetPath, loadSceneParameters);
+                    SceneObject = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(MainAssetInfo.AssetPath, LoadSceneParams);
                     _steps = ESteps.Checking;
                 }
                 else
                 {
-                    LoadSceneParameters loadSceneParameters = new LoadSceneParameters(SceneMode);
-                    _asyncOperation = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneAsyncInPlayMode(MainAssetInfo.AssetPath, loadSceneParameters);
+                    _asyncOperation = UnityEditor.SceneManagement.EditorSceneManager.LoadSceneAsyncInPlayMode(MainAssetInfo.AssetPath, LoadSceneParams);
                     if (_asyncOperation != null)
                     {
                         _asyncOperation.allowSceneActivation = !_suspendLoadMode;

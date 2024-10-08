@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace YooAsset
 {
-    internal class DefaultBuildinFileSystemBuild : UnityEditor.Build.IPreprocessBuildWithReport
+    public class DefaultBuildinFileSystemBuild : UnityEditor.Build.IPreprocessBuildWithReport
     {
         public int callbackOrder { get { return 0; } }
 
@@ -15,6 +15,8 @@ namespace YooAsset
         /// </summary>
         public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
         {
+            YooLogger.Log("Begin to create catalog file !");
+
             string savePath = $"Assets/Resources/{YooAssetSettingsData.Setting.DefaultYooFolderName}";
             DirectoryInfo saveDirectory = new DirectoryInfo(savePath);
             if (saveDirectory.Exists)
@@ -24,8 +26,7 @@ namespace YooAsset
             DirectoryInfo rootDirectory = new DirectoryInfo(rootPath);
             if (rootDirectory.Exists == false)
             {
-                Debug.LogWarning($"Can not found StreamingAssets root directory : {rootPath}");
-                return;
+                throw new System.Exception($"Can not found StreamingAssets root directory : {rootPath}");
             }
 
             // 搜索所有Package目录
@@ -35,7 +36,7 @@ namespace YooAsset
                 CreateBuildinCatalogFile(subDirectory.Name, subDirectory.FullName);
             }
         }
-        
+
         /// <summary>
         /// 生成包裹的内置资源目录文件
         /// </summary>
@@ -48,8 +49,7 @@ namespace YooAsset
                 string versionFilePath = $"{pacakgeDirectory}/{versionFileName}";
                 if (File.Exists(versionFilePath) == false)
                 {
-                    Debug.LogWarning($"Can not found package version file : {versionFilePath}");
-                    return;
+                    throw new System.Exception($"Can not found package version file : {versionFilePath}");
                 }
 
                 packageVersion = FileUtility.ReadAllText(versionFilePath);
@@ -62,8 +62,7 @@ namespace YooAsset
                 string manifestFilePath = $"{pacakgeDirectory}/{manifestFileName}";
                 if (File.Exists(manifestFilePath) == false)
                 {
-                    Debug.LogWarning($"Can not found package manifest file : {manifestFilePath}");
-                    return;
+                    throw new System.Exception($"Can not found package manifest file : {manifestFilePath}");
                 }
 
                 var binaryData = FileUtility.ReadAllBytes(manifestFilePath);
@@ -90,7 +89,8 @@ namespace YooAsset
             foreach (var fileInfo in fileInfos)
             {
                 if (fileInfo.Extension == ".meta" || fileInfo.Extension == ".version" ||
-                    fileInfo.Extension == ".hash" || fileInfo.Extension == ".bytes")
+                    fileInfo.Extension == ".hash" || fileInfo.Extension == ".bytes" ||
+                    fileInfo.Extension == ".json")
                     continue;
 
                 string fileName = fileInfo.Name;
@@ -109,8 +109,12 @@ namespace YooAsset
             FileUtility.CreateFileDirectory(saveFilePath);
 
             UnityEditor.AssetDatabase.CreateAsset(buildinFileCatalog, saveFilePath);
+            UnityEditor.EditorUtility.SetDirty(buildinFileCatalog);
+#if UNITY_2019
             UnityEditor.AssetDatabase.SaveAssets();
-            UnityEditor.AssetDatabase.Refresh();
+#else
+            UnityEditor.AssetDatabase.SaveAssetIfDirty(buildinFileCatalog);
+#endif
             Debug.Log($"Succeed to save buildin file catalog : {saveFilePath}");
         }
     }

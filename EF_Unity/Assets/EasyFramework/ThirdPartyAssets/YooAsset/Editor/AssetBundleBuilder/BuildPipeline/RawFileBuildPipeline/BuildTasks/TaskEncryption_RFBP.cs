@@ -1,7 +1,7 @@
 ﻿
 namespace YooAsset.Editor
 {
-    public class TaskEncryption_SBP : TaskEncryption, IBuildTask
+    public class TaskEncryption_RFBP : TaskEncryption, IBuildTask
     {
         void IBuildTask.Run(BuildContext context)
         {

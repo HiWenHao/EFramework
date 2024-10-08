@@ -8,13 +8,24 @@ namespace YooAsset
 {
     internal sealed class BundledSceneProvider : ProviderOperation
     {
-        public readonly LoadSceneMode SceneMode;
+        public readonly LoadSceneParameters LoadSceneParams;
         private AsyncOperation _asyncOperation;
         private bool _suspendLoadMode;
 
-        public BundledSceneProvider(ResourceManager manager, string providerGUID, AssetInfo assetInfo, LoadSceneMode sceneMode, bool suspendLoad) : base(manager, providerGUID, assetInfo)
+        /// <summary>
+        /// 场景加载模式
+        /// </summary>
+        public LoadSceneMode SceneMode
         {
-            SceneMode = sceneMode;
+            get
+            {
+                return LoadSceneParams.loadSceneMode;
+            }
+        }
+
+        public BundledSceneProvider(ResourceManager manager, string providerGUID, AssetInfo assetInfo, LoadSceneParameters loadSceneParams, bool suspendLoad) : base(manager, providerGUID, assetInfo)
+        {
+            LoadSceneParams = loadSceneParams;
             SceneName = Path.GetFileNameWithoutExtension(assetInfo.AssetPath);
             _suspendLoadMode = suspendLoad;
         }
@@ -61,15 +72,14 @@ namespace YooAsset
                 if (IsWaitForAsyncComplete)
                 {
                     // 注意：场景同步加载方法不会立即加载场景，而是在下一帧加载。
-                    LoadSceneParameters parameters = new LoadSceneParameters(SceneMode);
-                    SceneObject = SceneManager.LoadScene(MainAssetInfo.AssetPath, parameters);
+                    SceneObject = SceneManager.LoadScene(MainAssetInfo.AssetPath, LoadSceneParams);
                     _steps = ESteps.Checking;
                 }
                 else
                 {
                     // 注意：如果场景不存在异步加载方法返回NULL
                     // 注意：即使是异步加载也要在当帧获取到场景对象
-                    _asyncOperation = SceneManager.LoadSceneAsync(MainAssetInfo.AssetPath, SceneMode);
+                    _asyncOperation = SceneManager.LoadSceneAsync(MainAssetInfo.AssetPath, LoadSceneParams);
                     if (_asyncOperation != null)
                     {
                         _asyncOperation.allowSceneActivation = !_suspendLoadMode;

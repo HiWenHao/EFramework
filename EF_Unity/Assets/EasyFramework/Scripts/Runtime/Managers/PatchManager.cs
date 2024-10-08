@@ -216,7 +216,13 @@ namespace EasyFramework.Managers
                 case EPlayMode.WebPlayMode:
                     _initParameters = new WebPlayModeParameters
                     {
+
+#if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
+                        IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                        createParameters.WebFileSystemParameters = WechatFileSystemCreater.CreateWechatFileSystemParameters(remoteServices);
+#else
                         WebFileSystemParameters = FileSystemParameters.CreateDefaultWebFileSystemParameters()
+#endif
                     };
                     break;
             }
@@ -288,6 +294,16 @@ namespace EasyFramework.Managers
             {
                 return 1024;
             }
+
+            public byte[] ReadFileData(DecryptFileInfo fileInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string ReadFileText(DecryptFileInfo fileInfo)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -319,8 +335,18 @@ namespace EasyFramework.Managers
             {
                 return 32;
             }
+
+            public byte[] ReadFileData(DecryptFileInfo fileInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string ReadFileText(DecryptFileInfo fileInfo)
+            {
+                throw new NotImplementedException();
+            }
         }
-        #endregion
+#endregion
 
         #region Update the StaticViersion file.更新静态版本文件
         /// <summary>
