@@ -83,6 +83,8 @@ namespace EasyFramework.Edit
 		Component,
 		/// <summary> 压缩 </summary>
 		Compression,
+		/// <summary> 样品 </summary>
+		Demo,
 		/// <summary> 完成 </summary>
 		Done,
 		/// <summary> 向下 </summary>
@@ -131,6 +133,8 @@ namespace EasyFramework.Edit
 		Element,
 		/// <summary> 特效 </summary>
 		Effects,
+		/// <summary> 示例 </summary>
+		Example,
 		/// <summary> 提取 </summary>
 		Extract,
 		/// <summary> 加密 </summary>
@@ -265,6 +269,8 @@ namespace EasyFramework.Edit
 		Pack,
 		/// <summary> 预制件 </summary>
 		Prefab,
+		/// <summary> 插件 </summary>
+		Plugins,
 		/// <summary> 项目 </summary>
 		Project,
 		/// <summary> 粒子 </summary>
@@ -331,6 +337,8 @@ namespace EasyFramework.Edit
 		Select,
 		/// <summary> 系统 </summary>
 		System,
+		/// <summary> 开关 </summary>
+		Switch,
 		/// <summary> 间距 </summary>
 		Spacing,
 		/// <summary> 单一的 </summary>

@@ -320,6 +320,14 @@
     ]
   },
   {
+    "name": "Demo",
+    "desc": "样品",
+    "array": [
+      "Demo",
+      "样品"
+    ]
+  },
+  {
     "name": "Done",
     "desc": "完成",
     "array": [
@@ -509,6 +517,14 @@
     "array": [
       "Effects",
       "特效"
+    ]
+  },
+  {
+    "name": "Example",
+    "desc": "示例",
+    "array": [
+      "Example",
+      "示例"
     ]
   },
   {
@@ -1048,6 +1064,14 @@
     ]
   },
   {
+    "name": "Plugins",
+    "desc": "插件",
+    "array": [
+      "Plugins",
+      "插件"
+    ]
+  },
+  {
     "name": "Project",
     "desc": "项目",
     "array": [
@@ -1309,6 +1333,14 @@
     "array": [
       "System",
       "系统"
+    ]
+  },
+  {
+    "name": "Switch",
+    "desc": "开关",
+    "array": [
+      "Switch",
+      "开关"
     ]
   },
   {

@@ -25,8 +25,8 @@ MonoBehaviour:
     m_FormalUrl: http://127.0.0.1/dashboard/_Download/v1.0
     m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v1.0
   m_AppConst:
-    m_AppName: EFramework
-    m_AppPrefix: EF_
+    m_AppName: EF_Unity
+    m_AppPrefix: EF_Unity_
     m_AppVersion: 1.0
     m_AppStage: 1
     m_UIPath: Prefabs/UI/
