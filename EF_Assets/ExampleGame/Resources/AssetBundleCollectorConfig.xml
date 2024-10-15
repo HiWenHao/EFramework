@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root Version="v2.1">
+  <Common ShowPackageView="False" ShowEditorAlias="True" UniqueBundleName="False" />
+  <Package PackageName="DefaultPackage" PackageDesc="Test" AutoAddressable="False" LocationToLower="False" IncludeAssetGUID="False" IgnoreRuleName="NormalIgnoreRule">
+    <Group GroupActiveRule="EnableGroup" GroupName="Texture" GroupDesc="" AssetTags="">
+      <Collector CollectPath="Assets/ExampleGame/Resources/Texture/Freeui" CollectGUID="24dd9c859be3bd64bbe73026414a471a" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+      <Collector CollectPath="Assets/ExampleGame/Resources/Texture/Game" CollectGUID="05074d4bbefd4e344b0aaa4abe171500" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+    </Group>
+    <Group GroupActiveRule="EnableGroup" GroupName="Audio" GroupDesc="" AssetTags="">
+      <Collector CollectPath="Assets/ExampleGame/Resources/Sources" CollectGUID="97adeb34d337f4a40967cd3f992053b7" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+    </Group>
+    <Group GroupActiveRule="EnableGroup" GroupName="Code" GroupDesc="" AssetTags="">
+      <Collector CollectPath="Assets/AssetsHotfix" CollectGUID="937b0593a409953408bd4efba83fba28" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+    </Group>
+  </Package>
+</root>

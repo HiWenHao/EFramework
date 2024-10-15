@@ -69,6 +69,11 @@ namespace EasyFramework.Windows
                 #endregion
                 EditorGUILayout.EndHorizontal();
             }
+
+            private void OnDestroy()
+            {
+                m_CurrentPanel.OnDestroy();
+            }
         }
     }
 }

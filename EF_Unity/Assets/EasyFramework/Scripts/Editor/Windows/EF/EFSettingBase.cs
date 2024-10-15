@@ -10,10 +10,11 @@
 */
 
 using EasyFramework.Edit;
-using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 
 namespace EasyFramework.Windows
 {
@@ -26,10 +27,14 @@ namespace EasyFramework.Windows
         {
             public abstract void OnEnable();
             public abstract void OnGUI();
+            public abstract void OnDestroy();
         }
 
         public class ManagerSwitch : EFSettingBase
         {
+            const string ASSETSINFO = "Description/AssetsInfo.json";
+            const string EXAMPLEFOLDER = "ExampleGame";
+
             int m_ManagerIndex;
             int m_ManagerCount;
             Vector2 m_ManagersPos;
@@ -42,160 +47,116 @@ namespace EasyFramework.Windows
 
             bool m_ManagerSwitch;
             bool m_PluginsSwitch;
-            string m_AssetsConfigPath;
+            string m_AssetsPath;
+            Vector2 m_AllPostation;
             AssetsInformation m_Assets;
 
             public override void OnEnable()
             {
                 DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
+                m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets");
 
-                m_AssetsConfigPath = Path.Combine(_jsonFolder.FullName, "EF_Assets/Description/ManagerInformation.json");
-
-                m_Assets  = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(m_AssetsConfigPath));
+                string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
+                m_Assets  = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(_configPath));
 
                 m_PluginsCount = m_Assets.Plugins.Count;
                 m_ManagerCount = m_Assets.Managers.Count;
             }
+
             public override void OnGUI()
             {
-                #region Managers
-                m_ManagerSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(m_ManagerSwitch, LC.Combine(new Lc[] { Lc.Manager, Lc.Switch }));
-                if (m_ManagerSwitch)
+                m_AllPostation = EditorGUILayout.BeginScrollView(m_AllPostation);
+                // Managers
+                FoldoutHeaderGroup(ref m_ManagerSwitch, ref m_ManagersPos, ref m_ManagerIndex, m_ManagerCount, managers: m_Assets.Managers, null);
+
+                // Plugins
+                FoldoutHeaderGroup(ref m_PluginsSwitch, ref m_PluginsPos, ref m_PluginsIndex, m_PluginsCount, managers: null, m_Assets.Plugins);
+
+                #region Example
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.ToggleLeft(LC.Combine(Lc.Example), m_Assets.ExampleSwitch);
+                if (GUILayout.Button(LC.Combine(m_Assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
                 {
-                    m_PluginsSwitch = false;
-                    EditorGUILayout.BeginHorizontal("Badge");
-
-                    //Left List
-                    m_ManagersPos = EditorGUILayout.BeginScrollView(m_ManagersPos, GUILayout.Width(130f), GUILayout.Height(255f));
-                    for (int i = 0; i < m_ManagerCount; i++)
+                    if (m_Assets.ExampleSwitch)
                     {
-                        LeftItemButton(i, m_Assets.Managers[i], ref m_ManagerIndex);
+                        string _path = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
+                        if (Directory.Exists(_path))
+                        {
+                            Directory.Delete(_path, true);
+                            File.Delete(_path + ".meta");
+                        }
+                        m_Assets.ExampleSwitch = false;
                     }
-                    EditorGUILayout.EndScrollView();
+                    else
+                    {
+                        string _sorPath = Path.Combine(m_AssetsPath, EXAMPLEFOLDER);
+                        string _DesPath = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
+                        EditorUtils.CopyFolder(_sorPath, _DesPath);
 
-                    //Right Contents
-                    ManagerInfo();
-
-                    EditorGUILayout.EndHorizontal();
+                        m_Assets.ExampleSwitch = true;
+                    }
+                    SaveAssetsInfo();
+                    AssetDatabase.Refresh();
                 }
-                EditorGUILayout.EndFoldoutHeaderGroup();
-                EditorGUILayout.Space();
+                EditorGUILayout.EndHorizontal();
                 #endregion
 
-                #region Plugins
-                m_PluginsSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(m_PluginsSwitch, LC.Combine(new Lc[] { Lc.Plugins, Lc.Switch }));
-                if (m_PluginsSwitch)
-                {
-                    m_ManagerSwitch = false;
-                    EditorGUILayout.BeginHorizontal("Badge");
 
-                    //Left List
-                    m_PluginsPos = EditorGUILayout.BeginScrollView(m_PluginsPos, GUILayout.Width(130f), GUILayout.Height(255f));
-                    for (int i = 0; i < m_PluginsCount; i++)
-                    {
-                        LeftItemButton(i, m_Assets.Plugins[i], ref m_PluginsIndex);
-
-                    }
-                    EditorGUILayout.EndScrollView();
-
-                    //Right Contents
-                    PluginsInfo();
-
-
-                    EditorGUILayout.EndHorizontal();
-                }
-                EditorGUILayout.EndFoldoutHeaderGroup();
-                EditorGUILayout.Space();
-                #endregion
-
-                m_Assets.ExampleSwitch = EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Import, Lc.Example }), m_Assets.ExampleSwitch);
-
+                EditorGUILayout.EndScrollView();
 
                 #region Confirm
                 GUILayout.FlexibleSpace();
+                EditorGUILayout.BeginHorizontal();
+                //if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Current, Lc.Config })))
+                //{
+
+                //}
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Confirm, Lc.Config })))
                 {
-                    string _temp = JsonUtility.ToJson(m_Assets);
-                    File.WriteAllText(m_AssetsConfigPath, _temp, System.Text.Encoding.UTF8);
+
                 }
+                EditorGUILayout.EndHorizontal();
                 #endregion
             }
 
-            #region Manager
-            void ManagerInfo()
+            public override void OnDestroy()
             {
-                EditorGUILayout.BeginVertical();
-                #region Title
-                EditorGUILayout.LabelField(m_Assets.Managers[m_ManagerIndex].Name, new GUIStyle(GUI.skin.label)
+                SaveAssetsInfo();
+            }
+
+            #region Managers and Plugins
+            void FoldoutHeaderGroup(ref bool mySwitch, ref Vector2 pos, ref int index, int count, List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
+            {
+                mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch, LC.Combine(new Lc[] { Lc.Plugins, Lc.Switch }));
+                if (mySwitch)
                 {
-                    alignment = TextAnchor.MiddleLeft,
-                    fontSize = 24
-                }, GUILayout.Height(35f));
-                GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
-                EditorGUILayout.Space();
-                #endregion
+                    EditorGUILayout.BeginHorizontal("Badge");
 
-                #region Body
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Box(GUIContent.none, GUILayout.Width(3.0f), GUILayout.ExpandHeight(true));
-                EditorGUILayout.BeginVertical();
-
-                EditorGUILayout.TextArea(m_Assets.Managers[m_ManagerIndex].Des[ProjectUtility.Project.LanguageIndex], "CN Message");
-
-                if (null != m_Assets.Managers[m_ManagerIndex].Rely)
-                {
-                    GUILayout.Box(GUIContent.none, GUILayout.Height(2.0f), GUILayout.ExpandWidth(true));
-
-                    m_ManagersDesPos = EditorGUILayout.BeginScrollView(m_ManagersDesPos, GUILayout.Height(100f));
-                    for (int i = 0; i < m_Assets.Managers[m_ManagerIndex].Rely.Count; i++)
+                    //Left List
+                    pos = EditorGUILayout.BeginScrollView(pos, GUILayout.Width(130f), GUILayout.Height(255f));
+                    for (int i = 0; i < count; i++)
                     {
-                        EditorGUILayout.LabelField(m_Assets.Managers[m_ManagerIndex].Rely[i], GUILayout.Width(150f));
+                        if (null != managers)
+                            LeftItemButton(i, managers[i], ref index);
+
+                        if (null != plugins)
+                            LeftItemButton(i, plugins[i], ref index);
                     }
                     EditorGUILayout.EndScrollView();
+
+                    //Right Contents
+                    if (null != managers)
+                        ItemShowPanel(managers[index], true);
+
+                    if (null != plugins)
+                        ItemShowPanel(plugins[index], false);
+
+
+                    EditorGUILayout.EndHorizontal();
                 }
-
-                EditorGUILayout.EndVertical();
-                EditorGUILayout.EndHorizontal();
-
-                #endregion
-
-                DrawBottomButton(m_Assets.Managers[m_ManagerIndex]);
-
-                EditorGUILayout.EndVertical();
-            }
-            #endregion
-
-            #region Plugins
-            void PluginsInfo()
-            {
-                EditorGUILayout.BeginVertical();
-                #region Title
-                EditorGUILayout.LabelField(m_Assets.Plugins[m_PluginsIndex].Name, new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleLeft,
-                    fontSize = 24
-                }, GUILayout.Height(35f));
-                GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
+                EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.Space();
-                #endregion
-
-                #region Body
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Box(GUIContent.none, GUILayout.Width(3.0f), GUILayout.ExpandHeight(true));
-                EditorGUILayout.BeginVertical();
-
-                EditorGUILayout.TextArea(m_Assets.Plugins[m_PluginsIndex].Des[ProjectUtility.Project.LanguageIndex], "CN Message");
-
-                EditorGUILayout.EndVertical();
-                EditorGUILayout.EndHorizontal();
-
-                #endregion
-
-                DrawBottomButton(m_Assets.Plugins[m_PluginsIndex]);
-
-                EditorGUILayout.EndVertical();
             }
-            #endregion
 
             void LeftItemButton(int index, InfoBase info, ref int outIndex)
             {
@@ -210,8 +171,43 @@ namespace EasyFramework.Windows
                     outIndex = index;
                 }
             }
-            void DrawBottomButton(InfoBase info)
+
+            void ItemShowPanel(InfoBase info, bool hasRely)
             {
+                EditorGUILayout.BeginVertical();
+                #region Title
+                EditorGUILayout.LabelField(info.Name, new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    fontSize = 24
+                }, GUILayout.Height(35f));
+                GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
+                EditorGUILayout.Space();
+                #endregion
+
+                #region Body
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Box(GUIContent.none, GUILayout.Width(3.0f), GUILayout.ExpandHeight(true));
+                EditorGUILayout.BeginVertical();
+
+                EditorGUILayout.TextArea(info.Des[ProjectUtility.Project.LanguageIndex], "CN Message");
+
+                if (hasRely)
+                {
+                    GUILayout.Box(GUIContent.none, GUILayout.Height(2.0f), GUILayout.ExpandWidth(true));
+                    ManagerInfo _info = (ManagerInfo)info;
+                    m_ManagersDesPos = EditorGUILayout.BeginScrollView(m_ManagersDesPos, GUILayout.Height(100f));
+                    for (int i = 0; i < _info.Rely.Count; i++)
+                    {
+                        EditorGUILayout.LabelField(_info.Rely[i], GUILayout.Width(150f));
+                    }
+                    EditorGUILayout.EndScrollView();
+                }
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+
+                #endregion
+
                 GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
                 bool _isLoad = info.IsLoad;
                 if (GUILayout.Button(_isLoad ? LC.Combine(Lc.Unload) : LC.Combine(Lc.Import), GUILayout.MinWidth(100f)))
@@ -219,6 +215,14 @@ namespace EasyFramework.Windows
                     info.IsLoad = !_isLoad;
                 }
                 EditorGUILayout.Space();
+                EditorGUILayout.EndVertical();
+            }
+            #endregion
+
+            void SaveAssetsInfo()
+            {
+                string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
+                File.WriteAllText(_configPath, JsonUtility.ToJson(m_Assets), System.Text.Encoding.UTF8);
             }
         }
     }

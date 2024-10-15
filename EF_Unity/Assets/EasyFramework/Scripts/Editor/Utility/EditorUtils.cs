@@ -8,6 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -113,6 +114,35 @@ namespace EasyFramework.Edit
             return _endIndex;
         }
 
+        #endregion
+
+        #region IO
+        /// <summary>
+        /// Copy the folder to a certain path.
+        /// <para>复制文件夹到某一路径</para>
+        /// </summary>
+        /// <param name="sourceDir">源路径</param>
+        /// <param name="destDir">目标路径</param>
+        /// <param name="overwrite">覆盖</param>
+        public static void CopyFolder(string sourceDir, string destDir, bool overwrite = true)
+        {
+            if (!Directory.Exists(destDir))
+            {
+                Directory.CreateDirectory(destDir);
+            }
+
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string _desFile = Path.Combine(destDir, Path.GetFileName(file));
+                File.Copy(file, _desFile, overwrite);
+            }
+
+            foreach (string subDir in Directory.GetDirectories(sourceDir))
+            {
+                string _desSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
+                CopyFolder(subDir, _desSubDir);
+            }
+        }
         #endregion
     }
 }
