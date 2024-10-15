@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking.Types;
 
 namespace EasyFramework.Windows
 {
@@ -96,7 +95,6 @@ namespace EasyFramework.Windows
                         m_Assets.ExampleSwitch = true;
                     }
                     SaveAssetsInfo();
-                    AssetDatabase.Refresh();
                 }
                 EditorGUILayout.EndHorizontal();
                 #endregion
@@ -121,7 +119,7 @@ namespace EasyFramework.Windows
 
             public override void OnDestroy()
             {
-                SaveAssetsInfo();
+
             }
 
             #region Managers and Plugins
@@ -212,7 +210,25 @@ namespace EasyFramework.Windows
                 bool _isLoad = info.IsLoad;
                 if (GUILayout.Button(_isLoad ? LC.Combine(Lc.Unload) : LC.Combine(Lc.Import), GUILayout.MinWidth(100f)))
                 {
+                    if (_isLoad)
+                    {
+                        string _path = Path.Combine(Application.dataPath, "EasyFramework/ThirdPartyAssets/", info.Name);
+                        if (Directory.Exists(_path))
+                        {
+                            Directory.Delete(_path, true);
+                            File.Delete(_path + ".meta");
+                        }
+                    }
+                    else
+                    {
+                        string _sorPath = Path.Combine(m_AssetsPath, "Plugins", info.Name);
+                        string _DesPath = Path.Combine(Application.dataPath, "EasyFramework/ThirdPartyAssets/", info.Name);
+                        EditorUtils.CopyFolder(_sorPath, _DesPath);
+
+                    }
+
                     info.IsLoad = !_isLoad;
+                    SaveAssetsInfo();
                 }
                 EditorGUILayout.Space();
                 EditorGUILayout.EndVertical();
@@ -223,6 +239,7 @@ namespace EasyFramework.Windows
             {
                 string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
                 File.WriteAllText(_configPath, JsonUtility.ToJson(m_Assets), System.Text.Encoding.UTF8);
+                AssetDatabase.Refresh();
             }
         }
     }
