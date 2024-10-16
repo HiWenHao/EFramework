@@ -40,7 +40,7 @@ namespace EasyFramework.Windows
             {
                 if (null == m_CurrentPanel)
                 {
-                    m_ManagerSwitch = new ManagerSwitch();
+                    m_ManagerSwitch = new AssetsSwitch();
                     m_ManagerSwitch.OnEnable();
                     m_CurrentPanel = m_ManagerSwitch;
                 }
