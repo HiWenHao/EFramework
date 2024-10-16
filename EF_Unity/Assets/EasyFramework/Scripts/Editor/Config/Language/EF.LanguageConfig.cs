@@ -31,6 +31,7 @@ namespace EasyFramework.Edit
     {
         static int m_currentIndex;
         static string m_Separator;
+        static string m_AassetsPath;
         static Dictionary<string, string> m_Dictionary;
 
         static void LoadLanguage()
@@ -46,8 +47,10 @@ namespace EasyFramework.Edit
 
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
+                DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
+                m_AassetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets/Description/Editorlanguages.json");
                 m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-                JsonData _jd = JsonMapper.ToObject(File.ReadAllText($"{ProjectUtility.Path.FrameworkPath}/EFAssets/Configs/languages.json"));
+                JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
                 m_Dictionary = new Dictionary<string, string>();
                 m_Dictionary.Clear();
 
@@ -120,7 +123,7 @@ namespace EasyFramework.Edit
         static void UpdateLanguageConfig()
         {
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-            JsonData _jd = JsonMapper.ToObject(File.ReadAllText($"{ProjectUtility.Path.FrameworkPath}/EFAssets/Configs/languages.json"));
+            JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
 
             StringBuilder _sb = new StringBuilder();
             _sb.AppendLine("namespace EasyFramework.Edit\n{");

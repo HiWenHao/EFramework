@@ -9,7 +9,7 @@
  * ===============================================
 */
 
-using EasyFramework.Edit;
+using System.IO;
 using System.Xml;
 using UnityEngine;
 
@@ -20,6 +20,8 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal static class AssetsCheckerConfig
     {
+        private static string m_AssetsPath;
+
         internal static Color[] ScoreColors { get; set; } = new[]
         {
             Color.green,
@@ -78,13 +80,16 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         internal static void Initialize()
         {
-            if (!System.IO.File.Exists(ProjectUtility.Path.FrameworkPath + "EFAssets/Configs/AssetCheckerConfigs.xml"))
+            DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
+            m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets", "Description/AssetCheckerConfigs.xml");
+
+            if (!File.Exists(m_AssetsPath))
             {
                 return;
             }
 
             XmlDocument _xml = new XmlDocument();
-            _xml.LoadXml(System.IO.File.ReadAllText(ProjectUtility.Path.FrameworkPath + "EFAssets/Configs/AssetCheckerConfigs.xml"));
+            _xml.LoadXml(File.ReadAllText(m_AssetsPath));
 
             XmlNode _model = _xml.SelectSingleNode("/CheckerConfigs/Model");
             if (_model != null)
@@ -168,7 +173,7 @@ namespace EasyFramework.Windows.AssetChecker
             _root.AppendChild(_effectEle);
             _root.AppendChild(_common);
             _xml.AppendChild(_root);
-            _xml.Save(ProjectUtility.Path.FrameworkPath + "EFAssets/Configs/AssetCheckerConfigs.xml");
+            _xml.Save(m_AssetsPath);
         }
     }
 }

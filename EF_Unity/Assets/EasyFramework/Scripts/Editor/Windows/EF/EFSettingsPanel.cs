@@ -10,6 +10,7 @@
 */
 
 using EasyFramework.Edit;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,10 +24,12 @@ namespace EasyFramework.Windows
         public class EFSettingsPanel : EditorWindow
         {
             private EFSettingBase m_CurrentPanel;
-            private EFSettingBase m_ManagerSwitch;
+            private EFSettingBase m_AssetsSwitch;
 
             private Vector2 m_ScrollPostionL;
             private Vector2 m_ScrollPostionR;
+
+            private string m_AssetsPath;
 
             [MenuItem("EFTools/Settings/Main Panel &E", priority = 0)]
             private static void OpenWindow()
@@ -40,9 +43,11 @@ namespace EasyFramework.Windows
             {
                 if (null == m_CurrentPanel)
                 {
-                    m_ManagerSwitch = new AssetsSwitch();
-                    m_ManagerSwitch.OnEnable();
-                    m_CurrentPanel = m_ManagerSwitch;
+                    DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
+                    m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets");
+                    m_AssetsSwitch = new AssetsSwitch();
+                    m_AssetsSwitch.OnEnable(Path.Combine(m_AssetsPath));
+                    m_CurrentPanel = m_AssetsSwitch;
                 }
             }
 
@@ -55,7 +60,7 @@ namespace EasyFramework.Windows
                 EditorGUILayout.Space();
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Assets, Lc.Switch })))
                 {
-                    m_CurrentPanel = m_ManagerSwitch;
+                    m_CurrentPanel = m_AssetsSwitch;
                 }
                 EditorGUILayout.EndScrollView();
                 #endregion

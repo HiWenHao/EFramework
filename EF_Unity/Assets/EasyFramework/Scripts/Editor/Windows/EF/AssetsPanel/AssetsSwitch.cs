@@ -40,11 +40,9 @@ namespace EasyFramework.Windows
             Vector2 m_AllPostation;
             AssetsInformation m_Assets;
 
-            public override void OnEnable()
+            public override void OnEnable(string assetsPath)
             {
-                DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
-                m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets");
-
+                m_AssetsPath = assetsPath;
                 string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
                 m_Assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(_configPath));
 

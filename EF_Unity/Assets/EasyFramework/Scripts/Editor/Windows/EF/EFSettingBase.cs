@@ -18,7 +18,7 @@ namespace EasyFramework.Windows
         /// </summary>
         public abstract class EFSettingBase
         {
-            public abstract void OnEnable();
+            public abstract void OnEnable(string assetsPath);
             public abstract void OnGUI();
             public abstract void OnDestroy();
         }

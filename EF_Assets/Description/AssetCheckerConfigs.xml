@@ -1,6 +1,6 @@
 <CheckerConfigs>
   <Model MaxBones="60" MaxTriangs="5000" />
-  <Effect MaxMatrials="15" MaxParticles="500" />
+  <Effect MaxMatrials="15" MaxParticles="1000" />
   <Common>
     <ScoreNames ScoreName_0="完 美" />
     <ScoreNames ScoreName_1="优 秀" />
