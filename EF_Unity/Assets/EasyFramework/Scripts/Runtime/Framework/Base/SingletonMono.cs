@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * ================================================
  * Describe:        The class is monobehavior singleton base.
  * Author:          Xiaohei.Wang(Wenhao)
@@ -15,7 +15,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
 {
     protected MonoSingleton() { }
     /// Current type name
-    /// <para>µ±Ç°ÀàĞÍÃû×Ö</para>
+    /// <para>å½“å‰ç±»å‹åå­—</para>
     /// </summary>
     public string Name = typeof(T).Name;
     private static T _instance;

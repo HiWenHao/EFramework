@@ -16,11 +16,31 @@ namespace EasyFramework.Windows
         /// <summary>
         /// 设置面板基类
         /// </summary>
-        public abstract class EFSettingBase
+        internal abstract class EFSettingBase
         {
-            public abstract void OnEnable(string assetsPath);
-            public abstract void OnGUI();
-            public abstract void OnDestroy();
+            internal EFSettingBase(string name)
+            {
+                Name = name;
+            }
+
+            protected bool m_IsInitialzed;
+            public string Name { get; private set; }
+
+            /// <summary>
+            /// 当首次进入
+            /// </summary>
+            /// <param name="assetsPath">配置总路径</param>
+            internal abstract void OnEnable(string assetsPath);
+
+            /// <summary>
+            /// 界面绘制
+            /// </summary>
+            internal abstract void OnGUI();
+
+            /// <summary>
+            /// 当销毁时
+            /// </summary>
+            internal abstract void OnDestroy();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ================================================
  * Describe:        The class is game managers controller.
  * Author:          Xiaohei.Wang(Wenhao)

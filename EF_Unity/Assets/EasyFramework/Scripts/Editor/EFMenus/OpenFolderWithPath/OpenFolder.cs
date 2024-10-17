@@ -18,43 +18,43 @@ namespace EFExample
     /// </summary>
     public class OpenFolder
 	{
-        [MenuItem("EFTools/Open Folder/Assets", priority = 1000)]
+        [MenuItem("EFTools/Folders/Assets", priority = 90000)]
         public static void OpenDataPath()
         {
             Application.OpenURL("file://" + Application.dataPath);
         }
 
-        [MenuItem("EFTools/Open Folder/Library", priority = 1001)]
+        [MenuItem("EFTools/Folders/Library", priority = 90001)]
         public static void OpenLibraryPath()
         {
             Application.OpenURL("file://" + Application.dataPath + "/../Library");
         }
 
-        [MenuItem("EFTools/Open Folder/streamingAssets", priority = 1002)]
+        [MenuItem("EFTools/Folders/StreamingAssets", priority = 90002)]
         public static void OpenStreamingAssetsPath()
         {
             Application.OpenURL("file://" + Application.streamingAssetsPath);
         }
 
-        [MenuItem("EFTools/Open Folder/persistentData", priority = 1003)]
+        [MenuItem("EFTools/Folders/PersistentData", priority = 90003)]
         public static void OpenPersistent()
         {
             Application.OpenURL("file://" + Application.persistentDataPath);
         }
 
-        [MenuItem("EFTools/Open Folder/temporaryCache", priority = 1004)]
+        [MenuItem("EFTools/Folders/TemporaryCache", priority = 90004)]
         public static void OpenTemporaryCachePath()
         {
             Application.OpenURL("file://" + Application.temporaryCachePath);
         }
 
-        [MenuItem("EFTools/Open Folder/Excel", priority = 2000)]
+        [MenuItem("EFTools/Folders/Excel", priority = 91001)]
         public static void OpenExcelFolderPath()
         {
             Application.OpenURL("file://" + Application.dataPath + "/../../ExcelFolder");
         }
 
-        [MenuItem("EFTools/Open Folder/Luban", priority = 2001)]
+        [MenuItem("EFTools/Folders/Luban", priority = 91002)]
         public static void OpenLubanToolsFolderPath()
         {
             Application.OpenURL("file://" + Application.dataPath + "/../../Tools/LubanTools");

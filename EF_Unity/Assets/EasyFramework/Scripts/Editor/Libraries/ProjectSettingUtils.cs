@@ -8,8 +8,9 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
-using EasyFramework.Edit.PathConfig;
+
 using EasyFramework.Edit.Setting;
+using EasyFramework.Windows.SettingPanel;
 
 namespace EasyFramework.Edit
 {

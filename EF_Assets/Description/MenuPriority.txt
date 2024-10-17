@@ -1,0 +1,24 @@
+{
+	"EFTools/Settings" : 0,
+
+	"EFTools/Tools/Asset Checker" : 100,
+	"EFTools/Tools/Script Tools" : 200,
+	"EFTools/Tools/Prefabs Compare" : 201,
+	"EFTools/Tools/PlayerPrefs Editor" : 202,
+	"EFTools/Tools/Project File Size" : 300,
+
+
+	"EFTools/Utility/Update Edit Language" : 2001
+
+	"EFTools/Folders/Assets" : 90000,
+	"EFTools/Folders/Library" : 90001,
+	"EFTools/Folders/StreamingAssets" : 90002,
+	"EFTools/Folders/PersistentData" : 90003,
+	"EFTools/Folders/TemporaryCache" : 90004,
+	"EFTools/Folders/Excel" : 91001,
+	"EFTools/Folders/Luban" : 91002,
+
+	"EFTools/About Us/Join QQ group" : 100000,
+	"EFTools/About Us/Open git page" : 100001,
+	"EFTools/About Us/Report an iuess" : 100002
+}

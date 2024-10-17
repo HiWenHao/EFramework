@@ -167,6 +167,8 @@ namespace EasyFramework.Edit
 		Height,
 		/// <summary> 继续、等一等 </summary>
 		Holdon,
+		/// <summary> 硬件 </summary>
+		Hardware,
 		/// <summary> 强调 </summary>
 		Highlight,
 		/// <summary> 在...里 </summary>

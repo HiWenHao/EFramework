@@ -28,7 +28,7 @@ namespace EasyFramework.Windows.AssetChecker
         private TextureOverviewPanel m_TextureOverviewPanel;
         private ParticleEffectOverviewPanel m_ParticleEffectOverviewPanel;
 
-        [MenuItem("EFTools/Assets/Asset Checker", false, priority = 40)]
+        [MenuItem("EFTools/Tools/Asset Checker", false, priority = 100)]
         public static void ShowEditor()
         {
             AssetOveriewEditor assetOverview = GetWindow<AssetOveriewEditor>("AssetChecker");

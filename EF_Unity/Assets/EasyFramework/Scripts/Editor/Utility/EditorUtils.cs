@@ -37,7 +37,6 @@ namespace EasyFramework.Edit
                 {
                     D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {AssetDatabase.GUIDToAssetPath(assetPath)}");
                 }
-                D.Exception($"Not allow has multi type. 不能有多个 {assetType}");
             }
 #endif
             string _assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
@@ -67,7 +66,6 @@ namespace EasyFramework.Edit
             if (_paths.Length > 1)
             {
                 D.Error($"{typeof(T).Name} 数量大于1");
-                return _setting;
             }
             string _path = AssetDatabase.GUIDToAssetPath(_paths[0]);
             _setting = AssetDatabase.LoadAssetAtPath<T>(_path);

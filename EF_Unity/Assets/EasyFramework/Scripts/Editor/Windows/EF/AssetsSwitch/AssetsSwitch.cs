@@ -22,7 +22,7 @@ namespace EasyFramework.Windows
         /// <summary>
         /// 资源开关面板
         /// </summary>
-        public class AssetsSwitch : EFSettingBase
+        internal class AssetsSwitch : EFSettingBase
         {
             const string ASSETSINFO = "Description/AssetsInfo.json";
             const string EXAMPLEFOLDER = "ExampleGame";
@@ -40,8 +40,17 @@ namespace EasyFramework.Windows
             Vector2 m_AllPostation;
             AssetsInformation m_Assets;
 
-            public override void OnEnable(string assetsPath)
+            internal AssetsSwitch(string name) : base(name)
             {
+
+            }
+
+            internal override void OnEnable(string assetsPath)
+            {
+                if (m_IsInitialzed)
+                    return;
+                m_IsInitialzed = true;
+
                 m_AssetsPath = assetsPath;
                 string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
                 m_Assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(_configPath));
@@ -50,7 +59,7 @@ namespace EasyFramework.Windows
                 m_ManagerCount = m_Assets.Managers.Count;
             }
 
-            public override void OnGUI()
+            internal override void OnGUI()
             {
                 //  ScrollView
                 m_AllPostation = EditorGUILayout.BeginScrollView(m_AllPostation);
@@ -62,7 +71,7 @@ namespace EasyFramework.Windows
 
                 #region Example
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.ToggleLeft(LC.Combine(Lc.Example), m_Assets.ExampleSwitch);
+                EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Example, Lc.Project }), m_Assets.ExampleSwitch);
                 if (GUILayout.Button(LC.Combine(m_Assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
                 {
                     if (m_Assets.ExampleSwitch)
@@ -106,7 +115,7 @@ namespace EasyFramework.Windows
                 #endregion
             }
 
-            public override void OnDestroy()
+            internal override void OnDestroy()
             {
                 SaveAssetsInfo();
             }
@@ -114,7 +123,7 @@ namespace EasyFramework.Windows
             #region Managers and Plugins
             void FoldoutHeaderGroup(ref bool mySwitch, ref Vector2 pos, ref int index, int count, List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
             {
-                mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch, LC.Combine(new Lc[] { Lc.Plugins, Lc.Switch }));
+                mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch, LC.Combine(new Lc[] { (managers == null) ? Lc.Plugins : Lc.Manager, Lc.Switch }));
                 if (mySwitch)
                 {
                     EditorGUILayout.BeginHorizontal("Badge");

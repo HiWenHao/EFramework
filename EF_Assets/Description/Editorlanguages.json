@@ -656,6 +656,14 @@
     ]
   },
   {
+    "name": "Hardware",
+    "desc": "硬件",
+    "array": [
+      "Hardware",
+      "硬件"
+    ]
+  },
+  {
     "name": "Highlight",
     "desc": "强调",
     "array": [

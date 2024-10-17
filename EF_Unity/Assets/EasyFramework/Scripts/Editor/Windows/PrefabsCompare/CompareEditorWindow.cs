@@ -57,7 +57,7 @@ namespace EasyFramework.Windows
                     ComparePrefab(gameObjects[0], gameObjects[1]);
             }
 
-            [MenuItem("EFTools/Assets/Prefabs Compare")]
+            [MenuItem("EFTools/Tools/Prefabs Compare", priority = 201)]
             static CompareEditorWindow OpenWindow() => ComparePrefab(null, null);
             static CompareEditorWindow ComparePrefab(GameObject left, GameObject right)
             {

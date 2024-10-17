@@ -47,8 +47,7 @@ namespace EasyFramework.Edit
 
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
-                DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
-                m_AassetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets/Description/Editorlanguages.json");
+                m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
                 m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
                 m_Dictionary = new Dictionary<string, string>();
@@ -119,7 +118,7 @@ namespace EasyFramework.Edit
         }
         #endregion
 
-        [MenuItem("EFTools/Settings/Update Language Config", priority = 2001)]
+        [MenuItem("EFTools/Utility/Update Edit Language", priority = 2001)]
         static void UpdateLanguageConfig()
         {
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);

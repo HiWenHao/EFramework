@@ -10,7 +10,6 @@
 */
 
 using EasyFramework.Edit;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,14 +23,18 @@ namespace EasyFramework.Windows
         public class EFSettingsPanel : EditorWindow
         {
             private EFSettingBase m_CurrentPanel;
+
+            private EFSettingBase m_EFSetting;
+            private EFSettingBase m_PathConfig;
             private EFSettingBase m_AssetsSwitch;
+            private EFSettingBase m_UIAutoBinding;
 
             private Vector2 m_ScrollPostionL;
             private Vector2 m_ScrollPostionR;
 
             private string m_AssetsPath;
 
-            [MenuItem("EFTools/Settings/Main Panel &E", priority = 0)]
+            [MenuItem("EFTools/Settings &E", priority = 0)]
             private static void OpenWindow()
             {
                 EFSettingsPanel window = GetWindow<EFSettingsPanel>(false, "EF Settings");
@@ -43,11 +46,15 @@ namespace EasyFramework.Windows
             {
                 if (null == m_CurrentPanel)
                 {
-                    DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
-                    m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets");
-                    m_AssetsSwitch = new AssetsSwitch();
-                    m_AssetsSwitch.OnEnable(Path.Combine(m_AssetsPath));
-                    m_CurrentPanel = m_AssetsSwitch;
+                    m_AssetsPath = Utility.Path.GetEFAssetsPath();
+
+                    m_PathConfig = new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }));
+                    m_EFSetting = new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }));
+                    m_AssetsSwitch = new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch }));
+                    m_UIAutoBinding = new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }));
+
+                    m_CurrentPanel = m_EFSetting;
+                    m_CurrentPanel.OnEnable(m_AssetsPath);
                 }
             }
 
@@ -56,12 +63,11 @@ namespace EasyFramework.Windows
                 EditorGUILayout.BeginHorizontal();
                 #region Left menu
                 m_ScrollPostionL =  EditorGUILayout.BeginScrollView(m_ScrollPostionL, GUILayout.Width(180f), GUILayout.Height(position.height));
-                //GUILayout.ExpandHeight(true);
                 EditorGUILayout.Space();
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Assets, Lc.Switch })))
-                {
-                    m_CurrentPanel = m_AssetsSwitch;
-                }
+                DrawButton(m_EFSetting);
+                DrawButton(m_PathConfig);
+                DrawButton(m_AssetsSwitch);
+                DrawButton(m_UIAutoBinding);
                 EditorGUILayout.EndScrollView();
                 #endregion
 
@@ -69,6 +75,15 @@ namespace EasyFramework.Windows
 
                 #region Right contents
                 EditorGUILayout.BeginVertical("hostview");
+                #region Title
+                EditorGUILayout.LabelField(m_CurrentPanel.Name, new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    fontSize = 24
+                }, GUILayout.Height(35f));
+                GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
+                EditorGUILayout.Space();
+                #endregion
                 m_CurrentPanel.OnGUI();
                 EditorGUILayout.EndVertical();
                 #endregion
@@ -78,6 +93,16 @@ namespace EasyFramework.Windows
             private void OnDestroy()
             {
                 m_CurrentPanel.OnDestroy();
+            }
+
+
+            void DrawButton(EFSettingBase setting)
+            {
+                if (GUILayout.Button(setting.Name))
+                {
+                    setting.OnEnable(m_AssetsPath);
+                    m_CurrentPanel = setting;
+                }
             }
         }
     }

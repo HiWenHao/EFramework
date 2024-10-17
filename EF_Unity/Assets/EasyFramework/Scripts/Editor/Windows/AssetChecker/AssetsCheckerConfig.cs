@@ -80,8 +80,7 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         internal static void Initialize()
         {
-            DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent;
-            m_AssetsPath = Path.Combine(_jsonFolder.FullName, "EF_Assets", "Description/AssetCheckerConfigs.xml");
+            m_AssetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/AssetCheckerConfigs.xml");
 
             if (!File.Exists(m_AssetsPath))
             {

@@ -32,7 +32,7 @@ namespace EasyFramework.Edit
         private static List<string> DirList = new List<string>();
         private static bool isShowSize = true;
 
-        [MenuItem("EFTools/Assets/Project FileSize", priority = 9999)]
+        [MenuItem("EFTools/Tools/Project File Size", priority = 300)]
         private static void OpenPlaySize()
         {
             isShowSize = !isShowSize;

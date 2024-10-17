@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-06-07 18:18:36
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2022-06-07 18:18:36
+ * ModifyTime:    2024-10-16 15:17:28
  * Version:       0.1 
  * ===============================================
  */
@@ -20,12 +20,6 @@ namespace EasyFramework.Edit
 {
     class CreateTemplateScript
     {
-        //脚本模板路径
-        private readonly static string GameLauncherPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/GameLauncher.cs.txt";
-        private readonly static string SingleScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/SingleScript.cs.txt";
-        private readonly static string TemplateScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/TemplateScript.cs.txt";
-        private readonly static string MonoSingleScriptPath = ProjectUtility.Path.FrameworkPath + "EFAssets/ScriptTemplate/MonoSingleScript.cs.txt";
-
         //菜单项
         [MenuItem("Assets/Create/EF/C# Scripts/TemplateScript", false, 1)]
         static void CreateScript()
@@ -33,7 +27,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset.ScriptName = "TemplateScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewTemplateScript.cs",
-            null, TemplateScriptPath);
+            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/TemplateScript.cs.txt"));
         }
         [MenuItem("Assets/Create/EF/C# Scripts/SingleScript", false, 2)]
         static void CreateSingleScript()
@@ -41,7 +35,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset.ScriptName = "SingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewSingleScript.cs",
-            null, SingleScriptPath);
+            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/SingleScript.cs.txt"));
         }
         [MenuItem("Assets/Create/EF/C# Scripts/MonoSingleScript", false, 3)]
         static void CreateMonoSingleScript()
@@ -49,7 +43,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset.ScriptName = "MonoSingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewMonoSingleScript.cs",
-            null, MonoSingleScriptPath);
+            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/MonoSingleScript.cs.txt"));
         }
 
         [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
@@ -58,7 +52,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset.ScriptName = "GameLauncher";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/GameLauncher.cs",
-            null, GameLauncherPath);
+            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/GameLauncher.cs.txt"));
         }
 
         public static string GetSelectedPathOrFallback()

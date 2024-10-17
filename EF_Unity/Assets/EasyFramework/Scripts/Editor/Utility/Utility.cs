@@ -103,6 +103,21 @@ namespace EasyFramework
                     return false;
                 }
             }
+
+            /// <summary>
+            /// Gets the asset path associated with the framework
+            /// <para>获取框架的相关资产路径</para>
+            /// </summary>
+            public static string GetEFAssetsPath()
+            {
+                DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+                while (!_jsonFolder.Name.Equals("EF_Unity"))
+                {
+                    _jsonFolder = _jsonFolder.Parent;
+                }
+                return System.IO.Path.Combine(_jsonFolder.Parent.FullName, "EF_Assets");
+            }
         }
 
         /// <summary>
