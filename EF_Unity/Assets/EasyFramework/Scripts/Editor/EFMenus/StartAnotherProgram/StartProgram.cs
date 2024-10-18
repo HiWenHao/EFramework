@@ -11,7 +11,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using EasyFramework;
 
 namespace EasyFramework.Edit
 {

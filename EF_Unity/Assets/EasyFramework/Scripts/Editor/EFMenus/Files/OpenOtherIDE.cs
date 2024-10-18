@@ -16,41 +16,43 @@ using UnityEngine;
 
 namespace EasyFramework.Edit
 {
-    /// <summary>
-    /// Open file with other ide.
-    /// </summary>
-    public class OpenOtherIDE
+    namespace AssetToolLibrary
     {
-        [MenuItem("Assets/EF/Open With IDE/Sublime", false, 1)]
-        private static void OpenSublime()
+        /// <summary>
+        /// Open file with other ide.
+        /// </summary>
+        public class OpenOtherIDE
         {
-            var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+            [MenuItem("Assets/EF/Open With IDE/Sublime", false, 1)]
+            private static void OpenSublime()
+            {
+                var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
+                OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
-        }
-        [MenuItem("Assets/EF/Open With IDE/Sublime *meta", false, 2)]
-        private static void OpenSublimeMeta()
-        {
-            var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+            }
+            [MenuItem("Assets/EF/Open With IDE/Sublime *meta", false, 2)]
+            private static void OpenSublimeMeta()
+            {
+                var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
+                OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
-        }
+            }
 
-        [MenuItem("Assets/EF/Open With IDE/Notepad++", false, 3)]
-        private static void OpenNotepad()
-        {
-            var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
-        }
-        [MenuItem("Assets/EF/Open With IDE/Notepad++ *meta", false, 4)]
-        private static void OpenNotepadMeta()
-        {
-            var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+            [MenuItem("Assets/EF/Open With IDE/Notepad++", false, 3)]
+            private static void OpenNotepad()
+            {
+                var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
+                OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+            }
+            [MenuItem("Assets/EF/Open With IDE/Notepad++ *meta", false, 4)]
+            private static void OpenNotepadMeta()
+            {
+                var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
+                OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
 
-        }
+            }
 
-        private static string[] _notepadPaths = new string[] {
+            private static string[] _notepadPaths = new string[] {
             @"C:\Program Files\Notepad++\notepad++.exe",
             @"C:\Program Files (x86)\Notepad++\notepad++.exe",
             @"C:\Programs\Notepad++\notepad++.exe",
@@ -59,7 +61,7 @@ namespace EasyFramework.Edit
             @"D:\Program Files (x86)\Notepad++\notepad++.exe",
             @"D:\Programs\Notepad++\notepad++.exe",
         };
-        private static string[] _sublimePaths = new string[] {
+            private static string[] _sublimePaths = new string[] {
             @"C:\Program Files\Sublime Text 3\subl.exe",
             @"C:\Program Files\Sublime Text 3\sublime_text.exe",
             @"C:\Program Files\Sublime Text 2\sublime_text.exe",
@@ -82,48 +84,49 @@ namespace EasyFramework.Edit
             @"/Applications/Sublime Text.app/Contents/MacOS/sublime_text",
         };
 
-        /// <summary>
-        /// Open file with other IDE.
-        /// </summary>
-        /// <param name="appPath">IDE path</param>
-        /// <param name="filePath">Selection objcet path</param>
-        private static void OpenIDEWithPath(string appPath, string filePath, string[] defaultPath)
-        {
-            string _path = appPath;
-            bool _hasPath = File.Exists(_path);
-            if (!_hasPath)
+            /// <summary>
+            /// Open file with other IDE.
+            /// </summary>
+            /// <param name="appPath">IDE path</param>
+            /// <param name="filePath">Selection objcet path</param>
+            private static void OpenIDEWithPath(string appPath, string filePath, string[] defaultPath)
             {
-                if (null == defaultPath)
+                string _path = appPath;
+                bool _hasPath = File.Exists(_path);
+                if (!_hasPath)
                 {
-                    EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
-                        $"Please go to Settings to configure the path first.\n" +
-                        $"EFTools > Settings > Optimal Setting", "ok");
-                    return;
+                    if (null == defaultPath)
+                    {
+                        EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
+                            $"Please go to Settings to configure the path first.\n" +
+                            $"EFTools > Settings > Optimal Setting", "ok");
+                        return;
+                    }
+                    _path = defaultPath.FirstOrDefault(File.Exists);
+                    if (string.IsNullOrEmpty(_path))
+                    {
+                        EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
+                            $"Please go to Settings to configure the path first.\n" +
+                            $"EFTools > Settings > Optimal Setting", "ok");
+                        return;
+                    }
                 }
-                _path = defaultPath.FirstOrDefault(File.Exists);
-                if (string.IsNullOrEmpty(_path))
-                {
-                    EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
-                        $"Please go to Settings to configure the path first.\n" +
-                        $"EFTools > Settings > Optimal Setting", "ok");
-                    return;
-                }
+                System.Diagnostics.Process.Start(_path, filePath);
             }
-            System.Diagnostics.Process.Start(_path, filePath);
-        }
 
-        /// <summary>
-        /// Get path in Assets
-        /// </summary>
-        /// <returns></returns>
-        private static IEnumerable<string> GetPathsOfAssets(Object[] objects, bool metas)
-        {
-            return objects
-                    .Select(AssetDatabase.GetAssetPath)
-                    .Where(p => !string.IsNullOrEmpty(p))
-                    .Select(p => metas ? AssetDatabase.GetTextMetaFilePathFromAssetPath(p) : p)
-                    .Select(p => '"' + p + '"')
-                ;
+            /// <summary>
+            /// Get path in Assets
+            /// </summary>
+            /// <returns></returns>
+            private static IEnumerable<string> GetPathsOfAssets(Object[] objects, bool metas)
+            {
+                return objects
+                        .Select(AssetDatabase.GetAssetPath)
+                        .Where(p => !string.IsNullOrEmpty(p))
+                        .Select(p => metas ? AssetDatabase.GetTextMetaFilePathFromAssetPath(p) : p)
+                        .Select(p => '"' + p + '"')
+                    ;
+            }
         }
     }
 }
