@@ -36,7 +36,7 @@ namespace EasyFramework.Windows
             private static void OpenWindow()
             {
                 EFSettingsPanel window = GetWindow<EFSettingsPanel>(false, "EF Settings");
-                window.minSize = new Vector2(600.0f, 350.0f);
+                window.minSize = new Vector2(650.0f, 350.0f);
                 window.Show();
             }
 

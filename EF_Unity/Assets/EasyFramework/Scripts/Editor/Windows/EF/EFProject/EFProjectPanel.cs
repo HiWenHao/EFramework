@@ -145,31 +145,30 @@ namespace EasyFramework.Windows
                     LC.Combine(new Lc[] { Lc.Current, Lc.Hardware, Lc.Information }));
                 if (m_SystemInfoSwitch)
                 {
-                    m_ComputerInfoScroll = EditorGUILayout.BeginScrollView(m_ComputerInfoScroll, "Badge", GUILayout.MinHeight(120));
+                    string _contents =
+                    "---------------------------------------------------------------------------------------\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
+                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}\n" +
+                    "---------------------------------------------------------------------------------------\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}\n" +
+                    "---------------------------------------------------------------------------------------\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}\n" +
+                    "---------------------------------------------------------------------------------------\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}\n" +
+                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
+                    "---------------------------------------------------------------------------------------";
 
-                    GUILayout.Label("---------------------------------------------------------------------------------------");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}");
-                    GUILayout.Label("---------------------------------------------------------------------------------------");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}");
-                    GUILayout.Label("---------------------------------------------------------------------------------------");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}");
-                    GUILayout.Label("---------------------------------------------------------------------------------------");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}");
-                    GUILayout.Label($"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}");
-                    GUILayout.Label("---------------------------------------------------------------------------------------");
-                    EditorGUILayout.EndScrollView();
-
+                    GUILayout.Box(_contents, "Badge");
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
