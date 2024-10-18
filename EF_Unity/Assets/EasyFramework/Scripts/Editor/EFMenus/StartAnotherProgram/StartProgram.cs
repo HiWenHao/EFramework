@@ -20,7 +20,7 @@ namespace EasyFramework.Edit
     /// </summary>
     public class StartProgram
     {
-        [MenuItem("EFTools/Utility/Excel To Byte File", false, 99999)]
+        [MenuItem("EFTools/Utility/Excel To Byte File", false, 10000)]
         private static void StartETB()
         {
             StartEXE(Application.dataPath + "/../../Tools/ExcelToByteFIle", "ExcelToByteFile.exe");

@@ -36,15 +36,6 @@ namespace EasyFramework.Edit
 
         static void LoadLanguage()
         {
-            if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
-            {
-                if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
-                {
-                    ChangeLanguage(m_currentIndex, ProjectUtility.Project.LanguageIndex);
-                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
-                }
-            }
-
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
                 m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
@@ -59,6 +50,15 @@ namespace EasyFramework.Edit
                 }
 
                 m_Separator = m_Dictionary["S"];
+            }
+
+            if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
+            {
+                if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
+                {
+                    ChangeLanguage();
+                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
+                }
             }
         }
 
@@ -86,21 +86,21 @@ namespace EasyFramework.Edit
          * Change the relevant description language under the Settings panel.
          * 改变设置面板下的相关说明语言
          */
-        static void ChangeLanguage(int nowIndex, int nextIndex)
+        static void ChangeLanguage()
         {
-            string _lcPath = Path.Combine(ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Config/");
-            string _path = Path.Combine(UnityEngine.Application.dataPath, _lcPath);
-            string _nameNow = GetNameWithIndex(nowIndex);
-            string _nameNext = GetNameWithIndex(nextIndex);
-
+            string _lcPath = Path.Combine(
+                UnityEngine.Application.dataPath,
+                ProjectUtility.Path.FrameworkPath[7..],
+                "Scripts/Runtime/Config/");
+            string _sourcePath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Scripts/Config");
             try
             {
-                File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs"));
-                File.Delete(Path.Combine(_path, $"{_nameNow}/LanguagAttribute.cs.meta"));
-                if (!File.Exists(Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs")))
-                {
-                    File.Copy(Path.Combine(_path, $"{_nameNext}~/LanguagAttribute.cs"), Path.Combine(_path, $"{_nameNext}/LanguagAttribute.cs"));
-                }
+                File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs"));
+                File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs.meta"));
+
+                File.Copy(
+                    Path.Combine(_sourcePath, GetCurrentName(), $"LanguagAttribute.cs"), 
+                    Path.Combine(_lcPath, $"LanguagAttribute.cs"));
             }
             catch (Exception ex)
             {
@@ -108,9 +108,9 @@ namespace EasyFramework.Edit
             }
             AssetDatabase.Refresh();
         }
-        static string GetNameWithIndex(int index)
+        static string GetCurrentName()
         {
-            return index switch
+            return ProjectUtility.Project.LanguageIndex switch
             {
                 1 => "Chinese",
                 _ => "English",
@@ -118,7 +118,7 @@ namespace EasyFramework.Edit
         }
         #endregion
 
-        [MenuItem("EFTools/Utility/Update Edit Language", priority = 2001)]
+        [MenuItem("EFTools/Utility/Update Edit Language", priority = 10002)]
         static void UpdateLanguageConfig()
         {
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);

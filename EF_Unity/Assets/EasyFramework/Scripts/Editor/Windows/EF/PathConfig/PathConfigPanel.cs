@@ -22,7 +22,6 @@ namespace EasyFramework.Windows
         /// </summary>
         internal class PathConfigPanel : EFSettingBase
         {
-            string m_AssetsPath;
             Vector2 m_ScrollPos;
 
             GUIStyle m_UIStyle;

@@ -65,11 +65,6 @@ namespace EasyFramework.Windows
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
-
-            internal override void OnDestroy()
-            {
-
-            }
         }
 	}
 }

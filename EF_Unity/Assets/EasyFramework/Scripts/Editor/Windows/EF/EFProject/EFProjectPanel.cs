@@ -27,7 +27,6 @@ namespace EasyFramework.Windows
         internal class EFProjectPanel : EFSettingBase
         {
             bool m_SystemInfoSwitch;
-            bool m_ProjectInfoSwitch;
             string m_EditorUser;
             int m_languageIndex;
             int m_rendererPipline;
@@ -76,6 +75,8 @@ namespace EasyFramework.Windows
                 m_RendererPipline.intValue = m_rendererPipline;
 
                 FindAllManager();
+
+                m_SystemInfoSwitch = true;
             }
 
             internal override void OnGUI()
@@ -133,11 +134,6 @@ namespace EasyFramework.Windows
 
                 if (!changeCheckScope.changed) return;
                 m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            internal override void OnDestroy()
-            {
-
             }
 
             /// <summary>

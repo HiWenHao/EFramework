@@ -6,7 +6,7 @@ public class GUIStyleViewer : EditorWindow
     private Vector2 scrollVector2 = Vector2.zero;
     private string search = "";
 
-    [MenuItem("EFTools/Utility/GUIStyle查看器", false, 9999)]
+    [MenuItem("EFTools/Utility/GUI Style Viewer", false, 10001)]
     public static void InitWindow()
     {
         GetWindow(typeof(GUIStyleViewer));

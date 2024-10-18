@@ -22,17 +22,15 @@ namespace EasyFramework.Windows
         /// </summary>
         public class EFSettingsPanel : EditorWindow
         {
+            private string m_AssetsPath;
+            private Vector2 m_ScrollPostionL;
+
             private EFSettingBase m_CurrentPanel;
 
             private EFSettingBase m_EFSetting;
             private EFSettingBase m_PathConfig;
             private EFSettingBase m_AssetsSwitch;
             private EFSettingBase m_UIAutoBinding;
-
-            private Vector2 m_ScrollPostionL;
-            private Vector2 m_ScrollPostionR;
-
-            private string m_AssetsPath;
 
             [MenuItem("EFTools/Settings &E", priority = 0)]
             private static void OpenWindow()
@@ -95,10 +93,13 @@ namespace EasyFramework.Windows
                 m_CurrentPanel.OnDestroy();
             }
 
-
             void DrawButton(EFSettingBase setting)
             {
-                if (GUILayout.Button(setting.Name))
+                if (GUILayout.Button(setting.Name, 
+                    new GUIStyle(GUI.skin.button)
+                    {
+                        alignment = TextAnchor.MiddleLeft
+                    }))
                 {
                     setting.OnEnable(m_AssetsPath);
                     m_CurrentPanel = setting;

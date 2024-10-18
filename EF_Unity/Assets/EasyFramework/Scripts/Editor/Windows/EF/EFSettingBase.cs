@@ -40,7 +40,7 @@ namespace EasyFramework.Windows
             /// <summary>
             /// 当销毁时
             /// </summary>
-            internal abstract void OnDestroy();
+            internal virtual void OnDestroy() { }
         }
     }
 }

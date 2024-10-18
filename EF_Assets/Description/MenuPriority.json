@@ -1,6 +1,7 @@
 {
 	"EFTools/Settings" : 0,
 
+
 	"EFTools/Tools/Asset Checker" : 100,
 	"EFTools/Tools/Script Tools" : 200,
 	"EFTools/Tools/Prefabs Compare" : 201,
@@ -8,7 +9,10 @@
 	"EFTools/Tools/Project File Size" : 300,
 
 
-	"EFTools/Utility/Update Edit Language" : 2001
+	"EFTools/Utility/Excel To Byte File" : 10000,
+	"EFTools/Utility/GUI Style Viewer" : 10001,
+	"EFTools/Utility/Update Edit Language" : 10002,
+
 
 	"EFTools/Folders/Assets" : 90000,
 	"EFTools/Folders/Library" : 90001,
@@ -17,6 +21,7 @@
 	"EFTools/Folders/TemporaryCache" : 90004,
 	"EFTools/Folders/Excel" : 91001,
 	"EFTools/Folders/Luban" : 91002,
+
 
 	"EFTools/About Us/Join QQ group" : 100000,
 	"EFTools/About Us/Open git page" : 100001,

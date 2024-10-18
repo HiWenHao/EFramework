@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectSetting
   m_EditorClassIdentifier: 
-  m_LanguageIndex: 0
+  m_LanguageIndex: 1
   m_RendererPipline: 0
   m_ScriptAuthor: Xiaohei.Wang(Wenhao)
   m_ScriptVersion: 0.1
