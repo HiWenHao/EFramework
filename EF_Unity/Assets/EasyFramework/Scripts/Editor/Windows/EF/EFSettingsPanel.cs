@@ -60,7 +60,7 @@ namespace EasyFramework.Windows
             {
                 EditorGUILayout.BeginHorizontal();
                 #region Left menu
-                m_ScrollPostionL =  EditorGUILayout.BeginScrollView(m_ScrollPostionL, GUILayout.Width(180f), GUILayout.Height(position.height));
+                m_ScrollPostionL =  EditorGUILayout.BeginScrollView(m_ScrollPostionL, GUILayout.Width(140f), GUILayout.Height(position.height));
                 EditorGUILayout.Space();
                 DrawButton(m_EFSetting);
                 DrawButton(m_PathConfig);

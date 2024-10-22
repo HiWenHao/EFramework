@@ -31,7 +31,6 @@ namespace EasyFramework.Windows
             int m_languageIndex;
             int m_rendererPipline;
             Vector2 m_ScrollPos;
-            Vector2 m_ComputerInfoScroll;
 
             private SerializedObject m_SettingPanel;
             private SerializedProperty m_ScriptAuthor;
@@ -146,29 +145,30 @@ namespace EasyFramework.Windows
                 if (m_SystemInfoSwitch)
                 {
                     string _contents =
-                    "---------------------------------------------------------------------------------------\n" +
+                    "--------------------------------------------------------------------------------\n" +
                     $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
                     $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
                     $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}\n" +
                     $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}\n" +
-                    "---------------------------------------------------------------------------------------\n" +
+                    "--------------------------------------------------------------------------------\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}\n" +
                     $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}\n" +
-                    "---------------------------------------------------------------------------------------\n" +
+                    "--------------------------------------------------------------------------------\n" +
                     $"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}\n" +
                     $"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}\n" +
                     $"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}\n" +
                     $"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}\n" +
-                    "---------------------------------------------------------------------------------------\n" +
+                    "--------------------------------------------------------------------------------\n" +
                     $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}\n" +
                     $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
-                    "---------------------------------------------------------------------------------------";
+                    "--------------------------------------------------------------------------------";
 
-                    GUILayout.Box(_contents, "Badge");
+                    GUILayout.Box(_contents, "FrameBox", GUILayout.MinWidth(360f));
+                    //GUILayout.Box(GUIContent.none, GUILayout.Height(4.0f), GUILayout.ExpandWidth(true));
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
