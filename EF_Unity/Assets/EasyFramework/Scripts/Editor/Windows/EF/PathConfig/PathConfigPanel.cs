@@ -80,7 +80,7 @@ namespace EasyFramework.Windows
                 SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), m_ExtractPath);
 
                 EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
-                SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text, Lc.subl" }, m_SublimePath);
+                SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, m_SublimePath);
                 SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, m_NotepadPath);
 
 
