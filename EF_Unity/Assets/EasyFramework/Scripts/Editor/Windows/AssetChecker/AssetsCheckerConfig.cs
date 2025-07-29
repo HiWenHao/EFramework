@@ -20,7 +20,7 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal static class AssetsCheckerConfig
     {
-        private static string m_AssetsPath;
+        private static string _assetsPath;
 
         internal static Color[] ScoreColors { get; set; } = new[]
         {
@@ -62,17 +62,17 @@ namespace EasyFramework.Windows.AssetChecker
         /// <param name="score"></param>
         internal static int CalScoreLevel(float score)
         {
-            int _offset = (int)((score - 1) * 100);
-            _offset = _offset == 0 ? 1 : _offset;
-            _offset /= Mathf.Abs(_offset);
-            int _lv = score > 1 ? 1 : 0;
+            int offset = (int)((score - 1) * 100);
+            offset = offset == 0 ? 1 : offset;
+            offset /= Mathf.Abs(offset);
+            int lv = score > 1 ? 1 : 0;
 
-            float _offsetScore = Mathf.Abs(score - 1f);
-            if (_offsetScore >= 0.29f) _lv = 2;
-            else if (_offsetScore >= 0.19f) _lv = 1;
+            float offsetScore = Mathf.Abs(score - 1f);
+            if (offsetScore >= 0.29f) lv = 2;
+            else if (offsetScore >= 0.19f) lv = 1;
 
-            _lv = 2 + _lv * _offset;
-            return Mathf.Clamp(_lv, 0, 4);
+            lv = 2 + lv * offset;
+            return Mathf.Clamp(lv, 0, 4);
         }
 
         /// <summary>
@@ -80,50 +80,50 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         internal static void Initialize()
         {
-            m_AssetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/AssetCheckerConfigs.xml");
+            _assetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/AssetCheckerConfigs.xml");
 
-            if (!File.Exists(m_AssetsPath))
+            if (!File.Exists(_assetsPath))
             {
                 return;
             }
 
-            XmlDocument _xml = new XmlDocument();
-            _xml.LoadXml(File.ReadAllText(m_AssetsPath));
+            XmlDocument xml = new XmlDocument();
+            xml.LoadXml(File.ReadAllText(_assetsPath));
 
-            XmlNode _model = _xml.SelectSingleNode("/CheckerConfigs/Model");
-            if (_model != null)
+            XmlNode model = xml.SelectSingleNode("/CheckerConfigs/Model");
+            if (model != null)
             {
-                int _maxBones = int.Parse(_model.Attributes["MaxBones"].Value);
-                int _maxTriangs = int.Parse(_model.Attributes["MaxTriangs"].Value);
-                ModelMaxBones = _maxBones;
-                ModelMaxTriangs = _maxTriangs;
+                int maxBones = int.Parse(model.Attributes["MaxBones"].Value);
+                int maxTriangs = int.Parse(model.Attributes["MaxTriangs"].Value);
+                ModelMaxBones = maxBones;
+                ModelMaxTriangs = maxTriangs;
             }
 
-            XmlNode _effect = _xml.SelectSingleNode("/CheckerConfigs/Effect");
-            if (_effect != null)
+            XmlNode effect = xml.SelectSingleNode("/CheckerConfigs/Effect");
+            if (effect != null)
             {
-                int _maxMaterials = int.Parse(_effect.Attributes["MaxMatrials"].Value);
-                int _maxParticles = int.Parse(_effect.Attributes["MaxParticles"].Value);
-                EffectMaxMatrials = _maxMaterials;
-                EffectMaxParticles = _maxParticles;
+                int maxMaterials = int.Parse(effect.Attributes["MaxMatrials"].Value);
+                int maxParticles = int.Parse(effect.Attributes["MaxParticles"].Value);
+                EffectMaxMatrials = maxMaterials;
+                EffectMaxParticles = maxParticles;
             }
 
-            XmlNode _common = _xml.SelectSingleNode("/CheckerConfigs/Common");
-            if (_common != null)
+            XmlNode common = xml.SelectSingleNode("/CheckerConfigs/Common");
+            if (common != null)
             {
-                XmlNodeList _names = _common.SelectNodes("ScoreNames");
-                ScoreNames = new string[_names.Count];
-                for (int i = 0; i < _names.Count; i++)
+                XmlNodeList names = common.SelectNodes("ScoreNames");
+                ScoreNames = new string[names.Count];
+                for (int i = 0; i < names.Count; i++)
                 {
-                    string scoreNameAttr = _names[i].Attributes["ScoreName_" + i].Value;
+                    string scoreNameAttr = names[i].Attributes["ScoreName_" + i].Value;
                     ScoreNames[i] = scoreNameAttr;
                 }
 
-                XmlNodeList _colors = _common.SelectNodes("ScoreColors");
-                ScoreColors = new Color[_colors.Count];
-                for (int i = 0; i < _colors.Count; i++)
+                XmlNodeList colors = common.SelectNodes("ScoreColors");
+                ScoreColors = new Color[colors.Count];
+                for (int i = 0; i < colors.Count; i++)
                 {
-                    string[] scoreColorAttr = _colors[i].Attributes["ScoreColor_" + i].Value.Split(',');
+                    string[] scoreColorAttr = colors[i].Attributes["ScoreColor_" + i].Value.Split(',');
                     ScoreColors[i] = new Color(float.Parse(scoreColorAttr[0]), float.Parse(scoreColorAttr[1]), float.Parse(scoreColorAttr[2]));
                 }
             }
@@ -134,45 +134,45 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         internal static void SaveConfig()
         {
-            XmlDocument _xml = new XmlDocument();
-            XmlElement _root = _xml.CreateElement("CheckerConfigs");
+            XmlDocument xml = new XmlDocument();
+            XmlElement root = xml.CreateElement("CheckerConfigs");
 
-            XmlElement _modelEle = _xml.CreateElement("Model");
+            XmlElement modelEle = xml.CreateElement("Model");
             {
-                _modelEle.SetAttribute("MaxBones", ModelMaxBones.ToString());
-                _modelEle.SetAttribute("MaxTriangs", ModelMaxTriangs.ToString());
+                modelEle.SetAttribute("MaxBones", ModelMaxBones.ToString());
+                modelEle.SetAttribute("MaxTriangs", ModelMaxTriangs.ToString());
             }
 
-            XmlElement _effectEle = _xml.CreateElement("Effect");
+            XmlElement effectEle = xml.CreateElement("Effect");
             {
-                _effectEle.SetAttribute("MaxMatrials", EffectMaxMatrials.ToString());
-                _effectEle.SetAttribute("MaxParticles", EffectMaxParticles.ToString());
+                effectEle.SetAttribute("MaxMatrials", EffectMaxMatrials.ToString());
+                effectEle.SetAttribute("MaxParticles", EffectMaxParticles.ToString());
 
             }
 
-            XmlElement _common = _xml.CreateElement("Common");
+            XmlElement common = xml.CreateElement("Common");
             {
                 for (int i = 0; i < ScoreNames.Length; i++)
                 {
-                    XmlElement _scoreNames = _xml.CreateElement("ScoreNames");
-                    _scoreNames.SetAttribute($"ScoreName_{i}", ScoreNames[i]);
-                    _common.AppendChild(_scoreNames);
+                    XmlElement scoreNames = xml.CreateElement("ScoreNames");
+                    scoreNames.SetAttribute($"ScoreName_{i}", ScoreNames[i]);
+                    common.AppendChild(scoreNames);
                 }
 
                 for (int i = 0; i < ScoreColors.Length; i++)
                 {
-                    XmlElement _scoreColors = _xml.CreateElement("ScoreColors");
-                    string _col = $"{ScoreColors[i].r},{ScoreColors[i].g},{ScoreColors[i].b}";
-                    _scoreColors.SetAttribute($"ScoreColor_{i}", _col);
-                    _common.AppendChild(_scoreColors);
+                    XmlElement scoreColors = xml.CreateElement("ScoreColors");
+                    string col = $"{ScoreColors[i].r},{ScoreColors[i].g},{ScoreColors[i].b}";
+                    scoreColors.SetAttribute($"ScoreColor_{i}", col);
+                    common.AppendChild(scoreColors);
                 }
             }
 
-            _root.AppendChild(_modelEle);
-            _root.AppendChild(_effectEle);
-            _root.AppendChild(_common);
-            _xml.AppendChild(_root);
-            _xml.Save(m_AssetsPath);
+            root.AppendChild(modelEle);
+            root.AppendChild(effectEle);
+            root.AppendChild(common);
+            xml.AppendChild(root);
+            xml.Save(_assetsPath);
         }
     }
 }

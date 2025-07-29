@@ -13,17 +13,17 @@ namespace EasyFramework.Windows
             /// <summary>
             /// 选中的ID列表
             /// </summary>
-            private readonly List<int> m_SelectIDs = new List<int>();
+            private readonly List<int> _selectIDs = new List<int>();
 
             /// <summary>
             /// GameObject对比信息
             /// </summary>
-            private GameObjectCompareInfo m_Info;
+            private GameObjectCompareInfo _info;
 
             /// <summary>
             /// 左边还是右边
             /// </summary>
-            private readonly bool m_IsLeft;
+            private readonly bool _isLeft;
 
             /// <summary>
             /// 展开回调
@@ -38,53 +38,53 @@ namespace EasyFramework.Windows
             /// <summary>
             /// 保存展开的信息
             /// </summary>
-            private HashSet<int> m_ExpandedSet = new HashSet<int>();
+            private HashSet<int> _expandedSet = new HashSet<int>();
 
             /// <summary>
             /// 树的根节点
             /// </summary>
-            private TreeViewItem m_Root;
+            private TreeViewItem _root;
 
             public GameObjectTreeView(TreeViewState state, GameObjectCompareInfo info, bool isLeft) : base(state)
             {
-                m_Info = info;
-                m_IsLeft = isLeft;
+                _info = info;
+                _isLeft = isLeft;
 
                 Reload();
 
                 ExpandAll();
 
-                m_ExpandedSet = new HashSet<int>(GetExpanded());
+                _expandedSet = new HashSet<int>(GetExpanded());
             }
 
             protected override TreeViewItem BuildRoot()
             {
-                m_Root = new TreeViewItem { id = 0, depth = -1, displayName = "Root" };
+                _root = new TreeViewItem { id = 0, depth = -1, displayName = "Root" };
 
                 var allItems = new List<TreeViewItem>();
 
-                if (m_Info != null)
+                if (_info != null)
                 {
-                    var item = new CompareTreeViewItem<GameObjectCompareInfo> { Info = m_Info, id = m_Info.ID, depth = m_Info.Depth, displayName = m_Info.Name };
+                    var item = new CompareTreeViewItem<GameObjectCompareInfo> { Info = _info, id = _info.ID, depth = _info.Depth, displayName = _info.Name };
                     allItems.Add(item);
 
-                    AddChildItem(allItems, m_Info);
+                    AddChildItem(allItems, _info);
                 }
 
-                SetupParentsAndChildrenFromDepths(m_Root, allItems);
+                SetupParentsAndChildrenFromDepths(_root, allItems);
 
-                return m_Root;
+                return _root;
             }
 
             public void Reload(GameObjectCompareInfo info)
             {
-                m_Info = info;
+                _info = info;
 
                 Reload();
 
                 ExpandAll();
 
-                m_ExpandedSet = new HashSet<int>(GetExpanded());
+                _expandedSet = new HashSet<int>(GetExpanded());
             }
 
             public override void OnGUI(Rect rect)
@@ -95,10 +95,10 @@ namespace EasyFramework.Windows
 
                     if (ids.Count == 0 || ids[0] != CompareData.SelectedGameObjectID)
                     {
-                        m_SelectIDs.Clear();
-                        m_SelectIDs.Add(CompareData.SelectedGameObjectID);
-                        this.SetSelection(m_SelectIDs);
-                        m_SelectIDs.Clear();
+                        _selectIDs.Clear();
+                        _selectIDs.Add(CompareData.SelectedGameObjectID);
+                        this.SetSelection(_selectIDs);
+                        _selectIDs.Clear();
                     }
                 }
 
@@ -123,11 +123,11 @@ namespace EasyFramework.Windows
                 {
                     GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.failImg, ScaleMode.ScaleToFit);
                 }
-                else if (info.MissType == MissType.missRight && m_IsLeft)
+                else if (info.MissType == MissType.missRight && _isLeft)
                 {
                     GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
                 }
-                else if (info.MissType == MissType.missLeft && !m_IsLeft)
+                else if (info.MissType == MissType.missLeft && !_isLeft)
                 {
                     GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
                 }
@@ -136,7 +136,7 @@ namespace EasyFramework.Windows
                     GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.successImg, ScaleMode.ScaleToFit);
                 }
 
-                if (m_IsLeft)
+                if (_isLeft)
                 {
                     if (info.MissType != MissType.missLeft && info.LeftGameObject != null)
                     {
@@ -169,7 +169,7 @@ namespace EasyFramework.Windows
 
                 if (onClickItem != null)
                 {
-                    var item = FindItem(id, m_Root) as CompareTreeViewItem<GameObjectCompareInfo>;
+                    var item = FindItem(id, _root) as CompareTreeViewItem<GameObjectCompareInfo>;
 
                     onClickItem.Invoke(item.Info);
                 }
@@ -192,24 +192,24 @@ namespace EasyFramework.Windows
 
                     tempSet.Add(id);
 
-                    if (!m_ExpandedSet.Contains(id))
+                    if (!_expandedSet.Contains(id))
                     {
-                        m_ExpandedSet.Add(id);
-                        onExpandedStateChanged?.Invoke(id, m_IsLeft, true);
+                        _expandedSet.Add(id);
+                        onExpandedStateChanged?.Invoke(id, _isLeft, true);
                     }
                 }
 
-                foreach (var id in m_ExpandedSet)
+                foreach (var id in _expandedSet)
                 {
                     if (!tempSet.Contains(id))
                     {
                         removeList.Add(id);
-                        onExpandedStateChanged?.Invoke(id, m_IsLeft, false);
+                        onExpandedStateChanged?.Invoke(id, _isLeft, false);
                     }
                 }
 
                 for (int i = 0; i < removeList.Count; i++)
-                    m_ExpandedSet.Remove(removeList[i]);
+                    _expandedSet.Remove(removeList[i]);
             }
 
             private void AddChildItem(List<TreeViewItem> items, GameObjectCompareInfo info)
@@ -240,11 +240,11 @@ namespace EasyFramework.Windows
 
                     string displayName;
 
-                    if (child.MissType == MissType.missLeft && m_IsLeft)
+                    if (child.MissType == MissType.missLeft && _isLeft)
                     {
                         displayName = "";
                     }
-                    else if (child.MissType == MissType.missRight && !m_IsLeft)
+                    else if (child.MissType == MissType.missRight && !_isLeft)
                     {
                         displayName = "";
                     }

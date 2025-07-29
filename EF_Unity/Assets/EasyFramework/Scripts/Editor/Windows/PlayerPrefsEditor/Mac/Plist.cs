@@ -37,12 +37,12 @@ namespace Sabresaurus.PlayerPrefsEditor
 {
     public static class Plist
     {
-        private static List<int> offsetTable = new List<int>();
-        private static List<byte> objectTable = new List<byte>();
-        private static int refCount;
-        private static int objRefSize;
-        private static int offsetByteSize;
-        private static long offsetTableOffset;
+        private static List<int> _offsetTable = new List<int>();
+        private static List<byte> _objectTable = new List<byte>();
+        private static int _refCount;
+        private static int _objRefSize;
+        private static int _offsetByteSize;
+        private static long _offsetTableOffset;
 
         #region Public Functions
 
@@ -164,58 +164,58 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         public static byte[] writeBinary(object value)
         {
-            offsetTable.Clear();
-            objectTable.Clear();
-            refCount = 0;
-            objRefSize = 0;
-            offsetByteSize = 0;
-            offsetTableOffset = 0;
+            _offsetTable.Clear();
+            _objectTable.Clear();
+            _refCount = 0;
+            _objRefSize = 0;
+            _offsetByteSize = 0;
+            _offsetTableOffset = 0;
 
             //Do not count the root node, subtract by 1
             int totalRefs = countObject(value) - 1;
 
-            refCount = totalRefs;
+            _refCount = totalRefs;
 
-            objRefSize = RegulateNullBytes(BitConverter.GetBytes(refCount)).Length;
+            _objRefSize = RegulateNullBytes(BitConverter.GetBytes(_refCount)).Length;
 
             composeBinary(value);
 
             writeBinaryString("bplist00", false);
 
-            offsetTableOffset = (long)objectTable.Count;
+            _offsetTableOffset = (long)_objectTable.Count;
 
-            offsetTable.Add(objectTable.Count - 8);
+            _offsetTable.Add(_objectTable.Count - 8);
 
-            offsetByteSize = RegulateNullBytes(BitConverter.GetBytes(offsetTable[offsetTable.Count - 1])).Length;
+            _offsetByteSize = RegulateNullBytes(BitConverter.GetBytes(_offsetTable[_offsetTable.Count - 1])).Length;
 
             List<byte> offsetBytes = new List<byte>();
 
-            offsetTable.Reverse();
+            _offsetTable.Reverse();
 
-            for (int i = 0; i < offsetTable.Count; i++)
+            for (int i = 0; i < _offsetTable.Count; i++)
             {
-                offsetTable[i] = objectTable.Count - offsetTable[i];
-                byte[] buffer = RegulateNullBytes(BitConverter.GetBytes(offsetTable[i]), offsetByteSize);
+                _offsetTable[i] = _objectTable.Count - _offsetTable[i];
+                byte[] buffer = RegulateNullBytes(BitConverter.GetBytes(_offsetTable[i]), _offsetByteSize);
                 Array.Reverse(buffer);
                 offsetBytes.AddRange(buffer);
             }
 
-            objectTable.AddRange(offsetBytes);
+            _objectTable.AddRange(offsetBytes);
 
-            objectTable.AddRange(new byte[6]);
-            objectTable.Add(Convert.ToByte(offsetByteSize));
-            objectTable.Add(Convert.ToByte(objRefSize));
+            _objectTable.AddRange(new byte[6]);
+            _objectTable.Add(Convert.ToByte(_offsetByteSize));
+            _objectTable.Add(Convert.ToByte(_objRefSize));
 
             var a = BitConverter.GetBytes((long)totalRefs + 1);
             Array.Reverse(a);
-            objectTable.AddRange(a);
+            _objectTable.AddRange(a);
 
-            objectTable.AddRange(BitConverter.GetBytes((long)0));
-            a = BitConverter.GetBytes(offsetTableOffset);
+            _objectTable.AddRange(BitConverter.GetBytes((long)0));
+            a = BitConverter.GetBytes(_offsetTableOffset);
             Array.Reverse(a);
-            objectTable.AddRange(a);
+            _objectTable.AddRange(a);
 
-            return objectTable.ToArray();
+            return _objectTable.ToArray();
         }
 
         #endregion
@@ -230,13 +230,13 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static object readBinary(byte[] data)
         {
-            offsetTable.Clear();
+            _offsetTable.Clear();
             List<byte> offsetTableBytes = new List<byte>();
-            objectTable.Clear();
-            refCount = 0;
-            objRefSize = 0;
-            offsetByteSize = 0;
-            offsetTableOffset = 0;
+            _objectTable.Clear();
+            _refCount = 0;
+            _objRefSize = 0;
+            _offsetByteSize = 0;
+            _offsetTableOffset = 0;
 
             List<byte> bList = new List<byte>(data);
 
@@ -244,9 +244,9 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             parseTrailer(trailer);
 
-            objectTable = bList.GetRange(0, (int)offsetTableOffset);
+            _objectTable = bList.GetRange(0, (int)_offsetTableOffset);
 
-            offsetTableBytes = bList.GetRange((int)offsetTableOffset, bList.Count - (int)offsetTableOffset - 32);
+            offsetTableBytes = bList.GetRange((int)_offsetTableOffset, bList.Count - (int)_offsetTableOffset - 32);
 
             parseOffsetTable(offsetTableBytes);
 
@@ -447,18 +447,18 @@ namespace Sabresaurus.PlayerPrefsEditor
                 var o = new object[dictionary.Count];
                 dictionary.Values.CopyTo(o, 0);
                 composeBinary(o[i]);
-                offsetTable.Add(objectTable.Count);
-                refs.Add(refCount);
-                refCount--;
+                _offsetTable.Add(_objectTable.Count);
+                refs.Add(_refCount);
+                _refCount--;
             }
             for (int i = dictionary.Count - 1; i >= 0; i--)
             {
                 var o = new string[dictionary.Count];
                 dictionary.Keys.CopyTo(o, 0);
                 composeBinary(o[i]);//);
-                offsetTable.Add(objectTable.Count);
-                refs.Add(refCount);
-                refCount--;
+                _offsetTable.Add(_objectTable.Count);
+                refs.Add(_refCount);
+                _refCount--;
             }
 
             if (dictionary.Count < 15)
@@ -474,7 +474,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             foreach (int val in refs)
             {
-                byte[] refBuffer = RegulateNullBytes(BitConverter.GetBytes(val), objRefSize);
+                byte[] refBuffer = RegulateNullBytes(BitConverter.GetBytes(val), _objRefSize);
                 Array.Reverse(refBuffer);
                 buffer.InsertRange(0, refBuffer);
             }
@@ -482,7 +482,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             buffer.InsertRange(0, header);
 
 
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -496,9 +496,9 @@ namespace Sabresaurus.PlayerPrefsEditor
             for (int i = objects.Count - 1; i >= 0; i--)
             {
                 composeBinary(objects[i]);
-                offsetTable.Add(objectTable.Count);
-                refs.Add(refCount);
-                refCount--;
+                _offsetTable.Add(_objectTable.Count);
+                refs.Add(_refCount);
+                _refCount--;
             }
 
             if (objects.Count < 15)
@@ -513,14 +513,14 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             foreach (int val in refs)
             {
-                byte[] refBuffer = RegulateNullBytes(BitConverter.GetBytes(val), objRefSize);
+                byte[] refBuffer = RegulateNullBytes(BitConverter.GetBytes(val), _objRefSize);
                 Array.Reverse(refBuffer);
                 buffer.InsertRange(0, refBuffer);
             }
 
             buffer.InsertRange(0, header);
 
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -572,14 +572,14 @@ namespace Sabresaurus.PlayerPrefsEditor
             List<byte> buffer = new List<byte>(RegulateNullBytes(BitConverter.GetBytes(PlistDateConverter.ConvertToAppleTimeStamp(obj)), 8));
             buffer.Reverse();
             buffer.Insert(0, 0x33);
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
             return buffer.ToArray();
         }
 
         public static byte[] writeBinaryBool(bool obj)
         {
             List<byte> buffer = new List<byte>(new byte[1] { (bool)obj ? (byte)9 : (byte)8 });
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
             return buffer.ToArray();
         }
 
@@ -596,7 +596,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             buffer.Insert(0, Convert.ToByte(header));
 
             if (write)
-                objectTable.InsertRange(0, buffer);
+                _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -612,7 +612,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             buffer.Insert(0, Convert.ToByte(header));
 
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -633,7 +633,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             buffer.InsertRange(0, header);
 
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -660,7 +660,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             buffer.InsertRange(0, header);
 
-            objectTable.InsertRange(0, buffer);
+            _objectTable.InsertRange(0, buffer);
 
             return buffer.ToArray();
         }
@@ -699,23 +699,23 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static void parseTrailer(List<byte> trailer)
         {
-            offsetByteSize = BitConverter.ToInt32(RegulateNullBytes(trailer.GetRange(6, 1).ToArray(), 4), 0);
-            objRefSize = BitConverter.ToInt32(RegulateNullBytes(trailer.GetRange(7, 1).ToArray(), 4), 0);
+            _offsetByteSize = BitConverter.ToInt32(RegulateNullBytes(trailer.GetRange(6, 1).ToArray(), 4), 0);
+            _objRefSize = BitConverter.ToInt32(RegulateNullBytes(trailer.GetRange(7, 1).ToArray(), 4), 0);
             byte[] refCountBytes = trailer.GetRange(12, 4).ToArray();
             Array.Reverse(refCountBytes);
-            refCount = BitConverter.ToInt32(refCountBytes, 0);
+            _refCount = BitConverter.ToInt32(refCountBytes, 0);
             byte[] offsetTableOffsetBytes = trailer.GetRange(24, 8).ToArray();
             Array.Reverse(offsetTableOffsetBytes);
-            offsetTableOffset = BitConverter.ToInt64(offsetTableOffsetBytes, 0);
+            _offsetTableOffset = BitConverter.ToInt64(offsetTableOffsetBytes, 0);
         }
 
         private static void parseOffsetTable(List<byte> offsetTableBytes)
         {
-            for (int i = 0; i < offsetTableBytes.Count; i += offsetByteSize)
+            for (int i = 0; i < offsetTableBytes.Count; i += _offsetByteSize)
             {
-                byte[] buffer = offsetTableBytes.GetRange(i, offsetByteSize).ToArray();
+                byte[] buffer = offsetTableBytes.GetRange(i, _offsetByteSize).ToArray();
                 Array.Reverse(buffer);
-                offsetTable.Add(BitConverter.ToInt32(RegulateNullBytes(buffer, 4), 0));
+                _offsetTable.Add(BitConverter.ToInt32(RegulateNullBytes(buffer, 4), 0));
             }
         }
 
@@ -726,17 +726,17 @@ namespace Sabresaurus.PlayerPrefsEditor
             int refCount = 0;
 
             int refStartPosition;
-            refCount = getCount(offsetTable[objRef], out refStartPosition);
+            refCount = getCount(_offsetTable[objRef], out refStartPosition);
 
 
             if (refCount < 15)
-                refStartPosition = offsetTable[objRef] + 1;
+                refStartPosition = _offsetTable[objRef] + 1;
             else
-                refStartPosition = offsetTable[objRef] + 2 + RegulateNullBytes(BitConverter.GetBytes(refCount), 1).Length;
+                refStartPosition = _offsetTable[objRef] + 2 + RegulateNullBytes(BitConverter.GetBytes(refCount), 1).Length;
 
-            for (int i = refStartPosition; i < refStartPosition + refCount * 2 * objRefSize; i += objRefSize)
+            for (int i = refStartPosition; i < refStartPosition + refCount * 2 * _objRefSize; i += _objRefSize)
             {
-                byte[] refBuffer = objectTable.GetRange(i, objRefSize).ToArray();
+                byte[] refBuffer = _objectTable.GetRange(i, _objRefSize).ToArray();
                 Array.Reverse(refBuffer);
                 refs.Add(BitConverter.ToInt32(RegulateNullBytes(refBuffer, 4), 0));
             }
@@ -756,18 +756,18 @@ namespace Sabresaurus.PlayerPrefsEditor
             int refCount = 0;
 
             int refStartPosition;
-            refCount = getCount(offsetTable[objRef], out refStartPosition);
+            refCount = getCount(_offsetTable[objRef], out refStartPosition);
 
 
             if (refCount < 15)
-                refStartPosition = offsetTable[objRef] + 1;
+                refStartPosition = _offsetTable[objRef] + 1;
             else
                 //The following integer has a header aswell so we increase the refStartPosition by two to account for that.
-                refStartPosition = offsetTable[objRef] + 2 + RegulateNullBytes(BitConverter.GetBytes(refCount), 1).Length;
+                refStartPosition = _offsetTable[objRef] + 2 + RegulateNullBytes(BitConverter.GetBytes(refCount), 1).Length;
 
-            for (int i = refStartPosition; i < refStartPosition + refCount * objRefSize; i += objRefSize)
+            for (int i = refStartPosition; i < refStartPosition + refCount * _objRefSize; i += _objRefSize)
             {
-                byte[] refBuffer = objectTable.GetRange(i, objRefSize).ToArray();
+                byte[] refBuffer = _objectTable.GetRange(i, _objRefSize).ToArray();
                 Array.Reverse(refBuffer);
                 refs.Add(BitConverter.ToInt32(RegulateNullBytes(refBuffer, 4), 0));
             }
@@ -782,7 +782,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static int getCount(int bytePosition, out int newBytePosition)
         {
-            byte headerByte = objectTable[bytePosition];
+            byte headerByte = _objectTable[bytePosition];
             byte headerByteTrail = Convert.ToByte(headerByte & 0xf);
             int count;
             if (headerByteTrail < 15)
@@ -797,7 +797,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static object parseBinary(int objRef)
         {
-            byte header = objectTable[offsetTable[objRef]];
+            byte header = _objectTable[_offsetTable[objRef]];
             switch (header & 0xF0)
             {
                 case 0:
@@ -806,31 +806,31 @@ namespace Sabresaurus.PlayerPrefsEditor
                         //0 return null
                         //9 return true
                         //8 return false
-                        return (objectTable[offsetTable[objRef]] == 0) ? (object)null : ((objectTable[offsetTable[objRef]] == 9) ? true : false);
+                        return (_objectTable[_offsetTable[objRef]] == 0) ? (object)null : ((_objectTable[_offsetTable[objRef]] == 9) ? true : false);
                     }
                 case 0x10:
                     {
-                        return parseBinaryInt(offsetTable[objRef]);
+                        return parseBinaryInt(_offsetTable[objRef]);
                     }
                 case 0x20:
                     {
-                        return parseBinaryReal(offsetTable[objRef]);
+                        return parseBinaryReal(_offsetTable[objRef]);
                     }
                 case 0x30:
                     {
-                        return parseBinaryDate(offsetTable[objRef]);
+                        return parseBinaryDate(_offsetTable[objRef]);
                     }
                 case 0x40:
                     {
-                        return parseBinaryByteArray(offsetTable[objRef]);
+                        return parseBinaryByteArray(_offsetTable[objRef]);
                     }
                 case 0x50://String ASCII
                     {
-                        return parseBinaryAsciiString(offsetTable[objRef]);
+                        return parseBinaryAsciiString(_offsetTable[objRef]);
                     }
                 case 0x60://String Unicode
                     {
-                        return parseBinaryUnicodeString(offsetTable[objRef]);
+                        return parseBinaryUnicodeString(_offsetTable[objRef]);
                     }
                 case 0xD0:
                     {
@@ -846,7 +846,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         public static object parseBinaryDate(int headerPosition)
         {
-            byte[] buffer = objectTable.GetRange(headerPosition + 1, 8).ToArray();
+            byte[] buffer = _objectTable.GetRange(headerPosition + 1, 8).ToArray();
             Array.Reverse(buffer);
             double appleTime = BitConverter.ToDouble(buffer, 0);
             DateTime result = PlistDateConverter.ConvertFromAppleTimeStamp(appleTime);
@@ -861,9 +861,9 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static object parseBinaryInt(int headerPosition, out int newHeaderPosition)
         {
-            byte header = objectTable[headerPosition];
+            byte header = _objectTable[headerPosition];
             int byteCount = (int)Math.Pow(2, header & 0xf);
-            byte[] buffer = objectTable.GetRange(headerPosition + 1, byteCount).ToArray();
+            byte[] buffer = _objectTable.GetRange(headerPosition + 1, byteCount).ToArray();
             Array.Reverse(buffer);
             //Add one to account for the header byte
             newHeaderPosition = headerPosition + byteCount + 1;
@@ -872,9 +872,9 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private static object parseBinaryReal(int headerPosition)
         {
-            byte header = objectTable[headerPosition];
+            byte header = _objectTable[headerPosition];
             int byteCount = (int)Math.Pow(2, header & 0xf);
-            byte[] buffer = objectTable.GetRange(headerPosition + 1, byteCount).ToArray();
+            byte[] buffer = _objectTable.GetRange(headerPosition + 1, byteCount).ToArray();
             Array.Reverse(buffer);
 
             // Sabresaurus Note: This wasn't producing the right results with doubles, needed singles anyway, so I
@@ -888,7 +888,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             int charStartPosition;
             int charCount = getCount(headerPosition, out charStartPosition);
 
-            var buffer = objectTable.GetRange(charStartPosition, charCount);
+            var buffer = _objectTable.GetRange(charStartPosition, charCount);
             return buffer.Count > 0 ? Encoding.ASCII.GetString(buffer.ToArray()) : string.Empty;
         }
 
@@ -903,8 +903,8 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             for (int i = 0; i < charCount; i += 2)
             {
-                one = objectTable.GetRange(charStartPosition + i, 1)[0];
-                two = objectTable.GetRange(charStartPosition + i + 1, 1)[0];
+                one = _objectTable.GetRange(charStartPosition + i, 1)[0];
+                two = _objectTable.GetRange(charStartPosition + i + 1, 1)[0];
 
                 if (BitConverter.IsLittleEndian)
                 {
@@ -925,7 +925,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             int byteStartPosition;
             int byteCount = getCount(headerPosition, out byteStartPosition);
-            return objectTable.GetRange(byteStartPosition, byteCount).ToArray();
+            return _objectTable.GetRange(byteStartPosition, byteCount).ToArray();
         }
 
         #endregion
@@ -938,16 +938,16 @@ namespace Sabresaurus.PlayerPrefsEditor
 
     public static class PlistDateConverter
     {
-        public static long timeDifference = 978307200;
+        public static long _timeDifference = 978307200;
 
         public static long GetAppleTime(long unixTime)
         {
-            return unixTime - timeDifference;
+            return unixTime - _timeDifference;
         }
 
         public static long GetUnixTime(long appleTime)
         {
-            return appleTime + timeDifference;
+            return appleTime + _timeDifference;
         }
 
         public static DateTime ConvertFromAppleTimeStamp(double timestamp)

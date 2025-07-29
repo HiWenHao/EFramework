@@ -29,32 +29,32 @@ namespace EasyFramework.UI
         }
 
         public List<BindData> BindDatas = new List<BindData>();
-        public string Namespace => m_Namespace;
-        public string ComCodePath => m_ComCodePath;
-        public List<Component> m_BindComs = new List<Component>();
+        public string Namespace => _namespace;
+        public string ComCodePath => _comCodePath;
+        public List<Component> BindComs = new List<Component>();
 
         [SerializeField]
-        private string m_Namespace;
+        private string _namespace;
 
         [SerializeField]
-        private string m_ComCodePath;
+        private string _comCodePath;
 
         [SerializeField]
-        private bool m_DeleteScript;
+        private bool _deleteScript;
 
         [SerializeField]
-        private bool m_CreatePrefab;
+        private bool _createPrefab;
 
         [SerializeField]
-        private string m_PrefabPath;
+        private string _prefabPath;
 
         [SerializeField]
-        private bool m_PackUpBindList;
+        private bool _packUpBindList;
 
         [SerializeField]
-        private bool m_SortByType;
+        private bool _sortByType;
 
         [SerializeField]
-        private bool m_SortByNameLength;
+        private bool _sortByNameLength;
     }
 }

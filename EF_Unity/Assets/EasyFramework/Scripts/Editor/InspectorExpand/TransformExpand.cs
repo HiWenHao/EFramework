@@ -19,33 +19,33 @@ namespace EasyFramework.Edit.InspectorExpand
     [CustomEditor(typeof(Transform))]
     public class TransformExpand : DecoratorEditorBase
     {
-        private const float m_ButtonSize = 22.0f;
+        private const float _buttonSize = 22.0f;
 
-        private static GUIContent m_Wrold;
-        private static GUIContent m_RefreshBtn;
-        private static GUIStyle m_RefreshBtnStyle;
+        private static GUIContent _wrold;
+        private static GUIContent _refreshBtn;
+        private static GUIStyle _refreshBtnStyle;
 
-        private SerializedProperty m_position;
-        private SerializedProperty m_rotation;
-        private SerializedProperty m_scale;
+        private SerializedProperty _position;
+        private SerializedProperty _rotation;
+        private SerializedProperty _scale;
         public TransformExpand(): base("TransformInspector")
         { }
 
         public void OnEnable()
         {
-            m_position = serializedObject.FindProperty("m_LocalPosition");
-            m_rotation = serializedObject.FindProperty("m_LocalRotation");
-            m_scale = serializedObject.FindProperty("m_LocalScale");
+            _position = serializedObject.FindProperty("m_LocalPosition");
+            _rotation = serializedObject.FindProperty("m_LocalRotation");
+            _scale = serializedObject.FindProperty("m_LocalScale");
         }
 
         public override void OnInspectorGUI()
         {
-            if (m_RefreshBtn == null)
+            if (_refreshBtn == null)
             {
-                m_Wrold = EditorGUIUtility.IconContent("d_UnityEditor.InspectorWindow");
-                m_Wrold.tooltip = "The world position\nUnalterable";
-                m_RefreshBtn = EditorGUIUtility.IconContent("Refresh");
-                m_RefreshBtnStyle = new GUIStyle(GUI.skin.button)
+                _wrold = EditorGUIUtility.IconContent("d_UnityEditor.InspectorWindow");
+                _wrold.tooltip = "The world position\nUnalterable";
+                _refreshBtn = EditorGUIUtility.IconContent("Refresh");
+                _refreshBtnStyle = new GUIStyle(GUI.skin.button)
                 {
                     padding = new RectOffset()
                 };            
@@ -55,16 +55,16 @@ namespace EasyFramework.Edit.InspectorExpand
 
             EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.BeginVertical(GUILayout.Width(m_ButtonSize));
-                m_RefreshBtn.tooltip = "Reset local position";
-                if (GUILayout.Button(m_RefreshBtn, m_RefreshBtnStyle, GUILayout.Width(m_ButtonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                    m_position.vector3Value = Vector3.zero;
-                m_RefreshBtn.tooltip = "Reset local rotation";
-                if (GUILayout.Button(m_RefreshBtn, m_RefreshBtnStyle, GUILayout.Width(m_ButtonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                    m_rotation.quaternionValue = Quaternion.identity;
-                m_RefreshBtn.tooltip = "Reset local scale";
-                if (GUILayout.Button(m_RefreshBtn, m_RefreshBtnStyle, GUILayout.Width(m_ButtonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
-                    m_scale.vector3Value = Vector3.one;
+                EditorGUILayout.BeginVertical(GUILayout.Width(_buttonSize));
+                _refreshBtn.tooltip = "Reset local position";
+                if (GUILayout.Button(_refreshBtn, _refreshBtnStyle, GUILayout.Width(_buttonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                    _position.vector3Value = Vector3.zero;
+                _refreshBtn.tooltip = "Reset local rotation";
+                if (GUILayout.Button(_refreshBtn, _refreshBtnStyle, GUILayout.Width(_buttonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                    _rotation.quaternionValue = Quaternion.identity;
+                _refreshBtn.tooltip = "Reset local scale";
+                if (GUILayout.Button(_refreshBtn, _refreshBtnStyle, GUILayout.Width(_buttonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                    _scale.vector3Value = Vector3.one;
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.BeginVertical();
@@ -78,7 +78,7 @@ namespace EasyFramework.Edit.InspectorExpand
             if (((Transform)target).parent)
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(m_Wrold, m_RefreshBtnStyle, GUILayout.Width(m_ButtonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                EditorGUILayout.LabelField(_wrold, _refreshBtnStyle, GUILayout.Width(_buttonSize), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 EditorGUILayout.Vector3Field(new GUIContent("World Position")
                 {
                     tooltip = "The world position of this GameObject.\nThis value unalterable"

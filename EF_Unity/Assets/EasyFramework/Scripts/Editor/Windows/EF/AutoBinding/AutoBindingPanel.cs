@@ -23,11 +23,11 @@ namespace EasyFramework.Windows
         /// </summary>
         internal class AutoBindingPanel : EFSettingBase
         {
-            Vector2 m_ScrllPos;
+            Vector2 _scrllPos;
 
-            private SerializedProperty m_Namespace;
-            private SerializedProperty m_RulePrefixes;
-            private SerializedObject m_CustomSettings;
+            private SerializedProperty _namespace;
+            private SerializedProperty _rulePrefixes;
+            private SerializedObject _customSettings;
 
             public AutoBindingPanel(string name) : base(name)
             {
@@ -35,33 +35,33 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (m_IsInitialzed)
+                if (IsInitialzed)
                     return;
-                m_IsInitialzed = true;
+                IsInitialzed = true;
 
-                AutoBindSetting m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
-                m_CustomSettings = new SerializedObject(m_Setting);
-                m_Namespace = m_CustomSettings.FindProperty("m_Namespace");
-                m_RulePrefixes = m_CustomSettings.FindProperty("m_RulePrefixes");
+                AutoBindSetting setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
+                _customSettings = new SerializedObject(setting);
+                _namespace = _customSettings.FindProperty("_namespace");
+                _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
             }
 
             internal override void OnGUI()
             {
-                m_CustomSettings.Update();
+                _customSettings.Update();
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
-                m_Namespace.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Default, Lc.Script, Lc.Namespace }), m_Namespace.stringValue);
+                _namespace.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Default, Lc.Script, Lc.Namespace }), _namespace.stringValue);
 
                 EditorGUILayout.Space(12f, true);
                 
-                m_ScrllPos = EditorGUILayout.BeginScrollView(m_ScrllPos);
-                EditorGUILayout.PropertyField(m_RulePrefixes);
+                _scrllPos = EditorGUILayout.BeginScrollView(_scrllPos);
+                EditorGUILayout.PropertyField(_rulePrefixes);
                 EditorGUILayout.EndScrollView();
 
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
                 if (!changeCheckScope.changed) return;
-                m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
-                m_CustomSettings.ApplyModifiedProperties();
+                _customSettings.ApplyModifiedPropertiesWithoutUndo();
+                _customSettings.ApplyModifiedProperties();
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }

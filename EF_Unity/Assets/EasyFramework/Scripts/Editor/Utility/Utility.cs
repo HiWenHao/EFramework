@@ -110,13 +110,13 @@ namespace EasyFramework
             /// </summary>
             public static string GetEFAssetsPath()
             {
-                DirectoryInfo _jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory());
+                DirectoryInfo jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory());
 
-                while (!_jsonFolder.Name.Equals("EF_Unity"))
+                while (!jsonFolder.Name.Equals("EF_Unity"))
                 {
-                    _jsonFolder = _jsonFolder.Parent;
+                    jsonFolder = jsonFolder.Parent;
                 }
-                return System.IO.Path.Combine(_jsonFolder.Parent.FullName, "EF_Assets");
+                return System.IO.Path.Combine(jsonFolder.Parent.FullName, "EF_Assets");
             }
         }
 
@@ -130,19 +130,19 @@ namespace EasyFramework
             /// </summary>
             public static string GetPathInAssetsFolder(string path)
             {
-                string _endPath = Application.dataPath;
+                string endPath = Application.dataPath;
                 if (!string.IsNullOrEmpty(path))
                 {
                     int index = path.IndexOf("/Assets", System.StringComparison.Ordinal);
                     if (index == -1)
                     {
                         EditorUtility.DisplayDialog("提示", $"必须在Assets目录下", "确定");
-                        return _endPath;
+                        return endPath;
                     }
 
-                    _endPath = path.Substring(index + 1);
+                    endPath = path[(index + 1)..];
                 }
-                return _endPath;
+                return endPath;
             }
         }
     }

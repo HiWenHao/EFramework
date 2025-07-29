@@ -24,7 +24,7 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/C# Scripts/TemplateScript", false, 1)]
         static void CreateScript()
         {
-            CreateScriptAsset.ScriptName = "TemplateScript";
+            CreateScriptAsset._scriptName = "TemplateScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewTemplateScript.cs",
             null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/TemplateScript.cs.txt"));
@@ -32,7 +32,7 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/C# Scripts/SingleScript", false, 2)]
         static void CreateSingleScript()
         {
-            CreateScriptAsset.ScriptName = "SingleScript";
+            CreateScriptAsset._scriptName = "SingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewSingleScript.cs",
             null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/SingleScript.cs.txt"));
@@ -40,7 +40,7 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/C# Scripts/MonoSingleScript", false, 3)]
         static void CreateMonoSingleScript()
         {
-            CreateScriptAsset.ScriptName = "MonoSingleScript";
+            CreateScriptAsset._scriptName = "MonoSingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewMonoSingleScript.cs",
             null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/MonoSingleScript.cs.txt"));
@@ -49,7 +49,7 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
         static void CreateGameLauncherScript()
         {
-            CreateScriptAsset.ScriptName = "GameLauncher";
+            CreateScriptAsset._scriptName = "GameLauncher";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/GameLauncher.cs",
             null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/GameLauncher.cs.txt"));
@@ -72,7 +72,7 @@ namespace EasyFramework.Edit
     }
     class CreateScriptAsset : EndNameEditAction
     {
-        public static string ScriptName = "";
+        public static string _scriptName = "";
         public override void Action(int instanceId, string newScriptPath, string templatePath)
         {
             Object obj = CreateTemplateScriptAsset(newScriptPath, templatePath);
@@ -88,28 +88,28 @@ namespace EasyFramework.Edit
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(newScriptPath);
 
             //替换模板的文件名
-            text = Regex.Replace(text, ScriptName, fileNameWithoutExtension);
+            text = Regex.Replace(text, _scriptName, fileNameWithoutExtension);
             //把内容重新写入脚本
             bool encoderShouldEmitUTF8Identifier = false;
             bool throwOnInvalidBytes = false;
             UTF8Encoding encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier, throwOnInvalidBytes);
             bool append = false;
-            StreamWriter _sw = new StreamWriter(fullPath, append, encoding);
+            StreamWriter sw = new StreamWriter(fullPath, append, encoding);
 
-            _sw.WriteLine("/*");
-            _sw.WriteLine(" * ================================================");
-            _sw.WriteLine(" * Describe:      This script is used to .");
-            _sw.WriteLine(" * Author:        " + ProjectUtility.Project.ScriptAuthor);
-            _sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ModifyAuthor:  " + ProjectUtility.Project.ScriptAuthor);
-            _sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            _sw.WriteLine(" * ScriptVersion: " + ProjectUtility.Project.ScriptVersion);
-            _sw.WriteLine(" * ===============================================");
-            _sw.WriteLine("*/");
+            sw.WriteLine("/*");
+            sw.WriteLine(" * ================================================");
+            sw.WriteLine(" * Describe:      This script is used to .");
+            sw.WriteLine(" * Author:        " + ProjectUtility.Project.ScriptAuthor);
+            sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            sw.WriteLine(" * ModifyAuthor:  " + ProjectUtility.Project.ScriptAuthor);
+            sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            sw.WriteLine(" * ScriptVersion: " + ProjectUtility.Project.ScriptVersion);
+            sw.WriteLine(" * ===============================================");
+            sw.WriteLine("*/");
 
             text = text.Replace("PleaseChangeTheNamespace", EditorUtils.LoadSettingAtPath<AutoBind.AutoBindSetting>().Namespace);
-            _sw.Write(text);
-            _sw.Close();
+            sw.Write(text);
+            sw.Close();
             AssetDatabase.ImportAsset(newScriptPath);
             return AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
         }

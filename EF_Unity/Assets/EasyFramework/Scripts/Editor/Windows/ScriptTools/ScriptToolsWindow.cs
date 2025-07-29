@@ -31,24 +31,24 @@ namespace EasyFramework.Windows
                 public string DetailsPath;
             }
 
-            int m_typeIndex;
-            int m_MissingOpt;
-            int m_MissingTempOpt;
-            int m_MinssingMaxCount;
-            int m_MissingTempCount;
-            int m_DependenciesMaxCount;
+            int _typeIndex;
+            int _missingOpt;
+            int _missingTempOpt;
+            int _minssingMaxCount;
+            int _missingTempCount;
+            int _dependenciesMaxCount;
 
-            bool m_ShouldRecurse = false;
+            bool _shouldRecurse = false;
 
-            Vector2 m_MissingScroll;
-            Vector2 m_DependenciesScroll;
+            Vector2 _missingScroll;
+            Vector2 _dependenciesScroll;
 
-            MonoScript targetComponent;
+            MonoScript _targetComponent;
 
-            List<Info> m_Entries = new List<Info>();
-            List<string> m_Results = new List<string>();
+            List<Info> _entries = new List<Info>();
+            List<string> _results = new List<string>();
 
-            GUIStyle m_buttonStyle;
+            GUIStyle _buttonStyle;
 
             [MenuItem("EFTools/Tools/Script Tools", priority = 200)]
             private static void OpenWindow()
@@ -60,7 +60,7 @@ namespace EasyFramework.Windows
 
             private void OnEnable()
             {
-                if (m_typeIndex == 1)
+                if (_typeIndex == 1)
                 {
                     MissingFind();
                 }
@@ -69,7 +69,7 @@ namespace EasyFramework.Windows
             private void OnGUI()
             {
                 #region Style Initialize
-                m_buttonStyle = new GUIStyle("button")
+                _buttonStyle = new GUIStyle("button")
                 {
                     alignment = TextAnchor.MiddleLeft
                 };
@@ -83,8 +83,8 @@ namespace EasyFramework.Windows
                     fixedHeight = 30
                 });
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                m_typeIndex = EditorGUILayout.Popup(LC.Combine(new Lc[] { Lc.Select, Lc.Find, Lc.Type }),
-                    m_typeIndex, 
+                _typeIndex = EditorGUILayout.Popup(LC.Combine(new Lc[] { Lc.Select, Lc.Find, Lc.Type }),
+                    _typeIndex, 
                     new[]
                     {
                         LC.Combine(new Lc[]{ Lc.Rely, Lc.This, Lc.Script, Lc.Of, Lc.Prefab }),
@@ -93,18 +93,18 @@ namespace EasyFramework.Windows
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
                 //Dependencies
-                if (m_typeIndex == 0)
+                if (_typeIndex == 0)
                 {
-                    targetComponent = (MonoScript)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Select, Lc.Target, Lc.Script }), targetComponent, typeof(MonoScript), false);
+                    _targetComponent = (MonoScript)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Select, Lc.Target, Lc.Script }), _targetComponent, typeof(MonoScript), false);
 
                     EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                    m_ShouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), m_ShouldRecurse);
+                    _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), _shouldRecurse);
                     if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Find, Lc.Script, Lc.Rely })))
                     {
                         ActionSearchForComponent();
                     }
-                    if (m_DependenciesMaxCount != 0)
-                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Rely, Lc.Count })}:  [ {m_DependenciesMaxCount} ] ");
+                    if (_dependenciesMaxCount != 0)
+                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Rely, Lc.Count })}:  [ {_dependenciesMaxCount} ] ");
 
                     DependenciesListInfoShow();
                 }
@@ -116,19 +116,19 @@ namespace EasyFramework.Windows
                     {
                         MissingFind();
                     }
-                    m_MissingOpt = EditorGUILayout.Popup(m_MissingOpt, new string[]
+                    _missingOpt = EditorGUILayout.Popup(_missingOpt, new string[]
                         {
                             LC.Combine(new Lc[]{ Lc.In, Lc.All, Lc.Activity, Lc.Scene }),
                             LC.Combine(new Lc[]{ Lc.In, Lc.All, Lc.Prefab })
                         });
-                    if (m_MissingOpt != m_MissingTempOpt)
+                    if (_missingOpt != _missingTempOpt)
                     {
-                        m_MissingTempOpt = m_MissingOpt;
+                        _missingTempOpt = _missingOpt;
                         MissingFind();
                     }
                     EditorGUILayout.EndHorizontal();
-                    if (m_MinssingMaxCount != 0)
-                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Lost, Lc.Count })}:  [ {m_MinssingMaxCount} ] ");
+                    if (_minssingMaxCount != 0)
+                        EditorGUILayout.LabelField($"{LC.Combine(new Lc[] { Lc.Lost, Lc.Count })}:  [ {_minssingMaxCount} ] ");
                     EditorGUILayout.Space();
 
                     MissingListInfoShow();
@@ -138,24 +138,24 @@ namespace EasyFramework.Windows
             #region Dependencies
             void DependenciesListInfoShow()
             {
-                if (m_Results == null)
+                if (_results == null)
                     return;
 
-                if (m_DependenciesMaxCount == 0)
+                if (_dependenciesMaxCount == 0)
                 {
                     EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Not, Lc.Found, Lc.Match }));
                 }
                 else
                 {
-                    m_DependenciesScroll = EditorGUILayout.BeginScrollView(m_DependenciesScroll);
+                    _dependenciesScroll = EditorGUILayout.BeginScrollView(_dependenciesScroll);
 
-                    for (int i = 0; i < m_DependenciesMaxCount; i++)
+                    for (int i = 0; i < _dependenciesMaxCount; i++)
                     {
-                        string _res = m_Results[i];
+                        string res = _results[i];
                         EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
-                        if (GUILayout.Button(_res, m_buttonStyle, GUILayout.Height(25f)))
+                        if (GUILayout.Button(res, _buttonStyle, GUILayout.Height(25f)))
                         {
-                            Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(_res);
+                            Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(res);
                             EditorGUIUtility.PingObject(Selection.activeObject);
                         }
                         EditorGUILayout.EndHorizontal();
@@ -170,25 +170,25 @@ namespace EasyFramework.Windows
 
             private void ActionSearchForComponent()
             {
-                string _targetPath = AssetDatabase.GetAssetPath(targetComponent);
+                string targetPath = AssetDatabase.GetAssetPath(_targetComponent);
                 string[] allPrefabs = GetAllPrefabs();
 
-                m_Results.Clear();
-                m_DependenciesMaxCount = allPrefabs.Length;
-                for (int i = 0; i < m_DependenciesMaxCount; i++)
+                _results.Clear();
+                _dependenciesMaxCount = allPrefabs.Length;
+                for (int i = 0; i < _dependenciesMaxCount; i++)
                 {
-                    string _prefab = allPrefabs[i];
-                    string[] _single = new string[] { _prefab };
-                    string[] _dependencies = AssetDatabase.GetDependencies(_single, m_ShouldRecurse);
-                    foreach (string dependentAsset in _dependencies)
+                    string prefab = allPrefabs[i];
+                    string[] single = new string[] { prefab };
+                    string[] dependencies = AssetDatabase.GetDependencies(single, _shouldRecurse);
+                    foreach (string dependentAsset in dependencies)
                     {
-                        if (dependentAsset == _targetPath)
+                        if (dependentAsset == targetPath)
                         {
-                            m_Results.Add(_prefab);
+                            _results.Add(prefab);
                         }
                     }
                 }
-                m_DependenciesMaxCount = m_Results.Count;
+                _dependenciesMaxCount = _results.Count;
             }
 
             public static string[] GetAllPrefabs()
@@ -210,16 +210,16 @@ namespace EasyFramework.Windows
             #region Missing
             void MissingListInfoShow()
             {
-                if (m_Entries == null || m_Entries.Count != m_MinssingMaxCount)
+                if (_entries == null || _entries.Count != _minssingMaxCount)
                     return;
 
-                m_MissingScroll = EditorGUILayout.BeginScrollView(m_MissingScroll);
-                for (int i = 0; i < m_MinssingMaxCount; i++)
+                _missingScroll = EditorGUILayout.BeginScrollView(_missingScroll);
+                for (int i = 0; i < _minssingMaxCount; i++)
                 {
-                    Info _info = m_Entries[i];
+                    Info _info = _entries[i];
                     if (!_info.Target)
                     {
-                        m_MissingTempCount--;
+                        _missingTempCount--;
                         continue;
                     }
                     EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
@@ -231,7 +231,7 @@ namespace EasyFramework.Windows
                     }
                     EditorGUILayout.EndHorizontal();
                 }
-                if (m_MissingTempCount != m_MinssingMaxCount)
+                if (_missingTempCount != _minssingMaxCount)
                 {
                     MissingFind();
                 }
@@ -243,30 +243,30 @@ namespace EasyFramework.Windows
 
             void MissingFind()
             {
-                m_MinssingMaxCount = 0;
-                m_Entries.Clear();
+                _minssingMaxCount = 0;
+                _entries.Clear();
                 GameObject[] gos = Resources.FindObjectsOfTypeAll<GameObject>();
-                m_MinssingMaxCount = gos.Length;
+                _minssingMaxCount = gos.Length;
 
-                for (int i = 0; i < m_MinssingMaxCount; i++)
+                for (int i = 0; i < _minssingMaxCount; i++)
                 {
                     GameObject _go = gos[i];
 
 
-                    if ((m_MissingOpt == 0 && !_go.scene.IsValid()) ||
-                        (m_MissingOpt == 1 && _go.scene.IsValid())) continue;
+                    if ((_missingOpt == 0 && !_go.scene.IsValid()) ||
+                        (_missingOpt == 1 && _go.scene.IsValid())) continue;
 
-                    bool _hasLost = false;
+                    bool hasLost = false;
                     Component[] cos = _go.GetComponents<Component>();
                     foreach (var co in cos)
                     {
                         if (co == null)
                         {
-                            _hasLost = true;
+                            hasLost = true;
                             break;
                         }
                     }
-                    if (!_hasLost) continue;
+                    if (!hasLost) continue;
 
                     Transform tr = _go.transform.parent;
                     Info nfo = new Info()
@@ -274,31 +274,31 @@ namespace EasyFramework.Windows
                         DetailsPath = _go.name,
                         Target = _go
                     };
-                    int _layoutCount = 0;
+                    int layoutCount = 0;
                     while (tr != null)
                     {
-                        _layoutCount++;
+                        layoutCount++;
                         nfo.DetailsPath = $"{tr.name} / {nfo.DetailsPath}";
                         nfo.ParentName = tr.name;
                         tr = tr.parent;
                     }
-                    nfo.LayersCount = _layoutCount;
-                    m_Entries.Add(nfo);
+                    nfo.LayersCount = layoutCount;
+                    _entries.Add(nfo);
                 }
 
-                m_Entries.Sort((a, b) => a.DetailsPath.CompareTo(b.DetailsPath));
-                m_MinssingMaxCount = m_Entries.Count;
-                m_MissingTempCount = m_MinssingMaxCount;
+                _entries.Sort((a, b) => a.DetailsPath.CompareTo(b.DetailsPath));
+                _minssingMaxCount = _entries.Count;
+                _missingTempCount = _minssingMaxCount;
             }
             #endregion
 
             GUIStyle ChangedColor(bool changed)
             {
                 if (changed)
-                    m_buttonStyle.normal.textColor = Color.green;
+                    _buttonStyle.normal.textColor = Color.green;
                 else
-                    m_buttonStyle.normal.textColor = new Color(0.898f, 0.898f, 0.898f);
-                return m_buttonStyle;
+                    _buttonStyle.normal.textColor = new Color(0.898f, 0.898f, 0.898f);
+                return _buttonStyle;
             }
         }
     }

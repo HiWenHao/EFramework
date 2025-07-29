@@ -22,15 +22,15 @@ namespace EasyFramework.Windows
         /// </summary>
         public class EFSettingsPanel : EditorWindow
         {
-            private string m_AssetsPath;
-            private Vector2 m_ScrollPostionL;
+            private string _assetsPath;
+            private Vector2 _scrollPostionL;
 
-            private EFSettingBase m_CurrentPanel;
+            private EFSettingBase _currentPanel;
 
-            private EFSettingBase m_EFSetting;
-            private EFSettingBase m_PathConfig;
-            private EFSettingBase m_AssetsSwitch;
-            private EFSettingBase m_UIAutoBinding;
+            private EFSettingBase _efSetting;
+            private EFSettingBase _pathConfig;
+            private EFSettingBase _assetsSwitch;
+            private EFSettingBase _uiAutoBinding;
 
             [MenuItem("EFTools/Settings &E", priority = 0)]
             private static void OpenWindow()
@@ -42,17 +42,17 @@ namespace EasyFramework.Windows
 
             private void OnEnable()
             {
-                if (null == m_CurrentPanel)
+                if (null == _currentPanel)
                 {
-                    m_AssetsPath = Utility.Path.GetEFAssetsPath();
+                    _assetsPath = Utility.Path.GetEFAssetsPath();
 
-                    m_PathConfig = new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }));
-                    m_EFSetting = new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }));
-                    m_AssetsSwitch = new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch }));
-                    m_UIAutoBinding = new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }));
+                    _pathConfig = new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }));
+                    _efSetting = new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }));
+                    _assetsSwitch = new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch }));
+                    _uiAutoBinding = new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }));
 
-                    m_CurrentPanel = m_EFSetting;
-                    m_CurrentPanel.OnEnable(m_AssetsPath);
+                    _currentPanel = _efSetting;
+                    _currentPanel.OnEnable(_assetsPath);
                 }
             }
 
@@ -60,12 +60,12 @@ namespace EasyFramework.Windows
             {
                 EditorGUILayout.BeginHorizontal();
                 #region Left menu
-                m_ScrollPostionL =  EditorGUILayout.BeginScrollView(m_ScrollPostionL, GUILayout.Width(140f), GUILayout.Height(position.height));
+                _scrollPostionL =  EditorGUILayout.BeginScrollView(_scrollPostionL, GUILayout.Width(140f), GUILayout.Height(position.height));
                 EditorGUILayout.Space();
-                DrawButton(m_EFSetting);
-                DrawButton(m_PathConfig);
-                DrawButton(m_AssetsSwitch);
-                DrawButton(m_UIAutoBinding);
+                DrawButton(_efSetting);
+                DrawButton(_pathConfig);
+                DrawButton(_assetsSwitch);
+                DrawButton(_uiAutoBinding);
                 EditorGUILayout.EndScrollView();
                 #endregion
 
@@ -74,7 +74,7 @@ namespace EasyFramework.Windows
                 #region Right contents
                 EditorGUILayout.BeginVertical("hostview");
                 #region Title
-                EditorGUILayout.LabelField(m_CurrentPanel.Name, new GUIStyle(GUI.skin.label)
+                EditorGUILayout.LabelField(_currentPanel.Name, new GUIStyle(GUI.skin.label)
                 {
                     alignment = TextAnchor.MiddleLeft,
                     fontSize = 24
@@ -82,7 +82,7 @@ namespace EasyFramework.Windows
                 GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
                 EditorGUILayout.Space();
                 #endregion
-                m_CurrentPanel.OnGUI();
+                _currentPanel.OnGUI();
                 EditorGUILayout.EndVertical();
                 #endregion
                 EditorGUILayout.EndHorizontal();
@@ -90,7 +90,7 @@ namespace EasyFramework.Windows
 
             private void OnDestroy()
             {
-                m_CurrentPanel.OnDestroy();
+                _currentPanel.OnDestroy();
             }
 
             void DrawButton(EFSettingBase setting)
@@ -101,8 +101,8 @@ namespace EasyFramework.Windows
                         alignment = TextAnchor.MiddleLeft
                     }))
                 {
-                    setting.OnEnable(m_AssetsPath);
-                    m_CurrentPanel = setting;
+                    setting.OnEnable(_assetsPath);
+                    _currentPanel = setting;
                 }
             }
         }

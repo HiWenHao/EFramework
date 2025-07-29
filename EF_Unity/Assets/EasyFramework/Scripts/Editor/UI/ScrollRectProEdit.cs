@@ -21,79 +21,79 @@ namespace EasyFramework.Edit
     [CanEditMultipleObjects]
     public class ScrollRectProEdit : Editor
 	{
-        ScrollRectPro m_Pro;
-        SerializedProperty m_Lines;
-        SerializedProperty m_Inertia;
-        SerializedProperty m_Spacing;
-        SerializedProperty m_MaxCount;
-        SerializedProperty m_Scrollbar;
-        SerializedProperty m_DockSpeed;
-        SerializedProperty m_direction;
-        SerializedProperty m_Elasticity;
-        SerializedProperty m_AutoDocking;
-        SerializedProperty m_HasScrollbar;
-        SerializedProperty m_DecelerationRate;
+        ScrollRectPro _pro;
+        SerializedProperty _lines;
+        SerializedProperty _lnertia;
+        SerializedProperty _spacing;
+        SerializedProperty _maxCount;
+        SerializedProperty _scrollbar;
+        SerializedProperty _dockSpeed;
+        SerializedProperty _direction;
+        SerializedProperty _elasticity;
+        SerializedProperty _autoDocking;
+        SerializedProperty _hasScrollbar;
+        SerializedProperty _decelerationRate;
 
         private void OnEnable()
         {
-            m_Pro = (ScrollRectPro)target;
-            m_Lines = serializedObject.FindProperty("m_Lines");
-            m_Inertia = serializedObject.FindProperty("m_Inertia");
-            m_Spacing = serializedObject.FindProperty("m_Spacing");
-            m_MaxCount = serializedObject.FindProperty("m_MaxCount");
-            m_Scrollbar = serializedObject.FindProperty("m_Scrollbar");
-            m_DockSpeed = serializedObject.FindProperty("m_DockSpeed");
-            m_direction = serializedObject.FindProperty("m_direction");
-            m_Elasticity = serializedObject.FindProperty("m_Elasticity");
-            m_AutoDocking = serializedObject.FindProperty("m_AutoDocking");
-            m_HasScrollbar = serializedObject.FindProperty("m_HasScrollbar");
-            m_DecelerationRate = serializedObject.FindProperty("m_DecelerationRate");
+            _pro = (ScrollRectPro)target;
+            _lines = serializedObject.FindProperty("m_Lines");
+            _lnertia = serializedObject.FindProperty("m_Inertia");
+            _spacing = serializedObject.FindProperty("_spacing");
+            _maxCount = serializedObject.FindProperty("m_MaxCount");
+            _scrollbar = serializedObject.FindProperty("m_Scrollbar");
+            _dockSpeed = serializedObject.FindProperty("m_DockSpeed");
+            _direction = serializedObject.FindProperty("m_direction");
+            _elasticity = serializedObject.FindProperty("m_Elasticity");
+            _autoDocking = serializedObject.FindProperty("m_AutoDocking");
+            _hasScrollbar = serializedObject.FindProperty("m_HasScrollbar");
+            _decelerationRate = serializedObject.FindProperty("m_DecelerationRate");
         }
 
         public override void OnInspectorGUI()
         {
-            m_Pro = target as ScrollRectPro;
+            _pro = target as ScrollRectPro;
 
             EditorGUILayout.Separator();
-            m_Pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), m_Pro.content, typeof(RectTransform), true);
-            m_Pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scrol, Lc.Direction }), m_Pro.Direction);
-            m_Lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { m_Pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), m_Lines.intValue);
-            m_MaxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), m_MaxCount.intValue);
+            _pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), _pro.content, typeof(RectTransform), true);
+            _pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scrol, Lc.Direction }), _pro.Direction);
+            _lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { _pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), _lines.intValue);
+            _maxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), _maxCount.intValue);
             EditorGUILayout.Separator();
              
-            m_Pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Move, Lc.Type }), m_Pro.movementType);
-            m_Elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine(Lc.Elasticity), m_Elasticity.floatValue);
+            _pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Move, Lc.Type }), _pro.movementType);
+            _elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine(Lc.Elasticity), _elasticity.floatValue);
             EditorGUILayout.Separator();
 
-            m_Inertia.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Enable, Lc.Inertia }), m_Inertia.boolValue);
-            if (m_Inertia.boolValue)
+            _lnertia.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Enable, Lc.Inertia }), _lnertia.boolValue);
+            if (_lnertia.boolValue)
             {
-                m_DecelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Deceleration, Lc.Rate} ), m_DecelerationRate.floatValue);
+                _decelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Deceleration, Lc.Rate} ), _decelerationRate.floatValue);
             }
             EditorGUILayout.Separator();
 
-            m_Spacing.vector2IntValue = EditorGUILayout.Vector2IntField(LC.Combine(Lc.Spacing), m_Spacing.vector2IntValue);
-            m_Pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine(Lc.Element), m_Pro.Elemental, typeof(GameObject), true);
+            _spacing.vector2IntValue = EditorGUILayout.Vector2IntField(LC.Combine(Lc.Spacing), _spacing.vector2IntValue);
+            _pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine(Lc.Element), _pro.Elemental, typeof(GameObject), true);
             EditorGUILayout.Separator();
 
-            m_AutoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Dock} ), m_AutoDocking.boolValue);
-            if (m_AutoDocking.boolValue)
+            _autoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Dock} ), _autoDocking.boolValue);
+            if (_autoDocking.boolValue)
             {
-                m_DockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Dock, Lc.Speed} ), m_DockSpeed.floatValue), 0.1f, float.MaxValue);
+                _dockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Dock, Lc.Speed} ), _dockSpeed.floatValue), 0.1f, float.MaxValue);
             }
             EditorGUILayout.Separator();
 
-            m_HasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Have, Lc.Scrollbar} ), m_HasScrollbar.boolValue);
-            if (m_HasScrollbar.boolValue)
+            _hasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Have, Lc.Scrollbar} ), _hasScrollbar.boolValue);
+            if (_hasScrollbar.boolValue)
             {
-                m_Scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine(Lc.Scrollbar), m_Scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
+                _scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine(Lc.Scrollbar), _scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
             }
 
             if (GUI.changed)
             {
-                m_direction.enumValueFlag = (int)m_Pro.Direction;
+                _direction.enumValueFlag = (int)_pro.Direction;
                 serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(m_Pro);
+                EditorUtility.SetDirty(_pro);
             }
         }
     }

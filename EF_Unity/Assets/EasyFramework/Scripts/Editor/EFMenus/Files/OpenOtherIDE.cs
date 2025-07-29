@@ -91,9 +91,9 @@ namespace EasyFramework.Edit
             /// <param name="filePath">Selection objcet path</param>
             private static void OpenIDEWithPath(string appPath, string filePath, string[] defaultPath)
             {
-                string _path = appPath;
-                bool _hasPath = File.Exists(_path);
-                if (!_hasPath)
+                string path = appPath;
+                bool hasPath = File.Exists(path);
+                if (!hasPath)
                 {
                     if (null == defaultPath)
                     {
@@ -102,8 +102,8 @@ namespace EasyFramework.Edit
                             $"EFTools > Settings > Optimal Setting", "ok");
                         return;
                     }
-                    _path = defaultPath.FirstOrDefault(File.Exists);
-                    if (string.IsNullOrEmpty(_path))
+                    path = defaultPath.FirstOrDefault(File.Exists);
+                    if (string.IsNullOrEmpty(path))
                     {
                         EditorUtility.DisplayDialog("Error.错误", $"The program could not be found.\n" +
                             $"Please go to Settings to configure the path first.\n" +
@@ -111,7 +111,7 @@ namespace EasyFramework.Edit
                         return;
                     }
                 }
-                System.Diagnostics.Process.Start(_path, filePath);
+                System.Diagnostics.Process.Start(path, filePath);
             }
 
             /// <summary>

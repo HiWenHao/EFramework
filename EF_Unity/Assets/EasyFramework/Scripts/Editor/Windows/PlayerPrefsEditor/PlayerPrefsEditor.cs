@@ -24,7 +24,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             set => EditorPrefs.SetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayAddPref), value);
         }
 
-        private static readonly System.Text.Encoding encoding = new System.Text.UTF8Encoding();
+        private static readonly System.Text.Encoding _encoding = new System.Text.UTF8Encoding();
 
         // Represents a PlayerPref key-value record
         private struct PlayerPrefPair
@@ -37,7 +37,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         readonly DateTime MISSING_DATETIME = new DateTime(1601, 1, 1);
 
         // If True display EditorPrefs instead of PlayerPrefs
-        bool showEditorPrefs = false;
+        bool _showEditorPrefs = false;
 
         // Natively PlayerPrefs can be one of these three types
         enum PlayerPrefType
@@ -48,48 +48,48 @@ namespace Sabresaurus.PlayerPrefsEditor
         };
 
         // The actual cached store of PlayerPref records fetched from registry or plist
-        List<PlayerPrefPair> deserializedPlayerPrefs = new List<PlayerPrefPair>();
+        List<PlayerPrefPair> _deserializedPlayerPrefs = new List<PlayerPrefPair>();
 
         // When a search is in effect the search results are cached in this list
-        List<PlayerPrefPair> filteredPlayerPrefs = new List<PlayerPrefPair>();
+        List<PlayerPrefPair> _filteredPlayerPrefs = new List<PlayerPrefPair>();
 
         // Track last successful deserialisation to prevent doing this too often. On OSX this uses the PlayerPrefs file
         // last modified time, on Windows we just poll repeatedly and use this to prevent polling again too soon.
-        DateTime? lastDeserialization = null;
+        DateTime? _lastDeserialization = null;
 
         // The view position of the PlayerPrefs scroll view
-        Vector2 scrollPosition;
+        Vector2 _scrollPosition;
 
         // The scroll position from last frame (used with scrollPosition to detect user scrolling)
-        Vector2 lastScrollPosition;
+        Vector2 _lastScrollPosition;
 
         // Prevent OnInspector() forcing a repaint every time it's called
-        int inspectorUpdateFrame = 0;
+        int _inspectorUpdateFrame = 0;
 
         // Automatically attempt to decrypt keys and values that are detected as encrypted
-        bool automaticDecryption = true;
+        bool _automaticDecryption = true;
 
         // Filter the keys by search
-        string searchFilter = string.Empty;
+        string _searchFilter = string.Empty;
 
         // Because of some issues with deleting from OnGUI, we defer it to OnInspectorUpdate() instead
-        string keyQueuedForDeletion = null;
+        string _keyQueuedForDeletion = null;
 
         #region Adding New PlayerPref
 
         // This is the current type of PlayerPref that the user is about to create
-        PlayerPrefType newEntryType = PlayerPrefType.String;
+        PlayerPrefType _newEntryType = PlayerPrefType.String;
 
         // Whether the PlayerPref should be encrypted
-        bool newEntryIsEncrypted = false;
+        bool _newEntryIsEncrypted = false;
 
         // The identifier of the new PlayerPref
-        string newEntryKey = "";
+        string _newEntryKey = "";
 
         // Value of the PlayerPref about to be created (must be tracked differently for each type)
-        float newEntryValueFloat = 0;
-        int newEntryValueInt = 0;
-        string newEntryValueString = "";
+        float _newEntryValueFloat = 0;
+        int _newEntryValueInt = 0;
+        string _newEntryValueString = "";
 
         #endregion
 
@@ -129,13 +129,13 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             searchField = new SearchField();
 
-            deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+            _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
             UpdateSearch();
         }
 
         private void DeleteAll()
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 EditorPrefs.DeleteAll();
             }
@@ -147,7 +147,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void DeleteKey(string key)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 EditorPrefs.DeleteKey(key);
             }
@@ -159,7 +159,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private int GetInt(string key, int defaultValue = 0)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 return EditorPrefs.GetInt(key, defaultValue);
             }
@@ -171,7 +171,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private float GetFloat(string key, float defaultValue = 0.0f)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 return EditorPrefs.GetFloat(key, defaultValue);
             }
@@ -183,7 +183,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private string GetString(string key, string defaultValue = "")
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 return EditorPrefs.GetString(key, defaultValue);
             }
@@ -195,7 +195,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void SetInt(string key, int value)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 EditorPrefs.SetInt(key, value);
             }
@@ -207,7 +207,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void SetFloat(string key, float value)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 EditorPrefs.SetFloat(key, value);
             }
@@ -219,7 +219,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void SetString(string key, string value)
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 EditorPrefs.SetString(key, value);
             }
@@ -231,7 +231,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void Save()
         {
-            if (showEditorPrefs)
+            if (_showEditorPrefs)
             {
                 // No Save() method in EditorPrefs
             }
@@ -251,7 +251,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 string playerPrefsPath;
 
-                if (showEditorPrefs)
+                if (_showEditorPrefs)
                 {
                     playerPrefsPath = GetMacOSEditorPrefsPath();
                 }
@@ -305,7 +305,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 Microsoft.Win32.RegistryKey registryKey;
 
-                if (showEditorPrefs)
+                if (_showEditorPrefs)
                 {
                     // Starting Unity 5.5 registry key has " 5.x" suffix: https://docs.unity3d.com/550/Documentation/ScriptReference/EditorPrefs.html
                     // Even though for some versions of Unity docs state that N.x suffix is used where N.x is the major version number,
@@ -367,7 +367,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                                 // Fetch the float value from PlayerPrefs in memory
                                 ambiguousValue = GetFloat(key);
                             }
-                            else if (showEditorPrefs && GetInt(key, -1) != -1)
+                            else if (_showEditorPrefs && GetInt(key, -1) != -1)
                             {
                                 ambiguousValue = GetInt(key);
                             }
@@ -375,7 +375,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         else if (ambiguousValue.GetType() == typeof(byte[]))
                         {
                             // On Unity 5 a string may be stored as binary, so convert it back to a string
-                            ambiguousValue = encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
+                            ambiguousValue = _encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
                         }
 
                         // Assign the key and value into the respective record in our output array
@@ -401,20 +401,20 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void UpdateSearch()
         {
             // Clear any existing cached search results
-            filteredPlayerPrefs.Clear();
+            _filteredPlayerPrefs.Clear();
 
             // Don't attempt to find the search results if a search filter hasn't actually been supplied
-            if (string.IsNullOrEmpty(searchFilter))
+            if (string.IsNullOrEmpty(_searchFilter))
             {
                 return;
             }
 
-            int entryCount = deserializedPlayerPrefs.Count;
+            int entryCount = _deserializedPlayerPrefs.Count;
 
             // Iterate through all the cached results and add any matches to filteredPlayerPrefs
             for (int i = 0; i < entryCount; i++)
             {
-                string fullKey = deserializedPlayerPrefs[i].Key;
+                string fullKey = _deserializedPlayerPrefs[i].Key;
                 if (string.IsNullOrEmpty(fullKey))
                 {
                     continue;
@@ -422,23 +422,23 @@ namespace Sabresaurus.PlayerPrefsEditor
                 string displayKey = fullKey;
 
                 // Special case for encrypted keys in auto decrypt mode, search should use decrypted values
-                bool isEncryptedPair = PlayerPrefsUtility.IsEncryptedKey(deserializedPlayerPrefs[i].Key);
-                if (automaticDecryption && isEncryptedPair)
+                bool isEncryptedPair = PlayerPrefsUtility.IsEncryptedKey(_deserializedPlayerPrefs[i].Key);
+                if (_automaticDecryption && isEncryptedPair)
                 {
                     displayKey = PlayerPrefsUtility.DecryptKey(fullKey);
                 }
 
-                string _searchLower = searchFilter.ToLower();
+                string _searchLower = _searchFilter.ToLower();
 
                 // If the key contains the search filter (ToLower used on both parts to make this case insensitive)
                 if (displayKey.ToLower().Contains(_searchLower))
                 {
-                    filteredPlayerPrefs.Add(deserializedPlayerPrefs[i]);
+                    _filteredPlayerPrefs.Add(_deserializedPlayerPrefs[i]);
                 }
                 // Else check value
-                else if (deserializedPlayerPrefs[i].Value.ToString().ToLower().Contains(_searchLower))
+                else if (_deserializedPlayerPrefs[i].Value.ToString().ToLower().Contains(_searchLower))
                 {
-                    filteredPlayerPrefs.Add(deserializedPlayerPrefs[i]);
+                    _filteredPlayerPrefs.Add(_deserializedPlayerPrefs[i]);
                 }
             }
         }
@@ -446,7 +446,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void DrawTopBar()
         {
 #if UNITY_5_6_OR_NEWER
-            string newSearchFilter = searchField.OnGUI(searchFilter);
+            string newSearchFilter = searchField.OnGUI(_searchFilter);
             GUILayout.Space(4);
 #else
             EditorGUILayout.BeginHorizontal();
@@ -459,24 +459,24 @@ namespace Sabresaurus.PlayerPrefsEditor
 #endif
 
             // If the requested search filter has changed
-            if (newSearchFilter != searchFilter)
+            if (newSearchFilter != _searchFilter)
             {
-                searchFilter = newSearchFilter;
+                _searchFilter = newSearchFilter;
                 // Trigger UpdateSearch to calculate new search results
                 UpdateSearch();
             }
 
             // Allow the user to toggle between editor and PlayerPrefs
-            int oldIndex = showEditorPrefs ? 1 : 0;
+            int oldIndex = _showEditorPrefs ? 1 : 0;
             int newIndex = GUILayout.Toolbar(oldIndex, new[] { LC.Combine(Lc.PlayerPrefs), LC.Combine(Lc.EditorPrefs) });
 
             // Has the toggle changed?
             if (newIndex != oldIndex)
             {
                 // Reset
-                lastDeserialization = null;
-                showEditorPrefs = (newIndex == 1);
-                searchFilter = searchField.OnGUI("");
+                _lastDeserialization = null;
+                _showEditorPrefs = (newIndex == 1);
+                _searchFilter = searchField.OnGUI("");
                 UpdateSearch();
             }
         }
@@ -522,25 +522,25 @@ namespace Sabresaurus.PlayerPrefsEditor
             GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
 
             // Could be dealing with either the full list or search results, so get the right list
-            List<PlayerPrefPair> activePlayerPrefs = deserializedPlayerPrefs;
+            List<PlayerPrefPair> activePlayerPrefs = _deserializedPlayerPrefs;
 
-            if (!string.IsNullOrEmpty(searchFilter))
+            if (!string.IsNullOrEmpty(_searchFilter))
             {
-                activePlayerPrefs = filteredPlayerPrefs;
+                activePlayerPrefs = _filteredPlayerPrefs;
             }
 
             // Cache the entry count
             int entryCount = activePlayerPrefs.Count;
 
             // Record the last scroll position so we can calculate if the user has scrolled this frame
-            lastScrollPosition = scrollPosition;
+            _lastScrollPosition = _scrollPosition;
 
             // Start the scrollable area
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             // Ensure the scroll doesn't go below zero
-            if (scrollPosition.y < 0)
+            if (_scrollPosition.y < 0)
             {
-                scrollPosition.y = 0;
+                _scrollPosition.y = 0;
             }
 
             // The following code has been optimised so that rather than attempting to draw UI for every single PlayerPref
@@ -557,7 +557,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             int visibleCount = Mathf.CeilToInt(Screen.height / rowHeight);
 
             // Determine the index of the first PlayerPref that should be drawn as visible in the scrollable area
-            int firstShownIndex = Mathf.FloorToInt(scrollPosition.y / rowHeight);
+            int firstShownIndex = Mathf.FloorToInt(_scrollPosition.y / rowHeight);
 
             // Determine the bottom limit of the visible PlayerPrefs (last shown index + 1)
             int shownIndexLimit = firstShownIndex + visibleCount;
@@ -654,7 +654,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 bool failedAutoDecrypt = false;
 
                 // If this is an encrypted play pref and we're attempting to decrypt them, try to decrypt it!
-                if (isEncryptedPair && automaticDecryption)
+                if (isEncryptedPair && _automaticDecryption)
                 {
                     // This may throw exceptions (e.g. if private key changes), so wrap in a try-catch
                     try
@@ -678,7 +678,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                 // If it's an encrypted playerpref, we're automatically decrypting and it didn't fail the earlier
                 // auto decrypt test
-                if (isEncryptedPair && automaticDecryption && !failedAutoDecrypt)
+                if (isEncryptedPair && _automaticDecryption && !failedAutoDecrypt)
                 {
                     // Get the encrypted string
                     string encryptedValue = GetString(fullKey);
@@ -720,7 +720,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 if (valueType == typeof(float))
                 {
                     float initialValue;
-                    if (isEncryptedPair && automaticDecryption)
+                    if (isEncryptedPair && _automaticDecryption)
                     {
                         // Automatically decrypt the value if encrypted and in auto-decrypt mode
                         initialValue = PlayerPrefsUtility.GetEncryptedFloat(displayKey);
@@ -758,7 +758,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 else if (valueType == typeof(int)) // if we're dealing with an int
                 {
                     int initialValue;
-                    if (isEncryptedPair && automaticDecryption)
+                    if (isEncryptedPair && _automaticDecryption)
                     {
                         // Automatically decrypt the value if encrypted and in auto-decrypt mode
                         initialValue = PlayerPrefsUtility.GetEncryptedInt(displayKey);
@@ -796,7 +796,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 else if (valueType == typeof(string)) // if we're dealing with a string
                 {
                     string initialValue;
-                    if (isEncryptedPair && automaticDecryption && !failedAutoDecrypt)
+                    if (isEncryptedPair && _automaticDecryption && !failedAutoDecrypt)
                     {
                         // Automatically decrypt the value if encrypted and in auto-decrypt mode
                         initialValue = PlayerPrefsUtility.GetEncryptedString(displayKey);
@@ -828,7 +828,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         Save();
                     }
 
-                    if (isEncryptedPair && !automaticDecryption && !string.IsNullOrEmpty(initialValue))
+                    if (isEncryptedPair && !_automaticDecryption && !string.IsNullOrEmpty(initialValue))
                     {
                         // Because encrypted values when not in auto-decrypt mode are stored as string, determine their
                         // encrypted type and display that instead for these encrypted PlayerPrefs
@@ -887,14 +887,14 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.Space();
 
             // Heading
-            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine(new Lc[] { Lc.Add, showEditorPrefs ? Lc.EditorPrefs : Lc.PlayerPrefs }));
+            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine(new Lc[] { Lc.Add, _showEditorPrefs ? Lc.EditorPrefs : Lc.PlayerPrefs }));
             if (DisplayAddPref)
             {
                 // UI for whether the new PlayerPref is encrypted and what type it is
                 EditorGUILayout.BeginHorizontal();
-                newEntryIsEncrypted = GUILayout.Toggle(newEntryIsEncrypted, LC.Combine(Lc.Encrypt));
+                _newEntryIsEncrypted = GUILayout.Toggle(_newEntryIsEncrypted, LC.Combine(Lc.Encrypt));
 
-                newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string" });
+                _newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)_newEntryType, new string[] { "float", "int", "string" });
 
                 EditorGUILayout.EndHorizontal();
 
@@ -906,7 +906,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                 // If the new value will be encrypted tint the text boxes blue (in line with the display style for existing
                 // encrypted PlayerPrefs)
-                if (newEntryIsEncrypted)
+                if (_newEntryIsEncrypted)
                 {
                     if (EditorGUIUtility.isProSkin)
                     {
@@ -925,52 +925,52 @@ namespace Sabresaurus.PlayerPrefsEditor
                 // Track the next control so we can detect key events in it
                 GUI.SetNextControlName("newEntryKey");
                 // UI for the new key text box
-                newEntryKey = EditorGUILayout.TextField(newEntryKey, textFieldStyle);
+                _newEntryKey = EditorGUILayout.TextField(_newEntryKey, textFieldStyle);
 
                 // Track the next control so we can detect key events in it
                 GUI.SetNextControlName("newEntryValue");
 
                 // Display the correct UI field editor based on what type of PlayerPref is being created
-                if (newEntryType == PlayerPrefType.Float)
+                if (_newEntryType == PlayerPrefType.Float)
                 {
-                    newEntryValueFloat = EditorGUILayout.FloatField(newEntryValueFloat, textFieldStyle);
+                    _newEntryValueFloat = EditorGUILayout.FloatField(_newEntryValueFloat, textFieldStyle);
                 }
-                else if (newEntryType == PlayerPrefType.Int)
+                else if (_newEntryType == PlayerPrefType.Int)
                 {
-                    newEntryValueInt = EditorGUILayout.IntField(newEntryValueInt, textFieldStyle);
+                    _newEntryValueInt = EditorGUILayout.IntField(_newEntryValueInt, textFieldStyle);
                 }
                 else
                 {
-                    newEntryValueString = EditorGUILayout.TextField(newEntryValueString, textFieldStyle);
+                    _newEntryValueString = EditorGUILayout.TextField(_newEntryValueString, textFieldStyle);
                 }
 
                 // If the user hit enter while either the key or value fields were being edited
                 bool keyboardAddPressed = Event.current.isKey && Event.current.keyCode == KeyCode.Return && Event.current.type == EventType.KeyUp && (GUI.GetNameOfFocusedControl() == "newEntryKey" || GUI.GetNameOfFocusedControl() == "newEntryValue");
 
                 // If the user clicks the Add button or hits return (and there is a non-empty key), create the PlayerPref
-                if ((GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(newEntryKey))
+                if ((GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(_newEntryKey))
                 {
                     // If the PlayerPref we're creating is encrypted
-                    if (newEntryIsEncrypted)
+                    if (_newEntryIsEncrypted)
                     {
                         // Encrypt the key
-                        string encryptedKey = PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(newEntryKey);
+                        string encryptedKey = PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(_newEntryKey);
 
                         // Note: All encrypted values are stored as string
                         string encryptedValue;
 
                         // Calculate the encrypted value
-                        if (newEntryType == PlayerPrefType.Float)
+                        if (_newEntryType == PlayerPrefType.Float)
                         {
-                            encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(newEntryValueFloat);
+                            encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(_newEntryValueFloat);
                         }
-                        else if (newEntryType == PlayerPrefType.Int)
+                        else if (_newEntryType == PlayerPrefType.Int)
                         {
-                            encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(newEntryValueInt);
+                            encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(_newEntryValueInt);
                         }
                         else
                         {
-                            encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(newEntryValueString);
+                            encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(_newEntryValueString);
                         }
 
                         // Record the new PlayerPref in PlayerPrefs
@@ -981,26 +981,26 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
                     else
                     {
-                        if (newEntryType == PlayerPrefType.Float)
+                        if (_newEntryType == PlayerPrefType.Float)
                         {
                             // Record the new PlayerPref in PlayerPrefs
-                            SetFloat(newEntryKey, newEntryValueFloat);
+                            SetFloat(_newEntryKey, _newEntryValueFloat);
                             // Cache the addition
-                            CacheRecord(newEntryKey, newEntryValueFloat);
+                            CacheRecord(_newEntryKey, _newEntryValueFloat);
                         }
-                        else if (newEntryType == PlayerPrefType.Int)
+                        else if (_newEntryType == PlayerPrefType.Int)
                         {
                             // Record the new PlayerPref in PlayerPrefs
-                            SetInt(newEntryKey, newEntryValueInt);
+                            SetInt(_newEntryKey, _newEntryValueInt);
                             // Cache the addition
-                            CacheRecord(newEntryKey, newEntryValueInt);
+                            CacheRecord(_newEntryKey, _newEntryValueInt);
                         }
                         else
                         {
                             // Record the new PlayerPref in PlayerPrefs
-                            SetString(newEntryKey, newEntryValueString);
+                            SetString(_newEntryKey, _newEntryValueString);
                             // Cache the addition
-                            CacheRecord(newEntryKey, newEntryValueString);
+                            CacheRecord(_newEntryKey, _newEntryValueString);
                         }
                     }
 
@@ -1011,10 +1011,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                     Repaint();
 
                     // Reset the values
-                    newEntryKey = "";
-                    newEntryValueFloat = 0;
-                    newEntryValueInt = 0;
-                    newEntryValueString = "";
+                    _newEntryKey = "";
+                    _newEntryValueFloat = 0;
+                    _newEntryValueInt = 0;
+                    _newEntryValueString = "";
 
                     // Deselect
                     GUI.FocusControl("");
@@ -1035,7 +1035,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 EditorGUILayout.BeginHorizontal();
                 // UI for toggling automatic decryption on and off
-                automaticDecryption = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Decryption }), automaticDecryption);
+                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Decryption }), _automaticDecryption);
 
                 if (this.position.width < 390)
                 {
@@ -1073,7 +1073,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 }
 
                 EditorGUILayout.EndHorizontal();
-                if (showEditorPrefs == false)
+                if (_showEditorPrefs == false)
                 {
                     // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
                     if (GUILayout.Button(LC.Combine(Lc.Import)))
@@ -1093,7 +1093,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         Save();
 
                         // Clear the cache too, for an instant visibility update for OSX
-                        deserializedPlayerPrefs.Clear();
+                        _deserializedPlayerPrefs.Clear();
                     }
                 }
 
@@ -1118,7 +1118,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 string playerPrefsPath;
 
-                if (showEditorPrefs)
+                if (_showEditorPrefs)
                 {
                     playerPrefsPath = GetMacOSEditorPrefsPath();
                 }
@@ -1137,13 +1137,13 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                 // If we haven't deserialized the PlayerPrefs already, or the written file has changed then deserialize
                 // the latest version
-                if (!lastDeserialization.HasValue || lastDeserialization.Value != lastWriteTime)
+                if (!_lastDeserialization.HasValue || _lastDeserialization.Value != lastWriteTime)
                 {
                     // Deserialize the actual PlayerPrefs from file into a cache
-                    deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+                    _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
 
                     // Record the version of the file we just read, so we know if it changes in the future
-                    lastDeserialization = lastWriteTime;
+                    _lastDeserialization = lastWriteTime;
                 }
 
                 if (lastWriteTime != MISSING_DATETIME)
@@ -1158,13 +1158,13 @@ namespace Sabresaurus.PlayerPrefsEditor
             else if (Application.platform == RuntimePlatform.WindowsEditor)
             {
                 // Windows works a bit differently to OSX, we just regularly query the registry. So don't query too often
-                if (!lastDeserialization.HasValue || DateTime.UtcNow - lastDeserialization.Value > TimeSpan.FromMilliseconds(500))
+                if (!_lastDeserialization.HasValue || DateTime.UtcNow - _lastDeserialization.Value > TimeSpan.FromMilliseconds(500))
                 {
                     // Deserialize the actual PlayerPrefs from registry into a cache
-                    deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+                    _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
 
                     // Record the latest time, so we don't fetch again too quickly
-                    lastDeserialization = DateTime.UtcNow;
+                    _lastDeserialization = DateTime.UtcNow;
                 }
             }
         }
@@ -1185,7 +1185,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             // If the user has scrolled, deselect - this is because control IDs within carousel will change when scrolled
             // so we'd end up with the wrong box selected.
-            if (scrollPosition != lastScrollPosition)
+            if (_scrollPosition != _lastScrollPosition)
             {
                 // Deselect
                 GUI.FocusControl("");
@@ -1197,14 +1197,14 @@ namespace Sabresaurus.PlayerPrefsEditor
             // First of all check if this key already exists, if so replace it's value with the new value
             bool replaced = false;
 
-            int entryCount = deserializedPlayerPrefs.Count;
+            int entryCount = _deserializedPlayerPrefs.Count;
             for (int i = 0; i < entryCount; i++)
             {
                 // Found the key - it exists already
-                if (deserializedPlayerPrefs[i].Key == key)
+                if (_deserializedPlayerPrefs[i].Key == key)
                 {
                     // Update the cached pref with the new value
-                    deserializedPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = value };
+                    _deserializedPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = value };
                     // Mark the replacement so we no longer need to add it
                     replaced = true;
                     break;
@@ -1215,7 +1215,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             if (!replaced)
             {
                 // Cache a PlayerPref the user just created so it can be instantly display (mainly for OSX)
-                deserializedPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = value });
+                _deserializedPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = value });
             }
 
             // Update the search if it's active
@@ -1224,44 +1224,44 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void DeleteCachedRecord(string fullKey)
         {
-            keyQueuedForDeletion = fullKey;
+            _keyQueuedForDeletion = fullKey;
         }
 
         // OnInspectorUpdate() is called by Unity at 10 times a second
         private void OnInspectorUpdate()
         {
             // If a PlayerPref has been specified for deletion
-            if (!string.IsNullOrEmpty(keyQueuedForDeletion))
+            if (!string.IsNullOrEmpty(_keyQueuedForDeletion))
             {
                 // If the user just deleted a PlayerPref, find the ID and defer it for deletion by OnInspectorUpdate()
-                if (deserializedPlayerPrefs != null)
+                if (_deserializedPlayerPrefs != null)
                 {
-                    int entryCount = deserializedPlayerPrefs.Count;
+                    int entryCount = _deserializedPlayerPrefs.Count;
                     for (int i = 0; i < entryCount; i++)
                     {
-                        if (deserializedPlayerPrefs[i].Key == keyQueuedForDeletion)
+                        if (_deserializedPlayerPrefs[i].Key == _keyQueuedForDeletion)
                         {
-                            deserializedPlayerPrefs.RemoveAt(i);
+                            _deserializedPlayerPrefs.RemoveAt(i);
                             break;
                         }
                     }
                 }
 
                 // Remove the queued key since we've just deleted it
-                keyQueuedForDeletion = null;
+                _keyQueuedForDeletion = null;
 
                 // Update the search results and repaint the window
                 UpdateSearch();
                 Repaint();
             }
-            else if (inspectorUpdateFrame % 10 == 0) // Once a second (every 10th frame)
+            else if (_inspectorUpdateFrame % 10 == 0) // Once a second (every 10th frame)
             {
                 // Force the window to repaint
                 Repaint();
             }
 
             // Track what frame we're on, so we can call code less often
-            inspectorUpdateFrame++;
+            _inspectorUpdateFrame++;
         }
 
         public void Import(string companyName, string productName)

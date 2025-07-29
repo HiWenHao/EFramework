@@ -45,21 +45,21 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         protected string[] ObjectInfoList;
 
-        int m_TabsCount;
-        int m_OldTabIndex;
-        int m_CurTabIndex;
-        int m_OldFiltrateIndex;
-        int m_ObjectInfoListCount;
+        int _tabsCount;
+        int _oldTabIndex;
+        int _curTabIndex;
+        int _oldFiltrateIndex;
+        int _objectInfoListCount;
 
-        private Vector2 m_ScrollPos;
+        private Vector2 _scrollPos;
 
         /// <summary>
         /// 初始化
         /// </summary>
         internal virtual void Initialize()
         {
-            m_TabsCount = Tabs.Length;
-            m_ObjectInfoListCount = ObjectInfoList.Length;
+            _tabsCount = Tabs.Length;
+            _objectInfoListCount = ObjectInfoList.Length;
         }
 
         /// <summary>
@@ -68,31 +68,31 @@ namespace EasyFramework.Windows.AssetChecker
         internal virtual void OnGUI()
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Space(Screen.width * (0.5f / m_TabsCount));
-            for (int i = 0; i < m_TabsCount; i++)
+            GUILayout.Space(Screen.width * (0.5f / _tabsCount));
+            for (int i = 0; i < _tabsCount; i++)
             {
-                string _style;
-                if (i == 0) _style = "ButtonLeft";
-                else if (i == m_TabsCount - 1) _style = "ButtonRight";
-                else _style = "ButtonMid";
+                string style;
+                if (i == 0) style = "ButtonLeft";
+                else if (i == _tabsCount - 1) style = "ButtonRight";
+                else style = "ButtonMid";
 
-                if (GUILayout.Toggle(m_CurTabIndex == i, Tabs[i], _style))
+                if (GUILayout.Toggle(_curTabIndex == i, Tabs[i], style))
                 {
-                    m_CurTabIndex = i;
+                    _curTabIndex = i;
                 }
             }
-            GUILayout.Space(Screen.width * (0.5f / m_TabsCount));
+            GUILayout.Space(Screen.width * (0.5f / _tabsCount));
             GUILayout.EndHorizontal();
 
-            if (m_CurTabIndex != m_OldTabIndex)
+            if (_curTabIndex != _oldTabIndex)
             {
-                m_OldTabIndex = m_CurTabIndex;
-                if (m_CurTabIndex == 0)
+                _oldTabIndex = _curTabIndex;
+                if (_curTabIndex == 0)
                 {
                     FiltrateChanged(FiltrateIndex, true);
                 }
             }
-            if (m_CurTabIndex != 0)
+            if (_curTabIndex != 0)
             {
                 RuleViewOnGUI();
                 return;
@@ -104,9 +104,9 @@ namespace EasyFramework.Windows.AssetChecker
             {
                 GUILayout.Label($"{LC.Combine(Lc.Filtrate)}: ");
                 FiltrateIndex = EditorGUILayout.Popup(FiltrateIndex, Filtrates);
-                if (m_OldFiltrateIndex != FiltrateIndex)
+                if (_oldFiltrateIndex != FiltrateIndex)
                 {
-                    m_OldFiltrateIndex = FiltrateIndex;
+                    _oldFiltrateIndex = FiltrateIndex;
                     FiltrateChanged(FiltrateIndex, false);
                 }
 
@@ -119,7 +119,7 @@ namespace EasyFramework.Windows.AssetChecker
 
                 if (GUILayout.Button(LC.Combine(Lc.Refresh), GUILayout.Width(80)))
                 {
-                    m_ScrollPos = Vector2.zero;
+                    _scrollPos = Vector2.zero;
                     Refresh();
                 }
                 GUILayout.Space(8.5f);
@@ -129,22 +129,22 @@ namespace EasyFramework.Windows.AssetChecker
 
             //Info Tabs
             GUILayout.BeginHorizontal(GUILayout.MinHeight(20f));
-            if (m_ObjectInfoListCount > 2)
+            if (_objectInfoListCount > 2)
             {
                 if (GUILayout.Toggle(false, ObjectInfoList[0], "ButtonLeft", GUILayout.Width(150f)))
                 {
                     OnClickInfoList(0);
                 }
-                for (int i = 1; i < m_ObjectInfoListCount - 1; i++)
+                for (int i = 1; i < _objectInfoListCount - 1; i++)
                 {
-                    if (GUILayout.Toggle(false, ObjectInfoList[i], "ButtonMid", GUILayout.Width((Screen.width - 150f) / (m_ObjectInfoListCount - 1))))
+                    if (GUILayout.Toggle(false, ObjectInfoList[i], "ButtonMid", GUILayout.Width((Screen.width - 150f) / (_objectInfoListCount - 1))))
                     {
                         OnClickInfoList(i);
                     }
                 }
-                if (GUILayout.Toggle(false, ObjectInfoList[^1], "ButtonRight", GUILayout.Width((Screen.width - 150f) / (m_ObjectInfoListCount - 1))))
+                if (GUILayout.Toggle(false, ObjectInfoList[^1], "ButtonRight", GUILayout.Width((Screen.width - 150f) / (_objectInfoListCount - 1))))
                 {
-                    OnClickInfoList(m_ObjectInfoListCount - 1);
+                    OnClickInfoList(_objectInfoListCount - 1);
                 }
             }
             //GUILayout.Space(10f);
@@ -152,7 +152,7 @@ namespace EasyFramework.Windows.AssetChecker
 
             if (ListCount != 0)
             {
-                m_ScrollPos = GUILayout.BeginScrollView(m_ScrollPos);
+                _scrollPos = GUILayout.BeginScrollView(_scrollPos);
                 int index = 0;
                 for (int i = 0; i < ListCount; i++)
                 {

@@ -13,19 +13,19 @@ namespace EasyFramework.Windows
             public GameObject GameObjects { get; set; }
 
             /// <summary> GameObject树视图的状态 </summary>
-            private TreeViewState m_GOTreeState;
+            private TreeViewState _goTreeState;
 
             /// <summary> GameObject树视图 </summary>
-            private GameObjectTreeView m_GOTree;
+            private GameObjectTreeView m_goTree;
 
             /// <summary> 左边还是右边的视图 </summary>
-            private bool m_IsLeft;
+            private bool _isLeft;
 
             /// <summary> GameObject树结构展开状态变更回调 </summary>
             public Action<int, bool, bool> onGOTreeExpandedStateChanged
             {
-                get { return m_GOTree.onExpandedStateChanged; }
-                set { m_GOTree.onExpandedStateChanged = value; }
+                get { return m_goTree.onExpandedStateChanged; }
+                set { m_goTree.onExpandedStateChanged = value; }
             }
 
             /// <summary>
@@ -33,19 +33,19 @@ namespace EasyFramework.Windows
             /// </summary>
             public Action<GameObjectCompareInfo> onClickItem
             {
-                get { return m_GOTree.onClickItem; }
-                set { m_GOTree.onClickItem = value; }
+                get { return m_goTree.onClickItem; }
+                set { m_goTree.onClickItem = value; }
             }
 
             public CompareView(bool isLeft)
             {
-                m_IsLeft = isLeft;
+                _isLeft = isLeft;
 
                 if (GameObjects == null)
                 {
                     string prefabPath = "";
 
-                    if (m_IsLeft)
+                    if (_isLeft)
                     {
                         prefabPath = CompareData.LeftPrefabPath;
                     }
@@ -63,9 +63,9 @@ namespace EasyFramework.Windows
 
             public void Init()
             {
-                m_GOTreeState ??= new TreeViewState();
+                _goTreeState ??= new TreeViewState();
 
-                m_GOTree = new GameObjectTreeView(m_GOTreeState, CompareData.RootInfo, m_IsLeft);
+                m_goTree = new GameObjectTreeView(_goTreeState, CompareData.RootInfo, _isLeft);
 
                 CompareData.onShowStateChange += OnShowStateChange;
             }
@@ -73,8 +73,8 @@ namespace EasyFramework.Windows
             public void Destroy()
             {
                 CompareData.onShowStateChange -= OnShowStateChange;
-                m_GOTreeState = null;
-                m_GOTree = null;
+                _goTreeState = null;
+                m_goTree = null;
             }
 
             public void OnGUI()
@@ -96,16 +96,16 @@ namespace EasyFramework.Windows
 
             private void OnTreeView()
             {
-                if (m_GOTreeState.scrollPos != CompareData.GameObjectTreeScroll)
+                if (_goTreeState.scrollPos != CompareData.GameObjectTreeScroll)
                 {
-                    m_GOTreeState.scrollPos = CompareData.GameObjectTreeScroll;
+                    _goTreeState.scrollPos = CompareData.GameObjectTreeScroll;
                 }
 
-                m_GOTree.OnGUI(GUILayoutUtility.GetRect(0, 100000, 0, 100000));
+                m_goTree.OnGUI(GUILayoutUtility.GetRect(0, 100000, 0, 100000));
 
-                if (m_GOTreeState.scrollPos != CompareData.GameObjectTreeScroll)
+                if (_goTreeState.scrollPos != CompareData.GameObjectTreeScroll)
                 {
-                    CompareData.GameObjectTreeScroll = m_GOTreeState.scrollPos;
+                    CompareData.GameObjectTreeScroll = _goTreeState.scrollPos;
                 }
             }
 
@@ -116,7 +116,7 @@ namespace EasyFramework.Windows
             /// <param name="expanded"></param>
             public void SetExpanded(int id, bool expanded)
             {
-                m_GOTree.SetExpanded(id, expanded);
+                m_goTree.SetExpanded(id, expanded);
             }
 
             /// <summary>
@@ -124,7 +124,7 @@ namespace EasyFramework.Windows
             /// </summary>
             public void Reload()
             {
-                m_GOTree.Reload(CompareData.RootInfo);
+                m_goTree.Reload(CompareData.RootInfo);
             }
 
             /// <summary>
@@ -132,7 +132,7 @@ namespace EasyFramework.Windows
             /// </summary>
             private void OnShowStateChange()
             {
-                m_GOTree.Reload(CompareData.RootInfo);
+                m_goTree.Reload(CompareData.RootInfo);
             }
         }
     }

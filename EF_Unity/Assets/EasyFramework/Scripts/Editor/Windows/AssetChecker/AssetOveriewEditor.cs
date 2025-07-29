@@ -20,13 +20,13 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal class AssetOveriewEditor : EditorWindow
     {
-        private int m_TabIndex = 0;
+        private int _tabIndex = 0;
 
-        private OverviewPanelBase m_CurrentPanel;
-        private ConfigSettingPanel m_ConfigSettingPanel;
-        private ModelOverviewPanel m_ModelOverviewPanel;
-        private TextureOverviewPanel m_TextureOverviewPanel;
-        private ParticleEffectOverviewPanel m_ParticleEffectOverviewPanel;
+        private OverviewPanelBase _currentPanel;
+        private ConfigSettingPanel _configSettingPanel;
+        private ModelOverviewPanel _modelOverviewPanel;
+        private TextureOverviewPanel _textureOverviewPanel;
+        private ParticleEffectOverviewPanel _particleEffectOverviewPanel;
 
         [MenuItem("EFTools/Tools/Asset Checker", false, priority = 100)]
         public static void ShowEditor()
@@ -40,46 +40,46 @@ namespace EasyFramework.Windows.AssetChecker
         private void Initialize()
         {
             AssetsCheckerConfig.Initialize();
-            m_CurrentPanel = CreatePanel(m_TabIndex);
+            _currentPanel = CreatePanel(_tabIndex);
         }
 
         void OnDestroy()
         {
-            if (m_ModelOverviewPanel != null)
+            if (_modelOverviewPanel != null)
             {
-                m_ModelOverviewPanel.OnDestroy();
-                m_ModelOverviewPanel = null;
+                _modelOverviewPanel.OnDestroy();
+                _modelOverviewPanel = null;
             }
-            if (m_TextureOverviewPanel != null)
+            if (_textureOverviewPanel != null)
             {
-                m_TextureOverviewPanel.OnDestroy();
-                m_TextureOverviewPanel = null;
+                _textureOverviewPanel.OnDestroy();
+                _textureOverviewPanel = null;
             }
-            if (m_ParticleEffectOverviewPanel != null)
+            if (_particleEffectOverviewPanel != null)
             {
-                m_ParticleEffectOverviewPanel.OnDestroy();
-                m_ParticleEffectOverviewPanel = null;
+                _particleEffectOverviewPanel.OnDestroy();
+                _particleEffectOverviewPanel = null;
             }
         }
 
         void OnGUI()
         {
-            int _newTab = m_TabIndex;
+            int newTab = _tabIndex;
             GUILayout.BeginHorizontal();
-            if (GUILayout.Toggle(_newTab == 0, LC.Combine(Lc.Texture), "ButtonLeft")) _newTab = 0;
-            if (GUILayout.Toggle(_newTab == 1, LC.Combine(Lc.Model), "ButtonMid")) _newTab = 1;
-            if (GUILayout.Toggle(_newTab == 2, LC.Combine(Lc.Effects), "ButtonMid")) _newTab = 2;
-            if (GUILayout.Toggle(_newTab == 3, LC.Combine(Lc.Settings), "ButtonRight")) _newTab = 3;
+            if (GUILayout.Toggle(newTab == 0, LC.Combine(Lc.Texture), "ButtonLeft")) newTab = 0;
+            if (GUILayout.Toggle(newTab == 1, LC.Combine(Lc.Model), "ButtonMid")) newTab = 1;
+            if (GUILayout.Toggle(newTab == 2, LC.Combine(Lc.Effects), "ButtonMid")) newTab = 2;
+            if (GUILayout.Toggle(newTab == 3, LC.Combine(Lc.Settings), "ButtonRight")) newTab = 3;
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
-            if (m_TabIndex != _newTab)
+            if (_tabIndex != newTab)
             {
-                m_TabIndex = _newTab;
-                m_CurrentPanel = CreatePanel(_newTab);
+                _tabIndex = newTab;
+                _currentPanel = CreatePanel(newTab);
             }
 
-            m_CurrentPanel?.OnGUI();
+            _currentPanel?.OnGUI();
             GUILayout.Space(10);
         }
 
@@ -88,33 +88,33 @@ namespace EasyFramework.Windows.AssetChecker
             switch (index)
             {
                 case 0:
-                    if (null == m_TextureOverviewPanel)
+                    if (null == _textureOverviewPanel)
                     {
-                        m_TextureOverviewPanel = new TextureOverviewPanel();
-                        m_TextureOverviewPanel.Initialize();
+                        _textureOverviewPanel = new TextureOverviewPanel();
+                        _textureOverviewPanel.Initialize();
                     }
-                    return m_TextureOverviewPanel;
+                    return _textureOverviewPanel;
                 case 1:
-                    if (null == m_ModelOverviewPanel)
+                    if (null == _modelOverviewPanel)
                     {
-                        m_ModelOverviewPanel = new ModelOverviewPanel();
-                        m_ModelOverviewPanel.Initialize();
+                        _modelOverviewPanel = new ModelOverviewPanel();
+                        _modelOverviewPanel.Initialize();
                     }
-                    return m_ModelOverviewPanel;
+                    return _modelOverviewPanel;
                 case 2:
-                    if (null == m_ParticleEffectOverviewPanel)
+                    if (null == _particleEffectOverviewPanel)
                     {
-                        m_ParticleEffectOverviewPanel = new ParticleEffectOverviewPanel();
-                        m_ParticleEffectOverviewPanel.Initialize();
+                        _particleEffectOverviewPanel = new ParticleEffectOverviewPanel();
+                        _particleEffectOverviewPanel.Initialize();
                     }
-                    return m_ParticleEffectOverviewPanel;
+                    return _particleEffectOverviewPanel;
                 case 3:
-                    if (null == m_ConfigSettingPanel)
+                    if (null == _configSettingPanel)
                     {
-                        m_ConfigSettingPanel = new ConfigSettingPanel();
-                        m_ConfigSettingPanel.Initialize();
+                        _configSettingPanel = new ConfigSettingPanel();
+                        _configSettingPanel.Initialize();
                     }
-                    return m_ConfigSettingPanel;
+                    return _configSettingPanel;
             }
             return null;
         }

@@ -27,23 +27,23 @@ namespace EasyFramework.Edit
             [MenuItem("Assets/EF/Script format to UTF-8", false, 100)]
             private static void ChangeScriptEncoding()
             {
-                Object _selectedObject = Selection.activeObject;
+                Object selectedObject = Selection.activeObject;
 
-                if (_selectedObject == null)
+                if (selectedObject == null)
                     return;
 
-                string _assetPath = AssetDatabase.GetAssetPath(_selectedObject);
+                string assetPath = AssetDatabase.GetAssetPath(selectedObject);
 
-                if (!Path.GetExtension(_assetPath).ToLower().Equals(".cs"))
+                if (!Path.GetExtension(assetPath).ToLower().Equals(".cs"))
                 {
                     D.Warning("Please select a file of type c#, extension is '.cs'\t请选择一个类型为c#的文件，扩展名为 '.cs'");
                     return;
                 }
 
-                string _absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath), _assetPath);
+                string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath), assetPath);
 
-                string _contents = File.ReadAllText(_absPath, Encoding.GetEncoding("GB2312"));
-                File.WriteAllText(_absPath, _contents, Encoding.UTF8);
+                string contents = File.ReadAllText(absPath, Encoding.GetEncoding("GB2312"));
+                File.WriteAllText(absPath, contents, Encoding.UTF8);
 
                 AssetDatabase.Refresh();
             }

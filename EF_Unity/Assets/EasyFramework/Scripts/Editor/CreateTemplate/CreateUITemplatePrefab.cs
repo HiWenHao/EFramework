@@ -61,11 +61,11 @@ namespace EasyFramework.Edit
             if (prefab)
             {
                 #region Check display conditions
-                Canvas _canvas = Object.FindObjectOfType<Canvas>();
-                if (!_canvas)
+                Canvas canvas = Object.FindObjectOfType<Canvas>();
+                if (!canvas)
                 {
-                    _canvas = new GameObject("Canvas",typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster)).GetComponent<Canvas>();
-                    _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    canvas = new GameObject("Canvas",typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster)).GetComponent<Canvas>();
+                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 }
                 if (!Object.FindObjectOfType<EventSystem>())
                 {
@@ -73,15 +73,15 @@ namespace EasyFramework.Edit
                 }
                 #endregion
 
-                GameObject _inst = GameObject.Instantiate(prefab);
-                _inst.name = prefabName;
-                _inst.transform.SetParent(_canvas.transform, false);
-                GameObjectUtility.SetParentAndAlign(_inst, menuCommand.context as GameObject);
-                Undo.RegisterCreatedObjectUndo(_inst, $"Create {_inst.name}__{_inst.name}");
-                Selection.activeObject = _inst;
+                GameObject inst = GameObject.Instantiate(prefab);
+                inst.name = prefabName;
+                inst.transform.SetParent(canvas.transform, false);
+                GameObjectUtility.SetParentAndAlign(inst, menuCommand.context as GameObject);
+                Undo.RegisterCreatedObjectUndo(inst, $"Create {inst.name}__{inst.name}");
+                Selection.activeObject = inst;
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
-                return _inst;
+                return inst;
             }
             return null;
         }

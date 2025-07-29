@@ -22,18 +22,18 @@ namespace EasyFramework.Windows
         /// </summary>
         internal class PathConfigPanel : EFSettingBase
         {
-            Vector2 m_ScrollPos;
+            Vector2 _scrollPos;
 
-            GUIStyle m_UIStyle;
+            GUIStyle _uiStyle;
 
-            private SerializedProperty m_FrameworkPath;
-            private SerializedProperty m_SublimePath;
-            private SerializedProperty m_NotepadPath;
-            private SerializedProperty m_AtlasFolder;
-            private SerializedProperty m_ExtractPath;
-            private SerializedProperty m_UICodePath;
-            private SerializedProperty m_UIPrefabPath;
-            private SerializedObject m_CustomSettings;
+            private SerializedProperty _frameworkPath;
+            private SerializedProperty _sublimePath;
+            private SerializedProperty _notepadPath;
+            private SerializedProperty _atlasFolder;
+            private SerializedProperty _extractPath;
+            private SerializedProperty _uiCodePath;
+            private SerializedProperty _uiPrefabPath;
+            private SerializedObject _customSettings;
 
             public PathConfigPanel(string name) : base(name)
             {
@@ -41,10 +41,10 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (m_IsInitialzed)
+                if (IsInitialzed)
                     return;
-                m_IsInitialzed = true;
-                m_UIStyle = new GUIStyle()
+                IsInitialzed = true;
+                _uiStyle = new GUIStyle()
                 {
                     fontSize = 14,
                     normal =
@@ -53,42 +53,42 @@ namespace EasyFramework.Windows
                     }
                 };
 
-                PathConfigSetting _pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
-                m_CustomSettings = new SerializedObject(_pathConfig);
+                PathConfigSetting pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
+                _customSettings = new SerializedObject(pathConfig);
 
-                m_FrameworkPath = m_CustomSettings.FindProperty("m_FrameworkPath");
-                m_SublimePath = m_CustomSettings.FindProperty("m_SublimePath");
-                m_NotepadPath = m_CustomSettings.FindProperty("m_NotepadPath");
-                m_AtlasFolder = m_CustomSettings.FindProperty("m_AtlasFolder");
-                m_ExtractPath = m_CustomSettings.FindProperty("m_ExtractPath");
-                m_UICodePath = m_CustomSettings.FindProperty("m_UICodePath");
-                m_UIPrefabPath = m_CustomSettings.FindProperty("m_UIPrefabPath");
+                _frameworkPath = _customSettings.FindProperty("_frameworkPath");
+                _sublimePath = _customSettings.FindProperty("_sublimePath");
+                _notepadPath = _customSettings.FindProperty("_notepadPath");
+                _atlasFolder = _customSettings.FindProperty("_atlasFolder");
+                _extractPath = _customSettings.FindProperty("_extractPath");
+                _uiCodePath = _customSettings.FindProperty("_uiCodePath");
+                _uiPrefabPath = _customSettings.FindProperty("_uiPrefabPath");
             }
 
             internal override void OnGUI()
             {
-                m_CustomSettings.Update();
+                _customSettings.Update();
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-                m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos); //"Badge"
+                _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos); //"Badge"
 
 
                 EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
-                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Framework, Lc.Path }), m_FrameworkPath);
-                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), m_AtlasFolder);
-                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }), m_UIPrefabPath);
-                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }), m_UICodePath);
-                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), m_ExtractPath);
+                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Framework, Lc.Path }), _frameworkPath);
+                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), _atlasFolder);
+                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }), _uiPrefabPath);
+                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }), _uiCodePath);
+                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), _extractPath);
 
                 EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
-                SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, m_SublimePath);
-                SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, m_NotepadPath);
+                SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, _sublimePath);
+                SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, _notepadPath);
 
 
                 EditorGUILayout.EndScrollView();
 
                 if (!changeCheckScope.changed) return;
-                m_CustomSettings.ApplyModifiedPropertiesWithoutUndo();
-                m_CustomSettings.ApplyModifiedProperties();
+                _customSettings.ApplyModifiedPropertiesWithoutUndo();
+                _customSettings.ApplyModifiedProperties();
             }
 
             internal override void OnDestroy()
@@ -98,9 +98,9 @@ namespace EasyFramework.Windows
 
             GUIStyle SetUIStyle(Color color, int fontSize = 12)
             {
-                m_UIStyle.normal.textColor = color;
-                m_UIStyle.fontSize = fontSize;
-                return m_UIStyle;
+                _uiStyle.normal.textColor = color;
+                _uiStyle.fontSize = fontSize;
+                return _uiStyle;
             }
 
             void SelectionEXEPath(string label, string[] containsName, SerializedProperty property)
@@ -110,24 +110,24 @@ namespace EasyFramework.Windows
                 EditorGUILayout.LabelField(property.stringValue);
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), GUILayout.Width(140f)))
                 {
-                    string _folder = Path.Combine(Application.dataPath, property.stringValue);
-                    if (!Directory.Exists(_folder))
-                        _folder = Application.dataPath;
-                    string _path = EditorUtility.OpenFilePanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), _folder, "exe");
-                    if (!string.IsNullOrEmpty(_path))
+                    string folder = Path.Combine(Application.dataPath, property.stringValue);
+                    if (!Directory.Exists(folder))
+                        folder = Application.dataPath;
+                    string path = EditorUtility.OpenFilePanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "exe");
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        bool _exit = false;
+                        bool exit = false;
                         for (int i = containsName.Length - 1; i >= 0; i--)
                         {
-                            if (_path.Contains(containsName[i]))
+                            if (path.Contains(containsName[i]))
                             {
-                                _exit = true;
+                                exit = true;
                                 continue;
                             }
                         }
-                        if (_exit)
+                        if (exit)
                         {
-                            property.stringValue = _path; 
+                            property.stringValue = path; 
                             SaveAssetsInfo();
                         }
                         else
@@ -145,18 +145,18 @@ namespace EasyFramework.Windows
                 EditorGUILayout.DelayedTextField(property.stringValue);
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), GUILayout.Width(140f)))
                 {
-                    string _folder = Path.Combine(Application.dataPath, property.stringValue);
-                    if (!Directory.Exists(_folder))
+                    string folder = Path.Combine(Application.dataPath, property.stringValue);
+                    if (!Directory.Exists(folder))
                     {
-                        _folder = Application.dataPath;
+                        folder = Application.dataPath;
                     }
-                    string _path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), _folder, "");
-                    if (!string.IsNullOrEmpty(_path))
+                    string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "");
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        if (_path.Equals(Application.dataPath))
+                        if (path.Equals(Application.dataPath))
                             property.stringValue = "Assets/";
                         else
-                            property.stringValue = "Assets" + _path.Replace(Application.dataPath, "") + "/";
+                            property.stringValue = "Assets" + path.Replace(Application.dataPath, "") + "/";
                         SaveAssetsInfo();
                     }
                 }

@@ -25,20 +25,20 @@ namespace EasyFramework.Edit
             [MenuItem("Assets/EF/Rename To Pinyin", false, 101)]
             static void RenameAll()
             {
-                Object[] _selection = Selection.GetFiltered<Object>(SelectionMode.DeepAssets);
+                Object[] selection = Selection.GetFiltered<Object>(SelectionMode.DeepAssets);
 
-                int _count = _selection.Length;
-                for (int i = 0; i < _count; i++)
+                int count = selection.Length;
+                for (int i = 0; i < count; i++)
                 {
-                    Object _obj = _selection[i];
-                    if (_obj.name.IsChinese())
+                    Object obj = selection[i];
+                    if (obj.name.IsChinese())
                     {
-                        string _path = AssetDatabase.GetAssetPath(_obj);
+                        string path = AssetDatabase.GetAssetPath(obj);
 
-                        string _pinyin = Pinyin.GetPinyin(_obj.name);
-                        _pinyin = _pinyin.Replace(" ", "");
+                        string pinyin = Pinyin.GetPinyin(obj.name);
+                        pinyin = pinyin.Replace(" ", "");
 
-                        AssetDatabase.RenameAsset(_path, _pinyin);
+                        AssetDatabase.RenameAsset(path, pinyin);
                     }
                 }
                 AssetDatabase.Refresh();

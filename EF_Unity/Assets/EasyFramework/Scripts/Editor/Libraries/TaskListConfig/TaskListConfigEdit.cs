@@ -19,26 +19,26 @@ namespace EasyFramework.Edit.TaskList
     [CustomEditor(typeof(TaskListConfig))]
     public class TaskListConfigEdit : Editor
     {
-        SerializedProperty Mark;
-        SerializedProperty Title;
-        SerializedProperty Enabled;
-        SerializedProperty Progress;
-        SerializedProperty TaskCount;
-        SerializedProperty Description;
+        SerializedProperty _mark;
+        SerializedProperty _title;
+        SerializedProperty _enabled;
+        SerializedProperty _progress;
+        SerializedProperty _taskCount;
+        SerializedProperty _description;
 
-        GUIStyle m_HeadStyle;
-        GUIStyle m_DeleteStyle;
-        GUIStyle m_TaskTitleStyle;
-        GUIStyle m_DescriptionStyle;
-        GUIStyle m_TaskTitleMarkStyle;
-        GUIStyle m_HighlightMarkStyle;
+        GUIStyle _headStyle;
+        GUIStyle _deleteStyle;
+        GUIStyle _taskTitleStyle;
+        GUIStyle _descriptionStyle;
+        GUIStyle _taskTitleMarkStyle;
+        GUIStyle _highlightMarkStyle;
 
-        Color[] m_ContentColors;
-        string[] UIPopupContents;
+        Color[] _contentColors;
+        string[] _uiPopupContents;
 
         private void Awake()
         {
-            m_HeadStyle = new GUIStyle()
+            _headStyle = new GUIStyle()
             {
                 fontSize = 14,
                 fontStyle = FontStyle.Bold,
@@ -49,30 +49,30 @@ namespace EasyFramework.Edit.TaskList
                 }
             };
 
-            m_DeleteStyle = new GUIStyle("Button"); 
-            m_DeleteStyle.normal.textColor = new Color(0.4f, 0f, 0f);
-            m_DeleteStyle.hover.textColor = new Color(0.4f, 0f, 0f);
-            m_DeleteStyle.active.textColor = new Color(0.4f, 0f, 0f);
-            m_HighlightMarkStyle = new GUIStyle("Button");
-            m_HighlightMarkStyle.normal.textColor = new Color(0.5f, 1f, 1f);
-            m_HighlightMarkStyle.hover.textColor = new Color(0.5f, 1f, 1f);
-            m_HighlightMarkStyle.active.textColor = new Color(0.5f, 1f, 1f);
+            _deleteStyle = new GUIStyle("Button"); 
+            _deleteStyle.normal.textColor = new Color(0.4f, 0f, 0f);
+            _deleteStyle.hover.textColor = new Color(0.4f, 0f, 0f);
+            _deleteStyle.active.textColor = new Color(0.4f, 0f, 0f);
+            _highlightMarkStyle = new GUIStyle("Button");
+            _highlightMarkStyle.normal.textColor = new Color(0.5f, 1f, 1f);
+            _highlightMarkStyle.hover.textColor = new Color(0.5f, 1f, 1f);
+            _highlightMarkStyle.active.textColor = new Color(0.5f, 1f, 1f);
 
-            m_TaskTitleStyle = new GUIStyle("MiniPopup");
-            m_TaskTitleMarkStyle = new GUIStyle("PreviewPackageInUse");
-            m_DescriptionStyle = new GUIStyle("TextField")
+            _taskTitleStyle = new GUIStyle("MiniPopup");
+            _taskTitleMarkStyle = new GUIStyle("PreviewPackageInUse");
+            _descriptionStyle = new GUIStyle("TextField")
             {
                 wordWrap = true
             };
 
-            UIPopupContents = new string[]
+            _uiPopupContents = new string[]
             {
                 LC.Combine(Lc.Doing),
                 LC.Combine(Lc.Done),
                 LC.Combine(Lc.Timeout),
                 LC.Combine(Lc.Abandon)
             };
-            m_ContentColors = new Color[]
+            _contentColors = new Color[]
             {
                 Color.yellow,
                 Color.green,
@@ -83,52 +83,52 @@ namespace EasyFramework.Edit.TaskList
 
         private void OnEnable()
         {
-            Mark = serializedObject.FindProperty("Mark");
-            Title = serializedObject.FindProperty("Title");
-            Enabled = serializedObject.FindProperty("Enabled");
-            Progress = serializedObject.FindProperty("Progress");
-            TaskCount = serializedObject.FindProperty("TaskCount");
-            Description = serializedObject.FindProperty("Description");
+            _mark = serializedObject.FindProperty("Mark");
+            _title = serializedObject.FindProperty("Title");
+            _enabled = serializedObject.FindProperty("Enabled");
+            _progress = serializedObject.FindProperty("Progress");
+            _taskCount = serializedObject.FindProperty("TaskCount");
+            _description = serializedObject.FindProperty("Description");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField(new GUIContent(LC.Combine(new Lc[] { Lc.Task, Lc.List })), m_HeadStyle);
+            EditorGUILayout.LabelField(new GUIContent(LC.Combine(new Lc[] { Lc.Task, Lc.List })), _headStyle);
 
             ShowListInfo();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Add, Lc.Task })))
             {
-                Mark.InsertArrayElementAtIndex(TaskCount.intValue);
-                Title.InsertArrayElementAtIndex(TaskCount.intValue);
-                Enabled.InsertArrayElementAtIndex(TaskCount.intValue);
-                Progress.InsertArrayElementAtIndex(TaskCount.intValue);
-                Description.InsertArrayElementAtIndex(TaskCount.intValue);
+                _mark.InsertArrayElementAtIndex(_taskCount.intValue);
+                _title.InsertArrayElementAtIndex(_taskCount.intValue);
+                _enabled.InsertArrayElementAtIndex(_taskCount.intValue);
+                _progress.InsertArrayElementAtIndex(_taskCount.intValue);
+                _description.InsertArrayElementAtIndex(_taskCount.intValue);
 
-                Progress.GetArrayElementAtIndex(TaskCount.intValue).intValue = 0;
-                Mark.GetArrayElementAtIndex(TaskCount.intValue).boolValue = false;
-                Enabled.GetArrayElementAtIndex(TaskCount.intValue).boolValue = true;
-                Title.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Combine(Lc.Title);
-                Description.GetArrayElementAtIndex(TaskCount.intValue).stringValue = LC.Combine(new Lc[] { Lc.Task, Lc.Description });
+                _progress.GetArrayElementAtIndex(_taskCount.intValue).intValue = 0;
+                _mark.GetArrayElementAtIndex(_taskCount.intValue).boolValue = false;
+                _enabled.GetArrayElementAtIndex(_taskCount.intValue).boolValue = true;
+                _title.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine(Lc.Title);
+                _description.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine(new Lc[] { Lc.Task, Lc.Description });
 
-                TaskCount.intValue++;
+                _taskCount.intValue++;
             }
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Remove, Lc.All })))
             {
-                if (0 != TaskCount.intValue && EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), LC.Combine(new Lc[] { Lc.Remove, Lc.All, Lc.Task }), LC.Combine(Lc.Ok)))
+                if (0 != _taskCount.intValue && EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), LC.Combine(new Lc[] { Lc.Remove, Lc.All, Lc.Task }), LC.Combine(Lc.Ok)))
                 {
-                    TaskCount.intValue = 0;
-                    Mark.ClearArray();
-                    Title.ClearArray();
-                    Enabled.ClearArray();
-                    Progress.ClearArray();
-                    Description.ClearArray();
+                    _taskCount.intValue = 0;
+                    _mark.ClearArray();
+                    _title.ClearArray();
+                    _enabled.ClearArray();
+                    _progress.ClearArray();
+                    _description.ClearArray();
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -141,62 +141,62 @@ namespace EasyFramework.Edit.TaskList
 
         void ShowListInfo()
         {
-            for (int i = 0; i < TaskCount.intValue; i++)
+            for (int i = 0; i < _taskCount.intValue; i++)
             {
                 EditorGUILayout.Space(6f);
-                Enabled.GetArrayElementAtIndex(i).boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(Enabled.GetArrayElementAtIndex(i).boolValue,
-                    content: $"    {Title.GetArrayElementAtIndex(i).stringValue}",
-                    style: TaskStyle(Progress.GetArrayElementAtIndex(i).intValue, Mark.GetArrayElementAtIndex(i).boolValue)
+                _enabled.GetArrayElementAtIndex(i).boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(_enabled.GetArrayElementAtIndex(i).boolValue,
+                    content: $"    {_title.GetArrayElementAtIndex(i).stringValue}",
+                    style: TaskStyle(_progress.GetArrayElementAtIndex(i).intValue, _mark.GetArrayElementAtIndex(i).boolValue)
                     );
-                if (Enabled.GetArrayElementAtIndex(i).boolValue)
+                if (_enabled.GetArrayElementAtIndex(i).boolValue)
                 {
                     EditorGUILayout.BeginVertical("AvatarMappingBox");
 
                     EditorGUILayout.BeginHorizontal();
-                    Progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Combine(Lc.Progress),
-                        selectedValue: Progress.GetArrayElementAtIndex(i).intValue,
-                        displayedOptions: UIPopupContents,
+                    _progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Combine(Lc.Progress),
+                        selectedValue: _progress.GetArrayElementAtIndex(i).intValue,
+                        displayedOptions: _uiPopupContents,
                         optionValues: new int[] { 0, 1, 2, 3 },
-                        style: TaskStyle(Progress.GetArrayElementAtIndex(i).intValue, false)
+                        style: TaskStyle(_progress.GetArrayElementAtIndex(i).intValue, false)
                         );
                     GUILayout.Space(15f);
-                    if (GUILayout.Button(Mark.GetArrayElementAtIndex(i).boolValue ?
+                    if (GUILayout.Button(_mark.GetArrayElementAtIndex(i).boolValue ?
                         LC.Combine(new Lc[] { Lc.Cancel, Lc.Mark }) :
                         LC.Combine(new Lc[] { Lc.Highlight, Lc.Mark }),
-                        m_HighlightMarkStyle)
+                        _highlightMarkStyle)
                         )
                     {
-                        Mark.GetArrayElementAtIndex(i).boolValue = !Mark.GetArrayElementAtIndex(i).boolValue;
+                        _mark.GetArrayElementAtIndex(i).boolValue = !_mark.GetArrayElementAtIndex(i).boolValue;
                     }
                     EditorGUILayout.EndHorizontal();
-                    Title.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextField(Title.GetArrayElementAtIndex(i).stringValue);
-                    Description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(Description.GetArrayElementAtIndex(i).stringValue, m_DescriptionStyle);
+                    _title.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextField(_title.GetArrayElementAtIndex(i).stringValue);
+                    _description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(_description.GetArrayElementAtIndex(i).stringValue, _descriptionStyle);
 
                     EditorGUILayout.BeginHorizontal();
                     if (i != 0 && GUILayout.Button(LC.Combine(Lc.MoveUp)))
                     {
-                        Mark.MoveArrayElement(i, i - 1);
-                        Enabled.MoveArrayElement(i, i - 1);
-                        Progress.MoveArrayElement(i, i - 1);
-                        Title.MoveArrayElement(i, i - 1);
-                        Description.MoveArrayElement(i, i - 1);
+                        _mark.MoveArrayElement(i, i - 1);
+                        _enabled.MoveArrayElement(i, i - 1);
+                        _progress.MoveArrayElement(i, i - 1);
+                        _title.MoveArrayElement(i, i - 1);
+                        _description.MoveArrayElement(i, i - 1);
                     }
-                    if (i != (TaskCount.intValue - 1) && GUILayout.Button(LC.Combine(Lc.MoveDown)))
+                    if (i != (_taskCount.intValue - 1) && GUILayout.Button(LC.Combine(Lc.MoveDown)))
                     {
-                        Mark.MoveArrayElement(i, i + 1);
-                        Enabled.MoveArrayElement(i, i + 1);
-                        Progress.MoveArrayElement(i, i + 1);
-                        Title.MoveArrayElement(i, i + 1);
-                        Description.MoveArrayElement(i, i + 1);
+                        _mark.MoveArrayElement(i, i + 1);
+                        _enabled.MoveArrayElement(i, i + 1);
+                        _progress.MoveArrayElement(i, i + 1);
+                        _title.MoveArrayElement(i, i + 1);
+                        _description.MoveArrayElement(i, i + 1);
                     }
-                    if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), m_DeleteStyle))
+                    if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), _deleteStyle))
                     {
-                        Mark.DeleteArrayElementAtIndex(i);
-                        Enabled.DeleteArrayElementAtIndex(i);
-                        Progress.DeleteArrayElementAtIndex(i);
-                        Title.DeleteArrayElementAtIndex(i);
-                        Description.DeleteArrayElementAtIndex(i);
-                        TaskCount.intValue--;
+                        _mark.DeleteArrayElementAtIndex(i);
+                        _enabled.DeleteArrayElementAtIndex(i);
+                        _progress.DeleteArrayElementAtIndex(i);
+                        _title.DeleteArrayElementAtIndex(i);
+                        _description.DeleteArrayElementAtIndex(i);
+                        _taskCount.intValue--;
                         continue;
                     }
                     EditorGUILayout.EndHorizontal();
@@ -209,15 +209,15 @@ namespace EasyFramework.Edit.TaskList
 
         GUIStyle TaskStyle(int index, bool mark)
         {
-            GUIStyle _style = mark ? m_TaskTitleMarkStyle : m_TaskTitleStyle;
+            GUIStyle _style = mark ? _taskTitleMarkStyle : _taskTitleStyle;
 
-            _style.hover.textColor = m_ContentColors[index];
-            _style.normal.textColor = m_ContentColors[index];
-            _style.active.textColor = m_ContentColors[index];
-            _style.focused.textColor = m_ContentColors[index];
-            _style.onHover.textColor = m_ContentColors[index];
-            _style.onNormal.textColor = m_ContentColors[index];
-            _style.onFocused.textColor = m_ContentColors[index];
+            _style.hover.textColor = _contentColors[index];
+            _style.normal.textColor = _contentColors[index];
+            _style.active.textColor = _contentColors[index];
+            _style.focused.textColor = _contentColors[index];
+            _style.onHover.textColor = _contentColors[index];
+            _style.onNormal.textColor = _contentColors[index];
+            _style.onFocused.textColor = _contentColors[index];
 
             return _style;
         }

@@ -22,47 +22,47 @@ namespace EasyFramework.Edit
     [CanEditMultipleObjects]
     public class SlideshowEdit : Editor
     {
-        Slideshow m_slideshow;
-        SerializedProperty m_CanDrag;
-        SerializedProperty m_Spacing;
-        SerializedProperty m_AutoLoop;
-        SerializedProperty m_MoveAxis;
-        SerializedProperty m_SpacingTime;
-        SerializedProperty m_ElementSize;
-        SerializedProperty m_LoopDirection;
-        SerializedProperty m_LoopSpaceTime;
+        Slideshow _slideshow;
+        SerializedProperty _canDrag;
+        SerializedProperty _spacing;
+        SerializedProperty _autoLoop;
+        SerializedProperty _moveAxis;
+        SerializedProperty _spacingTime;
+        SerializedProperty _elementSize;
+        SerializedProperty _loopDirection;
+        SerializedProperty _loopSpaceTime;
 
         private void OnEnable()
         {
-            m_slideshow = target as Slideshow;
-            m_CanDrag = serializedObject.FindProperty("m_CanDrag");
-            m_Spacing = serializedObject.FindProperty("m_Spacing");
-            m_AutoLoop = serializedObject.FindProperty("m_AutoLoop");
-            m_MoveAxis = serializedObject.FindProperty("m_MoveAxis");
-            m_SpacingTime = serializedObject.FindProperty("m_SpacingTime");
-            m_ElementSize = serializedObject.FindProperty("m_ElementSize");
-            m_LoopSpaceTime = serializedObject.FindProperty("m_LoopSpaceTime");
-            m_LoopDirection = serializedObject.FindProperty("m_LoopDirection");
+            _slideshow = target as Slideshow;
+            _canDrag = serializedObject.FindProperty("_canDrag");
+            _spacing = serializedObject.FindProperty("_spacing");
+            _autoLoop = serializedObject.FindProperty("_autoLoop");
+            _moveAxis = serializedObject.FindProperty("_moveAxis");
+            _spacingTime = serializedObject.FindProperty("_spacingTime");
+            _elementSize = serializedObject.FindProperty("_elementSize");
+            _loopSpaceTime = serializedObject.FindProperty("_loopSpaceTime");
+            _loopDirection = serializedObject.FindProperty("_loopDirection");
         }
 
         public override void OnInspectorGUI() 
         {
-            m_ElementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(new Lc[] { Lc.Element, Lc.Size }), m_ElementSize.vector2Value);
-            m_Spacing.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(Lc.Spacing), m_Spacing.vector2Value);
+            _elementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(new Lc[] { Lc.Element, Lc.Size }), _elementSize.vector2Value);
+            _spacing.vector2Value = EditorGUILayout.Vector2Field(LC.Combine(Lc.Spacing), _spacing.vector2Value);
             EditorGUILayout.Space();
-            m_MoveAxis.enumValueFlag = (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Axis }), (AxisType)m_MoveAxis.enumValueFlag);
+            _moveAxis.enumValueFlag = (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Axis }), (AxisType)_moveAxis.enumValueFlag);
 
             EditorGUILayout.Space();
-            m_AutoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Loop }), m_AutoLoop.boolValue);
-            if (m_AutoLoop.boolValue)
+            _autoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Loop }), _autoLoop.boolValue);
+            if (_autoLoop.boolValue)
             {
-                m_LoopDirection.enumValueFlag = (int)(LoopDirectionType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Direction}), (LoopDirectionType)m_LoopDirection.enumValueFlag);
-                m_LoopSpaceTime.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Loop, Lc.Spacing, Lc.Time }), m_LoopSpaceTime.floatValue), 0f, float.MaxValue);
-                m_SpacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Spacing, Lc.Time }), m_SpacingTime.intValue, 0, 60000);
+                _loopDirection.enumValueFlag = (int)(LoopDirectionType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Loop, Lc.Direction}), (LoopDirectionType)_loopDirection.enumValueFlag);
+                _loopSpaceTime.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Loop, Lc.Spacing, Lc.Time }), _loopSpaceTime.floatValue), 0f, float.MaxValue);
+                _spacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Spacing, Lc.Time }), _spacingTime.intValue, 0, 60000);
             }
 
             EditorGUILayout.Space();
-            m_CanDrag.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Can, Lc.Drag }), m_CanDrag.boolValue);
+            _canDrag.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Can, Lc.Drag }), _canDrag.boolValue);
 
             if (GUI.changed)
             {

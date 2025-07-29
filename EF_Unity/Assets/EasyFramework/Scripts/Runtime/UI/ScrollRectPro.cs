@@ -226,7 +226,7 @@ namespace EasyFramework.UI
         /// Horizontal and vertical spacing
         /// </summary>
         [SerializeField]
-        Vector2Int m_Spacing = new Vector2Int(10, 10);
+        Vector2Int _spacing = new Vector2Int(10, 10);
         
         [SerializeField]
         ScrollbarPro m_Scrollbar;
@@ -800,7 +800,7 @@ namespace EasyFramework.UI
             float _everySize;
             if (m_direction == AxisType.Horizontal)
             {
-                _everySize = m_ElementWidth + m_Spacing.x;
+                _everySize = m_ElementWidth + _spacing.x;
                 m_ContentOffset = content.anchoredPosition.x % _everySize;
                 m_ContentOffset = m_ContentOffset > (_everySize / 2.0f) ? _everySize - m_ContentOffset : -m_ContentOffset;
                 m_OnEndOffset = new Vector2(m_ContentOffset, 0);
@@ -808,7 +808,7 @@ namespace EasyFramework.UI
             }
             else
             {
-                _everySize = m_ElementHeight + m_Spacing.y;
+                _everySize = m_ElementHeight + _spacing.y;
                 m_ContentOffset = content.anchoredPosition.y % _everySize;
                 m_ContentOffset = m_ContentOffset > (_everySize / 2.0f) ? _everySize - m_ContentOffset : -m_ContentOffset;
                 m_OnEndOffset = new Vector2(0, m_ContentOffset);
@@ -828,7 +828,7 @@ namespace EasyFramework.UI
 
             if (m_direction == AxisType.Vertical)
             {
-                float contentSize = (m_Spacing.y + m_ElementHeight) * Mathf.CeilToInt((float)num / m_Lines);
+                float contentSize = (_spacing.y + m_ElementHeight) * Mathf.CeilToInt((float)num / m_Lines);
                 m_ContentHeight = contentSize;
                 m_ContentWidth = content.sizeDelta.x;
                 contentSize = contentSize < m_Rect.rect.height ? m_Rect.rect.height : contentSize;
@@ -840,7 +840,7 @@ namespace EasyFramework.UI
             }
             else
             {
-                float contentSize = (m_Spacing.x + m_ElementWidth) * Mathf.CeilToInt((float)num / m_Lines);
+                float contentSize = (_spacing.x + m_ElementWidth) * Mathf.CeilToInt((float)num / m_Lines);
                 m_ContentWidth = contentSize;
                 m_ContentHeight = content.sizeDelta.x;
                 contentSize = contentSize < m_Rect.rect.width ? m_Rect.rect.width : contentSize;
@@ -909,11 +909,11 @@ namespace EasyFramework.UI
 
                 if (m_direction == AxisType.Vertical)
                 {
-                    _element.Postation = new Vector3(m_ElementWidth * (i % m_Lines) + m_Spacing.x * (i % m_Lines), -(m_ElementHeight * Mathf.FloorToInt(i / m_Lines) + m_Spacing.y * Mathf.FloorToInt(i / m_Lines)), 0);
+                    _element.Postation = new Vector3(m_ElementWidth * (i % m_Lines) + _spacing.x * (i % m_Lines), -(m_ElementHeight * Mathf.FloorToInt(i / m_Lines) + _spacing.y * Mathf.FloorToInt(i / m_Lines)), 0);
                 }
                 else
                 {
-                    _element.Postation = new Vector3(m_ElementWidth * Mathf.FloorToInt(i / m_Lines) + m_Spacing.x * Mathf.FloorToInt(i / m_Lines), -(m_ElementHeight * (i % m_Lines) + m_Spacing.y * (i % m_Lines)), 0);
+                    _element.Postation = new Vector3(m_ElementWidth * Mathf.FloorToInt(i / m_Lines) + _spacing.x * Mathf.FloorToInt(i / m_Lines), -(m_ElementHeight * (i % m_Lines) + _spacing.y * (i % m_Lines)), 0);
                 }
 
                 float cellPos = m_direction == AxisType.Vertical ? _element.Postation.y : _element.Postation.x;
@@ -1096,12 +1096,12 @@ namespace EasyFramework.UI
             Vector2 newPos = m_ElementInfosArray[theFirstIndex].Postation;
             if (m_direction == AxisType.Vertical)
             {
-                var posY = index <= m_Lines ? -newPos.y : -newPos.y - m_Spacing.y;
+                var posY = index <= m_Lines ? -newPos.y : -newPos.y - _spacing.y;
                 content.anchoredPosition = new Vector2(content.anchoredPosition.x, posY);
             }
             else
             {
-                var posX = index <= m_Lines ? -newPos.x : -newPos.x + m_Spacing.x;
+                var posX = index <= m_Lines ? -newPos.x : -newPos.x + _spacing.x;
                 content.anchoredPosition = new Vector2(posX, content.anchoredPosition.y);
             }
         }

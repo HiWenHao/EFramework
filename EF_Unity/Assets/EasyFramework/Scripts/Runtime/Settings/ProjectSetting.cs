@@ -21,28 +21,28 @@ namespace EasyFramework.Edit.Setting
     public class ProjectSetting : ScriptableObject
     {
         [SerializeField, Header(LanguagAttribute.LanguageIndex)]
-        private int m_LanguageIndex;
-        public int LanguageIndex => m_LanguageIndex;
+        private int _languageIndex;
+        public int LanguageIndex => _languageIndex;
 
         [SerializeField, Header(LanguagAttribute.RendererPipline)]
-        private int m_RendererPipline;
-        public int RendererPipline => m_RendererPipline;
+        private int _rendererPipline;
+        public int RendererPipline => _rendererPipline;
 
         [SerializeField, Header(LanguagAttribute.ScriptAuthor)]
-        private string m_ScriptAuthor = "Default";
-        public string ScriptAuthor => m_ScriptAuthor;
+        private string _scriptAuthor = "Default";
+        public string ScriptAuthor => _scriptAuthor;
 
         [SerializeField, Header(LanguagAttribute.ScriptVersion)]
-        private string m_ScriptVersion = "0.1";
-        public string ScriptVersion => m_ScriptVersion;
+        private string _scriptVersion = "0.1";
+        public string ScriptVersion => _scriptVersion;
 
         [SerializeField, Header(LanguagAttribute.ResourcesArea)]
-        private ResourcesArea m_ResourcesArea;
-        public ResourcesArea ResourcesArea => m_ResourcesArea;
+        private ResourcesArea _resourcesArea;
+        public ResourcesArea ResourcesArea => _resourcesArea;
 
         [SerializeField, Header(LanguagAttribute.AppConst)]
-        private AppConstConfig m_AppConst;
-        public AppConstConfig AppConst => m_AppConst;
+        private AppConstConfig _appConst;
+        public AppConstConfig AppConst => _appConst;
 
         //[Header("项目常量")]
         //[SerializeField]
@@ -185,44 +185,44 @@ namespace EasyFramework.Edit.Setting
     public class AppConstConfig
     {
         [SerializeField, Header(LanguagAttribute.AppName)]
-        private string m_AppName = "EasyFramework";
+        private string _appName = "EasyFramework";
         /// <summary>
         /// 应用名称
         /// </summary>
-        public string AppName => m_AppName;
+        public string AppName => _appName;
 
         [SerializeField, Header(LanguagAttribute.AppPrefix)]
-        private string m_AppPrefix = "EF_";
+        private string _appPrefix = "EF_";
         /// <summary>
         /// 保存内容时的前缀
         /// </summary>
-        public string AppPrefix => m_AppPrefix;
+        public string AppPrefix => _appPrefix;
 
         [SerializeField, Header(LanguagAttribute.AppVersion)]
-        private string m_AppVersion = "1.0";
+        private string _appVersion = "1.0";
         /// <summary>
         /// 应用版本
         /// </summary>
-        public string AppVersion => m_AppVersion;
+        public string AppVersion => _appVersion;
 
         [SerializeField, Header(LanguagAttribute.AppStage)]
-        private AppStageEnum m_AppStage = AppStageEnum.Debug;
+        private AppStageEnum _appStage = AppStageEnum.Debug;
         /// <summary>
         /// 开发阶段
         /// </summary>
-        public AppStageEnum AppStage => m_AppStage;
+        public AppStageEnum AppStage => _appStage;
 
 
         [SerializeField, Header(LanguagAttribute.UIPrefabsPath)]
-        private string m_UIPath= "Prefabs/UI/";
-        public string UIPrefabsPath => m_UIPath;
+        private string _uiPath= "Prefabs/UI/";
+        public string UIPrefabsPath => _uiPath;
 
         [SerializeField, Header(LanguagAttribute.AudioPath)]
-        private string m_AudioPath = "Sources/";
-        public string AudioPath => m_AudioPath;
+        private string _audioPath = "Sources/";
+        public string AudioPath => _audioPath;
 
         [SerializeField, Header(LanguagAttribute.ManagerLevel)]
-        private List<string> m_ManagerLevel = new List<string>()
+        private List<string> _managerLevel = new List<string>()
         {
             "TimeManager",
             "ToolManager",
@@ -235,6 +235,6 @@ namespace EasyFramework.Edit.Setting
             "AudioManager",
             "UIManager",
         };
-        public List<string> ManagerLevels => m_ManagerLevel;
+        public List<string> ManagerLevels => _managerLevel;
     }
 }

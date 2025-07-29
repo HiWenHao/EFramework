@@ -20,8 +20,8 @@ namespace EasyFramework.Windows.AssetChecker
 {
     internal class SettingView<T> where T : SettingBase, new()
     {
-        private string m_FilePath;
-        private Vector2 m_ScrollPos = Vector2.zero;
+        private string _filePath;
+        private Vector2 _scrollPos = Vector2.zero;
 
         internal List<T> Settings;
         public SettingView()
@@ -43,21 +43,21 @@ namespace EasyFramework.Windows.AssetChecker
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Clear, Lc.Config, Lc.File }), "ButtonLeft", GUILayout.Width(120)))
             {
-                if (File.Exists(m_FilePath))
+                if (File.Exists(_filePath))
                 {
-                    File.Delete(m_FilePath);
-                    File.Delete($"{m_FilePath}.meta");
+                    File.Delete(_filePath);
+                    File.Delete($"{_filePath}.meta");
                     AssetDatabase.Refresh();
                 }
             }
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Load, Lc.Config, Lc.File }), "ButtonRight", GUILayout.Width(120)))
             {
-                m_FilePath = EditorUtility.OpenFilePanel(LC.Combine(Lc.Open), Application.dataPath, "xml");
-                if (File.Exists(m_FilePath))
+                _filePath = EditorUtility.OpenFilePanel(LC.Combine(Lc.Open), Application.dataPath, "xml");
+                if (File.Exists(_filePath))
                 {
                     Settings.Clear();
                     XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.LoadXml(File.ReadAllText(m_FilePath));
+                    xmlDoc.LoadXml(File.ReadAllText(_filePath));
 
                     XmlNode rootEle = xmlDoc.SelectSingleNode("Configs");
                     if (null != rootEle)
@@ -77,7 +77,7 @@ namespace EasyFramework.Windows.AssetChecker
 
             if (Settings != null)
             {
-                m_ScrollPos = GUILayout.BeginScrollView(m_ScrollPos, "PopupCurveEditorBackground");
+                _scrollPos = GUILayout.BeginScrollView(_scrollPos, "PopupCurveEditorBackground");
                 for (int i = 0; i < Settings.Count; i++)
                 {
                     GUILayout.Space(5);
@@ -91,13 +91,13 @@ namespace EasyFramework.Windows.AssetChecker
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Save, Lc.Config, Lc.File })))
             {
-                if (string.IsNullOrEmpty(m_FilePath))
+                if (string.IsNullOrEmpty(_filePath))
                 {
-                    string _filePath = EditorUtility.SaveFilePanel(LC.Combine(Lc.Save), Application.dataPath, "new checker file", "xml");
-                    m_FilePath = _filePath.Replace(Application.dataPath, "Assets");
+                    string filePath = EditorUtility.SaveFilePanel(LC.Combine(Lc.Save), Application.dataPath, "new checker file", "xml");
+                    _filePath = filePath.Replace(Application.dataPath, "Assets");
                 }
-                if (!string.IsNullOrEmpty(m_FilePath))
-                    SaveSettingRule(m_FilePath);
+                if (!string.IsNullOrEmpty(_filePath))
+                    SaveSettingRule(_filePath);
                 AssetDatabase.Refresh();
             }
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Add, Lc.Config })))
@@ -167,9 +167,9 @@ namespace EasyFramework.Windows.AssetChecker
                             if (GUILayout.Button("...", GUILayout.Width(30f)))
                             {
                                 string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), Application.dataPath, "");
-                                string _rep = path.Replace(Application.dataPath, "Assets");
-                                if (!modelSetting.Folder.Contains(_rep))
-                                    modelSetting.Folder[i] = _rep;
+                                string rep = path.Replace(Application.dataPath, "Assets");
+                                if (!modelSetting.Folder.Contains(rep))
+                                    modelSetting.Folder[i] = rep;
                             }
                             if (GUILayout.Button("X", GUILayout.Width(30f)))
                             {

@@ -27,59 +27,59 @@ namespace EasyFramework.UI
         private Slideshow() { }
 
         [SerializeField]
-        private AxisType m_MoveAxis;
+        private AxisType _moveAxis;
 
         [SerializeField]
-        private LoopDirectionType m_LoopDirection = LoopDirectionType.LeftOrDown;
+        private LoopDirectionType _loopDirection = LoopDirectionType.LeftOrDown;
 
         [SerializeField]
-        private bool m_CanDrag = false;
+        private bool _canDrag = false;
 
         [SerializeField]
-        private bool m_AutoLoop = true;
+        private bool _autoLoop = true;
 
         [SerializeField]
-        private int m_SpacingTime = 150;
+        private int _spacingTime = 150;
 
         [SerializeField]
-        private float m_LoopSpaceTime = 1;
+        private float _loopSpaceTime = 1;
 
         [SerializeField]
-        private Vector2 m_Spacing = new Vector2(10, 10);
+        private Vector2 _spacing = new Vector2(10, 10);
 
         [SerializeField]
-        private Vector2 m_ElementSize = new Vector2(100, 100);
+        private Vector2 _elementSize = new Vector2(100, 100);
         public UnityEvent<int> OnIndexChanged { get; set; }
 
         /// <summary>
         /// 当前处于正中的元素
         /// </summary>
-        public int CurrentIndex => m_index;
+        public int CurrentIndex => _index;
 
         /// <summary>
         /// 元素总数
         /// </summary>
-        public int ElementCount => m_elementCount;
+        public int ElementCount => _elementCount;
 
-        private int m_index = 0;
-        private int m_preIndex = 0;
-        private int m_currentStep = 0;
-        private int m_elementCount = 0;
-        private float currTimeDelta = 0;
-        private bool m_Dragging = false;
-        private bool m_IsNormalizing = false;
-        private bool contentCheckCache = true;
+        private int _index = 0;
+        private int _preIndex = 0;
+        private int _currentStep = 0;
+        private int _elementCount = 0;
+        private float _currTimeDelta = 0;
+        private bool _dragging = false;
+        private bool _isNormalizing = false;
+        private bool _contentCheckCache = true;
 
-        private Vector2 m_PrePos;
-        private Vector2 m_CurrentPos;
-        private RectTransform header;
-        private RectTransform viewRectTran;
+        private Vector2 _prePos;
+        private Vector2 _currentPos;
+        private RectTransform _header;
+        private RectTransform _viewRectTran;
 
         protected override void Awake()
         {
-            m_elementCount = transform.childCount;
-            viewRectTran = GetComponent<RectTransform>();
-            header = GetChild(0);
+            _elementCount = transform.childCount;
+            _viewRectTran = GetComponent<RectTransform>();
+            _header = GetChild(0);
         }
 
         protected override void OnEnable()
@@ -105,109 +105,109 @@ namespace EasyFramework.UI
             int s = GetBoundaryState();
             LoopElement(s);
             //缓动回指定位置
-            if (m_IsNormalizing && !m_Dragging)
+            if (_isNormalizing && !_dragging)
             {
-                if (m_currentStep == m_SpacingTime)
+                if (_currentStep == _spacingTime)
                 {
-                    m_IsNormalizing = false;
-                    m_currentStep = 0;
-                    m_CurrentPos = Vector2.zero;
+                    _isNormalizing = false;
+                    _currentStep = 0;
+                    _currentPos = Vector2.zero;
                     return;
                 }
-                Vector2 delta = m_CurrentPos / m_SpacingTime;
-                m_currentStep++;
+                Vector2 delta = _currentPos / _spacingTime;
+                _currentStep++;
 
-                foreach (RectTransform i in viewRectTran)
+                foreach (RectTransform i in _viewRectTran)
                 {
                     i.localPosition -= (Vector3)delta;
                 }
             }
             //自动loop
-            if (m_AutoLoop && !m_IsNormalizing && !m_Dragging)
+            if (_autoLoop && !_isNormalizing && !_dragging)
             {
-                currTimeDelta += Time.deltaTime;
-                if (currTimeDelta > m_LoopSpaceTime)
+                _currTimeDelta += Time.deltaTime;
+                if (_currTimeDelta > _loopSpaceTime)
                 {
-                    currTimeDelta = 0;
-                    MoveToIndex(m_index + (int)m_LoopDirection);
+                    _currTimeDelta = 0;
+                    MoveToIndex(_index + (int)_loopDirection);
                 }
             }
             //检测index是否变化
-            if (m_MoveAxis == AxisType.Horizontal)
+            if (_moveAxis == AxisType.Horizontal)
             {
-                m_index = (int)(header.localPosition.x / (m_ElementSize.x + m_Spacing.x - 1));
+                _index = (int)(_header.localPosition.x / (_elementSize.x + _spacing.x - 1));
             }
             else
             {
-                m_index = (int)(header.localPosition.y / (m_ElementSize.y + m_Spacing.y - 1));
+                _index = (int)(_header.localPosition.y / (_elementSize.y + _spacing.y - 1));
             }
-            if (m_index <= 0)
+            if (_index <= 0)
             {
-                m_index = Mathf.Abs(m_index);
+                _index = Mathf.Abs(_index);
             }
             else
             {
-                m_index = ElementCount - m_index;
+                _index = ElementCount - _index;
             }
-            if (m_index != m_preIndex)
+            if (_index != _preIndex)
             {
-                OnIndexChanged?.Invoke(m_index);
+                OnIndexChanged?.Invoke(_index);
             }
-            m_preIndex = m_index;
+            _preIndex = _index;
 
         }
 
         #region Drag Handler
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            if (!m_CanDrag || !contentCheckCache)
+            if (!_canDrag || !_contentCheckCache)
             {
                 return;
             }
-            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
+            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(_viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
             {
-                m_Dragging = true;
-                m_PrePos = vector;
+                _dragging = true;
+                _prePos = vector;
             }
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
-            if (!m_CanDrag || !contentCheckCache)
+            if (!_canDrag || !_contentCheckCache)
             {
                 return;
             }
-            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
+            if (((eventData.button == PointerEventData.InputButton.Left) && IsActive()) && RectTransformUtility.ScreenPointToLocalPointInRectangle(_viewRectTran, eventData.position, eventData.pressEventCamera, out Vector2 vector))
             {
-                m_IsNormalizing = false;
-                m_CurrentPos = Vector2.zero;
-                m_currentStep = 0;
+                _isNormalizing = false;
+                _currentPos = Vector2.zero;
+                _currentStep = 0;
 
-                Vector2 vector2 = vector - m_PrePos;
-                if (m_MoveAxis == AxisType.Horizontal)
+                Vector2 vector2 = vector - _prePos;
+                if (_moveAxis == AxisType.Horizontal)
                     vector2.y = 0;
                 else
                     vector2.x = 0;
 
-                foreach (RectTransform i in viewRectTran)
+                foreach (RectTransform i in _viewRectTran)
                 {
                     i.localPosition += (Vector3)vector2;
                 }
 
-                m_PrePos = vector;
+                _prePos = vector;
             }
         }
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
-            if (!m_CanDrag || !contentCheckCache)
+            if (!_canDrag || !_contentCheckCache)
             {
                 return;
             }
-            m_Dragging = false;
-            m_IsNormalizing = true;
-            m_CurrentPos = CalcCorrectDeltaPos();
-            m_currentStep = 0;
+            _dragging = false;
+            _isNormalizing = true;
+            _currentPos = CalcCorrectDeltaPos();
+            _currentStep = 0;
         }
         #endregion
 
@@ -218,7 +218,7 @@ namespace EasyFramework.UI
         /// </summary>
         private void ResizeChildren()
         {
-            Vector2 delta = m_MoveAxis == AxisType.Horizontal ? new Vector2(m_ElementSize.x + m_Spacing.x, 0) : new Vector2(0, m_ElementSize.y + m_Spacing.y);
+            Vector2 delta = _moveAxis == AxisType.Horizontal ? new Vector2(_elementSize.x + _spacing.x, 0) : new Vector2(0, _elementSize.y + _spacing.y);
 
             for (int i = 0; i < ElementCount; i++)
             {
@@ -226,12 +226,12 @@ namespace EasyFramework.UI
                 if (t)
                 {
                     t.localPosition = delta * i;
-                    t.sizeDelta = m_ElementSize;
+                    t.sizeDelta = _elementSize;
                 }
             }
-            m_IsNormalizing = false;
-            m_CurrentPos = Vector2.zero;
-            m_currentStep = 0;
+            _isNormalizing = false;
+            _currentPos = Vector2.zero;
+            _currentStep = 0;
         }
 
         /// <summary>
@@ -240,20 +240,20 @@ namespace EasyFramework.UI
         /// </summary>
         private bool ContentIsLongerThanSelf()
         {
-            float _contentLen;
-            float _rectLen;
-            if (m_MoveAxis == AxisType.Horizontal)
+            float contentLen;
+            float rectLen;
+            if (_moveAxis == AxisType.Horizontal)
             {
-                _contentLen = ElementCount * (m_ElementSize.x + m_Spacing.x) - m_Spacing.x;
-                _rectLen = viewRectTran.rect.xMax - viewRectTran.rect.xMin;
+                contentLen = ElementCount * (_elementSize.x + _spacing.x) - _spacing.x;
+                rectLen = _viewRectTran.rect.xMax - _viewRectTran.rect.xMin;
             }
             else
             {
-                _contentLen = ElementCount * (m_ElementSize.y + m_Spacing.y) - m_Spacing.y;
-                _rectLen = viewRectTran.rect.yMax - viewRectTran.rect.yMin;
+                contentLen = ElementCount * (_elementSize.y + _spacing.y) - _spacing.y;
+                rectLen = _viewRectTran.rect.yMax - _viewRectTran.rect.yMin;
             }
-            contentCheckCache = _contentLen > _rectLen;
-            return contentCheckCache;
+            _contentCheckCache = contentLen > rectLen;
+            return _contentCheckCache;
         }
 
         /// <summary>
@@ -262,17 +262,17 @@ namespace EasyFramework.UI
         /// </summary>
         private int GetBoundaryState()
         {
-            RectTransform _left;
-            RectTransform _right;
-            _left = GetChild(0);
-            _right = GetChild(ElementCount - 1);
+            RectTransform left;
+            RectTransform right;
+            left = GetChild(0);
+            right = GetChild(ElementCount - 1);
 
             Vector3[] _leftV3 = new Vector3[4];
             Vector3[] _rightV3 = new Vector3[4];
-            _left.GetWorldCorners(_leftV3);
-            _right.GetWorldCorners(_rightV3);
+            left.GetWorldCorners(_leftV3);
+            right.GetWorldCorners(_rightV3);
 
-            if (m_MoveAxis == AxisType.Horizontal)
+            if (_moveAxis == AxisType.Horizontal)
             {
                 if (_leftV3[0].x >= GetWorldCorners(0, AxisType.Horizontal))
                 {
@@ -305,9 +305,9 @@ namespace EasyFramework.UI
         /// <param name="axis">Axis type.  <para>轴向</para></param>
         private float GetWorldCorners(int rect, AxisType axis)
         {
-            Vector3[] _v3 = new Vector3[4];
-            viewRectTran.GetWorldCorners(_v3);
-            return axis == AxisType.Horizontal ? _v3[rect].x : _v3[rect].y;
+            Vector3[] v3Array = new Vector3[4];
+            _viewRectTran.GetWorldCorners(v3Array);
+            return axis == AxisType.Horizontal ? v3Array[rect].x : v3Array[rect].y;
         }
 
         /// <summary>
@@ -335,10 +335,10 @@ namespace EasyFramework.UI
                 _moveCell.SetSiblingIndex(0);
             }
 
-            if (m_MoveAxis == AxisType.Horizontal)
-                _tarPos = _tarborder.localPosition + new Vector3((m_ElementSize.x + m_Spacing.x) * dir, 0, 0);
+            if (_moveAxis == AxisType.Horizontal)
+                _tarPos = _tarborder.localPosition + new Vector3((_elementSize.x + _spacing.x) * dir, 0, 0);
             else
-                _tarPos = (Vector2)_tarborder.localPosition + new Vector2(0, (m_ElementSize.y + m_Spacing.y) * dir);
+                _tarPos = (Vector2)_tarborder.localPosition + new Vector2(0, (_elementSize.y + _spacing.y) * dir);
 
             _moveCell.localPosition = _tarPos;
         }
@@ -349,22 +349,22 @@ namespace EasyFramework.UI
         /// </summary>
         private Vector2 CalcCorrectDeltaPos()
         {
-            Vector2 _v2 = Vector2.zero;
-            float _dis = float.MaxValue;
-            foreach (RectTransform i in viewRectTran)
+            Vector2 v2 = Vector2.zero;
+            float dis = float.MaxValue;
+            foreach (RectTransform i in _viewRectTran)
             {
                 var td = Mathf.Abs(i.localPosition.x) + Mathf.Abs(i.localPosition.y);
-                if (td <= _dis)
+                if (td <= dis)
                 {
-                    _dis = td;
-                    _v2 = i.localPosition;
+                    dis = td;
+                    v2 = i.localPosition;
                 }
                 else
                 {
                     break;
                 }
             }
-            return _v2;
+            return v2;
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace EasyFramework.UI
         /// </summary>
         private RectTransform GetChild(int index)
         {
-            if (index >= m_elementCount)
+            if (index >= _elementCount)
             {
                 return null;
             }
@@ -388,28 +388,28 @@ namespace EasyFramework.UI
         /// <param name="ind"></param>
         public void MoveToIndex(int ind)
         {
-            if (m_IsNormalizing)
+            if (_isNormalizing)
             {
                 return;
             }
-            if (ind == m_index)
+            if (ind == _index)
             {
                 return;
             }
-            this.m_IsNormalizing = true;
+            this._isNormalizing = true;
             Vector2 offset;
-            if (m_MoveAxis == AxisType.Horizontal)
+            if (_moveAxis == AxisType.Horizontal)
             {
-                offset = new Vector2(m_ElementSize.x + m_Spacing.x, 0);
+                offset = new Vector2(_elementSize.x + _spacing.x, 0);
             }
             else
             {
-                offset = new Vector2(0, m_ElementSize.y + m_Spacing.y);
+                offset = new Vector2(0, _elementSize.y + _spacing.y);
             }
             var delta = CalcCorrectDeltaPos();
-            int vindex = m_index;
-            m_CurrentPos = delta + offset * (ind - vindex);
-            m_currentStep = 0;
+            int vindex = _index;
+            _currentPos = delta + offset * (ind - vindex);
+            _currentStep = 0;
         }
     }
 }

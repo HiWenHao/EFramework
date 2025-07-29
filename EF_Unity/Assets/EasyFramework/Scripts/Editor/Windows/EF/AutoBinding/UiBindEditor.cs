@@ -26,71 +26,71 @@ namespace EasyFramework.Edit.AutoBind
     {
         UiBind m_Builder;
 
-        private SerializedProperty m_BindDatas;
-        private SerializedProperty m_BindComs;
-        private SerializedProperty m_SortByType;
-        private SerializedProperty m_SortByNameLength;
-        private SerializedProperty m_Namespace;
-        private SerializedProperty m_ComCodePath;
-        private SerializedProperty m_PrefabPath;
-        private SerializedProperty m_CreatePrefab;
-        private SerializedProperty m_DeleteScript;
-        private SerializedProperty m_PackUpBindList;
+        private SerializedProperty _bindDatas;
+        private SerializedProperty _bindComs;
+        private SerializedProperty _sortByType;
+        private SerializedProperty _sortByNameLength;
+        private SerializedProperty _namespace;
+        private SerializedProperty _comCodePath;
+        private SerializedProperty _prefabPath;
+        private SerializedProperty _createPrefab;
+        private SerializedProperty _deleteScript;
+        private SerializedProperty _packUpBindList;
 
-        private AutoBindSetting m_Setting;
+        private AutoBindSetting _setting;
 
-        private bool m_sortByType;
-        private bool m_sortByNameLength;
+        private bool _sortByTypes;
+        private bool _sortByNamesLength;
 
-        private List<string> m_TempFiledNames;
-        private List<string> m_TempComponentTypeNames;
-        private Dictionary<string, int> m_ComponentsName;
+        private List<string> _tempFiledNames;
+        private List<string> _tempComponentTypeNames;
+        private Dictionary<string, int> _componentsName;
 
         private void OnEnable()
         {
             m_Builder = (UiBind)target;
-            m_Setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
-            m_BindComs = serializedObject.FindProperty("m_BindComs");
-            m_BindDatas = serializedObject.FindProperty("BindDatas");
-            m_Namespace = serializedObject.FindProperty("m_Namespace");
-            m_SortByType = serializedObject.FindProperty("m_SortByType");
-            m_PrefabPath = serializedObject.FindProperty("m_PrefabPath");
-            m_ComCodePath = serializedObject.FindProperty("m_ComCodePath");
-            m_CreatePrefab = serializedObject.FindProperty("m_CreatePrefab");
-            m_DeleteScript = serializedObject.FindProperty("m_DeleteScript");
-            m_PackUpBindList = serializedObject.FindProperty("m_PackUpBindList");
-            m_SortByNameLength = serializedObject.FindProperty("m_SortByNameLength");
+            _setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
+            _bindComs = serializedObject.FindProperty("BindComs");
+            _bindDatas = serializedObject.FindProperty("BindDatas");
+            _namespace = serializedObject.FindProperty("_namespace");
+            _sortByType = serializedObject.FindProperty("_sortByType");
+            _prefabPath = serializedObject.FindProperty("_prefabPath");
+            _comCodePath = serializedObject.FindProperty("_comCodePath");
+            _createPrefab = serializedObject.FindProperty("_createPrefab");
+            _deleteScript = serializedObject.FindProperty("_deleteScript");
+            _packUpBindList = serializedObject.FindProperty("_packUpBindList");
+            _sortByNameLength = serializedObject.FindProperty("_sortByNameLength");
 
-            m_Namespace.stringValue = string.IsNullOrEmpty(m_Namespace.stringValue) ? m_Setting.Namespace : m_Namespace.stringValue;
-            m_PrefabPath.stringValue = string.IsNullOrEmpty(m_PrefabPath.stringValue) ? ProjectUtility.Path.UIPrefabPath : m_PrefabPath.stringValue;
-            m_ComCodePath.stringValue = string.IsNullOrEmpty(m_ComCodePath.stringValue) ? ProjectUtility.Path.UICodePath : m_ComCodePath.stringValue;
+            _namespace.stringValue = string.IsNullOrEmpty(_namespace.stringValue) ? _setting.Namespace : _namespace.stringValue;
+            _prefabPath.stringValue = string.IsNullOrEmpty(_prefabPath.stringValue) ? ProjectUtility.Path.UIPrefabPath : _prefabPath.stringValue;
+            _comCodePath.stringValue = string.IsNullOrEmpty(_comCodePath.stringValue) ? ProjectUtility.Path.UICodePath : _comCodePath.stringValue;
 
-            m_TempFiledNames = new List<string>();
-            m_TempComponentTypeNames = new List<string>();
-            m_ComponentsName = new Dictionary<string, int>();
+            _tempFiledNames = new List<string>();
+            _tempComponentTypeNames = new List<string>();
+            _componentsName = new Dictionary<string, int>();
 
-            m_sortByType = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
-            m_sortByNameLength = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
-            m_SortByType.boolValue = m_sortByType;
-            m_SortByNameLength.boolValue = m_sortByNameLength;
-            m_PackUpBindList.boolValue = true;
+            _sortByTypes = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
+            _sortByNamesLength = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+            _sortByType.boolValue = _sortByTypes;
+            _sortByNameLength.boolValue = _sortByNamesLength;
+            _packUpBindList.boolValue = true;
 
-            m_ComCodePath.stringValue = ProjectUtility.Path.UICodePath;
-            m_PrefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
+            _comCodePath.stringValue = ProjectUtility.Path.UICodePath;
+            _prefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
 
             serializedObject.ApplyModifiedProperties();
         }
 
         private void OnDisable()
         {
-            m_TempFiledNames.Clear();
-            m_ComponentsName.Clear();
-            m_TempComponentTypeNames.Clear();
+            _tempFiledNames.Clear();
+            _componentsName.Clear();
+            _tempComponentTypeNames.Clear();
 
-            m_Setting = null;
-            m_TempFiledNames = null;
-            m_ComponentsName = null;
-            m_TempComponentTypeNames = null;
+            _setting = null;
+            _tempFiledNames = null;
+            _componentsName = null;
+            _tempComponentTypeNames = null;
         }
 
         public override void OnInspectorGUI()
@@ -118,10 +118,10 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawSetting()
         {
             EditorGUILayout.BeginHorizontal();
-            m_Namespace.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), m_Namespace.stringValue);
+            _namespace.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _namespace.stringValue);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
             {
-                m_Namespace.stringValue = m_Setting.Namespace;
+                _namespace.stringValue = _setting.Namespace;
             }
             EditorGUILayout.EndHorizontal();
 
@@ -131,17 +131,17 @@ namespace EasyFramework.Edit.AutoBind
 
             EditorGUILayout.Space(12f, true);
 
-            m_CreatePrefab.boolValue = GUILayout.Toggle(m_CreatePrefab.boolValue, m_CreatePrefab.boolValue ?
+            _createPrefab.boolValue = GUILayout.Toggle(_createPrefab.boolValue, _createPrefab.boolValue ?
                 LC.Combine(Lc.Create) + " UI " + LC.Combine(Lc.Prefab) : 
                 LC.Combine(new Lc[] { Lc.No, Lc.Create }) + " UI " + LC.Combine(Lc.Prefab))
                 ;
-            if (m_CreatePrefab.boolValue)
+            if (_createPrefab.boolValue)
             {
-                EditorGUILayout.LabelField(m_PrefabPath.stringValue);
+                EditorGUILayout.LabelField(_prefabPath.stringValue);
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
                 {
-                    string folder = Path.Combine(Application.dataPath, m_PrefabPath.stringValue);
+                    string folder = Path.Combine(Application.dataPath, _prefabPath.stringValue);
                     if (!Directory.Exists(folder))
                     {
                         folder = Application.dataPath;
@@ -149,23 +149,23 @@ namespace EasyFramework.Edit.AutoBind
                     string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
                     if (!string.IsNullOrEmpty(path))
                     {
-                        m_PrefabPath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                        _prefabPath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
                     }
                 }
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
                 {
-                    m_PrefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
+                    _prefabPath.stringValue = ProjectUtility.Path.UIPrefabPath;
                 }
                 EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.Space(12f, true);
 
             EditorGUILayout.LabelField(LC.Combine(Lc.Default) + " UI " + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }));
-            EditorGUILayout.LabelField(m_ComCodePath.stringValue);
+            EditorGUILayout.LabelField(_comCodePath.stringValue);
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
             {
-                string folder = Application.dataPath + "/" + m_ComCodePath.stringValue;
+                string folder = Application.dataPath + "/" + _comCodePath.stringValue;
                 if (!Directory.Exists(folder))
                 {
                     folder = Application.dataPath;
@@ -173,12 +173,12 @@ namespace EasyFramework.Edit.AutoBind
                 string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    m_ComCodePath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                    _comCodePath.stringValue = path.Replace(Application.dataPath + "/", "Assets/") + "/";
                 }
             }
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
             {
-                m_ComCodePath.stringValue = ProjectUtility.Path.UICodePath;
+                _comCodePath.stringValue = ProjectUtility.Path.UICodePath;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -191,17 +191,17 @@ namespace EasyFramework.Edit.AutoBind
         {
             GUILayout.Space(12.0f);
             GUILayout.BeginHorizontal();
-            m_sortByType = GUILayout.Toggle(m_sortByType, LC.Combine(new Lc[] { Lc.By, Lc.Type, Lc.Sort }));
-            if (m_sortByType != m_SortByType.boolValue)
+            _sortByTypes = GUILayout.Toggle(_sortByTypes, LC.Combine(new Lc[] { Lc.By, Lc.Type, Lc.Sort }));
+            if (_sortByTypes != _sortByType.boolValue)
             {
-                m_SortByType.boolValue = m_sortByType;
-                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", m_sortByType ? 1 : 0);
+                _sortByType.boolValue = _sortByTypes;
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", _sortByTypes ? 1 : 0);
             }
-            m_sortByNameLength = GUILayout.Toggle(m_sortByNameLength, LC.Combine(new Lc[] { Lc.By, Lc.Name, Lc.Length, Lc.Sort }));
-            if (m_sortByNameLength != m_SortByNameLength.boolValue)
+            _sortByNamesLength = GUILayout.Toggle(_sortByNamesLength, LC.Combine(new Lc[] { Lc.By, Lc.Name, Lc.Length, Lc.Sort }));
+            if (_sortByNamesLength != _sortByNameLength.boolValue)
             {
-                m_SortByNameLength.boolValue = m_sortByNameLength;
-                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", m_sortByNameLength ? 1 : 0);
+                _sortByNameLength.boolValue = _sortByNamesLength;
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", _sortByNamesLength ? 1 : 0);
             }
             GUILayout.EndHorizontal();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Auto, Lc.Bind, Lc.Component })))
@@ -218,19 +218,19 @@ namespace EasyFramework.Edit.AutoBind
         {
             int needDeleteIndex = -1;
 
-            m_PackUpBindList.boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(m_PackUpBindList.boolValue, m_PackUpBindList.boolValue ? LC.Combine(new Lc[] { Lc.Close, Lc.List }) : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
-            if (m_PackUpBindList.boolValue)
+            _packUpBindList.boolValue = EditorGUILayout.BeginFoldoutHeaderGroup(_packUpBindList.boolValue, _packUpBindList.boolValue ? LC.Combine(new Lc[] { Lc.Close, Lc.List }) : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
+            if (_packUpBindList.boolValue)
             {
                 EditorGUILayout.BeginVertical();
                 SerializedProperty property;
 
-                for (int i = 0; i < m_BindDatas.arraySize; i++)
+                for (int i = 0; i < _bindDatas.arraySize; i++)
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
-                    property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("ScriptName");
+                    property = _bindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("ScriptName");
                     EditorGUILayout.PrefixLabel(property.stringValue);
-                    property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
+                    property = _bindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
                     property.objectReferenceValue = EditorGUILayout.ObjectField(property.objectReferenceValue, typeof(Component), true);
 
                     if (GUILayout.Button("X"))
@@ -244,7 +244,7 @@ namespace EasyFramework.Edit.AutoBind
                 //删除data
                 if (needDeleteIndex != -1)
                 {
-                    m_BindDatas.DeleteArrayElementAtIndex(needDeleteIndex);
+                    _bindDatas.DeleteArrayElementAtIndex(needDeleteIndex);
                     SyncBindComs();
                 }
 
@@ -259,17 +259,17 @@ namespace EasyFramework.Edit.AutoBind
         private void DrawStartBind()
         {
             GUILayout.Space(24f);
-            m_DeleteScript.boolValue = GUILayout.Toggle(m_DeleteScript.boolValue, LC.Combine(new Lc[] { Lc.Unload, Lc.Script }));
+            _deleteScript.boolValue = GUILayout.Toggle(_deleteScript.boolValue, LC.Combine(new Lc[] { Lc.Unload, Lc.Script }));
 
             GUILayout.Space(12f);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Bind, Lc.Create }), GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
-                if (m_CreatePrefab.boolValue)
+                if (_createPrefab.boolValue)
                 {
                     CreateOrModifyPrefab();
                 }
-                if (m_DeleteScript.boolValue)
+                if (_deleteScript.boolValue)
                 {
                     DestroyImmediate(m_Builder);
                 }
@@ -285,13 +285,13 @@ namespace EasyFramework.Edit.AutoBind
         /// </summary>
         private void AutoBindComponent()
         {
-            m_BindDatas.ClearArray();
-            m_ComponentsName.Clear();
+            _bindDatas.ClearArray();
+            _componentsName.Clear();
             Transform[] childs = m_Builder.gameObject.GetComponentsInChildren<Transform>(true);
             foreach (Transform child in childs)
             {
-                m_TempFiledNames.Clear();
-                m_TempComponentTypeNames.Clear();
+                _tempFiledNames.Clear();
+                _tempComponentTypeNames.Clear();
                 if (child == m_Builder.transform)
                 {
                     continue;
@@ -305,18 +305,18 @@ namespace EasyFramework.Edit.AutoBind
                         continue;
                     }
                 }
-                if (IsValidBind(child, m_TempFiledNames, m_TempComponentTypeNames))
+                if (IsValidBind(child, _tempFiledNames, _tempComponentTypeNames))
                 {
-                    for (int i = 0; i < m_TempFiledNames.Count; i++)
+                    for (int i = 0; i < _tempFiledNames.Count; i++)
                     {
-                        Component com = child.GetComponent(m_TempComponentTypeNames[i]);
+                        Component com = child.GetComponent(_tempComponentTypeNames[i]);
                         if (com == null)
                         {
-                            D.Error($"{child.name}上不存在{m_TempComponentTypeNames[i]}的组件");
+                            D.Error($"{child.name}上不存在{_tempComponentTypeNames[i]}的组件");
                         }
                         else
                         {
-                            AddBindData(child.name, m_TempFiledNames[i], child.GetComponent(m_TempComponentTypeNames[i]));
+                            AddBindData(child.name, _tempFiledNames[i], child.GetComponent(_tempComponentTypeNames[i]));
                         }
 
                     }
@@ -332,13 +332,13 @@ namespace EasyFramework.Edit.AutoBind
         /// </summary>
         private void SyncBindComs()
         {
-            m_BindComs.ClearArray();
+            _bindComs.ClearArray();
 
-            for (int i = 0; i < m_BindDatas.arraySize; i++)
+            for (int i = 0; i < _bindDatas.arraySize; i++)
             {
-                SerializedProperty property = m_BindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
-                m_BindComs.InsertArrayElementAtIndex(i);
-                m_BindComs.GetArrayElementAtIndex(i).objectReferenceValue = property.objectReferenceValue;
+                SerializedProperty property = _bindDatas.GetArrayElementAtIndex(i).FindPropertyRelative("BindCom");
+                _bindComs.InsertArrayElementAtIndex(i);
+                _bindComs.GetArrayElementAtIndex(i).objectReferenceValue = property.objectReferenceValue;
             }
         }
 
@@ -348,11 +348,11 @@ namespace EasyFramework.Edit.AutoBind
         /// </summary>
         private void AddBindData(string realName, string scriptName, Component bindCom)
         {
-            int _index = m_BindDatas.arraySize;
+            int _index = _bindDatas.arraySize;
             List<string> _nameList = new List<string>();
-            for (int i = 0; i < m_BindDatas.arraySize; i++)
+            for (int i = 0; i < _bindDatas.arraySize; i++)
             {
-                SerializedProperty elementData = m_BindDatas.GetArrayElementAtIndex(i);
+                SerializedProperty elementData = _bindDatas.GetArrayElementAtIndex(i);
                 string _elementName = elementData.FindPropertyRelative("ScriptName").stringValue;
                 if (_elementName == scriptName)
                 {
@@ -365,41 +365,41 @@ namespace EasyFramework.Edit.AutoBind
             }
 
             string _componentsName = bindCom.GetType().Name;
-            if (m_SortByType.boolValue && m_SortByNameLength.boolValue)
+            if (_sortByType.boolValue && _sortByNameLength.boolValue)
             {
-                if (!m_ComponentsName.ContainsKey(_componentsName))
-                    m_ComponentsName.Add(_componentsName, _index);
+                if (!this._componentsName.ContainsKey(_componentsName))
+                    this._componentsName.Add(_componentsName, _index);
                 else
                 {
                     List<string> _comNameList = new List<string>();
-                    foreach (var item in m_ComponentsName.Keys)
+                    foreach (var item in this._componentsName.Keys)
                         _comNameList.Add(item);
 
                     int _indexOf = _comNameList.IndexOf(_componentsName);
                     for (int i = _indexOf + 1; i < _comNameList.Count; i++)
-                        ++m_ComponentsName[_comNameList[i]];
+                        ++this._componentsName[_comNameList[i]];
 
-                    int _endIndex = _indexOf + 1 >= _comNameList.Count ? m_BindDatas.arraySize : m_ComponentsName[_comNameList[_indexOf + 1]] - 1;
-                    _index = EditorUtils.GetIndexWithLengthSort(scriptName.Length, _nameList, m_ComponentsName[_comNameList[_indexOf]], _endIndex);
+                    int _endIndex = _indexOf + 1 >= _comNameList.Count ? _bindDatas.arraySize : this._componentsName[_comNameList[_indexOf + 1]] - 1;
+                    _index = EditorUtils.GetIndexWithLengthSort(scriptName.Length, _nameList, this._componentsName[_comNameList[_indexOf]], _endIndex);
                     _comNameList.Clear();
                 }
             }
-            else if (m_SortByType.boolValue && !m_SortByNameLength.boolValue)
+            else if (_sortByType.boolValue && !_sortByNameLength.boolValue)
             {
-                if (!m_ComponentsName.ContainsKey(_componentsName))
-                    m_ComponentsName.Add(_componentsName, _index);
+                if (!this._componentsName.ContainsKey(_componentsName))
+                    this._componentsName.Add(_componentsName, _index);
                 else
                 {
-                    _index = ++m_ComponentsName[_componentsName];
+                    _index = ++this._componentsName[_componentsName];
                     List<string> _comNameList = new List<string>();
-                    foreach (var item in m_ComponentsName.Keys)
+                    foreach (var item in this._componentsName.Keys)
                         _comNameList.Add(item);
                     for (int i = _comNameList.IndexOf(_componentsName) + 1; i < _comNameList.Count; i++)
-                        ++m_ComponentsName[_comNameList[i]];
+                        ++this._componentsName[_comNameList[i]];
                     _comNameList.Clear();
                 }
             }
-            else if (!m_SortByType.boolValue && m_SortByNameLength.boolValue)
+            else if (!_sortByType.boolValue && _sortByNameLength.boolValue)
                 _index = EditorUtils.GetIndexWithLengthSort(scriptName.Length, _nameList, 0, _nameList.Count);
             else
                 _index = _nameList.Count;
@@ -417,8 +417,8 @@ namespace EasyFramework.Edit.AutoBind
         private void InsertArrayElementAtIndex(int index, string realName, string scriptName, Component bindCom)
         {
             //D.Warning($"InsertArrayElementAtIndex()\tindex = {index}\tname = {scriptName}\tbindCom = {bindCom}");
-            m_BindDatas.InsertArrayElementAtIndex(index);
-            SerializedProperty element = m_BindDatas.GetArrayElementAtIndex(index);
+            _bindDatas.InsertArrayElementAtIndex(index);
+            SerializedProperty element = _bindDatas.GetArrayElementAtIndex(index);
             element.FindPropertyRelative("RealName").stringValue = realName;
             element.FindPropertyRelative("ScriptName").stringValue = scriptName;
             element.FindPropertyRelative("BindCom").objectReferenceValue = bindCom;
@@ -474,21 +474,21 @@ namespace EasyFramework.Edit.AutoBind
         #region Create prefab file. 生成预制件文件
         private void CreateOrModifyPrefab()
         {
-            string _path;
-            if (Application.dataPath.Equals(m_PrefabPath.stringValue))
-                _path = $"{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
+            string path;
+            if (Application.dataPath.Equals(_prefabPath.stringValue))
+                path = $"{_prefabPath.stringValue}/{m_Builder.name}.prefab";
             else
-                _path = $"{Application.dataPath}/{m_PrefabPath.stringValue}/{m_Builder.name}.prefab";
-            if (_path.Contains("Assets/Assets"))
-                _path = _path.Replace("Assets/Assets", "Assets");
+                path = $"{Application.dataPath}/{_prefabPath.stringValue}/{m_Builder.name}.prefab";
+            if (path.Contains("Assets/Assets"))
+                path = path.Replace("Assets/Assets", "Assets");
 
-            if (File.Exists(_path))
+            if (File.Exists(path))
             {
-                File.Delete(_path);
-                File.Delete(_path + ".meta");
+                File.Delete(path);
+                File.Delete(path + ".meta");
             }
 
-            GameObject _obj = PrefabUtility.SaveAsPrefabAsset(m_Builder.gameObject, _path);
+            GameObject _obj = PrefabUtility.SaveAsPrefabAsset(m_Builder.gameObject, path);
             DestroyImmediate(_obj.GetComponent<UiBind>(), true);
 
             AssetDatabase.SaveAssets();
@@ -551,19 +551,19 @@ namespace EasyFramework.Edit.AutoBind
             Dictionary<string, string> _otherComponent = new Dictionary<string, string>();
             for (int i = 0; i < m_Builder.BindDatas.Count; i++)
             {
-                Type _type = m_Builder.BindDatas[i].BindCom.GetType();
+                Type type = m_Builder.BindDatas[i].BindCom.GetType();
 
-                string _ns = _type.Namespace;
-                if (!_namespace.Contains(_ns))
-                    _namespace.Add(_ns);
+                string ns = type.Namespace;
+                if (!_namespace.Contains(ns))
+                    _namespace.Add(ns);
 
-                if (_type == typeof(ButtonPro))
+                if (type == typeof(ButtonPro))
                 {
                     _hasButton = true;
                     _ButtonProNameLst.Add(m_Builder.BindDatas[i].RealName);
                     _ButtonProLst.Add(m_Builder.BindDatas[i].ScriptName);
                 }
-                else if (_type == typeof(UnityEngine.UI.Button))
+                else if (type == typeof(UnityEngine.UI.Button))
                 {
                     _hasButton = true;
                     _ButtonNameLst.Add(m_Builder.BindDatas[i].RealName);
@@ -667,12 +667,12 @@ namespace EasyFramework.Edit.AutoBind
                 sw.WriteLine("\t\t" + ButtonEventsStart);
                 for (int i = 0; i < m_Builder.BindDatas.Count; i++)
                 {
-                    Type _type = m_Builder.BindDatas[i].BindCom.GetType();
-                    if (_type == typeof(ButtonPro))
+                    Type type = m_Builder.BindDatas[i].BindCom.GetType();
+                    if (type == typeof(ButtonPro))
                     {
                         sw.WriteLine($"\t\tvoid OnClick{m_Builder.BindDatas[i].ScriptName}() " + "\n\t\t{" + "\n\t\t\tD.Log(\"OnClick:  " + m_Builder.BindDatas[i].RealName + "\");\n\t\t}");
                     }
-                    else if (_type == typeof(UnityEngine.UI.Button))
+                    else if (type == typeof(UnityEngine.UI.Button))
                     {
                         sw.WriteLine($"\t\tvoid OnClick{m_Builder.BindDatas[i].ScriptName}() " + "\n\t\t{" + "\n\t\t\tD.Log(\"OnClick:  " + m_Builder.BindDatas[i].RealName + "\");\n\t\t}");
                     }

@@ -19,30 +19,30 @@ namespace EasyFramework.Edit
     /// </summary>
     public class ProjectUtility
     {
-        static ProjectSetting m_ProjectSetting;
+        static ProjectSetting _projectSetting;
         public static ProjectSetting Project
         {
             get
             {
-                if (m_ProjectSetting == null)
+                if (_projectSetting == null)
                 {
-                    m_ProjectSetting = EditorUtils.GetSingletonAssetsByResources<ProjectSetting>("Settings/ProjectSetting");
+                    _projectSetting = EditorUtils.GetSingletonAssetsByResources<ProjectSetting>("Settings/ProjectSetting");
                 }
-                return m_ProjectSetting;
+                return _projectSetting;
             }
         }
     
 
-        static PathConfigSetting m_PathConfigSetting;
+        static PathConfigSetting _pathConfigSetting;
         public static PathConfigSetting Path
         {
             get
             {
-                if (m_PathConfigSetting == null)
+                if (_pathConfigSetting == null)
                 {
-                    m_PathConfigSetting = EditorUtils.GetSingletonAssetsByResources<PathConfigSetting>("Settings/PathConfigSetting");
+                    _pathConfigSetting = EditorUtils.GetSingletonAssetsByResources<PathConfigSetting>("Settings/PathConfigSetting");
                 }
-                return m_PathConfigSetting;
+                return _pathConfigSetting;
             }
         }
     }

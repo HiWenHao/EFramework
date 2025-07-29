@@ -25,18 +25,18 @@ namespace EasyFramework.Edit
         private const string REMOVE_STR = "Assets";
         private const string FILESIZE = "FileSize";
 
-        private static readonly int mRemoveCount = REMOVE_STR.Length;
-        private static readonly Color professionalColor = new Color(56f / 255, 56f / 255, 56f / 255, 1);
-        private static readonly Color personaloColor = new Color(194f / 255, 194f / 255, 194f / 255, 1);
-        private static Dictionary<string, long> DirSizeDictionary = new Dictionary<string, long>();
-        private static List<string> DirList = new List<string>();
-        private static bool isShowSize = true;
+        private static readonly int _removeCount = REMOVE_STR.Length;
+        private static readonly Color _professionalColor = new Color(56f / 255, 56f / 255, 56f / 255, 1);
+        private static readonly Color _personaloColor = new Color(194f / 255, 194f / 255, 194f / 255, 1);
+        private static Dictionary<string, long> _dirSizeDictionary = new Dictionary<string, long>();
+        private static List<string> _dirList = new List<string>();
+        private static bool _isShowSize = true;
 
         [MenuItem("EFTools/Tools/Project File Size", priority = 300)]
         private static void OpenPlaySize()
         {
-            isShowSize = !isShowSize;
-            EditorPrefs.SetBool(FILESIZE, isShowSize);
+            _isShowSize = !_isShowSize;
+            EditorPrefs.SetBool(FILESIZE, _isShowSize);
             GetPropjectDirs();
             AssetDatabase.Refresh();
         }
@@ -58,36 +58,36 @@ namespace EasyFramework.Edit
         private static void GetPropjectDirs()
         {
             Init();
-            if (isShowSize == false) return;
+            if (_isShowSize == false) return;
             GetAllDirecotries(Application.dataPath);
-            foreach (string path in DirList)
+            foreach (string path in _dirList)
             {
                 string newPath = path.Replace("\\", "/");
-                DirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
+                _dirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
             }
         }
 
         private static void Init()
         {
-            isShowSize = EditorPrefs.GetBool(FILESIZE);
-            DirSizeDictionary.Clear();
-            DirList.Clear();
+            _isShowSize = EditorPrefs.GetBool(FILESIZE);
+            _dirSizeDictionary.Clear();
+            _dirList.Clear();
         }
 
         //刷新编辑器ui
         private static void OnGUI(string guid, Rect selectionRect)
         {
-            if (isShowSize == false || selectionRect.height > 16) return;//>16为防止文件图标缩放时引起排版错乱
+            if (_isShowSize == false || selectionRect.height > 16) return;//>16为防止文件图标缩放时引起排版错乱
             var dataPath = Application.dataPath;
             var startIndex = dataPath.LastIndexOf(REMOVE_STR);
-            var dir = dataPath.Remove(startIndex, mRemoveCount);
+            var dir = dataPath.Remove(startIndex, _removeCount);
             var path = dir + AssetDatabase.GUIDToAssetPath(guid);
             string text;
 
             long fileSize;
-            if (DirSizeDictionary.ContainsKey(path))
+            if (_dirSizeDictionary.ContainsKey(path))
             {
-                fileSize = DirSizeDictionary[path];
+                fileSize = _dirSizeDictionary[path];
             }
             else if (File.Exists(path))
             {
@@ -107,7 +107,7 @@ namespace EasyFramework.Edit
             pos.x = pos.xMax - width;
             pos.width = width;
 
-            EditorGUI.DrawRect(pos, UseDark() ? professionalColor : personaloColor);
+            EditorGUI.DrawRect(pos, UseDark() ? _professionalColor : _personaloColor);
             Color defaultC = GUI.color;
 
             if (fileSize > 1024 * 1024 * 10)
@@ -154,7 +154,7 @@ namespace EasyFramework.Edit
             {
                 return;
             }
-            DirList.Add(dirPath);
+            _dirList.Add(dirPath);
             DirectoryInfo[] dirArray = new DirectoryInfo(dirPath).GetDirectories();
             foreach (DirectoryInfo item in dirArray)
             {

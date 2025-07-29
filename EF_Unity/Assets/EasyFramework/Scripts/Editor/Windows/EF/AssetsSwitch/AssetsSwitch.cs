@@ -27,18 +27,18 @@ namespace EasyFramework.Windows
             const string ASSETSINFO = "Description/AssetsInfo.json";
             const string EXAMPLEFOLDER = "ExampleGame";
 
-            int m_ManagerIndex;
-            int m_ManagerCount;
-            Vector2 m_ManagersPos;
-            Vector2 m_ManagersDesPos;
+            int _managerIndex;
+            int _managerCount;
+            Vector2 _managersPos;
+            Vector2 _managersDesPos;
 
-            int m_PluginsIndex;
-            int m_PluginsCount;
-            Vector2 m_PluginsPos;
+            int pluginsIndex;
+            int _pluginsCount;
+            Vector2 _pluginsPos;
 
-            string m_AssetsPath;
-            Vector2 m_AllPostation;
-            AssetsInformation m_Assets;
+            string _assetsPath;
+            Vector2 _allPostation;
+            AssetsInformation _assets;
 
             internal AssetsSwitch(string name) : base(name)
             {
@@ -47,50 +47,50 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (m_IsInitialzed)
+                if (IsInitialzed)
                     return;
-                m_IsInitialzed = true;
+                IsInitialzed = true;
 
-                m_AssetsPath = assetsPath;
-                string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
-                m_Assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(_configPath));
+                _assetsPath = assetsPath;
+                string configPath = Path.Combine(_assetsPath, ASSETSINFO);
+                _assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(configPath));
 
-                m_PluginsCount = m_Assets.Plugins.Count;
-                m_ManagerCount = m_Assets.Managers.Count;
+                _pluginsCount = _assets.Plugins.Count;
+                _managerCount = _assets.Managers.Count;
             }
 
             internal override void OnGUI()
             {
                 //  ScrollView
-                m_AllPostation = EditorGUILayout.BeginScrollView(m_AllPostation);
+                _allPostation = EditorGUILayout.BeginScrollView(_allPostation);
                 // Managers
-                FoldoutHeaderGroup(ref m_Assets.ManagerListSwitch, ref m_ManagersPos, ref m_ManagerIndex, m_ManagerCount, managers: m_Assets.Managers, null);
+                FoldoutHeaderGroup(ref _assets.ManagerListSwitch, ref _managersPos, ref _managerIndex, _managerCount, managers: _assets.Managers, null);
 
                 // Plugins
-                FoldoutHeaderGroup(ref m_Assets.PluginsListSwitch, ref m_PluginsPos, ref m_PluginsIndex, m_PluginsCount, managers: null, m_Assets.Plugins);
+                FoldoutHeaderGroup(ref _assets.PluginsListSwitch, ref _pluginsPos, ref pluginsIndex, _pluginsCount, managers: null, _assets.Plugins);
 
                 #region Example
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Example, Lc.Project }), m_Assets.ExampleSwitch);
-                if (GUILayout.Button(LC.Combine(m_Assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
+                EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Example, Lc.Project }), _assets.ExampleSwitch);
+                if (GUILayout.Button(LC.Combine(_assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
                 {
-                    if (m_Assets.ExampleSwitch)
+                    if (_assets.ExampleSwitch)
                     {
-                        string _path = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
-                        if (Directory.Exists(_path))
+                        string path = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
+                        if (Directory.Exists(path))
                         {
-                            Directory.Delete(_path, true);
-                            File.Delete(_path + ".meta");
+                            Directory.Delete(path, true);
+                            File.Delete(path + ".meta");
                         }
-                        m_Assets.ExampleSwitch = false;
+                        _assets.ExampleSwitch = false;
                     }
                     else
                     {
-                        string _sorPath = Path.Combine(m_AssetsPath, EXAMPLEFOLDER);
-                        string _DesPath = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
-                        EditorUtils.CopyFolder(_sorPath, _DesPath);
+                        string sorPath = Path.Combine(_assetsPath, EXAMPLEFOLDER);
+                        string desPath = Path.Combine(Application.dataPath, EXAMPLEFOLDER);
+                        EditorUtils.CopyFolder(sorPath, desPath);
 
-                        m_Assets.ExampleSwitch = true;
+                        _assets.ExampleSwitch = true;
                     }
                     SaveAssetsInfo();
                 }
@@ -160,9 +160,9 @@ namespace EasyFramework.Windows
                 {
                     alignment = TextAnchor.MiddleLeft,
                 };
-                bool _isLoad = info.IsLoad;
-                textButtonStyle.normal.textColor = _isLoad ? Color.white : new Color(0.8f, 0.3f, 0.3f);
-                if (GUILayout.Button($"{(_isLoad ? "√" : "X")}  {info.Name}", textButtonStyle, GUILayout.Width(120f)))
+                bool isLoad = info.IsLoad;
+                textButtonStyle.normal.textColor = isLoad ? Color.white : new Color(0.8f, 0.3f, 0.3f);
+                if (GUILayout.Button($"{(isLoad ? "√" : "X")}  {info.Name}", textButtonStyle, GUILayout.Width(120f)))
                 {
                     outIndex = index;
                 }
@@ -192,7 +192,7 @@ namespace EasyFramework.Windows
                 {
                     GUILayout.Box(GUIContent.none, GUILayout.Height(2.0f), GUILayout.ExpandWidth(true));
                     ManagerInfo _manager = (ManagerInfo)info;
-                    m_ManagersDesPos = EditorGUILayout.BeginScrollView(m_ManagersDesPos, GUILayout.Height(100f));
+                    _managersDesPos = EditorGUILayout.BeginScrollView(_managersDesPos, GUILayout.Height(100f));
                     for (int i = 0; i < _manager.Rely.Count; i++)
                     {
                         EditorGUILayout.LabelField(_manager.Rely[i], GUILayout.Width(150f));
@@ -205,42 +205,42 @@ namespace EasyFramework.Windows
                 #endregion
 
                 GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
-                bool _isLoad = info.IsLoad;
-                if (GUILayout.Button(_isLoad ? LC.Combine(Lc.Unload) : LC.Combine(Lc.Import), GUILayout.MinWidth(100f)))
+                bool isLoad = info.IsLoad;
+                if (GUILayout.Button(isLoad ? LC.Combine(Lc.Unload) : LC.Combine(Lc.Import), GUILayout.MinWidth(100f)))
                 {
-                    string _path = Path.Combine(
+                    string path = Path.Combine(
                         Application.dataPath,
                         isManager ? "EasyFramework/Scripts/Runtime/Managers" : "EasyFramework/ThirdPartyAssets", 
                         info.Name);
 
-                    if (_isLoad)
+                    if (isLoad)
                     {
-                        if (Directory.Exists(_path))
+                        if (Directory.Exists(path))
                         {
-                            Directory.Delete(_path, true);
-                            File.Delete(_path + ".meta");
+                            Directory.Delete(path, true);
+                            File.Delete(path + ".meta");
                         }
                     }
                     else
                     {
-                        string _sorPath = Path.Combine(m_AssetsPath, isManager ? "Scripts" : "Plugins", info.Name);
-                        EditorUtils.CopyFolder(_sorPath, _path);
+                        string sorPath = Path.Combine(_assetsPath, isManager ? "Scripts" : "Plugins", info.Name);
+                        EditorUtils.CopyFolder(sorPath, path);
                     }
 
                     if (isManager)
                     {
-                        string _monoPath = Path.Combine(Application.dataPath, "EasyFramework/Scripts/Runtime/EF.Start.cs");
-                        string[] _lines = File.ReadAllLines(_monoPath);
+                        string monoPath = Path.Combine(Application.dataPath, "EasyFramework/Scripts/Runtime/EF.Start.cs");
+                        string[] lines = File.ReadAllLines(monoPath);
                         ManagerInfo _manager = (ManagerInfo)info;
-                        if (_isLoad) 
-                            _lines[_manager.MonoIndex] = "//" + _lines[_manager.MonoIndex];
+                        if (isLoad) 
+                            lines[_manager.MonoIndex] = "//" + lines[_manager.MonoIndex];
                         else
-                            _lines[_manager.MonoIndex] = _lines[_manager.MonoIndex][2..];
+                            lines[_manager.MonoIndex] = lines[_manager.MonoIndex][2..];
 
-                        File.WriteAllLines(_monoPath, _lines);
+                        File.WriteAllLines(monoPath, lines);
                     }
 
-                    info.IsLoad = !_isLoad;
+                    info.IsLoad = !isLoad;
                     SaveAssetsInfo();
                 }
                 EditorGUILayout.Space();
@@ -250,8 +250,8 @@ namespace EasyFramework.Windows
 
             void SaveAssetsInfo()
             {
-                string _configPath = Path.Combine(m_AssetsPath, ASSETSINFO);
-                File.WriteAllText(_configPath, JsonUtility.ToJson(m_Assets), System.Text.Encoding.UTF8);
+                string configPath = Path.Combine(_assetsPath, ASSETSINFO);
+                File.WriteAllText(configPath, JsonUtility.ToJson(_assets), System.Text.Encoding.UTF8);
                 AssetDatabase.Refresh();
             }
         }

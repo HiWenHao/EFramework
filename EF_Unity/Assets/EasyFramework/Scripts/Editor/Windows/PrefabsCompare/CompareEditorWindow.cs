@@ -23,19 +23,19 @@ namespace EasyFramework.Windows
         /// </summary>
         public class CompareEditorWindow : EditorWindow
         {
-            int m_oldMissIndex;
+            int _oldMissIndex;
 
-            GUIStyle m_MissingLabel;
-            GUIStyle m_ToolButtonStyle;
-            StringBuilder m_MissLeft = new StringBuilder();
-            StringBuilder m_MissRight = new StringBuilder();
+            GUIStyle _missingLabel;
+            GUIStyle _toolButtonStyle;
+            StringBuilder _missLeft = new StringBuilder();
+            StringBuilder _missRight = new StringBuilder();
 
             [System.NonSerialized]
-            private bool m_Initialized;
-            private bool m_MissComponent;
+            private bool _initialized;
+            private bool _missComponent;
 
-            private CompareView m_LeftView;
-            private CompareView m_RightView;
+            private CompareView _leftView;
+            private CompareView _rightView;
 
             [MenuItem("Assets/EF/Prefabs Compare", false, 20)]
             static void PrefabsCompares()
@@ -82,23 +82,23 @@ namespace EasyFramework.Windows
 
             private void InitIfNeeded()
             {
-                if (!m_Initialized)
+                if (!_initialized)
                 {
-                    m_LeftView ??= new CompareView(true);
-                    m_RightView ??= new CompareView(false);
+                    _leftView ??= new CompareView(true);
+                    _rightView ??= new CompareView(false);
 
-                    InitView(m_LeftView);
-                    InitView(m_RightView);
+                    InitView(_leftView);
+                    InitView(_rightView);
 
                     CompareData.CompareCall += Compare;
 
-                    m_LeftView.onClickItem += OnClickItem;
-                    m_RightView.onClickItem += OnClickItem;
+                    _leftView.onClickItem += OnClickItem;
+                    _rightView.onClickItem += OnClickItem;
 
-                    m_Initialized = true;
+                    _initialized = true;
                 }
 
-                m_MissingLabel = new GUIStyle("label")
+                _missingLabel = new GUIStyle("label")
                 {
                     alignment = TextAnchor.MiddleLeft,
                     normal =
@@ -107,7 +107,7 @@ namespace EasyFramework.Windows
                     }
                 };
 
-                m_ToolButtonStyle = new GUIStyle("ToolBarButton");
+                _toolButtonStyle = new GUIStyle("ToolBarButton");
             }
 
             private void InitView(CompareView view)
@@ -140,39 +140,39 @@ namespace EasyFramework.Windows
                     CompareData.RootInfo = null;
                 }
 
-                if (null != m_LeftView)
+                if (null != _leftView)
                 {
-                    m_LeftView.onClickItem -= OnClickItem;
-                    m_LeftView.onGOTreeExpandedStateChanged -= OnExpandedStateChanged;
-                    m_LeftView.Destroy();
-                    m_LeftView = null;
+                    _leftView.onClickItem -= OnClickItem;
+                    _leftView.onGOTreeExpandedStateChanged -= OnExpandedStateChanged;
+                    _leftView.Destroy();
+                    _leftView = null;
                 }
-                if (null != m_RightView)
+                if (null != _rightView)
                 {
-                    m_RightView.onClickItem -= OnClickItem;
-                    m_RightView.onGOTreeExpandedStateChanged -= OnExpandedStateChanged;
-                    m_RightView.Destroy();
-                    m_RightView = null;
+                    _rightView.onClickItem -= OnClickItem;
+                    _rightView.onGOTreeExpandedStateChanged -= OnExpandedStateChanged;
+                    _rightView.Destroy();
+                    _rightView = null;
                 }
             }
 
             private void OnClickItem(GameObjectCompareInfo info)
             {
-                m_MissComponent = info.AllEqual();
-                if (m_MissComponent || m_oldMissIndex == info.ID)
+                _missComponent = info.AllEqual();
+                if (_missComponent || _oldMissIndex == info.ID)
                     return;
 
-                m_oldMissIndex = info.ID;
+                _oldMissIndex = info.ID;
 
-                m_MissLeft.Clear();
-                m_MissRight.Clear();
+                _missLeft.Clear();
+                _missRight.Clear();
                 switch (info.MissType)
                 {
                     case MissType.missLeft:
-                        m_MissRight.AppendLine(LC.Combine(new Lc[] { Lc.Left, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
+                        _missRight.AppendLine(LC.Combine(new Lc[] { Lc.Left, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
                         break;
                     case MissType.missRight:
-                        m_MissLeft.AppendLine(LC.Combine(new Lc[] { Lc.Right, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
+                        _missLeft.AppendLine(LC.Combine(new Lc[] { Lc.Right, Lc.Missing, Lc.Object }) + ", " + LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
                         break;
                     default:
                         break;
@@ -180,24 +180,24 @@ namespace EasyFramework.Windows
 
                 foreach (var item in info.Components)
                 {
-                    if (item.MissType == MissType.allExist || m_oldMissIndex == item.ID)
+                    if (item.MissType == MissType.allExist || _oldMissIndex == item.ID)
                         continue;
 
                     switch (item.MissType)
                     {
                         case MissType.missLeft:
-                            if (m_MissLeft.Length == 0)
+                            if (_missLeft.Length == 0)
                             {
-                                m_MissLeft.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
+                                _missLeft.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
                             }
-                            m_MissLeft.AppendLine(item.Name);
+                            _missLeft.AppendLine(item.Name);
                             break;
                         case MissType.missRight:
-                            if (m_MissRight.Length == 0)
+                            if (_missRight.Length == 0)
                             {
-                                m_MissRight.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
+                                _missRight.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
                             }
-                            m_MissRight.AppendLine(item.Name);
+                            _missRight.AppendLine(item.Name);
                             break;
                         default:
                             break;
@@ -209,11 +209,11 @@ namespace EasyFramework.Windows
             {
                 if (isLeft)
                 {
-                    m_RightView.SetExpanded(id, expanded);
+                    _rightView.SetExpanded(id, expanded);
                 }
                 else
                 {
-                    m_LeftView.SetExpanded(id, expanded);
+                    _leftView.SetExpanded(id, expanded);
                 }
             }
 
@@ -227,9 +227,9 @@ namespace EasyFramework.Windows
 
                 EditorGUILayout.BeginHorizontal();
 
-                m_LeftView.OnGUI();
+                _leftView.OnGUI();
 
-                m_RightView.OnGUI();
+                _rightView.OnGUI();
 
                 EditorGUILayout.EndHorizontal();
 
@@ -240,7 +240,7 @@ namespace EasyFramework.Windows
             {
                 EditorGUILayout.BeginHorizontal(new GUIStyle("ToolBar"));
 
-                if (GUILayout.Button(LC.Combine(Lc.Compare), m_ToolButtonStyle, GUILayout.Width(80.0f)))
+                if (GUILayout.Button(LC.Combine(Lc.Compare), _toolButtonStyle, GUILayout.Width(80.0f)))
                 {
                     Compare();
                 }
@@ -249,9 +249,9 @@ namespace EasyFramework.Windows
 
                 using (var check = new EditorGUI.ChangeCheckScope())
                 {
-                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, LC.Combine(new Lc[] { Lc.Display, Lc.Consistency })), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual, new GUIContent(PrefabsCompareStyle.successImg, LC.Combine(new Lc[] { Lc.Display, Lc.Consistency })), _toolButtonStyle, GUILayout.Width(30.0f));
 
-                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, LC.Combine(new Lc[] { Lc.Display, Lc.Simplex })), m_ToolButtonStyle, GUILayout.Width(30.0f));
+                    CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss, new GUIContent(PrefabsCompareStyle.inconclusiveImg, LC.Combine(new Lc[] { Lc.Display, Lc.Simplex })), _toolButtonStyle, GUILayout.Width(30.0f));
 
                     if (check.changed)
                     {
@@ -265,7 +265,7 @@ namespace EasyFramework.Windows
 
             private void Compare()
             {
-                if (m_LeftView.GameObjects != null && m_RightView.GameObjects != null)
+                if (_leftView.GameObjects != null && _rightView.GameObjects != null)
                 {
                     CompareImplement();
                 }
@@ -273,8 +273,8 @@ namespace EasyFramework.Windows
                 {
                     CompareData.RootInfo = null;
 
-                    m_LeftView.Reload();
-                    m_RightView.Reload();
+                    _leftView.Reload();
+                    _rightView.Reload();
                 }
             }
 
@@ -282,9 +282,9 @@ namespace EasyFramework.Windows
             {
                 InitIfNeeded();
 
-                m_LeftView.GameObjects = left;
-                m_RightView.GameObjects = right;
-                if (m_LeftView.GameObjects && m_RightView.GameObjects)
+                _leftView.GameObjects = left;
+                _rightView.GameObjects = right;
+                if (_leftView.GameObjects && _rightView.GameObjects)
                 {
                     CompareImplement();
                 }
@@ -292,21 +292,21 @@ namespace EasyFramework.Windows
 
             private void MissComponents()
             {
-                if (m_MissComponent)
+                if (_missComponent)
                 {
                     GUILayout.Space(EditorGUIUtility.singleLineHeight);
                     return;
                 }
                 EditorGUILayout.BeginHorizontal("box");
-                GUILayout.Label(new GUIContent(m_MissLeft.ToString(), LC.Combine(new Lc[] { Lc.Left, Lc.Lost, Lc.Content })), ChangedLabel(true), GUILayout.ExpandWidth(true));
-                GUILayout.Label(new GUIContent(m_MissRight.ToString(), LC.Combine(new Lc[] { Lc.Right, Lc.Lost, Lc.Content })), ChangedLabel(false), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(_missLeft.ToString(), LC.Combine(new Lc[] { Lc.Left, Lc.Lost, Lc.Content })), ChangedLabel(true), GUILayout.ExpandWidth(true));
+                GUILayout.Label(new GUIContent(_missRight.ToString(), LC.Combine(new Lc[] { Lc.Right, Lc.Lost, Lc.Content })), ChangedLabel(false), GUILayout.ExpandWidth(true));
                 EditorGUILayout.EndHorizontal();
             }
 
             private void CompareImplement()
             {
-                CompareData.LeftPrefabPath = AssetDatabase.GetAssetPath(m_LeftView.GameObjects);
-                CompareData.RightPrefabPath = AssetDatabase.GetAssetPath(m_RightView.GameObjects);
+                CompareData.LeftPrefabPath = AssetDatabase.GetAssetPath(_leftView.GameObjects);
+                CompareData.RightPrefabPath = AssetDatabase.GetAssetPath(_rightView.GameObjects);
 
                 CompareData.LeftPrefabContent = PrefabUtility.LoadPrefabContents(CompareData.LeftPrefabPath);
                 CompareData.RightPrefabContent = PrefabUtility.LoadPrefabContents(CompareData.RightPrefabPath);
@@ -314,17 +314,17 @@ namespace EasyFramework.Windows
                 CompareData.RootInfo = CompareUtility.ComparePrefab(CompareData.LeftPrefabContent, CompareData.RightPrefabContent);
 
 
-                m_LeftView.Reload();
-                m_RightView.Reload();
+                _leftView.Reload();
+                _rightView.Reload();
             }
 
             GUIStyle ChangedLabel(bool isLeft)
             {
                 if (isLeft)
-                    m_MissingLabel.alignment = TextAnchor.MiddleLeft;
+                    _missingLabel.alignment = TextAnchor.MiddleLeft;
                 else
-                    m_MissingLabel.alignment = TextAnchor.MiddleRight;
-                return m_MissingLabel;
+                    _missingLabel.alignment = TextAnchor.MiddleRight;
+                return _missingLabel;
             }
         }
     }

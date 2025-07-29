@@ -26,20 +26,20 @@ namespace EasyFramework.Windows
         /// </summary>
         internal class EFProjectPanel : EFSettingBase
         {
-            bool m_SystemInfoSwitch;
-            string m_EditorUser;
-            int m_languageIndex;
-            int m_rendererPipline;
-            Vector2 m_ScrollPos;
+            bool _systemInfoSwitch;
+            string _editorUser;
+            int _languageByIndex;
+            int _rendererPiplines;
+            Vector2 _scrollPos;
 
-            private SerializedObject m_SettingPanel;
-            private SerializedProperty m_ScriptAuthor;
-            private SerializedProperty m_LanguageIndex;
-            private SerializedProperty m_ScriptVersion;
-            private SerializedProperty m_ResourcesArea;
-            private SerializedProperty m_AppConstConfig;
-            private SerializedProperty m_RendererPipline;
-            private SerializedProperty m_AppConstManagerList;
+            private SerializedObject _settingPanel;
+            private SerializedProperty _scriptAuthor;
+            private SerializedProperty _languageIndex;
+            private SerializedProperty _scriptVersion;
+            private SerializedProperty _resourcesArea;
+            private SerializedProperty _appConstConfig;
+            private SerializedProperty _rendererPipline;
+            private SerializedProperty _appConstManagerList;
 
             public EFProjectPanel(string name) : base(name)
             {
@@ -47,35 +47,35 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (m_IsInitialzed)
+                if (IsInitialzed)
                     return;
-                m_IsInitialzed = true;
+                IsInitialzed = true;
 
-                m_SettingPanel = new SerializedObject(ProjectUtility.Project);
-                m_ScriptAuthor = m_SettingPanel.FindProperty("m_ScriptAuthor");
-                m_LanguageIndex = m_SettingPanel.FindProperty("m_LanguageIndex");
-                m_ScriptVersion = m_SettingPanel.FindProperty("m_ScriptVersion");
-                m_ResourcesArea = m_SettingPanel.FindProperty("m_ResourcesArea");
-                m_AppConstConfig = m_SettingPanel.FindProperty("m_AppConst");
-                m_RendererPipline = m_SettingPanel.FindProperty("m_RendererPipline");
-                m_AppConstManagerList = m_AppConstConfig.FindPropertyRelative("m_ManagerLevel");
+                _settingPanel = new SerializedObject(ProjectUtility.Project);
+                _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
+                _languageIndex = _settingPanel.FindProperty("_languageIndex");
+                _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
+                _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
+                _appConstConfig = _settingPanel.FindProperty("_appConst");
+                _rendererPipline = _settingPanel.FindProperty("_rendererPipline");
+                _appConstManagerList = _appConstConfig.FindPropertyRelative("_managerLevel");
 
-                var _Type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
-                MethodInfo m = _Type.GetMethod("GetUserInfo");
-                PropertyInfo instance = _Type.GetProperty("instance");
-                var _userInfo = m.Invoke(instance.GetValue(null), null);
-                var _type = _userInfo.GetType();
-                PropertyInfo _p = _type.GetProperty("displayName");
-                m_EditorUser = (string)_p.GetValue(_userInfo);
+                var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
+                MethodInfo methodInfo = type.GetMethod("GetUserInfo");
+                PropertyInfo instance = type.GetProperty("instance");
+                var userInfo = methodInfo.Invoke(instance.GetValue(null), null);
+                var userInfoType = userInfo.GetType();
+                PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
+                _editorUser = (string)propertyInfo.GetValue(userInfo);
 
-                m_languageIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-                m_LanguageIndex.intValue = m_languageIndex;
-                m_rendererPipline = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
-                m_RendererPipline.intValue = m_rendererPipline;
+                _languageByIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+                _languageIndex.intValue = _languageByIndex;
+                _rendererPiplines = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", 0);
+                _rendererPipline.intValue = _rendererPiplines;
 
                 FindAllManager();
 
-                m_SystemInfoSwitch = true;
+                _systemInfoSwitch = true;
             }
 
             internal override void OnGUI()
@@ -84,25 +84,25 @@ namespace EasyFramework.Windows
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
-                m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos, "Badge");
-                m_languageIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Editor, Lc.Language }), (ELanguage)m_LanguageIndex.intValue);
-                if (m_languageIndex != m_LanguageIndex.intValue)
+                _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, "Badge");
+                _languageByIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Editor, Lc.Language }), (ELanguage)_languageIndex.intValue);
+                if (_languageByIndex != _languageIndex.intValue)
                 {
-                    m_LanguageIndex.intValue = m_languageIndex;
-                    EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_languageIndex);
+                    _languageIndex.intValue = _languageByIndex;
+                    EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", _languageByIndex);
                 }
 
-                m_rendererPipline = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Rendering, Lc.Type }), (RenderingTypeEnum)m_RendererPipline.intValue);
-                if (m_rendererPipline != m_RendererPipline.intValue)
+                _rendererPiplines = (int)(RenderingTypeEnum)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Rendering, Lc.Type }), (RenderingTypeEnum)_rendererPipline.intValue);
+                if (_rendererPiplines != _rendererPipline.intValue)
                 {
                     ChangedRendererPipline();
                 }
 
-                EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), m_EditorUser);
-                m_ScriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }), m_ScriptAuthor.stringValue);
-                m_ScriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Version }), m_ScriptVersion.stringValue);
+                EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
+                _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }), _scriptAuthor.stringValue);
+                _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Version }), _scriptVersion.stringValue);
 
-                EditorGUILayout.PropertyField(m_AppConstConfig);
+                EditorGUILayout.PropertyField(_appConstConfig);
 
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Project, Lc.Settings })))
@@ -110,11 +110,11 @@ namespace EasyFramework.Windows
                     ResetManagerLevel();
 
                     string _name = Application.dataPath.Split('/')[^2];
-                    m_AppConstConfig.FindPropertyRelative("m_AppName").stringValue = _name;
-                    m_AppConstConfig.FindPropertyRelative("m_AppPrefix").stringValue = _name + "_";
-                    m_AppConstConfig.FindPropertyRelative("m_AppVersion").stringValue = "1.0";
-                    m_AppConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
-                    m_AppConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
+                    _appConstConfig.FindPropertyRelative("_appName").stringValue = _name;
+                    _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = _name + "_";
+                    _appConstConfig.FindPropertyRelative("_appVersion").stringValue = "1.0";
+                    _appConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
+                    _appConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
                 }
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Only, Lc.Reset, Lc.Manager, Lc.Level })))
                 {
@@ -123,7 +123,7 @@ namespace EasyFramework.Windows
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.Space(6);
-                EditorGUILayout.PropertyField(m_ResourcesArea);
+                EditorGUILayout.PropertyField(_resourcesArea);
                 EditorGUILayout.Space(20);
 
                 EditorGUILayout.EndScrollView();
@@ -132,7 +132,7 @@ namespace EasyFramework.Windows
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
                 if (!changeCheckScope.changed) return;
-                m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
+                _settingPanel.ApplyModifiedPropertiesWithoutUndo();
             }
 
             /// <summary>
@@ -140,11 +140,11 @@ namespace EasyFramework.Windows
             /// </summary>
             private void SystemInfos()
             {
-                m_SystemInfoSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(m_SystemInfoSwitch,
+                _systemInfoSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(_systemInfoSwitch,
                     LC.Combine(new Lc[] { Lc.Current, Lc.Hardware, Lc.Information }));
-                if (m_SystemInfoSwitch)
+                if (_systemInfoSwitch)
                 {
-                    string _contents =
+                    string contents =
                     "--------------------------------------------------------------------------------\n" +
                     $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
                     $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
@@ -167,7 +167,7 @@ namespace EasyFramework.Windows
                     $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
                     "--------------------------------------------------------------------------------";
 
-                    GUILayout.Box(_contents, "FrameBox", GUILayout.MinWidth(360f));
+                    GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));
                     //GUILayout.Box(GUIContent.none, GUILayout.Height(4.0f), GUILayout.ExpandWidth(true));
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
@@ -179,12 +179,12 @@ namespace EasyFramework.Windows
             /// </summary>
             private void ChangedRendererPipline()
             {
-                if (m_rendererPipline == 1)
+                if (_rendererPiplines == 1)
                 {
-                    string _path = Path.Combine(Application.dataPath[..^7], "Packages/manifest.json");
-                    string _manifest = File.ReadAllText(_path);
+                    string path = Path.Combine(Application.dataPath[..^7], "Packages/manifest.json");
+                    string manifest = File.ReadAllText(path);
 
-                    if (!_manifest.Contains("com.unity.render-pipelines.universal"))
+                    if (!manifest.Contains("com.unity.render-pipelines.universal"))
                     {
                         if (EditorUtility.DisplayDialog(LC.Combine(Lc.Error), LC.Combine(new Lc[] { Lc.Related, Lc.Resource, Lc.Package, Lc.Lost }), LC.Combine(Lc.Import), LC.Combine(Lc.Cancel)))
                         {
@@ -194,19 +194,19 @@ namespace EasyFramework.Windows
                     }
                 }
 
-                m_RendererPipline.intValue = m_rendererPipline;
-                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", m_rendererPipline);
+                _rendererPipline.intValue = _rendererPiplines;
+                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "RendererPipline", _rendererPiplines);
 
-                string _uiPath = Path.Combine(Application.dataPath, ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Managers/UI/UIManager.Private.cs");
-                string[] _contentsArray = File.ReadAllLines(_uiPath);
+                string uiPath = Path.Combine(Application.dataPath, ProjectUtility.Path.FrameworkPath[7..], "Scripts/Runtime/Managers/UI/UIManager.Private.cs");
+                string[] contentsArray = File.ReadAllLines(uiPath);
 
-                _contentsArray[17] = m_rendererPipline == 0 ? _contentsArray[17].Insert(0, "//") : _contentsArray[17].Replace("//", "");
+                contentsArray[17] = _rendererPiplines == 0 ? contentsArray[17].Insert(0, "//") : contentsArray[17].Replace("//", "");
                 for (int i = 60; i < 63; i++)
                 {
-                    _contentsArray[i] = m_rendererPipline == 0 ? _contentsArray[i].Insert(16, "//") : _contentsArray[i].Replace("//", "");
+                    contentsArray[i] = _rendererPiplines == 0 ? contentsArray[i].Insert(16, "//") : contentsArray[i].Replace("//", "");
                 }
 
-                File.WriteAllLines(_uiPath, _contentsArray);
+                File.WriteAllLines(uiPath, contentsArray);
 
                 AssetDatabase.Refresh();
             }
@@ -216,21 +216,21 @@ namespace EasyFramework.Windows
             /// </summary>
             private void ResetManagerLevel()
             {
-                m_AppConstManagerList.ClearArray();
+                _appConstManagerList.ClearArray();
                 for (int i = 0; i < 10; i++)
                 {
-                    m_AppConstManagerList.InsertArrayElementAtIndex(0);
+                    _appConstManagerList.InsertArrayElementAtIndex(0);
                 }
-                m_AppConstManagerList.GetArrayElementAtIndex(0).stringValue = "TimeManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(1).stringValue = "ToolManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(2).stringValue = "EventManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(3).stringValue = "HttpsManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(4).stringValue = "SocketManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(5).stringValue = "FolderManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(6).stringValue = "LoadManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(7).stringValue = "ScenesManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
-                m_AppConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
+                _appConstManagerList.GetArrayElementAtIndex(0).stringValue = "TimeManager";
+                _appConstManagerList.GetArrayElementAtIndex(1).stringValue = "ToolManager";
+                _appConstManagerList.GetArrayElementAtIndex(2).stringValue = "EventManager";
+                _appConstManagerList.GetArrayElementAtIndex(3).stringValue = "HttpsManager";
+                _appConstManagerList.GetArrayElementAtIndex(4).stringValue = "SocketManager";
+                _appConstManagerList.GetArrayElementAtIndex(5).stringValue = "FolderManager";
+                _appConstManagerList.GetArrayElementAtIndex(6).stringValue = "LoadManager";
+                _appConstManagerList.GetArrayElementAtIndex(7).stringValue = "ScenesManager";
+                _appConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
+                _appConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
 
             }
 
@@ -239,27 +239,27 @@ namespace EasyFramework.Windows
             /// </summary>
             private void FindAllManager()
             {
-                List<string> _managerNameList = new List<string>();
-                for (int i = 0; i < m_AppConstManagerList.arraySize; i++)
+                List<string> managerNameList = new List<string>();
+                for (int i = 0; i < _appConstManagerList.arraySize; i++)
                 {
-                    _managerNameList.Add(m_AppConstManagerList.GetArrayElementAtIndex(i).stringValue);
+                    managerNameList.Add(_appConstManagerList.GetArrayElementAtIndex(i).stringValue);
                 }
 
-                bool _changed = false;
-                TypeCache.TypeCollection _collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
-                for (int i = 0; i < _collection.Count; i++)
+                bool changed = false;
+                TypeCache.TypeCollection collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
+                for (int i = 0; i < collection.Count; i++)
                 {
-                    if (!_managerNameList.Contains(_collection[i].Name))
+                    if (!managerNameList.Contains(collection[i].Name))
                     {
-                        _changed = true;
-                        int _cot = _managerNameList.Count;
-                        m_AppConstManagerList.InsertArrayElementAtIndex(_cot);
-                        m_AppConstManagerList.GetArrayElementAtIndex(_cot).stringValue = _collection[i].Name;
+                        changed = true;
+                        int _cot = managerNameList.Count;
+                        _appConstManagerList.InsertArrayElementAtIndex(_cot);
+                        _appConstManagerList.GetArrayElementAtIndex(_cot).stringValue = collection[i].Name;
                     }
                 }
-                if (_changed)
+                if (changed)
                 {
-                    m_SettingPanel.ApplyModifiedPropertiesWithoutUndo();
+                    _settingPanel.ApplyModifiedPropertiesWithoutUndo();
                 }
             }
         }

@@ -32,13 +32,13 @@ namespace EasyFramework.UI
         {
             get
             {
-                return m_minDistance;
+                return _minDistance;
             }
             set
             {
-                if (m_minDistance != value)
+                if (_minDistance != value)
                 {
-                    m_minDistance = Mathf.Clamp(value, 0.0f, m_maxDistance);
+                    _minDistance = Mathf.Clamp(value, 0.0f, _maxDistance);
                     ChangedAndUpdate();
                 }
             }
@@ -48,7 +48,7 @@ namespace EasyFramework.UI
         /// The max distance of a vertex from the center.
         /// <para>顶点到中心的最大距离</para>
         /// </summary>
-        public float MaxDistance => m_maxDistance;
+        public float MaxDistance => _maxDistance;
 
         /// <summary>
         /// Update the number of vertices of the radar map.
@@ -58,51 +58,51 @@ namespace EasyFramework.UI
         { 
             get
             {
-                return m_vertexCount;
+                return _vertexCount;
             }
             set
             {
-                if (m_vertexCount != value)
+                if (_vertexCount != value)
                 {
-                    float[] _tempArray = new float[value];
-                    if (m_vertexCount > value)
+                    float[] tempArray = new float[value];
+                    if (_vertexCount > value)
                     {
-                        Array.Copy(m_EachPercent, _tempArray, value);
-                        m_EachPercent = _tempArray;
+                        Array.Copy(_eachPercent, tempArray, value);
+                        _eachPercent = tempArray;
                     }
                     else
                     {
-                        Array.Copy(m_EachPercent, _tempArray, m_vertexCount);
-                        for (int i = m_vertexCount; i < value; i++)
-                            _tempArray[i] = 0;
+                        Array.Copy(_eachPercent, tempArray, _vertexCount);
+                        for (int i = _vertexCount; i < value; i++)
+                            tempArray[i] = 0;
 
-                        m_EachPercent = _tempArray;
+                        _eachPercent = tempArray;
                     }
-                    m_vertexCount = value;
+                    _vertexCount = value;
                     ChangedAndUpdate();
                 }
             }
         }
 
         [SerializeField]
-        private int m_vertexCount = 3;
+        private int _vertexCount = 3;
         [SerializeField]
-        private float m_minDistance;
+        private float _minDistance;
         [SerializeField]
-        private float m_maxDistance;
+        private float _maxDistance;
         [SerializeField]
-        private float m_InitialRadian = 0;
+        private float _initialRadian = 0;
         [SerializeField]
-        private float[] m_EachPercent;
+        private float[] _eachPercent;
 
-        private Vector3[] m_innerPositions;//雷达图最内圈的点
-        private Vector3[] m_exteriorPositions;//雷达图最外圈的点
-        RectTransform m_selfTransform;
+        private Vector3[] _innerPositions;//雷达图最内圈的点
+        private Vector3[] _exteriorPositions;//雷达图最外圈的点
+        RectTransform _selfTransform;
         protected override void Awake()
         {
-            if (null == m_EachPercent)
+            if (null == _eachPercent)
             {
-                m_EachPercent = new float[m_vertexCount];
+                _eachPercent = new float[_vertexCount];
             }
 
             SetVerticesDirty();
@@ -112,33 +112,33 @@ namespace EasyFramework.UI
         {
             vh.Clear();//清除原信息
 
-            if (null == m_selfTransform)
+            if (null == _selfTransform)
             {
-                m_selfTransform = GetComponent<RectTransform>();
-                m_maxDistance = (m_selfTransform.sizeDelta.x <= m_selfTransform.sizeDelta.y ? m_selfTransform.sizeDelta.x : m_selfTransform.sizeDelta.y) / 2.0f;
+                _selfTransform = GetComponent<RectTransform>();
+                _maxDistance = (_selfTransform.sizeDelta.x <= _selfTransform.sizeDelta.y ? _selfTransform.sizeDelta.x : _selfTransform.sizeDelta.y) / 2.0f;
             }
 
-            m_innerPositions = new Vector3[m_vertexCount];
-            m_exteriorPositions = new Vector3[m_vertexCount];
-            float _tempRadian = m_InitialRadian;
-            float _radiamDelta = 2 * Mathf.PI / m_vertexCount;
+            _innerPositions = new Vector3[_vertexCount];
+            _exteriorPositions = new Vector3[_vertexCount];
+            float tempRadian = _initialRadian;
+            float radiamDelta = 2 * Mathf.PI / _vertexCount;
 
             vh.AddVert(Vector3.zero, color, Vector2.zero);
-            for (int i = 0; i < m_vertexCount; i++)
+            for (int i = 0; i < _vertexCount; i++)
             {
-                m_innerPositions[i] = new Vector3(m_minDistance * Mathf.Cos(_tempRadian), m_minDistance * Mathf.Sin(_tempRadian), 0);
-                m_exteriorPositions[i] = new Vector3(m_maxDistance * Mathf.Cos(_tempRadian), m_maxDistance * Mathf.Sin(_tempRadian), 0);
-                _tempRadian += _radiamDelta;
+                _innerPositions[i] = new Vector3(_minDistance * Mathf.Cos(tempRadian), _minDistance * Mathf.Sin(tempRadian), 0);
+                _exteriorPositions[i] = new Vector3(_maxDistance * Mathf.Cos(tempRadian), _maxDistance * Mathf.Sin(tempRadian), 0);
+                tempRadian += radiamDelta;
 
                 //通过在最内点和最外点间差值得到雷达图顶点实际位置，并添加到为vh的顶点。由于并没有图案，最后一项的uv坐标就随便填了。
-                vh.AddVert(Vector3.Lerp(m_innerPositions[i], m_exteriorPositions[i], m_EachPercent[i]), color, Vector2.zero);
+                vh.AddVert(Vector3.Lerp(_innerPositions[i], _exteriorPositions[i], _eachPercent[i]), color, Vector2.zero);
             }
 
-            for (int i = 0; i < m_vertexCount - 1; i++)
+            for (int i = 0; i < _vertexCount - 1; i++)
             {
                 vh.AddTriangle(0, i + 1, i + 2);
             }
-            vh.AddTriangle(0, m_vertexCount, 1);
+            vh.AddTriangle(0, _vertexCount, 1);
         }
 
         /// <summary>
@@ -151,9 +151,9 @@ namespace EasyFramework.UI
         /// <para>强制更新，如果一次性更改信息较多，推荐主动调用 UpdateRadarMap 函数更新</para></param>
         public void ChangedInfoByIndex(int index, float value, bool forceUpdate = false)
         {
-            if (index >= m_vertexCount)
+            if (index >= _vertexCount)
                 return;
-            m_EachPercent[index] = value;
+            _eachPercent[index] = value;
 
             if (forceUpdate)
                 ChangedAndUpdate();

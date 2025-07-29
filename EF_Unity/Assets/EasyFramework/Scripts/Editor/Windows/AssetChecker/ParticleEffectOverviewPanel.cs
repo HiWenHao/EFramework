@@ -22,19 +22,19 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal class ParticleEffectOverviewPanel : OverviewPanelBase
     {
-        int m_SortName = 1,
-            m_SortScore = 1,
-            m_SortTexture = 1,
-            m_SortDrawCall = 1,
-            m_SortParticles = 1;
+        int _sortName = 1;
+        int _sortScore = 1;
+        int _sortTexture = 1;
+        int _sortDrawCall = 1;
+        int _sortParticles = 1;
 
-        SettingView<ParticleEffectSetting> m_RuleView;
-        List<EffectInformation> m_ShowEffectInfo;
+        SettingView<ParticleEffectSetting> _ruleView;
+        List<EffectInformation> _showEffectInfo;
 
         internal override void Initialize()
         {
-            m_ShowEffectInfo = new List<EffectInformation>();
-            m_RuleView = new SettingView<ParticleEffectSetting>();
+            _showEffectInfo = new List<EffectInformation>();
+            _ruleView = new SettingView<ParticleEffectSetting>();
 
             ObjectInfoList = new string[]
             {
@@ -52,81 +52,81 @@ namespace EasyFramework.Windows.AssetChecker
         {
             base.OnDestroy();
 
-            m_ShowEffectInfo.Clear();
-            m_ShowEffectInfo = null;
-            m_RuleView = null;
+            _showEffectInfo.Clear();
+            _showEffectInfo = null;
+            _ruleView = null;
         }
 
         protected override void OnClickInfoList(int index)
         {
             if (index == 0)
             {
-                m_SortName *= -1;
-                m_ShowEffectInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * m_SortName);
+                _sortName *= -1;
+                _showEffectInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * _sortName);
             }
             else if (index == 2)
             {
-                m_SortDrawCall *= -1;
-                m_ShowEffectInfo.Sort((x, y) => x.DrawCallCount.CompareTo(y.DrawCallCount) * m_SortDrawCall);
+                _sortDrawCall *= -1;
+                _showEffectInfo.Sort((x, y) => x.DrawCallCount.CompareTo(y.DrawCallCount) * _sortDrawCall);
             }
             else if (index == 3)
             {
-                m_SortTexture *= -1;
-                m_ShowEffectInfo.Sort((x, y) => x.TextureCount.CompareTo(y.TextureCount) * m_SortTexture);
+                _sortTexture *= -1;
+                _showEffectInfo.Sort((x, y) => x.TextureCount.CompareTo(y.TextureCount) * _sortTexture);
             }
             else if (index == 4)
             {
-                m_SortParticles *= -1;
-                m_ShowEffectInfo.Sort((x, y) => x.ParticelCount.CompareTo(y.ParticelCount) * m_SortParticles);
+                _sortParticles *= -1;
+                _showEffectInfo.Sort((x, y) => x.ParticelCount.CompareTo(y.ParticelCount) * _sortParticles);
             }
             else if (index == 5)
             {
-                m_SortScore *= -1;
-                m_ShowEffectInfo.Sort((x, y) => x.Score.CompareTo(y.Score) * m_SortScore);
+                _sortScore *= -1;
+                _showEffectInfo.Sort((x, y) => x.Score.CompareTo(y.Score) * _sortScore);
             }
         }
 
         protected override void FiltrateChanged(int index, bool fflush)
         {
             #region FindAllEffect                
-            List<string> _filtrates = new List<string>
+            List<string> filtrates = new List<string>
             {
                 "ALL"
             };
 
-            List<string> _filePaths = new List<string>();
+            List<string> filePaths = new List<string>();
             Dictionary<ParticleEffectSetting, string[]> fileMaps = new Dictionary<ParticleEffectSetting, string[]>();
 
             float _count = 0;
-            if (m_RuleView.Settings != null)
+            if (_ruleView.Settings != null)
             {
-                for (int i = 0; i < m_RuleView.Settings.Count; i++)
+                for (int i = 0; i < _ruleView.Settings.Count; i++)
                 {
-                    _filePaths.Clear();
-                    for (int j = 0; j < m_RuleView.Settings[i].Folder.Count; j++)
+                    filePaths.Clear();
+                    for (int j = 0; j < _ruleView.Settings[i].Folder.Count; j++)
                     {
-                        string rootFolder = m_RuleView.Settings[i].Folder[j];
+                        string rootFolder = _ruleView.Settings[i].Folder[j];
                         if (string.IsNullOrEmpty(rootFolder)) continue;
                         string[] fileArr = Directory.GetFiles(rootFolder, "*.prefab", SearchOption.AllDirectories);
-                        _filePaths.AddRange(fileArr);
+                        filePaths.AddRange(fileArr);
                         _count += fileArr.Length;
                     }
-                    fileMaps[m_RuleView.Settings[i]] = _filePaths.ToArray();
-                    _filtrates.Add(m_RuleView.Settings[i].AssetDesc);
+                    fileMaps[_ruleView.Settings[i]] = filePaths.ToArray();
+                    filtrates.Add(_ruleView.Settings[i].AssetDesc);
                 }
             }
 
-            Filtrates = _filtrates.ToArray();
+            Filtrates = filtrates.ToArray();
 
-            int _curFileIndex = 0;
-            m_ShowEffectInfo.Clear();
+            int curFileIndex = 0;
+            _showEffectInfo.Clear();
             foreach (ParticleEffectSetting msb in fileMaps.Keys)
             {
                 string[] childFiles = fileMaps[msb];
                 for (int i = 0; i < childFiles.Length; i++)
                 {
-                    _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), _curFileIndex / _count);
+                    curFileIndex++;
+                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), curFileIndex / _count);
                     EffectInformation _effect = ParseEffectAsset(childFiles[i]);
                     _effect.AssetDesc = msb.AssetDesc;
 
@@ -134,23 +134,23 @@ namespace EasyFramework.Windows.AssetChecker
                     _effect.ParticeScore = _effect.ParticelCount / (float)msb.MaxParticels;
                     _effect.Score = (_effect.DrawCallScore + _effect.ParticeScore) * 0.5f;
 
-                    m_ShowEffectInfo.Add(_effect);
+                    _showEffectInfo.Add(_effect);
                 }
             }
 
-            ListCount = _curFileIndex;
+            ListCount = curFileIndex;
             EditorUtility.ClearProgressBar();
             #endregion
 
             if (index == 0)
                 return;
 
-            for (int i = m_ShowEffectInfo.Count - 1; i >= 0; i--)
+            for (int i = _showEffectInfo.Count - 1; i >= 0; i--)
             {
-                if (!Filtrates[index].Equals(m_ShowEffectInfo[i].AssetDesc))
-                    m_ShowEffectInfo.RemoveAt(i);
+                if (!Filtrates[index].Equals(_showEffectInfo[i].AssetDesc))
+                    _showEffectInfo.RemoveAt(i);
             }
-            ListCount = m_ShowEffectInfo.Count;
+            ListCount = _showEffectInfo.Count;
         }
 
         protected override void Refresh()
@@ -160,35 +160,35 @@ namespace EasyFramework.Windows.AssetChecker
 
         protected override void RuleViewOnGUI()
         {
-            m_RuleView.OnGUI();
+            _ruleView.OnGUI();
         }
 
         protected override void DrawOne(int index)
         {
-            EffectInformation _effect = m_ShowEffectInfo[index];
+            EffectInformation effect = _showEffectInfo[index];
 
-            if (GUILayout.Button(_effect.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.MaxWidth(140f)))
+            if (GUILayout.Button(effect.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.MaxWidth(140f)))
             {
-                Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(_effect.FilePath);
+                Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(effect.FilePath);
             }
 
-            float _width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
+            float width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
 
-            GUILayout.Label(_effect.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(effect.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
 
-            SetGUIColor(_effect.DrawCallScore);
-            GUILayout.Label(_effect.DrawCallCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            SetGUIColor(effect.DrawCallScore);
+            GUILayout.Label(effect.DrawCallCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            GUILayout.Label(_effect.TextureCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(effect.TextureCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            SetGUIColor(_effect.ParticeScore);
-            GUILayout.Label(_effect.ParticelCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            SetGUIColor(effect.ParticeScore);
+            GUILayout.Label(effect.ParticelCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
 
-            int lv = AssetsCheckerConfig.CalScoreLevel(_effect.Score);
+            int lv = AssetsCheckerConfig.CalScoreLevel(effect.Score);
             GUI.color = AssetsCheckerConfig.ScoreColors[lv];
-            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
         }
 
@@ -197,37 +197,37 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         private EffectInformation ParseEffectAsset(string filePath)
         {
-            EffectInformation _effect = new EffectInformation
+            EffectInformation effect = new EffectInformation
             {
                 Name = Path.GetFileName(filePath),
                 FilePath = filePath
             };
 
-            Object _obj = AssetDatabase.LoadAssetAtPath<Object>(filePath);
-            GameObject _go = Object.Instantiate(_obj) as GameObject;
+            Object obj = AssetDatabase.LoadAssetAtPath<Object>(filePath);
+            GameObject go = Object.Instantiate(obj) as GameObject;
 
-            ParticleSystem[] _particleArr = _go.GetComponentsInChildren<ParticleSystem>();
+            ParticleSystem[] particleArr = go.GetComponentsInChildren<ParticleSystem>();
 
-            Dictionary<string, bool> _materialsDic = new Dictionary<string, bool>();
-            Dictionary<string, bool> _texturesDic = new Dictionary<string, bool>();
-            int _particels = 0;
-            for (int i = 0; i < _particleArr.Length; i++)
+            Dictionary<string, bool> materialsDic = new Dictionary<string, bool>();
+            Dictionary<string, bool> texturesDic = new Dictionary<string, bool>();
+            int particels = 0;
+            for (int i = 0; i < particleArr.Length; i++)
             {
-                Renderer _renderer = _particleArr[i].GetComponent<Renderer>();
-                Material _mat = _renderer.sharedMaterial;
-                if (_mat != null)
+                Renderer renderer = particleArr[i].GetComponent<Renderer>();
+                Material mat = renderer.sharedMaterial;
+                if (mat != null)
                 {
-                    _materialsDic[_mat.name] = true;
-                    if (_mat.mainTexture != null)
-                        _texturesDic[_mat.mainTexture.name] = true;
+                    materialsDic[mat.name] = true;
+                    if (mat.mainTexture != null)
+                        texturesDic[mat.mainTexture.name] = true;
                 }
-                _particels += _particleArr[i].main.maxParticles;
+                particels += particleArr[i].main.maxParticles;
             }
-            _effect.DrawCallCount = _materialsDic.Count;
-            _effect.TextureCount = _texturesDic.Count;
-            _effect.ParticelCount = _particels;
-            Object.DestroyImmediate(_go);
-            return _effect;
+            effect.DrawCallCount = materialsDic.Count;
+            effect.TextureCount = texturesDic.Count;
+            effect.ParticelCount = particels;
+            Object.DestroyImmediate(go);
+            return effect;
         }
     }
 }

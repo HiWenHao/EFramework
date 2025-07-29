@@ -23,7 +23,7 @@ namespace EasyFramework.Windows
                 Name = name;
             }
 
-            protected bool m_IsInitialzed;
+            protected bool IsInitialzed;
             public string Name { get; private set; }
 
             /// <summary>

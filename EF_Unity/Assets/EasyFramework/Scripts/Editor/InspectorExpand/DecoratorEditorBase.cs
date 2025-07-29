@@ -34,43 +34,43 @@ namespace EasyFramework.Edit.InspectorExpand
         /// <summary>
         /// GunsType object for the internally used (decorated) editor.
         /// </summary>
-        private System.Type decoratedEditorType;
+        private System.Type _decoratedEditorType;
 
         /// <summary>
         /// GunsType object for the object that is edited by this editor.
         /// </summary>
-        private System.Type editedObjectType;
+        private System.Type _editedObjectType;
 
         // Some methods forbid using the 'targets' property and allow only the 'target' one.
         // For this purpose, keep two instances of the decorated editor type configured accordingly.
         // Example: OnSceneGUI() or OnPreviewGUI() allow only the 'target' property.
         //			If this is not respected, this error is logged:
         //			"The targets array should not be used inside OnSceneGUI or OnPreviewGUI. Use the single target property instead. UnityEditor.Editor:get_targets()"
-        private Editor editorInstanceMultiTargets;
-        private Editor editorInstanceSingleTarget;
+        private Editor _editorInstanceMultiTargets;
+        private Editor _editorInstanceSingleTarget;
 
         #endregion
 
-        private static Dictionary<string, System.Type> decoratedEditorTypes = new Dictionary<string, System.Type>();
-        private static Dictionary<string, MethodInfo> decoratedMethods = new Dictionary<string, MethodInfo>();
+        private static Dictionary<string, System.Type> _decoratedEditorTypes = new Dictionary<string, System.Type>();
+        private static Dictionary<string, MethodInfo> _decoratedMethods = new Dictionary<string, MethodInfo>();
 
-        private static Assembly editorAssembly = Assembly.GetAssembly(typeof(Editor));
+        private static Assembly _editorAssembly = Assembly.GetAssembly(typeof(Editor));
 
         protected Editor EditorInstanceMultiTargets
         {
             get
             {
-                if (editorInstanceMultiTargets == null && targets != null && targets.Length > 0)
+                if (_editorInstanceMultiTargets == null && targets != null && targets.Length > 0)
                 {
-                    editorInstanceMultiTargets = Editor.CreateEditor(targets, decoratedEditorType);
+                    _editorInstanceMultiTargets = Editor.CreateEditor(targets, _decoratedEditorType);
                 }
 
-                if (editorInstanceMultiTargets == null)
+                if (_editorInstanceMultiTargets == null)
                 {
                     Debug.LogError("Could not create editor!");
                 }
 
-                return editorInstanceMultiTargets;
+                return _editorInstanceMultiTargets;
             }
         }
 
@@ -79,7 +79,7 @@ namespace EasyFramework.Edit.InspectorExpand
         {
             get
             {
-                if (editorInstanceSingleTarget == null && target != null)
+                if (_editorInstanceSingleTarget == null && target != null)
                 {
                     // HACK: Unity has this magic field m_AllowMultiObjectAccess that suppresses usage of SerializedObject or targets in some rare cases like OnSceneGUI.
                     var editorType = typeof(Editor);
@@ -87,38 +87,38 @@ namespace EasyFramework.Edit.InspectorExpand
                     var prevValue = allowField.GetValue(null);
                     allowField.SetValue(null, true);
 
-                    editorInstanceSingleTarget = Editor.CreateEditor(target, decoratedEditorType);
+                    _editorInstanceSingleTarget = Editor.CreateEditor(target, _decoratedEditorType);
 
                     allowField.SetValue(null, prevValue);
                 }
 
-                if (editorInstanceSingleTarget == null)
+                if (_editorInstanceSingleTarget == null)
                 {
                     Debug.LogError("Could not create editor!");
                 }
 
-                return editorInstanceSingleTarget;
+                return _editorInstanceSingleTarget;
             }
         }
 
         public DecoratorEditorBase(string editorTypeName)
         {
-            if (!decoratedEditorTypes.TryGetValue(editorTypeName, out this.decoratedEditorType))
+            if (!_decoratedEditorTypes.TryGetValue(editorTypeName, out this._decoratedEditorType))
             {
-                this.decoratedEditorType = editorAssembly.GetTypes().Where(t => t.Name == editorTypeName).FirstOrDefault();
-                decoratedEditorTypes.Add(editorTypeName, this.decoratedEditorType);
+                this._decoratedEditorType = _editorAssembly.GetTypes().Where(t => t.Name == editorTypeName).FirstOrDefault();
+                _decoratedEditorTypes.Add(editorTypeName, this._decoratedEditorType);
             }
 
             Init();
 
             // Check CustomEditor types.
-            var originalEditedType = GetCustomEditorType(decoratedEditorType);
+            var originalEditedType = GetCustomEditorType(_decoratedEditorType);
 
-            if (originalEditedType != editedObjectType)
+            if (originalEditedType != _editedObjectType)
             {
                 throw new System.ArgumentException(
                     string.Format("GunsType {0} does not match the editor {1} type {2}",
-                              editedObjectType, editorTypeName, originalEditedType));
+                              _editedObjectType, editorTypeName, originalEditedType));
             }
         }
 
@@ -139,18 +139,18 @@ namespace EasyFramework.Edit.InspectorExpand
             var attributes = this.GetType().GetCustomAttributes(typeof(CustomEditor), true) as CustomEditor[];
             var field = attributes.Select(editor => editor.GetType().GetField("m_InspectedType", flags)).First();
 
-            editedObjectType = field.GetValue(attributes[0]) as System.Type;
+            _editedObjectType = field.GetValue(attributes[0]) as System.Type;
         }
 
         void OnDisable()
         {
-            if (editorInstanceMultiTargets != null)
+            if (_editorInstanceMultiTargets != null)
             {
-                DestroyImmediate(editorInstanceMultiTargets);
+                DestroyImmediate(_editorInstanceMultiTargets);
             }
-            if (editorInstanceSingleTarget != null)
+            if (_editorInstanceSingleTarget != null)
             {
-                DestroyImmediate(editorInstanceSingleTarget);
+                DestroyImmediate(_editorInstanceSingleTarget);
             }
         }
 
@@ -167,15 +167,15 @@ namespace EasyFramework.Edit.InspectorExpand
             MethodInfo method = null;
 
             // Add MethodInfo to cache
-            if (!decoratedMethods.ContainsKey(methodName))
+            if (!_decoratedMethods.ContainsKey(methodName))
             {
                 var flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
 
-                method = decoratedEditorType.GetMethod(methodName, flags);
+                method = _decoratedEditorType.GetMethod(methodName, flags);
 
                 if (method != null)
                 {
-                    decoratedMethods[methodName] = method;
+                    _decoratedMethods[methodName] = method;
                 }
                 else
                 {
@@ -184,7 +184,7 @@ namespace EasyFramework.Edit.InspectorExpand
             }
             else
             {
-                method = decoratedMethods[methodName];
+                method = _decoratedMethods[methodName];
             }
 
             if (method != null)

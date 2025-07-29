@@ -22,32 +22,32 @@ namespace EasyFramework.Windows
         public class PathConfigSetting : ScriptableObject
         {
             [SerializeField, Header(LanguagAttribute.FrameworkPath)]
-            private string m_FrameworkPath = "Assets/EasyFramework/";
-            public string FrameworkPath => m_FrameworkPath;
+            private string _frameworkPath = "Assets/EasyFramework/";
+            public string FrameworkPath => _frameworkPath;
 
             [SerializeField, Header(LanguagAttribute.AtlasFolder)]
-            private string m_AtlasFolder = "Assets/";
-            public string AtlasFolder => m_AtlasFolder;
+            private string _atlasFolder = "Assets/";
+            public string AtlasFolder => _atlasFolder;
 
             [SerializeField, Header(LanguagAttribute.ExtractPath)]
-            private string m_ExtractPath = "Assets/";
-            public string ExtractPath => m_ExtractPath;
+            private string _extractPath = "Assets/";
+            public string ExtractPath => _extractPath;
 
             [SerializeField, Header(LanguagAttribute.UIPrefabPath)]
-            private string m_UIPrefabPath = "Assets/";
-            public string UIPrefabPath => m_UIPrefabPath;
+            private string _uiPrefabPath = "Assets/";
+            public string UIPrefabPath => _uiPrefabPath;
 
             [SerializeField, Header(LanguagAttribute.UICodePath)]
-            private string m_UICodePath = "Assets/";
-            public string UICodePath => m_UICodePath;
+            private string _uiCodePath = "Assets/";
+            public string UICodePath => _uiCodePath;
 
             [SerializeField, Header(LanguagAttribute.SublimePath)]
-            private string m_SublimePath = "";
-            public string SublimePath => m_SublimePath;
+            private string _sublimePath = "";
+            public string SublimePath => _sublimePath;
 
             [SerializeField, Header(LanguagAttribute.NotepadPath)]
-            private string m_NotepadPath = "";
-            public string NotepadPath => m_NotepadPath;
+            private string _notepadPath = "";
+            public string NotepadPath => _notepadPath;
         }
     }
 }

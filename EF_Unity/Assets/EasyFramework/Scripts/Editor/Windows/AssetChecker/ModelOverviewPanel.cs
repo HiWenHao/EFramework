@@ -22,19 +22,19 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal class ModelOverviewPanel : OverviewPanelBase
     {
-        int m_SortName = 1,
-            m_SortBond = 1,
-            m_SortScore = 1,
-            m_SortVertex = 1,
-            m_SortTriangle = 1;
+        int _sortName = 1;
+        int _sortBond = 1;
+        int _sortScore = 1;
+        int _sortVertex = 1;
+        int _sortTriangle = 1;
 
-        SettingView<ModelSetting> m_RuleView;
-        List<ModelInformation> m_ShowModelInfo;
+        SettingView<ModelSetting> _ruleView;
+        List<ModelInformation> _showModelInfo;
 
         internal override void Initialize()
         {
-            m_ShowModelInfo = new List<ModelInformation>();
-            m_RuleView = new SettingView<ModelSetting>();
+            _showModelInfo = new List<ModelInformation>();
+            _ruleView = new SettingView<ModelSetting>();
 
             ObjectInfoList = new string[]
             {
@@ -53,79 +53,79 @@ namespace EasyFramework.Windows.AssetChecker
         {
             base.OnDestroy();
 
-            m_ShowModelInfo.Clear();
-            m_ShowModelInfo = null;
-            m_RuleView = null;
+            _showModelInfo.Clear();
+            _showModelInfo = null;
+            _ruleView = null;
         }
 
         protected override void OnClickInfoList(int index)
         {
             if (index == 0)
             {
-                m_SortName *= -1;
-                m_ShowModelInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * m_SortName);
+                _sortName *= -1;
+                _showModelInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * _sortName);
             }
             else if (index == 2)
             {
-                m_SortVertex *= -1;
-                m_ShowModelInfo.Sort((x, y) => x.VertexCount.CompareTo(y.VertexCount) * m_SortVertex);
+                _sortVertex *= -1;
+                _showModelInfo.Sort((x, y) => x.VertexCount.CompareTo(y.VertexCount) * _sortVertex);
             }
             else if (index == 3)
             {
-                m_SortTriangle *= -1;
-                m_ShowModelInfo.Sort((x, y) => x.TriangleCount.CompareTo(y.TriangleCount) * m_SortTriangle);
+                _sortTriangle *= -1;
+                _showModelInfo.Sort((x, y) => x.TriangleCount.CompareTo(y.TriangleCount) * _sortTriangle);
             }
             else if (index == 4)
             {
-                m_SortBond *= -1;
-                m_ShowModelInfo.Sort((x, y) => x.BondCount.CompareTo(y.BondCount) * m_SortBond);
+                _sortBond *= -1;
+                _showModelInfo.Sort((x, y) => x.BondCount.CompareTo(y.BondCount) * _sortBond);
             }
             else if (index == 6)
             {
-                m_SortScore *= -1;
-                m_ShowModelInfo.Sort((x, y) => x.Score.CompareTo(y.Score) * m_SortScore);
+                _sortScore *= -1;
+                _showModelInfo.Sort((x, y) => x.Score.CompareTo(y.Score) * _sortScore);
             }
         }
 
         protected override void FiltrateChanged(int index, bool fflush)
         {
             #region FindAllModels                
-            List<string> _filtrates = new List<string>
+            List<string> filtrates = new List<string>
             {
                 "ALL"
             };
-            List<string> _filePaths = new List<string>();
+            List<string> filePaths = new List<string>();
             Dictionary<ModelSetting, string[]> _fileMaps = new Dictionary<ModelSetting, string[]>();
 
             int _count = 0;
-            if (m_RuleView.Settings != null)
+            if (_ruleView.Settings != null)
             {
-                for (int i = 0; i < m_RuleView.Settings.Count; i++)
+                for (int i = 0; i < _ruleView.Settings.Count; i++)
                 {
-                    _filePaths.Clear();
-                    for (int j = 0; j < m_RuleView.Settings[i].Folder.Count; j++)
+                    filePaths.Clear();
+                    for (int j = 0; j < _ruleView.Settings[i].Folder.Count; j++)
                     {
-                        string rootFolder = m_RuleView.Settings[i].Folder[j];
+                        string rootFolder = _ruleView.Settings[i].Folder[j];
                         if (string.IsNullOrEmpty(rootFolder)) continue;
                         string[] fileArr = Directory.GetFiles(rootFolder, "*.FBX", SearchOption.AllDirectories);
-                        _filePaths.AddRange(fileArr);
+                        filePaths.AddRange(fileArr);
                         _count += fileArr.Length;
                     }
-                    _fileMaps[m_RuleView.Settings[i]] = _filePaths.ToArray();
-                    _filtrates.Add(m_RuleView.Settings[i].AssetDesc);
+                    _fileMaps[_ruleView.Settings[i]] = filePaths.ToArray();
+                    filtrates.Add(_ruleView.Settings[i].AssetDesc);
                 }
             }
-            Filtrates = _filtrates.ToArray();
+            Filtrates = filtrates.ToArray();
 
-            int _curFileIndex = 0;
-            m_ShowModelInfo.Clear();
+            int curFileIndex = 0;
+            _showModelInfo.Clear();
             foreach (ModelSetting msb in _fileMaps.Keys)
             {
                 string[] childFiles = _fileMaps[msb];
                 for (int i = 0; i < childFiles.Length; i++)
                 {
-                    _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), _curFileIndex / _count);
+                    curFileIndex++;
+                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), curFileIndex / _count);
                     ModelInformation mb = ParseModel(childFiles[i]);
                     mb.AssetDesc = msb.AssetDesc;
 
@@ -133,22 +133,22 @@ namespace EasyFramework.Windows.AssetChecker
                     mb.BondScore = mb.BondCount / (float)msb.MaxBones;
                     mb.Score = (mb.TriangleScore + mb.BondScore) * 0.5f;
 
-                    m_ShowModelInfo.Add(mb);
+                    _showModelInfo.Add(mb);
                 }
             }
-            ListCount = _curFileIndex;
+            ListCount = curFileIndex;
             EditorUtility.ClearProgressBar();
             #endregion
 
             if (index == 0)
                 return;
 
-            for (int i = m_ShowModelInfo.Count - 1; i >= 0; i--)
+            for (int i = _showModelInfo.Count - 1; i >= 0; i--)
             {
-                if (!Filtrates[index].Equals(m_ShowModelInfo[i].AssetDesc))
-                    m_ShowModelInfo.RemoveAt(i);
+                if (!Filtrates[index].Equals(_showModelInfo[i].AssetDesc))
+                    _showModelInfo.RemoveAt(i);
             }
-            ListCount = m_ShowModelInfo.Count;
+            ListCount = _showModelInfo.Count;
         }
 
         protected override void Refresh()
@@ -158,38 +158,38 @@ namespace EasyFramework.Windows.AssetChecker
 
         protected override void RuleViewOnGUI()
         {
-            m_RuleView.OnGUI();
+            _ruleView.OnGUI();
         }
 
         protected override void DrawOne(int index)
         {
-            ModelInformation _model = m_ShowModelInfo[index];
-            if (GUILayout.Button(_model.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.Width(140f)))
+            ModelInformation model = _showModelInfo[index];
+            if (GUILayout.Button(model.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.Width(140f)))
             {
-                Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(_model.FilePath);
+                Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(model.FilePath);
             }
 
-            float _width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
+            float width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
 
-            GUILayout.Label(_model.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(model.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
 
-            SetGUIColor(_model.VetexScore);
-            GUILayout.Label(_model.VertexCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            SetGUIColor(model.VetexScore);
+            GUILayout.Label(model.VertexCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            SetGUIColor(_model.TriangleScore);
-            GUILayout.Label(_model.TriangleCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            SetGUIColor(model.TriangleScore);
+            GUILayout.Label(model.TriangleCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            SetGUIColor(_model.BondScore);
-            GUILayout.Label(_model.BondCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            SetGUIColor(model.BondScore);
+            GUILayout.Label(model.BondCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            GUILayout.Label($"{_model.TextureSize.x} x {_model.TextureSize.y}", AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label($"{model.TextureSize.x} x {model.TextureSize.y}", AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
 
-            int _lv = AssetsCheckerConfig.CalScoreLevel(_model.Score);
-            GUI.color = AssetsCheckerConfig.ScoreColors[_lv];
-            GUILayout.Label(AssetsCheckerConfig.ScoreNames[_lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            int lv = AssetsCheckerConfig.CalScoreLevel(model.Score);
+            GUI.color = AssetsCheckerConfig.ScoreColors[lv];
+            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
 
             GUI.color = Color.white;
         }
@@ -199,25 +199,25 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         private ModelInformation ParseModel(string filePath)
         {
-            ModelInformation _modelInfo = new ModelInformation
+            ModelInformation modelInfo = new ModelInformation
             {
                 Name = Path.GetFileNameWithoutExtension(filePath),
                 FilePath = filePath
             };
 
-            Object _resObj = AssetDatabase.LoadAssetAtPath<Object>(filePath);
-            GameObject _go = Object.Instantiate(_resObj) as GameObject;
-            SkinnedMeshRenderer _skin = _go.GetComponentInChildren<SkinnedMeshRenderer>();
-            if (_skin != null)
-                ReadSkinMeshRender(_skin, _modelInfo);
+            Object resObj = AssetDatabase.LoadAssetAtPath<Object>(filePath);
+            GameObject go = Object.Instantiate(resObj) as GameObject;
+            SkinnedMeshRenderer skin = go.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (skin != null)
+                ReadSkinMeshRender(skin, modelInfo);
             else
             {
-                MeshRenderer _mesh = _go.GetComponentInChildren<MeshRenderer>();
-                if (_mesh != null) ReadMeshRender(_mesh, _modelInfo);
+                MeshRenderer _mesh = go.GetComponentInChildren<MeshRenderer>();
+                if (_mesh != null) ReadMeshRender(_mesh, modelInfo);
             }
 
-            Object.DestroyImmediate(_go);
-            return _modelInfo;
+            Object.DestroyImmediate(go);
+            return modelInfo;
         }
 
         /// <summary>
@@ -249,11 +249,11 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         private void ReadMeshRender(MeshRenderer modelMesh, ModelInformation model)
         {
-            MeshFilter _meshFilter = modelMesh.GetComponent<MeshFilter>();
-            if (_meshFilter.sharedMesh != null)
+            MeshFilter meshFilter = modelMesh.GetComponent<MeshFilter>();
+            if (meshFilter.sharedMesh != null)
             {
-                model.VertexCount = _meshFilter.sharedMesh.vertexCount;
-                model.TriangleCount = _meshFilter.sharedMesh.triangles.Length / 3;
+                model.VertexCount = meshFilter.sharedMesh.vertexCount;
+                model.TriangleCount = meshFilter.sharedMesh.triangles.Length / 3;
             }
 
             if (modelMesh.sharedMaterial && modelMesh.sharedMaterial.mainTexture)

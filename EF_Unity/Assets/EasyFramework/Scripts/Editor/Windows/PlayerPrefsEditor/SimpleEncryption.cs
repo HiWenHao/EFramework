@@ -9,19 +9,19 @@ namespace Sabresaurus.PlayerPrefsUtilities
     {
         // IMPORTANT: Make sure to change this key for each project you use this encryption in to help secure your
         // encrypted values. This key must be exactly 32 bytes (256 bit).
-        private static byte[] key =
+        private static byte[] _key =
         {
             58, 123, 106, 37, 54, 106, 63, 69, 58, 116, 35, 125, 71, 49, 48, 109, 77, 37, 57, 104, 112, 53, 83, 61, 37, 125, 50, 44, 89, 50, 54, 67
         };
 
-        private static bool customKeyApplied = false;
+        private static bool _customKeyApplied = false;
         
         // Cache the encryption provider
-        private static RijndaelManaged provider = null;
+        private static RijndaelManaged _provider = null;
 
         public static bool IsCustomKeyApplied
         {
-            get { return customKeyApplied; }
+            get { return _customKeyApplied; }
         }
 
         public static void SetCustomKey(string keyString)
@@ -36,9 +36,9 @@ namespace Sabresaurus.PlayerPrefsUtilities
                 throw new ArgumentException("Key must be exactly 32 bytes long (256 bit)");
             }
 
-            SimpleEncryption.key = key;
+            SimpleEncryption._key = key;
 
-            customKeyApplied = true;
+            _customKeyApplied = true;
             
             // Make sure the encryption provider is set using the correct key
             SetupProvider();
@@ -47,12 +47,12 @@ namespace Sabresaurus.PlayerPrefsUtilities
         private static void SetupProvider()
         {
             // Create a new encryption provider
-            provider = new RijndaelManaged();
+            _provider = new RijndaelManaged();
 
-            provider.Key = key;
+            _provider.Key = _key;
 
             // Ensure that the same data is always encrypted the same way when used with the same key
-            provider.Mode = CipherMode.ECB;
+            _provider.Mode = CipherMode.ECB;
         }
 
         /// <summary>
@@ -60,14 +60,14 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// </summary>
         public static string EncryptString(string sourceString)
         {
-            if (provider == null)
+            if (_provider == null)
             {
                 // Encryption provider hasn't been set up yet, so set it up
                 SetupProvider();
             }
 
             // Create an encryptor to encrypt the bytes
-            ICryptoTransform encryptor = provider.CreateEncryptor();
+            ICryptoTransform encryptor = _provider.CreateEncryptor();
 
             // Convert the source string into bytes to be encrypted
             byte[] sourceBytes = Encoding.UTF8.GetBytes(sourceString);
@@ -86,14 +86,14 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// </summary>
         public static string DecryptString(string sourceString)
         {
-            if (provider == null)
+            if (_provider == null)
             {
                 // Encryption provider hasn't been set up yet, so set it up
                 SetupProvider();
             }
 
             // Create a decryptor to decrypt the encrypted bytes
-            ICryptoTransform decryptor = provider.CreateDecryptor();
+            ICryptoTransform decryptor = _provider.CreateDecryptor();
 
             // Convert the base 64 string representing the encrypted bytes back into an array of encrypted bytes
             byte[] sourceBytes = Convert.FromBase64String(sourceString);

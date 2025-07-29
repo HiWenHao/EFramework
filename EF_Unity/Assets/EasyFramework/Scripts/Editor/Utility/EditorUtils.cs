@@ -33,14 +33,14 @@ namespace EasyFramework.Edit
             string[] globalAssetPaths = UnityEditor.AssetDatabase.FindAssets($"t:{assetType}");
             if (globalAssetPaths.Length > 1)
             {
-                foreach (var assetPath in globalAssetPaths)
+                foreach (var path in globalAssetPaths)
                 {
-                    D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {AssetDatabase.GUIDToAssetPath(assetPath)}");
+                    D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {AssetDatabase.GUIDToAssetPath(path)}");
                 }
             }
 #endif
-            string _assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
-            T customGlobalSettings = AssetDatabase.LoadAssetAtPath<T>(_assetPath);
+            string assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
+            T customGlobalSettings = AssetDatabase.LoadAssetAtPath<T>(assetPath);
             if (customGlobalSettings == null)
             {
                 D.Exception($"Don`t find asset. 没找到 {assetType} asset，需要创建一个:{assetsPath}.");
@@ -56,20 +56,20 @@ namespace EasyFramework.Edit
         /// <typeparam name="T">面板类型</typeparam>
         public static T LoadSettingAtPath<T>() where T : ScriptableObject, new()
         {
-            T _setting = default;
-            string[] _paths = AssetDatabase.FindAssets($"t:{typeof(T)}");
-            if (_paths.Length == 0)
+            T setting = default;
+            string[] paths = AssetDatabase.FindAssets($"t:{typeof(T)}");
+            if (paths.Length == 0)
             {
                 D.Error($"不存在 {typeof(T).Name}");
-                return _setting;
+                return setting;
             }
-            if (_paths.Length > 1)
+            if (paths.Length > 1)
             {
                 D.Error($"{typeof(T).Name} 数量大于1");
             }
-            string _path = AssetDatabase.GUIDToAssetPath(_paths[0]);
-            _setting = AssetDatabase.LoadAssetAtPath<T>(_path);
-            return _setting;
+            string path = AssetDatabase.GUIDToAssetPath(paths[0]);
+            setting = AssetDatabase.LoadAssetAtPath<T>(path);
+            return setting;
         }
 
         #endregion
@@ -96,20 +96,20 @@ namespace EasyFramework.Edit
             if (endIndex < 0)
                 return 0;
 
-            int _endIndex = endIndex;
+            int endIdx = endIndex;
             if (strList.Count < endIndex)
             {
-                _endIndex = strList.Count - 1;
+                endIdx = strList.Count - 1;
                 D.Warning("The parameter [ endIndex ] greater than array length, will be limited to array length minus one.");
             }
-            for (int i = startIndex; i < _endIndex; i++)
+            for (int i = startIndex; i < endIdx; i++)
             {
                 if (nameLength < strList[i].Length)
                 {
                     return i;
                 }
             }
-            return _endIndex;
+            return endIdx;
         }
 
         #endregion
@@ -131,14 +131,14 @@ namespace EasyFramework.Edit
 
             foreach (string file in Directory.GetFiles(sourceDir))
             {
-                string _desFile = Path.Combine(destDir, Path.GetFileName(file));
-                File.Copy(file, _desFile, overwrite);
+                string desFile = Path.Combine(destDir, Path.GetFileName(file));
+                File.Copy(file, desFile, overwrite);
             }
 
             foreach (string subDir in Directory.GetDirectories(sourceDir))
             {
-                string _desSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
-                CopyFolder(subDir, _desSubDir);
+                string desSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
+                CopyFolder(subDir, desSubDir);
             }
         }
         #endregion

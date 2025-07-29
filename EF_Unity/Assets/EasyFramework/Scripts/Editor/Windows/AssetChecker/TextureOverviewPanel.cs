@@ -22,21 +22,21 @@ namespace EasyFramework.Windows.AssetChecker
     /// </summary>
     internal class TextureOverviewPanel : OverviewPanelBase
     {
-        int m_SortName = 1,
-            m_SortWidth = 1,
-            m_SortHeight = 1,
-            m_SortMaxSize = 1,
-            m_SortMemorySize = 1;
+        int _sortName = 1;
+        int _sortWidth = 1;
+        int _sortHeight = 1;
+        int _sortMaxSize = 1;
+        int _sortMemorySize = 1;
 
-        SettingView<TextureSetting> m_RuleView;
-        List<TextureInformation> m_ShowTextureInfo;
-        Dictionary<string, TextureSetting> m_SettingMap;
+        SettingView<TextureSetting> _ruleView;
+        List<TextureInformation> _showTextureInfo;
+        Dictionary<string, TextureSetting> _settingMap;
 
         internal override void Initialize()
         {
-            m_ShowTextureInfo = new List<TextureInformation>();
-            m_RuleView = new SettingView<TextureSetting>();
-            m_SettingMap = new Dictionary<string, TextureSetting>();
+            _showTextureInfo = new List<TextureInformation>();
+            _ruleView = new SettingView<TextureSetting>();
+            _settingMap = new Dictionary<string, TextureSetting>();
             ObjectInfoList = new string[]
             {
                 LC.Combine(new Lc[]{ Lc.Texture, Lc.Name }),
@@ -55,93 +55,93 @@ namespace EasyFramework.Windows.AssetChecker
         internal override void OnDestroy()
         {
             base.OnDestroy();
-            m_ShowTextureInfo.Clear();
-            m_ShowTextureInfo = null;
-            m_SettingMap.Clear();
-            m_SettingMap = null;
-            m_RuleView = null;
+            _showTextureInfo.Clear();
+            _showTextureInfo = null;
+            _settingMap.Clear();
+            _settingMap = null;
+            _ruleView = null;
         }
 
         protected override void OnClickInfoList(int index)
         {
             if (index == 0)
             {
-                m_SortName *= -1;
-                m_ShowTextureInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * m_SortName);
+                _sortName *= -1;
+                _showTextureInfo.Sort((x, y) => x.Name.CompareTo(y.Name) * _sortName);
             }
             else if (index == 2)
             {
-                m_SortWidth *= -1;
-                m_ShowTextureInfo.Sort((x, y) => x.Width.CompareTo(y.Width) * m_SortWidth);
+                _sortWidth *= -1;
+                _showTextureInfo.Sort((x, y) => x.Width.CompareTo(y.Width) * _sortWidth);
             }
             else if (index == 3)
             {
-                m_SortHeight *= -1;
-                m_ShowTextureInfo.Sort((x, y) => x.Height.CompareTo(y.Height) * m_SortHeight);
+                _sortHeight *= -1;
+                _showTextureInfo.Sort((x, y) => x.Height.CompareTo(y.Height) * _sortHeight);
             }
             else if (index == 5)
             {
-                m_SortMaxSize *= -1;
-                m_ShowTextureInfo.Sort((x, y) => x.MaxSize.CompareTo(y.MaxSize) * m_SortMaxSize);
+                _sortMaxSize *= -1;
+                _showTextureInfo.Sort((x, y) => x.MaxSize.CompareTo(y.MaxSize) * _sortMaxSize);
             }
             else if (index == 7)
             {
-                m_SortMemorySize *= -1;
-                m_ShowTextureInfo.Sort((x, y) => x.MemorySize.CompareTo(y.MemorySize) * m_SortMemorySize);
+                _sortMemorySize *= -1;
+                _showTextureInfo.Sort((x, y) => x.MemorySize.CompareTo(y.MemorySize) * _sortMemorySize);
             }
         }
 
         protected override void FiltrateChanged(int index, bool fflush = false)
         {
             #region FindAllTextures
-            List<string> _filtrates = new List<string>
+            List<string> filtrates = new List<string>
             {
                 "ALL"
             };
-            List<string> _filePaths = new List<string>();
-            Dictionary<TextureSetting, string[]> _fileMaps = new Dictionary<TextureSetting, string[]>();
+            List<string> filePaths = new List<string>();
+            Dictionary<TextureSetting, string[]> fileMaps = new Dictionary<TextureSetting, string[]>();
 
-            int _count = 0;
-            if (m_RuleView.Settings != null)
+            int count = 0;
+            if (_ruleView.Settings != null)
             {
-                m_SettingMap.Clear();
-                for (int i = 0; i < m_RuleView.Settings.Count; i++)
+                _settingMap.Clear();
+                for (int i = 0; i < _ruleView.Settings.Count; i++)
                 {
-                    m_SettingMap[m_RuleView.Settings[i].AssetDesc] = m_RuleView.Settings[i];
-                    _filePaths.Clear();
-                    for (int j = 0; j < m_RuleView.Settings[i].Folder.Count; j++)
+                    _settingMap[_ruleView.Settings[i].AssetDesc] = _ruleView.Settings[i];
+                    filePaths.Clear();
+                    for (int j = 0; j < _ruleView.Settings[i].Folder.Count; j++)
                     {
-                        string rootFolder = m_RuleView.Settings[i].Folder[j];
+                        string rootFolder = _ruleView.Settings[i].Folder[j];
                         if (string.IsNullOrEmpty(rootFolder)) continue;
                         string[] fileArr = Directory.GetFiles(rootFolder, "*.jpg", SearchOption.AllDirectories);
-                        _filePaths.AddRange(fileArr);
-                        _count += fileArr.Length;
+                        filePaths.AddRange(fileArr);
+                        count += fileArr.Length;
 
                         fileArr = Directory.GetFiles(rootFolder, "*.png", SearchOption.AllDirectories);
-                        _filePaths.AddRange(fileArr);
-                        _count += fileArr.Length;
+                        filePaths.AddRange(fileArr);
+                        count += fileArr.Length;
                     }
-                    _fileMaps[m_RuleView.Settings[i]] = _filePaths.ToArray();
-                    _filtrates.Add(m_RuleView.Settings[i].AssetDesc);
+                    fileMaps[_ruleView.Settings[i]] = filePaths.ToArray();
+                    filtrates.Add(_ruleView.Settings[i].AssetDesc);
                 }
             }
-            Filtrates = _filtrates.ToArray();
+            Filtrates = filtrates.ToArray();
 
-            int _curFileIndex = 0;
-            m_ShowTextureInfo.Clear();
-            foreach (TextureSetting msb in _fileMaps.Keys)
+            int curFileIndex = 0;
+            _showTextureInfo.Clear();
+            foreach (TextureSetting msb in fileMaps.Keys)
             {
-                string[] childFiles = _fileMaps[msb];
+                string[] childFiles = fileMaps[msb];
                 for (int i = 0; i < childFiles.Length; i++)
                 {
-                    _curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.Holdon), _curFileIndex / _count);
+                    curFileIndex++;
+                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.Holdon), curFileIndex / count);
                     TextureInformation asset = GetTextureInformation(childFiles[i]);
                     asset.AssetDesc = msb.AssetDesc;
-                    m_ShowTextureInfo.Add(asset);
+                    _showTextureInfo.Add(asset);
                 }
             }
-            ListCount = _curFileIndex;
+            ListCount = curFileIndex;
             EditorUtility.ClearProgressBar();
 
             #endregion
@@ -149,12 +149,12 @@ namespace EasyFramework.Windows.AssetChecker
             if (index == 0)
                 return;
 
-            for (int i = m_ShowTextureInfo.Count - 1; i >= 0; i--)
+            for (int i = _showTextureInfo.Count - 1; i >= 0; i--)
             {
-                if (!Filtrates[index].Equals(m_ShowTextureInfo[i].AssetDesc))
-                    m_ShowTextureInfo.RemoveAt(i);
+                if (!Filtrates[index].Equals(_showTextureInfo[i].AssetDesc))
+                    _showTextureInfo.RemoveAt(i);
             }
-            ListCount = m_ShowTextureInfo.Count;
+            ListCount = _showTextureInfo.Count;
 
         }
 
@@ -165,12 +165,12 @@ namespace EasyFramework.Windows.AssetChecker
 
         protected override void RuleViewOnGUI()
         {
-            m_RuleView.OnGUI();
+            _ruleView.OnGUI();
         }
 
         protected override void DrawOne(int index)
         {
-            TextureInformation _texture = m_ShowTextureInfo[index];
+            TextureInformation _texture = _showTextureInfo[index];
             if (GUILayout.Button(_texture.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.Width(140f)))
             {
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(_texture.FilePath);
@@ -182,7 +182,7 @@ namespace EasyFramework.Windows.AssetChecker
             GUILayout.Label(_texture.Width.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
             GUILayout.Label(_texture.Height.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
 
-            GUI.color = (_texture.MipMaps != m_SettingMap[_texture.AssetDesc].MipMaps) ? Color.red : Color.white;
+            GUI.color = (_texture.MipMaps != _settingMap[_texture.AssetDesc].MipMaps) ? Color.red : Color.white;
             GUILayout.Label(_texture.MipMaps.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
             GUI.color = Color.white;
 
@@ -208,18 +208,18 @@ namespace EasyFramework.Windows.AssetChecker
         void SwitchMipMaps()
         {
             List<TextureInformation> _textures = new List<TextureInformation>();
-            for (int i = 0; i < m_ShowTextureInfo.Count; i++)
+            for (int i = 0; i < _showTextureInfo.Count; i++)
             {
-                if (m_ShowTextureInfo[i].MipMaps.Equals(m_SettingMap[m_ShowTextureInfo[i].AssetDesc].MipMaps)) continue;
-                _textures.Add(m_ShowTextureInfo[i]);
+                if (_showTextureInfo[i].MipMaps.Equals(_settingMap[_showTextureInfo[i].AssetDesc].MipMaps)) continue;
+                _textures.Add(_showTextureInfo[i]);
             }
 
             for (int i = 0; i < _textures.Count; i++)
             {
                 EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), i / (float)_textures.Count);
                 TextureImporter texImp = AssetImporter.GetAtPath(_textures[i].FilePath) as TextureImporter;
-                texImp.mipmapEnabled = m_SettingMap[_textures[i].AssetDesc].MipMaps;
-                _textures[i].MipMaps = m_SettingMap[_textures[i].AssetDesc].MipMaps;
+                texImp.mipmapEnabled = _settingMap[_textures[i].AssetDesc].MipMaps;
+                _textures[i].MipMaps = _settingMap[_textures[i].AssetDesc].MipMaps;
             }
 
             _textures.Clear();
@@ -265,18 +265,18 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         private float ComputeMemory(TextureFormat format, int width, int height)
         {
-            float _colorByte = 4;
+            float colorByte = 4;
             switch (format)
             {
                 case TextureFormat.ARGB4444:
                 case TextureFormat.RGB565:
-                    _colorByte = 2;
+                    colorByte = 2;
                     break;
                 case TextureFormat.ETC_RGB4:
-                    _colorByte = 0.5f;
+                    colorByte = 0.5f;
                     break;
             }
-            return _colorByte * width * height / 1024;
+            return colorByte * width * height / 1024;
         }
     }
 }

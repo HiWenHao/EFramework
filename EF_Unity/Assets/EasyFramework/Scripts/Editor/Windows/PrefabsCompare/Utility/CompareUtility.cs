@@ -16,12 +16,12 @@ namespace EasyFramework.Windows
             /// <summary>
             /// 组件数组（重复利用）
             /// </summary>
-            static readonly List<Component> m_LeftComponentList = new List<Component>();
+            static readonly List<Component> _leftComponentList = new List<Component>();
 
             /// <summary>
             /// 组件数组（重复利用）
             /// </summary>
-            static readonly List<Component> m_RightComponentList = new List<Component>();
+            static readonly List<Component> _rightComponentList = new List<Component>();
 
             /// <summary>
             /// 对比两个Prefab
@@ -252,11 +252,11 @@ namespace EasyFramework.Windows
             /// <param name="info"></param>
             private static void CompareComponent(GameObject left, GameObject right, ref GameObjectCompareInfo info)
             {
-                left.GetComponents(m_LeftComponentList);
-                right.GetComponents(m_RightComponentList);
+                left.GetComponents(_leftComponentList);
+                right.GetComponents(_rightComponentList);
 
-                var leftCount = m_LeftComponentList.Count;
-                var rightCount = m_RightComponentList.Count;
+                var leftCount = _leftComponentList.Count;
+                var rightCount = _rightComponentList.Count;
 
                 int leftIndex = 0;
                 int rightIndex = 0;
@@ -275,7 +275,7 @@ namespace EasyFramework.Windows
                     {
                         for (int i = rightIndex; i < rightCount; i++)
                         {
-                            var rightComponent = m_RightComponentList[i];
+                            var rightComponent = _rightComponentList[i];
 
                             var childInfo = AddComponentInfo(info, null, rightComponent, rightComponent.GetType().FullName, MissType.missLeft);
 
@@ -291,7 +291,7 @@ namespace EasyFramework.Windows
                     {
                         for (int i = leftIndex; i < leftCount; i++)
                         {
-                            var leftComponent = m_LeftComponentList[i];
+                            var leftComponent = _leftComponentList[i];
 
                             var childInfo = AddComponentInfo(info, leftComponent, null, leftComponent.GetType().FullName, MissType.missRight);
 
@@ -305,13 +305,13 @@ namespace EasyFramework.Windows
                     }
                     else
                     {
-                        var leftComponent = m_LeftComponentList[leftIndex];
+                        var leftComponent = _leftComponentList[leftIndex];
 
                         var index = -1;
 
                         for (int i = rightIndex; i < rightCount; i++)
                         {
-                            var rightComponent = m_RightComponentList[i];
+                            var rightComponent = _rightComponentList[i];
 
                             if (leftComponent.GetType() == rightComponent.GetType())
                             {
@@ -338,7 +338,7 @@ namespace EasyFramework.Windows
 
                             for (int i = rightIndex; i < index; i++)
                             {
-                                rightComponent = m_RightComponentList[rightIndex];
+                                rightComponent = _rightComponentList[rightIndex];
 
                                 childInfo = AddComponentInfo(info, null, rightComponent, rightComponent.GetType().FullName, MissType.missLeft);
 
@@ -348,7 +348,7 @@ namespace EasyFramework.Windows
                                 }
                             }
 
-                            rightComponent = m_RightComponentList[index];
+                            rightComponent = _rightComponentList[index];
 
                             childInfo = AddComponentInfo(info, leftComponent, rightComponent, leftComponent.GetType().FullName, MissType.allExist);
 
