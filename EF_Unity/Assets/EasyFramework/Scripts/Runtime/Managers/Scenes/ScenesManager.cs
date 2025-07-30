@@ -23,97 +23,97 @@ namespace EasyFramework.Managers
     /// </summary>
     public class ScenesManager : Singleton<ScenesManager>, IManager
     {
-        bool m_bol_IsLoading;
-		float m_flt_transition = 1.0f;
+        bool _isLoading;
+		float _transition = 1.0f;
 
-        Image m_img_BG;
-        Text m_txt_PCTN;
-        Transform LoadCanvas;
-		Slider m_slid_ProgressBar;
-		AsyncOperation m_asyncOperation;
+        Image _bg;
+        Text _pcTN;
+        Transform _loadCanvas;
+		Slider _progressBar;
+		AsyncOperation _asyncOperation;
 
-		Action m_act_Callback;
+		Action _callback;
         void ISingleton.Init()
         {
-            LoadCanvas = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
-            LoadCanvas.SetParent(EF.Singleton);
-            m_img_BG = LoadCanvas.GetChild(0).GetComponent<Image>();
-            m_slid_ProgressBar = m_img_BG.transform.GetChild(0).GetComponent<Slider>();
-            m_txt_PCTN = m_slid_ProgressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
+            _loadCanvas = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
+            _loadCanvas.SetParent(EF.Singleton);
+            _bg = _loadCanvas.GetChild(0).GetComponent<Image>();
+            _progressBar = _bg.transform.GetChild(0).GetComponent<Slider>();
+            _pcTN = _progressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
 
-			LoadCanvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(Screen.width, Screen.height);
-            LoadCanvas.gameObject.SetActive(false);
+			_loadCanvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(Screen.width, Screen.height);
+            _loadCanvas.gameObject.SetActive(false);
         }
 
         void ISingleton.Quit()
         {
             EF.StopAllCoroutine();
-            m_txt_PCTN = null;
-            m_slid_ProgressBar = null;
-            m_img_BG = null;
-            LoadCanvas = null;
-            m_asyncOperation = null;
+            _pcTN = null;
+            _progressBar = null;
+            _bg = null;
+            _loadCanvas = null;
+            _asyncOperation = null;
         }
 
         #region Load
 		IEnumerator LoadScene()
 		{
-			m_bol_IsLoading = true;
+			_isLoading = true;
 			yield return new WaitForSeconds(.1f);
-			LoadCanvas.gameObject.SetActive(true);
+			_loadCanvas.gameObject.SetActive(true);
 
-			while (m_img_BG.color.a < 1.0f)
+			while (_bg.color.a < 1.0f)
 			{
-				Color _color = m_img_BG.color;
-				_color.a += 0.02f * m_flt_transition;
-				m_img_BG.color = _color;
+				Color color = _bg.color;
+				color.a += 0.02f * _transition;
+				_bg.color = color;
 				yield return null;
 			}
-			m_slid_ProgressBar.value = 0.0f;
-			m_slid_ProgressBar.gameObject.SetActive(true);
-			while (m_slid_ProgressBar.value < .1f)
+			_progressBar.value = 0.0f;
+			_progressBar.gameObject.SetActive(true);
+			while (_progressBar.value < .1f)
 			{
-				m_slid_ProgressBar.value += .01f;
-				m_txt_PCTN.text = $"{Mathf.RoundToInt(m_slid_ProgressBar.value * 90)}%";
+				_progressBar.value += .01f;
+				_pcTN.text = $"{Mathf.RoundToInt(_progressBar.value * 90)}%";
 				yield return null;
 			}
-			m_asyncOperation = SceneManager.LoadSceneAsync(CurrentScene);
+			_asyncOperation = SceneManager.LoadSceneAsync(CurrentScene);
 
-            while (!m_asyncOperation.isDone)
+            while (!_asyncOperation.isDone)
             {
-                while ((m_asyncOperation.progress - m_slid_ProgressBar.value) >= .1f)
+                while ((_asyncOperation.progress - _progressBar.value) >= .1f)
                 {
-					m_slid_ProgressBar.value += 0.01f;
-					m_txt_PCTN.text = $"{Mathf.RoundToInt(m_slid_ProgressBar.value * 100)}%";
+					_progressBar.value += 0.01f;
+					_pcTN.text = $"{Mathf.RoundToInt(_progressBar.value * 100)}%";
 					yield return null;
 				}
 				yield return null;
 			}
 			yield return new WaitForSeconds(.5f);
-            while (m_asyncOperation.isDone)
+            while (_asyncOperation.isDone)
             {
-				while (m_slid_ProgressBar.value < 1.0f)
+				while (_progressBar.value < 1.0f)
 				{
-					m_slid_ProgressBar.value += .005f;
-					float _vla = Mathf.RoundToInt(m_slid_ProgressBar.value * 100);
-					m_txt_PCTN.text = _vla > 100 ? "100%" : $"{_vla}%";
+					_progressBar.value += .005f;
+					float vla = Mathf.RoundToInt(_progressBar.value * 100);
+					_pcTN.text = vla > 100 ? "100%" : $"{vla}%";
 					yield return null;
 				}
 				break;
 			}
 
 			yield return new WaitForSeconds(.1f);
-			m_act_Callback?.Invoke();
-			m_slid_ProgressBar.gameObject.SetActive(false);
-			while (m_img_BG.color.a > .02f)
+			_callback?.Invoke();
+			_progressBar.gameObject.SetActive(false);
+			while (_bg.color.a > .02f)
 			{
-				Color _color = m_img_BG.color;
-				_color.a -= 0.02f * m_flt_transition;
-				m_img_BG.color = _color;
+				Color color = _bg.color;
+				color.a -= 0.02f * _transition;
+				_bg.color = color;
 				yield return null;
 			}
-			LoadCanvas.gameObject.SetActive(false);
-			m_bol_IsLoading = false;
+			_loadCanvas.gameObject.SetActive(false);
+			_isLoading = false;
 			EF.StopCoroutines(LoadScene());
 		}
         #endregion
@@ -134,7 +134,7 @@ namespace EasyFramework.Managers
         /// <param name="transition">The black screen transition speed. <para>过度黑屏速率</para></param>
         public void LoadSceneWithName(string sceneName, Action callback = null, float transition = 1.0f)
 		{
-            if (m_bol_IsLoading)
+            if (_isLoading)
             {
 				D.Error("Current time is loading, please wait a moment.");
 				return;
@@ -151,9 +151,9 @@ namespace EasyFramework.Managers
 				callback?.Invoke();
 				return;
             }
-			m_flt_transition = transition;
+			_transition = transition;
 			CurrentScene = sceneName;
-			m_act_Callback = callback;
+			_callback = callback;
 			EF.StartCoroutines(LoadScene());
 		}
 
@@ -166,7 +166,7 @@ namespace EasyFramework.Managers
         /// <param name="callback">The scene load callback. <para>场景加载回调</para></param>
         public void LoadSceneWithNameNow(string sceneName, System.Action callback = null)
         {
-            if (m_bol_IsLoading)
+            if (_isLoading)
             {
                 D.Error("Current time is loading, please wait a moment.");
                 return;

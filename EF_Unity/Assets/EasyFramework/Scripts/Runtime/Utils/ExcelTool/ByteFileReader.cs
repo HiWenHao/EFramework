@@ -19,12 +19,12 @@ namespace EasyFramework
         /// </summary>
         public class ByteFileReader
         {
-            static byte[] data;
-            static int row = 0;
-            static int col = 0;
-            static int colCnt;
-            static int rowLength;
-            static List<int> colOff;
+            static byte[] _data;
+            static int _row = 0;
+            static int _col = 0;
+            static int _colCnt;
+            static int _rowLength;
+            static List<int> _colOff;
 
             //public ByteFileReader(byte[] data, int rowLength, List<int> colOff)
             //{
@@ -42,12 +42,12 @@ namespace EasyFramework
             /// <param name="colOff1">The column length.竖排长度</param>
             public static void Reset(byte[] data1, int rowLength1, List<int> colOff1)
             {
-                data = data1;
-                colCnt = colOff1.Count;
-                rowLength = rowLength1;
-                colOff = colOff1;
-                row = 0;
-                col = 0;
+                _data = data1;
+                _colCnt = colOff1.Count;
+                _rowLength = rowLength1;
+                _colOff = colOff1;
+                _row = 0;
+                _col = 0;
             }
 
             /// <summary>
@@ -56,12 +56,12 @@ namespace EasyFramework
             /// <typeparam name="T">The T type.</typeparam>
             public static T Get<T>()
             {
-                var ret = ByteReader.Read<T>(data, row * rowLength + colOff[col]);
-                col++;
-                if (col >= colCnt)
+                var ret = ByteReader.Read<T>(_data, _row * _rowLength + _colOff[_col]);
+                _col++;
+                if (_col >= _colCnt)
                 {
-                    col = 0;
-                    row++;
+                    _col = 0;
+                    _row++;
                 }
                 return ret;
             }
@@ -71,12 +71,12 @@ namespace EasyFramework
             /// </summary>
             public static Dictionary<K, V> GetDict<K, V>()
             {
-                var ret = ByteReader.ReadDict<K, V>(data, row * rowLength + colOff[col]);
-                col++;
-                if (col >= colCnt)
+                var ret = ByteReader.ReadDict<K, V>(_data, _row * _rowLength + _colOff[_col]);
+                _col++;
+                if (_col >= _colCnt)
                 {
-                    col = 0;
-                    row++;
+                    _col = 0;
+                    _row++;
                 }
                 return ret;
             }
@@ -87,7 +87,7 @@ namespace EasyFramework
             public T GetByRowAndIndex<T>(int rowNum, int index)
             {
                 // 此处主要用于缓存数据使用，就暂时不做有效验证了
-                return ByteReader.Read<T>(data, rowNum * rowLength + colOff[index]);
+                return ByteReader.Read<T>(_data, rowNum * _rowLength + _colOff[index]);
             }
 
             /// <summary>
@@ -96,7 +96,7 @@ namespace EasyFramework
             public Dictionary<K, V> GetDictByRowAndIndex<K, V>(int rowNum, int index)
             {
                 // 此处主要用于缓存数据使用，就暂时不做有效验证了
-                return ByteReader.ReadDict<K, V>(data, rowNum * rowLength + colOff[index]);
+                return ByteReader.ReadDict<K, V>(_data, rowNum * _rowLength + _colOff[index]);
             }
 
             /// <summary>
@@ -104,11 +104,11 @@ namespace EasyFramework
             /// </summary>
             public static void SkipOne()
             {
-                col++;
-                if (col >= colCnt)
+                _col++;
+                if (_col >= _colCnt)
                 {
-                    col = 0;
-                    row++;
+                    _col = 0;
+                    _row++;
                 }
             }
         }

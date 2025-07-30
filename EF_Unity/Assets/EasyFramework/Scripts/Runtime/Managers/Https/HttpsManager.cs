@@ -21,12 +21,12 @@ namespace EasyFramework.Managers
     /// </summary>
     public class HttpsManager : Singleton<HttpsManager>, IManager
     {
-        const string Token = "";
-        const string Domain = "";
+        const string TOKEN = "";
+        const string DOMAIN = "";
 
-        const string GetJson = "application/json";
-        const string SendFiles = "multipart/form-data";
-        const string GetFiles = "application/x-www-form-urlencoded";
+        const string GETJSON = "application/json";
+        const string SENDFILES = "multipart/form-data";
+        const string GETFILES = "application/x-www-form-urlencoded";
 
         void ISingleton.Init()
         {
@@ -54,26 +54,26 @@ namespace EasyFramework.Managers
 
         IEnumerator GetFunc(string address, Action<DownloadHandler> callback)
         {
-            using UnityWebRequest _uwr = UnityWebRequest.Get(address);
+            using UnityWebRequest uwr = UnityWebRequest.Get(address);
 
-            yield return _uwr.SendWebRequest();
+            yield return uwr.SendWebRequest();
 
-            if (_uwr.result == UnityWebRequest.Result.Success)
-                callback?.Invoke(_uwr.downloadHandler);
+            if (uwr.result == UnityWebRequest.Result.Success)
+                callback?.Invoke(uwr.downloadHandler);
             else
-                D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
+                D.Error($"[ {address} ]\t Error Type: [ {uwr.result} ]\t>>>>>   {uwr.error}");
         }
 
         IEnumerator PostFunc(string address, Action<DownloadHandler> callback)
         {
-            using UnityWebRequest _uwr = UnityWebRequest.Post(address, address);
+            using UnityWebRequest uwr = UnityWebRequest.Post(address, address);
 
-            yield return _uwr.SendWebRequest();
+            yield return uwr.SendWebRequest();
 
-            if (_uwr.result == UnityWebRequest.Result.Success)
-                callback?.Invoke(_uwr.downloadHandler);
+            if (uwr.result == UnityWebRequest.Result.Success)
+                callback?.Invoke(uwr.downloadHandler);
             else
-                D.Error($"[ {address} ]\t Error Type: [ {_uwr.result} ]\t>>>>>   {_uwr.error}");
+                D.Error($"[ {address} ]\t Error Type: [ {uwr.result} ]\t>>>>>   {uwr.error}");
         }
 
         /*

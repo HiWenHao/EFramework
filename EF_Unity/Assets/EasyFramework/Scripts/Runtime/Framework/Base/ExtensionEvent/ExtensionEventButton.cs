@@ -53,10 +53,10 @@ namespace EasyFramework.UI
             if (null == buttons)
                 return null;
 
-            int _tempLength = buttons.Count;
+            int tempLength = buttons.Count;
             
-            while (--_tempLength >= 0)
-                buttons[_tempLength].onClick.RemoveAllListeners();
+            while (--tempLength >= 0)
+                buttons[tempLength].onClick.RemoveAllListeners();
 
             buttons.Clear();
             return buttons;
@@ -82,7 +82,7 @@ namespace EasyFramework.UI
             {
                 list = new List<ButtonPro>();
             }
-            button.onClickLeft.AddListener(events);
+            button.OnClickLeft.AddListener(events);
             list.Add(button);
             return button;
         }
@@ -102,10 +102,10 @@ namespace EasyFramework.UI
             if (null == buttons)
                 return null;
 
-            int _tempLength = buttons.Count;
+            int tempLength = buttons.Count;
 
-            while (--_tempLength >= 0)
-                buttons[_tempLength].onClickLeft.RemoveAllListeners();
+            while (--tempLength >= 0)
+                buttons[tempLength].OnClickLeft.RemoveAllListeners();
 
             buttons.Clear();
             return buttons;

@@ -74,45 +74,45 @@ namespace EasyFramework.Managers
 
         EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
 
-        Transform m_patchUpdater;
-        RectTransform Tran_Updater;
-        RectTransform Tran_HintsBox;
-        RectTransform Tran_MessgeBox;
-        Text Txt_Hints;
-        Text Txt_UpdaterTips;
-        Slider Sld_UpdaterSlider;
-        List<Button> m_AllButtons;
+        Transform _patchUpdater;
+        RectTransform _rectUpdater;
+        RectTransform _rectHintsBox;
+        RectTransform _tranMessgeBox;
+        Text _txtHints;
+        Text _txtUpdaterTips;
+        Slider _sldUpdaterSlider;
+        List<Button> _allButtons;
 
-        string m_packageVersion;
-        ResourcePackage m_Package;
-        Dictionary<string, bool> m_CacheData;
-        ResourceDownloaderOperation m_Downloader;
+        string _packageVersion;
+        ResourcePackage _package;
+        Dictionary<string, bool> _cacheData;
+        ResourceDownloaderOperation _downloader;
 
-        Action m_Callback;
-        IEnumerator m_ie_currentIE;
-        Queue<IEnumerator> m_que_updaterState;
+        Action _callback;
+        IEnumerator _ieCurrentIE;
+        Queue<IEnumerator> _queUupdaterState;
 
         void ISingleton.Init()
         {
             // 初始化资源系统
             YooAssets.Initialize();
-            m_que_updaterState = new Queue<IEnumerator>();
+            _queUupdaterState = new Queue<IEnumerator>();
         }
 
         void ISingleton.Quit()
         {
-            if (null != m_Package)
+            if (null != _package)
             {
                 //清空该包体的全部缓存
                 //m_Package.ClearAllCacheFilesAsync();
-                m_Package = null;
+                _package = null;
             }
 
-            m_Downloader = null;
+            _downloader = null;
 
-            m_que_updaterState.Clear();
-            m_que_updaterState = null;
-            m_Callback = null;
+            _queUupdaterState.Clear();
+            _queUupdaterState = null;
+            _callback = null;
         }
 
         /// <summary>
@@ -124,35 +124,35 @@ namespace EasyFramework.Managers
         /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
         public void StartUpdatePatch(EFPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
         {
-            m_CacheData = new Dictionary<string, bool>(1000);
+            _cacheData = new Dictionary<string, bool>(1000);
             PlayMode = (EPlayMode)mode;
             D.Emphasize($"资源系统运行模式：{mode}");
-            m_Callback = callback;
-            m_Package = YooAssets.TryGetPackage(packageName);
-            if (m_Package == null)
+            _callback = callback;
+            _package = YooAssets.TryGetPackage(packageName);
+            if (_package == null)
             {
                 // 创建默认的资源包
-                m_Package = YooAssets.CreatePackage(packageName);
+                _package = YooAssets.CreatePackage(packageName);
 
                 //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-                YooAssets.SetDefaultPackage(m_Package);
-                EF.Load.AddResourcePackage(m_Package);
+                YooAssets.SetDefaultPackage(_package);
+                EF.Load.AddResourcePackage(_package);
             }
             else
             {
-                m_Package = YooAssets.GetPackage(packageName);
+                _package = YooAssets.GetPackage(packageName);
             }
 
-            m_que_updaterState.Clear();
-            if (m_Package.InitializeStatus != EOperationStatus.Succeed)
+            _queUupdaterState.Clear();
+            if (_package.InitializeStatus != EOperationStatus.Succeed)
             {
-                m_que_updaterState.Enqueue(Initialize());
-                m_que_updaterState.Enqueue(GetStaticVersion());
-                m_que_updaterState.Enqueue(GetManifest());
+                _queUupdaterState.Enqueue(Initialize());
+                _queUupdaterState.Enqueue(GetStaticVersion());
+                _queUupdaterState.Enqueue(GetManifest());
             }
 
-            m_que_updaterState.Enqueue(CreateDownloader());
-            m_que_updaterState.Enqueue(BeginDownload());
+            _queUupdaterState.Enqueue(CreateDownloader());
+            _queUupdaterState.Enqueue(BeginDownload());
 
             Run(EUpdateFlow.Initialize);
         }
@@ -162,66 +162,66 @@ namespace EasyFramework.Managers
         {
             //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {m_que_updaterState.Count}");
 
-            if (null != m_ie_currentIE)
-                EF.StopCoroutines(m_ie_currentIE);
-            if (nextFlow.Equals(EUpdateFlow.Done) || m_que_updaterState.Count <= 0)
+            if (null != _ieCurrentIE)
+                EF.StopCoroutines(_ieCurrentIE);
+            if (nextFlow.Equals(EUpdateFlow.Done) || _queUupdaterState.Count <= 0)
             {
-                m_ie_currentIE = null;
-                if (m_patchUpdater)
-                    Tran_MessgeBox.gameObject.SetActive(true);
+                _ieCurrentIE = null;
+                if (_patchUpdater)
+                    _tranMessgeBox.gameObject.SetActive(true);
                 else
-                    m_Callback?.Invoke();
+                    _callback?.Invoke();
                 return;
             }
 
-            m_ie_currentIE = m_que_updaterState.Dequeue();
-            EF.StartCoroutines(m_ie_currentIE);
+            _ieCurrentIE = _queUupdaterState.Dequeue();
+            EF.StartCoroutines(_ieCurrentIE);
         }
 
         void UpdateDone()
         {
-            Txt_Hints = null;
-            Tran_Updater = null;
-            Tran_HintsBox = null;
-            Tran_MessgeBox = null;
-            Txt_UpdaterTips = null;
-            Sld_UpdaterSlider = null;
+            _txtHints = null;
+            _rectUpdater = null;
+            _rectHintsBox = null;
+            _tranMessgeBox = null;
+            _txtUpdaterTips = null;
+            _sldUpdaterSlider = null;
 
-            m_AllButtons.ReleaseAndRemoveEvent();
-            m_AllButtons = null;
+            _allButtons.ReleaseAndRemoveEvent();
+            _allButtons = null;
 
-            Object.Destroy(m_patchUpdater.gameObject);
-            m_patchUpdater = null;
-            m_Callback?.Invoke();
+            Object.Destroy(_patchUpdater.gameObject);
+            _patchUpdater = null;
+            _callback?.Invoke();
 
-            m_CacheData.Clear();
-            m_CacheData = null;
-            m_Callback = null;
-            m_Package = null;
+            _cacheData.Clear();
+            _cacheData = null;
+            _callback = null;
+            _package = null;
         }
         #endregion
 
         #region Setting config Initialize.初始化更新设置
         IEnumerator Initialize()
         {
-            InitializeParameters _initParameters = null;
+            InitializeParameters initParameters = null;
             switch (PlayMode)
             {
                 case EPlayMode.EditorSimulateMode:
-                    var _simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, m_Package.PackageName);
-                    _initParameters = new EditorSimulateModeParameters
+                    var _simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, _package.PackageName);
+                    initParameters = new EditorSimulateModeParameters
                     {
                         EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(_simulateBuildResult)
                     };
                     break;
                 case EPlayMode.OfflinePlayMode:
-                    _initParameters = new OfflinePlayModeParameters
+                    initParameters = new OfflinePlayModeParameters
                     {
                         BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters()
                     };
                     break;
                 case EPlayMode.HostPlayMode:
-                    _initParameters = new HostPlayModeParameters
+                    initParameters = new HostPlayModeParameters
                     {
                         BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters(),
                         CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters
@@ -234,7 +234,7 @@ namespace EasyFramework.Managers
                     };
                     break;
                 case EPlayMode.WebPlayMode:
-                    _initParameters = new WebPlayModeParameters
+                    initParameters = new WebPlayModeParameters
                     {
 
 #if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
@@ -247,12 +247,12 @@ namespace EasyFramework.Managers
                     break;
             }
 
-            InitializationOperation _initializationOperation = m_Package.InitializeAsync(_initParameters);
-            yield return _initializationOperation;
+            InitializationOperation initializationOperation = _package.InitializeAsync(initParameters);
+            yield return initializationOperation;
 
-            if (_initializationOperation.Status != EOperationStatus.Succeed)
+            if (initializationOperation.Status != EOperationStatus.Succeed)
             {
-                D.Error(_initializationOperation.Error);
+                D.Error(initializationOperation.Error);
             }
             else
             {
@@ -374,14 +374,14 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator GetStaticVersion()
         {
-            var operation = m_Package.RequestPackageVersionAsync();
+            var operation = _package.RequestPackageVersionAsync();
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
                 //更新成功
                 string packageVersion = operation.PackageVersion;
-                m_packageVersion = packageVersion;
+                _packageVersion = packageVersion;
                 D.Log($"Updated package Version : {packageVersion}");
 
                 //拿到版本号接下来去获取Manifest信息     GetManifestInfo
@@ -401,7 +401,7 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator GetManifest()
         {
-            var operation = m_Package.UpdatePackageManifestAsync(m_packageVersion);
+            var operation = _package.UpdatePackageManifestAsync(_packageVersion);
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
@@ -425,29 +425,29 @@ namespace EasyFramework.Managers
         {
             int downloadingMaxNum = 10;
             int failedTryAgain = 3;
-            m_Downloader = m_Package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
+            _downloader = _package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
 
             yield return null;
 
-            if (m_Downloader.TotalDownloadCount == 0)
+            if (_downloader.TotalDownloadCount == 0)
             {
                 Run(EUpdateFlow.Done);
             }
             else
             {
-                if (null == m_patchUpdater)
+                if (null == _patchUpdater)
                 {
-                    m_patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
+                    _patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
 
-                    Txt_Hints = EF.Tool.Find<Text>(m_patchUpdater, "Txt_Hints");
-                    Tran_Updater = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_Updater");
-                    Tran_HintsBox = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_HintsBox");
-                    Tran_MessgeBox = EF.Tool.Find<RectTransform>(m_patchUpdater, "Tran_MessgeBox");
-                    EF.Tool.Find<Button>(m_patchUpdater, "Btn_True").RegisterInListAndBindEvent(OnClickBtn_True, ref m_AllButtons);
-                    EF.Tool.Find<Button>(m_patchUpdater, "Btn_False").RegisterInListAndBindEvent(UpdateDone, ref m_AllButtons);
+                    _txtHints = EF.Tool.Find<Text>(_patchUpdater, "Txt_Hints");
+                    _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
+                    _rectHintsBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_HintsBox");
+                    _tranMessgeBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_MessgeBox");
+                    EF.Tool.Find<Button>(_patchUpdater, "Btn_True").RegisterInListAndBindEvent(OnClickBtn_True, ref _allButtons);
+                    EF.Tool.Find<Button>(_patchUpdater, "Btn_False").RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
                 }
 
-                Txt_Hints.text = $"一共发现了{m_Downloader.TotalDownloadCount}个资源，总大小为{(int)(m_Downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
+                _txtHints.text = $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
             }
         }
         #endregion
@@ -458,26 +458,26 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator BeginDownload()
         {
-            if (null == Txt_UpdaterTips)
+            if (null == _txtUpdaterTips)
             {
-                Txt_UpdaterTips = EF.Tool.Find<Text>(m_patchUpdater, "Txt_UpdaterTips");
-                Sld_UpdaterSlider = EF.Tool.Find<Slider>(m_patchUpdater, "Sld_UpdaterSlider");
+                _txtUpdaterTips = EF.Tool.Find<Text>(_patchUpdater, "Txt_UpdaterTips");
+                _sldUpdaterSlider = EF.Tool.Find<Slider>(_patchUpdater, "Sld_UpdaterSlider");
 
-                EF.Tool.Find<Button>(m_patchUpdater, "Btn_Done").RegisterInListAndBindEvent(UpdateDone, ref m_AllButtons);
+                EF.Tool.Find<Button>(_patchUpdater, "Btn_Done").RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
             }
 
             //注册下载回调
-            m_Downloader.OnDownloadErrorCallback = OnDownloadErrorFunction;
-            m_Downloader.OnDownloadProgressCallback = OnDownloadProgressUpdateFunction;
-            m_Downloader.OnDownloadOverCallback = OnDownloadOverFunction;
-            m_Downloader.OnStartDownloadFileCallback = OnStartDownloadFileFunction;
+            _downloader.OnDownloadErrorCallback = OnDownloadErrorFunction;
+            _downloader.OnDownloadProgressCallback = OnDownloadProgressUpdateFunction;
+            _downloader.OnDownloadOverCallback = OnDownloadOverFunction;
+            _downloader.OnStartDownloadFileCallback = OnStartDownloadFileFunction;
 
             //开启下载
-            m_Downloader.BeginDownload();
-            yield return m_Downloader;
+            _downloader.BeginDownload();
+            yield return _downloader;
 
             // 检测下载结果
-            if (m_Downloader.Status != EOperationStatus.Succeed)
+            if (_downloader.Status != EOperationStatus.Succeed)
                 yield break;
 
             Run(EUpdateFlow.Done);
@@ -489,26 +489,26 @@ namespace EasyFramework.Managers
         }
         private void OnDownloadProgressUpdateFunction(int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes)
         {
-            Sld_UpdaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
+            _sldUpdaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
 
             string currentSizeMB = (currentDownloadBytes / 1048576f).ToString("f1");
             string totalSizeMB = (totalDownloadBytes / 1048576f).ToString("f1");
-            Txt_UpdaterTips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
+            _txtUpdaterTips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
         }
         private void OnStartDownloadFileFunction(string fileName, long sizeBytes)
         {
-            //D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
+            D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
         }
         private void OnDownloadOverFunction(bool isSucceed)
         {
-            //D.Log("下载完成，结果为：" + isSucceed);
+            D.Log("下载完成，结果为：" + isSucceed);
         }
         #endregion
 
         void OnClickBtn_True()
         {
-            Tran_Updater.gameObject.SetActive(true);
-            Tran_HintsBox.gameObject.SetActive(false);
+            _rectUpdater.gameObject.SetActive(true);
+            _rectHintsBox.gameObject.SetActive(false);
             Run(EUpdateFlow.BeginDownload);
         }
     }

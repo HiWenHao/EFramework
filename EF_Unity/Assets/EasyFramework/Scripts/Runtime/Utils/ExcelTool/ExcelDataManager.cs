@@ -23,9 +23,9 @@ namespace EasyFramework
             /// <summary>
             /// The all byte file path.全部字节文件路径
             /// </summary>
-            public static string AllByteFilePath => byteDataPathPrefix;
+            public static string AllByteFilePath => _byteDataPathPrefix;
 
-            static string byteDataPathPrefix = null;
+            static string _byteDataPathPrefix = null;
 
             /// <summary>
             /// Initialize excel transition.
@@ -35,8 +35,8 @@ namespace EasyFramework
             public static void Init(string byteDataPath)
             {
                 if (byteDataPath != null)
-                    byteDataPathPrefix = byteDataPath + "/";
-                byte[] data = Resources.Load<TextAsset>(byteDataPathPrefix + "manifest").bytes;
+                    _byteDataPathPrefix = byteDataPath + "/";
+                byte[] data = Resources.Load<TextAsset>(_byteDataPathPrefix + "manifest").bytes;
                 if (data.Length > 0)
                 {
                     int index = 0;
@@ -45,44 +45,44 @@ namespace EasyFramework
                     for (short i = 0; i < fileCnt; i++)
                     {
                         ByteFileParam param = new ByteFileParam();
-                        param.fileName = ByteReader.ReadString(data, index, false);
-                        index += param.fileName.Length + 2;
-                        param.idColIndex = ByteReader.ReadInt(data, index);
+                        param.FileName = ByteReader.ReadString(data, index, false);
+                        index += param.FileName.Length + 2;
+                        param.IdColIndex = ByteReader.ReadInt(data, index);
                         index += 4;
-                        param.rowCount = ByteReader.ReadInt(data, index);
+                        param.RowCount = ByteReader.ReadInt(data, index);
                         index += 4;
-                        param.rowLen = ByteReader.ReadInt(data, index);
+                        param.RowLen = ByteReader.ReadInt(data, index);
                         index += 4;
-                        param.colOff = ByteReader.ReadListInt(data, index, false);
-                        index += 4 * param.colOff.Count + 2;
-                        param.types = ByteReader.ReadListInt(data, index, false);
-                        index += 4 * param.types.Count + 2;
-                        param.varNames = ByteReader.ReadListString(data, index, false);
-                        index += GetListStringLen(param.varNames);
-                        param.cache = ByteReader.ReadBool(data, index);
+                        param.ColOff = ByteReader.ReadListInt(data, index, false);
+                        index += 4 * param.ColOff.Count + 2;
+                        param.Types = ByteReader.ReadListInt(data, index, false);
+                        index += 4 * param.Types.Count + 2;
+                        param.VarNames = ByteReader.ReadListString(data, index, false);
+                        index += GetListStringLen(param.VarNames);
+                        param.Cache = ByteReader.ReadBool(data, index);
                         index++;
-                        param.optimizeType = (OptimizeType)ByteReader.ReadByte(data, index);
+                        param.OptimizeType = (OptimizeType)ByteReader.ReadByte(data, index);
                         index++;
 
-                        switch (param.optimizeType)
+                        switch (param.OptimizeType)
                         {
                             case OptimizeType.Continuity:
-                                param.step = ByteReader.ReadInt(data, index);
+                                param.Step = ByteReader.ReadInt(data, index);
                                 index += 4;
                                 break;
                             case OptimizeType.Segment:
-                                param.segmentList = ByteReader.ReadListInt(data, index, false);
-                                index += 4 * param.segmentList.Count + 2;
+                                param.SegmentList = ByteReader.ReadListInt(data, index, false);
+                                index += 4 * param.SegmentList.Count + 2;
                                 break;
                             case OptimizeType.PartialContinuity:
-                                param.continuityStartOff = ByteReader.ReadInt(data, index);
+                                param.ContinuityStartOff = ByteReader.ReadInt(data, index);
                                 index += 4;
-                                param.continuityCnt = ByteReader.ReadInt(data, index);
+                                param.ContinuityCnt = ByteReader.ReadInt(data, index);
                                 index += 4;
                                 break;
                         }
-                        param.extraInfo = ByteReader.ReadDict<string, string>(data, index, false);
-                        index += GetDictStringLen(param.extraInfo);
+                        param.ExtraInfo = ByteReader.ReadDict<string, string>(data, index, false);
+                        index += GetDictStringLen(param.ExtraInfo);
 
                         object info = GetByteFileInfo(param);
                         byteFilefileInfoDict.Add(i, info);
@@ -114,7 +114,7 @@ namespace EasyFramework
 
             private static object GetByteFileInfo(ByteFileParam param)
             {
-                int idType = param.types[param.idColIndex];
+                int idType = param.Types[param.IdColIndex];
                 switch (idType)
                 {
                     case (int)TypeToken.Bool: return new ByteFileInfo<bool>(param);

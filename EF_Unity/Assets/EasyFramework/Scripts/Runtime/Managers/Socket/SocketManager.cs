@@ -21,18 +21,18 @@ namespace EasyFramework.Managers
     public class SocketManager : Singleton<SocketManager>, IManager
     {
         private int Count;
-        private List<WebSocket> m_WebSocketList;
+        private List<WebSocket> _webSocketList;
 
         void ISingleton.Init()
         {
-            m_WebSocketList = new List<WebSocket>();
+            _webSocketList = new List<WebSocket>();
         }
 
         void ISingleton.Quit()
         {
             DisposeAll();
-            m_WebSocketList.Clear();
-            m_WebSocketList = null;
+            _webSocketList.Clear();
+            _webSocketList = null;
         }
 
         /// <summary>
@@ -56,13 +56,13 @@ namespace EasyFramework.Managers
 #endif
             )
         {
-            WebSocket _ws = new WebSocket(uri);
-            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
+            WebSocket ws = new WebSocket(uri);
+            Register(ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
 #if (!UNITY_WEBGL || UNITY_EDITOR)
                 , onIncompleteFrame
 #endif
                 );
-            return _ws;
+            return ws;
         }
 
         /// <summary>
@@ -93,17 +93,17 @@ namespace EasyFramework.Managers
 #endif
             )
         {
-            WebSocket _ws = new WebSocket(uri, origin, protocol
+            WebSocket ws = new WebSocket(uri, origin, protocol
 #if (!UNITY_WEBGL || UNITY_EDITOR)
                 , extensions
 #endif
                 );
-            Register(_ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
+            Register(ws, onOpen, onMessage, onBinary, onClosed, onError, onErrorDescription
 #if (!UNITY_WEBGL || UNITY_EDITOR)
                 , onIncompleteFrame
 #endif
                 );
-            return _ws;
+            return ws;
         }
 
         /// <summary>
@@ -112,10 +112,10 @@ namespace EasyFramework.Managers
         /// </summary>
         public void DisposeDesignation(WebSocket ws)
         {
-            if (-1 != m_WebSocketList.IndexOf(ws))
+            if (-1 != _webSocketList.IndexOf(ws))
             {
                 Dispose(ws);
-                m_WebSocketList.Remove(ws);
+                _webSocketList.Remove(ws);
                 Count--;
             }
         }
@@ -128,8 +128,8 @@ namespace EasyFramework.Managers
         {
             while (Count > 0)
             {
-                Dispose(m_WebSocketList[--Count]);
-                m_WebSocketList.RemoveAt(Count);
+                Dispose(_webSocketList[--Count]);
+                _webSocketList.RemoveAt(Count);
             }
         }
 
@@ -157,7 +157,7 @@ namespace EasyFramework.Managers
 #endif
             ws.Open();
             Count++;
-            m_WebSocketList.Add(ws);
+            _webSocketList.Add(ws);
         }
 
         void Dispose(WebSocket ws)

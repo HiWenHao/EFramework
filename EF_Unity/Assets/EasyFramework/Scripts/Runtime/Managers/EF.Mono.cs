@@ -47,52 +47,52 @@ public sealed partial class EF : MonoBehaviour
     #endregion
 
     #region Initialize application
-    static EF m_monoEF;
+    static EF _monoEF;
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
     {
         Managers = new GameObject("GM.Managers").transform;
         Singleton = new GameObject("GM.Singleton").transform;
-        m_monoEF = Managers.gameObject.AddComponent<EF>();
+        _monoEF = Managers.gameObject.AddComponent<EF>();
         DontDestroyOnLoad(Managers);
         DontDestroyOnLoad(Singleton);
 
-        ManagerList = new List<IManager>();
-        ManageUpdater = new List<IUpdate>();
-        Updater = new List<IUpdate>();
-        Singletons = new List<ISingleton>();
+        _managerList = new List<IManager>();
+        _manageUpdater = new List<IUpdate>();
+        _updater = new List<IUpdate>();
+        _singletons = new List<ISingleton>();
         Projects = Resources.Load<EasyFramework.Edit.Setting.ProjectSetting>("Settings/ProjectSetting");
         
-        Exiting = false;
+        _exiting = false;
     }
     #endregion
 
     #region Update
     private void Update()
     {
-        if (Exiting)
+        if (_exiting)
             return;
-        for (int i = 0; i < MgrUprCount; i++)
+        for (int i = 0; i < _mgrUprCount; i++)
         {
-            ManageUpdater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
+            _manageUpdater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
-        for (int i = 0; i < UprCount; i++)
+        for (int i = 0; i < _uprCount; i++)
         {
-            Updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
+            _updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
     #endregion
 
     #region Control Mamager and update
-    static bool Exiting;
-    static int SingletonsCount;
-    static int UprCount;
-    static int MgrUprCount;
-    static int ManagerCount;
-    static List<IManager> ManagerList;
-    static List<IUpdate> ManageUpdater;
-    static List<IUpdate> Updater;
-    static List<ISingleton> Singletons;
+    static bool _exiting;
+    static int _singletonsCount;
+    static int _uprCount;
+    static int _mgrUprCount;
+    static int _managerCount;
+    static List<IManager> _managerList;
+    static List<IUpdate> _manageUpdater;
+    static List<IUpdate> _updater;
+    static List<ISingleton> _singletons;
 
     /// <summary>
     /// Register a singleton
@@ -102,11 +102,11 @@ public sealed partial class EF : MonoBehaviour
     {
         if (item is IUpdate)
         {
-            UprCount++;
-            Updater.Add(item as IUpdate);
+            _uprCount++;
+            _updater.Add(item as IUpdate);
         }
-        SingletonsCount++;
-        Singletons.Add(item);
+        _singletonsCount++;
+        _singletons.Add(item);
     }
 
     /// <summary>
@@ -115,26 +115,26 @@ public sealed partial class EF : MonoBehaviour
     /// </summary>
     public static void Register(IManager item)
     {
-        ManagerCount++;
+        _managerCount++;
 
-        int _level = Projects.AppConst.ManagerLevels.IndexOf(item.GetType().Name);
+        int level = Projects.AppConst.ManagerLevels.IndexOf(item.GetType().Name);
 
-        if (_level == -1 || ManagerList.Count == 0)
+        if (level == -1 || _managerList.Count == 0)
         {
-            ManagerList.Add(item);
+            _managerList.Add(item);
         }
         else
         {
-            for (int i = ManagerList.Count - 1; i >= 0; i--)
+            for (int i = _managerList.Count - 1; i >= 0; i--)
             {
-                if (_level > Projects.AppConst.ManagerLevels.IndexOf(ManagerList[i].GetType().Name))
+                if (level > Projects.AppConst.ManagerLevels.IndexOf(_managerList[i].GetType().Name))
                 {
-                    ManagerList.Insert(i + 1, item);
+                    _managerList.Insert(i + 1, item);
                     break;
                 }
                 if (0 == i)
                 {
-                    ManagerList.Insert(0, item);
+                    _managerList.Insert(0, item);
                     break;
                 }
             }
@@ -142,26 +142,26 @@ public sealed partial class EF : MonoBehaviour
 
         if (item is IUpdate)
         {
-            if (ManageUpdater.Count == 0)
-                ManageUpdater.Add(item as IUpdate);
+            if (_manageUpdater.Count == 0)
+                _manageUpdater.Add(item as IUpdate);
             else
             {
-                for (int i = ManageUpdater.Count - 1; i >= 0; i--)
+                for (int i = _manageUpdater.Count - 1; i >= 0; i--)
                 {
                     
-                    if (_level > Projects.AppConst.ManagerLevels.IndexOf(ManageUpdater[i].GetType().Name))
+                    if (level > Projects.AppConst.ManagerLevels.IndexOf(_manageUpdater[i].GetType().Name))
                     {
-                        ManageUpdater.Insert(i + 1, item as IUpdate);
+                        _manageUpdater.Insert(i + 1, item as IUpdate);
                         break;
                     }
                     if (0 == i)
                     {
-                        ManageUpdater.Insert(0, item as IUpdate);
+                        _manageUpdater.Insert(0, item as IUpdate);
                         break;
                     }
                 }
             }
-            MgrUprCount++;
+            _mgrUprCount++;
         }
     }
 
@@ -176,13 +176,13 @@ public sealed partial class EF : MonoBehaviour
             D.Error("You should not unregister this singleton, bescause is a manager.");
             return;
         }
-        --SingletonsCount;
-        Singletons[Singletons.IndexOf(item)].Quit();
-        Singletons.Remove(item);
+        --_singletonsCount;
+        _singletons[_singletons.IndexOf(item)].Quit();
+        _singletons.Remove(item);
         if (item is IUpdate)
         {
-            UprCount--;
-            Updater.Remove(item as IUpdate);
+            _uprCount--;
+            _updater.Remove(item as IUpdate);
         }
         if (item is MonoBehaviour _mono)
         {
@@ -193,25 +193,25 @@ public sealed partial class EF : MonoBehaviour
 
     static void QuitGames()
     {
-        if (Exiting)
+        if (_exiting)
             return;
-        Exiting = true;
+        _exiting = true;
                 
-        while (--SingletonsCount >= 0)
-            Singletons[SingletonsCount].Quit();
+        while (--_singletonsCount >= 0)
+            _singletons[_singletonsCount].Quit();
 
-        Updater.Clear();
-        Updater = null;
-        Singletons.Clear();
-        Singletons = null;
+        _updater.Clear();
+        _updater = null;
+        _singletons.Clear();
+        _singletons = null;
 
-        while (--ManagerCount >= 0)
-            ManagerList[ManagerCount].Quit();
+        while (--_managerCount >= 0)
+            _managerList[_managerCount].Quit();
 
-        ManagerList.Clear();
-        ManagerList = null;
-        ManageUpdater.Clear();
-        ManageUpdater = null;
+        _managerList.Clear();
+        _managerList = null;
+        _manageUpdater.Clear();
+        _manageUpdater = null;
     }
     #endregion
 

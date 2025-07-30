@@ -18,18 +18,18 @@ namespace EasyFramework
     /// </summary>
     public class BindableProperty<T> where T : IEquatable<T>
 	{
-		private T m_value = default;
+		private T _value = default;
 
 		/// <summary>
 		/// 当前值
 		/// </summary>
 		public T Value {
-			get => m_value;
+			get => _value;
 			set {
-				if (!value.Equals(m_value))
+				if (!value.Equals(_value))
                 {
-                    m_value = value;
-					OnVlaueChanged?.Invoke(m_value);
+                    _value = value;
+					OnVlaueChanged?.Invoke(_value);
                 }
 			}
 		}

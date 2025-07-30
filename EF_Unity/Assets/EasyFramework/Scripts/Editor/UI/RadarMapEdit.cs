@@ -40,7 +40,7 @@ namespace EasyFramework.Edit
 
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            //base.OnInspectorGUI();
             EditorGUILayout.Space();
 
             _minDistance.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Min, Lc.Distance, Lc.Limit }), _minDistance.floatValue), 0f, _maxDistance.floatValue);

@@ -37,17 +37,17 @@ namespace EasyFramework.Edit
         private void OnEnable()
         {
             _pro = (ScrollRectPro)target;
-            _lines = serializedObject.FindProperty("m_Lines");
-            _lnertia = serializedObject.FindProperty("m_Inertia");
+            _lines = serializedObject.FindProperty("_lines");
+            _lnertia = serializedObject.FindProperty("_inertia");
             _spacing = serializedObject.FindProperty("_spacing");
-            _maxCount = serializedObject.FindProperty("m_MaxCount");
-            _scrollbar = serializedObject.FindProperty("m_Scrollbar");
-            _dockSpeed = serializedObject.FindProperty("m_DockSpeed");
+            _maxCount = serializedObject.FindProperty("_maxCount");
+            _scrollbar = serializedObject.FindProperty("_scrollbar");
+            _dockSpeed = serializedObject.FindProperty("_dockSpeed");
             _direction = serializedObject.FindProperty("m_direction");
-            _elasticity = serializedObject.FindProperty("m_Elasticity");
-            _autoDocking = serializedObject.FindProperty("m_AutoDocking");
-            _hasScrollbar = serializedObject.FindProperty("m_HasScrollbar");
-            _decelerationRate = serializedObject.FindProperty("m_DecelerationRate");
+            _elasticity = serializedObject.FindProperty("_elasticity");
+            _autoDocking = serializedObject.FindProperty("_autoDocking");
+            _hasScrollbar = serializedObject.FindProperty("_hasScrollbar");
+            _decelerationRate = serializedObject.FindProperty("_decelerationRate");
         }
 
         public override void OnInspectorGUI()
@@ -55,7 +55,7 @@ namespace EasyFramework.Edit
             _pro = target as ScrollRectPro;
 
             EditorGUILayout.Separator();
-            _pro.content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), _pro.content, typeof(RectTransform), true);
+            _pro.Content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), _pro.Content, typeof(RectTransform), true);
             _pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scrol, Lc.Direction }), _pro.Direction);
             _lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { _pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), _lines.intValue);
             _maxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), _maxCount.intValue);

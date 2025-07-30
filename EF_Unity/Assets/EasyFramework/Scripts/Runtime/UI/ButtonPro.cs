@@ -28,101 +28,101 @@ namespace EasyFramework.UI
 
         [FormerlySerializedAs("onClickLeft")]
         [SerializeField]
-        private UnityEvent m_OnClickLeft = new UnityEvent();
+        private UnityEvent _onClickLeft = new UnityEvent();
 
         [FormerlySerializedAs("onClickRight")]
         [SerializeField]
-        private UnityEvent m_OnClickRight = new UnityEvent();
+        private UnityEvent _oClickRight = new UnityEvent();
 
         [FormerlySerializedAs("onLongPressLeft")]
         [SerializeField]
-        private UnityEvent m_onLongPressLeft = new UnityEvent();
+        private UnityEvent _onLongPressLeft = new UnityEvent();
 
         [FormerlySerializedAs("onDoubleClickLeft")]
         [SerializeField]
-        private UnityEvent m_onDoubleClickLeft = new UnityEvent();
+        private UnityEvent _onDoubleClickLeft = new UnityEvent();
 
         [FormerlySerializedAs("onKeepPressLeft")]
         [SerializeField]
-        private UnityEvent m_onKeepPressLeft = new UnityEvent();
+        private UnityEvent _onKeepPressLeft = new UnityEvent();
 
-        public UnityEvent onClickLeft
+        public UnityEvent OnClickLeft
         {
-            get { return m_OnClickLeft; }
+            get { return _onClickLeft; }
         }
-        public UnityEvent onClickRight
+        public UnityEvent OnClickRight
         {
-            get { return m_OnClickRight; }
+            get { return _oClickRight; }
         }
-        public UnityEvent onDoubleClickLeft
+        public UnityEvent OnDoubleClickLeft
         {
-            get { return m_onDoubleClickLeft; }
+            get { return _onDoubleClickLeft; }
         }
-        public UnityEvent onLongPressLeft
+        public UnityEvent OnLongPressLeft
         {
-            get { return m_onLongPressLeft; }
+            get { return _onLongPressLeft; }
         }
-        public UnityEvent onKeepPressLeft
+        public UnityEvent OnKeepPressLeft
         {
-            get { return m_onKeepPressLeft; }
+            get { return _onKeepPressLeft; }
         }
 
-        private float m_longPressIntervalTime = 600.0f;
-        private float m_doubleClcikIntervalTime = 170.0f;
+        private float _longPressIntervalTime = 600.0f;
+        private float _doubleClcikIntervalTime = 170.0f;
 
-        private float m_clickCount = 0;
-        private bool m_onHoldDown = false;
-        private bool m_isKeepPress = false;
-        private bool m_onEventTrigger = false;
-        private double m_clickIntervalTime = 0;
-        private DateTime m_clickStartTime;
+        private float _clickCount = 0;
+        private bool _onHoldDown = false;
+        private bool _isKeepPress = false;
+        private bool _onEventTrigger = false;
+        private double _clickIntervalTime = 0;
+        private DateTime _clickStartTime;
 
         private void OnAnyEventTrigger()
         {
-            m_clickCount = 0;
-            m_onEventTrigger = true;
-            m_clickStartTime = default;
+            _clickCount = 0;
+            _onEventTrigger = true;
+            _clickStartTime = default;
         }
 
         private void Update()
         {
             if (!interactable) return;
-            m_clickIntervalTime = (DateTime.Now - m_clickStartTime).TotalMilliseconds;
+            _clickIntervalTime = (DateTime.Now - _clickStartTime).TotalMilliseconds;
 
-            if (!m_onHoldDown && 0 != m_clickCount)
+            if (!_onHoldDown && 0 != _clickCount)
             {
-                if (m_clickIntervalTime >= m_doubleClcikIntervalTime && m_clickIntervalTime < m_longPressIntervalTime)
+                if (_clickIntervalTime >= _doubleClcikIntervalTime && _clickIntervalTime < _longPressIntervalTime)
                 {
-                    if (m_clickCount == 2)
-                        m_onDoubleClickLeft?.Invoke();
+                    if (_clickCount == 2)
+                        _onDoubleClickLeft?.Invoke();
                     else
-                        onClickLeft?.Invoke();
+                        OnClickLeft?.Invoke();
                     OnAnyEventTrigger();
                 }
             }
 
-            if (m_onHoldDown && !m_onEventTrigger)
+            if (_onHoldDown && !_onEventTrigger)
             {
-                if (m_clickIntervalTime >= m_longPressIntervalTime)
+                if (_clickIntervalTime >= _longPressIntervalTime)
                 {
-                    m_onHoldDown = false;
-                    m_onLongPressLeft?.Invoke();
+                    _onHoldDown = false;
+                    _onLongPressLeft?.Invoke();
                     OnAnyEventTrigger();
                 }
             }
 
-            if (m_isKeepPress) onKeepPressLeft?.Invoke();
+            if (_isKeepPress) OnKeepPressLeft?.Invoke();
         }
 
         public override void OnPointerDown(PointerEventData eventData)
         {
             if (eventData.button == InputButton.Left)
             {
-                m_onHoldDown = true;
-                m_onEventTrigger = false;
-                m_clickStartTime = DateTime.Now;
+                _onHoldDown = true;
+                _onEventTrigger = false;
+                _clickStartTime = DateTime.Now;
             }
-            m_isKeepPress = true;
+            _isKeepPress = true;
             base.OnPointerDown(eventData);
         }
 
@@ -130,25 +130,25 @@ namespace EasyFramework.UI
         {
             if (eventData.button == InputButton.Right)
             {
-                onClickRight?.Invoke();
+                OnClickRight?.Invoke();
                 OnAnyEventTrigger();
             }
-            else if (eventData.button == InputButton.Left && !m_onEventTrigger)
+            else if (eventData.button == InputButton.Left && !_onEventTrigger)
             {
-                m_clickCount++;
-                if (m_clickCount % 3 == 0)
+                _clickCount++;
+                if (_clickCount % 3 == 0)
                 {
-                    onClickLeft?.Invoke();
+                    OnClickLeft?.Invoke();
                     OnAnyEventTrigger();
                     return;
                 }
                 else
                 {
-                    m_onHoldDown = false;
-                    m_isKeepPress = false;
+                    _onHoldDown = false;
+                    _isKeepPress = false;
                 }
             }
-            m_isKeepPress = false;
+            _isKeepPress = false;
 
             base.OnPointerUp(eventData);
         }
@@ -157,9 +157,9 @@ namespace EasyFramework.UI
         {
             if (eventData.button == InputButton.Left)
             {
-                m_onHoldDown = false;
+                _onHoldDown = false;
             }
-            m_isKeepPress = false;
+            _isKeepPress = false;
 
             base.OnPointerExit(eventData);
         }

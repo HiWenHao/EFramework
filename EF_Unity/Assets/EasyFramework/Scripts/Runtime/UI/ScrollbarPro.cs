@@ -66,28 +66,28 @@ namespace EasyFramework.UI
         public class ScrollDragEvent : UnityEvent<bool> { }
 
         [SerializeField]
-        private RectTransform m_HandleRect;
+        private RectTransform _handleRect;
 
         /// <summary>
         /// The RectTransform to use for the handle.
         /// </summary>
-        public RectTransform handleRect { get { return m_HandleRect; } set { if (SetClass(ref m_HandleRect, value)) { UpdateCachedReferences(); UpdateVisuals(); } } }
+        public RectTransform handleRect { get { return _handleRect; } set { if (SetClass(ref _handleRect, value)) { UpdateCachedReferences(); UpdateVisuals(); } } }
 
         // Direction of movement.
         [SerializeField]
-        private Direction m_Direction = Direction.LeftToRight;
+        private Direction _direction = Direction.LeftToRight;
 
         /// <summary>
         /// The direction of the scrollbar from minimum to maximum value.
         /// </summary>
-        public Direction direction { get { return m_Direction; } set { if (SetStruct(ref m_Direction, value)) UpdateVisuals(); } }
+        public Direction direction { get { return _direction; } set { if (SetStruct(ref _direction, value)) UpdateVisuals(); } }
 
         protected ScrollbarPro()
         { }
 
         [Range(0f, 1f)]
         [SerializeField]
-        private float m_Value;
+        private float _value;
 
         /// <summary>
         /// The current value of the scrollbar, between 0 and 1.
@@ -96,9 +96,9 @@ namespace EasyFramework.UI
         {
             get
             {
-                float val = m_Value;
-                if (m_NumberOfSteps > 1)
-                    val = Mathf.Round(val * (m_NumberOfSteps - 1)) / (m_NumberOfSteps - 1);
+                float val = _value;
+                if (_numberOfSteps > 1)
+                    val = Mathf.Round(val * (_numberOfSteps - 1)) / (_numberOfSteps - 1);
                 return val;
             }
             set
@@ -118,29 +118,29 @@ namespace EasyFramework.UI
 
         [Range(0f, 1f)]
         [SerializeField]
-        private float m_Size = 0.2f;
+        private float _size = 0.2f;
 
         /// <summary>
         /// The size of the scrollbar handle where 1 means it fills the entire scrollbar.
         /// </summary>
-        public float size { get { return m_Size; } set { if (SetStruct(ref m_Size, Mathf.Clamp01(value))) UpdateVisuals(); } }
+        public float size { get { return _size; } set { if (SetStruct(ref _size, Mathf.Clamp01(value))) UpdateVisuals(); } }
 
         [Range(0, 11)]
         [SerializeField]
-        private int m_NumberOfSteps = 0;
+        private int _numberOfSteps = 0;
 
         /// <summary>
         /// The number of steps to use for the value. A value of 0 disables use of steps.
         /// </summary>
-        public int numberOfSteps { get { return m_NumberOfSteps; } set { if (SetStruct(ref m_NumberOfSteps, value)) { Set(m_Value); UpdateVisuals(); } } }
+        public int numberOfSteps { get { return _numberOfSteps; } set { if (SetStruct(ref _numberOfSteps, value)) { Set(_value); UpdateVisuals(); } } }
 
         [Space(6)]
 
         [SerializeField]
-        private ScrollEvent m_OnValueChanged = new ScrollEvent();
+        private ScrollEvent _onValueChanged = new ScrollEvent();
 
         [SerializeField]
-        private ScrollDragEvent m_OnScrollDrag = new ScrollDragEvent();
+        private ScrollDragEvent _onScrollDrag = new ScrollDragEvent();
 
         /// <summary>
         /// Handling for when the scrollbar value is changed.
@@ -148,43 +148,43 @@ namespace EasyFramework.UI
         /// <remarks>
         /// Allow for delegate-based subscriptions for faster events than 'eventReceiver', and allowing for multiple receivers.
         /// </remarks>
-        public ScrollEvent onValueChanged { get { return m_OnValueChanged; } set { m_OnValueChanged = value; } }
-        public ScrollDragEvent onScrollDrag { get { return m_OnScrollDrag; } set { m_OnScrollDrag = value; } }
+        public ScrollEvent onValueChanged { get { return _onValueChanged; } set { _onValueChanged = value; } }
+        public ScrollDragEvent onScrollDrag { get { return _onScrollDrag; } set { _onScrollDrag = value; } }
 
         // Private fields
 
-        private RectTransform m_ContainerRect;
+        private RectTransform _containerRect;
 
         // The offset from handle position to mouse down position
-        private Vector2 m_Offset = Vector2.zero;
+        private Vector2 _offset = Vector2.zero;
 
         // Size of each step.
-        float stepSize { get { return (m_NumberOfSteps > 1) ? 1f / (m_NumberOfSteps - 1) : 0.1f; } }
+        float stepSize { get { return (_numberOfSteps > 1) ? 1f / (_numberOfSteps - 1) : 0.1f; } }
 
         // field is never assigned warning
 #pragma warning disable 649
-        private DrivenRectTransformTracker m_Tracker;
+        private DrivenRectTransformTracker _tracker;
 #pragma warning restore 649
-        private Coroutine m_PointerDownRepeat;
-        private bool isPointerDownAndNotDragging = false;
+        private Coroutine _pointerDownRepeat;
+        private bool _isPointerDownAndNotDragging = false;
 
         // This "delayed" mechanism is required for case 1037681.
-        private bool m_DelayedUpdateVisuals = false;
+        private bool _delayedUpdateVisuals = false;
 
 #if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
 
-            m_Size = Mathf.Clamp01(m_Size);
+            _size = Mathf.Clamp01(_size);
 
             //This can be invoked before OnEnabled is called. So we shouldn't be accessing other objects, before OnEnable is called.
             if (IsActive())
             {
                 UpdateCachedReferences();
-                Set(m_Value, false);
+                Set(_value, false);
                 // Update rects (in next update) since other things might affect them even if value didn't change.
-                m_DelayedUpdateVisuals = true;
+                _delayedUpdateVisuals = true;
             }
 
             if (!UnityEditor.PrefabUtility.IsPartOfPrefabAsset(this) && !Application.isPlaying)
@@ -217,14 +217,14 @@ namespace EasyFramework.UI
         {
             base.OnEnable();
             UpdateCachedReferences();
-            Set(m_Value, false);
+            Set(_value, false);
             // Update rects since they need to be initialized correctly.
             UpdateVisuals();
         }
 
         protected override void OnDisable()
         {
-            m_Tracker.Clear();
+            _tracker.Clear();
             base.OnDisable();
         }
 
@@ -234,27 +234,27 @@ namespace EasyFramework.UI
         /// </summary>
         protected virtual void Update()
         {
-            if (m_DelayedUpdateVisuals)
+            if (_delayedUpdateVisuals)
             {
-                m_DelayedUpdateVisuals = false;
+                _delayedUpdateVisuals = false;
                 UpdateVisuals();
             }
         }
 
         void UpdateCachedReferences()
         {
-            if (m_HandleRect && m_HandleRect.parent != null)
-                m_ContainerRect = m_HandleRect.parent.GetComponent<RectTransform>();
+            if (_handleRect && _handleRect.parent != null)
+                _containerRect = _handleRect.parent.GetComponent<RectTransform>();
             else
-                m_ContainerRect = null;
+                _containerRect = null;
         }
 
         void Set(float input, bool sendCallback = true)
         {
-            float currentValue = m_Value;
+            float currentValue = _value;
 
             // bugfix (case 802330) clamp01 input in callee before calling this function, this allows inertia from dragging content to go past extremities without being clamped
-            m_Value = input;
+            _value = input;
 
             // If the stepped value doesn't match the last one, it's time to update
             if (currentValue == value)
@@ -264,7 +264,7 @@ namespace EasyFramework.UI
             if (sendCallback)
             {
                 UISystemProfilerApi.AddMarker("Scrollbar.value", this);
-                m_OnValueChanged.Invoke(value);
+                _onValueChanged.Invoke(value);
             }
         }
 
@@ -285,8 +285,8 @@ namespace EasyFramework.UI
             Vertical = 1
         }
 
-        Axis axis { get { return (m_Direction == Direction.LeftToRight || m_Direction == Direction.RightToLeft) ? Axis.Horizontal : Axis.Vertical; } }
-        bool reverseValue { get { return m_Direction == Direction.RightToLeft || m_Direction == Direction.TopToBottom; } }
+        Axis axis { get { return (_direction == Direction.LeftToRight || _direction == Direction.RightToLeft) ? Axis.Horizontal : Axis.Vertical; } }
+        bool reverseValue { get { return _direction == Direction.RightToLeft || _direction == Direction.TopToBottom; } }
 
         // Force-update the scroll bar. Useful if you've changed the properties and want it to update visually.
         private void UpdateVisuals()
@@ -295,11 +295,11 @@ namespace EasyFramework.UI
             if (!Application.isPlaying)
                 UpdateCachedReferences();
 #endif
-            m_Tracker.Clear();
+            _tracker.Clear();
 
-            if (m_ContainerRect != null)
+            if (_containerRect != null)
             {
-                m_Tracker.Add(this, m_HandleRect, DrivenTransformProperties.Anchors);
+                _tracker.Add(this, _handleRect, DrivenTransformProperties.Anchors);
                 Vector2 anchorMin = Vector2.zero;
                 Vector2 anchorMax = Vector2.one;
 
@@ -315,8 +315,8 @@ namespace EasyFramework.UI
                     anchorMax[(int)axis] = movement + size;
                 }
 
-                m_HandleRect.anchorMin = anchorMin;
-                m_HandleRect.anchorMax = anchorMax;
+                _handleRect.anchorMin = anchorMin;
+                _handleRect.anchorMax = anchorMax;
             }
         }
 
@@ -326,17 +326,17 @@ namespace EasyFramework.UI
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
 
-            if (m_ContainerRect == null)
+            if (_containerRect == null)
                 return;
 
             Vector2 localCursor;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(m_ContainerRect, eventData.position, eventData.pressEventCamera, out localCursor))
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_containerRect, eventData.position, eventData.pressEventCamera, out localCursor))
                 return;
 
-            Vector2 handleCenterRelativeToContainerCorner = localCursor - m_Offset - m_ContainerRect.rect.position;
-            Vector2 handleCorner = handleCenterRelativeToContainerCorner - (m_HandleRect.rect.size - m_HandleRect.sizeDelta) * 0.5f;
+            Vector2 handleCenterRelativeToContainerCorner = localCursor - _offset - _containerRect.rect.position;
+            Vector2 handleCorner = handleCenterRelativeToContainerCorner - (_handleRect.rect.size - _handleRect.sizeDelta) * 0.5f;
 
-            float parentSize = axis == 0 ? m_ContainerRect.rect.width : m_ContainerRect.rect.height;
+            float parentSize = axis == 0 ? _containerRect.rect.width : _containerRect.rect.height;
             float remainingSize = parentSize * (1 - size);
             if (remainingSize <= 0)
                 return;
@@ -347,7 +347,7 @@ namespace EasyFramework.UI
         //this function is testable, it is found using reflection in ScrollbarClamp test
         private void DoUpdateDrag(Vector2 handleCorner, float remainingSize)
         {
-            switch (m_Direction)
+            switch (_direction)
             {
                 case Direction.LeftToRight:
                     Set(Mathf.Clamp01(handleCorner.x / remainingSize));
@@ -374,20 +374,20 @@ namespace EasyFramework.UI
         /// </summary>
         public virtual void OnBeginDrag(PointerEventData eventData)
         {
-            isPointerDownAndNotDragging = false;
+            _isPointerDownAndNotDragging = false;
 
             if (!MayDrag(eventData))
                 return;
 
-            if (m_ContainerRect == null)
+            if (_containerRect == null)
                 return;
 
-            m_Offset = Vector2.zero;
-            if (RectTransformUtility.RectangleContainsScreenPoint(m_HandleRect, eventData.pointerPressRaycast.screenPosition, eventData.enterEventCamera))
+            _offset = Vector2.zero;
+            if (RectTransformUtility.RectangleContainsScreenPoint(_handleRect, eventData.pointerPressRaycast.screenPosition, eventData.enterEventCamera))
             {
                 Vector2 localMousePos;
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(m_HandleRect, eventData.pointerPressRaycast.screenPosition, eventData.pressEventCamera, out localMousePos))
-                    m_Offset = localMousePos - m_HandleRect.rect.center;
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_handleRect, eventData.pointerPressRaycast.screenPosition, eventData.pressEventCamera, out localMousePos))
+                    _offset = localMousePos - _handleRect.rect.center;
             }
         }
 
@@ -399,7 +399,7 @@ namespace EasyFramework.UI
             if (!MayDrag(eventData))
                 return;
 
-            if (m_ContainerRect != null)
+            if (_containerRect != null)
                 UpdateDrag(eventData);
         }
 
@@ -418,10 +418,10 @@ namespace EasyFramework.UI
                 return;
 
             base.OnPointerDown(eventData);
-            isPointerDownAndNotDragging = true;
-            m_PointerDownRepeat = StartCoroutine(ClickRepeat(eventData.pointerPressRaycast.screenPosition, eventData.enterEventCamera));
+            _isPointerDownAndNotDragging = true;
+            _pointerDownRepeat = StartCoroutine(ClickRepeat(eventData.pointerPressRaycast.screenPosition, eventData.enterEventCamera));
 
-            m_OnScrollDrag?.Invoke(true);
+            _onScrollDrag?.Invoke(true);
         }
 
         protected IEnumerator ClickRepeat(PointerEventData eventData)
@@ -434,12 +434,12 @@ namespace EasyFramework.UI
         /// </summary>
         protected IEnumerator ClickRepeat(Vector2 screenPosition, Camera camera)
         {
-            while (isPointerDownAndNotDragging)
+            while (_isPointerDownAndNotDragging)
             {
-                if (!RectTransformUtility.RectangleContainsScreenPoint(m_HandleRect, screenPosition, camera))
+                if (!RectTransformUtility.RectangleContainsScreenPoint(_handleRect, screenPosition, camera))
                 {
                     Vector2 localMousePos;
-                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(m_HandleRect, screenPosition, camera, out localMousePos))
+                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_handleRect, screenPosition, camera, out localMousePos))
                     {
                         var axisCoordinate = axis == 0 ? localMousePos.x : localMousePos.y;
 
@@ -456,7 +456,7 @@ namespace EasyFramework.UI
 
             }            
 
-            StopCoroutine(m_PointerDownRepeat);
+            StopCoroutine(_pointerDownRepeat);
         }
 
         /// <summary>
@@ -465,7 +465,7 @@ namespace EasyFramework.UI
         public override void OnPointerUp(PointerEventData eventData)
         {
             base.OnPointerUp(eventData);
-            isPointerDownAndNotDragging = false;
+            _isPointerDownAndNotDragging = false;
             onScrollDrag?.Invoke(false);
         }
 

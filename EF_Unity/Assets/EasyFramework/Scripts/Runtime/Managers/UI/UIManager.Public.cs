@@ -28,7 +28,7 @@ namespace EasyFramework.Managers
         /// Number of UI page
         /// <para>UI界面数量</para>
         /// </summary>
-        public int UiPageCount => m_PageCount;
+        public int UiPageCount => _pageCount;
 
         /// <summary>
         /// The popups count.<para>弹出窗口的最大数量</para>
@@ -45,7 +45,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(UIPageBase page, params object[] args)
         {
-            if (page == m_CurrentPage)
+            if (page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please use other Push function. ");
                 return null;
@@ -63,7 +63,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(UIPageBase page, bool hideCurrent, params object[] args)
         {
-            if (page == m_CurrentPage)
+            if (page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please use other Push function. ");
                 return null;
@@ -81,7 +81,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(bool repeatCreated, UIPageBase page, params object[] args)
         {
-            if (!repeatCreated && page == m_CurrentPage)
+            if (!repeatCreated && page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true. ");
                 return null;
@@ -100,7 +100,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase Push(bool repeatCreated, UIPageBase page, bool hideCurrent, params object[] args)
         {
-            if (!repeatCreated && page == m_CurrentPage)
+            if (!repeatCreated && page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true. ");
                 return null;
@@ -119,7 +119,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(UIPageBase page, params object[] args)
         {
-            if (page == m_CurrentPage)
+            if (page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
                 return null;
@@ -138,7 +138,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(UIPageBase page, bool hideCurrent, params object[] args)
         {
-            if (page == m_CurrentPage)
+            if (page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
                 return null;
@@ -157,7 +157,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, params object[] args)
         {
-            if (!repeatCreated && page == m_CurrentPage)
+            if (!repeatCreated && page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
                 return null;
@@ -178,7 +178,7 @@ namespace EasyFramework.Managers
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
         public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, bool destroy, bool hideCurrent, params object[] args)
         {
-            if (!repeatCreated && page == m_CurrentPage)
+            if (!repeatCreated && page == _currentPage)
             {
                 D.Error("This is already the page, please dont enter again. If you need repeat enter, please set params 'repeatCreated' to true");
                 return null;
@@ -234,7 +234,7 @@ namespace EasyFramework.Managers
         /// <param name="args"> Send this params to home ui page. <para>给主页面传递参数</para></param>
         public void PopToOnlyOne(bool destroy = false, params object[] args)
         {
-            while (m_PageCount > 2)
+            while (_pageCount > 2)
             {
                 PageClose(destroy);
             }

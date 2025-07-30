@@ -19,8 +19,8 @@ public abstract class Singleton<T> where T : class, ISingleton
     /// <para>当前类型名字</para>
     /// </summary>
     public string Name = typeof(T).Name;
-    public static T Instance => m_Instance;
-    private static readonly T m_Instance = new Lazy<T>(delegate
+    public static T Instance => _instance;
+    private static readonly T _instance = new Lazy<T>(delegate
     {
         T t = Activator.CreateInstance<T>();
         if (t is IManager)

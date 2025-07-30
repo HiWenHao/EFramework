@@ -21,13 +21,13 @@ namespace EasyFramework
         /// <typeparam name="TIdType">IdType。 IdType的类型</typeparam>
         public sealed class ByteFileInfo<TIdType>
         {
-            byte[] data;
-            const int filter = 0xffff;
+            byte[] _data;
+            const int _filter = 0xffff;
 
             /// <summary>
             /// The all index in current sheet data.
             /// </summary>
-            public TIdType[] Ids { get { if (cacheIds == null) CacheAllIds(); return cacheIds; } }
+            public TIdType[] Ids { get { if (_cacheIds == null) CacheAllIds(); return _cacheIds; } }
             /// <summary>
             /// Judge the byte data is load.判断字节数据已经加载
             /// </summary>
@@ -55,11 +55,11 @@ namespace EasyFramework
             /// <summary>
             /// 列数
             /// </summary>
-            public int ColCount => typeToken.Count;
+            public int ColCount => _typeToken.Count;
             /// <summary>
             /// Current id column name.当前ID列的名字
             /// </summary>
-            public string IdColName => varNames[IdColIndex];
+            public string IdColName => _varNames[IdColIndex];
             /// <summary>
             /// 优化类型
             /// </summary>
@@ -68,26 +68,26 @@ namespace EasyFramework
             /// Judge cache.判断是否缓存
             /// </summary>
             public bool Cache { get; }
-            private readonly List<int> typeToken;
-            private readonly List<int> colOff;
-            private readonly List<string> varNames;
-            Dictionary<TIdType, int> id2RowStartOff;    // id对应行起始偏移
+            private readonly List<int> _typeToken;
+            private readonly List<int> _colOff;
+            private readonly List<string> _varNames;
+            Dictionary<TIdType, int> _id2RowStartOff;    // id对应行起始偏移
 
-            TIdType[] cacheIds;
-            readonly int idColOff;
+            TIdType[] _cacheIds;
+            readonly int _idColOff;
 
             /* ------ 优化 ------- */
             // 连续类型
-            TIdType firstVal;
-            readonly int step;
+            TIdType _firstVal;
+            readonly int _step;
             // 分段类型
-            readonly List<int> segmentList; // 每一段的长度
-            List<TIdType> segmentStartList; // 每一段开始的元素值
-            List<int> segmentStartOff;      // 每一段开始的偏移值
-                                            // 部分连续
-            readonly int continuityCnt;  // 连续部分个数
-            readonly int continuityStartOff; // 连续部分起始偏移
-            TIdType continuityStartVal; // 连续部分起始值
+            readonly List<int> _segmentList;    // 每一段的长度
+            List<TIdType> _segmentStartList;    // 每一段开始的元素值
+            List<int> _segmentStartOff;         // 每一段开始的偏移值
+                                                // 部分连续
+            readonly int _continuityCnt;        // 连续部分个数
+            readonly int _continuityStartOff;   // 连续部分起始偏移
+            TIdType _continuityStartVal;        // 连续部分起始值
             /**********************/
 
             /// <summary>
@@ -96,29 +96,29 @@ namespace EasyFramework
             /// <param name="param">参数</param>
             public ByteFileInfo(ByteFileParam param)
             {
-                this.Name = param.fileName;
-                this.IdColIndex = param.idColIndex;
-                this.RowCount = param.rowCount;
-                this.RowLength = param.rowLen;
-                this.typeToken = param.types;
-                this.colOff = param.colOff;
-                this.varNames = param.varNames;
-                this.OptimizeType = param.optimizeType;
-                this.Cache = param.cache;
-                this.idColOff = colOff[IdColIndex];
-                this.ExtraInfo = param.extraInfo;
+                this.Name = param.FileName;
+                this.IdColIndex = param.IdColIndex;
+                this.RowCount = param.RowCount;
+                this.RowLength = param.RowLen;
+                this._typeToken = param.Types;
+                this._colOff = param.ColOff;
+                this._varNames = param.VarNames;
+                this.OptimizeType = param.OptimizeType;
+                this.Cache = param.Cache;
+                this._idColOff = _colOff[IdColIndex];
+                this.ExtraInfo = param.ExtraInfo;
                 if (OptimizeType == OptimizeType.Continuity)
                 {
-                    this.step = param.step;
+                    this._step = param.Step;
                 }
                 else if (OptimizeType == OptimizeType.Segment)
                 {
-                    this.segmentList = param.segmentList;
+                    this._segmentList = param.SegmentList;
                 }
                 else if (OptimizeType == OptimizeType.PartialContinuity)
                 {
-                    this.continuityStartOff = param.continuityStartOff;
-                    this.continuityCnt = param.continuityCnt;
+                    this._continuityStartOff = param.ContinuityStartOff;
+                    this._continuityCnt = param.ContinuityCnt;
                 }
                 Parse();
             }
@@ -126,56 +126,56 @@ namespace EasyFramework
             private void Parse()
             {
                 ByteDataLoaded = true;
-                data = Resources.Load<TextAsset>(ExcelDataManager.AllByteFilePath + Name).bytes;
-                if (data.Length > 0)
+                _data = Resources.Load<TextAsset>(ExcelDataManager.AllByteFilePath + Name).bytes;
+                if (_data.Length > 0)
                 {
                     switch (OptimizeType)
                     {
                         case OptimizeType.None:
                             {
-                                id2RowStartOff = new Dictionary<TIdType, int>();
-                                cacheIds = new TIdType[RowCount];
+                                _id2RowStartOff = new Dictionary<TIdType, int>();
+                                _cacheIds = new TIdType[RowCount];
                                 for (int i = 0; i < RowCount; i++)
                                 {
-                                    TIdType id = ByteReader.Read<TIdType>(data, i * RowLength + idColOff);
-                                    cacheIds[i] = id;
-                                    id2RowStartOff.Add(id, i * RowLength);
+                                    TIdType id = ByteReader.Read<TIdType>(_data, i * RowLength + _idColOff);
+                                    _cacheIds[i] = id;
+                                    _id2RowStartOff.Add(id, i * RowLength);
                                 }
                                 break;
                             }
                         case OptimizeType.Continuity:
-                            firstVal = ByteReader.Read<TIdType>(data, colOff[IdColIndex]);
+                            _firstVal = ByteReader.Read<TIdType>(_data, _colOff[IdColIndex]);
                             break;
                         case OptimizeType.Segment:
                             {
-                                segmentStartOff = new List<int>(segmentList.Count);
-                                segmentStartList = new List<TIdType>(segmentList.Count);
-                                segmentStartOff.Add(0);
-                                segmentStartList.Add(ByteReader.Read<TIdType>(data, idColOff));
-                                int preCnt = segmentList[0];
-                                for (int i = 1; i < segmentList.Count; i++)
+                                _segmentStartOff = new List<int>(_segmentList.Count);
+                                _segmentStartList = new List<TIdType>(_segmentList.Count);
+                                _segmentStartOff.Add(0);
+                                _segmentStartList.Add(ByteReader.Read<TIdType>(_data, _idColOff));
+                                int preCnt = _segmentList[0];
+                                for (int i = 1; i < _segmentList.Count; i++)
                                 {
-                                    segmentStartOff.Add(RowLength * preCnt);
-                                    segmentStartList.Add(ByteReader.Read<TIdType>(data, preCnt * RowLength + idColOff));
-                                    preCnt += segmentList[i];
+                                    _segmentStartOff.Add(RowLength * preCnt);
+                                    _segmentStartList.Add(ByteReader.Read<TIdType>(_data, preCnt * RowLength + _idColOff));
+                                    preCnt += _segmentList[i];
                                 }
                                 break;
                             }
                         case OptimizeType.PartialContinuity:
                             {
-                                id2RowStartOff = new Dictionary<TIdType, int>();
-                                int preCnt = continuityStartOff / RowLength;
+                                _id2RowStartOff = new Dictionary<TIdType, int>();
+                                int preCnt = _continuityStartOff / RowLength;
                                 for (int i = 0; i < preCnt; i++)
                                 {
-                                    TIdType id = ByteReader.Read<TIdType>(data, i * RowLength + idColOff);
-                                    id2RowStartOff.Add(id, i * RowLength);
+                                    TIdType id = ByteReader.Read<TIdType>(_data, i * RowLength + _idColOff);
+                                    _id2RowStartOff.Add(id, i * RowLength);
                                 }
-                                continuityStartVal = ByteReader.Read<TIdType>(data, preCnt * RowLength + idColOff);
-                                var remainStart = preCnt + continuityCnt;
+                                _continuityStartVal = ByteReader.Read<TIdType>(_data, preCnt * RowLength + _idColOff);
+                                var remainStart = preCnt + _continuityCnt;
                                 for (; remainStart < RowCount; remainStart++)
                                 {
-                                    TIdType id = ByteReader.Read<TIdType>(data, remainStart * RowLength + idColOff);
-                                    id2RowStartOff.Add(id, remainStart * RowLength);
+                                    TIdType id = ByteReader.Read<TIdType>(_data, remainStart * RowLength + _idColOff);
+                                    _id2RowStartOff.Add(id, remainStart * RowLength);
                                 }
                                 break;
                             }
@@ -189,7 +189,7 @@ namespace EasyFramework
             public void UnloadByteData()
             {
                 ByteDataLoaded = false;
-                data = null;
+                _data = null;
             }
 
             /// <summary>
@@ -199,7 +199,7 @@ namespace EasyFramework
             {
                 if (ByteDataLoaded) return;
                 ByteDataLoaded = true;
-                data = Resources.Load<TextAsset>(ExcelDataManager.AllByteFilePath + Name).bytes;
+                _data = Resources.Load<TextAsset>(ExcelDataManager.AllByteFilePath + Name).bytes;
             }
 
             /// <summary>
@@ -208,9 +208,9 @@ namespace EasyFramework
             /// <param name="variableOff">变量偏移</param>
             public int GetIndex(int variableOff)
             {
-                for (int i = 0; i < colOff.Count; i++)
+                for (int i = 0; i < _colOff.Count; i++)
                 {
-                    if (colOff[i] == variableOff) return i;
+                    if (_colOff[i] == variableOff) return i;
                 }
                 return -1;
             }
@@ -222,8 +222,8 @@ namespace EasyFramework
             /// <param name="firstValue">第一个元素值</param>
             public void GetOptimizeInfo_Continuity(out int step, out TIdType firstValue)
             {
-                step = this.step;
-                firstValue = firstVal;
+                step = this._step;
+                firstValue = _firstVal;
             }
 
             /// <summary>
@@ -233,8 +233,8 @@ namespace EasyFramework
             /// <param name="continuityCnt">连续部分长度</param>
             public void GetOptimizeInfo_PartialContinuity(out TIdType startVal, out int continuityCnt)
             {
-                startVal = continuityStartVal;
-                continuityCnt = this.continuityCnt;
+                startVal = _continuityStartVal;
+                continuityCnt = this._continuityCnt;
             }
 
             /// <summary>
@@ -244,8 +244,8 @@ namespace EasyFramework
             /// <param name="segmentStartList"></param>
             public void GetOptimizeInfo_Segment(out List<int> segmentList, out List<TIdType> segmentStartList)
             {
-                segmentList = this.segmentList;
-                segmentStartList = this.segmentStartList;
+                segmentList = this._segmentList;
+                segmentStartList = this._segmentStartList;
             }
 
             /// <summary>
@@ -257,64 +257,64 @@ namespace EasyFramework
             /// <returns></returns>
             public T Get<T>(TIdType id, int variableOff)
             {
-                var off = variableOff & filter;
+                var off = variableOff & _filter;
                 if (off >= RowLength)
                 {
-                    Debug.LogError($"{Name} 内不存在此变量: {variableOff >> 16}列");
+                    D.Error($"{Name} 内不存在此变量: {variableOff >> 16}列");
                     return default(T);
                 }
                 switch (OptimizeType)
                 {
                     case OptimizeType.None:
                         {
-                            if (id2RowStartOff.TryGetValue(id, out int rowStart))
+                            if (_id2RowStartOff.TryGetValue(id, out int rowStart))
                             {
-                                return ByteReader.Read<T>(data, rowStart + off);
+                                return ByteReader.Read<T>(_data, rowStart + off);
                             }
                             break;
                         }
                     case OptimizeType.Continuity:
                         {
-                            int diff = GenericCalc.SubToInt(id, firstVal);
-                            int diffCnt = diff / step;  // 与第一个元素相差几个元素（包含自身）
-                            if (diffCnt >= RowCount || ((diff % step) != 0))    // diffCnt最大值为RowCount - 1
+                            int diff = GenericCalc.SubToInt(id, _firstVal);
+                            int diffCnt = diff / _step;  // 与第一个元素相差几个元素（包含自身）
+                            if (diffCnt >= RowCount || ((diff % _step) != 0))    // diffCnt最大值为RowCount - 1
                             {
                                 break;
                             }
-                            return ByteReader.Read<T>(data, diffCnt * RowLength + off);
+                            return ByteReader.Read<T>(_data, diffCnt * RowLength + off);
                         }
                     case OptimizeType.Segment:
                         {
-                            for (int i = 0; i < segmentStartList.Count; i++)
+                            for (int i = 0; i < _segmentStartList.Count; i++)
                             {
-                                int cnt = segmentList[i];
-                                int diff = GenericCalc.SubToInt(id, segmentStartList[i]);
+                                int cnt = _segmentList[i];
+                                int diff = GenericCalc.SubToInt(id, _segmentStartList[i]);
                                 if (diff >= cnt) continue; // diff最大值为cnt - 1
                                 if (diff < 0) break;
-                                return ByteReader.Read<T>(data, segmentStartOff[i] + diff * RowLength + off);
+                                return ByteReader.Read<T>(_data, _segmentStartOff[i] + diff * RowLength + off);
                             }
                             break;
                         }
                     case OptimizeType.PartialContinuity:
                         {
-                            Debug.LogError(id);
-                            Debug.LogError(continuityStartVal);
-                            Debug.LogError(continuityCnt);
-                            int diff = GenericCalc.SubToInt(id, continuityStartVal);
+                            D.Error(id);
+                            D.Error(_continuityStartVal);
+                            D.Error(_continuityCnt);
+                            int diff = GenericCalc.SubToInt(id, _continuityStartVal);
                             // 优先判断是否在连续范围内，因为至少80%概率是在连续范围内
-                            if (diff >= 0 && diff < continuityCnt) // 在连续范围内
+                            if (diff >= 0 && diff < _continuityCnt) // 在连续范围内
                             {
-                                return ByteReader.Read<T>(data, continuityStartOff + diff * RowLength + off);
+                                return ByteReader.Read<T>(_data, _continuityStartOff + diff * RowLength + off);
                             }
-                            if (id2RowStartOff.TryGetValue(id, out int rowStart))
+                            if (_id2RowStartOff.TryGetValue(id, out int rowStart))
                             {
-                                return ByteReader.Read<T>(data, rowStart + off);
+                                return ByteReader.Read<T>(_data, rowStart + off);
                             }
                             break;
                         }
                 }
-                Debug.LogError($"{Name} 内不存在此id: {id}");
-                return default(T);
+                D.Error($"{Name} 内不存在此id: {id}");
+                return default;
             }
 
             /// <summary>
@@ -323,7 +323,7 @@ namespace EasyFramework
             public T GetByRowAndIndex<T>(int rowNum, int index)
             {
                 // 此处主要用于缓存数据使用，就暂时不做有效验证了
-                return ByteReader.Read<T>(data, rowNum * RowLength + colOff[index]);
+                return ByteReader.Read<T>(_data, rowNum * RowLength + _colOff[index]);
             }
 
             /// <summary>
@@ -332,7 +332,7 @@ namespace EasyFramework
             public Dictionary<K, V> GetDictByRowAndIndex<K, V>(int rowNum, int index)
             {
                 // 此处主要用于缓存数据使用，就暂时不做有效验证了
-                return ByteReader.ReadDict<K, V>(data, rowNum * RowLength + colOff[index]);
+                return ByteReader.ReadDict<K, V>(_data, rowNum * RowLength + _colOff[index]);
             }
 
             /// <summary>
@@ -344,10 +344,10 @@ namespace EasyFramework
                 if (OptimizeType == OptimizeType.None) return Ids[rowNum];
                 if (rowNum >= 0 && rowNum < RowCount)
                 {
-                    return ByteReader.Read<TIdType>(data, rowNum * RowLength + idColOff);
+                    return ByteReader.Read<TIdType>(_data, rowNum * RowLength + _idColOff);
                 }
-                Debug.LogError($"行数{rowNum}超出范围，必须属于{0}-{RowCount - 1}");
-                return default(TIdType);
+                D.Error($"行数{rowNum}超出范围，必须属于{0}-{RowCount - 1}");
+                return default;
             }
 
             /// <summary>
@@ -369,17 +369,17 @@ namespace EasyFramework
             /// <param name="cnt">count. 数量</param>
             public List<T> GetOneCol<T>(int variableOff, int cnt)
             {
-                var off = variableOff & filter;
+                var off = variableOff & _filter;
                 if (off >= RowLength || RowCount <= 0)
                 {
-                    Debug.LogError($"{Name} 内不存在此变量: {variableOff >> 16}列");
-                    return default(List<T>);
+                    D.Error($"{Name} 内不存在此变量: {variableOff >> 16}列");
+                    return default;
                 }
                 List<T> ls = new List<T>(cnt);
                 int index = off;
                 for (int i = 0; i < cnt; i++)
                 {
-                    ls.Add(ByteReader.Read<T>(data, index));
+                    ls.Add(ByteReader.Read<T>(_data, index));
                     index += RowLength;
                 }
                 return ls;
@@ -392,73 +392,73 @@ namespace EasyFramework
             /// <returns></returns>
             public Dictionary<K, V> GetDict<K, V>(TIdType id, int variableOff)
             {
-                var off = variableOff & filter;
+                var off = variableOff & _filter;
                 if (off >= RowLength)
                 {
-                    Debug.LogError($"{Name} 内不存在此变量: {variableOff >> 16}列");
+                    D.Error($"{Name} 内不存在此变量: {variableOff >> 16}列");
                     return null;
                 }
                 switch (OptimizeType)
                 {
                     case OptimizeType.None:
                         {
-                            if (id2RowStartOff.TryGetValue(id, out int rowStart))
+                            if (_id2RowStartOff.TryGetValue(id, out int rowStart))
                             {
-                                return ByteReader.ReadDict<K, V>(data, rowStart + off);
+                                return ByteReader.ReadDict<K, V>(_data, rowStart + off);
                             }
                             break;
                         }
                     case OptimizeType.Continuity:
                         {
-                            int diff = GenericCalc.SubToInt(id, firstVal);
-                            int diffCnt = diff / step;  // 与第一个元素相差几个元素（包含自身）
-                            if (diffCnt >= RowCount || ((diff % step) != 0))    // diffCnt最大值为RowCount - 1
+                            int diff = GenericCalc.SubToInt(id, _firstVal);
+                            int diffCnt = diff / _step;  // 与第一个元素相差几个元素（包含自身）
+                            if (diffCnt >= RowCount || ((diff % _step) != 0))    // diffCnt最大值为RowCount - 1
                             {
                                 break;
                             }
-                            return ByteReader.ReadDict<K, V>(data, diffCnt * RowLength + off);
+                            return ByteReader.ReadDict<K, V>(_data, diffCnt * RowLength + off);
                         }
                     case OptimizeType.Segment:
                         {
-                            for (int i = 0; i < segmentStartList.Count; i++)
+                            for (int i = 0; i < _segmentStartList.Count; i++)
                             {
-                                int cnt = segmentList[i];
-                                int diff = GenericCalc.SubToInt(id, segmentStartList[i]);
+                                int cnt = _segmentList[i];
+                                int diff = GenericCalc.SubToInt(id, _segmentStartList[i]);
                                 if (diff >= cnt) continue; // diff最大值为cnt - 1
-                                return ByteReader.ReadDict<K, V>(data, segmentStartOff[i] + diff * RowLength + off);
+                                return ByteReader.ReadDict<K, V>(_data, _segmentStartOff[i] + diff * RowLength + off);
                             }
                             break;
                         }
                     case OptimizeType.PartialContinuity:
                         {
-                            int diff = GenericCalc.SubToInt(id, continuityStartVal);
+                            int diff = GenericCalc.SubToInt(id, _continuityStartVal);
                             // 优先判断是否在连续范围内，因为至少80%概率是在连续范围内
-                            if (diff >= 0 && diff < continuityCnt) // 在连续范围内
+                            if (diff >= 0 && diff < _continuityCnt) // 在连续范围内
                             {
-                                return ByteReader.ReadDict<K, V>(data, continuityStartOff + diff * RowLength + variableOff);
+                                return ByteReader.ReadDict<K, V>(_data, _continuityStartOff + diff * RowLength + variableOff);
                             }
-                            if (id2RowStartOff.TryGetValue(id, out int rowStart))
+                            if (_id2RowStartOff.TryGetValue(id, out int rowStart))
                             {
-                                return ByteReader.ReadDict<K, V>(data, rowStart + off);
+                                return ByteReader.ReadDict<K, V>(_data, rowStart + off);
                             }
                             break;
                         }
                 }
-                Debug.LogError($"{Name} 内不存在此id: {id}");
+                D.Error($"{Name} 内不存在此id: {id}");
                 return null;
             }
             /// <summary>
             /// Reset byte file read manager. 重置字节文件读取
             /// </summary>
-            public void ResetByteFileReader() => ByteFileReader.Reset(data, RowLength, colOff);
+            public void ResetByteFileReader() => ByteFileReader.Reset(_data, RowLength, _colOff);
 
             private void CacheAllIds()
             {
-                if (cacheIds != null) return;
-                cacheIds = new TIdType[RowCount];
+                if (_cacheIds != null) return;
+                _cacheIds = new TIdType[RowCount];
                 for (int i = 0; i < RowCount; i++)
                 {
-                    cacheIds[i] = ByteReader.Read<TIdType>(data, i * RowLength + idColOff);
+                    _cacheIds[i] = ByteReader.Read<TIdType>(_data, i * RowLength + _idColOff);
                 }
             }
         }
@@ -468,26 +468,26 @@ namespace EasyFramework
         /// </summary>
         public struct ByteFileParam
         {
-            public string fileName;
-            public int idColIndex;
-            public int rowCount;
-            public int rowLen;
-            public List<int> types;
-            public List<int> colOff;
-            public List<string> varNames;
-            public bool cache;
-            public Dictionary<string, string> extraInfo;
+            public string FileName;
+            public int IdColIndex;
+            public int RowCount;
+            public int RowLen;
+            public List<int> Types;
+            public List<int> ColOff;
+            public List<string> VarNames;
+            public bool Cache;
+            public Dictionary<string, string> ExtraInfo;
 
             // -----优化相关-----
-            public OptimizeType optimizeType;
+            public OptimizeType OptimizeType;
             // 连续类型
-            public int step;
+            public int Step;
             // 分段类型
-            public List<int> segmentList;
+            public List<int> SegmentList;
             // 部分连续
-            public int continuityStartOff;  // 连续部分起始偏移
-            public int continuityCnt;       // 连续部分个数
-            public long startVal;           // 连续部分开始值
+            public int ContinuityStartOff;  // 连续部分起始偏移
+            public int ContinuityCnt;       // 连续部分个数
+            public long StartVal;           // 连续部分开始值
         }
     }
 }

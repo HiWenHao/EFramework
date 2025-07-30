@@ -100,9 +100,13 @@ namespace EasyFramework.UI
         RectTransform _selfTransform;
         protected override void Awake()
         {
-            if (null == _eachPercent)
+            if (null == _eachPercent || _eachPercent.Length != _vertexCount)
             {
                 _eachPercent = new float[_vertexCount];
+                for (int i = 0; i < _vertexCount; i++)
+                {
+                    _eachPercent[i] = 1.0f;
+                }
             }
 
             SetVerticesDirty();

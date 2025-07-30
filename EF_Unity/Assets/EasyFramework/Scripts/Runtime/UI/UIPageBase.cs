@@ -17,7 +17,7 @@ namespace EasyFramework.UI
     /// </summary>
     public abstract class UIPageBase
     {
-        private bool m_Focus = true;
+        private bool _focus = true;
 
         /// <summary>
         /// Page serial number, do not change.
@@ -29,7 +29,7 @@ namespace EasyFramework.UI
         /// Focus or not.
         /// <para>是否被聚焦</para>
         /// </summary>
-        public bool IsFocus => m_Focus;
+        public bool IsFocus => _focus;
 
         /// <summary>
         /// Initialize this page in created.
@@ -60,7 +60,7 @@ namespace EasyFramework.UI
         /// <para>当上一个页面退出并传递参数时，参数才可能有值.</para></param>
         public virtual void OnFocus(bool focus, params object[] args) 
         {
-            m_Focus = focus;
+            _focus = focus;
         }
 
         /// <summary>

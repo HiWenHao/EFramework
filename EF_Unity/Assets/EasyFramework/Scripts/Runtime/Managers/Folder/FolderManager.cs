@@ -21,15 +21,15 @@ namespace EasyFramework.Managers
     /// </summary>
     public class FolderManager : Singleton<FolderManager>, IManager
     {
-        private string m_AssetsPath;
+        private string _assetsPath;
         void ISingleton.Init()
         {
-            m_AssetsPath = Application.persistentDataPath + "/";
+            _assetsPath = Application.persistentDataPath + "/";
         }
 
         void ISingleton.Quit()
         {
-            m_AssetsPath = default;
+            _assetsPath = default;
         }
 
         #region Target folder operation. 目标文件夹操作
@@ -40,7 +40,7 @@ namespace EasyFramework.Managers
         /// <param name="folderName">folder`s name. <para>文件夹名称</para></param>
         public void CreatAssetsFolder(string folderName)
         {
-            string path = m_AssetsPath + folderName;
+            string path = _assetsPath + folderName;
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         }
 
@@ -51,7 +51,7 @@ namespace EasyFramework.Managers
         /// <param name="folderName">folder`s name. <para>文件夹名称</para></param>
         public void DeleteAssetsFolder(string folderName)
         {
-            string path = m_AssetsPath + folderName;
+            string path = _assetsPath + folderName;
             if (!Directory.Exists(path))
             {
                 D.Error("This folder by name does not exist. 该名字的文件叫不存在.");
@@ -71,7 +71,7 @@ namespace EasyFramework.Managers
         /// <returns></returns>
         public bool CheckFolderExist(string folderName)
         {
-            return Directory.Exists(m_AssetsPath + folderName);
+            return Directory.Exists(_assetsPath + folderName);
         }
         #endregion
 

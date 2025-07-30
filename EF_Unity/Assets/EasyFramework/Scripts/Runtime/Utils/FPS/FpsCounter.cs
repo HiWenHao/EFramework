@@ -16,11 +16,11 @@ namespace EasyFramework
     /// </summary>
     public sealed class FpsCounter
     {
-        private int m_Frames;
-        private float m_TimeLeft;
-        private float m_CurrentFps;
-        private float m_Accumulator;
-        private float m_UpdateInterval;
+        private int _frames;
+        private float _timeLeft;
+        private float _currentFps;
+        private float _accumulator;
+        private float _updateInterval;
 
         /// <summary>
         /// FPS 计算中心
@@ -34,7 +34,7 @@ namespace EasyFramework
                 return;
             }
 
-            m_UpdateInterval = updateInterval;
+            _updateInterval = updateInterval;
             Reset();
         }
 
@@ -45,7 +45,7 @@ namespace EasyFramework
         {
             get
             {
-                return m_UpdateInterval;
+                return _updateInterval;
             }
             set
             {
@@ -55,7 +55,7 @@ namespace EasyFramework
                     return;
                 }
 
-                m_UpdateInterval = value;
+                _updateInterval = value;
                 Reset();
             }
         }
@@ -67,31 +67,31 @@ namespace EasyFramework
         {
             get
             {
-                return m_CurrentFps;
+                return _currentFps;
             }
         }
 
         public void Update(float realElapseSeconds)
         {
-            m_Frames++;
-            m_Accumulator += realElapseSeconds;
-            m_TimeLeft -= realElapseSeconds;
+            _frames++;
+            _accumulator += realElapseSeconds;
+            _timeLeft -= realElapseSeconds;
 
-            if (m_TimeLeft <= 0f)
+            if (_timeLeft <= 0f)
             {
-                m_CurrentFps = m_Accumulator > 0f ? m_Frames / m_Accumulator : 0f;
-                m_Frames = 0;
-                m_Accumulator = 0f;
-                m_TimeLeft += m_UpdateInterval;
+                _currentFps = _accumulator > 0f ? _frames / _accumulator : 0f;
+                _frames = 0;
+                _accumulator = 0f;
+                _timeLeft += _updateInterval;
             }
         }
 
         private void Reset()
         {
-            m_CurrentFps = 0f;
-            m_Frames = 0;
-            m_Accumulator = 0f;
-            m_TimeLeft = 0f;
+            _currentFps = 0f;
+            _frames = 0;
+            _accumulator = 0f;
+            _timeLeft = 0f;
         }
     }
 }

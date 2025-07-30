@@ -32,16 +32,16 @@ namespace EasyFramework.Managers
             Release
         }
 
-        Dictionary<string, IEventHelp> m_EventCenter;
+        Dictionary<string, IEventHelp> _eventCenter;
         void ISingleton.Init()
         {
-            m_EventCenter = new Dictionary<string, IEventHelp>();
+            _eventCenter = new Dictionary<string, IEventHelp>();
         }
 
         void ISingleton.Quit()
         {
-            m_EventCenter.Clear();
-            m_EventCenter = null;
+            _eventCenter.Clear();
+            _eventCenter = null;
         }
 
         #region Private Function
@@ -100,7 +100,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event executing action.<para>事件执行函数</para></param>
         public void AddEvent(string eventName, Action action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 0)
                 {
@@ -111,7 +111,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                m_EventCenter.Add(eventName, new EventHelp(action));
+                _eventCenter.Add(eventName, new EventHelp(action));
             }
         }
 
@@ -123,7 +123,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event executing action.<para>事件执行函数</para></param>
         public void AddEvent<T1>(string eventName, Action<T1> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 1)
                 {
@@ -134,7 +134,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                m_EventCenter.Add(eventName, new EventHelp<T1>(action));
+                _eventCenter.Add(eventName, new EventHelp<T1>(action));
             }
         }
 
@@ -146,7 +146,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event executing action.<para>事件执行函数</para></param>
         public void AddEvent<T1, T2>(string eventName, Action<T1, T2> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 2)
                 {
@@ -157,7 +157,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                m_EventCenter.Add(eventName, new EventHelp<T1, T2>(action));
+                _eventCenter.Add(eventName, new EventHelp<T1, T2>(action));
             }
         }
 
@@ -169,7 +169,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event executing action.<para>事件执行函数</para></param>
         public void AddEvent<T1, T2, T3>(string eventName, Action<T1, T2, T3> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 3)
                 {
@@ -180,7 +180,7 @@ namespace EasyFramework.Managers
             }
             else
             {
-                m_EventCenter.Add(eventName, new EventHelp<T1, T2, T3>(action));
+                _eventCenter.Add(eventName, new EventHelp<T1, T2, T3>(action));
             }
         }
 
@@ -191,7 +191,7 @@ namespace EasyFramework.Managers
         /// <param name="eventName">The event name.<para>事件名称</para></param>
         public void CallEvent(string eventName)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 0)
                 {
@@ -211,7 +211,7 @@ namespace EasyFramework.Managers
         /// <param name="eventName">The event name.<para>事件名称</para></param>
         public void CallEvent<T>(string eventName, T value)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 1)
                     (e as EventHelp<T>)?.Call(value);
@@ -229,7 +229,7 @@ namespace EasyFramework.Managers
         /// <param name="eventName">The event name.<para>事件名称</para></param>
         public void CallEvent<T1, T2>(string eventName, T1 value1, T2 value2)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 2)
                     (e as EventHelp<T1, T2>)?.Call(value1, value2);
@@ -247,7 +247,7 @@ namespace EasyFramework.Managers
         /// <param name="eventName">The event name.<para>事件名称</para></param>
         public void CallEvent<T1, T2, T3>(string eventName, T1 value1, T2 value2, T3 value3)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 3)
                     (e as EventHelp<T1, T2, T3>)?.Call(value1, value2, value3);
@@ -266,7 +266,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event function.<para>事件函数</para></param>
         public void RemoveEvent(string eventName, Action action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 0)
                     (e as EventHelp).Remove(action);
@@ -285,7 +285,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event function.<para>事件函数</para></param>
         public void RemoveEvent<T1>(string eventName, Action<T1> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 1)
                     (e as EventHelp<T1>).Remove(action);
@@ -304,7 +304,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event function.<para>事件函数</para></param>
         public void RemoveEvent<T1, T2>(string eventName, Action<T1, T2> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 2)
                     (e as EventHelp<T1, T2>).Remove(action);
@@ -323,7 +323,7 @@ namespace EasyFramework.Managers
         /// <param name="action">The event function.<para>事件函数</para></param>
         public void RemoveEvent<T1, T2, T3>(string eventName, Action<T1, T2, T3> action)
         {
-            if (m_EventCenter.TryGetValue(eventName, out var e))
+            if (_eventCenter.TryGetValue(eventName, out var e))
             {
                 if (e.ParamsNumber == 3)
                     (e as EventHelp<T1, T2, T3>).Remove(action);
@@ -341,10 +341,10 @@ namespace EasyFramework.Managers
         /// <param name="eventName">事件名</param>
         public void ReleaseEvent(string eventName)
         {
-            if (m_EventCenter.ContainsKey(eventName))
+            if (_eventCenter.ContainsKey(eventName))
             {
-                m_EventCenter[eventName] = null;
-                m_EventCenter.Remove(eventName);
+                _eventCenter[eventName] = null;
+                _eventCenter.Remove(eventName);
             }
             else
                 EventNotFound(eventName, OperationType.Release);

@@ -22,7 +22,7 @@ namespace EasyFramework.Managers
         /// Globally unique time.
         /// <para>全局唯一时间</para>
         /// </summary>
-        public float TotalTime => m_GlobalTime;
+        public float TotalTime => _globalTime;
 
         /// <summary>
         /// Get current time.
@@ -36,58 +36,58 @@ namespace EasyFramework.Managers
         /// </summary>
         public int SleepTimeout
         {
-            get { return m_SleepTimeout; }
+            get { return _sleepTimeout; }
             set {
-                m_SleepTimeout = value;
-                Screen.sleepTimeout = m_SleepTimeout;
+                _sleepTimeout = value;
+                Screen.sleepTimeout = _sleepTimeout;
             }
         }
 
-        private float m_GlobalTime;
-        private int m_SleepTimeout;
+        private float _globalTime;
+        private int _sleepTimeout;
         /// <summary>  Number of events to be processed. 待处理事件数量 </summary>
-        private int m_HandleCount;
+        private int _handleCount;
         /// <summary> Event self-increment index. 事件自增索引 </summary>
-        private int m_KeyIndex;
+        private int _keyIndex;
 
         /// <summary> Event to be deleted. 待删除事件 </summary>
-        private List<int> m_RemovedEvents;
+        private List<int> _removedEvents;
         /// <summary> Event to be added. 待增加事件 </summary>
-        private List<TimeEvent> m_AddedEvents;
+        private List<TimeEvent> _addedEvents;
         /// <summary> All events. 全部事件 </summary>
-        private Dictionary<int, TimeEvent> m_Events;
+        private Dictionary<int, TimeEvent> _events;
 
         void ISingleton.Init()
         {
-            m_GlobalTime = 0.0f;
+            _globalTime = 0.0f;
 
-            m_RemovedEvents = new List<int>();
-            m_AddedEvents = new List<TimeEvent>();
-            m_Events = new Dictionary<int, TimeEvent>();
+            _removedEvents = new List<int>();
+            _addedEvents = new List<TimeEvent>();
+            _events = new Dictionary<int, TimeEvent>();
         }
 
         void ISingleton.Quit()
         {
-            m_Events.Clear();
-            m_AddedEvents.Clear();
-            m_RemovedEvents.Clear();
-            m_Events = null;
-            m_AddedEvents = null;
-            m_RemovedEvents = null;
+            _events.Clear();
+            _addedEvents.Clear();
+            _removedEvents.Clear();
+            _events = null;
+            _addedEvents = null;
+            _removedEvents = null;
         }
 
         void IUpdate.Update(float elapse, float realElapse)
         {
-            m_GlobalTime += elapse;
+            _globalTime += elapse;
 
-            if ((m_HandleCount = m_AddedEvents.Count) != 0)
+            if ((_handleCount = _addedEvents.Count) != 0)
             {
-                for (int i = 0; i < m_HandleCount; i++)
-                    m_Events.Add(m_AddedEvents[i].Id, m_AddedEvents[i]);
-                m_AddedEvents.Clear();
+                for (int i = 0; i < _handleCount; i++)
+                    _events.Add(_addedEvents[i].Id, _addedEvents[i]);
+                _addedEvents.Clear();
             }
 
-            foreach (var timer in m_Events.Values)
+            foreach (var timer in _events.Values)
             {
                 if (timer.IsCompleted)
                     continue;
@@ -99,22 +99,22 @@ namespace EasyFramework.Managers
                     if (--timer.CycleCount == 0)
                     {
                         timer.IsCompleted = true;
-                        m_RemovedEvents.Add(timer.Id);
+                        _removedEvents.Add(timer.Id);
                     }
                     //执行
                     timer.EndCallback?.Invoke(timer.IsCompleted);
                 }
             }
 
-            if ((m_HandleCount = m_RemovedEvents.Count) != 0)
+            if ((_handleCount = _removedEvents.Count) != 0)
             {
-                for (int i = 0; i < m_HandleCount; i++)
+                for (int i = 0; i < _handleCount; i++)
                 {
-                    int _idx = m_RemovedEvents[i];
-                    if (m_Events.ContainsKey(_idx))
-                        m_Events.Remove(m_RemovedEvents[i]);
+                    int _idx = _removedEvents[i];
+                    if (_events.ContainsKey(_idx))
+                        _events.Remove(_removedEvents[i]);
                 }
-                m_RemovedEvents.Clear();
+                _removedEvents.Clear();
             }
         }
 
@@ -129,16 +129,16 @@ namespace EasyFramework.Managers
         /// <returns>时间事件ID</returns>
         int CreateTimeEvent(float firstDelayTime, float cycleTime, int cycleCount, Action<bool> callback)
         {
-            m_KeyIndex++;
-            m_AddedEvents.Add(new TimeEvent()
+            _keyIndex++;
+            _addedEvents.Add(new TimeEvent()
             {
-                Id = m_KeyIndex,
+                Id = _keyIndex,
                 DelayTime = firstDelayTime,
                 CycleCount = cycleCount,
                 CycleTime = cycleTime,
                 EndCallback = callback
             });
-            return m_KeyIndex;
+            return _keyIndex;
         }
 
         #region Public function
@@ -179,7 +179,7 @@ namespace EasyFramework.Managers
             if (timeId < 0)
                 return;
 
-            m_RemovedEvents.Add(timeId);
+            _removedEvents.Add(timeId);
         }
 
         /// <summary>
@@ -188,10 +188,10 @@ namespace EasyFramework.Managers
         /// </summary>
         public void RemoveAll()
         {
-            foreach (var e in m_Events)
+            foreach (var e in _events)
             {
                 e.Value.IsCompleted = true;
-                m_RemovedEvents.Add(e.Key);
+                _removedEvents.Add(e.Key);
             }
         }
         #endregion

@@ -19,28 +19,28 @@ namespace EasyFramework.Managers
     /// </summary>
     public class LoadManager : Singleton<LoadManager>, IManager
     {
-        private Dictionary<string, ResourcePackage> m_ResourcePackageList;
+        private Dictionary<string, ResourcePackage> _resourcePackageList;
         void ISingleton.Init()
         {
-            m_ResourcePackageList = new Dictionary<string, ResourcePackage>();
+            _resourcePackageList = new Dictionary<string, ResourcePackage>();
         }
 
         void ISingleton.Quit()
         {
 
-            foreach (var package in m_ResourcePackageList)
+            foreach (var package in _resourcePackageList)
             {
                 package.Value.UnloadAllAssetsAsync();
             }
-            m_ResourcePackageList.Clear();
-            m_ResourcePackageList = null;
+            _resourcePackageList.Clear();
+            _resourcePackageList = null;
 
         }
 
         #region Added the ResourcePackage
         public void AddResourcePackage(ResourcePackage package)
         {
-            m_ResourcePackageList.Add(package.PackageName, package);
+            _resourcePackageList.Add(package.PackageName, package);
         }
         #endregion
 
@@ -57,7 +57,7 @@ namespace EasyFramework.Managers
 
         public AssetHandle LoadInYooAsset(string pathName, string packageName = "DefaultPackage")
         {
-            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
             {
                 return package.LoadAssetAsync(pathName);
             }
@@ -70,7 +70,7 @@ namespace EasyFramework.Managers
 
         public void LoadSceneAsyncInYooAsset(string pathName, string packageName = "DefaultPackage")
         {
-            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
             {
                 package.LoadSceneAsync(pathName);
             }
@@ -81,7 +81,7 @@ namespace EasyFramework.Managers
         }
         public void LoadSceneAsyncInYooAsset(AssetInfo assetInfo, string packageName = "DefaultPackage")
         {
-            if (m_ResourcePackageList.TryGetValue(packageName, out ResourcePackage package))
+            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
             {
                 package.LoadSceneAsync(assetInfo);
             }
@@ -107,7 +107,7 @@ namespace EasyFramework.Managers
         /// </summary>
         public void ClearYooAssetMemory()
         {
-            foreach (var package in m_ResourcePackageList)
+            foreach (var package in _resourcePackageList)
                 package.Value.UnloadUnusedAssetsAsync();
         }
         /// <summary>
