@@ -438,8 +438,7 @@ namespace EasyFramework.UI
             {
                 if (!RectTransformUtility.RectangleContainsScreenPoint(_handleRect, screenPosition, camera))
                 {
-                    Vector2 localMousePos;
-                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_handleRect, screenPosition, camera, out localMousePos))
+                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_handleRect, screenPosition, camera, out Vector2 localMousePos))
                     {
                         var axisCoordinate = axis == 0 ? localMousePos.x : localMousePos.y;
 

@@ -43,7 +43,7 @@ namespace EasyFramework.Edit
             _maxCount = serializedObject.FindProperty("_maxCount");
             _scrollbar = serializedObject.FindProperty("_scrollbar");
             _dockSpeed = serializedObject.FindProperty("_dockSpeed");
-            _direction = serializedObject.FindProperty("m_direction");
+            _direction = serializedObject.FindProperty("_direction");
             _elasticity = serializedObject.FindProperty("_elasticity");
             _autoDocking = serializedObject.FindProperty("_autoDocking");
             _hasScrollbar = serializedObject.FindProperty("_hasScrollbar");
