@@ -66,7 +66,7 @@ namespace EasyFramework.Managers
 
         IEnumerator PostFunc(string address, Action<DownloadHandler> callback)
         {
-            using UnityWebRequest uwr = UnityWebRequest.Post(address, address);
+            using UnityWebRequest uwr = UnityWebRequest.PostWwwForm(address, address);
 
             yield return uwr.SendWebRequest();
 
