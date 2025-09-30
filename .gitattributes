@@ -189,3 +189,4 @@
 *.dwlt filter=lfs diff=lfs merge=lfs -text
 *.conf filter=lfs diff=lfs merge=lfs -text
 *.sbn filter=lfs diff=lfs merge=lfs -text
+*.user filter=lfs diff=lfs merge=lfs -text
