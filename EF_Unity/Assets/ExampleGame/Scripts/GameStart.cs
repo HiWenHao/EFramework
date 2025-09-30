@@ -96,18 +96,18 @@ namespace EFExample
             //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, callback: LoadMetadataForAOTAssemblies);
 
 
-            //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
-            //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
-            //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
-            //System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
-            //    new System.Func<string, ByteBuf>(LoadByteBuf)
-            //    : new System.Func<string, JSONNode>(LoadJson);
-            //EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
+            var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
+            var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
+            // 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
+            System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
+                new System.Func<string, ByteBuf>(LoadByteBuf)
+                : new System.Func<string, JSONNode>(LoadJson);
+            EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
 
-            //foreach (var item in tables.TbItem.DataList)
-            //{
-            //    EasyFramework.D.Warning("reward:\t" + item.ToString());
-            //}
+            foreach (var item in tables.TbItem.DataList)
+            {
+                EasyFramework.D.Warning("reward:\t" + item.ToString());
+            }
 
             //UI进入
             EF.Ui.Push(new UiA());
