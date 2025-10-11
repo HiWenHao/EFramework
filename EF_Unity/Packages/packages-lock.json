@@ -5,7 +5,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "d505624c78e6d1d2d53efd716abe7349b611681e"
+      "hash": "01754c8fb47bd49697b3428993109e7a972a7968"
     },
     "com.code-philosophy.luban": {
       "version": "https://github.com/focus-creative-games/luban_unity.git",
@@ -13,6 +13,18 @@
       "source": "git",
       "dependencies": {},
       "hash": "005c365bac0b245048050d48d27df098739a6f8f"
+    },
+    "com.tuyoogame.yooasset": {
+      "version": "2.3.16",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.scriptablebuildpipeline": "1.21.25",
+        "com.unity.modules.assetbundle": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
+      },
+      "url": "https://package.openupm.com"
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -53,7 +65,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "1.20.2",
+      "version": "1.21.25",
       "depth": 0,
       "source": "registry",
       "dependencies": {},

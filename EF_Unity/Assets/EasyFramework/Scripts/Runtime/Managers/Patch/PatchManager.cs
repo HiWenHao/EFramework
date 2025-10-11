@@ -1,13 +1,13 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to Update the StaticViersion file. 
+ * Describe:      This script is used to Update the StaticViersion file.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-10-19 10:31:31
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
  * ModifyTime:    2024-07-09 15:38:31
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using EasyFramework.UI;
 using System;
@@ -56,62 +56,61 @@ namespace EasyFramework.Managers
         /// The patch update flow.
         /// <para>补丁更新流程</para>
         /// </summary>
-        enum EUpdateFlow
+        private enum EUpdateFlow
         {
             /// <summary> 初始化 </summary>
             Initialize,
+
             /// <summary> 获取版本 </summary>
             GetStaticVersion,
+
             /// <summary> 获取配置信息 </summary>
             GetManifestInfo,
+
             /// <summary> 创建下载 </summary>
             CreateDownloader,
+
             /// <summary> 开始下载 </summary>
             BeginDownload,
+
             /// <summary> 更新完成 </summary>
             Done
         }
 
-        EPlayMode PlayMode = EPlayMode.EditorSimulateMode;
+        private EPlayMode _playMode = EPlayMode.EditorSimulateMode;
 
-        Transform _patchUpdater;
-        RectTransform _rectUpdater;
-        RectTransform _rectHintsBox;
-        RectTransform _tranMessgeBox;
-        Text _txtHints;
-        Text _txtUpdaterTips;
-        Slider _sldUpdaterSlider;
-        List<Button> _allButtons;
+        private Transform _patchUpdater;
+        private RectTransform _rectUpdater;
+        private RectTransform _rectHintsBox;
+        private RectTransform _tranMessgeBox;
+        private Text _txtHints;
+        private Text _txtUpdaterTips;
+        private Slider _sldUpdaterSlider;
+        private List<Button> _allButtons;
 
-        string _packageVersion;
-        ResourcePackage _package;
-        Dictionary<string, bool> _cacheData;
-        ResourceDownloaderOperation _downloader;
+        private string _packageVersion;
+        private ResourcePackage _package;
+        private Dictionary<string, bool> _cacheData;
+        private ResourceDownloaderOperation _downloader;
 
-        Action _callback;
-        IEnumerator _ieCurrentIE;
-        Queue<IEnumerator> _queUupdaterState;
+        private Action _callback;
+        private IEnumerator _ieCurrentIE;
+        private Queue<IEnumerator> _updateStateQueue;
 
         void ISingleton.Init()
         {
             // 初始化资源系统
             YooAssets.Initialize();
-            _queUupdaterState = new Queue<IEnumerator>();
+            _updateStateQueue = new Queue<IEnumerator>();
         }
 
         void ISingleton.Quit()
         {
-            if (null != _package)
-            {
-                //清空该包体的全部缓存
-                //m_Package.ClearAllCacheFilesAsync();
-                _package = null;
-            }
-
+            _package = null;
             _downloader = null;
 
-            _queUupdaterState.Clear();
-            _queUupdaterState = null;
+            _updateStateQueue.Clear();
+            _updateStateQueue = null;
             _callback = null;
         }
 
@@ -125,7 +124,7 @@ namespace EasyFramework.Managers
         public void StartUpdatePatch(EFPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
         {
             _cacheData = new Dictionary<string, bool>(1000);
-            PlayMode = (EPlayMode)mode;
+            _playMode = (EPlayMode)mode;
             D.Emphasize($"资源系统运行模式：{mode}");
             _callback = callback;
             _package = YooAssets.TryGetPackage(packageName);
@@ -136,23 +135,23 @@ namespace EasyFramework.Managers
 
                 //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
                 YooAssets.SetDefaultPackage(_package);
-                EF.Load.AddResourcePackage(_package);
             }
             else
             {
                 _package = YooAssets.GetPackage(packageName);
             }
+            EF.Load.AddResourcePackage(_package);
 
-            _queUupdaterState.Clear();
+            _updateStateQueue.Clear();
             if (_package.InitializeStatus != EOperationStatus.Succeed)
             {
-                _queUupdaterState.Enqueue(Initialize());
-                _queUupdaterState.Enqueue(GetStaticVersion());
-                _queUupdaterState.Enqueue(GetManifest());
+                _updateStateQueue.Enqueue(Initialize());
+                _updateStateQueue.Enqueue(GetStaticVersion());
+                _updateStateQueue.Enqueue(GetManifest());
             }
 
-            _queUupdaterState.Enqueue(CreateDownloader());
-            _queUupdaterState.Enqueue(BeginDownload());
+            _updateStateQueue.Enqueue(CreateDownloader());
+            _updateStateQueue.Enqueue(BeginDownload());
 
             Run(EUpdateFlow.Initialize);
         }
@@ -160,11 +159,11 @@ namespace EasyFramework.Managers
         #region Run progress. 跑更新流程
         void Run(EUpdateFlow nextFlow)
         {
-            //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {m_que_updaterState.Count}");
+            //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {_updateStateQueue.Count}");
 
             if (null != _ieCurrentIE)
                 EF.StopCoroutines(_ieCurrentIE);
-            if (nextFlow.Equals(EUpdateFlow.Done) || _queUupdaterState.Count <= 0)
+            if (nextFlow.Equals(EUpdateFlow.Done) || _updateStateQueue.Count <= 0)
             {
                 _ieCurrentIE = null;
                 if (_patchUpdater)
@@ -174,7 +173,7 @@ namespace EasyFramework.Managers
                 return;
             }
 
-            _ieCurrentIE = _queUupdaterState.Dequeue();
+            _ieCurrentIE = _updateStateQueue.Dequeue();
             EF.StartCoroutines(_ieCurrentIE);
         }
 
@@ -199,27 +198,33 @@ namespace EasyFramework.Managers
             _callback = null;
             _package = null;
         }
+
         #endregion
 
         #region Setting config Initialize.初始化更新设置
         IEnumerator Initialize()
         {
             InitializeParameters initParameters = null;
-            switch (PlayMode)
+            switch (_playMode)
             {
+                // 编辑器下的模拟模式
                 case EPlayMode.EditorSimulateMode:
-                    var _simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, _package.PackageName);
+                    var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(_package.PackageName);
                     initParameters = new EditorSimulateModeParameters
                     {
-                        EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(_simulateBuildResult)
+                        EditorFileSystemParameters =
+                            FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult
+                                .PackageRootDirectory)
                     };
                     break;
+                // 单机运行模式
                 case EPlayMode.OfflinePlayMode:
                     initParameters = new OfflinePlayModeParameters
                     {
                         BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters()
                     };
                     break;
+                // 联机运行模式
                 case EPlayMode.HostPlayMode:
                     initParameters = new HostPlayModeParameters
                     {
@@ -233,15 +238,22 @@ namespace EasyFramework.Managers
                         )
                     };
                     break;
+                // WebGL运行模式
                 case EPlayMode.WebPlayMode:
                     initParameters = new WebPlayModeParameters
                     {
-
 #if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
-                        IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-                        createParameters.WebFileSystemParameters = WechatFileSystemCreater.CreateWechatFileSystemParameters(remoteServices);
+                        //注意：如果有子目录，请修改此处！
+                        WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(
+                            $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE", 
+                            new RemoteServices(
+                                EF.Projects.ResourcesArea.InnerUrl,
+                                EF.Projects.ResourcesArea.StandbyUrl
+                            )
+                        );
 #else
-                        WebFileSystemParameters = FileSystemParameters.CreateDefaultWebFileSystemParameters()
+                        WebServerFileSystemParameters =
+                            FileSystemParameters.CreateDefaultWebServerFileSystemParameters()
 #endif
                     };
                     break;
@@ -273,10 +285,12 @@ namespace EasyFramework.Managers
                 _defaultHostServer = defaultHostServer;
                 _fallbackHostServer = fallbackHostServer;
             }
+
             string IRemoteServices.GetRemoteMainURL(string fileName)
             {
                 return $"{_defaultHostServer}/{fileName}";
             }
+
             string IRemoteServices.GetRemoteFallbackURL(string fileName)
             {
                 return $"{_fallbackHostServer}/{fileName}";
@@ -290,39 +304,65 @@ namespace EasyFramework.Managers
         {
             /// <summary>
             /// 同步方式获取解密的资源包对象
-            /// 注意：加载流对象在资源包对象释放的时候会自动释放
             /// </summary>
-            AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+            DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
             {
-                BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                managedStream = bundleStream;
-                return AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+                BundleStream bundleStream =
+                    new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                DecryptResult decryptResult = new DecryptResult();
+                decryptResult.ManagedStream = bundleStream;
+                decryptResult.Result =
+                    AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+                return decryptResult;
             }
 
             /// <summary>
             /// 异步方式获取解密的资源包对象
-            /// 注意：加载流对象在资源包对象释放的时候会自动释放
             /// </summary>
-            AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+            DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
             {
-                BundleStream bundleStream = new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                managedStream = bundleStream;
-                return AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+                BundleStream bundleStream =
+                    new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                DecryptResult decryptResult = new DecryptResult();
+                decryptResult.ManagedStream = bundleStream;
+                decryptResult.CreateRequest =
+                    AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
+                return decryptResult;
+            }
+
+            /// <summary>
+            /// 后备方式获取解密的资源包
+            /// 注意：当正常解密方法失败后，会触发后备加载！
+            /// 说明：建议通过LoadFromMemory()方法加载资源包作为保底机制。
+            /// </summary>
+            DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
+            {
+                byte[] fileData = File.ReadAllBytes(fileInfo.FileLoadPath);
+                var assetBundle = AssetBundle.LoadFromMemory(fileData);
+                DecryptResult decryptResult = new DecryptResult();
+                decryptResult.Result = assetBundle;
+                return decryptResult;
+            }
+
+            /// <summary>
+            /// 获取解密的字节数据
+            /// </summary>
+            byte[] IDecryptionServices.ReadFileData(DecryptFileInfo fileInfo)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            /// <summary>
+            /// 获取解密的文本数据
+            /// </summary>
+            string IDecryptionServices.ReadFileText(DecryptFileInfo fileInfo)
+            {
+                throw new System.NotImplementedException();
             }
 
             private static uint GetManagedReadBufferSize()
             {
                 return 1024;
-            }
-
-            public byte[] ReadFileData(DecryptFileInfo fileInfo)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string ReadFileText(DecryptFileInfo fileInfo)
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -335,37 +375,56 @@ namespace EasyFramework.Managers
             /// 同步方式获取解密的资源包对象
             /// 注意：加载流对象在资源包对象释放的时候会自动释放
             /// </summary>
-            AssetBundle IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo, out Stream managedStream)
+            DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
             {
-                managedStream = null;
-                return AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+                DecryptResult decryptResult = new DecryptResult();
+                decryptResult.ManagedStream = null;
+                decryptResult.Result = AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+                return decryptResult;
             }
 
             /// <summary>
             /// 异步方式获取解密的资源包对象
             /// 注意：加载流对象在资源包对象释放的时候会自动释放
             /// </summary>
-            AssetBundleCreateRequest IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo, out Stream managedStream)
+            DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
             {
-                managedStream = null;
-                return AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+                DecryptResult decryptResult = new DecryptResult();
+                decryptResult.ManagedStream = null;
+                decryptResult.CreateRequest = AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
+                return decryptResult;
+            }
+
+            /// <summary>
+            /// 后备方式获取解密的资源包对象
+            /// </summary>
+            DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
+            {
+                return new DecryptResult();
+            }
+
+            /// <summary>
+            /// 获取解密的字节数据
+            /// </summary>
+            byte[] IDecryptionServices.ReadFileData(DecryptFileInfo fileInfo)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            /// <summary>
+            /// 获取解密的文本数据
+            /// </summary>
+            string IDecryptionServices.ReadFileText(DecryptFileInfo fileInfo)
+            {
+                throw new System.NotImplementedException();
             }
 
             private static ulong GetFileOffset()
             {
                 return 32;
             }
-
-            public byte[] ReadFileData(DecryptFileInfo fileInfo)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string ReadFileText(DecryptFileInfo fileInfo)
-            {
-                throw new NotImplementedException();
-            }
         }
+
         #endregion
 
         #region Update the StaticViersion file.更新静态版本文件
@@ -393,6 +452,7 @@ namespace EasyFramework.Managers
                 D.Error($"Get the StaticVersion file error: {operation.Error}");
             }
         }
+
         #endregion
 
         #region Update the GetManifest file.更新配置文件清单
@@ -415,6 +475,7 @@ namespace EasyFramework.Managers
                 D.Error($"Get the Manifest file error: {operation.Error}");
             }
         }
+
         #endregion
 
         #region Create one downloader.创建一个下载器
@@ -423,9 +484,7 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator CreateDownloader()
         {
-            int downloadingMaxNum = 10;
-            int failedTryAgain = 3;
-            _downloader = _package.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
+            _downloader = _package.CreateResourceDownloader(10, 3);
 
             yield return null;
 
@@ -437,19 +496,26 @@ namespace EasyFramework.Managers
             {
                 if (null == _patchUpdater)
                 {
-                    _patchUpdater = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
+                    _patchUpdater = Object
+                        .Instantiate(
+                            EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater"))
+                        .transform;
 
                     _txtHints = EF.Tool.Find<Text>(_patchUpdater, "Txt_Hints");
                     _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
                     _rectHintsBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_HintsBox");
                     _tranMessgeBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_MessgeBox");
-                    EF.Tool.Find<Button>(_patchUpdater, "Btn_True").RegisterInListAndBindEvent(OnClickBtn_True, ref _allButtons);
-                    EF.Tool.Find<Button>(_patchUpdater, "Btn_False").RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
+                    EF.Tool.Find<Button>(_patchUpdater, "Btn_True")
+                        .RegisterInListAndBindEvent(OnClickDownloadBegin, ref _allButtons);
+                    EF.Tool.Find<Button>(_patchUpdater, "Btn_False")
+                        .RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
                 }
 
-                _txtHints.text = $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
+                _txtHints.text =
+                    $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
             }
         }
+
         #endregion
 
         #region Download service pack.下载补丁包
@@ -467,10 +533,10 @@ namespace EasyFramework.Managers
             }
 
             //注册下载回调
-            _downloader.OnDownloadErrorCallback = OnDownloadErrorFunction;
-            _downloader.OnDownloadProgressCallback = OnDownloadProgressUpdateFunction;
-            _downloader.OnDownloadOverCallback = OnDownloadOverFunction;
-            _downloader.OnStartDownloadFileCallback = OnStartDownloadFileFunction;
+            _downloader.DownloadErrorCallback = OnDownloadErrorFunction;
+            _downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
+            _downloader.DownloadFinishCallback = OnDownloadOverFunction;
+            _downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
 
             //开启下载
             _downloader.BeginDownload();
@@ -483,29 +549,36 @@ namespace EasyFramework.Managers
             Run(EUpdateFlow.Done);
         }
 
-        private void OnDownloadErrorFunction(string fileName, string error)
+        private void OnDownloadErrorFunction(DownloadErrorData errorData)
         {
-            D.Error($"Download the file failed. The file name is {fileName} ,  Error info is {error}");
+            D.Error($"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
         }
-        private void OnDownloadProgressUpdateFunction(int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes)
-        {
-            _sldUpdaterSlider.value = (float)currentDownloadBytes / totalDownloadBytes;
 
-            string currentSizeMB = (currentDownloadBytes / 1048576f).ToString("f1");
-            string totalSizeMB = (totalDownloadBytes / 1048576f).ToString("f1");
-            _txtUpdaterTips.text = $"{currentDownloadCount}/{totalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
-        }
-        private void OnStartDownloadFileFunction(string fileName, long sizeBytes)
+        private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
         {
-            D.Error("当前下载：" + fileName + "   大小为： " + sizeBytes);
+            _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
+
+            string currentSizeMB = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
+            string totalSizeMB = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
+            _txtUpdaterTips.text = $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
         }
-        private void OnDownloadOverFunction(bool isSucceed)
+
+        private void OnStartDownloadFileFunction(DownloadFileData fileData)
         {
-            D.Log("下载完成，结果为：" + isSucceed);
+            D.Error($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
         }
+
+        private void OnDownloadOverFunction(DownloaderFinishData finishData)
+        {
+            D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
+        }
+
         #endregion
 
-        void OnClickBtn_True()
+        /// <summary>
+        /// 当点击开始下载
+        /// </summary>
+        void OnClickDownloadBegin()
         {
             _rectUpdater.gameObject.SetActive(true);
             _rectHintsBox.gameObject.SetActive(false);
@@ -520,9 +593,11 @@ namespace EasyFramework.Managers
     {
         public const byte KEY = 64;
 
-        public BundleStream(string path, FileMode mode, FileAccess access, FileShare share) : base(path, mode, access, share)
+        public BundleStream(string path, FileMode mode, FileAccess access, FileShare share) : base(path, mode, access,
+            share)
         {
         }
+
         public BundleStream(string path, FileMode mode) : base(path, mode)
         {
         }
@@ -534,6 +609,7 @@ namespace EasyFramework.Managers
             {
                 array[i] ^= KEY;
             }
+
             return index;
         }
     }
