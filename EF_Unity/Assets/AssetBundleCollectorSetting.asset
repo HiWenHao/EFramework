@@ -9,16 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 185f6993d5150494d98da50e26cb1c25, type: 3}
+  m_Script: {fileID: 0}
   m_Name: AssetBundleCollectorSetting
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: YooAsset.Editor:YooAsset.Editor:AssetBundleCollectorSetting
   ShowPackageView: 0
   ShowEditorAlias: 1
   UniqueBundleName: 0
   Packages:
   - PackageName: DefaultPackage
     PackageDesc: Test
-    EnableAddressable: 0
+    EnableAddressable: 1
+    SupportExtensionless: 1
     LocationToLower: 0
     IncludeAssetGUID: 0
     AutoCollectShaders: 1
@@ -29,16 +30,24 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ExampleGame/Resources/Texture/Freeui
-        CollectorGUID: 24dd9c859be3bd64bbe73026414a471a
+      - CollectPath: Assets/ExampleGame/Resources/Texture/Game
+        CollectorGUID: 05074d4bbefd4e344b0aaa4abe171500
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-      - CollectPath: Assets/ExampleGame/Resources/Texture/Game
-        CollectorGUID: 05074d4bbefd4e344b0aaa4abe171500
+      - CollectPath: Assets/ExampleGame/Resources/Texture/Freeui/ZOSMA/Set
+        CollectorGUID: db6f39f49fac3cc41abeec908a20ad30
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/ExampleGame/Resources/Texture/Freeui/ZOSMA/Stage
+        CollectorGUID: 8879146dfc5721a429c0fe418f9a391e
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory

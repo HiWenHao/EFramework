@@ -14,6 +14,7 @@ using Luban;
 using SimpleJSON;
 using System.Linq;
 using UnityEngine;
+using YooAsset;
 
 namespace EFExample
 {
@@ -23,6 +24,7 @@ namespace EFExample
     public class GameStart : MonoBehaviour
     {
         public bool StartWebSocket;
+        public EasyFramework.Managers.EFPlayMode PlayMode;
         private void Start()
         {
             D.Init();
@@ -93,21 +95,37 @@ namespace EFExample
             }
 
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
-            //EF.Patch.StartUpdatePatch(EasyFramework.Managers.EFPlayMode.HostPlayMode, callback: LoadMetadataForAOTAssemblies);
+            // Yoo现在需要有首包资源，并且会产生[ BuildinCatalog ]文件
+            // 在[ HostPlayMode ]模式下加载某个资源时，
+            // 会先从[ StreamingAssetsPath ] 下寻找，找不到再去沙河路径下寻找
+            // 如何测试:
+            // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
+            // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
+            // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
+            //EF.Patch.StartUpdatePatch(PlayMode, callback: delegate
+            //{
+            //    AssetHandle handle = EF.Load.LoadInYooAsset("Haoheng");
+            //    AudioClip clip = handle.AssetObject as AudioClip;
+            //    if (null == clip)
+            //        clip = EF.Load.LoadInYooAssetSync<AudioClip>("Haoheng");
+            //    
+            //    EF.Audio.Play2DEffectSouceByClip(clip);
+            //    LoadMetadataForAOTAssemblies();
+            //});
 
 
-            var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
-            var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
-            // 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
-            System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
-                new System.Func<string, ByteBuf>(LoadByteBuf)
-                : new System.Func<string, JSONNode>(LoadJson);
-            EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
+            //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
+            //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
+            //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
+            //System.Delegate loader = loaderReturnType == typeof(ByteBuf) ?
+            //    new System.Func<string, ByteBuf>(LoadByteBuf)
+            //    : new System.Func<string, JSONNode>(LoadJson);
+            //EasyFramework.LC tables = (EasyFramework.LC)tablesCtor.Invoke(new object[] { loader });
 
-            foreach (var item in tables.TbItem.DataList)
-            {
-                EasyFramework.D.Warning("reward:\t" + item.ToString());
-            }
+            //foreach (var item in tables.TbItem.DataList)
+            //{
+            //    EasyFramework.D.Warning("reward:\t" + item.ToString());
+            //}
 
             //UI进入
             EF.Ui.Push(new UiA());
@@ -128,12 +146,8 @@ namespace EFExample
             System.Reflection.Assembly _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "ExampleGameHotfix");
             RunHotfixCode(_hotUpdateAss);
 #else
-            YooAsset.AssetHandle _handle = EF.Load.LoadInYooAsset("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
-            _handle.Completed += delegate
-            {
-                byte[] _dllBytes = (_handle.AssetObject as TextAsset).bytes;
-                RunHotfixCode(System.Reflection.Assembly.Load(_dllBytes));
-            };
+            TextAsset handle = EF.Load.LoadInYooAssetSync<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
+            RunHotfixCode(System.Reflection.Assembly.Load(handle.bytes));
 #endif
         }
 
