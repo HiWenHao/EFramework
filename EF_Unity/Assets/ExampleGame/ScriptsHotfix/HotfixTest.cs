@@ -11,16 +11,24 @@
 using EasyFramework;
 using UnityEngine;
 
-namespace Example
+namespace EFExample
 {
     /// <summary>
     /// Please modify the description。
     /// </summary>
     public class HotfixTest : MonoBehaviour
 	{
-		public static void RunTest()
+		public static void Init()
 		{
 			D.Emphasize("Hello Game and HybridCLR");
+			
+			
+			//FPS展示
+			FPSOnGUI.Instance.AllowDrag = true;
+			
+			//UI进入
+			EF.Ui.Push(new UiA());
+
 		}
 	}
 }

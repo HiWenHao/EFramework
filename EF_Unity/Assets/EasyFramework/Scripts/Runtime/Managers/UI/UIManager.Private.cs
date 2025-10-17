@@ -19,9 +19,9 @@ using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
-    public partial class UIManager : Singleton<UIManager>, IManager, IUpdate
+    public partial class UIManager
     {
-        private const string PAGE_BASE_OBJECT_NAME = "Page_Base";
+        private const string PageBaseObjectName = "Page_Base";
 
         int _serial;
         int _pageCount;
@@ -107,7 +107,7 @@ namespace EasyFramework.Managers
 
         void PageInit()
         {
-            RectTransform rect = new GameObject(PAGE_BASE_OBJECT_NAME).AddComponent<RectTransform>();
+            RectTransform rect = new GameObject(PageBaseObjectName).AddComponent<RectTransform>();
             _pageBaseObject = rect.transform;
             _pageBaseObject.SetParent(_root.transform, false);
             _pageBaseObject.localPosition = Vector3.zero;
@@ -159,8 +159,11 @@ namespace EasyFramework.Managers
 
         private GameObject PageCreated(UIPageBase page)
         {
-            GameObject uiObj = Object.Instantiate(EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + page.GetType().Name));
-            uiObj.transform.SetParent(_pageBaseObject);
+            GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(page.GetType().Name) 
+                : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + page.GetType().Name);
+            if (!prefab)
+                D.Exception($"UI Prefab [ {page.GetType().Name} ] not found in YooAsset or Resources Folder.");
+            GameObject uiObj = Object.Instantiate(prefab, _pageBaseObject.transform);
             RectTransform rect = uiObj.GetComponent<RectTransform>();
             rect.anchorMax = Vector2.one;
             rect.anchorMin = Vector2.zero;

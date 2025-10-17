@@ -13,7 +13,6 @@ using EasyFramework.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;
@@ -22,36 +21,20 @@ using Object = UnityEngine.Object;
 namespace EasyFramework.Managers
 {
     /// <summary>
-    /// 资源运行模式
-    /// </summary>
-    public enum EFPlayMode
-    {
-        /// <summary>
-        /// 编辑器下的模拟模式
-        /// </summary>
-        EditorSimulateMode,
-
-        /// <summary>
-        /// 离线运行模式
-        /// </summary>
-        OfflinePlayMode,
-
-        /// <summary>
-        /// 联机运行模式
-        /// </summary>
-        HostPlayMode,
-
-        /// <summary>
-        /// WebGL运行模式
-        /// </summary>
-        WebPlayMode,
-    }
-
-    /// <summary>
     /// 资源更新
     /// </summary>
     public class PatchManager : Singleton<PatchManager>, ISingleton
     {
+        /// <summary>
+        /// 是否使用Yoo
+        /// </summary>
+        public bool IsUse { get; private set; }
+
+        /// <summary>
+        /// 启用可寻址资源定位
+        /// </summary>
+        public bool EnableAddressable => _package.GetPackageDetails().EnableAddressable;
+        
         /// <summary>
         /// The patch update flow.
         /// <para>补丁更新流程</para>
@@ -106,6 +89,8 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
+            IsUse = false;
+            
             _package = null;
             _downloader = null;
 
@@ -121,10 +106,10 @@ namespace EasyFramework.Managers
         /// <param name="mode">Refresh scheme.<para>更新模式</para></param>
         /// <param name="callback">Update the completion callback.<para>更新完成回调</para></param>
         /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
-        public void StartUpdatePatch(EFPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
+        public void StartUpdatePatch(EPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
         {
             _cacheData = new Dictionary<string, bool>(1000);
-            _playMode = (EPlayMode)mode;
+            _playMode = mode;
             D.Emphasize($"资源系统运行模式：{mode}");
             _callback = callback;
             _package = YooAssets.TryGetPackage(packageName);
@@ -165,6 +150,7 @@ namespace EasyFramework.Managers
                 EF.StopCoroutines(_ieCurrentIE);
             if (nextFlow.Equals(EUpdateFlow.Done) || _updateStateQueue.Count <= 0)
             {
+                IsUse = true;
                 _ieCurrentIE = null;
                 if (_patchUpdater)
                     _tranMessgeBox.gameObject.SetActive(true);
@@ -296,135 +282,6 @@ namespace EasyFramework.Managers
                 return $"{_fallbackHostServer}/{fileName}";
             }
         }
-
-        /// <summary>
-        /// 资源文件流加载解密类
-        /// </summary>
-        private class FileStreamDecryption : IDecryptionServices
-        {
-            /// <summary>
-            /// 同步方式获取解密的资源包对象
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
-            {
-                BundleStream bundleStream =
-                    new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                DecryptResult decryptResult = new DecryptResult();
-                decryptResult.ManagedStream = bundleStream;
-                decryptResult.Result =
-                    AssetBundle.LoadFromStream(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
-                return decryptResult;
-            }
-
-            /// <summary>
-            /// 异步方式获取解密的资源包对象
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
-            {
-                BundleStream bundleStream =
-                    new BundleStream(fileInfo.FileLoadPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                DecryptResult decryptResult = new DecryptResult();
-                decryptResult.ManagedStream = bundleStream;
-                decryptResult.CreateRequest =
-                    AssetBundle.LoadFromStreamAsync(bundleStream, fileInfo.FileLoadCRC, GetManagedReadBufferSize());
-                return decryptResult;
-            }
-
-            /// <summary>
-            /// 后备方式获取解密的资源包
-            /// 注意：当正常解密方法失败后，会触发后备加载！
-            /// 说明：建议通过LoadFromMemory()方法加载资源包作为保底机制。
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
-            {
-                byte[] fileData = File.ReadAllBytes(fileInfo.FileLoadPath);
-                var assetBundle = AssetBundle.LoadFromMemory(fileData);
-                DecryptResult decryptResult = new DecryptResult();
-                decryptResult.Result = assetBundle;
-                return decryptResult;
-            }
-
-            /// <summary>
-            /// 获取解密的字节数据
-            /// </summary>
-            byte[] IDecryptionServices.ReadFileData(DecryptFileInfo fileInfo)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            /// <summary>
-            /// 获取解密的文本数据
-            /// </summary>
-            string IDecryptionServices.ReadFileText(DecryptFileInfo fileInfo)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            private static uint GetManagedReadBufferSize()
-            {
-                return 1024;
-            }
-        }
-
-        /// <summary>
-        /// 资源文件偏移加载解密类
-        /// </summary>
-        private class FileOffsetDecryption : IDecryptionServices
-        {
-            /// <summary>
-            /// 同步方式获取解密的资源包对象
-            /// 注意：加载流对象在资源包对象释放的时候会自动释放
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundle(DecryptFileInfo fileInfo)
-            {
-                DecryptResult decryptResult = new DecryptResult();
-                decryptResult.ManagedStream = null;
-                decryptResult.Result = AssetBundle.LoadFromFile(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
-                return decryptResult;
-            }
-
-            /// <summary>
-            /// 异步方式获取解密的资源包对象
-            /// 注意：加载流对象在资源包对象释放的时候会自动释放
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundleAsync(DecryptFileInfo fileInfo)
-            {
-                DecryptResult decryptResult = new DecryptResult();
-                decryptResult.ManagedStream = null;
-                decryptResult.CreateRequest = AssetBundle.LoadFromFileAsync(fileInfo.FileLoadPath, fileInfo.FileLoadCRC, GetFileOffset());
-                return decryptResult;
-            }
-
-            /// <summary>
-            /// 后备方式获取解密的资源包对象
-            /// </summary>
-            DecryptResult IDecryptionServices.LoadAssetBundleFallback(DecryptFileInfo fileInfo)
-            {
-                return new DecryptResult();
-            }
-
-            /// <summary>
-            /// 获取解密的字节数据
-            /// </summary>
-            byte[] IDecryptionServices.ReadFileData(DecryptFileInfo fileInfo)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            /// <summary>
-            /// 获取解密的文本数据
-            /// </summary>
-            string IDecryptionServices.ReadFileText(DecryptFileInfo fileInfo)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            private static ulong GetFileOffset()
-            {
-                return 32;
-            }
-        }
-
         #endregion
 
         #region Update the StaticViersion file.更新静态版本文件
@@ -583,34 +440,6 @@ namespace EasyFramework.Managers
             _rectUpdater.gameObject.SetActive(true);
             _rectHintsBox.gameObject.SetActive(false);
             Run(EUpdateFlow.BeginDownload);
-        }
-    }
-
-    /// <summary>
-    /// 资源文件解密流
-    /// </summary>
-    public class BundleStream : FileStream
-    {
-        public const byte KEY = 64;
-
-        public BundleStream(string path, FileMode mode, FileAccess access, FileShare share) : base(path, mode, access,
-            share)
-        {
-        }
-
-        public BundleStream(string path, FileMode mode) : base(path, mode)
-        {
-        }
-
-        public override int Read(byte[] array, int offset, int count)
-        {
-            var index = base.Read(array, offset, count);
-            for (int i = 0; i < array.Length; i++)
-            {
-                array[i] ^= KEY;
-            }
-
-            return index;
         }
     }
 }
