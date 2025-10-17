@@ -12,26 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectSetting
   m_EditorClassIdentifier: 
-  m_LanguageIndex: 1
-  m_RendererPipline: 0
-  m_ScriptAuthor: Xiaohei.Wang(Wenhao)
-  m_ScriptVersion: 0.1
-  m_ResourcesArea:
+  _languageIndex: 1
+  _rendererPipline: 0
+  _scriptAuthor: Default
+  _scriptVersion: 0.1
+  _resourcesArea:
     m_CopyResToCommit: 0
     m_CleanCommitRes: 1
     m_ServerType: 1
-    m_InnerUrl: http://127.0.0.1/dashboard/_Download/v1.0
-    m_ExtraUrl: http://127.0.0.1/dashboard/_Download/v1.0
-    m_FormalUrl: http://127.0.0.1/dashboard/_Download/v1.0
-    m_StandbyUrl: http://127.0.0.1/dashboard/_Download/v1.0
-  m_AppConst:
-    m_AppName: EF_Unity
-    m_AppPrefix: EF_Unity_
-    m_AppVersion: 1.0
-    m_AppStage: 1
-    m_UIPath: Prefabs/UI/
-    m_AudioPath: Sources/
-    m_ManagerLevel:
+    m_InnerUrl: http://localhost/dashboard/_download/v1.0
+    m_ExtraUrl: http://localhost/dashboard/_download/v1.0
+    m_FormalUrl: http://localhost/dashboard/_download/v1.0
+    m_StandbyUrl: http://localhost/dashboard/_download/v1.0
+  _appConst:
+    _appName: EasyFramework
+    _appPrefix: EF_
+    _appVersion: 1.0
+    _appStage: 1
+    _uiPath: Prefabs/UI/
+    _audioPath: Sources/
+    _managerLevel:
     - TimeManager
     - ToolManager
     - EventManager
