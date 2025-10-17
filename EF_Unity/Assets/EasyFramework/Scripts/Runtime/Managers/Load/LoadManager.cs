@@ -38,7 +38,7 @@ namespace EasyFramework.Managers
             _resourcePackageList = null;
         }
 
-        #region Added the ResourcePackage
+        #region Added the ResourcePackage - 增加资源包
 
         public void AddResourcePackage(ResourcePackage package)
         {
@@ -46,6 +46,72 @@ namespace EasyFramework.Managers
         }
 
         #endregion
+
+        #region Check - 查询
+
+        /// <summary>
+        /// 查询资源是否在具体的包中
+        /// </summary>
+        /// <param name="location">资源的定位地址， 如果勾选[ Enable Addressable ] 则只需要提供名字即可.
+        /// <para>否则需要提供项目下的具体路径 eg: Assets/ExampleGame/Sources/xxxxx.mp3</para></param>
+        /// <param name="packageName">资源包提名称</param>
+        /// <returns></returns>
+        public bool ResourceInPackage(string location, string packageName)
+        {
+            if (_resourcePackageList.TryGetValue(packageName, out var package))
+                return package.CheckLocationValid(location);
+
+            D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
+            return false;
+        }
+
+        #endregion
+
+        #region Load resources - 加载资源
+        /// <summary>
+        /// 同步加载资源
+        /// </summary>
+        /// <param name="location">资源的定位地址， 如果勾选[ Enable Addressable ] 则只需要提供名字即可.
+        /// <para>否则需要提供项目下的具体路径 eg: Assets/ExampleGame/Sources/xxxxx.mp3</para></param>
+        /// <param name="packageName">资源包提名称</param>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <returns>T类型对象</returns>
+        public T LoadInYooSync<T>(string location, string packageName = "DefaultPackage") where T : Object
+            => LoadInYooAsset<T>(location, packageName, false);
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="location">资源的定位地址， 如果勾选[ Enable Addressable ] 则只需要提供名字即可.
+        /// <para>否则需要提供项目下的具体路径 eg: Assets/ExampleGame/Sources/xxxxx.mp3</para></param>
+        /// <param name="packageName">资源包提名称</param>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <returns>T类型对象</returns>
+        public T LoadInYooAsync<T>(string location, string packageName = "DefaultPackage") where T : Object
+            => LoadInYooAsset<T>(location, packageName, true);
+
+        private T LoadInYooAsset<T>(string location, string packageName, bool useAsync) where T : Object
+        {
+            T resources = null;
+            if (!EF.Patch.IsUse)
+            {
+                D.Error($"Please use [ EF.Patch.StartUpdatePatch() ] initialize YooAsset.!");
+                return resources;
+            }
+
+            if (_resourcePackageList.TryGetValue(packageName, out var package))
+            {
+                if (package.CheckLocationValid(location))
+                    resources = useAsync ? package.LoadAssetAsync<T>(location).GetAssetObject<T>()
+                        : package.LoadAssetSync<T>(location).GetAssetObject<T>();
+                else
+                    D.Warning($"Current resource [ {location} ] doesn't exist in [ {packageName} ]..");
+            }
+            else
+                D.Error($"The [ {packageName} ] package not yet obtained. Please use function [EF.Patch.StartUpdatePatch()] to update.");
+
+            return resources;
+        }
 
         /// <summary>
         /// Load the object in resources folder.
@@ -57,57 +123,8 @@ namespace EasyFramework.Managers
         {
             return Resources.Load<T>(pathName);
         }
-        
-        public T LoadInYooAssetSync<T>(string pathName, string packageName = "DefaultPackage") where T : Object
-        {
-            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
-            {
-                return package.LoadAssetSync<T>(pathName).AssetObject as T;
-            }
-            else
-            {
-                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
-                return null;
-            }
-            
-        }
-        
-        public AssetHandle LoadInYooAsset(string pathName, string packageName = "DefaultPackage")
-        {
-            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
-            {
-                return package.LoadAssetAsync(pathName);
-            }
-            else
-            {
-                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
-                return null;
-            }
-        }
 
-        public void LoadSceneAsyncInYooAsset(string pathName, string packageName = "DefaultPackage")
-        {
-            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
-            {
-                package.LoadSceneAsync(pathName);
-            }
-            else
-            {
-                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
-            }
-        }
-
-        public void LoadSceneAsyncInYooAsset(AssetInfo assetInfo, string packageName = "DefaultPackage")
-        {
-            if (_resourcePackageList.TryGetValue(packageName, out ResourcePackage package))
-            {
-                package.LoadSceneAsync(assetInfo);
-            }
-            else
-            {
-                D.Error($"The [ {packageName} ] package not yet obtained. Please start updater.");
-            }
-        }
+        #endregion
 
         #region ClearMemory
 

@@ -1,3 +1,16 @@
 {
-	"name": "ExampleGameHotfix"
+    "name": "ExampleGameHotfix",
+    "rootNamespace": "",
+    "references": [
+        "GUID:819eb555a9518b940aac77f138a990d0"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

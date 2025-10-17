@@ -24,7 +24,7 @@ namespace EFExample
     public class GameStart : MonoBehaviour
     {
         public bool StartWebSocket;
-        public EasyFramework.Managers.EFPlayMode PlayMode;
+        public EPlayMode PlayMode;
         private void Start()
         {
             D.Init();
@@ -41,8 +41,6 @@ namespace EFExample
 
             EF.Timer.SleepTimeout = SleepTimeout.NeverSleep;
 
-            //FPS展示
-            FPSOnGUI.Instance.AllowDrag = true;
 
             //当然，你也可以随时卸载你不需要的单例
             //EF.Timer.AddOnce(2.0f, delegate
@@ -102,16 +100,11 @@ namespace EFExample
             // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            //EF.Patch.StartUpdatePatch(PlayMode, callback: delegate
-            //{
-            //    AssetHandle handle = EF.Load.LoadInYooAsset("Haoheng");
-            //    AudioClip clip = handle.AssetObject as AudioClip;
-            //    if (null == clip)
-            //        clip = EF.Load.LoadInYooAssetSync<AudioClip>("Haoheng");
-            //    
-            //    EF.Audio.Play2DEffectSouceByClip(clip);
-            //    LoadMetadataForAOTAssemblies();
-            //});
+            EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
+                AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
+                EF.Audio.Play2DEffectSouceByClip(clip);
+                LoadMetadataForAOTAssemblies();
+            });
 
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
@@ -127,8 +120,6 @@ namespace EFExample
             //    EasyFramework.D.Warning("reward:\t" + item.ToString());
             //}
 
-            //UI进入
-            EF.Ui.Push(new UiA());
 
             //音频播放
             //EF.Sources.PlayBGMByName("You bgm`s name", true);
@@ -146,15 +137,15 @@ namespace EFExample
             System.Reflection.Assembly _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "ExampleGameHotfix");
             RunHotfixCode(_hotUpdateAss);
 #else
-            TextAsset handle = EF.Load.LoadInYooAssetSync<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
+            TextAsset handle = EF.Load.LoadInYooSync<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
             RunHotfixCode(System.Reflection.Assembly.Load(handle.bytes));
 #endif
         }
 
         void RunHotfixCode(System.Reflection.Assembly assembly)
         {
-            System.Type _type = assembly.GetType("Example.HotfixTest");//找不到类型，加命名空间试试
-            System.Reflection.MethodInfo _info = _type.GetMethod("RunTest");
+            System.Type _type = assembly.GetType("EFExample.HotfixTest");//找不到类型，加命名空间试试
+            System.Reflection.MethodInfo _info = _type.GetMethod("Init");
             _info.Invoke(null, null);
         }
         #endregion
