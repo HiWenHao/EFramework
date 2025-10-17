@@ -290,7 +290,7 @@ namespace EasyFramework.Managers
         /// </summary>
         IEnumerator GetStaticVersion()
         {
-            var operation = _package.RequestPackageVersionAsync();
+            var operation = _package.RequestPackageVersionAsync(false);
             yield return operation;
 
             if (operation.Status == EOperationStatus.Succeed)
