@@ -33,7 +33,6 @@ namespace EasyFramework.Windows
 
             private SerializedObject _settingPanel;
             private SerializedProperty _scriptAuthor;
-            private SerializedProperty _languageIndex;
             private SerializedProperty _scriptVersion;
             private SerializedProperty _resourcesArea;
             private SerializedProperty _appConstConfig;
@@ -51,7 +50,6 @@ namespace EasyFramework.Windows
 
                 _settingPanel = new SerializedObject(ProjectUtility.Project);
                 _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
-                _languageIndex = _settingPanel.FindProperty("_languageIndex");
                 _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
                 _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
                 _appConstConfig = _settingPanel.FindProperty("_appConst");
@@ -65,9 +63,6 @@ namespace EasyFramework.Windows
                 PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
                 _editorUser = (string)propertyInfo.GetValue(userInfo);
 
-                _languageByIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-                _languageIndex.intValue = _languageByIndex;
-
                 FindAllManager();
 
                 _systemInfoSwitch = true;
@@ -80,12 +75,6 @@ namespace EasyFramework.Windows
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
                 _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, "Badge");
-                _languageByIndex = (int)(ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Editor, Lc.Language }), (ELanguage)_languageIndex.intValue);
-                if (_languageByIndex != _languageIndex.intValue)
-                {
-                    _languageIndex.intValue = _languageByIndex;
-                    EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", _languageByIndex);
-                }
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
                 _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }), _scriptAuthor.stringValue);

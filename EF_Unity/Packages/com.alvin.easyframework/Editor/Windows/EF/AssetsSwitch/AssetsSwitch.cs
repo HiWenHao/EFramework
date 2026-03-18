@@ -186,7 +186,7 @@ namespace EasyFramework.Windows
                 GUILayout.Box(GUIContent.none, GUILayout.Width(3.0f), GUILayout.ExpandHeight(true));
                 EditorGUILayout.BeginVertical();
 
-                EditorGUILayout.TextArea(info.Des[ProjectUtility.Project.LanguageIndex], "CN Message");
+                EditorGUILayout.TextArea(info.Des[0], "CN Message");
 
                 if (isManager)
                 {

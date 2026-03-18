@@ -20,10 +20,6 @@ namespace EasyFramework.Edit.Setting
     [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 200)]
     public class ProjectSetting : ScriptableObject
     {
-        [SerializeField, Header(LanguagAttribute.LanguageIndex)]
-        private int _languageIndex;
-        public int LanguageIndex => _languageIndex;
-        
         [SerializeField, Header(LanguagAttribute.ScriptAuthor)]
         private string _scriptAuthor = "Default";
         public string ScriptAuthor => _scriptAuthor;

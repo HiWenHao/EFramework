@@ -39,15 +39,16 @@ namespace EasyFramework.Edit
                 }
             }
 #endif
+            if (globalAssetPaths.Length == 0)
+                return null;
+            
             string assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
             T customGlobalSettings = AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            if (customGlobalSettings == null)
-            {
-                D.Exception($"Don`t find asset. 没找到 {assetType} asset，需要创建一个:{assetsPath}.");
-                return null;
-            }
-
-            return customGlobalSettings;
+            if (customGlobalSettings != null)
+                return customGlobalSettings;
+            
+            D.Exception($"Don`t find asset. 没找到 {assetType} asset，需要创建一个:{assetsPath}.");
+            return null;
         }
 
         /// <summary>

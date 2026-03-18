@@ -39,27 +39,27 @@ namespace EasyFramework.Edit
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
                 m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
-                m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-                JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
+                m_currentIndex = 0; //EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+                JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
                 m_Dictionary = new Dictionary<string, string>();
                 m_Dictionary.Clear();
 
-                for (int i = 0; i < _jd.Count; i++)
+                for (int i = 0; i < jd.Count; i++)
                 {
-                    m_Dictionary.Add(_jd[i]["name"].ToString(), _jd[i]["array"][m_currentIndex].ToString());
+                    m_Dictionary.Add(jd[i]["name"].ToString(), jd[i]["array"][m_currentIndex].ToString());
                 }
 
                 m_Separator = m_Dictionary["S"];
             }
 
-            if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
-            {
-                if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
-                {
-                    ChangeLanguage();
-                    m_currentIndex = ProjectUtility.Project.LanguageIndex;
-                }
-            }
+            //if (m_currentIndex != ProjectUtility.Project.LanguageIndex)
+            //{
+            //    if (ProjectUtility.Project.LanguageIndex >= 0 && ProjectUtility.Project.LanguageIndex <= 1)
+            //    {
+            //        ChangeLanguage();
+            //        m_currentIndex = ProjectUtility.Project.LanguageIndex;
+            //    }
+            //}
         }
 
         #region Combine
@@ -99,7 +99,7 @@ namespace EasyFramework.Edit
                 File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs.meta"));
 
                 File.Copy(
-                    Path.Combine(_sourcePath, GetCurrentName(), $"LanguagAttribute.cs"), 
+                    Path.Combine(_sourcePath, $"Chinese/LanguagAttribute.cs"), 
                     Path.Combine(_lcPath, $"LanguagAttribute.cs"));
             }
             catch (Exception ex)
@@ -108,20 +108,16 @@ namespace EasyFramework.Edit
             }
             AssetDatabase.Refresh();
         }
-        static string GetCurrentName()
-        {
-            return ProjectUtility.Project.LanguageIndex switch
-            {
-                1 => "Chinese",
-                _ => "English",
-            };
-        }
         #endregion
 
         [MenuItem("EFTools/Utility/Update Edit Language", priority = 10002)]
         static void UpdateLanguageConfig()
         {
-            m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            //m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            if (string.IsNullOrEmpty(m_AassetsPath))
+            {
+                m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
+            }
             JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
 
             StringBuilder _sb = new StringBuilder();
@@ -136,7 +132,10 @@ namespace EasyFramework.Edit
             }
             _sb.AppendLine("\t}\n}");
 
-            File.WriteAllText($"{ProjectUtility.Path.FrameworkPath}/Scripts/Editor/Config/Language/EF.LanguageEnum.cs", _sb.ToString());
+            string path = $"{ProjectUtility.Path.FrameworkPath}/Scripts/Editor/Config/Language";
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            File.WriteAllText($"{path}/EF.LanguageEnum.cs", _sb.ToString());
             AssetDatabase.Refresh();
         }
     }

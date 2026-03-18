@@ -23,6 +23,7 @@ namespace EasyFramework.Windows
         public class EFSettingsPanel : EditorWindow
         {
             private int _panelIndex = -1;
+            private bool _inited;
             private string _assetsPath;
             private Vector2 _scrollPositionL;
 
@@ -32,22 +33,6 @@ namespace EasyFramework.Windows
             private static void OpenWindow()
             {
                 Open(0);
-            }
-
-            private void OnEnable()
-            {
-                if (_panelIndex >= 0) return;
-                _assetsPath = Utility.Path.GetEFAssetsPath();
-
-                _settings = new[] {
-                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
-                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
-                    new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
-                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
-                };
-
-                _panelIndex = 0;
-                _settings[0].OnEnable(_assetsPath);
             }
 
             private void OnGUI()
@@ -109,6 +94,22 @@ namespace EasyFramework.Windows
                 }
             }
 
+            void Init()
+            {
+                if (_panelIndex >= 0 || _inited) return;
+                _inited = true;
+                _assetsPath = Utility.Path.GetEFAssetsPath();
+
+                _settings = new[] {
+                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
+                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
+                    new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
+                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
+                };
+
+                _panelIndex = 0;
+            }
+
             /// <summary>
             /// 根据索引打开页面
             /// </summary>
@@ -118,6 +119,7 @@ namespace EasyFramework.Windows
                 EFSettingsPanel window = GetWindow<EFSettingsPanel>(false, "EF Settings");
                 window.minSize = new Vector2(650.0f, 350.0f);
                 window.Show();
+                window.Init();
                 window._panelIndex = pageIndex;
                 window._settings[pageIndex].OnEnable(window._assetsPath);
             }

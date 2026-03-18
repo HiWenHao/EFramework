@@ -53,10 +53,7 @@ namespace EasyFramework.Managers
         /// <param name="operation">操作类型</param>
         void EventNotFound(string eventName, OperationType operation)
         {
-            if (0 == EF.Projects.LanguageIndex)
-                D.Log($"Event [ {eventName} ] not found. Unable to {operation}.");
-            else
-                D.Log($"未找到事件 [ {eventName} ] 。 无法 {GetChinese(operation)}.");
+            D.Log($"未找到事件 [ {eventName} ] 。 无法 {GetChinese(operation)}.");
         }
 
         /// <summary>
@@ -69,10 +66,7 @@ namespace EasyFramework.Managers
         /// <param name="operation">操作类型</param>
         void ParamsNumberError(string eventName, int par1, int par2, OperationType operation)
         {
-            if (0 == EF.Projects.LanguageIndex)
-                D.Warning($"Event [ {eventName} ] takes {par1} arguments, but the function you're {operation} requires {par2} ! Try another name.");
-            else
-                D.Warning($"事件 [ {eventName} ] 支持 {par1} 个参数，而你 {GetChinese(operation)} 的函数需要 {par2} 个参数！换个名字试试。");
+            D.Warning($"事件 [ {eventName} ] 支持 {par1} 个参数，而你 {GetChinese(operation)} 的函数需要 {par2} 个参数！换个名字试试。");
         }
 
         /// <summary>
