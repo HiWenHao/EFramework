@@ -190,3 +190,5 @@
 *.conf filter=lfs diff=lfs merge=lfs -text
 *.sbn filter=lfs diff=lfs merge=lfs -text
 *.user filter=lfs diff=lfs merge=lfs -text
+*.p7m filter=lfs diff=lfs merge=lfs -text
+*.mixer filter=lfs diff=lfs merge=lfs -text
