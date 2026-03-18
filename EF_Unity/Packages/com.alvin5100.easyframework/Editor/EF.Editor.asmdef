@@ -1,10 +1,15 @@
 {
-    "name": "ExampleGameHotfix",
+    "name": "EF.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:396fd9bc7a7442941a71f32479ef054d"
+        "HybridCLR.Editor",
+        "EF.Runtime",
+        "LitJson",
+        "Unity.TextMeshPro"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

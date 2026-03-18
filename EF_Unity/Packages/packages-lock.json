@@ -1,5 +1,23 @@
 {
   "dependencies": {
+    "com.alvin5100.easyframework": {
+      "version": "file:com.alvin5100.easyframework",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.scriptablebuildpipeline": "1.21.25",
+        "com.tuyoogame.yooasset": "2.3.18",
+        "com.code-philosophy.hybridclr": "8.11.0",
+        "com.unity.modules.assetbundle": "1.0.0"
+      }
+    },
+    "com.bshsf.joystick": {
+      "version": "https://github.com/Bian-Sh/UniJoystick.git?path=Packages/Joystick",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "ce39299c9f67597dd923db3e77ce1e335421f56a"
+    },
     "com.code-philosophy.hybridclr": {
       "version": "https://github.com/focus-creative-games/hybridclr_unity.git",
       "depth": 0,
@@ -15,8 +33,8 @@
       "hash": "005c365bac0b245048050d48d27df098739a6f8f"
     },
     "com.tuyoogame.yooasset": {
-      "version": "2.3.16",
-      "depth": 0,
+      "version": "2.3.18",
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.scriptablebuildpipeline": "1.21.25",
