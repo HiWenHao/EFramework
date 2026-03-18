@@ -108,15 +108,9 @@ namespace EasyFramework
             /// Gets the asset path associated with the framework
             /// <para>获取框架的相关资产路径</para>
             /// </summary>
-            public static string GetEFAssetsPath()
+            public static string GetEfAssetsPath()
             {
-                DirectoryInfo jsonFolder = new DirectoryInfo(Directory.GetCurrentDirectory());
-
-                while (!jsonFolder.Name.Equals("EF_Unity"))
-                {
-                    jsonFolder = jsonFolder.Parent;
-                }
-                return System.IO.Path.Combine(jsonFolder.Parent.FullName, "EF_Assets");
+                return @"Packages\com.alvin.easyframework\Editor Resources";
             }
         }
 

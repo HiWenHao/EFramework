@@ -98,7 +98,7 @@ namespace EasyFramework.Windows
             {
                 if (_panelIndex >= 0 || _inited) return;
                 _inited = true;
-                _assetsPath = Utility.Path.GetEFAssetsPath();
+                _assetsPath = Utility.Path.GetEfAssetsPath();
 
                 _settings = new[] {
                     new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,

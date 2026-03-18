@@ -38,7 +38,7 @@ namespace EasyFramework.Edit
         {
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
-                m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
+                m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
                 m_currentIndex = 0; //EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
                 m_Dictionary = new Dictionary<string, string>();
@@ -92,7 +92,7 @@ namespace EasyFramework.Edit
                 UnityEngine.Application.dataPath,
                 ProjectUtility.Path.FrameworkPath[7..],
                 "Scripts/Runtime/Config/");
-            string _sourcePath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Scripts/Config");
+            string _sourcePath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Scripts/Config");
             try
             {
                 File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs"));
@@ -116,7 +116,7 @@ namespace EasyFramework.Edit
             //m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             if (string.IsNullOrEmpty(m_AassetsPath))
             {
-                m_AassetsPath = Path.Combine(Utility.Path.GetEFAssetsPath(), "Description/Editorlanguages.json");
+                m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
             }
             JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
 

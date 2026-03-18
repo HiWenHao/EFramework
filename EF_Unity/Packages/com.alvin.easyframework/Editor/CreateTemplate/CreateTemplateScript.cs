@@ -27,7 +27,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset._scriptName = "TemplateScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewTemplateScript.cs",
-            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/TemplateScript.cs.txt"));
+            null, Path.Combine(Utility.Path.GetEfAssetsPath(), "ScriptTemplate/TemplateScript.cs.txt"));
         }
         [MenuItem("Assets/Create/EF/C# Scripts/SingleScript", false, 2)]
         static void CreateSingleScript()
@@ -35,7 +35,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset._scriptName = "SingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewSingleScript.cs",
-            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/SingleScript.cs.txt"));
+            null, Path.Combine(Utility.Path.GetEfAssetsPath(), "ScriptTemplate/SingleScript.cs.txt"));
         }
         [MenuItem("Assets/Create/EF/C# Scripts/MonoSingleScript", false, 3)]
         static void CreateMonoSingleScript()
@@ -43,7 +43,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset._scriptName = "MonoSingleScript";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/NewMonoSingleScript.cs",
-            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/MonoSingleScript.cs.txt"));
+            null, Path.Combine(Utility.Path.GetEfAssetsPath(), "ScriptTemplate/MonoSingleScript.cs.txt"));
         }
 
         [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
@@ -52,7 +52,7 @@ namespace EasyFramework.Edit
             CreateScriptAsset._scriptName = "GameLauncher";
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<CreateScriptAsset>(),
             GetSelectedPathOrFallback() + "/GameLauncher.cs",
-            null, Path.Combine(Utility.Path.GetEFAssetsPath(), "ScriptTemplate/GameLauncher.cs.txt"));
+            null, Path.Combine(Utility.Path.GetEfAssetsPath(), "ScriptTemplate/GameLauncher.cs.txt"));
         }
 
         public static string GetSelectedPathOrFallback()
