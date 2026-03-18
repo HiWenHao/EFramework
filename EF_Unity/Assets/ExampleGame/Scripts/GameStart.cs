@@ -100,11 +100,11 @@ namespace EFExample
             // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
-                AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
-                EF.Audio.Play2DEffectSouceByClip(clip);
-                LoadMetadataForAOTAssemblies();
-            });
+            //EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
+            //    AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
+            //    EF.Audio.Play2DEffectSouceByClip(clip);
+            //    LoadMetadataForAOTAssemblies();
+            //});
 
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];

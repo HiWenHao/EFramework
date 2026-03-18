@@ -2,14 +2,13 @@
     "name": "ExampleGame",
     "rootNamespace": "",
     "references": [
-        "GUID:819eb555a9518b940aac77f138a990d0",
-        "GUID:d3ad006f94af81f41a3f01432dcfed1a",
         "GUID:e34a5702dd353724aa315fb8011f08c3",
         "GUID:3479095eef6310e448f34d9fd03d8df9",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:27daf5c26b3035c4cbca111597fd25e2",
         "GUID:2a81c6962524d424a8ef5072bd3b0fa0",
-        "GUID:7f4fcead742bb6244a2bf813275a47e5"
+        "GUID:7f4fcead742bb6244a2bf813275a47e5",
+        "GUID:396fd9bc7a7442941a71f32479ef054d"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
