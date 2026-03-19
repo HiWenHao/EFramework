@@ -105,6 +105,15 @@ namespace EasyFramework
             }
 
             /// <summary>
+            /// Gets the framework path
+            /// <para>获取框架路径</para>
+            /// </summary>
+            public static string GetEfPath()
+            {
+                return @"Packages\com.alvin.easyframework";
+            }
+            
+            /// <summary>
             /// Gets the asset path associated with the framework
             /// <para>获取框架的相关资产路径</para>
             /// </summary>
