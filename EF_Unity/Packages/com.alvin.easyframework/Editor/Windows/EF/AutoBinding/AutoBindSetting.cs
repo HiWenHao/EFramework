@@ -16,7 +16,6 @@ namespace EasyFramework.Edit.AutoBind
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
-    [CreateAssetMenu(fileName = "AutoBindSetting", menuName = "EF/AutoBindSetting", order = 210)]
     public class AutoBindSetting : ScriptableObject
     {
         /// <summary>

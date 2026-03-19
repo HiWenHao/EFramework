@@ -121,6 +121,24 @@ namespace EasyFramework
             {
                 return @"Packages\com.alvin.easyframework\Editor Resources";
             }
+            
+            public static string GetCurrentFolderPath()
+            {
+                string[] guids = Selection.assetGUIDs;
+
+                // 如果没有选中任何东西，则提示并返回
+                if (guids == null || guids.Length == 0)
+                {
+                    Debug.LogWarning("没有选中任何文件或文件夹。");
+                    return null;
+                }
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                
+                string folderPath = Directory.Exists(assetPath) ? 
+                    assetPath : System.IO.Path.GetDirectoryName(assetPath);
+                
+                return folderPath;
+            }
         }
 
         /// <summary>

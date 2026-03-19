@@ -17,7 +17,6 @@ namespace EasyFramework.Edit.Setting
     /// <summary>
     /// 框架设置界面
     /// </summary>
-    [CreateAssetMenu(fileName = "ProjectSetting", menuName = "EF/ProjectSetting", order = 200)]
     public class ProjectSetting : ScriptableObject
     {
         [SerializeField, Header(LanguagAttribute.ScriptAuthor)]

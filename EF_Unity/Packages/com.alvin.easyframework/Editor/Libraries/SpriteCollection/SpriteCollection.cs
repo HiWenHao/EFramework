@@ -17,7 +17,6 @@ namespace EasyFramework.Edit.SpriteTools
     /// <summary>
     /// Collect the sprite and control it.
     /// </summary>
-    [CreateAssetMenu(fileName = "SpriteCollection", menuName = "EF/SpriteCollection", order = 50)]
     public class SpriteCollection : ScriptableObject
     {
         [SerializeField]

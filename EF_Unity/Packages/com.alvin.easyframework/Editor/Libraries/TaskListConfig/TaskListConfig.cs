@@ -12,13 +12,12 @@ using UnityEngine;
 
 namespace EasyFramework.Edit.TaskList
 {
-    [CreateAssetMenu(fileName = "TodoList", menuName = "EF/Todo List", order = 300)]
+    //[CreateAssetMenu(fileName = "TodoList", menuName = "EF/Todo List", order = 300)]
     public class TaskListConfig : ScriptableObject
     {
 #pragma warning disable 0414
         [SerializeField]
         int TaskCount = 0;
-#pragma warning disable 0414
         [SerializeField]
         bool[] Mark = new bool[] { };
         [SerializeField]
@@ -29,5 +28,6 @@ namespace EasyFramework.Edit.TaskList
         string[] Title = new string[] { };
         [SerializeField]
         string[] Description = new string[] { };
+#pragma warning disable 0414
     }
 }

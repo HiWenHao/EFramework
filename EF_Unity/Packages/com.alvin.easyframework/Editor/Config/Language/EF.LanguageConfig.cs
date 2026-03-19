@@ -38,7 +38,7 @@ namespace EasyFramework.Edit
         {
             if (null == m_Dictionary || m_Dictionary.Count == 0)
             {
-                m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
+                m_AassetsPath = Path.Combine(Utility.Path.GetEfPath(), "Editor Resources/Description/Editorlanguages.json");
                 m_currentIndex = 0; //EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
                 JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
                 m_Dictionary = new Dictionary<string, string>();
@@ -88,19 +88,15 @@ namespace EasyFramework.Edit
          */
         static void ChangeLanguage()
         {
-            string _lcPath = Path.Combine(
-                UnityEngine.Application.dataPath,
-                ProjectUtility.Path.FrameworkPath[7..],
-                "Scripts/Runtime/Config/");
-            string _sourcePath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Scripts/Config");
+            string lcPath = Path.Combine(Utility.Path.GetEfPath(),"Runtime/Config/");
             try
             {
-                File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs"));
-                File.Delete(Path.Combine(_lcPath, $"LanguagAttribute.cs.meta"));
+                File.Delete(Path.Combine(lcPath, $"LanguagAttribute.cs"));
+                File.Delete(Path.Combine(lcPath, $"LanguagAttribute.cs.meta"));
 
                 File.Copy(
-                    Path.Combine(_sourcePath, $"Chinese/LanguagAttribute.cs"), 
-                    Path.Combine(_lcPath, $"LanguagAttribute.cs"));
+                    Path.Combine(lcPath, $"Chinese/LanguagAttribute.cs"), 
+                    Path.Combine(lcPath, $"LanguagAttribute.cs"));
             }
             catch (Exception ex)
             {
@@ -111,13 +107,12 @@ namespace EasyFramework.Edit
         #endregion
 
         [MenuItem("EFTools/Utility/Update Edit Language", priority = 10002)]
-        static void UpdateLanguageConfig()
+        private static void UpdateLanguageConfig()
         {
             //m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             if (string.IsNullOrEmpty(m_AassetsPath))
-            {
-                m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
-            }
+                m_AassetsPath = Path.Combine(Utility.Path.GetEfPath(), "Editor Resources//Description/Editorlanguages.json");
+            
             JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
 
             StringBuilder _sb = new StringBuilder();
@@ -132,7 +127,7 @@ namespace EasyFramework.Edit
             }
             _sb.AppendLine("\t}\n}");
 
-            string path = $"{ProjectUtility.Path.FrameworkPath}/Scripts/Editor/Config/Language";
+            string path = $"{Utility.Path.GetEfPath()}/Editor/Config/Language";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             File.WriteAllText($"{path}/EF.LanguageEnum.cs", _sb.ToString());

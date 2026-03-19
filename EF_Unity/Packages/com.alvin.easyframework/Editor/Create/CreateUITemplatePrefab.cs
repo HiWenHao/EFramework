@@ -212,7 +212,7 @@ namespace EasyFramework.Edit
             }
             catch (Exception e)
             {
-                D.Error($"{types[0].Name}: 挂载组件失败，绝逼是 API 变更!");
+                D.Error($"{types[0].Name}: 挂载组件失败，绝逼是 API 变更!   {e.Message}");
                 throw;
             }
 

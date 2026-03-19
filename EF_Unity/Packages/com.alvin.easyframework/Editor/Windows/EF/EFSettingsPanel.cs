@@ -103,7 +103,7 @@ namespace EasyFramework.Windows
                 _settings = new[] {
                     new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
                     new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
-                    new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
+                    //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
                     new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
                 };
 
