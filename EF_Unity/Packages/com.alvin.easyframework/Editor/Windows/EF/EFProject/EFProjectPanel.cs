@@ -26,7 +26,6 @@ namespace EasyFramework.Windows
         {
             bool _systemInfoSwitch;
             string _editorUser;
-            int _languageByIndex;
             Vector2 _scrollPos;
 
             private SerializedObject _settingPanel;
@@ -73,7 +72,7 @@ namespace EasyFramework.Windows
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
                 LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(
-                    LC.Combine(new Lc[] { Lc.Editor, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
+                    LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
 
@@ -118,6 +117,7 @@ namespace EasyFramework.Windows
 
                 if (!changeCheckScope.changed) return;
                 _settingPanel.ApplyModifiedPropertiesWithoutUndo();
+                _settingPanel.ApplyModifiedProperties();
             }
 
             /// <summary>

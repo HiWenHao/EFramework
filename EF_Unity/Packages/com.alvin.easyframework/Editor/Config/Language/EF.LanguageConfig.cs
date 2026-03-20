@@ -32,15 +32,12 @@ namespace EasyFramework.Edit
     {
         public static ELanguage DisPlayLanguage
         {
-            get => _disPlayLanguage;
-
+            get => (ELanguage)m_currentIndex;
             set
             {
-                if (value == _disPlayLanguage)
+                if (m_currentIndex.Equals((int)value))
                     return;
-                
-                _disPlayLanguage = (ELanguage)Math.Clamp((int)value, 0, 1);
-                EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", (int)value);
+                m_currentIndex = (int)value;
                 ChangeLanguage();
             }
         }
@@ -48,7 +45,6 @@ namespace EasyFramework.Edit
         static int m_currentIndex;
         static string m_Separator;
         static string m_AassetsPath;
-        private static ELanguage _disPlayLanguage;
         static Dictionary<string, string> m_Dictionary;
 
         static void LoadLanguage()
@@ -59,6 +55,7 @@ namespace EasyFramework.Edit
             m_AassetsPath = Path.Combine(Utility.Path.GetEfPath(),
                 "Editor Resources/Description/Editorlanguages.json");
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            DisPlayLanguage = (ELanguage)m_currentIndex;
             JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
             m_Dictionary = new Dictionary<string, string>();
             m_Dictionary.Clear();
@@ -100,38 +97,26 @@ namespace EasyFramework.Edit
          * Change the relevant description language under the Settings panel.
          * 改变设置面板下的相关说明语言
          */
-        static void ChangeLanguage()
+        private static void ChangeLanguage()
         {
+            EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_currentIndex);
+
             string lcPath = Path.Combine(Utility.Path.GetEfPath(), "Runtime/Config/");
             try
             {
-                File.Delete(Path.Combine(lcPath, $"LanguagAttribute.cs"));
-                File.Delete(Path.Combine(lcPath, $"LanguagAttribute.cs.meta"));
-
+                File.Delete(Path.Combine(lcPath, "LanguagAttribute.cs"));
+                File.Delete(Path.Combine(lcPath, "LanguagAttribute.cs.meta"));
+                
                 File.Copy(
-                    Path.Combine(lcPath, $"{_disPlayLanguage}~/LanguagAttribute.cs"),
-                    Path.Combine(lcPath, $"LanguagAttribute.cs"));
+                    Path.Combine(lcPath, $"{DisPlayLanguage}~/LanguagAttribute.cs"),
+                    Path.Combine(lcPath, "LanguagAttribute.cs"));
             }
             catch (Exception ex)
             {
                 D.Exception(ex.Message);
             }
-            //Windows.SettingPanel.EFSettingsPanel.focusedWindow.Close();
-            
-            // Utility.RefreshUtility.RefreshWithCallback(delegate
-            // {
-            // });
-
-        }
-
-        static void RefreshEfPanel()
-        {
-            if (EditorApplication.isUpdating) 
-            {
-                D.Log("编辑器正在刷新资源，请稍后操作...");
-                return;
-            }
-            //Windows.SettingPanel.EFSettingsPanel.Open(0);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
         
         #endregion

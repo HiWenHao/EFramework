@@ -23,7 +23,6 @@ namespace EasyFramework.Windows
         public class EFSettingsPanel : EditorWindowBase
         {
             private int _panelIndex = -1;
-            private bool _inited;
             private string _assetsPath;
             private Vector2 _scrollPositionL;
 
@@ -94,7 +93,6 @@ namespace EasyFramework.Windows
 
             private void OnDestroy()
             {
-                _inited = false;
                 if (null == _settings)
                     return;
                 int length = _settings.Length;
