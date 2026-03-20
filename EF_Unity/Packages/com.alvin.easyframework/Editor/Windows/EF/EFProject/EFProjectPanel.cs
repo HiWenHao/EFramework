@@ -7,12 +7,10 @@
  * ModifyTime:    2024-10-17 14:02:47
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using EasyFramework.Edit;
-using EasyFramework.Edit.Setting;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -44,15 +42,16 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (IsInitialzed)
-                    return;
-                IsInitialzed = true;
+                LoadWindowData();
+            }
 
+            internal override void LoadWindowData()
+            {
                 _settingPanel = new SerializedObject(ProjectUtility.Project);
+                _appConstConfig = _settingPanel.FindProperty("_appConst");
                 _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
                 _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
                 _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
-                _appConstConfig = _settingPanel.FindProperty("_appConst");
                 _appConstManagerList = _appConstConfig.FindPropertyRelative("_managerLevel");
 
                 var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
@@ -73,12 +72,18 @@ namespace EasyFramework.Windows
                 SystemInfos();
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
+                LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(
+                    LC.Combine(new Lc[] { Lc.Editor, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
+
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
+
                 _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, "Badge");
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
-                _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }), _scriptAuthor.stringValue);
-                _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Version }), _scriptVersion.stringValue);
+                _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }),
+                    _scriptAuthor.stringValue);
+                _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Version }),
+                    _scriptVersion.stringValue);
 
                 EditorGUILayout.PropertyField(_appConstConfig);
 
@@ -94,10 +99,12 @@ namespace EasyFramework.Windows
                     _appConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
                     _appConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
                 }
+
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Only, Lc.Reset, Lc.Manager, Lc.Level })))
                 {
                     ResetManagerLevel();
                 }
+
                 EditorGUILayout.EndHorizontal();
 
                 EditorGUILayout.Space(6);
@@ -123,31 +130,32 @@ namespace EasyFramework.Windows
                 if (_systemInfoSwitch)
                 {
                     string contents =
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
-                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
-                    "--------------------------------------------------------------------------------";
+                        "--------------------------------------------------------------------------------\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
+                        $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}\n" +
+                        "--------------------------------------------------------------------------------\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}\n" +
+                        "--------------------------------------------------------------------------------\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}\n" +
+                        "--------------------------------------------------------------------------------\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}\n" +
+                        $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
+                        "--------------------------------------------------------------------------------";
 
                     GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));
                     //GUILayout.Box(GUIContent.none, GUILayout.Height(4.0f), GUILayout.ExpandWidth(true));
                 }
+
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             }
@@ -162,6 +170,7 @@ namespace EasyFramework.Windows
                 {
                     _appConstManagerList.InsertArrayElementAtIndex(0);
                 }
+
                 _appConstManagerList.GetArrayElementAtIndex(0).stringValue = "TimeManager";
                 _appConstManagerList.GetArrayElementAtIndex(1).stringValue = "ToolManager";
                 _appConstManagerList.GetArrayElementAtIndex(2).stringValue = "EventManager";
@@ -172,7 +181,6 @@ namespace EasyFramework.Windows
                 _appConstManagerList.GetArrayElementAtIndex(7).stringValue = "ScenesManager";
                 _appConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
                 _appConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
-
             }
 
             /// <summary>
@@ -198,6 +206,7 @@ namespace EasyFramework.Windows
                         _appConstManagerList.GetArrayElementAtIndex(_cot).stringValue = collection[i].Name;
                     }
                 }
+
                 if (changed)
                 {
                     _settingPanel.ApplyModifiedPropertiesWithoutUndo();

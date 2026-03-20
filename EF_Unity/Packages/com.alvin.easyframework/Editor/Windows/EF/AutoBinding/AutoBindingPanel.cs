@@ -35,10 +35,11 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (IsInitialzed)
-                    return;
-                IsInitialzed = true;
+                LoadWindowData();
+            }
 
+            internal override void LoadWindowData()
+            {
                 AutoBindSetting setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
                 _customSettings = new SerializedObject(setting);
                 _namespace = _customSettings.FindProperty("_namespace");
@@ -60,10 +61,9 @@ namespace EasyFramework.Windows
 
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
                 if (!changeCheckScope.changed) return;
-                _customSettings.ApplyModifiedPropertiesWithoutUndo();
+
                 _customSettings.ApplyModifiedProperties();
                 AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
             }
         }
 	}

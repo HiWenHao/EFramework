@@ -1,4 +1,4 @@
-/* 
+/*
  * ================================================
  * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
@@ -7,7 +7,8 @@
  * ModifyTime:    2023-03-31 15:56:54
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
+
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace EasyFramework
     /// 工具类
     /// </summary>
     public class Utility
-	{
+    {
         /// <summary>
         /// 路径相关的实用函数。
         /// </summary>
@@ -52,7 +53,9 @@ namespace EasyFramework
                     return null;
                 }
 
-                return regularPath.Contains("://") ? regularPath : ("file:///" + regularPath).Replace("file:////", "file:///");
+                return regularPath.Contains("://")
+                    ? regularPath
+                    : ("file:///" + regularPath).Replace("file:////", "file:///");
             }
 
             /// <summary>
@@ -112,7 +115,7 @@ namespace EasyFramework
             {
                 return @"Packages\com.alvin.easyframework";
             }
-            
+
             /// <summary>
             /// Gets the asset path associated with the framework
             /// <para>获取框架的相关资产路径</para>
@@ -121,7 +124,7 @@ namespace EasyFramework
             {
                 return @"Packages\com.alvin.easyframework\Editor Resources";
             }
-            
+
             public static string GetCurrentFolderPath()
             {
                 string[] guids = Selection.assetGUIDs;
@@ -132,11 +135,13 @@ namespace EasyFramework
                     Debug.LogWarning("没有选中任何文件或文件夹。");
                     return null;
                 }
+
                 string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-                
-                string folderPath = Directory.Exists(assetPath) ? 
-                    assetPath : System.IO.Path.GetDirectoryName(assetPath);
-                
+
+                string folderPath = Directory.Exists(assetPath)
+                    ? assetPath
+                    : System.IO.Path.GetDirectoryName(assetPath);
+
                 return folderPath;
             }
         }
@@ -163,7 +168,82 @@ namespace EasyFramework
 
                     endPath = path[(index + 1)..];
                 }
+
                 return endPath;
+            }
+        }
+
+        public static class RefreshUtility
+        {
+            /// <summary>
+            /// 执行刷新并在完成后执行回调
+            /// </summary>
+            public static void RefreshWithCallback(System.Action onComplete)
+            {
+                if (onComplete == null)
+                {
+                    AssetDatabase.Refresh();
+                    return;
+                }
+
+                // 保存资源
+                AssetDatabase.SaveAssets();
+
+                // 开始刷新
+                AssetDatabase.Refresh();
+
+                // 启动协程式检查
+                CheckRefreshCompletion(onComplete);
+            }
+
+            static void CheckRefreshCompletion(System.Action onComplete)
+            {
+                // 创建一个临时编辑器窗口来执行更新检查
+                var updater = ScriptableObject.CreateInstance<RefreshCompletionChecker>();
+                updater.StartChecking(onComplete);
+            }
+
+            // 辅助类：使用 HideAndDontSave 避免污染场景
+            class RefreshCompletionChecker : ScriptableObject
+            {
+                private System.Action callback;
+                private float checkInterval = 0.5f;
+                private double nextCheckTime;
+
+                public void StartChecking(System.Action onComplete)
+                {
+                    callback = onComplete;
+                    nextCheckTime = EditorApplication.timeSinceStartup + checkInterval;
+
+                    // 订阅更新事件
+                    EditorApplication.update += OnEditorUpdate;
+
+                    // 确保这个对象不会被保存
+                    hideFlags = HideFlags.HideAndDontSave;
+                }
+
+                void OnEditorUpdate()
+                {
+                    // 控制检查频率
+                    if (EditorApplication.timeSinceStartup < nextCheckTime)
+                        return;
+
+                    nextCheckTime = EditorApplication.timeSinceStartup + checkInterval;
+
+                    // 检查是否完成
+                    if (!EditorApplication.isCompiling && !EditorApplication.isUpdating)
+                    {
+                        // 刷新完成
+                        EditorApplication.update -= OnEditorUpdate;
+
+                        // 延迟一帧执行回调，确保一切稳定
+                        EditorApplication.delayCall += () =>
+                        {
+                            callback?.Invoke();
+                            DestroyImmediate(this);
+                        };
+                    }
+                }
             }
         }
     }

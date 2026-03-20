@@ -7,7 +7,7 @@
  * ModifyTime:    2024-10-10 15:43:25
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 namespace EasyFramework.Windows
 {
@@ -23,7 +23,6 @@ namespace EasyFramework.Windows
                 Name = name;
             }
 
-            protected bool IsInitialzed;
             public string Name { get; private set; }
 
             /// <summary>
@@ -33,6 +32,13 @@ namespace EasyFramework.Windows
             internal abstract void OnEnable(string assetsPath);
 
             /// <summary>
+            /// 加载窗口数据
+            /// </summary>
+            internal virtual void LoadWindowData()
+            {
+            }
+
+            /// <summary>
             /// 界面绘制
             /// </summary>
             internal abstract void OnGUI();
@@ -40,7 +46,9 @@ namespace EasyFramework.Windows
             /// <summary>
             /// 当销毁时
             /// </summary>
-            internal virtual void OnDestroy() { }
+            internal virtual void OnDestroy()
+            {
+            }
         }
     }
 }

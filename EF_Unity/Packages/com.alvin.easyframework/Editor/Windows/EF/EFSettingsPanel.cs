@@ -7,7 +7,7 @@
  * ModifyTime:    2026-03-17 13:57:26
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using EasyFramework.Edit;
 using UnityEditor;
@@ -20,7 +20,7 @@ namespace EasyFramework.Windows
         /// <summary>
         /// Please modify the description。
         /// </summary>
-        public class EFSettingsPanel : EditorWindow
+        public class EFSettingsPanel : EditorWindowBase
         {
             private int _panelIndex = -1;
             private bool _inited;
@@ -35,18 +35,42 @@ namespace EasyFramework.Windows
                 Open(0);
             }
 
-            private void OnGUI()
+            protected override void LoadWindowData()
             {
+                _assetsPath = Utility.Path.GetEfAssetsPath();
+
+                _settings ??= new[]
+                {
+                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
+                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
+                    //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
+                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
+                };
+
+                _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
+                _settings[_panelIndex].LoadWindowData();
+            }
+
+            protected override void OnSmartGUI()
+            {
+                if (IsRefreshing)
+                    return;
+
                 EditorGUILayout.BeginHorizontal();
+
                 #region Left menu
-                _scrollPositionL =  EditorGUILayout.BeginScrollView(_scrollPositionL, GUILayout.Width(140f), GUILayout.Height(position.height));
+
+                _scrollPositionL = EditorGUILayout.BeginScrollView(_scrollPositionL, GUILayout.Width(140f),
+                    GUILayout.Height(position.height));
                 EditorGUILayout.Space();
                 int length = _settings.Length;
                 for (int i = 0; i < length; i++)
                 {
                     DrawButton(i, _settings[i]);
                 }
+
                 EditorGUILayout.EndScrollView();
+
                 #endregion
 
                 GUILayout.Box(GUIContent.none, "hostview", GUILayout.Width(10f));
@@ -70,6 +94,9 @@ namespace EasyFramework.Windows
 
             private void OnDestroy()
             {
+                _inited = false;
+                if (null == _settings)
+                    return;
                 int length = _settings.Length;
                 for (int i = 0; i < length; i++)
                 {
@@ -83,31 +110,15 @@ namespace EasyFramework.Windows
 
             void DrawButton(int index, EFSettingBase setting)
             {
-                if (GUILayout.Button(setting.Name, 
-                    new GUIStyle(GUI.skin.button)
-                    {
-                        alignment = TextAnchor.MiddleLeft
-                    }))
+                if (GUILayout.Button(setting.Name,
+                        new GUIStyle(GUI.skin.button)
+                        {
+                            alignment = TextAnchor.MiddleLeft
+                        }))
                 {
                     _panelIndex = index;
                     setting.OnEnable(_assetsPath);
                 }
-            }
-
-            void Init()
-            {
-                if (_panelIndex >= 0 || _inited) return;
-                _inited = true;
-                _assetsPath = Utility.Path.GetEfAssetsPath();
-
-                _settings = new[] {
-                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
-                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
-                    //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
-                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
-                };
-
-                _panelIndex = 0;
             }
 
             /// <summary>
@@ -118,8 +129,7 @@ namespace EasyFramework.Windows
             {
                 EFSettingsPanel window = GetWindow<EFSettingsPanel>(false, "EF Settings");
                 window.minSize = new Vector2(650.0f, 350.0f);
-                window.Show();
-                window.Init();
+                window.ShowUtility();
                 window._panelIndex = pageIndex;
                 window._settings[pageIndex].OnEnable(window._assetsPath);
             }

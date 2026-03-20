@@ -26,7 +26,6 @@ namespace EasyFramework.Windows
 
             GUIStyle _uiStyle;
 
-            private SerializedProperty _frameworkPath;
             private SerializedProperty _sublimePath;
             private SerializedProperty _notepadPath;
             private SerializedProperty _atlasFolder;
@@ -41,9 +40,11 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (IsInitialzed)
-                    return;
-                IsInitialzed = true;
+                LoadWindowData();
+            }
+
+            internal override void LoadWindowData()
+            {
                 _uiStyle = new GUIStyle()
                 {
                     fontSize = 14,
@@ -56,7 +57,6 @@ namespace EasyFramework.Windows
                 PathConfigSetting pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
                 _customSettings = new SerializedObject(pathConfig);
 
-                _frameworkPath = _customSettings.FindProperty("_frameworkPath");
                 _sublimePath = _customSettings.FindProperty("_sublimePath");
                 _notepadPath = _customSettings.FindProperty("_notepadPath");
                 _atlasFolder = _customSettings.FindProperty("_atlasFolder");
@@ -73,7 +73,6 @@ namespace EasyFramework.Windows
 
 
                 EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
-                SelectionFolderPath(LC.Combine(new Lc[] { Lc.Framework, Lc.Path }), _frameworkPath);
                 SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), _atlasFolder);
                 SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }), _uiPrefabPath);
                 SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }), _uiCodePath);

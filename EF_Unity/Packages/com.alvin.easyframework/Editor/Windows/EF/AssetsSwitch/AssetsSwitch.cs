@@ -47,10 +47,6 @@ namespace EasyFramework.Windows
 
             internal override void OnEnable(string assetsPath)
             {
-                if (IsInitialzed)
-                    return;
-                IsInitialzed = true;
-
                 _assetsPath = assetsPath;
                 string configPath = Path.Combine(_assetsPath, ASSETSINFO);
                 _assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(configPath));
