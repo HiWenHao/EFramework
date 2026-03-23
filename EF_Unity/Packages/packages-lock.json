@@ -8,7 +8,7 @@
         "com.unity.scriptablebuildpipeline": "1.21.25",
         "com.tuyoogame.yooasset": "2.3.18",
         "com.code-philosophy.hybridclr": "8.11.0",
-        "com.unity.modules.assetbundle": "1.0.0"
+        "com.code-philosophy.luban": "1.1.1"
       }
     },
     "com.code-philosophy.hybridclr": {
