@@ -193,16 +193,16 @@ namespace EasyFramework.Managers
             InitializeParameters initParameters = null;
             switch (_playMode)
             {
-                //// 编辑器下的模拟模式
-                //case EPlayMode.EditorSimulateMode:
-                //    var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(_package.PackageName);
-                //    initParameters = new EditorSimulateModeParameters
-                //    {
-                //        EditorFileSystemParameters =
-                //            FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult
-                //                .PackageRootDirectory)
-                //    };
-                //    break;
+                // 编辑器下的模拟模式
+                case EPlayMode.EditorSimulateMode:
+                    var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(_package.PackageName);
+                    initParameters = new EditorSimulateModeParameters
+                    {
+                        EditorFileSystemParameters =
+                            FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult
+                                .PackageRootDirectory)
+                    };
+                    break;
                 // 单机运行模式
                 case EPlayMode.OfflinePlayMode:
                     initParameters = new OfflinePlayModeParameters
