@@ -16,7 +16,8 @@
   "dependencies": {
     "com.unity.scriptablebuildpipeline": "1.21.25",
     "com.tuyoogame.yooasset": "2.3.18",
-    "com.code-philosophy.hybridclr": "8.11.0"
+    "com.code-philosophy.hybridclr": "8.11.0",
+    "com.code-philosophy.luban": "1.0.0"
   },
   "repository": {
     "url": "git@github.com:Alvin5100/Jiaopengyou.git",
