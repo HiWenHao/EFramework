@@ -27,7 +27,7 @@ namespace EasyFramework.Edit
                 if (_projectSetting is null && EditorUtils.CheckAssets<ProjectSetting>(out var pathConfigPath))
                     _projectSetting = EditorUtils.LoadSettingAtPath<ProjectSetting>();
                 if (_projectSetting is null)
-                    CreateSettings.Instance<ProjectSetting>(true, "Resources/Settings/");
+                    CreateSettings.Instance<ProjectSetting>(true, "Assets/Resources/Settings");
                 return _projectSetting;
             }
         }
