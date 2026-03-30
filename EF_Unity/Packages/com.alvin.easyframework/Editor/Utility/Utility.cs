@@ -132,7 +132,7 @@ namespace EasyFramework
                 // 如果没有选中任何东西，则提示并返回
                 if (guids == null || guids.Length == 0)
                 {
-                    Debug.LogWarning("没有选中任何文件或文件夹。");
+                    //Debug.LogWarning("No files or folders have been selected.");
                     return null;
                 }
 

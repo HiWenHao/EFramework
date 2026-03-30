@@ -12,6 +12,7 @@
 using EasyFramework.Edit;
 using System.Collections.Generic;
 using System.Reflection;
+using EasyFramework.Edit.Setting;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,7 +36,7 @@ namespace EasyFramework.Windows
             private SerializedProperty _appConstConfig;
             private SerializedProperty _appConstManagerList;
 
-            public EFProjectPanel(string name) : base(name)
+            public EFProjectPanel(string name, ProjectSetting target) : base(name, target)
             {
             }
 
@@ -46,7 +47,7 @@ namespace EasyFramework.Windows
 
             internal override void LoadWindowData()
             {
-                _settingPanel = new SerializedObject(ProjectUtility.Project);
+                _settingPanel = new SerializedObject(TargetScriptable);
                 _appConstConfig = _settingPanel.FindProperty("_appConst");
                 _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
                 _scriptVersion = _settingPanel.FindProperty("_scriptVersion");

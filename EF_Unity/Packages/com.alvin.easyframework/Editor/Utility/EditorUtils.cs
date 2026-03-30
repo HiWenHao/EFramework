@@ -8,6 +8,7 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -22,33 +23,32 @@ namespace EasyFramework.Edit
 	{
         #region Load
         /// <summary>
-        /// 按资源获取单例资产
+        /// 检查资源资产
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
-        /// <param name="assetsPath">资源路径</param>
-        public static T GetSingletonAssetsByResources<T>(string assetsPath) where T : ScriptableObject
+        /// <param name="assetPath">对应资产在编辑器下的路径</param>
+        public static bool CheckAssets<T>(out string assetPath) where T : ScriptableObject
         {
             string assetType = typeof(T).Name;
+            string[] globalAssetPaths = AssetDatabase.FindAssets($"t:{assetType}");
 #if UNITY_EDITOR
-            string[] globalAssetPaths = UnityEditor.AssetDatabase.FindAssets($"t:{assetType}");
+            if (globalAssetPaths.Length == 0)
+            {
+                //D.Warning($"Your need create one ScriptableObject type of [ {assetType} ] in your project...");
+                assetPath = "";
+                return false;
+            }
+            
             if (globalAssetPaths.Length > 1)
             {
                 foreach (var path in globalAssetPaths)
                 {
-                    D.Error($"Not allow has multi type. 不能有多个 {assetType}. 路径: {AssetDatabase.GUIDToAssetPath(path)}");
+                    D.Error($"Not allow has multi type of {assetType}. Path is [ {AssetDatabase.GUIDToAssetPath(path)} ] ");
                 }
             }
+            assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
 #endif
-            if (globalAssetPaths.Length == 0)
-                return null;
-            
-            string assetPath = AssetDatabase.GUIDToAssetPath(globalAssetPaths[0]);
-            T customGlobalSettings = AssetDatabase.LoadAssetAtPath<T>(assetPath);
-            if (customGlobalSettings != null)
-                return customGlobalSettings;
-            
-            D.Exception($"Don`t find asset. 没找到 {assetType} asset，需要创建一个:{assetsPath}.");
-            return null;
+            return true;
         }
 
         /// <summary>
@@ -57,20 +57,18 @@ namespace EasyFramework.Edit
         /// <typeparam name="T">面板类型</typeparam>
         public static T LoadSettingAtPath<T>() where T : ScriptableObject, new()
         {
-            T setting = default;
             string[] paths = AssetDatabase.FindAssets($"t:{typeof(T)}");
             if (paths.Length == 0)
             {
-                D.Error($"不存在 {typeof(T).Name}");
-                return setting;
+                D.Error($"Type of [ {typeof(T).Name} ] not exist in your project, please create it manually.");
+                return null;
             }
             if (paths.Length > 1)
             {
                 D.Error($"{typeof(T).Name} 数量大于1");
             }
             string path = AssetDatabase.GUIDToAssetPath(paths[0]);
-            setting = AssetDatabase.LoadAssetAtPath<T>(path);
-            return setting;
+            return AssetDatabase.LoadAssetAtPath<T>(path);
         }
 
         #endregion

@@ -9,6 +9,8 @@
  * ===============================================
  */
 
+using UnityEngine;
+
 namespace EasyFramework.Windows
 {
     namespace SettingPanel
@@ -18,12 +20,18 @@ namespace EasyFramework.Windows
         /// </summary>
         internal abstract class EFSettingBase
         {
-            internal EFSettingBase(string name)
+            internal EFSettingBase(string name, ScriptableObject s)
             {
                 Name = name;
+                TargetScriptable = s;
             }
 
             public string Name { get; private set; }
+            
+            /// <summary>
+            /// 序列化目标
+            /// </summary>
+            internal ScriptableObject TargetScriptable { get; private set; }
 
             /// <summary>
             /// 当首次进入

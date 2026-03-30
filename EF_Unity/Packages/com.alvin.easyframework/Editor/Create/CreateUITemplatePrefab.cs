@@ -151,7 +151,7 @@ namespace EasyFramework.Edit
         [MenuItem("GameObject/UI/EF/About Bind", false, 999)]
         static void CreateUIBind(MenuCommand menuCommand)
         {
-            EFSettingsPanel.Open(3);
+            EFSettingsPanel.Open(2);
         }
 
         /// <summary>

@@ -17,31 +17,29 @@ namespace EasyFramework.Edit
     /// <summary>
     /// Easy framework setting utils.框架设置工具
     /// </summary>
-    public class ProjectUtility
+    public static class ProjectUtility
     {
-        static ProjectSetting _projectSetting;
+        private static ProjectSetting _projectSetting;
         public static ProjectSetting Project
         {
             get
             {
+                if (_projectSetting == null && EditorUtils.CheckAssets<ProjectSetting>(out var pathConfigPath))
+                    _projectSetting = EditorUtils.LoadSettingAtPath<ProjectSetting>();
                 if (_projectSetting == null)
-                {
-                    _projectSetting = EditorUtils.GetSingletonAssetsByResources<ProjectSetting>("Settings/ProjectSetting");
-                }
+                    CreateSettings.Instance<ProjectSetting>();
                 return _projectSetting;
             }
         }
     
 
-        static PathConfigSetting _pathConfigSetting;
+        private static PathConfigSetting _pathConfigSetting;
         public static PathConfigSetting Path
         {
             get
             {
-                if (_pathConfigSetting == null)
-                {
-                    _pathConfigSetting = EditorUtils.GetSingletonAssetsByResources<PathConfigSetting>("Settings/PathConfigSetting");
-                }
+                if (_pathConfigSetting == null && EditorUtils.CheckAssets<PathConfigSetting>(out var pathConfigPath))
+                    _pathConfigSetting = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
                 return _pathConfigSetting;
             }
         }

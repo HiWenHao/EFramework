@@ -7,7 +7,8 @@
  * ModifyTime:    2024-10-16 16:39:56
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
+
 using EasyFramework.Edit;
 using System.IO;
 using UnityEditor;
@@ -34,7 +35,7 @@ namespace EasyFramework.Windows
             private SerializedProperty _uiPrefabPath;
             private SerializedObject _customSettings;
 
-            public PathConfigPanel(string name) : base(name)
+            public PathConfigPanel(string name, PathConfigSetting target) : base(name, target)
             {
             }
 
@@ -54,8 +55,8 @@ namespace EasyFramework.Windows
                     }
                 };
 
-                PathConfigSetting pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
-                _customSettings = new SerializedObject(pathConfig);
+                //PathConfigSetting pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
+                _customSettings = new SerializedObject(TargetScriptable);
 
                 _sublimePath = _customSettings.FindProperty("_sublimePath");
                 _notepadPath = _customSettings.FindProperty("_notepadPath");
@@ -72,13 +73,20 @@ namespace EasyFramework.Windows
                 _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos); //"Badge"
 
 
-                EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
+                EditorGUILayout.LabelField(
+                    $"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----",
+                    SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
                 SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), _atlasFolder);
-                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }), _uiPrefabPath);
-                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }), _uiCodePath);
+                SelectionFolderPath(
+                    LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }),
+                    _uiPrefabPath);
+                SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }),
+                    _uiCodePath);
                 SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), _extractPath);
 
-                EditorGUILayout.LabelField($"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----", SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
+                EditorGUILayout.LabelField(
+                    $"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----",
+                    SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
                 SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, _sublimePath);
                 SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, _notepadPath);
 
@@ -112,7 +120,8 @@ namespace EasyFramework.Windows
                     string folder = Path.Combine(Application.dataPath, property.stringValue);
                     if (!Directory.Exists(folder))
                         folder = Application.dataPath;
-                    string path = EditorUtility.OpenFilePanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "exe");
+                    string path =
+                        EditorUtility.OpenFilePanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "exe");
                     if (!string.IsNullOrEmpty(path))
                     {
                         bool exit = false;
@@ -124,15 +133,18 @@ namespace EasyFramework.Windows
                                 continue;
                             }
                         }
+
                         if (exit)
                         {
-                            property.stringValue = path; 
+                            property.stringValue = path;
                             SaveAssetsInfo();
                         }
                         else
-                            EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }), LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }), LC.Combine(Lc.Ok));
+                            EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }),
+                                LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }), LC.Combine(Lc.Ok));
                     }
                 }
+
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             }
@@ -149,7 +161,9 @@ namespace EasyFramework.Windows
                     {
                         folder = Application.dataPath;
                     }
-                    string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "");
+
+                    string path =
+                        EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         if (path.Equals(Application.dataPath))
@@ -159,6 +173,7 @@ namespace EasyFramework.Windows
                         SaveAssetsInfo();
                     }
                 }
+
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             }

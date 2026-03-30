@@ -25,56 +25,50 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/ProjectSetting", priority = 200)]
         private static void CreatedProjectSetting()
         {
-            CreatedSetting<ProjectSetting>();
+            Instance<ProjectSetting>();
         }
         
         [MenuItem("Assets/Create/EF/AutoBindSetting", priority = 210)]
         private static void CreatedAutoBindSetting()
         {
-            CreatedSetting<AutoBindSetting>();
+            Instance<AutoBindSetting>();
         }
         
         [MenuItem("Assets/Create/EF/PathConfigSetting", priority = 211)]
         private static void CreatedPathConfigSetting()
         {
-            CreatedSetting<PathConfigSetting>();
+            Instance<PathConfigSetting>();
         }
         
         [MenuItem("Assets/Create/EF/TaskListConfig", priority = 300)]
         private static void CreatedTaskListConfig()
         {
-            CreatedSetting<TaskListConfig>(false);
+            Instance<TaskListConfig>(false);
         }
         
         [MenuItem("Assets/Create/EF/SpriteCollection", priority = 301)]
         private static void CreatedSpriteCollection()
         {
-            CreatedSetting<SpriteCollection>(false);
+            Instance<SpriteCollection>(false);
         }
         
-        private static void CreatedSetting<T>(bool single = true)  where T : ScriptableObject
+        /// <summary>
+        /// 创建对应设置
+        /// </summary>
+        /// <param name="single">是否全局唯一， 默认为True</param>
+        /// <typeparam name="T">设置类型</typeparam>
+        public static void Instance<T>(bool single = true)  where T : ScriptableObject
         {
             string typeName = typeof(T).Name;
-            string configPath = single
-                ? Path.Combine(Utility.Path.GetEfPath(), $"/Editor Resources/Settings/{typeName}.asset")
-                : Path.Combine(Utility.Path.GetCurrentFolderPath(), $"{typeName}.asset");
+            string path = Utility.Path.GetCurrentFolderPath();
+            string configPath = string.IsNullOrEmpty(path) ? $"Assets/{typeName}.asset" : Path.Combine(path, $"{typeName}.asset");
             
-            if (single)
+            if (single && EditorUtils.CheckAssets<T>(out var assetPath))
             {
-                T existingAsset = AssetDatabase.LoadAssetAtPath<T>(configPath);
-                if (existingAsset == null)
-                {
-                    string[] guids = AssetDatabase.FindAssets($"t:{typeName}");
-                    if (guids.Length > 0)
-                        existingAsset = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                }
-
-                if (existingAsset != null)
-                {
-                    Selection.activeObject = existingAsset;
-                    EditorGUIUtility.PingObject(existingAsset);
-                    return;
-                }
+                T existingAsset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                Selection.activeObject = existingAsset;
+                EditorGUIUtility.PingObject(existingAsset);
+                return;
             }
 
             T asset = ScriptableObject.CreateInstance<T>();

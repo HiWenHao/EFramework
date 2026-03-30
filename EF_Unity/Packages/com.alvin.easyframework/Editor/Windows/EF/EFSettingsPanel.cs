@@ -10,6 +10,7 @@
  */
 
 using EasyFramework.Edit;
+using EasyFramework.Edit.AutoBind;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,6 +27,7 @@ namespace EasyFramework.Windows
             private string _assetsPath;
             private Vector2 _scrollPositionL;
 
+            private static EFSettingsPanel _window;
             private EFSettingBase[] _settings;
 
             [MenuItem("EFTools/Settings &E", priority = 0)]
@@ -37,13 +39,15 @@ namespace EasyFramework.Windows
             protected override void LoadWindowData()
             {
                 _assetsPath = Utility.Path.GetEfAssetsPath();
-
+                ;
                 _settings ??= new[]
                 {
-                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings })) as EFSettingBase,
-                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config })),
+                    new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ProjectUtility.Project) as
+                        EFSettingBase,
+                    new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ProjectUtility.Path),
                     //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
-                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }))
+                    new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
+                        EditorUtils.LoadSettingAtPath<AutoBindSetting>())
                 };
 
                 _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
@@ -106,17 +110,23 @@ namespace EasyFramework.Windows
                 _settings = null;
             }
 
-            void DrawButton(int index, EFSettingBase setting)
+            private void DrawButton(int index, EFSettingBase setting)
             {
-                if (GUILayout.Button(setting.Name,
+                if (!GUILayout.Button(setting.Name,
                         new GUIStyle(GUI.skin.button)
                         {
                             alignment = TextAnchor.MiddleLeft
-                        }))
+                        })) 
+                    return;
+
+                if (!setting.TargetScriptable)
                 {
-                    _panelIndex = index;
-                    setting.OnEnable(_assetsPath);
+                    D.Warning("Please create assets of the corresponding type, and reopen the window.");
+                    return;
                 }
+                    
+                _panelIndex = index;
+                setting.OnEnable(_assetsPath);
             }
 
             /// <summary>
@@ -125,11 +135,21 @@ namespace EasyFramework.Windows
             /// <param name="pageIndex">页面索引</param>
             public static void Open(int pageIndex)
             {
-                EFSettingsPanel window = GetWindow<EFSettingsPanel>(false, "EF Settings");
-                window.minSize = new Vector2(650.0f, 350.0f);
-                window.ShowUtility();
-                window._panelIndex = pageIndex;
-                window._settings[pageIndex].OnEnable(window._assetsPath);
+                if (!ProjectUtility.Project)
+                {
+                    D.Log("ProjectSetting has been created successfully. Please reopen this panel.");
+                    return;
+                }
+                if (null == _window)
+                {
+                    _window = CreateInstance<EFSettingsPanel>();// GetWindow<EFSettingsPanel>(false, "EF Settings");
+                    _window.titleContent = new GUIContent("EF Settings");
+                    _window.minSize = new Vector2(650.0f, 350.0f);
+                    _window.Show();
+                    _window.Focus();
+                }
+                _window._panelIndex = pageIndex;
+                _window._settings[pageIndex].OnEnable(_window._assetsPath);
             }
         }
     }

@@ -7,11 +7,12 @@
  * ModifyTime:    2024-10-16 10:16:59
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using EasyFramework.Edit;
 using System.Collections.Generic;
 using System.IO;
+using EasyFramework.Edit.Setting;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,9 +41,8 @@ namespace EasyFramework.Windows
             Vector2 _allPostation;
             AssetsInformation _assets;
 
-            internal AssetsSwitch(string name) : base(name)
+            internal AssetsSwitch(string name, ProjectSetting target) : base(name, target)
             {
-
             }
 
             internal override void OnEnable(string assetsPath)
@@ -60,12 +60,15 @@ namespace EasyFramework.Windows
                 //  ScrollView
                 _allPostation = EditorGUILayout.BeginScrollView(_allPostation);
                 // Managers
-                FoldoutHeaderGroup(ref _assets.ManagerListSwitch, ref _managersPos, ref _managerIndex, _managerCount, managers: _assets.Managers, null);
+                FoldoutHeaderGroup(ref _assets.ManagerListSwitch, ref _managersPos, ref _managerIndex, _managerCount,
+                    managers: _assets.Managers, null);
 
                 // Plugins
-                FoldoutHeaderGroup(ref _assets.PluginsListSwitch, ref _pluginsPos, ref pluginsIndex, _pluginsCount, managers: null, _assets.Plugins);
+                FoldoutHeaderGroup(ref _assets.PluginsListSwitch, ref _pluginsPos, ref pluginsIndex, _pluginsCount,
+                    managers: null, _assets.Plugins);
 
                 #region Example
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Example, Lc.Project }), _assets.ExampleSwitch);
                 if (GUILayout.Button(LC.Combine(_assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
@@ -78,6 +81,7 @@ namespace EasyFramework.Windows
                             Directory.Delete(path, true);
                             File.Delete(path + ".meta");
                         }
+
                         _assets.ExampleSwitch = false;
                     }
                     else
@@ -88,15 +92,19 @@ namespace EasyFramework.Windows
 
                         _assets.ExampleSwitch = true;
                     }
+
                     SaveAssetsInfo();
                 }
+
                 EditorGUILayout.EndHorizontal();
+
                 #endregion
 
 
                 EditorGUILayout.EndScrollView();
 
                 #region Confirm
+
                 GUILayout.FlexibleSpace();
                 //EditorGUILayout.BeginHorizontal();
                 ////if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Current, Lc.Config })))
@@ -108,6 +116,7 @@ namespace EasyFramework.Windows
 
                 //}
                 //EditorGUILayout.EndHorizontal();
+
                 #endregion
             }
 
@@ -117,9 +126,12 @@ namespace EasyFramework.Windows
             }
 
             #region Managers and Plugins
-            void FoldoutHeaderGroup(ref bool mySwitch, ref Vector2 pos, ref int index, int count, List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
+
+            void FoldoutHeaderGroup(ref bool mySwitch, ref Vector2 pos, ref int index, int count,
+                List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
             {
-                mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch, LC.Combine(new Lc[] { (managers == null) ? Lc.Plugins : Lc.Manager, Lc.Switch }));
+                mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch,
+                    LC.Combine(new Lc[] { (managers == null) ? Lc.Plugins : Lc.Manager, Lc.Switch }));
                 if (mySwitch)
                 {
                     EditorGUILayout.BeginHorizontal("Badge");
@@ -134,6 +146,7 @@ namespace EasyFramework.Windows
                         if (null != plugins)
                             LeftItemButton(i, plugins[i], ref index);
                     }
+
                     EditorGUILayout.EndScrollView();
 
                     //Right Contents
@@ -146,6 +159,7 @@ namespace EasyFramework.Windows
 
                     EditorGUILayout.EndHorizontal();
                 }
+
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.Space();
             }
@@ -167,7 +181,9 @@ namespace EasyFramework.Windows
             void ItemShowPanel(InfoBase info, bool isManager)
             {
                 EditorGUILayout.BeginVertical();
+
                 #region Title
+
                 EditorGUILayout.LabelField(info.Name, new GUIStyle(GUI.skin.label)
                 {
                     alignment = TextAnchor.MiddleLeft,
@@ -175,9 +191,11 @@ namespace EasyFramework.Windows
                 }, GUILayout.Height(35f));
                 GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
                 EditorGUILayout.Space();
+
                 #endregion
 
                 #region Body
+
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Box(GUIContent.none, GUILayout.Width(3.0f), GUILayout.ExpandHeight(true));
                 EditorGUILayout.BeginVertical();
@@ -193,8 +211,10 @@ namespace EasyFramework.Windows
                     {
                         EditorGUILayout.LabelField(_manager.Rely[i], GUILayout.Width(150f));
                     }
+
                     EditorGUILayout.EndScrollView();
                 }
+
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
 
@@ -206,7 +226,7 @@ namespace EasyFramework.Windows
                 {
                     string path = Path.Combine(
                         Application.dataPath,
-                        isManager ? "EasyFramework/Scripts/Runtime/Managers" : "EasyFramework/ThirdPartyAssets", 
+                        isManager ? "EasyFramework/Scripts/Runtime/Managers" : "EasyFramework/ThirdPartyAssets",
                         info.Name);
 
                     if (isLoad)
@@ -225,10 +245,11 @@ namespace EasyFramework.Windows
 
                     if (isManager)
                     {
-                        string monoPath = Path.Combine(Application.dataPath, "EasyFramework/Scripts/Runtime/EF.Start.cs");
+                        string monoPath = Path.Combine(Application.dataPath,
+                            "EasyFramework/Scripts/Runtime/EF.Start.cs");
                         string[] lines = File.ReadAllLines(monoPath);
                         ManagerInfo _manager = (ManagerInfo)info;
-                        if (isLoad) 
+                        if (isLoad)
                             lines[_manager.MonoIndex] = "//" + lines[_manager.MonoIndex];
                         else
                             lines[_manager.MonoIndex] = lines[_manager.MonoIndex][2..];
@@ -239,16 +260,18 @@ namespace EasyFramework.Windows
                     info.IsLoad = !isLoad;
                     SaveAssetsInfo();
                 }
+
                 EditorGUILayout.Space();
                 EditorGUILayout.EndVertical();
             }
+
             #endregion
 
             void SaveAssetsInfo()
             {
                 if (string.IsNullOrEmpty(_assetsPath))
                     return;
-                
+
                 string configPath = Path.Combine(_assetsPath, ASSETSINFO);
                 File.WriteAllText(configPath, JsonUtility.ToJson(_assets), System.Text.Encoding.UTF8);
                 AssetDatabase.Refresh();
