@@ -14,7 +14,6 @@ using UnityEditor;
 using System.IO;
 using System.Text;
 
-
 namespace EasyFramework.Edit
 {
     namespace AssetToolLibrary
