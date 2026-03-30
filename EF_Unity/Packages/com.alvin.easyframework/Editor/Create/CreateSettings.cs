@@ -25,7 +25,7 @@ namespace EasyFramework.Edit
         [MenuItem("Assets/Create/EF/ProjectSetting", priority = 200)]
         private static void CreatedProjectSetting()
         {
-            Instance<ProjectSetting>();
+            Instance<ProjectSetting>(folderPath: "Assets/Resources/Settings/");
         }
         
         [MenuItem("Assets/Create/EF/AutoBindSetting", priority = 210)]
@@ -56,11 +56,12 @@ namespace EasyFramework.Edit
         /// 创建对应设置
         /// </summary>
         /// <param name="single">是否全局唯一， 默认为True</param>
+        /// <param name="folderPath">所属文件夹，基于Assets下</param>
         /// <typeparam name="T">设置类型</typeparam>
-        public static void Instance<T>(bool single = true)  where T : ScriptableObject
+        public static void Instance<T>(bool single = true, string folderPath = "")  where T : ScriptableObject
         {
             string typeName = typeof(T).Name;
-            string path = Utility.Path.GetCurrentFolderPath();
+            string path = !string.IsNullOrEmpty(folderPath) ? folderPath : Utility.Path.GetCurrentFolderPath();
             string configPath = string.IsNullOrEmpty(path) ? $"Assets/{typeName}.asset" : Path.Combine(path, $"{typeName}.asset");
             
             if (single && EditorUtils.CheckAssets<T>(out var assetPath))
@@ -73,9 +74,9 @@ namespace EasyFramework.Edit
 
             T asset = ScriptableObject.CreateInstance<T>();
         
-            string folderPath = Path.GetDirectoryName(configPath);
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
+            string folder = Path.GetDirectoryName(configPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
             AssetDatabase.CreateAsset(asset, configPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

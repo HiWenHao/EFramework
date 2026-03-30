@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
+  m_Name: AutoBindSetting
+  m_EditorClassIdentifier: 
+  _namespace: PleaseChangeTheNamespace
+  _rulePrefixes:
+  - Prefixe: Btn
+    FullContent: Button
+  - Prefixe: BtnP
+    FullContent: ButtonPro
+  - Prefixe: Canvas
+    FullContent: Canvas
+  - Prefixe: Drop
+    FullContent: Dropdown
+  - Prefixe: DropTmp
+    FullContent: TMP_Dropdown
+  - Prefixe: Group
+    FullContent: CanvasGroup
+  - Prefixe: GGroup
+    FullContent: GridLayoutGroup
+  - Prefixe: HGroup
+    FullContent: HorizontalLayoutGroup
+  - Prefixe: Img
+    FullContent: Image
+  - Prefixe: Ipt
+    FullContent: InputField
+  - Prefixe: IptTmp
+    FullContent: TMP_InputField
+  - Prefixe: Mask
+    FullContent: Mask
+  - Prefixe: Map
+    FullContent: RadarMap
+  - Prefixe: Mask2D
+    FullContent: RectMask2D
+  - Prefixe: NAnim
+    FullContent: Animator
+  - Prefixe: OAnim
+    FullContent: Animation
+  - Prefixe: RImg
+    FullContent: RawImage
+  - Prefixe: Rect
+    FullContent: RectTransform
+  - Prefixe: Sld
+    FullContent: Slider
+  - Prefixe: Sbar
+    FullContent: Scrollbar
+  - Prefixe: SRct
+    FullContent: ScrollRect
+  - Prefixe: SRctP
+    FullContent: ScrollRectPro
+  - Prefixe: Tran
+    FullContent: Transform
+  - Prefixe: Txt
+    FullContent: Text
+  - Prefixe: TxtTmp
+    FullContent: TextMeshProUGUI
+  - Prefixe: Tog
+    FullContent: Toggle
+  - Prefixe: TGroup
+    FullContent: ToggleGroup
+  - Prefixe: VGroup
+    FullContent: VerticalLayoutGroup

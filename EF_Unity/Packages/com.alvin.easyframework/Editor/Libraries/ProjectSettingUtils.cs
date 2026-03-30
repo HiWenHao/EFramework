@@ -24,10 +24,10 @@ namespace EasyFramework.Edit
         {
             get
             {
-                if (_projectSetting == null && EditorUtils.CheckAssets<ProjectSetting>(out var pathConfigPath))
+                if (_projectSetting is null && EditorUtils.CheckAssets<ProjectSetting>(out var pathConfigPath))
                     _projectSetting = EditorUtils.LoadSettingAtPath<ProjectSetting>();
-                if (_projectSetting == null)
-                    CreateSettings.Instance<ProjectSetting>();
+                if (_projectSetting is null)
+                    CreateSettings.Instance<ProjectSetting>(true, "Resources/Settings/");
                 return _projectSetting;
             }
         }
@@ -38,7 +38,7 @@ namespace EasyFramework.Edit
         {
             get
             {
-                if (_pathConfigSetting == null && EditorUtils.CheckAssets<PathConfigSetting>(out var pathConfigPath))
+                if (_pathConfigSetting is null && EditorUtils.CheckAssets<PathConfigSetting>(out var pathConfigPath))
                     _pathConfigSetting = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
                 return _pathConfigSetting;
             }
