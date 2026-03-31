@@ -3,15 +3,17 @@
  * Describe:        The class to used clip animation.
  * Author:          Faquan.Xue
  * CreationTime:    2023-04-19-17:34:01
- * ModifyAuthor:    Xiaohei.Wang(Wenhao)
- * ModifyTime:      2023-04-21-10:36:28
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-03-31 14:04:04
  * Version:         1.0
  * ===============================================
  */
 
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Edit
 {
@@ -19,7 +21,7 @@ namespace EasyFramework.Edit
     {
         public class AnimationEditor : Editor
         {
-            [MenuItem("Assets/EF/Animation Tools/Compress One Clip", false, 50)]
+            [MenuItem("Assets/EF/Animation/Compress One Clip", false, 50)]
             static void CompressAnimation()
             {
                 Object[] selection = Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets);
@@ -37,7 +39,7 @@ namespace EasyFramework.Edit
                 }
             }
 
-            [MenuItem("Assets/EF/Animation Tools/Compress All Clips", false, 51)]
+            [MenuItem("Assets/EF/Animation/Compress All Clips", false, 51)]
             public static void CompressAnimations()
             {
                 foreach (var obj in Selection.GetFiltered<Object>(SelectionMode.Assets))
@@ -56,7 +58,7 @@ namespace EasyFramework.Edit
                     FileInfo[] files = directoryInfo.GetFiles("*.anim");
                     foreach (FileInfo file in files)
                     {
-                        string fbxPath = file.FullName.Substring(file.FullName.IndexOf("Assets"));
+                        string fbxPath = file.FullName[file.FullName.IndexOf("Assets", StringComparison.Ordinal)..];
                         AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(fbxPath);
                         CullCurves(clip);
                     }
@@ -64,8 +66,8 @@ namespace EasyFramework.Edit
                 }
             }
 
-            [MenuItem("Assets/EF/Animation Tools/Extract Clips Compress", false, 52)]
-            public static void GetAniamtionClipAndCompress()
+            [MenuItem("Assets/EF/Animation/Extract Clips Compress", false, 52)]
+            public static void GetAnimationClipAndCompress()
             {
                 Object[] objects = Selection.GetFiltered<Object>(SelectionMode.Assets);
                 foreach (var obj in objects)
@@ -76,7 +78,7 @@ namespace EasyFramework.Edit
                     if (Directory.Exists(path))
                     {
                         DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                        string pt = directoryInfo.FullName.Remove(directoryInfo.FullName.IndexOf("Assets"));
+                        string pt = directoryInfo.FullName.Remove(directoryInfo.FullName.IndexOf("Assets", StringComparison.Ordinal));
                         pt += ProjectUtility.Path.ExtractPath + directoryInfo.Name;
 
                         if (Directory.Exists(pt))
@@ -95,7 +97,7 @@ namespace EasyFramework.Edit
                     }
                     else
                     {
-                        AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path[path.IndexOf("Assets")..]);
+                        AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path[path.IndexOf("Assets", StringComparison.Ordinal)..]);
                         if (!clip)
                         {
                             D.Error($"The <<{obj.name}>> is not a FBX/fbx file or folder, please reselection.");

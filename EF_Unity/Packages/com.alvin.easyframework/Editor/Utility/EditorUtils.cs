@@ -1,10 +1,10 @@
-/* 
+﻿/* 
  * ================================================
  * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-04-20 19:57:04
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-04-20 19:57:04
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-03-31 14:20:52
  * ScriptVersion: 0.1
  * ===============================================
 */
@@ -19,7 +19,7 @@ namespace EasyFramework.Edit
     /// <summary>
     /// The editor folder utils.
     /// </summary>
-    public class EditorUtils
+    public static class EditorUtils
 	{
         #region Load
         /// <summary>
@@ -73,6 +73,37 @@ namespace EasyFramework.Edit
 
         #endregion
 
+        #region Get files path
+
+        /// <summary>
+        /// 获取当前文件路径
+        /// </summary>
+        /// <returns>文件路径</returns>
+        public static string GetSelectFilePath()
+        {
+            Object selectedObject = Selection.activeObject;
+            return selectedObject == null ? "Assets" : AssetDatabase.GetAssetPath(selectedObject);
+        }
+        
+        /// <summary>
+        /// 获取当前所选择的文件路径
+        /// </summary>
+        /// <returns>所选择的文件路径</returns>
+        public static string[] GetSelectFilesPath()
+        {
+            string[] guids = Selection.assetGUIDs;
+            string[] paths = new string[guids.Length];
+            for (var i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (!string.IsNullOrEmpty(path))
+                    paths[i]= path;
+            }
+            return paths;
+        }
+
+        #endregion
+        
         #region String
         /// <summary>
         /// 删除标点符号

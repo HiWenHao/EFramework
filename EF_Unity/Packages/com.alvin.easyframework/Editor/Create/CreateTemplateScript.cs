@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:      This script is used to create template script.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-06-07 18:18:36
- * ModifyAuthor:  Alvin.Wang(Wenhao)
- * ModifyTime:    2026-03-31 12:32:44
- * Version:       0.1
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-03-31 14:20:52
+ * ScriptVersion: 0.1
  * ===============================================
  */
 

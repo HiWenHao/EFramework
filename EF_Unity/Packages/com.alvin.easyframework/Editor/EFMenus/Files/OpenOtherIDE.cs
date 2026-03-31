@@ -21,20 +21,20 @@ namespace EasyFramework.Edit
         /// <summary>
         /// Open file with other ide.
         /// </summary>
-        public class OpenOtherIDE
+        public static class OpenOtherIDE
         {
             [MenuItem("Assets/EF/Open With IDE/Sublime", false, 1)]
             private static void OpenSublime()
             {
                 var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-                OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+                OpenIdeWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
             }
             [MenuItem("Assets/EF/Open With IDE/Sublime *meta", false, 2)]
             private static void OpenSublimeMeta()
             {
                 var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-                OpenIDEWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+                OpenIdeWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
 
             }
 
@@ -42,13 +42,13 @@ namespace EasyFramework.Edit
             private static void OpenNotepad()
             {
                 var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-                OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+                OpenIdeWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
             }
             [MenuItem("Assets/EF/Open With IDE/Notepad++ *meta", false, 4)]
             private static void OpenNotepadMeta()
             {
                 var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-                OpenIDEWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+                OpenIdeWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
 
             }
 
@@ -89,7 +89,7 @@ namespace EasyFramework.Edit
             /// </summary>
             /// <param name="appPath">IDE path</param>
             /// <param name="filePath">Selection objcet path</param>
-            private static void OpenIDEWithPath(string appPath, string filePath, string[] defaultPath)
+            private static void OpenIdeWithPath(string appPath, string filePath, string[] defaultPath)
             {
                 string path = appPath;
                 bool hasPath = File.Exists(path);
