@@ -73,8 +73,7 @@ namespace EasyFramework.Windows
                 SystemInfos();
                 using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
-                LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(
-                    LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
+                //LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
 
                 EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
 

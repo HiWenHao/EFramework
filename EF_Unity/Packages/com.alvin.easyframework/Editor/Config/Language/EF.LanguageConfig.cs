@@ -51,9 +51,8 @@ namespace EasyFramework.Edit
         {
             if (null != m_Dictionary && m_Dictionary.Count != 0) 
                 return;
-            
-            m_AassetsPath = Path.Combine(Utility.Path.GetEfPath(),
-                "Editor Resources/Description/Editorlanguages.json");
+
+            m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             DisPlayLanguage = (ELanguage)m_currentIndex;
             JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
@@ -126,8 +125,7 @@ namespace EasyFramework.Edit
         {
             m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             if (string.IsNullOrEmpty(m_AassetsPath))
-                m_AassetsPath = Path.Combine(Utility.Path.GetEfPath(),
-                    "Editor Resources//Description/Editorlanguages.json");
+                m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
 
             JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
 
