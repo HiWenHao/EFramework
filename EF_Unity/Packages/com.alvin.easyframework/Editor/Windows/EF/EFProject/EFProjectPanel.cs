@@ -61,6 +61,7 @@ namespace EasyFramework.Windows
                 var userInfoType = userInfo.GetType();
                 PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
                 _editorUser = (string)propertyInfo.GetValue(userInfo);
+                EditorPrefs.SetString($"{((ProjectSetting)TargetScriptable).AppConst.AppPrefix}EditorUser", _editorUser);
 
                 FindAllManager();
 
