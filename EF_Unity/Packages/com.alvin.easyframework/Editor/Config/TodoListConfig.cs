@@ -10,10 +10,9 @@
 */
 using UnityEngine;
 
-namespace EasyFramework.Edit.TaskList
+namespace EasyFramework.Edit.TodoList
 {
-    //[CreateAssetMenu(fileName = "TodoList", menuName = "EF/Todo List", order = 300)]
-    public class TaskListConfig : ScriptableObject
+    public class TodoListConfig : ScriptableObject
     {
 #pragma warning disable 0414
         [SerializeField]

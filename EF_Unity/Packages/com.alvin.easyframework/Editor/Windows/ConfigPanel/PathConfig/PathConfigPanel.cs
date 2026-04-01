@@ -13,12 +13,12 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    internal class PathConfigPanel : EFSettingBase
+    internal class PathConfigPanel : EFConfigPanelBase
     {
         Vector2 _scrollPos;
 
@@ -32,7 +32,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         private SerializedProperty _uiPrefabPath;
         private SerializedObject _customSettings;
 
-        public PathConfigPanel(string name, PathConfigSetting target) : base(name, target)
+        public PathConfigPanel(string name, PathConfig target) : base(name, target)
         {
         }
 
@@ -52,7 +52,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
                 }
             };
 
-            //PathConfigSetting pathConfig = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
+            //PathConfig pathConfig = EditorUtils.LoadSettingAtPath<PathConfig>();
             _customSettings = new SerializedObject(TargetScriptable);
 
             _sublimePath = _customSettings.FindProperty("_sublimePath");

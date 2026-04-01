@@ -14,12 +14,12 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 资源开关面板
     /// </summary>
-    internal class AssetsSwitch : EFSettingBase
+    internal class AssetsSwitch : EFConfigPanelBase
     {
         const string ASSETSINFO = "Description/AssetsInfo.json";
         const string EXAMPLEFOLDER = "ExampleGame";
@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         Vector2 _allPostation;
         AssetsInformation _assets;
 
-        internal AssetsSwitch(string name, ProjectSetting target) : base(name, target)
+        internal AssetsSwitch(string name, ProjectConfig target) : base(name, target)
         {
         }
 

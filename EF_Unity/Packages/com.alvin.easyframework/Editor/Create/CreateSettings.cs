@@ -11,8 +11,8 @@
 
 using System.IO;
 using EasyFramework.Edit.SpriteTools;
-using EasyFramework.Edit.TaskList;
-using EasyFramework.Edit.Windows.SettingPanel;
+using EasyFramework.Edit.TodoList;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,28 +20,28 @@ namespace EasyFramework.Edit.Create
 {
     internal static class CreateSettings
     {
-        [MenuItem("Assets/Create/EF/ProjectSetting", priority = 200)]
-        private static void CreatedProjectSetting()
+        [MenuItem("Assets/Create/EF/ProjectConfig", priority = 200)]
+        private static void CreatedProjectConfig()
         {
-            Instance<ProjectSetting>(folderPath: "Assets/Resources/Settings/");
+            Instance<ProjectConfig>(folderPath: "Assets/Resources/Configs/");
         }
         
-        [MenuItem("Assets/Create/EF/AutoBindSetting", priority = 210)]
+        [MenuItem("Assets/Create/EF/AutoBindingConfig", priority = 210)]
         private static void CreatedAutoBindSetting()
         {
-            Instance<AutoBindSetting>();
+            Instance<AutoBindingConfig>();
         }
         
-        [MenuItem("Assets/Create/EF/PathConfigSetting", priority = 211)]
+        [MenuItem("Assets/Create/EF/PathConfig", priority = 211)]
         private static void CreatedPathConfigSetting()
         {
-            Instance<PathConfigSetting>();
+            Instance<PathConfig>();
         }
         
-        [MenuItem("Assets/Create/EF/TaskListConfig", priority = 300)]
+        [MenuItem("Assets/Create/EF/TodoListConfig", priority = 300)]
         private static void CreatedTaskListConfig()
         {
-            Instance<TaskListConfig>(false);
+            Instance<TodoListConfig>(false);
         }
         
         [MenuItem("Assets/Create/EF/SpriteCollection", priority = 301)]

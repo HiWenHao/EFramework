@@ -12,12 +12,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
-    public class AutoBindSetting : ScriptableObject
+    public class AutoBindingConfig : ScriptableObject
     {
         /// <summary>
         /// 默认命名空间

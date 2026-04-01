@@ -19,7 +19,7 @@ namespace EasyFramework
     /// <summary>
     /// 框架设置界面
     /// </summary>
-    public class ProjectSetting : ScriptableObject
+    public class ProjectConfig : ScriptableObject
     {
         [SerializeField, Header(LanguagAttribute.ScriptAuthor)]
         private string _scriptAuthor = "Default";

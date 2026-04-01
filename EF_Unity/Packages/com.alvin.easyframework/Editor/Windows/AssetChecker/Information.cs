@@ -9,7 +9,7 @@
  * ===============================================
 */
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 纹理信息

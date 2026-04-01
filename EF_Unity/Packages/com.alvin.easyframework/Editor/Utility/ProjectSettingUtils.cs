@@ -9,7 +9,7 @@
  * ===============================================
 */
 
-using EasyFramework.Edit.Windows.SettingPanel;
+using EasyFramework.Edit.Windows.ConfigPanel;
 
 namespace EasyFramework.Edit
 {
@@ -18,28 +18,28 @@ namespace EasyFramework.Edit
     /// </summary>
     public static class ProjectUtility
     {
-        private static ProjectSetting _projectSetting;
-        public static ProjectSetting Project
+        private static ProjectConfig _projectConfig;
+        public static ProjectConfig Project
         {
             get
             {
-                if (_projectSetting is null && EditorUtils.CheckAssets<ProjectSetting>(out var pathConfigPath))
-                    _projectSetting = EditorUtils.LoadSettingAtPath<ProjectSetting>();
-                if (_projectSetting is null)
-                    Create.CreateSettings.Instance<ProjectSetting>(true, "Assets/Resources/Settings");
-                return _projectSetting;
+                if (_projectConfig is null && EditorUtils.CheckAssets<ProjectConfig>(out var pathConfigPath))
+                    _projectConfig = EditorUtils.LoadSettingAtPath<ProjectConfig>();
+                if (_projectConfig is null)
+                    Create.CreateSettings.Instance<ProjectConfig>(true, "Assets/Resources/Configs");
+                return _projectConfig;
             }
         }
     
 
-        private static PathConfigSetting _pathConfigSetting;
-        public static PathConfigSetting Path
+        private static PathConfig _pathConfig;
+        public static PathConfig Path
         {
             get
             {
-                if (_pathConfigSetting is null && EditorUtils.CheckAssets<PathConfigSetting>(out var pathConfigPath))
-                    _pathConfigSetting = EditorUtils.LoadSettingAtPath<PathConfigSetting>();
-                return _pathConfigSetting;
+                if (_pathConfig is null && EditorUtils.CheckAssets<PathConfig>(out var pathConfigPath))
+                    _pathConfig = EditorUtils.LoadSettingAtPath<PathConfig>();
+                return _pathConfig;
             }
         }
     }

@@ -11,12 +11,12 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 优化设置界面
     /// </summary>
-    public class PathConfigSetting : ScriptableObject
+    public class PathConfig : ScriptableObject
     {
         [SerializeField, Header(LanguagAttribute.AtlasFolder)]
         private string _atlasFolder = "Assets/";

@@ -12,7 +12,7 @@
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using EasyFramework.Edit.Windows.SettingPanel;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
@@ -103,7 +103,7 @@ namespace EasyFramework.Edit.Create
                 sw.WriteLine("*/");
 
                 text = text.Replace("PleaseChangeTheNamespace",
-                    EditorUtils.LoadSettingAtPath<AutoBindSetting>().Namespace);
+                    EditorUtils.LoadSettingAtPath<AutoBindingConfig>().Namespace);
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);

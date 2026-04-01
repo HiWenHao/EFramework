@@ -13,7 +13,7 @@ using System.IO;
 using System.Xml;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 检查器配置

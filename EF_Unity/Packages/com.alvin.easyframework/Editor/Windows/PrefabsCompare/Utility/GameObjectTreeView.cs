@@ -4,261 +4,261 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace EasyFramework.Windows
+namespace EasyFramework.Edit.Windows.PrefabsCompare
 {
-    namespace PrefabsCompare
+    public class GameObjectTreeView : TreeView
     {
-        public class GameObjectTreeView : TreeView
+        /// <summary>
+        /// 选中的ID列表
+        /// </summary>
+        private readonly List<int> _selectIDs = new List<int>();
+
+        /// <summary>
+        /// GameObject对比信息
+        /// </summary>
+        private GameObjectCompareInfo _info;
+
+        /// <summary>
+        /// 左边还是右边
+        /// </summary>
+        private readonly bool _isLeft;
+
+        /// <summary>
+        /// 展开回调
+        /// </summary>
+        public Action<int, bool, bool> onExpandedStateChanged;
+
+        /// <summary>
+        /// 单击回调
+        /// </summary>
+        public Action<GameObjectCompareInfo> onClickItem;
+
+        /// <summary>
+        /// 保存展开的信息
+        /// </summary>
+        private HashSet<int> _expandedSet = new HashSet<int>();
+
+        /// <summary>
+        /// 树的根节点
+        /// </summary>
+        private TreeViewItem _root;
+
+        public GameObjectTreeView(TreeViewState state, GameObjectCompareInfo info, bool isLeft) : base(state)
         {
-            /// <summary>
-            /// 选中的ID列表
-            /// </summary>
-            private readonly List<int> _selectIDs = new List<int>();
+            _info = info;
+            _isLeft = isLeft;
 
-            /// <summary>
-            /// GameObject对比信息
-            /// </summary>
-            private GameObjectCompareInfo _info;
+            Reload();
 
-            /// <summary>
-            /// 左边还是右边
-            /// </summary>
-            private readonly bool _isLeft;
+            ExpandAll();
 
-            /// <summary>
-            /// 展开回调
-            /// </summary>
-            public Action<int, bool, bool> onExpandedStateChanged;
+            _expandedSet = new HashSet<int>(GetExpanded());
+        }
 
-            /// <summary>
-            /// 单击回调
-            /// </summary>
-            public Action<GameObjectCompareInfo> onClickItem;
+        protected override TreeViewItem BuildRoot()
+        {
+            _root = new TreeViewItem { id = 0, depth = -1, displayName = "Root" };
 
-            /// <summary>
-            /// 保存展开的信息
-            /// </summary>
-            private HashSet<int> _expandedSet = new HashSet<int>();
+            var allItems = new List<TreeViewItem>();
 
-            /// <summary>
-            /// 树的根节点
-            /// </summary>
-            private TreeViewItem _root;
-
-            public GameObjectTreeView(TreeViewState state, GameObjectCompareInfo info, bool isLeft) : base(state)
+            if (_info != null)
             {
-                _info = info;
-                _isLeft = isLeft;
+                var item = new CompareTreeViewItem<GameObjectCompareInfo>
+                    { Info = _info, id = _info.ID, depth = _info.Depth, displayName = _info.Name };
+                allItems.Add(item);
 
-                Reload();
-
-                ExpandAll();
-
-                _expandedSet = new HashSet<int>(GetExpanded());
+                AddChildItem(allItems, _info);
             }
 
-            protected override TreeViewItem BuildRoot()
+            SetupParentsAndChildrenFromDepths(_root, allItems);
+
+            return _root;
+        }
+
+        public void Reload(GameObjectCompareInfo info)
+        {
+            _info = info;
+
+            Reload();
+
+            ExpandAll();
+
+            _expandedSet = new HashSet<int>(GetExpanded());
+        }
+
+        public override void OnGUI(Rect rect)
+        {
+            if (CompareData.SelectedGameObjectID != -1)
             {
-                _root = new TreeViewItem { id = 0, depth = -1, displayName = "Root" };
+                var ids = this.GetSelection();
 
-                var allItems = new List<TreeViewItem>();
-
-                if (_info != null)
+                if (ids.Count == 0 || ids[0] != CompareData.SelectedGameObjectID)
                 {
-                    var item = new CompareTreeViewItem<GameObjectCompareInfo> { Info = _info, id = _info.ID, depth = _info.Depth, displayName = _info.Name };
-                    allItems.Add(item);
-
-                    AddChildItem(allItems, _info);
+                    _selectIDs.Clear();
+                    _selectIDs.Add(CompareData.SelectedGameObjectID);
+                    this.SetSelection(_selectIDs);
+                    _selectIDs.Clear();
                 }
-
-                SetupParentsAndChildrenFromDepths(_root, allItems);
-
-                return _root;
             }
 
-            public void Reload(GameObjectCompareInfo info)
+            base.OnGUI(rect);
+        }
+
+        protected override void RowGUI(RowGUIArgs args)
+        {
+            var item = args.item as CompareTreeViewItem<GameObjectCompareInfo>;
+
+            var info = item.Info;
+
+            Rect rect = args.rowRect;
+
+            var interval = 2;
+
+            Rect stateIconRect = new Rect(rect.x + GetContentIndent(item), rect.y, rect.height, rect.height);
+
+            Rect goIconRect = new Rect(stateIconRect.x + stateIconRect.width + interval, stateIconRect.y,
+                stateIconRect.width, stateIconRect.height);
+
+            if (info.MissType == MissType.allExist && !info.AllEqual())
             {
-                _info = info;
-
-                Reload();
-
-                ExpandAll();
-
-                _expandedSet = new HashSet<int>(GetExpanded());
+                GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.failImg, ScaleMode.ScaleToFit);
+            }
+            else if (info.MissType == MissType.missRight && _isLeft)
+            {
+                GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
+            }
+            else if (info.MissType == MissType.missLeft && !_isLeft)
+            {
+                GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
+            }
+            else if (!string.IsNullOrWhiteSpace(item.displayName))
+            {
+                GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.successImg, ScaleMode.ScaleToFit);
             }
 
-            public override void OnGUI(Rect rect)
+            if (_isLeft)
             {
-                if (CompareData.SelectedGameObjectID != -1)
+                if (info.MissType != MissType.missLeft && info.LeftGameObject != null)
                 {
-                    var ids = this.GetSelection();
+                    Texture2D gameObjectIcon = PrefabUtility.GetIconForGameObject(info.LeftGameObject);
 
-                    if (ids.Count == 0 || ids[0] != CompareData.SelectedGameObjectID)
-                    {
-                        _selectIDs.Clear();
-                        _selectIDs.Add(CompareData.SelectedGameObjectID);
-                        this.SetSelection(_selectIDs);
-                        _selectIDs.Clear();
-                    }
+                    GUI.DrawTexture(goIconRect, gameObjectIcon, ScaleMode.ScaleToFit);
                 }
+            }
+            else
+            {
+                if (info.MissType != MissType.missRight && info.LeftGameObject != null)
+                {
+                    Texture2D gameObjectIcon = PrefabUtility.GetIconForGameObject(info.RightGameObject);
 
-                base.OnGUI(rect);
+                    GUI.DrawTexture(goIconRect, gameObjectIcon, ScaleMode.ScaleToFit);
+                }
             }
 
-            protected override void RowGUI(RowGUIArgs args)
+            rect.width -= stateIconRect.width + goIconRect.width + interval;
+            rect.x += stateIconRect.width + goIconRect.width + interval;
+            args.rowRect = rect;
+
+            base.RowGUI(args);
+        }
+
+        protected override void SingleClickedItem(int id)
+        {
+            base.SingleClickedItem(id);
+            CompareData.SelectedGameObjectID = id;
+
+            if (onClickItem != null)
             {
-                var item = args.item as CompareTreeViewItem<GameObjectCompareInfo>;
+                var item = FindItem(id, _root) as CompareTreeViewItem<GameObjectCompareInfo>;
 
-                var info = item.Info;
+                onClickItem.Invoke(item.Info);
+            }
+        }
 
-                Rect rect = args.rowRect;
+        protected override void ExpandedStateChanged()
+        {
+            base.ExpandedStateChanged();
 
-                var interval = 2;
+            var list = GetExpanded();
 
-                Rect stateIconRect = new Rect(rect.x + GetContentIndent(item), rect.y, rect.height, rect.height);
+            //TODO: 优化堆内存
+            var tempSet = new HashSet<int>();
 
-                Rect goIconRect = new Rect(stateIconRect.x + stateIconRect.width + interval, stateIconRect.y, stateIconRect.width, stateIconRect.height);
+            var removeList = new List<int>();
 
-                if (info.MissType == MissType.allExist && !info.AllEqual())
+            for (int i = 0; i < list.Count; i++)
+            {
+                int id = list[i];
+
+                tempSet.Add(id);
+
+                if (!_expandedSet.Contains(id))
                 {
-                    GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.failImg, ScaleMode.ScaleToFit);
+                    _expandedSet.Add(id);
+                    onExpandedStateChanged?.Invoke(id, _isLeft, true);
                 }
-                else if (info.MissType == MissType.missRight && _isLeft)
+            }
+
+            foreach (var id in _expandedSet)
+            {
+                if (!tempSet.Contains(id))
                 {
-                    GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
+                    removeList.Add(id);
+                    onExpandedStateChanged?.Invoke(id, _isLeft, false);
                 }
-                else if (info.MissType == MissType.missLeft && !_isLeft)
+            }
+
+            for (int i = 0; i < removeList.Count; i++)
+                _expandedSet.Remove(removeList[i]);
+        }
+
+        private void AddChildItem(List<TreeViewItem> items, GameObjectCompareInfo info)
+        {
+            if (info.Children == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < info.Children.Count; i++)
+            {
+                var child = info.Children[i];
+
+                if (child == null)
                 {
-                    GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.inconclusiveImg, ScaleMode.ScaleToFit);
-                }
-                else if (!string.IsNullOrWhiteSpace(item.displayName))
-                {
-                    GUI.DrawTexture(stateIconRect, PrefabsCompareStyle.successImg, ScaleMode.ScaleToFit);
+                    continue;
                 }
 
-                if (_isLeft)
+                if (!CompareData.ShowMiss && child.MissType != MissType.allExist)
                 {
-                    if (info.MissType != MissType.missLeft && info.LeftGameObject != null)
-                    {
-                        Texture2D gameObjectIcon = PrefabUtility.GetIconForGameObject(info.LeftGameObject);
+                    continue;
+                }
 
-                        GUI.DrawTexture(goIconRect, gameObjectIcon, ScaleMode.ScaleToFit);
-                    }
+                if (!CompareData.ShowEqual && child.AllEqual())
+                {
+                    continue;
+                }
+
+                string displayName;
+
+                if (child.MissType == MissType.missLeft && _isLeft)
+                {
+                    displayName = "";
+                }
+                else if (child.MissType == MissType.missRight && !_isLeft)
+                {
+                    displayName = "";
                 }
                 else
                 {
-                    if (info.MissType != MissType.missRight && info.LeftGameObject != null)
-                    {
-                        Texture2D gameObjectIcon = PrefabUtility.GetIconForGameObject(info.RightGameObject);
-
-                        GUI.DrawTexture(goIconRect, gameObjectIcon, ScaleMode.ScaleToFit);
-                    }
+                    displayName = child.Name;
                 }
 
-                rect.width -= stateIconRect.width + goIconRect.width + interval;
-                rect.x += stateIconRect.width + goIconRect.width + interval;
-                args.rowRect = rect;
+                var item = new CompareTreeViewItem<GameObjectCompareInfo>
+                    { Info = child, id = child.ID, depth = child.Depth, displayName = displayName };
 
-                base.RowGUI(args);
-            }
+                items.Add(item);
 
-            protected override void SingleClickedItem(int id)
-            {
-                base.SingleClickedItem(id);
-                CompareData.SelectedGameObjectID = id;
-
-                if (onClickItem != null)
-                {
-                    var item = FindItem(id, _root) as CompareTreeViewItem<GameObjectCompareInfo>;
-
-                    onClickItem.Invoke(item.Info);
-                }
-            }
-
-            protected override void ExpandedStateChanged()
-            {
-                base.ExpandedStateChanged();
-
-                var list = GetExpanded();
-
-                //TODO: 优化堆内存
-                var tempSet = new HashSet<int>();
-
-                var removeList = new List<int>();
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    int id = list[i];
-
-                    tempSet.Add(id);
-
-                    if (!_expandedSet.Contains(id))
-                    {
-                        _expandedSet.Add(id);
-                        onExpandedStateChanged?.Invoke(id, _isLeft, true);
-                    }
-                }
-
-                foreach (var id in _expandedSet)
-                {
-                    if (!tempSet.Contains(id))
-                    {
-                        removeList.Add(id);
-                        onExpandedStateChanged?.Invoke(id, _isLeft, false);
-                    }
-                }
-
-                for (int i = 0; i < removeList.Count; i++)
-                    _expandedSet.Remove(removeList[i]);
-            }
-
-            private void AddChildItem(List<TreeViewItem> items, GameObjectCompareInfo info)
-            {
-                if (info.Children == null)
-                {
-                    return;
-                }
-
-                for (int i = 0; i < info.Children.Count; i++)
-                {
-                    var child = info.Children[i];
-
-                    if (child == null)
-                    {
-                        continue;
-                    }
-
-                    if (!CompareData.ShowMiss && child.MissType != MissType.allExist)
-                    {
-                        continue;
-                    }
-
-                    if (!CompareData.ShowEqual && child.AllEqual())
-                    {
-                        continue;
-                    }
-
-                    string displayName;
-
-                    if (child.MissType == MissType.missLeft && _isLeft)
-                    {
-                        displayName = "";
-                    }
-                    else if (child.MissType == MissType.missRight && !_isLeft)
-                    {
-                        displayName = "";
-                    }
-                    else
-                    {
-                        displayName = child.Name;
-                    }
-
-                    var item = new CompareTreeViewItem<GameObjectCompareInfo> { Info = child, id = child.ID, depth = child.Depth, displayName = displayName };
-
-                    items.Add(item);
-
-                    AddChildItem(items, child);
-                }
+                AddChildItem(items, child);
             }
         }
     }

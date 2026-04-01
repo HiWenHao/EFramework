@@ -23,7 +23,7 @@ public sealed partial class EF
     public static Transform Singleton { get; private set; }
 
     /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
-    public static ProjectSetting Projects { get; private set; }
+    public static ProjectConfig Projects { get; private set; }
 
     /// <summary> UI manager.<para>UI管理器</para></summary>
     public static UIManager Ui => UIManager.Instance;

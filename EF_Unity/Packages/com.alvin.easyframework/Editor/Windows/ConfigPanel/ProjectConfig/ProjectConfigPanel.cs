@@ -14,12 +14,12 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 项目设置面板
     /// </summary>
-    internal class EFProjectPanel : EFSettingBase
+    internal class ProjectConfigPanel : EFConfigPanelBase
     {
         bool _systemInfoSwitch;
         string _editorUser;
@@ -32,7 +32,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         private SerializedProperty _appConstConfig;
         private SerializedProperty _appConstManagerList;
 
-        public EFProjectPanel(string name, ProjectSetting target) : base(name, target)
+        public ProjectConfigPanel(string name, ProjectConfig target) : base(name, target)
         {
         }
 
@@ -57,7 +57,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
             var userInfoType = userInfo.GetType();
             PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
             _editorUser = (string)propertyInfo.GetValue(userInfo);
-            EditorPrefs.SetString($"{((ProjectSetting)TargetScriptable).AppConst.AppPrefix}EditorUser", _editorUser);
+            EditorPrefs.SetString($"{((ProjectConfig)TargetScriptable).AppConst.AppPrefix}EditorUser", _editorUser);
 
             FindAllManager();
 

@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// Information about all managers, including whether to import and depend on modules.

@@ -11,7 +11,7 @@
 
 using System;
 using System.Reflection;
-using EasyFramework.Edit.Windows.SettingPanel;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using EasyFramework.UI;
 using TMPro;
 using UnityEditor;
@@ -151,7 +151,7 @@ namespace EasyFramework.Edit.Create
         [MenuItem("GameObject/UI/EF/About Bind", false, 999)]
         static void CreateUIBind(MenuCommand menuCommand)
         {
-            EFSettingsPanel.Open(2);
+            EFConfigsPanel.Open(2);
         }
 
         /// <summary>

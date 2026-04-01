@@ -16,7 +16,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// Ui builder with editor.
@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         private SerializedProperty _deleteScript;
         private SerializedProperty _packUpBindList;
 
-        private AutoBindSetting _setting;
+        private AutoBindingConfig _setting;
 
         private bool _sortByTypes;
         private bool _sortByNamesLength;
@@ -49,7 +49,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         private void OnEnable()
         {
             m_Builder = (UiBind)target;
-            _setting = EditorUtils.LoadSettingAtPath<AutoBindSetting>();
+            _setting = EditorUtils.LoadSettingAtPath<AutoBindingConfig>();
             _bindComs = serializedObject.FindProperty("BindComs");
             _bindDatas = serializedObject.FindProperty("BindDatas");
             _namespace = serializedObject.FindProperty("_namespace");
@@ -444,7 +444,7 @@ namespace EasyFramework.Edit.Windows.SettingPanel
             string filedName = _strArray[^1];
             filedName = EditorUtils.RemovePunctuation(filedName).Trim();
 
-            List<RulePrefixes> _PrefixesDict = EditorUtils.LoadSettingAtPath<AutoBindSetting>().RulePrefixes;
+            List<RulePrefixes> _PrefixesDict = EditorUtils.LoadSettingAtPath<AutoBindingConfig>().RulePrefixes;
             for (int i = 0; i < _strArray.Length - 1; i++)
             {
                 string _prefixe = _strArray[i];

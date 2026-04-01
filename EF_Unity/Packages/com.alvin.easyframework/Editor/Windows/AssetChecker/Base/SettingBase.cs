@@ -9,14 +9,13 @@
  * ===============================================
 */
 
-using EasyFramework.Edit;
 using System;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 设置基类

@@ -12,19 +12,19 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    public class EFSettingsPanel : EditorWindowBase
+    public class EFConfigsPanel : EditorWindowBase
     {
         private int _panelIndex = -1;
         private string _assetsPath;
         private Vector2 _scrollPositionL;
 
-        private static EFSettingsPanel _window;
-        private EFSettingBase[] _settings;
+        private static EFConfigsPanel _window;
+        private EFConfigPanelBase[] _settings;
 
         [MenuItem("EFTools/Settings &E", priority = 0)]
         private static void OpenWindow()
@@ -38,12 +38,12 @@ namespace EasyFramework.Edit.Windows.SettingPanel
             ;
             _settings ??= new[]
             {
-                new EFProjectPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ProjectUtility.Project) as
-                    EFSettingBase,
+                new ProjectConfigPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ProjectUtility.Project) as
+                    EFConfigPanelBase,
                 new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ProjectUtility.Path),
                 //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
                 new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
-                    EditorUtils.LoadSettingAtPath<AutoBindSetting>())
+                    EditorUtils.LoadSettingAtPath<AutoBindingConfig>())
             };
 
             _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
@@ -113,23 +113,23 @@ namespace EasyFramework.Edit.Windows.SettingPanel
             _settings = null;
         }
 
-        private void DrawButton(int index, EFSettingBase setting)
+        private void DrawButton(int index, EFConfigPanelBase configPanel)
         {
-            if (!GUILayout.Button(setting.Name,
+            if (!GUILayout.Button(configPanel.Name,
                     new GUIStyle(GUI.skin.button)
                     {
                         alignment = TextAnchor.MiddleLeft
                     }))
                 return;
 
-            if (!setting.TargetScriptable)
+            if (!configPanel.TargetScriptable)
             {
                 D.Warning("Please create assets of the corresponding type, and reopen the window.");
                 return;
             }
 
             _panelIndex = index;
-            setting.OnEnable(_assetsPath);
+            configPanel.OnEnable(_assetsPath);
         }
 
         /// <summary>
@@ -140,13 +140,13 @@ namespace EasyFramework.Edit.Windows.SettingPanel
         {
             if (!ProjectUtility.Project)
             {
-                D.Log("ProjectSetting has been created successfully. Please reopen this panel.");
+                D.Log("ProjectConfig has been created successfully. Please reopen this panel.");
                 return;
             }
 
             if (null == _window)
             {
-                _window = CreateInstance<EFSettingsPanel>(); // GetWindow<EFSettingsPanel>(false, "EF Settings");
+                _window = CreateInstance<EFConfigsPanel>(); // GetWindow<EFConfigsPanel>(false, "EF Settings");
                 _window.titleContent = new GUIContent("EF Settings");
                 _window.minSize = new Vector2(650.0f, 350.0f);
                 _window.Show();

@@ -1,17 +1,14 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows
+namespace EasyFramework.Edit.Windows.PrefabsCompare
 {
-    namespace PrefabsCompare
+    public class PrefabsCompareStyle
     {
-        public class PrefabsCompareStyle
-        {
-            public static readonly Texture2D failImg = EditorGUIUtility.FindTexture("TestFailed");
-                    
-            public static readonly Texture2D successImg = EditorGUIUtility.FindTexture("TestPassed");
-                    
-            public static readonly Texture2D inconclusiveImg = EditorGUIUtility.FindTexture("TestInconclusive");
-        }
+        public static readonly Texture2D failImg = EditorGUIUtility.FindTexture("TestFailed");
+
+        public static readonly Texture2D successImg = EditorGUIUtility.FindTexture("TestPassed");
+
+        public static readonly Texture2D inconclusiveImg = EditorGUIUtility.FindTexture("TestInconclusive");
     }
 }

@@ -8,16 +8,17 @@
  * ScriptVersion: 0.2
  * ===============================================
 */
+
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.TaskList
+namespace EasyFramework.Edit.TodoList
 {
     /// <summary>
     /// Show the user need to do list.
     /// </summary>
-    [CustomEditor(typeof(TaskListConfig))]
-    public class TaskListConfigEdit : Editor
+    [CustomEditor(typeof(TodoListConfig))]
+    public class TodoListConfigEdit : Editor
     {
         SerializedProperty _mark;
         SerializedProperty _title;

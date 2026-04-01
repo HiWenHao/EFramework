@@ -8,6 +8,7 @@
  * Version:       0.1 
  * ===============================================
  */
+
 using EasyFramework;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,7 +28,7 @@ public sealed partial class EF : MonoBehaviour
     {
 #if !UNITY_WEBGL
         System.Threading.Tasks.Task.Run(AsyncEnter);
-#else
+#else 
         Application.focusChanged += ApplicationFocusChanged;
 #endif
     }
@@ -61,7 +62,7 @@ public sealed partial class EF : MonoBehaviour
         _manageUpdater = new List<IUpdate>();
         _updater = new List<IUpdate>();
         _singletons = new List<ISingleton>();
-        Projects = Resources.Load<ProjectSetting>("Settings/ProjectSetting");
+        Projects = Resources.Load<ProjectConfig>("Configs/ProjectConfig");
         
         _exiting = false;
     }

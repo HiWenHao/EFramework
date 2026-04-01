@@ -11,14 +11,14 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.SettingPanel
+namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 设置面板基类
     /// </summary>
-    internal abstract class EFSettingBase
+    internal abstract class EFConfigPanelBase
     {
-        internal EFSettingBase(string name, ScriptableObject s)
+        internal EFConfigPanelBase(string name, ScriptableObject s)
         {
             Name = name;
             TargetScriptable = s;

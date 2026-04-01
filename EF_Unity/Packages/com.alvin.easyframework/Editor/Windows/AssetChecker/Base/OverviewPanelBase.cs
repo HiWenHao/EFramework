@@ -9,11 +9,10 @@
  * ===============================================
 */
 
-using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 面板基类

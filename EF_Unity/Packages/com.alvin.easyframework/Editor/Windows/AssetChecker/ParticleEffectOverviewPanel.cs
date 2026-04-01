@@ -15,7 +15,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 粒子信息面板

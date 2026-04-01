@@ -32,14 +32,18 @@ namespace EasyFramework.Edit.SpriteTools
         [SerializeField]
         [HideInInspector]
         List<SpriteAtlas> _atlas = new List<SpriteAtlas>();
-        public List<SpriteAtlas> Atlas { get { return _atlas; } set { _atlas = value; } }
+        public List<SpriteAtlas> Atlas { get => _atlas;
+            set => _atlas = value;
+        }
 
         public List<Dictionary<string, Sprite>> Sprites { get; set; } = new List<Dictionary<string, Sprite>>();
 
         [SerializeField]
         [HideInInspector]
         List<SpriteInfo> _spriteInfos = new List<SpriteInfo>();
-        public List<SpriteInfo> SpriteInfos { get { return _spriteInfos; } set { _spriteInfos = value; } }
+        public List<SpriteInfo> SpriteInfos { get => _spriteInfos;
+            set => _spriteInfos = value;
+        }
 
         [System.Serializable]
         public class SpriteInfo

@@ -16,7 +16,7 @@ using System.Xml;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     internal class SettingView<T> where T : SettingBase, new()
     {

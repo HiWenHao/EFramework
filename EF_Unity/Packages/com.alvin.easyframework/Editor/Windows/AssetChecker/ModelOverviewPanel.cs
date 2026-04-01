@@ -15,7 +15,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 模型信息面板

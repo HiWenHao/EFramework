@@ -13,7 +13,7 @@ using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Windows.AssetChecker
+namespace EasyFramework.Edit.Windows.AssetChecker
 {
     internal class ConfigSettingPanel : OverviewPanelBase
     {
