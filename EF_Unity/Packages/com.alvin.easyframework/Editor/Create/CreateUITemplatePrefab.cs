@@ -1,10 +1,10 @@
-/*
+﻿/*
  * ================================================
  * Describe:      This script is used to create template ui.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-10-27 14:55:09
- * ModifyAuthor:  Alvin.Wang(Wenhao)
- * ModifyTime:    2026-03-17 13:03:55
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 15:01:35
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -18,7 +18,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.Create
 {
     public class CreateUITemplatePrefab
     {

@@ -1,13 +1,13 @@
-/* 
+﻿/*
  * ================================================
  * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-05-15 16:26:33
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-05-15 16:26:33
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 15:54:50
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.InspectorExpand
+namespace EasyFramework.Edit.EditorExpand
 {
     /// <summary>
     /// A base class for creating editors that decorate Unity's built-in editor types.
@@ -24,7 +24,7 @@ namespace EasyFramework.Edit.InspectorExpand
     /// 
     /// This version is tweaked a bit and some corner-cases were fixed.
     /// </summary>
-    public abstract class DecoratorEditorBase : Editor
+    internal abstract class DecoratorEditorBase : Editor
     {
         // empty array for invoking methods using reflection
         private static readonly object[] EMPTY_ARRAY = new object[0];
@@ -83,7 +83,8 @@ namespace EasyFramework.Edit.InspectorExpand
                 {
                     // HACK: Unity has this magic field m_AllowMultiObjectAccess that suppresses usage of SerializedObject or targets in some rare cases like OnSceneGUI.
                     var editorType = typeof(Editor);
-                    var allowField = editorType.GetField("m_AllowMultiObjectAccess", BindingFlags.Static | BindingFlags.NonPublic);
+                    var allowField = editorType.GetField("m_AllowMultiObjectAccess",
+                        BindingFlags.Static | BindingFlags.NonPublic);
                     var prevValue = allowField.GetValue(null);
                     allowField.SetValue(null, true);
 
@@ -105,7 +106,8 @@ namespace EasyFramework.Edit.InspectorExpand
         {
             if (!_decoratedEditorTypes.TryGetValue(editorTypeName, out this._decoratedEditorType))
             {
-                this._decoratedEditorType = _editorAssembly.GetTypes().Where(t => t.Name == editorTypeName).FirstOrDefault();
+                this._decoratedEditorType =
+                    _editorAssembly.GetTypes().Where(t => t.Name == editorTypeName).FirstOrDefault();
                 _decoratedEditorTypes.Add(editorTypeName, this._decoratedEditorType);
             }
 
@@ -118,7 +120,7 @@ namespace EasyFramework.Edit.InspectorExpand
             {
                 throw new System.ArgumentException(
                     string.Format("GunsType {0} does not match the editor {1} type {2}",
-                              _editedObjectType, editorTypeName, originalEditedType));
+                        _editedObjectType, editorTypeName, originalEditedType));
             }
         }
 
@@ -148,6 +150,7 @@ namespace EasyFramework.Edit.InspectorExpand
             {
                 DestroyImmediate(_editorInstanceMultiTargets);
             }
+
             if (_editorInstanceSingleTarget != null)
             {
                 DestroyImmediate(_editorInstanceSingleTarget);
@@ -159,10 +162,12 @@ namespace EasyFramework.Edit.InspectorExpand
         /// </summary>
         protected void CallInspectorMethod(string methodName, bool multiTargets = true)
         {
-            CallInspectorMethodWithParams(multiTargets ? EditorInstanceMultiTargets : EditorInstanceSingleTarget, methodName, EMPTY_ARRAY);
+            CallInspectorMethodWithParams(multiTargets ? EditorInstanceMultiTargets : EditorInstanceSingleTarget,
+                methodName, EMPTY_ARRAY);
         }
 
-        protected void CallInspectorMethodWithParams(Editor decoratedEditorInstance, string methodName, params object[] args)
+        protected void CallInspectorMethodWithParams(Editor decoratedEditorInstance, string methodName,
+            params object[] args)
         {
             MethodInfo method = null;
 

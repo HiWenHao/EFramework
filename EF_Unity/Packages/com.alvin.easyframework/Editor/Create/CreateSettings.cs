@@ -1,10 +1,10 @@
-/*
+﻿/*
  * ================================================
  * Describe:      This script is used to .
  * Author:        Alvin5100(Wang)
  * CreationTime:  2026-03-19 15:23:14
- * ModifyAuthor:  Alvin5100(Wang)
- * ModifyTime:    2026-03-19 15:23:14
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 15:01:35
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -18,7 +18,7 @@ using EasyFramework.Windows.SettingPanel;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.Create
 {
     internal static class CreateSettings
     {

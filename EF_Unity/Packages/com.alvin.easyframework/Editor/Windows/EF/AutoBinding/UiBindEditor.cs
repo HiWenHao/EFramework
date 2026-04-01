@@ -444,13 +444,13 @@ namespace EasyFramework.Edit.AutoBind
             string filedName = _strArray[^1];
             filedName = EditorUtils.RemovePunctuation(filedName).Trim();
 
-            List<RulePrefixe> _PrefixesDict = EditorUtils.LoadSettingAtPath<AutoBindSetting>().RulePrefixes;
+            List<RulePrefixes> _PrefixesDict = EditorUtils.LoadSettingAtPath<AutoBindSetting>().RulePrefixes;
             for (int i = 0; i < _strArray.Length - 1; i++)
             {
                 string _prefixe = _strArray[i];
                 string _comName;
                 bool isFindComponent = false;
-                foreach (RulePrefixe autoBindRulePrefix in _PrefixesDict)
+                foreach (RulePrefixes autoBindRulePrefix in _PrefixesDict)
                 {
                     if (autoBindRulePrefix.Prefixe.Equals(_prefixe))
                     {

@@ -1,10 +1,11 @@
 using HybridCLR.Editor.Commands;
 using HybridCLR.Editor.Installer;
 using System.IO;
+using HybridCLR.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace HybridCLR.Editor
+namespace EasyFramework.Edit.MenuToolkit
 {
     public class BuildPlayerCommand
     {

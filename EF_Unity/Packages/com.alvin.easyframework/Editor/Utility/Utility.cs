@@ -1,10 +1,10 @@
-/*
+﻿/*
  * ================================================
  * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-03-31 15:56:54
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-03-31 15:56:54
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 14:59:28
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -13,7 +13,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 工具类

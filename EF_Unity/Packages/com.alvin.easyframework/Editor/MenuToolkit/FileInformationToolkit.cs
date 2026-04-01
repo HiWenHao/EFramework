@@ -1,0 +1,296 @@
+﻿/*
+ * ================================================
+ * Describe:      This script is used to copy the file info.
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2023-04-24 20:55:56
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 15:42:00
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using NPinyin;
+using UnityEditor;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace EasyFramework.Edit.MenuToolkit
+{
+    /// <summary>
+    /// Copy the file info
+    /// </summary>
+    internal static class FileInformationToolkit
+    {
+        #region Copy
+
+        [MenuItem("Assets/EF/File/Copy GUID", false, 1)]
+        private static void CopySelectedGuid()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("\n");
+            foreach (var obj in Selection.objects)
+            {
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out string guid, out long localId))
+                    continue;
+
+                sb.AppendLine(AssetDatabase.IsMainAsset(obj) ? $"{obj}" : $"{guid}-{localId}");
+            }
+
+            var te = new TextEditor()
+            {
+                text = sb.ToString()
+            };
+            te.SelectAll();
+            te.Copy();
+        }
+
+        [MenuItem("Assets/EF/File/Copy Relative Path", false, 2)]
+        private static void CopyFileAssetsPath()
+        {
+            var assetNames = Selection.assetGUIDs.Select(AssetDatabase.GUIDToAssetPath);
+
+            var te = new TextEditor()
+            {
+                text = string.Join("\n", assetNames.Distinct())
+            };
+            te.SelectAll();
+            te.Copy();
+        }
+
+        [MenuItem("Assets/EF/File/Copy Absolute Path", false, 3)]
+        private static void CopyFileDiskPath()
+        {
+            var projectRoot = Path.GetDirectoryName(Application.dataPath);
+
+            var assetNames = Selection.assetGUIDs
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .Select(path => path.Replace('/', Path.DirectorySeparatorChar))
+                    .Select(path => projectRoot + Path.DirectorySeparatorChar + path)
+                ;
+
+            var te = new TextEditor()
+            {
+                text = string.Join("\n", assetNames.Distinct())
+            };
+            te.SelectAll();
+            te.Copy();
+        }
+
+        #endregion
+
+        #region Rename
+
+        /// <summary>
+        /// Quickly change Chinese to Pinyin
+        /// </summary>
+        internal static class FileToolkit
+        {
+            [MenuItem("Assets/EF/File/Rename To Pinyin", false, 21)]
+            private static void RenameAll()
+            {
+                Object[] selection = Selection.GetFiltered<Object>(SelectionMode.DeepAssets);
+
+                int count = selection.Length;
+                for (int i = 0; i < count; i++)
+                {
+                    Object obj = selection[i];
+                    if (!obj.name.IsChinese())
+                        continue;
+
+                    string pinyin = Pinyin.GetPinyin(obj.name);
+                    pinyin = pinyin.Replace(" ", "");
+
+                    AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(obj), pinyin);
+                }
+
+                AssetDatabase.Refresh();
+            }
+        }
+
+        #endregion
+
+        #region Assets
+
+        /// <summary>
+        /// Displays the memory occupied by file contents
+        /// </summary>
+        internal static class ShowFileSize
+        {
+            private const string REMOVE_STR = "Assets";
+            private const string FILESIZE = "FileSize";
+
+            private static readonly int _removeCount = REMOVE_STR.Length;
+            private static readonly Color _professionalColor = new Color(56f / 255, 56f / 255, 56f / 255, 1);
+            private static readonly Color _personaloColor = new Color(194f / 255, 194f / 255, 194f / 255, 1);
+            private static Dictionary<string, long> _dirSizeDictionary = new Dictionary<string, long>();
+            private static List<string> _dirList = new List<string>();
+            private static bool _isShowSize = true;
+
+            [MenuItem("EFTools/Tools/Project File Size", priority = 300)]
+            private static void OpenPlaySize()
+            {
+                _isShowSize = !_isShowSize;
+                EditorPrefs.SetBool(FILESIZE, _isShowSize);
+                GetPropjectDirs();
+                AssetDatabase.Refresh();
+            }
+
+            [InitializeOnLoadMethod]
+            private static void InitializeOnLoadMethod()
+            {
+                EditorApplication.projectChanged += GetPropjectDirs;
+                //在ProjectWindow中，为每个可见列表项委派OnGUI事件。
+                EditorApplication.projectWindowItemOnGUI += OnGUI;
+            }
+
+            [UnityEditor.Callbacks.DidReloadScripts]
+            private static void OnScriptsReloaded()
+            {
+                GetPropjectDirs();
+            }
+
+            private static void GetPropjectDirs()
+            {
+                Init();
+                if (_isShowSize == false) return;
+                GetAllDirecotries(Application.dataPath);
+                foreach (string path in _dirList)
+                {
+                    string newPath = path.Replace("\\", "/");
+                    _dirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
+                }
+            }
+
+            private static void Init()
+            {
+                _isShowSize = EditorPrefs.GetBool(FILESIZE);
+                _dirSizeDictionary.Clear();
+                _dirList.Clear();
+            }
+
+            //刷新编辑器ui
+            private static void OnGUI(string guid, Rect selectionRect)
+            {
+                if (_isShowSize == false || selectionRect.height > 16) return; //>16为防止文件图标缩放时引起排版错乱
+                var dataPath = Application.dataPath;
+                var startIndex = dataPath.LastIndexOf(REMOVE_STR);
+                var dir = dataPath.Remove(startIndex, _removeCount);
+                var path = dir + AssetDatabase.GUIDToAssetPath(guid);
+                string text;
+
+                long fileSize;
+                if (_dirSizeDictionary.ContainsKey(path))
+                {
+                    fileSize = _dirSizeDictionary[path];
+                }
+                else if (File.Exists(path))
+                {
+                    fileSize = new FileInfo(path).Length;
+                }
+                else
+                {
+                    return;
+                }
+
+                text = GetFormatSizeString((int)fileSize);
+
+                var label = EditorStyles.label;
+                var content = new GUIContent(text);
+                var width = label.CalcSize(content).x + 10;
+
+                var pos = selectionRect;
+                pos.x = pos.xMax - width;
+                pos.width = width;
+
+                EditorGUI.DrawRect(pos, UseDark() ? _professionalColor : _personaloColor);
+                Color defaultC = GUI.color;
+
+                if (fileSize > 1024 * 1024 * 10)
+                {
+                    GUI.color = Color.red;
+                }
+                else if (fileSize > 1024 * 1024)
+                {
+                    GUI.color = Color.yellow;
+                }
+
+                GUI.Label(pos, text);
+                GUI.color = defaultC;
+            }
+
+            /// <summary>
+            /// 获取皮肤
+            /// </summary>
+            private static bool UseDark()
+            {
+                PropertyInfo propertyInfo =
+                    typeof(EditorGUIUtility).GetProperty("skinIndex", BindingFlags.Static | BindingFlags.NonPublic);
+                bool useDark = (int)propertyInfo.GetValue(null) == 1;
+                return useDark;
+            }
+
+            //计算文件大小
+            private static string GetFormatSizeString(int size)
+            {
+                string[] ns = new string[] { "Byte", "KB", "MB", "GB", "TB", "PB" };
+                double baseNum = 1024;
+                if (size <= 0)
+                {
+                    return $"{0:F2} {ns[0]}";
+                }
+
+                int pow = Math.Min((int)Math.Floor(Math.Log(size, baseNum)), ns.Length - 1);
+
+                return $"{size / Math.Pow(baseNum, pow):F2} {ns[pow]}";
+            }
+
+            //获取Asset目录下所有的文件路径
+            private static void GetAllDirecotries(string dirPath)
+            {
+                if (Directory.Exists(dirPath) == false)
+                {
+                    return;
+                }
+
+                _dirList.Add(dirPath);
+                DirectoryInfo[] dirArray = new DirectoryInfo(dirPath).GetDirectories();
+                foreach (DirectoryInfo item in dirArray)
+                {
+                    GetAllDirecotries(item.FullName);
+                }
+            }
+
+            //获取具体路径文件的大小
+            private static long GetDirectoriesSize(string dirPath)
+            {
+                if (Directory.Exists(dirPath) == false)
+                {
+                    return 0;
+                }
+
+                long size = 0;
+                DirectoryInfo dir = new DirectoryInfo(dirPath);
+                foreach (FileInfo info in dir.GetFiles())
+                {
+                    size += info.Length;
+                }
+
+                DirectoryInfo[] dirBotton = dir.GetDirectories();
+                foreach (DirectoryInfo info in dirBotton)
+                {
+                    size += GetDirectoriesSize(info.FullName);
+                }
+
+                return size;
+            }
+        }
+
+        #endregion
+    }
+}

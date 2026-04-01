@@ -1,13 +1,14 @@
-/* 
+﻿/* 
  * ================================================
  * Describe:      This script is used to setting project contents. 
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-15 15:11:29
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-15 15:11:29
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 14:59:28
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using System;
 
 namespace EasyFramework.Edit
@@ -16,7 +17,7 @@ namespace EasyFramework.Edit
     /// 规则前缀
     /// </summary>
     [Serializable]
-    public class RulePrefixe
+    public struct RulePrefixes
     {
         /// <summary>
         /// 前缀
@@ -31,11 +32,11 @@ namespace EasyFramework.Edit
         /// <summary>
         /// 规则前缀
         /// </summary>
-        /// <param name="prefixe">前缀</param>
+        /// <param name="prefixes">前缀</param>
         /// <param name="fullContent">全内容</param>
-        public RulePrefixe(string prefixe, string fullContent)
+        public RulePrefixes(string prefixes, string fullContent)
         {
-            Prefixe = prefixe;
+            Prefixe = prefixes;
             FullContent = fullContent;
         }
     }

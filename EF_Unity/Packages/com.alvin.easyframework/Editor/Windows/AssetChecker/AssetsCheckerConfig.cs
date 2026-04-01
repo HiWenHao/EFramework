@@ -80,7 +80,7 @@ namespace EasyFramework.Windows.AssetChecker
         /// </summary>
         internal static void Initialize()
         {
-            _assetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/AssetCheckerConfigs.xml");
+            _assetsPath = Path.Combine(Edit.Utility.Path.GetEfAssetsPath(), "Description/AssetCheckerConfigs.xml");
 
             if (!File.Exists(_assetsPath))
             {

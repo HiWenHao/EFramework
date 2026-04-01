@@ -1,14 +1,12 @@
 ﻿using HybridCLR.Editor.Commands;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HybridCLR.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace HybridCLR.Editor
+namespace EasyFramework.Edit.MenuToolkit
 {
     public static class BuildAssetsCommand
     {

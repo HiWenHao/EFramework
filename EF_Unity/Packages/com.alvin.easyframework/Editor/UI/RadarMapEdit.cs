@@ -8,11 +8,12 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using EasyFramework.UI;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.UI
 {
     /// <summary>
     /// Please modify the description。

@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-06-07 18:18:36
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-03-31 14:20:52
+ * ModifyTime:    2026-04-01 15:01:35
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -16,7 +16,7 @@ using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Edit.Create
 {
     internal static class CreateTemplateScript
     {

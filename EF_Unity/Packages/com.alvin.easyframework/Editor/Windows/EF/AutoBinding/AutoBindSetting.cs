@@ -30,38 +30,38 @@ namespace EasyFramework.Edit.AutoBind
         /// 组件的缩略名字映射
         /// </summary>
         [SerializeField, Header(LanguagAttribute.RulePrefixes)]
-        private List<RulePrefixe> _rulePrefixes = new List<RulePrefixe>()
+        private List<RulePrefixes> _rulePrefixes = new List<RulePrefixes>()
         {
-            new RulePrefixe("Btn","Button"),
-            new RulePrefixe("BtnP","ButtonPro"),
-            new RulePrefixe("Canvas","Canvas"),
-            new RulePrefixe("Drop","Dropdown"),
-            new RulePrefixe("DropTmp","TMP_Dropdown"),
-            new RulePrefixe("Group","CanvasGroup"),
-            new RulePrefixe("GGroup","GridLayoutGroup"),
-            new RulePrefixe("HGroup","HorizontalLayoutGroup"),
-            new RulePrefixe("Img","Image"),
-            new RulePrefixe("Ipt","InputField"),
-            new RulePrefixe("IptTmp","TMP_InputField"),
-            new RulePrefixe("Mask","Mask"),
-            new RulePrefixe("Map","RadarMap"),
-            new RulePrefixe("Mask2D","RectMask2D"),
-            new RulePrefixe("NAnim","Animator"),
-            new RulePrefixe("OAnim","Animation"),
-            new RulePrefixe("RImg","RawImage"),
-            new RulePrefixe("Rect","RectTransform"),
-            new RulePrefixe("Sld","Slider"),
-            new RulePrefixe("Sbar","Scrollbar"),
-            new RulePrefixe("SRct","ScrollRect"),
-            new RulePrefixe("SRctP","ScrollRectPro"),
-            new RulePrefixe("Tran","Transform"),
-            new RulePrefixe("Txt","Text"),
-            new RulePrefixe("TxtTmp","TextMeshProUGUI"),
-            new RulePrefixe("Tog","Toggle"),
-            new RulePrefixe("TGroup","ToggleGroup"),
-            new RulePrefixe("VGroup","VerticalLayoutGroup"),
+            new RulePrefixes("Btn","Button"),
+            new RulePrefixes("BtnP","ButtonPro"),
+            new RulePrefixes("Canvas","Canvas"),
+            new RulePrefixes("Drop","Dropdown"),
+            new RulePrefixes("DropTmp","TMP_Dropdown"),
+            new RulePrefixes("Group","CanvasGroup"),
+            new RulePrefixes("GGroup","GridLayoutGroup"),
+            new RulePrefixes("HGroup","HorizontalLayoutGroup"),
+            new RulePrefixes("Img","Image"),
+            new RulePrefixes("Ipt","InputField"),
+            new RulePrefixes("IptTmp","TMP_InputField"),
+            new RulePrefixes("Mask","Mask"),
+            new RulePrefixes("Map","RadarMap"),
+            new RulePrefixes("Mask2D","RectMask2D"),
+            new RulePrefixes("NAnim","Animator"),
+            new RulePrefixes("OAnim","Animation"),
+            new RulePrefixes("RImg","RawImage"),
+            new RulePrefixes("Rect","RectTransform"),
+            new RulePrefixes("Sld","Slider"),
+            new RulePrefixes("Sbar","Scrollbar"),
+            new RulePrefixes("SRct","ScrollRect"),
+            new RulePrefixes("SRctP","ScrollRectPro"),
+            new RulePrefixes("Tran","Transform"),
+            new RulePrefixes("Txt","Text"),
+            new RulePrefixes("TxtTmp","TextMeshProUGUI"),
+            new RulePrefixes("Tog","Toggle"),
+            new RulePrefixes("TGroup","ToggleGroup"),
+            new RulePrefixes("VGroup","VerticalLayoutGroup"),
         };
         /// <summary> 组件的缩略名字映射 </summary>
-        public List<RulePrefixe> RulePrefixes => _rulePrefixes;
+        public List<RulePrefixes> RulePrefixes => _rulePrefixes;
     }
 }
