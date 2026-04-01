@@ -1,17 +1,18 @@
-/* 
+﻿/* 
  * ================================================
  * Describe:      This script is used to setting auto bind. 
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-13 17:36:43
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-02-13 17:36:43
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 16:47:08
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Edit.AutoBind
+namespace EasyFramework.Edit.Windows.SettingPanel
 {
     /// <summary>
     /// 自动绑定全局设置

@@ -1,11 +1,11 @@
-/* 
+﻿/* 
  * ================================================
  * Describe:      This script is used to builder with editor. 
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-13 16:46:15
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-04-26 16:11:44
- * ScriptVersion: 0.2
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 16:47:08
+ * ScriptVersion: 0.1
  * ===============================================
 */
 using EasyFramework.UI;
@@ -16,7 +16,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.AutoBind
+namespace EasyFramework.Edit.Windows.SettingPanel
 {
     /// <summary>
     /// Ui builder with editor.

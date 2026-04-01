@@ -11,8 +11,8 @@
 
 using System;
 using System.Reflection;
+using EasyFramework.Edit.Windows.SettingPanel;
 using EasyFramework.UI;
-using EasyFramework.Windows.SettingPanel;
 using TMPro;
 using UnityEditor;
 using UnityEngine;

@@ -13,7 +13,7 @@ using UnityEditor;
 using UnityEngine;
 using System;
 
-namespace EasyFramework.Windows
+namespace EasyFramework.Edit.Windows
 {
     /// <summary>
     /// 窗口基类稳定版

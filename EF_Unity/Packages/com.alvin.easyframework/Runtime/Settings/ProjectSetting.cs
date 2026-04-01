@@ -8,11 +8,13 @@
  * ScriptVersion: 0.1
  * ===============================================
 */
+
 using System;
 using System.Collections.Generic;
+using EasyFramework.Edit;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Setting
+namespace EasyFramework
 {
     /// <summary>
     /// 框架设置界面

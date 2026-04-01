@@ -61,7 +61,7 @@ public sealed partial class EF : MonoBehaviour
         _manageUpdater = new List<IUpdate>();
         _updater = new List<IUpdate>();
         _singletons = new List<ISingleton>();
-        Projects = Resources.Load<EasyFramework.Edit.Setting.ProjectSetting>("Settings/ProjectSetting");
+        Projects = Resources.Load<ProjectSetting>("Settings/ProjectSetting");
         
         _exiting = false;
     }

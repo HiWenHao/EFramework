@@ -9,8 +9,7 @@
  * ===============================================
 */
 
-using EasyFramework.Edit.Setting;
-using EasyFramework.Windows.SettingPanel;
+using EasyFramework.Edit.Windows.SettingPanel;
 
 namespace EasyFramework.Edit
 {

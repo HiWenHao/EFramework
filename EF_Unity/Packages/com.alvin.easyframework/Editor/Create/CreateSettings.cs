@@ -10,11 +10,9 @@
  */
 
 using System.IO;
-using EasyFramework.Edit.Setting;
-using EasyFramework.Edit.AutoBind;
 using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.TaskList;
-using EasyFramework.Windows.SettingPanel;
+using EasyFramework.Edit.Windows.SettingPanel;
 using UnityEditor;
 using UnityEngine;
 

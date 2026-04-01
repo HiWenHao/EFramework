@@ -8,9 +8,10 @@
  * Version:         1.0
  * ===============================================
  */
-using EasyFramework.Edit.Setting;
+
 using EasyFramework.Managers;
 using System.Collections;
+using EasyFramework;
 using UnityEngine;
 
 public sealed partial class EF
