@@ -506,7 +506,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         + " * ModifyTime:    #ChangeTime#\r\n"
         + " * ScriptVersion: #Version# \r\n"
         + " * ================================================\r\n"
-        + "*/";
+        + " */";
         readonly string m_StrChangeTime = "* ModifyTime:";
         readonly string m_StrChangeAuthor = "* ModifyAuthor:";
 
@@ -882,7 +882,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 if (strList[i].Contains(m_StrChangeAuthor))
                 {
-                    strList[i] = $" {m_StrChangeAuthor}  {ProjectUtility.Project.ScriptAuthor}";
+                    strList[i] = $" {m_StrChangeAuthor}  {GetAuthorName()}";
                 }
                 if (strList[i].Contains(m_StrChangeTime))
                 {
@@ -906,14 +906,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             //把#Author# 替换
             annotationStr = annotationStr.Replace("#Author#",
-                ProjectUtility.Project.ScriptAuthor);
+                GetAuthorName());
             //把#ChangeAuthor# 替换
             annotationStr = annotationStr.Replace("#ChangeAuthor#",
-                ProjectUtility.Project.ScriptAuthor);
+                GetAuthorName());
             //把#Version# 替换
             annotationStr = annotationStr.Replace("#Version#",
                 ProjectUtility.Project.ScriptVersion);
             return annotationStr;
+        }
+
+        private string GetAuthorName()
+        {
+            string configName = ProjectUtility.Project.ScriptAuthor;
+            string authorName = EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
+            return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
         }
         #endregion
     }

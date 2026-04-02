@@ -72,11 +72,7 @@ namespace EasyFramework.Edit.Create
             public static Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
             {
                 string fullPath = Path.GetFullPath(newScriptPath);
-                string authorName =
-                    EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
-                authorName = string.IsNullOrEmpty(ProjectUtility.Project.ScriptAuthor)
-                    ? authorName
-                    : ProjectUtility.Project.ScriptAuthor;
+                string authorName = GetAuthorName();
                 StreamReader streamReader = new StreamReader(templatePath);
                 string text = streamReader.ReadToEnd();
                 streamReader.Close();
@@ -100,14 +96,21 @@ namespace EasyFramework.Edit.Create
                 sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 sw.WriteLine(" * ScriptVersion: " + ProjectUtility.Project.ScriptVersion);
                 sw.WriteLine(" * ===============================================");
-                sw.WriteLine("*/");
-
+                sw.WriteLine(" */");
+                sw.WriteLine();
+                
                 text = text.Replace("PleaseChangeTheNamespace",
                     EditorUtils.LoadSettingAtPath<AutoBindingConfig>().Namespace);
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);
                 return AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+            }
+            private static string GetAuthorName()
+            {
+                string configName = ProjectUtility.Project.ScriptAuthor;
+                string authorName = EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
+                return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
             }
         }
     }
