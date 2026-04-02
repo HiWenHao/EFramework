@@ -63,11 +63,12 @@ namespace EasyFramework.Edit.MenuToolkit
                 if (contents.Length < 10)
                     continue;
 
+                string configName = ProjectUtility.Project.ScriptAuthor;
                 string authorName =
                     EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
-                authorName = string.IsNullOrEmpty(ProjectUtility.Project.ScriptAuthor)
+                authorName = string.IsNullOrEmpty(configName) || configName.Equals("Default")
                     ? authorName
-                    : ProjectUtility.Project.ScriptAuthor;
+                    : configName;
                 if (!contents[5].Contains("ModifyAuthor:"))
                     continue;
                 contents[5] = $" * ModifyAuthor:  {authorName}";
