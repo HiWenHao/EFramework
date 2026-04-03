@@ -602,7 +602,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     sw.WriteLine("\nnamespace PleaseAmendNamespace\n{");
 
                 sw.WriteLine($"\t/// <summary>\n\t/// Please modify the description.\n\t/// </summary>");
-                sw.WriteLine("\tpublic class " + m_Builder.name + " : UIPageBase\n\t{");
+                sw.WriteLine("\tpublic class " + m_Builder.name + " : UIPageView\n\t{");
 
                 #region override Awake 
                 sw.WriteLine("\t\t/* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */");

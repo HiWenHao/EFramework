@@ -19,7 +19,7 @@ namespace EFExample
 	/// <summary>
 	/// Please modify the description.
 	/// </summary>
-	public class UiB : UIPageBase
+	public class UiB : UIPageView
     {
         bool m_bol_MuteSource;
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */

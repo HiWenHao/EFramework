@@ -12,6 +12,7 @@
 using EasyFramework.UI;
 using System.Collections.Generic;
 using System.Linq;
+using EasyFramework.UI.Tips;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -32,13 +33,16 @@ namespace EasyFramework.Managers
         Transform _pageBaseObject;
 
         GameObject _currentObj;
-        UIPageBase _currentPage;
+        UIPageView _currentPage;
 
-        Stack<UIPageBase> _useUIStack;
+        private TipsView _tipsView;
+        Stack<UIPageView> _useUIStack;
         Stack<GameObject> _useGOStack;
 
-        Dictionary<int, UIPageBase> _readyUIDic;
+        Dictionary<int, UIPageView> _readyUIDic;
         Dictionary<int, GameObject> _readyGODic;
+        
+        Dictionary<UIViewType, Transform> _viewParentDic;
 
         void ISingleton.Init()
         {
@@ -67,6 +71,22 @@ namespace EasyFramework.Managers
                 _cs.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
                 _root.transform.SetParent(_target, false);
                 UICamera.transform.SetParent(_target, false);
+
+                int typeCount = System.Enum.GetValues(typeof(UIViewType)).Length;
+                _viewParentDic =  new Dictionary<UIViewType, Transform>(typeCount);
+                for (int i = 0; i < typeCount; i++)
+                {
+                    Transform trans = new GameObject($"ViewType{i}-{(UIViewType)i}").transform;
+                    trans.SetParent(_root.transform);
+                    trans.gameObject.SetActive(i != 0);
+                    RectTransform rect = trans.gameObject.AddComponent<RectTransform>();
+                    rect.sizeDelta = Vector2.zero;
+                    rect.anchorMax = Vector3.one;
+                    rect.anchorMin = Vector3.zero;
+                    rect.localPosition = Vector3.zero;
+                
+                    _viewParentDic.Add((UIViewType)i, rect);
+                }
             }
             GameObject _eventSystem = GameObject.Find("EventSystem");
             if (!_eventSystem)
@@ -90,6 +110,9 @@ namespace EasyFramework.Managers
         {
             PageExit();
 
+            _tipsView.Quit();
+            _tipsView = null;
+            
             Destroy(UICamera.gameObject);
             UICamera = null;
 
@@ -116,9 +139,9 @@ namespace EasyFramework.Managers
             rect.sizeDelta = Vector2.zero;
             rect.localScale = Vector2.one;
 
-            _useUIStack = new Stack<UIPageBase>();
+            _useUIStack = new Stack<UIPageView>();
             _useGOStack = new Stack<GameObject>();
-            _readyUIDic = new Dictionary<int, UIPageBase>();
+            _readyUIDic = new Dictionary<int, UIPageView>();
             _readyGODic = new Dictionary<int, GameObject>();
         }
 
@@ -157,7 +180,7 @@ namespace EasyFramework.Managers
             _pageBaseObject = null;
         }
 
-        private GameObject PageCreated(UIPageBase page)
+        private GameObject PageCreated(UIPageView page)
         {
             GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(page.GetType().Name) 
                 : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + page.GetType().Name);
@@ -180,7 +203,7 @@ namespace EasyFramework.Managers
             return uiObj;
         }
 
-        private UIPageBase PageOpen(UIPageBase page, bool hideCurrent, params object[] args)
+        private UIPageView PageOpen(UIPageView page, bool hideCurrent, params object[] args)
         {
             if (!_pageInit)
             {
@@ -239,7 +262,7 @@ namespace EasyFramework.Managers
             if (_pageCount <= 0)
                 return;
 
-            UIPageBase ui = _useUIStack.Pop();
+            UIPageView ui = _useUIStack.Pop();
             GameObject go = _useGOStack.Pop();
 
             ui.Close();
@@ -266,5 +289,24 @@ namespace EasyFramework.Managers
                 _currentPage.OnFocus(true, args);
             }
         }
+
+        #region Tips
+
+        private void CheckTipsCreated()
+        {
+            if (null != _tipsView)
+                return;
+            
+            _tipsView = new TipsView();
+            GameObject tipsObj = Object.Instantiate(Resources.Load<GameObject>($"{EF.Projects.AppConst.UIPrefabsPath}TipsView"), _viewParentDic[_tipsView.ViewType], true);
+            RectTransform rect =  tipsObj.GetComponent<RectTransform>();
+            rect.anchorMax = Vector3.one;
+            rect.anchorMin = Vector3.zero;
+            rect.sizeDelta = Vector3.zero;
+            rect.localPosition = Vector3.zero;
+            _tipsView.Awake(tipsObj);
+        }
+
+        #endregion
     }
 }

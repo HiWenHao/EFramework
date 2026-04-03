@@ -20,7 +20,7 @@ namespace EFExample
     /// <summary>
     /// Please modify the description.
     /// </summary>
-    public class UiC : UIPageBase
+    public class UiC : UIPageView
     {
         int m_TimeEventId;
         Action<bool> timeEvent;

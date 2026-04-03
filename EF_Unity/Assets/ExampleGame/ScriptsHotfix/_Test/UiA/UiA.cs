@@ -19,7 +19,7 @@ namespace EFExample
     /// <summary>
     /// Please modify the description.
     /// </summary>
-    public class UiA : UIPageBase
+    public class UiA : UIPageView
     {
         /* ---------- Do not change anything with an ' -- Auto' ending. 不要对以 -- Auto 结尾的内容做更改 ---------- */
 		#region Components.可使用组件 -- Auto

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace EasyFramework.Manager.UI
 {
-    public interface IUIPageBase
+    public interface IUIPageView
     {
         /// <summary>
         /// Page serial number, do not change.

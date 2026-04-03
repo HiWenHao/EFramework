@@ -17,7 +17,7 @@ namespace EasyFramework.UI
     /// <summary>
     /// UI界面接口
     /// </summary>
-    public abstract class UIPageBase : IUIPageBase
+    public abstract class UIPageView : IUIPageView
     {
         public int SerialId { get; set; }
         public bool IsFocus { get; set; }

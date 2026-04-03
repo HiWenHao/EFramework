@@ -10,6 +10,7 @@
  */
 
 using EasyFramework.UI;
+using EasyFramework.UI.Tips;
 using UnityEngine;
 
 namespace EasyFramework.Managers
@@ -43,7 +44,7 @@ namespace EasyFramework.Managers
         /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase Push(UIPageBase page, params object[] args)
+        public UIPageView Push(UIPageView page, params object[] args)
         {
             if (page == _currentPage)
             {
@@ -61,7 +62,7 @@ namespace EasyFramework.Managers
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase Push(UIPageBase page, bool hideCurrent, params object[] args)
+        public UIPageView Push(UIPageView page, bool hideCurrent, params object[] args)
         {
             if (page == _currentPage)
             {
@@ -79,7 +80,7 @@ namespace EasyFramework.Managers
         /// <param name="page">Next ui page should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase Push(bool repeatCreated, UIPageBase page, params object[] args)
+        public UIPageView Push(bool repeatCreated, UIPageView page, params object[] args)
         {
             if (!repeatCreated && page == _currentPage)
             {
@@ -98,7 +99,7 @@ namespace EasyFramework.Managers
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase Push(bool repeatCreated, UIPageBase page, bool hideCurrent, params object[] args)
+        public UIPageView Push(bool repeatCreated, UIPageView page, bool hideCurrent, params object[] args)
         {
             if (!repeatCreated && page == _currentPage)
             {
@@ -117,7 +118,7 @@ namespace EasyFramework.Managers
         /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase PopAndPushTo(UIPageBase page, params object[] args)
+        public UIPageView PopAndPushTo(UIPageView page, params object[] args)
         {
             if (page == _currentPage)
             {
@@ -136,7 +137,7 @@ namespace EasyFramework.Managers
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面</para>.</param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase PopAndPushTo(UIPageBase page, bool hideCurrent, params object[] args)
+        public UIPageView PopAndPushTo(UIPageView page, bool hideCurrent, params object[] args)
         {
             if (page == _currentPage)
             {
@@ -155,7 +156,7 @@ namespace EasyFramework.Managers
         /// <param name="page">Next ui page.should be exist in Assets\Resources\Prefabs\UI path,and be named the class name.
         /// <para>下个页面需要存在于相关路径下，并且名字要与类名相同</para></param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, params object[] args)
+        public UIPageView PopAndPushTo(bool repeatCreated, UIPageView page, params object[] args)
         {
             if (!repeatCreated && page == _currentPage)
             {
@@ -176,7 +177,7 @@ namespace EasyFramework.Managers
         /// <param name="destroy">Destroy current ui page.<para>销毁当前界面</para></param>
         /// <param name="hideCurrent">Hide current ui page.<para>隐藏当前界面.</para></param>
         /// <param name="args">Send this params to next ui page.<para>给要进入的页面 传递该参数</para></param>
-        public UIPageBase PopAndPushTo(bool repeatCreated, UIPageBase page, bool destroy, bool hideCurrent, params object[] args)
+        public UIPageView PopAndPushTo(bool repeatCreated, UIPageView page, bool destroy, bool hideCurrent, params object[] args)
         {
             if (!repeatCreated && page == _currentPage)
             {
@@ -240,6 +241,20 @@ namespace EasyFramework.Managers
             }
 
             PageClose(destroy, args);
+        }
+        #endregion
+
+        #region Tips
+        /// <summary>
+        /// 显示提示窗
+        /// </summary>
+        /// <param name="tips">提示内容</param>
+        /// <param name="viewExtraData">附加数据</param>
+        public void ShowTips(string tips, TipsViewExtraData viewExtraData)
+        {
+            CheckTipsCreated();
+            
+            _tipsView.Show(tips, viewExtraData);
         }
         #endregion
     }

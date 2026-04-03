@@ -13,6 +13,7 @@ using EasyFramework;
 using Luban;
 using SimpleJSON;
 using System.Linq;
+using EasyFramework.UI.Tips;
 using UnityEngine;
 using YooAsset;
 
@@ -123,6 +124,16 @@ namespace EFExample
 
             //音频播放
             //EF.Sources.PlayBGMByName("You bgm`s name", true);
+            
+            
+            EF.Ui.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
+            {
+                ConfirmName = "确定",
+                CancelName = "取消",
+                //ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
+                CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
+                //CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
+            });
         }
 
         #region HybirdCLR
