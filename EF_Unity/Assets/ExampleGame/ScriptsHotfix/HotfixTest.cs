@@ -9,8 +9,9 @@
  * ===============================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.UI.Tips;
+using EasyFramework.Manager.UI.Tips;
 using UnityEngine;
 
 namespace EFExample
@@ -29,17 +30,28 @@ namespace EFExample
             FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
-            EF.Ui.Push(new UiA());
+            EF.Uii.OpenPage(new UiAView());
 
+            //EF.Uii.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
+            //{
+            //    ConfirmName = "确定",
+            //    CancelName = "取消",
+            //    ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
+            //    CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
+            //    CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
+            //});
 
-            EF.Ui.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
+            Test().Forget();
+        }
+
+        static async UniTask Test()
+        {
+            for (int i = 0; i < 20; i++)
             {
-                ConfirmName = "确定",
-                CancelName = "取消",
-                ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
-                CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
-                CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
-            });
+                await UniTask.WaitForSeconds(0.1f);
+                D.Warning(i);
+                EF.Uii.ShowPopupView($"\t{i}\tIndex");
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ using EasyFramework;
 using Luban;
 using SimpleJSON;
 using System.Linq;
-using EasyFramework.UI.Tips;
+using EasyFramework.Manager.UI.Tips;
 using UnityEngine;
 using YooAsset;
 
@@ -101,11 +101,11 @@ namespace EFExample
             // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            //EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
-            //    AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
-            //    EF.Audio.Play2DEffectSouceByClip(clip);
-            //    LoadMetadataForAOTAssemblies();
-            //});
+            EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
+                AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
+                EF.Audio.Play2DEffectSouceByClip(clip);
+                LoadMetadataForAOTAssemblies();
+            });
 
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
@@ -126,14 +126,16 @@ namespace EFExample
             //EF.Sources.PlayBGMByName("You bgm`s name", true);
             
             
-            EF.Ui.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
-            {
-                ConfirmName = "确定",
-                CancelName = "取消",
-                //ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
-                CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
-                //CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
-            });
+            //EF.Uii.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
+            //{
+            //    ConfirmName = "确定",
+            //    CancelName = "取消",
+            //    //ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
+            //    CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
+            //    //CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
+            //});
+            
+            
         }
 
         #region HybirdCLR

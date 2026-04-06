@@ -21,6 +21,7 @@ namespace EasyFramework.UI
     {
         public int SerialId { get; set; }
         public bool IsFocus { get; set; }
+        public GameObject UiObject { get; internal set; }
 
         public abstract void Awake(GameObject obj, params object[] args);
 

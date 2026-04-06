@@ -12,11 +12,12 @@
 using EasyFramework.UI;
 using System.Collections.Generic;
 using System.Linq;
-using EasyFramework.UI.Tips;
+using EasyFramework.Manager.UI;
+using EasyFramework.Manager.UI.Tips;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
-//using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.Universal;
 
 namespace EasyFramework.Managers
 {
@@ -35,7 +36,6 @@ namespace EasyFramework.Managers
         GameObject _currentObj;
         UIPageView _currentPage;
 
-        private TipsView _tipsView;
         Stack<UIPageView> _useUIStack;
         Stack<GameObject> _useGOStack;
 
@@ -110,9 +110,6 @@ namespace EasyFramework.Managers
         {
             PageExit();
 
-            _tipsView.Quit();
-            _tipsView = null;
-            
             Destroy(UICamera.gameObject);
             UICamera = null;
 
@@ -289,24 +286,5 @@ namespace EasyFramework.Managers
                 _currentPage.OnFocus(true, args);
             }
         }
-
-        #region Tips
-
-        private void CheckTipsCreated()
-        {
-            if (null != _tipsView)
-                return;
-            
-            _tipsView = new TipsView();
-            GameObject tipsObj = Object.Instantiate(Resources.Load<GameObject>($"{EF.Projects.AppConst.UIPrefabsPath}TipsView"), _viewParentDic[_tipsView.ViewType], true);
-            RectTransform rect =  tipsObj.GetComponent<RectTransform>();
-            rect.anchorMax = Vector3.one;
-            rect.anchorMin = Vector3.zero;
-            rect.sizeDelta = Vector3.zero;
-            rect.localPosition = Vector3.zero;
-            _tipsView.Awake(tipsObj);
-        }
-
-        #endregion
     }
 }

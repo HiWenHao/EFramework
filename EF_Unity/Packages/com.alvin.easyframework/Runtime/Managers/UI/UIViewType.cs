@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.UI
+namespace EasyFramework.Manager.UI
 {
     /// <summary>
     /// UI视窗类型
@@ -32,9 +32,9 @@ namespace EasyFramework.UI
         Page,
 
         /// <summary>
-        /// 弹窗
+        /// 顶层常驻
         /// </summary>
-        Popup,
+        TopPermanent,
 
         /// <summary>
         /// 提示窗
@@ -42,8 +42,8 @@ namespace EasyFramework.UI
         Tips,
 
         /// <summary>
-        /// 顶层常驻
+        /// 弹窗
         /// </summary>
-        TopPermanent,
+        Popup,
     }
 }

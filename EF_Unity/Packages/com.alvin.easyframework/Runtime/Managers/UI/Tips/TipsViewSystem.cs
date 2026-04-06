@@ -9,54 +9,38 @@
  * ===============================================
  */
 
-using UnityEngine;
-
-namespace EasyFramework.UI.Tips
+namespace EasyFramework.Manager.UI.Tips
 {
     /// <summary>
     /// 提示窗基类
     /// </summary>
     public partial class TipsView
     {
-        public void Awake(GameObject obj)
+        void IUiView.Awake()
         {
-            if (obj.Equals(_tipsViewGameObject))
-                return;
-
-            if (_tipsViewGameObject != null)
-                Object.Destroy(_tipsViewGameObject);
-
-            _tipsViewGameObject = obj;
-            Bind();
         }
 
-        public void Quit()
+        void IUiView.Enable(params object[] args)
         {
-            Dispose();
+            _tipsExtraData.Dispose();
+            _tipsExtraData = (TipsViewExtraData)args[1];
+
+            Txt_Display.text = $"{args[0]}";
+            Txt_Cancel.transform.parent.gameObject.SetActive(null != _tipsExtraData.CancelCallBack);
+            Txt_Confirm.transform.parent.gameObject.SetActive(null != _tipsExtraData.ConfirmCallBack);
+            Txt_Cancel.text = string.IsNullOrEmpty(_tipsExtraData.CancelName) ? "取消" : _tipsExtraData.CancelName;
+            Txt_Confirm.text = string.IsNullOrEmpty(_tipsExtraData.ConfirmName) ? "确认" : _tipsExtraData.ConfirmName;
+
+            View.gameObject.SetActive(true);
         }
 
-        /// <summary>
-        /// 展示
-        /// </summary>
-        /// <param name="displayContents">显示内容</param>
-        /// <param name="viewExtraData">附加数据</param>
-        public void Show(string displayContents, TipsViewExtraData viewExtraData)
+        void IUiView.Quit()
         {
-            _tipsExtraData?.Dispose();
-            _tipsExtraData = viewExtraData;
-
-            Txt_Display.text = displayContents;
-            Txt_Cancel.transform.parent.gameObject.SetActive(null != viewExtraData.CancelCallBack);
-            Txt_Confirm.transform.parent.gameObject.SetActive(null != viewExtraData.ConfirmCallBack);
-            Txt_Cancel.text = string.IsNullOrEmpty(viewExtraData.CancelName) ? "取消" : viewExtraData.CancelName;
-            Txt_Confirm.text = string.IsNullOrEmpty(viewExtraData.ConfirmName) ? "确认" : viewExtraData.ConfirmName;
-
-            _tipsViewGameObject.SetActive(true);
         }
 
         private void Hide()
         {
-            _tipsViewGameObject.SetActive(false);
+            View.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -64,7 +48,7 @@ namespace EasyFramework.UI.Tips
         /// </summary>
         void OnClickClose()
         {
-            _tipsExtraData?.CloseCallBack?.Invoke();
+            _tipsExtraData.CloseCallBack?.Invoke();
             Hide();
         }
 
@@ -73,7 +57,7 @@ namespace EasyFramework.UI.Tips
         /// </summary>
         void OnClickCancel()
         {
-            _tipsExtraData?.CancelCallBack?.Invoke();
+            _tipsExtraData.CancelCallBack?.Invoke();
             Hide();
         }
 
@@ -82,7 +66,7 @@ namespace EasyFramework.UI.Tips
         /// </summary>
         void OnClickConfirm()
         {
-            _tipsExtraData?.ConfirmCallBack?.Invoke();
+            _tipsExtraData.ConfirmCallBack?.Invoke();
             Hide();
         }
     }

@@ -10,7 +10,6 @@
  */
 
 using EasyFramework.UI;
-using EasyFramework.UI.Tips;
 using UnityEngine;
 
 namespace EasyFramework.Managers
@@ -241,20 +240,6 @@ namespace EasyFramework.Managers
             }
 
             PageClose(destroy, args);
-        }
-        #endregion
-
-        #region Tips
-        /// <summary>
-        /// 显示提示窗
-        /// </summary>
-        /// <param name="tips">提示内容</param>
-        /// <param name="viewExtraData">附加数据</param>
-        public void ShowTips(string tips, TipsViewExtraData viewExtraData)
-        {
-            CheckTipsCreated();
-            
-            _tipsView.Show(tips, viewExtraData);
         }
         #endregion
     }

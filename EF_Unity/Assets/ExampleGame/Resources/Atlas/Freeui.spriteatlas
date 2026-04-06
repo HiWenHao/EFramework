@@ -50,7 +50,6 @@ SpriteAtlas:
     - 90e68fc4a91e688499437eb6b367f443: 21300000
     - 88dd22b5715878f4281b7ae68d00ff56: 21300000
     - 0919efc52c563654385e36a9ea1c61b7: 21300000
-    - 2d7261d597abf884dbb36f9e026d9dbf: 21300000
     - 901081f5deab5de47a34e05f3b267cc2: 21300000
     - 5ad1d60795a758c468e9886f7fa4a71b: 21300000
     - 3d6e441791dc08b41b9cccd520a510c9: 21300000
@@ -92,7 +91,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 90e68fc4a91e688499437eb6b367f443, type: 3}
   - {fileID: 21300000, guid: 88dd22b5715878f4281b7ae68d00ff56, type: 3}
   - {fileID: 21300000, guid: 0919efc52c563654385e36a9ea1c61b7, type: 3}
-  - {fileID: 21300000, guid: 2d7261d597abf884dbb36f9e026d9dbf, type: 3}
   - {fileID: 21300000, guid: 901081f5deab5de47a34e05f3b267cc2, type: 3}
   - {fileID: 21300000, guid: 5ad1d60795a758c468e9886f7fa4a71b, type: 3}
   - {fileID: 21300000, guid: 3d6e441791dc08b41b9cccd520a510c9, type: 3}
@@ -133,7 +131,6 @@ SpriteAtlas:
   - Line2
   - Stageexplanation
   - RIghtdownside
-  - Gamebotton
   - Shopbotton
   - Icon
   - Itembotton

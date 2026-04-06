@@ -27,17 +27,17 @@ namespace EasyFramework.Edit
         /// <summary>
         /// 全名称
         /// </summary>
-        public string FullContent;
+        public string FullName;
 
         /// <summary>
         /// 规则前缀
         /// </summary>
         /// <param name="prefixes">前缀</param>
-        /// <param name="fullContent">全内容</param>
-        public RulePrefixes(string prefixes, string fullContent)
+        /// <param name="fullName">全内容</param>
+        public RulePrefixes(string prefixes, string fullName)
         {
             Prefixe = prefixes;
-            FullContent = fullContent;
+            FullName = fullName;
         }
     }
 }

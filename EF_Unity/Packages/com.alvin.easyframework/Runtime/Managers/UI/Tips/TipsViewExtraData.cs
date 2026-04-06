@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.UI.Tips
+namespace EasyFramework.Manager.UI.Tips
 {
     /// <summary>
     /// 提示窗附加数据
@@ -24,7 +24,7 @@ namespace EasyFramework.UI.Tips
         public string ConfirmName;
 
         /// <summary>
-        /// 确定方法
+        /// 确定方法，为空则不显示确定按钮
         /// </summary>
         public Action ConfirmCallBack;
 
@@ -34,7 +34,7 @@ namespace EasyFramework.UI.Tips
         public string CancelName;
 
         /// <summary>
-        /// 取消方法
+        /// 取消方法，为空则不显示取消按钮
         /// </summary>
         public Action CancelCallBack;
 

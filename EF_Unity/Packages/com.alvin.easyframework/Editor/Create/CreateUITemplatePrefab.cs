@@ -25,17 +25,18 @@ namespace EasyFramework.Edit.Create
         [MenuItem("GameObject/UI/EF/New UI Page", false, 20)]
         static void CreateUINewUIPage(MenuCommand menuCommand)
         {
-            RectTransform tran = CreateUIObject(menuCommand, "UiPage", new[] { typeof(Image) }).transform as RectTransform;
-            tran.gameObject.AddComponent<Canvas>();
-            tran.gameObject.AddComponent<GraphicRaycaster>();
-            tran.gameObject.AddComponent<CanvasGroup>();
-            tran.gameObject.AddComponent<UiBind>();
-            UnityEngine.Object.DestroyImmediate(tran.GetComponent<Image>());
+            RectTransform rect = CreateUIObject(menuCommand, "UiPage", new[] { typeof(Image) }).transform as RectTransform;
             
-            tran.anchorMax = Vector2.one;
-            tran.anchorMin = Vector2.zero;
-            tran.sizeDelta = Vector2.zero;
-            tran.anchoredPosition = Vector2.zero;
+            if (rect == null) 
+                return;
+            
+            rect.gameObject.AddComponent<UiBinding>();
+            UnityEngine.Object.DestroyImmediate(rect.GetComponent<Image>());
+
+            rect.anchorMax = Vector2.one;
+            rect.anchorMin = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+            rect.anchoredPosition = Vector2.zero;
         }
 
         [MenuItem("GameObject/UI/EF/Button Pro", false, 40)]
