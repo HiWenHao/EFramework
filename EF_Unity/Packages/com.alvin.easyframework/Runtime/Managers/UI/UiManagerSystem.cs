@@ -139,6 +139,86 @@ namespace EasyFramework.Manager.UI
 
         #region PageView
 
+        /// <summary>
+        /// 打开页面
+        /// </summary>
+        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
+        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
+        public void OpenPage<T>(params object[] args) where T : IUiView, new()
+        {
+            IUiView uiView;
+            bool needCreate = true;
+            
+            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Page]))
+            {
+                if (_currentPageView == uiView)
+                    return;
+                needCreate = false;
+            }
+            
+            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Cache]))
+            {
+                _viewStackDic[UIViewType.Cache].Remove(uiView);
+                needCreate = false;
+            }
+
+            if (needCreate)
+            {
+                uiView = new T();
+                string viewName = typeof(T).Name;
+                GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(viewName) 
+                    : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
+                if (!prefab)
+                    D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
+                GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[UIViewType.Page], true);
+                RectTransform rect = uiObj.GetComponent<RectTransform>();
+            
+                rect.anchorMax = Vector3.one;
+                rect.anchorMin = Vector3.zero;
+                rect.sizeDelta = Vector3.zero;
+                rect.localPosition = Vector3.zero;
+        
+                uiView.Bind(rect);
+                uiView.SerialId = ++_serialId;
+                uiObj.name = viewName;
+                uiView.Awake();
+            }
+            
+            ViewClose(_currentPageView, false, args);
+            ViewEnable(uiView, args);
+        }
+
+        /// <summary>
+        /// 获取视窗
+        /// </summary>
+        /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
+        public IUiView GetView<T>() where T : IUiView, new()
+        {
+            InViewList<T>(out IUiView uiView, _viewStackDic[UIViewType.Page]);
+            return uiView;
+        }
+        
+        /// <summary>
+        /// 关闭UI视窗
+        /// </summary>
+        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
+        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
+        public void ClosePage<T>(params object[] args) where T : IUiView
+        {
+            if (!InViewList<T>(out IUiView uiView, _viewStackDic[UIViewType.Page]))
+                return;
+
+            if (uiView == _currentPageView)
+            {
+                if (_viewStackDic[UIViewType.Page].Count >= 2)
+                    ViewEnable(_viewStackDic[UIViewType.Page][^2], args);
+                else
+                    _currentPageView = null;
+            }
+            
+            ViewClose(uiView, true, args);
+        }
+        
         private void PageInit()
         {
             _autoDestroyDic ??= new Dictionary<IUiView, float>();
@@ -181,66 +261,6 @@ namespace EasyFramework.Manager.UI
             
             _autoDestroyDic.Clear();
             _autoDestroyDic = null;
-        }
-
-        public void OpenPage<T>(params object[] args) where T : IUiView, new()
-        {
-            IUiView uiView;
-            bool needCreate = true;
-            
-            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Page]))
-            {
-                if (_currentPageView == uiView)
-                    return;
-                needCreate = false;
-            }
-            
-            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Cache]))
-            {
-                _viewStackDic[UIViewType.Cache].Remove(uiView);
-                needCreate = false;
-            }
-
-            if (needCreate)
-            {
-                uiView = new T();
-                string viewName = typeof(T).Name;
-                GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(viewName) 
-                    : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
-                if (!prefab)
-                    D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
-                GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[UIViewType.Page], true);
-                RectTransform rect = uiObj.GetComponent<RectTransform>();
-            
-                rect.anchorMax = Vector3.one;
-                rect.anchorMin = Vector3.zero;
-                rect.sizeDelta = Vector3.zero;
-                rect.localPosition = Vector3.zero;
-        
-                uiView.Bind(rect);
-                uiView.SerialId = ++_serialId;
-                uiObj.name = $"{_serialId} - {viewName}";
-                uiView.Awake();
-            }
-            
-            ViewClose(_currentPageView, false, args);
-            ViewEnable(uiView, args);
-        }
-
-        public void ClosePage<T>(params object[] args) where T : IUiView
-        {
-            if (!InViewList<T>(out IUiView uiView, _viewStackDic[UIViewType.Page]))
-                return;
-
-            if (uiView == _currentPageView)
-            {
-                if (_viewStackDic[UIViewType.Page].Count >= 2)
-                    ViewEnable(_viewStackDic[UIViewType.Page][^2], args);
-                else
-                    _currentPageView = null;
-            }
-            
-            ViewClose(uiView, true, args);
         }
         
         private void ViewEnable(IUiView uiView, params object[] args)
