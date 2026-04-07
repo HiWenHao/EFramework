@@ -41,16 +41,15 @@ namespace EasyFramework.Manager.UI
         private Dictionary<uint, IUiView> _allUsedViewsDict; //	正在被使用的全部UI视窗        /晚些处理，删除
 
 
+        /// <summary> 自动销毁时间 </summary>
+        private const float AutoDestroyTimer = 10.0f;
 
-
-
-        /// <summary>
-        /// 自动销毁计时
-        /// </summary>
+        /// <summary> 自动销毁计时 </summary>
         private Dictionary<IUiView, float> _autoDestroyDic;
         
         /// <summary> 不同视窗类型的父节点存储字典 </summary>
         private Dictionary<UIViewType, Transform> _viewParentDic;
+        
         /// <summary> 内存中存在的全部UI视窗 </summary>
         private Dictionary<UIViewType, List<IUiView>> _viewStackDic;
         

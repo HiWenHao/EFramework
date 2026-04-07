@@ -289,7 +289,7 @@ namespace EasyFramework.Manager.UI
             if (!cache)
                 return;
 
-            _autoDestroyDic[uiView] = 5.0f;
+            _autoDestroyDic[uiView] = AutoDestroyTimer;
             D.Log(_autoDestroyDic.Count);
             _viewStackDic[UIViewType.Cache].Add(uiView);
             _viewStackDic[UIViewType.Page].Remove(uiView);

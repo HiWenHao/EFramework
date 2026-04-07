@@ -1,14 +1,13 @@
 {
-  "name": "com.alvin.easyframework",
-  "displayName": "EF",
+  "name": "cn.efefef.core",
+  "displayName": "EF.Core",
   "version": "0.1.0",
   "unity": "2021.3",
   "unityRelease": "10f1",
   "description": "A simple game framework, which endeavors to assist developers in simplifying the development process as much as possible.",
   "author": {
-    "name": "Alvin5100",
-    "url": "https://blog.csdn.net/Wenhao_China",
-    "email": "510094761@qq.com"
+    "name": "Alvin",
+    "url": "https://blog.csdn.net/Wenhao_China"
   },
   "changelogUrl": "https://github.com/HiWenHao/EFramework",
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
@@ -19,11 +18,6 @@
     "com.code-philosophy.hybridclr": "8.11.0",
     "com.code-philosophy.luban": "1.0.0",
     "com.tuyoogame.yooasset": "2.3.18"
-  },
-  "repository": {
-    "url": "git@github.com:Alvin5100/Jiaopengyou.git",
-    "type": "git",
-    "revision": "caea06fc11a3ddbc64a55aeb9d2e8b040a3c798b"
   },
   "samples": [
     {
