@@ -10,8 +10,6 @@
  */
 
 using System.Collections.Generic;
-using EasyFramework.Manager.UI.Tips;
-using EasyFramework.UI.Popup;
 using UnityEngine;
 
 namespace EasyFramework.Manager.UI
@@ -40,8 +38,47 @@ namespace EasyFramework.Manager.UI
 
         #endregion
 
-        private Dictionary<uint, IUiView> _allUsedViewsDict; //	正在被使用的全部UI视窗
-        private Dictionary<string, IUiView> _allCachedViewsDict; //  已经关闭，但还在缓存中的UI视窗
-        private Dictionary<UIViewType, Transform> _viewParentDic; //	不同视窗类型的父节点存储字典
+        private Dictionary<uint, IUiView> _allUsedViewsDict; //	正在被使用的全部UI视窗        /晚些处理，删除
+
+
+
+
+
+        /// <summary>
+        /// 自动销毁计时
+        /// </summary>
+        private Dictionary<IUiView, float> _autoDestroyDic;
+        
+        /// <summary> 不同视窗类型的父节点存储字典 </summary>
+        private Dictionary<UIViewType, Transform> _viewParentDic;
+        /// <summary> 内存中存在的全部UI视窗 </summary>
+        private Dictionary<UIViewType, List<IUiView>> _viewStackDic;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
 }

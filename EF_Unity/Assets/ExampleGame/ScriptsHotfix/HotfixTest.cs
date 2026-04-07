@@ -30,7 +30,7 @@ namespace EFExample
             FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
-            EF.Uii.OpenPage(new UiAView());
+            EF.Uii.OpenPage<UiAView>();
 
             //EF.Uii.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
             //{

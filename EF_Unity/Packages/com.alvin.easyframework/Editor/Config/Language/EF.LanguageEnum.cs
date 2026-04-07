@@ -99,6 +99,8 @@ namespace EasyFramework.Edit
 		Delete,
 		/// <summary> 详情 </summary>
 		Details,
+		/// <summary> 销毁 </summary>
+		Destroy,
 		/// <summary> 设备 </summary>
 		Device,
 		/// <summary> 显示 </summary>

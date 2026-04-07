@@ -29,6 +29,11 @@ namespace EasyFramework.Manager.UI
         public UIViewType ViewType { get; }
 
         /// <summary>
+        /// 自动销毁
+        /// </summary>
+        protected internal bool AutoDestroy { get; }
+        
+        /// <summary>
         /// view serial number, do not change.
         /// <para>页面序列号,请勿改动</para>
         /// </summary>

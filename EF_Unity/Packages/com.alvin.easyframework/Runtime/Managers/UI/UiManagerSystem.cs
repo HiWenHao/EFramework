@@ -10,7 +10,6 @@
  */
 
 using System.Collections.Generic;
-using System.Linq;
 using EasyFramework.Manager.UI.Tips;
 using EasyFramework.UI.Popup;
 using UnityEngine;
@@ -84,8 +83,8 @@ namespace EasyFramework.Manager.UI
             eventSystem.transform.parent = _target;
 
             _allUsedViewsDict = new Dictionary<uint, IUiView>();
-            _allCachedViewsDict = new Dictionary<string, IUiView>();
             _popupViewsList = new List<IUiView>(PopupViewMax);
+            PageInit();
         }
 
         void IUpdate.Update(float elapse, float realElapse)
@@ -97,10 +96,13 @@ namespace EasyFramework.Manager.UI
 
                 uiView.Value.Update(elapse, realElapse);
             }
+
+            PageUpdate(elapse, realElapse);
         }
 
         void ISingleton.Quit()
         {
+            PageQuit();
             _popupGameObject = null;
 
             _popupViewsList.Clear();
@@ -112,18 +114,9 @@ namespace EasyFramework.Manager.UI
                 view.Value.Dispose();
                 Destroy(view.Value.View.gameObject);
             }
-            foreach (KeyValuePair<string, IUiView> view in _allCachedViewsDict)
-            {
-                view.Value.Quit();
-                view.Value.Dispose();
-                Destroy(view.Value.View.gameObject);
-            }
 
             _allUsedViewsDict.Clear();
             _allUsedViewsDict = null;
-            _allCachedViewsDict.Clear();
-            _allCachedViewsDict = null;
-
             Destroy(UICamera.gameObject);
             UICamera = null;
 
@@ -146,68 +139,163 @@ namespace EasyFramework.Manager.UI
 
         #region PageView
 
-        public void OpenPage(IUiView view, params object[] args)
+        private void PageInit()
         {
-            if (view == null || _allUsedViewsDict.ContainsKey(view.SerialId))
-                return;
-            string viewName = view.GetType().Name;
-            foreach (KeyValuePair<string, IUiView> uiView in _allCachedViewsDict)
-            {
-                if (!uiView.Value.View.name.Contains(viewName))
-                    continue;
-
-                if (!_allCachedViewsDict.Remove(uiView.Value.View.name, out IUiView cachedView))
-                    continue;
-                
-                _allUsedViewsDict.Add(cachedView.SerialId, cachedView);
-                cachedView.View.gameObject.SetActive(true);
-                cachedView.Enable(args);
-                
-                _currentPageView?.DisEnable(args);
-                _currentPageView?.View.gameObject.SetActive(false);
-                _currentPageView = cachedView;
-                return;
-            }
-            
-            GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(viewName) 
-                : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
-            if (!prefab)
-                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
-            GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[UIViewType.Page], true);
-            RectTransform rect = uiObj.GetComponent<RectTransform>();
-                
-            rect.anchorMax = Vector3.one;
-            rect.anchorMin = Vector3.zero;
-            rect.sizeDelta = Vector3.zero;
-            rect.localPosition = Vector3.zero;
-            
-            view.Bind(rect);
-            view.SerialId = ++_serialId;
-            uiObj.name = $"{_serialId} - {viewName}";
-            
-            _currentPageView?.DisEnable(args);
-            _currentPageView?.View.gameObject.SetActive(false);
-            _currentPageView = view;
+            _autoDestroyDic ??= new Dictionary<IUiView, float>();
+            _viewStackDic ??= new Dictionary<UIViewType, List<IUiView>>();
+            _viewStackDic[UIViewType.Page] = new List<IUiView>();
+            _viewStackDic[UIViewType.Cache] = new List<IUiView>();
         }
 
-        public void ClosePage(IUiView view, params object[] args)
+        private void PageUpdate(float elapse, float realElapse)
         {
-            if (!_allUsedViewsDict.Remove(view.SerialId, out IUiView pageView))
+            foreach (IUiView uiView in _viewStackDic[UIViewType.Page])
+            {
+                uiView.Update(elapse, realElapse);
+            }
+
+            for (var i = 0; i < _viewStackDic[UIViewType.Cache].Count; i++)
+            {
+                IUiView uiView = _viewStackDic[UIViewType.Cache][i];
+                if (!((_autoDestroyDic[uiView] -= elapse) <= 0.0f))
+                    continue;
+                ViewQuit(uiView);
+            }
+        }
+        
+        private  void PageQuit()
+        {
+            if (null == _viewStackDic[UIViewType.Page])
+                return;
+
+            List<IUiView> pages = _viewStackDic[UIViewType.Page];
+            for (int i = pages.Count - 1; i >= 0; i--)
+            {
+                pages[i].Quit();
+                pages[i].Dispose();
+                pages.RemoveAt(i);
+            }
+            _viewStackDic[UIViewType.Page].Clear();
+            _viewStackDic[UIViewType.Page] = null;
+            _viewStackDic.Remove(UIViewType.Page);
+            
+            _autoDestroyDic.Clear();
+            _autoDestroyDic = null;
+        }
+
+        public void OpenPage<T>(params object[] args) where T : IUiView, new()
+        {
+            IUiView uiView;
+            bool needCreate = true;
+            
+            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Page]))
+            {
+                if (_currentPageView == uiView)
+                    return;
+                needCreate = false;
+            }
+            
+            if (InViewList<T>(out uiView, _viewStackDic[UIViewType.Cache]))
+            {
+                _viewStackDic[UIViewType.Cache].Remove(uiView);
+                needCreate = false;
+            }
+
+            if (needCreate)
+            {
+                uiView = new T();
+                string viewName = typeof(T).Name;
+                GameObject prefab = EF.Patch.IsUse ? EF.Load.LoadInYooSync<GameObject>(viewName) 
+                    : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
+                if (!prefab)
+                    D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
+                GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[UIViewType.Page], true);
+                RectTransform rect = uiObj.GetComponent<RectTransform>();
+            
+                rect.anchorMax = Vector3.one;
+                rect.anchorMin = Vector3.zero;
+                rect.sizeDelta = Vector3.zero;
+                rect.localPosition = Vector3.zero;
+        
+                uiView.Bind(rect);
+                uiView.SerialId = ++_serialId;
+                uiObj.name = $"{_serialId} - {viewName}";
+                uiView.Awake();
+            }
+            
+            ViewClose(_currentPageView, false, args);
+            ViewEnable(uiView, args);
+        }
+
+        public void ClosePage<T>(params object[] args) where T : IUiView
+        {
+            if (!InViewList<T>(out IUiView uiView, _viewStackDic[UIViewType.Page]))
+                return;
+
+            if (uiView == _currentPageView)
+            {
+                if (_viewStackDic[UIViewType.Page].Count >= 2)
+                    ViewEnable(_viewStackDic[UIViewType.Page][^2], args);
+                else
+                    _currentPageView = null;
+            }
+            
+            ViewClose(uiView, true, args);
+        }
+        
+        private void ViewEnable(IUiView uiView, params object[] args)
+        {
+            uiView.Enable(args);
+            uiView.View.gameObject.SetActive(true);
+            
+            if (!_viewStackDic[UIViewType.Page].Contains(uiView))
+                _viewStackDic[UIViewType.Page].Add(uiView);
+
+            if (!uiView.View.parent.Equals(_viewParentDic[UIViewType.Page]))
+                uiView.View.transform.SetParent(_viewParentDic[UIViewType.Page], false);
+            
+            _currentPageView = uiView;
+            _autoDestroyDic.Remove(uiView);
+        }
+        
+        private void ViewClose(IUiView uiView, bool cache, params object[] args)
+        {
+            if (null == uiView)
                 return;
             
-            _allCachedViewsDict.Add(pageView.View.name, pageView);
-                
-            if (_currentPageView == view)
+            uiView.DisEnable(args);
+            uiView.View.gameObject.SetActive(false);
+            
+            if (!cache)
+                return;
+
+            _autoDestroyDic[uiView] = 5.0f;
+            D.Log(_autoDestroyDic.Count);
+            _viewStackDic[UIViewType.Cache].Add(uiView);
+            _viewStackDic[UIViewType.Page].Remove(uiView);
+            uiView.View.transform.SetParent(_viewParentDic[UIViewType.Cache], false);
+        }
+
+        private void ViewQuit(IUiView uiView)
+        {
+            uiView.Quit();
+            uiView.Dispose();
+            Destroy(uiView.View.gameObject);
+            _autoDestroyDic.Remove(uiView);
+            _viewStackDic[UIViewType.Cache].Remove(uiView);
+        }
+
+        private bool InViewList<T>(out IUiView uiView, List<IUiView> viewList)
+        {
+            foreach (IUiView view in viewList)
             {
-                _currentPageView = _allUsedViewsDict.Last().Value;
-                
-                _currentPageView.Enable(args);
-                _currentPageView.View.gameObject.SetActive(true);
-                
+                if (typeof(T) != view.GetType())
+                    continue;
+                uiView = view;
+                return true;
             }
-                
-            view.DisEnable(args);
-            view.View.gameObject.SetActive(false);
+            uiView = null; 
+            return false;
         }
 
         #endregion

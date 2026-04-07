@@ -130,9 +130,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8907212501254227161}
-  - component: {fileID: 7740307663783623013}
-  - component: {fileID: 7871027338011351899}
-  - component: {fileID: 6922275092732200115}
   - component: {fileID: 1204617660786741130}
   m_Layer: 5
   m_Name: UiAView
@@ -164,58 +161,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!223 &7740307663783623013
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4107528241821563605}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 1
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
---- !u!114 &7871027338011351899
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4107528241821563605}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 0
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 32
---- !u!225 &6922275092732200115
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4107528241821563605}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!114 &1204617660786741130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,22 +173,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BindDatas:
-  - RealName: Btn_ToB
-    ScriptName: Btn_ToB
-    BindCom: {fileID: 8961536179098024215}
-  - RealName: Btn_Quit
-    ScriptName: Btn_Quit
-    BindCom: {fileID: 6871867135336465635}
-  BindComs: []
-  _namespace: PleaseChangeTheNamespace
-  _comCodePath: Assets/ExampleGame/ScriptsHotfix/_Test/
-  _deleteScript: 0
-  _createPrefab: 0
-  _prefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
-  _packUpBindList: 1
-  _sortByType: 0
-  _sortByNameLength: 1
+  Namespace: PleaseChangeTheNamespace
+  Describe: Please modify the description.
+  ViewType: 2
+  PrefabPath: 
+  ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/
+  CreatePrefab: 0
+  PackUpBindList: 1
+  SortByType: 1
+  SortByNameLength: 1
+  DeleteScript: 0
 --- !u!1 &5967752919626689131
 GameObject:
   m_ObjectHideFlags: 0

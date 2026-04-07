@@ -35,7 +35,7 @@ namespace EFExample
 
         void IUiView.Update(float elapse, float realElapse)
         {
-            Txt_TotalTime.text = $"当前游戏已运行 {EF.Timer.TotalTime} s";
+            Txt_TotalTime.text = $"当前游戏已运行 {EF.Timer.TotalTime} s\t 当前游戏已运行 {realElapse} s";
         }
 
         void IUiView.Quit()
@@ -47,7 +47,7 @@ namespace EFExample
 
         private void OnClickBtn_QuitC()
         {
-            EF.Uii.ClosePage(this, "C page is exit, also pass args to current page.");
+            EF.Uii.ClosePage<UiCView>("C页面退出，向即将被显示的页面B传递参数");
         }
 
         private void OnClickBtn_AddTimeEvent()

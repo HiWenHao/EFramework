@@ -18,6 +18,7 @@ namespace EasyFramework.Manager.UI.Tips
 {
     public partial class TipsView : IUiView
     {
+        bool IUiView.AutoDestroy => false;
         uint IUiView.SerialId { get; set; }
 
         public RectTransform View { get; private set; }

@@ -165,9 +165,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8387134977370622116}
   - component: {fileID: 477459629356981861}
-  - component: {fileID: 1073784661190953765}
-  - component: {fileID: 5444866878085539890}
-  - component: {fileID: 7854680741622142434}
   - component: {fileID: 1101733102904625160}
   m_Layer: 5
   m_Name: PopupView
@@ -204,58 +201,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5817798294381427941}
   m_CullTransparentMesh: 1
---- !u!223 &1073784661190953765
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5817798294381427941}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
---- !u!114 &5444866878085539890
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5817798294381427941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!225 &7854680741622142434
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5817798294381427941}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!114 &1101733102904625160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,13 +213,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BindDatas: []
-  BindComs: []
-  _namespace: PleaseChangeTheNamespace
-  _comCodePath: Assets/ExampleGame/ScriptsHotfix/_Test/
-  _deleteScript: 0
-  _createPrefab: 0
-  _prefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
-  _packUpBindList: 1
-  _sortByType: 0
-  _sortByNameLength: 1
+  Namespace: PleaseChangeTheNamespace
+  Describe: 
+  ViewType: 2
+  PrefabPath: 
+  ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/
+  CreatePrefab: 0
+  PackUpBindList: 1
+  SortByType: 1
+  SortByNameLength: 1
+  DeleteScript: 0

@@ -60,16 +60,16 @@ namespace EFExample
         
         private void OnClickBtn_ToC()
         {
-            EF.Uii.OpenPage(new UiCView(), true);
+            EF.Uii.OpenPage<UiCView>();
         }
         private void OnClickBtn_ToCPop()
         {
-            EF.Uii.OpenPage(new UiCView(), true, false);
-            EF.Uii.ClosePage(this);
+            EF.Uii.OpenPage<UiCView>();
+            EF.Uii.ClosePage<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_BackA()
         {
-            EF.Uii.ClosePage(this);
+            EF.Uii.ClosePage<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_StopAllEffect()
         {

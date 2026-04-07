@@ -384,6 +384,14 @@
     ]
   },
   {
+    "name": "Destroy",
+    "desc": "销毁",
+    "array": [
+      "Destroy",
+      "销毁"
+    ]
+  },
+  {
     "name": "Device",
     "desc": "设备",
     "array": [

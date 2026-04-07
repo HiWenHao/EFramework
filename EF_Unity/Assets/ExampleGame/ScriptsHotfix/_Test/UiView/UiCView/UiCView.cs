@@ -21,6 +21,7 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiCView : IUiView
     {
+        bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Page;
         public RectTransform View { get; private set; }

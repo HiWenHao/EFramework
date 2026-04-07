@@ -115,8 +115,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
 
             EditorGUILayout.Space(6f, true);
+            _builder.AutoDestroy = EditorGUILayout.Toggle(LC.Combine(new []{Lc.Auto, Lc.Destroy}), _builder.AutoDestroy);
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
-            if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
+            if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips or UIViewType.System)
                 _builder.ViewType = UIViewType.Page;
 
             EditorGUILayout.Space(12f, true);
@@ -282,6 +283,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private void AutoBindComponent()
         {
+            if (Application.isPlaying)
+                return;
+            
             _builder.BindDatas.Clear();
             _componentsName.Clear();
             Transform[] children = _builder.gameObject.GetComponentsInChildren<Transform>(true);
@@ -541,10 +545,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             StringBuilder sb = new StringBuilder();
 
             #region view script
-            
+
+            string autoDestroy = _builder.AutoDestroy ? "true" : "false";
             sb.AppendLine(ScriptExplain);
             sb.AppendLine($"    public partial class {_builder.name} : IUiView");
             sb.AppendLine($"    {{");
+            sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");
             sb.AppendLine($"        uint IUiView.SerialId {{ get; set; }}");
             sb.AppendLine($"        public UIViewType ViewType => UIViewType.{_builder.ViewType};");
             sb.AppendLine($"        public RectTransform View {{ get; private set; }}");

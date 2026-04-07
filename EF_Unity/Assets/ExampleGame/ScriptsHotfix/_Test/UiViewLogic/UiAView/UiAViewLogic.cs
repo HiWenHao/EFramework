@@ -35,7 +35,7 @@ namespace EFExample
 
         private void OnClickBtn_ToB()
         {
-            EF.Uii.OpenPage(new UiBView(), true, "向B传递参数");
+            EF.Uii.OpenPage<UiBView>("向B传递参数");
         }
 
         private void OnClickBtn_Quit()

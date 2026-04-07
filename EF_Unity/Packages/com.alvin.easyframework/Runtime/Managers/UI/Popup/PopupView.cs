@@ -20,11 +20,10 @@ namespace EasyFramework.UI.Popup
     /// </summary>
     public partial class PopupView : IUiView
     {
-        public RectTransform View { get; private set; }
-
+        bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
-
         public UIViewType ViewType => UIViewType.Popup;
+        public RectTransform View { get; private set; }
 
         private float _exitTime = 2f; //	弹窗退出时间
 

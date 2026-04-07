@@ -52,6 +52,11 @@ namespace EasyFramework.UI
         public string Describe = "Please modify the description.";
         
         /// <summary>
+        /// 页面自动销毁
+        /// </summary>
+        public bool AutoDestroy = true;
+        
+        /// <summary>
         /// 页面类型
         /// </summary>
         public UIViewType ViewType = UIViewType.Page;
