@@ -29,6 +29,8 @@ namespace EFExample
 
         void IUiView.Quit()
         {
+            
+            D.Warning("A Quit");
         }
 
         #region Button invoke event. Do not change here.不要更改这行 -- Auto

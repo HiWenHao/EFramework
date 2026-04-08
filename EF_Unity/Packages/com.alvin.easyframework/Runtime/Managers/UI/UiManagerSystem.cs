@@ -20,16 +20,6 @@ namespace EasyFramework.Manager.UI
 {
     public partial class UiManager
     {
-        /// <summary>
-        /// 对象激活状态
-        /// </summary>
-        private enum ActiveType
-        {
-            Any,
-            Enable,
-            DisEnable
-        }
-
         void ISingleton.Init()
         {
             _target = new GameObject("UI").transform;
@@ -110,24 +100,18 @@ namespace EasyFramework.Manager.UI
 
                     if (uiViews.Key != UIViewType.Cache || !((_autoDestroyDic[uiView] -= elapse) <= 0.0f))
                         continue;
-                    ViewDestroy(uiView);
+                    ViewDestroy(uiView, uiViews.Value);
                 }
             }
         }
 
         void ISingleton.Quit()
         {
-            _autoDestroyDic.Clear();
-            _autoDestroyDic = null;
-
             foreach (var uiViews in _viewStackDic)
             {
-                for (var i = 0; i < uiViews.Value.Count; i++)
+                for (int i = uiViews.Value.Count - 1; i >= 0; i--)
                 {
-                    IUiView uiView = uiViews.Value[i];
-                    uiView.Quit();
-                    uiView.Dispose();
-                    uiViews.Value.RemoveAt(i);
+                    ViewDestroy(uiViews.Value[i], uiViews.Value);
                 }
 
                 uiViews.Value.Clear();
@@ -135,10 +119,15 @@ namespace EasyFramework.Manager.UI
                 Destroy(_viewParentDic[uiViews.Key].gameObject);
             }
 
+            _currentPageView = null;
+            
             _viewStackDic.Clear();
             _viewStackDic = null;
             _viewParentDic.Clear();
             _viewParentDic = null;
+
+            _autoDestroyDic.Clear();
+            _autoDestroyDic = null;
 
             Destroy(UICamera.gameObject);
             UICamera = null;
@@ -161,6 +150,8 @@ namespace EasyFramework.Manager.UI
                 ? EF.Load.LoadInYooSync<GameObject>(viewName)
                 : EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
             if (!prefab)
+                prefab = EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
+            if (!prefab)
                 D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
             GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[uiView.ViewType], true);
             RectTransform rect = uiObj.GetComponent<RectTransform>();
@@ -176,15 +167,16 @@ namespace EasyFramework.Manager.UI
             return uiView;
         }
 
-        private void ViewDestroy(IUiView uiView)
+        private void ViewDestroy(IUiView uiView, List<IUiView> viewList)
         {
             uiView.Quit();
             uiView.Dispose();
             Destroy(uiView.View.gameObject);
+            viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
-            _viewStackDic[UIViewType.Cache].Remove(uiView);
         }
 
+        //  displaceCurrentPage 用来记录是否替换当前所展示的UI页面
         private void ViewEnable(IUiView uiView, bool displaceCurrentPage, params object[] args)
         {
             if (!_viewStackDic[uiView.ViewType].Contains(uiView))
@@ -202,6 +194,7 @@ namespace EasyFramework.Manager.UI
             uiView.View.gameObject.SetActive(true);
         }
 
+        //  cache 用来判断是否需要将页面进入销毁倒计时
         private void ViewClose(IUiView uiView, bool cache, params object[] args)
         {
             if (null == uiView)
@@ -216,6 +209,12 @@ namespace EasyFramework.Manager.UI
             if (!cache)
                 return;
 
+            if (_viewStackDic[UIViewType.Cache].Contains(uiView))
+            {
+                D.Warning(uiView.GetType().Name);
+                return;
+            }
+            
             _autoDestroyDic[uiView] = AutoDestroyTimer;
             _viewStackDic[UIViewType.Cache].Add(uiView);
             _viewStackDic[uiView.ViewType].Remove(uiView);
@@ -227,8 +226,7 @@ namespace EasyFramework.Manager.UI
         /// </summary>
         /// <param name="uiView">视窗</param>
         /// <param name="viewType">视窗类型</param>
-        /// <param name="active">视窗对象激活状态</param>
-        private bool InViewList<T>(out IUiView uiView, UIViewType viewType, ActiveType active)
+        private bool InViewList<T>(out IUiView uiView, UIViewType viewType)
         {
             foreach (IUiView view in _viewStackDic[viewType])
             {
@@ -236,10 +234,7 @@ namespace EasyFramework.Manager.UI
                     continue;
 
                 uiView = view;
-                if (active == ActiveType.Any ||
-                    (active == ActiveType.Enable && uiView.View.gameObject.activeSelf) ||
-                    (active == ActiveType.DisEnable && !uiView.View.gameObject.activeSelf))
-                    return true;
+                return true;
             }
 
             uiView = null;
@@ -258,14 +253,14 @@ namespace EasyFramework.Manager.UI
             IUiView uiView;
             bool needCreate = true;
 
-            if (InViewList<T>(out uiView, UIViewType.Page, ActiveType.Any))
+            if (InViewList<T>(out uiView, UIViewType.Page))
             {
                 if (_currentPageView == uiView)
                     return;
                 needCreate = false;
             }
 
-            if (InViewList<T>(out uiView, UIViewType.Cache, ActiveType.Any))
+            if (InViewList<T>(out uiView, UIViewType.Cache))
             {
                 _viewStackDic[UIViewType.Cache].Remove(uiView);
                 needCreate = false;
@@ -284,7 +279,7 @@ namespace EasyFramework.Manager.UI
         /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
         public IUiView GetPageView<T>() where T : IUiView
         {
-            InViewList<T>(out IUiView uiView, UIViewType.Page, ActiveType.Any);
+            InViewList<T>(out IUiView uiView, UIViewType.Page);
             return uiView;
         }
 
@@ -293,27 +288,11 @@ namespace EasyFramework.Manager.UI
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void ClosePageView<T>(params object[] args) where T : IUiView
-        {
-            if (!InViewList<T>(out IUiView uiView, UIViewType.Page, ActiveType.Any))
-                return;
-
-            if (uiView == _currentPageView)
-            {
-                if (_viewStackDic[UIViewType.Page].Count >= 2)
-                    ViewEnable(_viewStackDic[UIViewType.Page][^2], true, args);
-                else
-                    _currentPageView = null;
-            }
-
-            ViewClose(uiView, true, args);
-        }
-
         public void CloseView<T>(params object[] args) where T : IUiView
         {
             for (int i = 5; i > 0; i--)
             {
-                if (!InViewList<T>(out IUiView uiView, (UIViewType)i, ActiveType.Enable))
+                if (!InViewList<T>(out IUiView uiView, (UIViewType)i))
                     continue;
 
                 if (uiView.ViewType == UIViewType.Page)
@@ -329,6 +308,11 @@ namespace EasyFramework.Manager.UI
             }
         }
 
+        /// <summary>
+        /// 关闭视窗
+        /// </summary>
+        /// <param name="uiView">要被关闭的视窗</param>
+        /// <param name="args">参数</param>
         public void CloseView(IUiView uiView, params object[] args)
         {
             ViewClose(uiView, true, args);
@@ -344,8 +328,7 @@ namespace EasyFramework.Manager.UI
         /// <param name="contents">显示内容</param>
         public void ShowPopupView(string contents)
         {
-            IUiView view;
-            if (!InViewList<PopupView>(out view, UIViewType.Cache, ActiveType.Any))
+            if (!InViewList<PopupView>(out IUiView view, UIViewType.Cache))
             {
                 if (_viewStackDic[UIViewType.Popup].Count >= PopupViewMax)
                 {

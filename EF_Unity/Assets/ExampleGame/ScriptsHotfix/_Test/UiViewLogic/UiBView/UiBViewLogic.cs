@@ -48,6 +48,7 @@ namespace EFExample
         void IUiView.Quit()
         {
             Sld_Volum.onValueChanged.RemoveAllListeners();
+            D.Warning("B quit");
         }
 
         #region Button invoke event. Do not change here.不要更改这行 -- Auto
@@ -65,11 +66,11 @@ namespace EFExample
         private void OnClickBtn_ToCPop()
         {
             EF.Uii.OpenPage<UiCView>();
-            EF.Uii.ClosePageView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            EF.Uii.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_BackA()
         {
-            EF.Uii.ClosePageView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            EF.Uii.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_StopAllEffect()
         {

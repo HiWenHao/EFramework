@@ -21,16 +21,6 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiAView : IUiView
     {
-        public static void Open(params object[] args)
-        {
-            EF.Uii.OpenPage<UiAView>(args);
-        }
-
-        public static void Close(params object[] args)
-        {
-            EF.Uii.ClosePageView<UiAView>(args);
-        }
-        
         bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Page;
