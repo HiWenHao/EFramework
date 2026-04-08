@@ -46,9 +46,5 @@ namespace EasyFramework.Manager.UI
         /// </summary>
         Popup,
         
-        /// <summary>
-        /// 系统级内容
-        /// </summary>
-        System
     }
 }

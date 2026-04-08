@@ -17,7 +17,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
     /// <summary>
     /// 资源总览编辑器
     /// </summary>
-    internal class AssetOveriewEditor : EditorWindow
+    internal class AssetOverviewEditor : EditorWindow
     {
         private int _tabIndex = 0;
 
@@ -30,7 +30,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         [MenuItem("EFTools/Tools/Asset Checker", false, priority = 100)]
         public static void ShowEditor()
         {
-            AssetOveriewEditor assetOverview = GetWindow<AssetOveriewEditor>("AssetChecker");
+            AssetOverviewEditor assetOverview = GetWindow<AssetOverviewEditor>("AssetChecker");
             assetOverview.minSize = new Vector2(800f, 130f);
             assetOverview.Initialize();
             assetOverview.Show();

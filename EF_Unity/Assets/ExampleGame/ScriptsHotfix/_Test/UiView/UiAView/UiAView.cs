@@ -28,7 +28,7 @@ namespace EFExample
 
         public static void Close(params object[] args)
         {
-            EF.Uii.ClosePage<UiAView>(args);
+            EF.Uii.ClosePageView<UiAView>(args);
         }
         
         bool IUiView.AutoDestroy => true;

@@ -117,7 +117,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.Space(6f, true);
             _builder.AutoDestroy = EditorGUILayout.Toggle(LC.Combine(new []{Lc.Auto, Lc.Destroy}), _builder.AutoDestroy);
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
-            if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips or UIViewType.System)
+            if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
                 _builder.ViewType = UIViewType.Page;
 
             EditorGUILayout.Space(12f, true);

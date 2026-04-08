@@ -35,7 +35,11 @@ namespace EasyFramework.UI.Popup
         {
             if ((_exitTime -= elapse) < 0.0f)
             {
-                View.gameObject.SetActive(false);
+                //View.gameObject.SetActive(false);
+                
+                //EF.Uii.CloseView(this);
+                
+                Close();
                 return;
             }
 

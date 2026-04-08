@@ -31,16 +31,11 @@ namespace EasyFramework.Manager.UI
 
         #region Popup
 
-        private const int PopupViewMax = 5; //	弹窗最大数量
         private int _popupIndex; //	弹窗当前被使用的索引
-        private GameObject _popupGameObject; //	弹窗预制件
-        private List<IUiView> _popupViewsList; //	弹窗列表
+        private const int PopupViewMax = 5; //	弹窗最大数量
 
         #endregion
-
-        private Dictionary<uint, IUiView> _allUsedViewsDict; //	正在被使用的全部UI视窗        /晚些处理，删除
-
-
+        
         /// <summary> 自动销毁时间 </summary>
         private const float AutoDestroyTimer = 10.0f;
 
@@ -52,32 +47,6 @@ namespace EasyFramework.Manager.UI
         
         /// <summary> 内存中存在的全部UI视窗 </summary>
         private Dictionary<UIViewType, List<IUiView>> _viewStackDic;
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
     }
 }
