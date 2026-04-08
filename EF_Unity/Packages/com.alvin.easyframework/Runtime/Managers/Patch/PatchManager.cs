@@ -9,10 +9,10 @@
  * ===============================================
  */
 
-using EasyFramework.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using EasyFramework.Manager.UI.Tips;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;
@@ -34,7 +34,7 @@ namespace EasyFramework.Managers
         /// 启用可寻址资源定位
         /// </summary>
         public bool EnableAddressable => _package.GetPackageDetails().EnableAddressable;
-        
+
         /// <summary>
         /// The patch update flow.
         /// <para>补丁更新流程</para>
@@ -64,12 +64,8 @@ namespace EasyFramework.Managers
 
         private Transform _patchUpdater;
         private RectTransform _rectUpdater;
-        private RectTransform _rectHintsBox;
-        private RectTransform _tranMessgeBox;
-        private Text _txtHints;
         private Text _txtUpdaterTips;
         private Slider _sldUpdaterSlider;
-        private List<Button> _allButtons;
 
         private string _packageVersion;
         private ResourcePackage _package;
@@ -90,7 +86,7 @@ namespace EasyFramework.Managers
         void ISingleton.Quit()
         {
             IsUse = false;
-            
+
             _package = null;
             _downloader = null;
 
@@ -125,6 +121,7 @@ namespace EasyFramework.Managers
             {
                 _package = YooAssets.GetPackage(packageName);
             }
+
             EF.Load.AddResourcePackage(_package);
 
             _updateStateQueue.Clear();
@@ -142,6 +139,7 @@ namespace EasyFramework.Managers
         }
 
         #region Run progress. 跑更新流程
+
         void Run(EUpdateFlow nextFlow)
         {
             //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {_updateStateQueue.Count}");
@@ -153,9 +151,18 @@ namespace EasyFramework.Managers
                 IsUse = true;
                 _ieCurrentIE = null;
                 if (_patchUpdater)
-                    _tranMessgeBox.gameObject.SetActive(true);
+                {
+                    EF.Uii.ShowTipsView(
+                        $"更新完成",
+                        new TipsViewExtraData()
+                        {
+                            ConfirmName = "好的",
+                            ConfirmCallBack = UpdateDone,
+                        });
+                }
                 else
                     _callback?.Invoke();
+
                 return;
             }
 
@@ -165,15 +172,9 @@ namespace EasyFramework.Managers
 
         void UpdateDone()
         {
-            _txtHints = null;
             _rectUpdater = null;
-            _rectHintsBox = null;
-            _tranMessgeBox = null;
             _txtUpdaterTips = null;
             _sldUpdaterSlider = null;
-
-            _allButtons.ReleaseAndRemoveEvent();
-            _allButtons = null;
 
             Object.Destroy(_patchUpdater.gameObject);
             _patchUpdater = null;
@@ -188,6 +189,7 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Setting config Initialize.初始化更新设置
+
         IEnumerator Initialize()
         {
             InitializeParameters initParameters = null;
@@ -282,9 +284,11 @@ namespace EasyFramework.Managers
                 return $"{_fallbackHostServer}/{fileName}";
             }
         }
+
         #endregion
 
         #region Update the StaticViersion file.更新静态版本文件
+
         /// <summary>
         /// Update the StaticViersion file.更新静态版本文件
         /// </summary>
@@ -313,6 +317,7 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Update the GetManifest file.更新配置文件清单
+
         /// <summary>
         /// Update the Manifest file.更新配置文件清单
         /// </summary>
@@ -336,6 +341,7 @@ namespace EasyFramework.Managers
         #endregion
 
         #region Create one downloader.创建一个下载器
+
         /// <summary>
         /// CreateTimeEvent one downloader.创建一个下载器
         /// </summary>
@@ -357,25 +363,28 @@ namespace EasyFramework.Managers
                         .Instantiate(
                             EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater"))
                         .transform;
-
-                    _txtHints = EF.Tool.Find<Text>(_patchUpdater, "Txt_Hints");
+                    Canvas canvas = _patchUpdater.GetComponent<Canvas>();
+                    canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    canvas.worldCamera = EF.Uii.UICamera;
                     _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
-                    _rectHintsBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_HintsBox");
-                    _tranMessgeBox = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_MessgeBox");
-                    EF.Tool.Find<Button>(_patchUpdater, "Btn_True")
-                        .RegisterInListAndBindEvent(OnClickDownloadBegin, ref _allButtons);
-                    EF.Tool.Find<Button>(_patchUpdater, "Btn_False")
-                        .RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
                 }
 
-                _txtHints.text =
-                    $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。";
+                EF.Uii.ShowTipsView(
+                    $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
+                    new TipsViewExtraData()
+                    {
+                        ConfirmName = "下载",
+                        CancelName = "取消",
+                        ConfirmCallBack = OnClickDownloadBegin,
+                        CancelCallBack = UpdateDone
+                    });
             }
         }
 
         #endregion
 
         #region Download service pack.下载补丁包
+
         /// <summary>
         /// Download service pack.下载补丁包
         /// </summary>
@@ -385,15 +394,13 @@ namespace EasyFramework.Managers
             {
                 _txtUpdaterTips = EF.Tool.Find<Text>(_patchUpdater, "Txt_UpdaterTips");
                 _sldUpdaterSlider = EF.Tool.Find<Slider>(_patchUpdater, "Sld_UpdaterSlider");
-
-                EF.Tool.Find<Button>(_patchUpdater, "Btn_Done").RegisterInListAndBindEvent(UpdateDone, ref _allButtons);
             }
 
             //注册下载回调
-            //_downloader.DownloadErrorCallback = OnDownloadErrorFunction;
-            //_downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
-            //_downloader.DownloadFinishCallback = OnDownloadOverFunction;
-            //_downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
+            _downloader.DownloadErrorCallback = OnDownloadErrorFunction;
+            _downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
+            _downloader.DownloadFinishCallback = OnDownloadOverFunction;
+            _downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
 
             //开启下载
             _downloader.BeginDownload();
@@ -406,29 +413,31 @@ namespace EasyFramework.Managers
             Run(EUpdateFlow.Done);
         }
 
-       private void OnDownloadErrorFunction(DownloadErrorData errorData)
-       {
-           D.Error($"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
-       }
+        private void OnDownloadErrorFunction(DownloadErrorData errorData)
+        {
+            D.Error(
+                $"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
+        }
 
-       private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
-       {
-           _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
+        private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
+        {
+            _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
 
-           string currentSizeMB = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
-           string totalSizeMB = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
-           _txtUpdaterTips.text = $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
-       }
+            string currentSizeMB = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
+            string totalSizeMB = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
+            _txtUpdaterTips.text =
+                $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
+        }
 
-       private void OnStartDownloadFileFunction(DownloadFileData fileData)
-       {
-           D.Error($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
-       }
+        private void OnStartDownloadFileFunction(DownloadFileData fileData)
+        {
+            D.Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
+        }
 
-       private void OnDownloadOverFunction(DownloaderFinishData finishData)
-       {
-           D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
-       }
+        private void OnDownloadOverFunction(DownloaderFinishData finishData)
+        {
+            D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
+        }
 
         #endregion
 
@@ -438,7 +447,6 @@ namespace EasyFramework.Managers
         void OnClickDownloadBegin()
         {
             _rectUpdater.gameObject.SetActive(true);
-            _rectHintsBox.gameObject.SetActive(false);
             Run(EUpdateFlow.BeginDownload);
         }
     }

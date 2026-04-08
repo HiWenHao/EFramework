@@ -61,11 +61,11 @@ namespace EFExample
         
         private void OnClickBtn_ToC()
         {
-            EF.Uii.OpenPage<UiCView>();
+            EF.Uii.OpenPageView<UiCView>();
         }
         private void OnClickBtn_ToCPop()
         {
-            EF.Uii.OpenPage<UiCView>();
+            EF.Uii.OpenPageView<UiCView>();
             EF.Uii.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_BackA()

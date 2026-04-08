@@ -22,7 +22,7 @@ namespace EasyFramework.UI.Popup
     {
         public static void Open(params object[] args)
         {
-            EF.Uii.OpenPage<PopupView>(args);
+            EF.Uii.OpenPageView<PopupView>(args);
         }
 
         public static void Close(params object[] args)

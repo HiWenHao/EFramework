@@ -241,14 +241,12 @@ namespace EasyFramework.Manager.UI
             return false;
         }
 
-        #region PageView
-
         /// <summary>
         /// 打开页面
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void OpenPage<T>(params object[] args) where T : IUiView, new()
+        public void OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
             IUiView uiView;
             bool needCreate = true;
@@ -284,6 +282,37 @@ namespace EasyFramework.Manager.UI
         }
 
         /// <summary>
+        /// 显示通用弹窗
+        /// </summary>
+        /// <param name="contents">显示内容</param>
+        public void ShowPopupView(string contents)
+        {
+            if (!InViewList<PopupView>(out IUiView view, UIViewType.Cache))
+            {
+                if (_viewStackDic[UIViewType.Popup].Count >= PopupViewMax)
+                {
+                    if (_popupIndex >= _viewStackDic[UIViewType.Popup].Count)
+                        _popupIndex = 0;
+                    view = _viewStackDic[UIViewType.Popup][_popupIndex++];
+                }
+            }
+
+            view ??= ViewCreate<PopupView>();
+            ViewEnable(view, false, contents);
+        }
+
+        /// <summary>
+        /// 显示通用提示窗
+        /// </summary>
+        /// <param name="contents">显示内容</param>
+        /// <param name="viewExtraData">附加数据</param>
+        public void ShowTipsView(string contents, TipsViewExtraData viewExtraData)
+        {
+            _tipsView ??= ViewCreate<TipsView>();
+            ViewEnable(_tipsView, false, contents, viewExtraData);
+        }
+        
+        /// <summary>
         /// 关闭UI视窗
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
@@ -318,45 +347,5 @@ namespace EasyFramework.Manager.UI
             ViewClose(uiView, true, args);
         }
 
-        #endregion
-
-        #region Pooup
-
-        /// <summary>
-        /// 显示通用弹窗
-        /// </summary>
-        /// <param name="contents">显示内容</param>
-        public void ShowPopupView(string contents)
-        {
-            if (!InViewList<PopupView>(out IUiView view, UIViewType.Cache))
-            {
-                if (_viewStackDic[UIViewType.Popup].Count >= PopupViewMax)
-                {
-                    if (_popupIndex >= _viewStackDic[UIViewType.Popup].Count)
-                        _popupIndex = 0;
-                    view = _viewStackDic[UIViewType.Popup][_popupIndex++];
-                }
-            }
-
-            view ??= ViewCreate<PopupView>();
-            ViewEnable(view, false, contents);
-        }
-
-        #endregion
-
-        #region TipsView
-
-        /// <summary>
-        /// 显示通用提示窗
-        /// </summary>
-        /// <param name="contents">显示内容</param>
-        /// <param name="viewExtraData">附加数据</param>
-        public void ShowTips(string contents, TipsViewExtraData viewExtraData)
-        {
-            _tipsView ??= ViewCreate<TipsView>();
-            ViewEnable(_tipsView, false, viewExtraData);
-        }
-
-        #endregion
     }
 }
