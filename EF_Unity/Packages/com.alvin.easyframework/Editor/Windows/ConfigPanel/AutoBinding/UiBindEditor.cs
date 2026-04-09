@@ -124,64 +124,63 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             _builder.CreatePrefab = GUILayout.Toggle(_builder.CreatePrefab,
                     _builder.CreatePrefab
-                        ? LC.Combine(Lc.Create) + " UI " + LC.Combine(Lc.Prefab)
-                        : LC.Combine(new Lc[] { Lc.No, Lc.Create }) + " UI " + LC.Combine(Lc.Prefab))
+                        ? LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path })
+                        : LC.Combine(new Lc[] { Lc.Create, Lc.Prefab }))
                 ;
             if (_builder.CreatePrefab)
             {
                 EditorGUILayout.LabelField(_builder.PrefabPath);
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
-                {
-                    string folder = Path.Combine(Application.dataPath, _builder.PrefabPath);
-                    if (!Directory.Exists(folder))
-                    {
-                        folder = Application.dataPath;
-                    }
-
-                    string path =
-                        EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-                    }
-                }
-
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-                {
-                    _builder.PrefabPath = ProjectUtility.Path.UIPrefabPath;
-                }
-
-                EditorGUILayout.EndHorizontal();
+                // EditorGUILayout.BeginHorizontal();
+                // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
+                // {
+                //     string folder = Path.Combine(Application.dataPath, _builder.PrefabPath);
+                //     if (!Directory.Exists(folder))
+                //     {
+                //         folder = Application.dataPath;
+                //     }
+                //
+                //     string path =
+                //         EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
+                //     if (!string.IsNullOrEmpty(path))
+                //     {
+                //         _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                //     }
+                // }
+                //
+                // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
+                // {
+                //     _builder.PrefabPath = ProjectUtility.Path.UIPrefabPath;
+                // }
+                //
+                // EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.Space(12f, true);
 
-            EditorGUILayout.LabelField(LC.Combine(Lc.Default) + " UI " +
-                                       LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }));
+            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }));
             EditorGUILayout.LabelField(_builder.ScriptPath);
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
-            {
-                string folder = Application.dataPath + "/" + _builder.ScriptPath;
-                if (!Directory.Exists(folder))
-                {
-                    folder = Application.dataPath;
-                }
-
-                string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
-                if (!string.IsNullOrEmpty(path))
-                {
-                    _builder.ScriptPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-                }
-            }
-
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-            {
-                _builder.ScriptPath = ProjectUtility.Path.UICodePath;
-            }
-
-            EditorGUILayout.EndHorizontal();
+            // EditorGUILayout.BeginHorizontal();
+            // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
+            // {
+            //     string folder = Application.dataPath + "/" + _builder.ScriptPath;
+            //     if (!Directory.Exists(folder))
+            //     {
+            //         folder = Application.dataPath;
+            //     }
+            //
+            //     string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
+            //     if (!string.IsNullOrEmpty(path))
+            //     {
+            //         _builder.ScriptPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+            //     }
+            // }
+            //
+            // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
+            // {
+            //     _builder.ScriptPath = ProjectUtility.Path.UICodePath;
+            // }
+            //
+            // EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
@@ -477,9 +476,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             string codePath = !string.IsNullOrEmpty(_builder.ScriptPath)
                 ? _builder.ScriptPath
                 : ProjectUtility.Path.UICodePath;
-            
-            string viewPath = Path.Combine(codePath, "UiView", $"{_builder.name}");
-            string logicPath = Path.Combine(codePath, "UiViewLogic", $"{_builder.name}");
+
+            string className = _builder.name;
+            string viewPath = Path.Combine(codePath, "UiView", $"{className}");
+            string logicPath = Path.Combine(codePath, "UiViewLogic", $"{className}");
             
             if (!Directory.Exists(viewPath))
                 Directory.CreateDirectory(viewPath);
@@ -517,8 +517,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 }
             }
 
-            viewPath = Path.Combine(viewPath, $"{_builder.name}.cs");
-            logicPath = Path.Combine(logicPath, $"{_builder.name}Logic.cs");
+            viewPath = Path.Combine(viewPath, $"{className}.cs");
+            logicPath = Path.Combine(logicPath, $"{className}Logic.cs");
 
             #region Common start
             
@@ -548,8 +548,18 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             string autoDestroy = _builder.AutoDestroy ? "true" : "false";
             sb.AppendLine(ScriptExplain);
-            sb.AppendLine($"    public partial class {_builder.name} : IUiView");
+            sb.AppendLine($"    public partial class {className} : IUiView");
             sb.AppendLine($"    {{");
+            sb.AppendLine($"        public static {className} Open(params object[] args)");
+            sb.AppendLine($"        {{");
+            sb.AppendLine($"            return EF.Uii.OpenPageView<{className}>(args);");
+            sb.AppendLine($"        }}");
+            sb.AppendLine();
+            sb.AppendLine($"        public static bool Close(params object[] args)");
+            sb.AppendLine($"        {{");
+            sb.AppendLine($"            return EF.Uii.CloseView<{className}>(args);");
+            sb.AppendLine($"        }}");
+            sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");
             sb.AppendLine($"        uint IUiView.SerialId {{ get; set; }}");
             sb.AppendLine($"        public UIViewType ViewType => UIViewType.{_builder.ViewType};");
@@ -600,14 +610,15 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             File.WriteAllText(viewPath, commonSb + sb.ToString(), Encoding.UTF8);
 
             #endregion
-            
+
             sb.Clear();
+            #region Logic script
             if (!File.Exists(logicPath))
             {
                 sb.AppendLine($"    /// <summary>");
                 sb.AppendLine($"    /// {_builder.Describe}");
                 sb.AppendLine($"    /// </summary>");
-                sb.AppendLine($"    public partial class {_builder.name}");
+                sb.AppendLine($"    public partial class {className}");
                 sb.AppendLine($"    {{");
                 sb.AppendLine($"        void IUiView.Awake()");
                 sb.AppendLine($"        {{");
@@ -693,6 +704,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 logicList.Clear();
                 buttonFunction.Clear();
             }
+            #endregion
 
             sb.Clear();
             commonSb.Clear();

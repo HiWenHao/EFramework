@@ -195,10 +195,10 @@ namespace EasyFramework.Manager.UI
         }
 
         //  cache 用来判断是否需要将页面进入销毁倒计时
-        private void ViewClose(IUiView uiView, bool cache, params object[] args)
+        private bool ViewClose(IUiView uiView, bool cache, params object[] args)
         {
             if (null == uiView)
-                return;
+                return false;
 
             if (uiView.View.gameObject.activeSelf)
             {
@@ -206,19 +206,15 @@ namespace EasyFramework.Manager.UI
                 uiView.View.gameObject.SetActive(false);
             }
 
-            if (!cache)
-                return;
-
-            if (_viewStackDic[UIViewType.Cache].Contains(uiView))
-            {
-                D.Warning(uiView.GetType().Name);
-                return;
-            }
+            if (!cache || _viewStackDic[UIViewType.Cache].Contains(uiView))
+                return true;
             
             _autoDestroyDic[uiView] = AutoDestroyTimer;
             _viewStackDic[UIViewType.Cache].Add(uiView);
             _viewStackDic[uiView.ViewType].Remove(uiView);
             uiView.View.transform.SetParent(_viewParentDic[UIViewType.Cache], false);
+            
+            return true;
         }
 
         /// <summary>
@@ -246,7 +242,7 @@ namespace EasyFramework.Manager.UI
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void OpenPageView<T>(params object[] args) where T : IUiView, new()
+        public T OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
             IUiView uiView;
             bool needCreate = true;
@@ -254,7 +250,7 @@ namespace EasyFramework.Manager.UI
             if (InViewList<T>(out uiView, UIViewType.Page))
             {
                 if (_currentPageView == uiView)
-                    return;
+                    return (T)uiView;
                 needCreate = false;
             }
 
@@ -269,16 +265,18 @@ namespace EasyFramework.Manager.UI
 
             ViewClose(_currentPageView, false, args);
             ViewEnable(uiView, true, args);
+            
+            return (T)uiView;
         }
 
         /// <summary>
         /// 获取视窗
         /// </summary>
         /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
-        public IUiView GetPageView<T>() where T : IUiView
+        public T GetPageView<T>() where T : IUiView
         {
             InViewList<T>(out IUiView uiView, UIViewType.Page);
-            return uiView;
+            return (T)uiView;
         }
 
         /// <summary>
@@ -317,7 +315,7 @@ namespace EasyFramework.Manager.UI
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void CloseView<T>(params object[] args) where T : IUiView
+        public bool CloseView<T>(params object[] args) where T : IUiView
         {
             for (int i = 5; i > 0; i--)
             {
@@ -332,19 +330,21 @@ namespace EasyFramework.Manager.UI
                         _currentPageView = null;
                 }
                 
-                ViewClose(uiView, true, args);
-                return;
+                return ViewClose(uiView, true, args);
             }
-        }
 
+            return false;
+        }
+        
         /// <summary>
         /// 关闭视窗
         /// </summary>
         /// <param name="uiView">要被关闭的视窗</param>
         /// <param name="args">参数</param>
-        public void CloseView(IUiView uiView, params object[] args)
+        /// <returns>是否关闭成功</returns>
+        public bool CloseView(IUiView uiView, params object[] args)
         {
-            ViewClose(uiView, true, args);
+            return ViewClose(uiView, true, args);
         }
 
     }
