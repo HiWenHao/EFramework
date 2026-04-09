@@ -38,7 +38,7 @@ namespace EasyFramework.Edit.SpriteTools
             _target = (SpriteCollection)target;
             _atlasFolder = serializedObject.FindProperty("_atlasFolder");
             _targetObjects = serializedObject.FindProperty("_objects");
-            _frameworkAtlasFolder = ProjectUtility.Path.AtlasFolder;
+            _frameworkAtlasFolder = ConfigManager.Path.AtlasFolder;
 
             _allOverwrite = true;
             _hasPreview = new List<bool>();

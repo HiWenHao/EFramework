@@ -78,7 +78,7 @@ namespace EasyFramework.Edit.MenuToolkit
                     DirectoryInfo directoryInfo = new DirectoryInfo(path);
                     string pt = directoryInfo.FullName.Remove(
                         directoryInfo.FullName.IndexOf("Assets", StringComparison.Ordinal));
-                    pt += ProjectUtility.Path.ExtractPath + directoryInfo.Name;
+                    pt += ConfigManager.Path.ExtractPath + directoryInfo.Name;
 
                     if (Directory.Exists(pt))
                         Directory.Delete(pt, true);
@@ -107,8 +107,8 @@ namespace EasyFramework.Edit.MenuToolkit
                         continue;
                     }
 
-                    if (!Directory.Exists(ProjectUtility.Path.ExtractPath + "Extract"))
-                        Directory.CreateDirectory(ProjectUtility.Path.ExtractPath + "Extract");
+                    if (!Directory.Exists(ConfigManager.Path.ExtractPath + "Extract"))
+                        Directory.CreateDirectory(ConfigManager.Path.ExtractPath + "Extract");
                     ExtractClips(clip, "Extract");
                 }
             }
@@ -119,7 +119,7 @@ namespace EasyFramework.Edit.MenuToolkit
             AnimationClip tempAC = new AnimationClip();
             EditorUtility.CopySerialized(clip, tempAC);
             CullCurves(tempAC);
-            string path = ProjectUtility.Path.ExtractPath + directoryName + "/" +
+            string path = ConfigManager.Path.ExtractPath + directoryName + "/" +
                           EditorUtils.RemovePunctuation(tempAC.name);
             int clipIndex = 0;
             while (File.Exists($"{path}_{clipIndex}.anim"))

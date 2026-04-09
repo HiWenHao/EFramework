@@ -31,6 +31,7 @@ namespace EasyFramework.UI.Popup
         }
 
         bool IUiView.AutoDestroy => true;
+        float IUiView.AutoDestroyCountdown => 10.0f;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Popup;
         public RectTransform View { get; private set; }

@@ -288,6 +288,14 @@
     ]
   },
   {
+    "name": "Countdown",
+    "desc": "倒计时",
+    "array": [
+      "Countdown",
+      "倒计时"
+    ]
+  },
+  {
     "name": "Catalogue",
     "desc": "目录",
     "array": [

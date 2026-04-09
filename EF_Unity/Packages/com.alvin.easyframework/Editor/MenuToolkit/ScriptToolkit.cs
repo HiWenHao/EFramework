@@ -63,9 +63,9 @@ namespace EasyFramework.Edit.MenuToolkit
                 if (contents.Length < 10)
                     continue;
 
-                string configName = ProjectUtility.Project.ScriptAuthor;
+                string configName = ConfigManager.Project.ScriptAuthor;
                 string authorName =
-                    EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
+                    EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
                 authorName = string.IsNullOrEmpty(configName) || configName.Equals("Default")
                     ? authorName
                     : configName;
@@ -73,7 +73,7 @@ namespace EasyFramework.Edit.MenuToolkit
                     continue;
                 contents[5] = $" * ModifyAuthor:  {authorName}";
                 contents[6] = $" * ModifyTime:    {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                contents[7] = $" * ScriptVersion: {ProjectUtility.Project.ScriptVersion}";
+                contents[7] = $" * ScriptVersion: {ConfigManager.Project.ScriptVersion}";
 
                 File.WriteAllLines(absPath, contents, Encoding.UTF8);
             }

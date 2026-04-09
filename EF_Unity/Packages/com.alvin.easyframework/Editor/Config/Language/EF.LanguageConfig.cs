@@ -53,7 +53,7 @@ namespace EasyFramework.Edit
                 return;
 
             m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
-            m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             DisPlayLanguage = (ELanguage)m_currentIndex;
             JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
             m_Dictionary = new Dictionary<string, string>();
@@ -98,7 +98,7 @@ namespace EasyFramework.Edit
          */
         private static void ChangeLanguage()
         {
-            EditorPrefs.SetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", m_currentIndex);
+            EditorPrefs.SetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", m_currentIndex);
 
             string lcPath = Path.Combine(Utility.Path.GetEfPath(), "Runtime/Config/");
             try
@@ -123,7 +123,7 @@ namespace EasyFramework.Edit
         [MenuItem("EFTools/Utility/Update Edit Language", priority = 10002)]
         private static void UpdateLanguageConfig()
         {
-            m_currentIndex = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+            m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             if (string.IsNullOrEmpty(m_AassetsPath))
                 m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
 

@@ -30,7 +30,9 @@ namespace EasyFramework.Edit.Create
             if (rect == null) 
                 return;
             
-            rect.gameObject.AddComponent<UiBinding>();
+            UiBinding uiBinding = rect.gameObject.AddComponent<UiBinding>();
+            uiBinding.Namespace = ConfigManager.UiBinding.Namespace;
+            uiBinding.PrefabPath = ConfigManager.Path.UIPrefabPath;
             UnityEngine.Object.DestroyImmediate(rect.GetComponent<Image>());
 
             rect.anchorMax = Vector2.one;

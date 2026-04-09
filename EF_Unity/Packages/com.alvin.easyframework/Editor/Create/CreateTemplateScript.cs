@@ -94,7 +94,7 @@ namespace EasyFramework.Edit.Create
                 sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 sw.WriteLine(" * ModifyAuthor:  " + authorName);
                 sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                sw.WriteLine(" * ScriptVersion: " + ProjectUtility.Project.ScriptVersion);
+                sw.WriteLine(" * ScriptVersion: " + ConfigManager.Project.ScriptVersion);
                 sw.WriteLine(" * ===============================================");
                 sw.WriteLine(" */");
                 sw.WriteLine();
@@ -108,8 +108,8 @@ namespace EasyFramework.Edit.Create
             }
             private static string GetAuthorName()
             {
-                string configName = ProjectUtility.Project.ScriptAuthor;
-                string authorName = EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
+                string configName = ConfigManager.Project.ScriptAuthor;
+                string authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
                 return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
             }
         }

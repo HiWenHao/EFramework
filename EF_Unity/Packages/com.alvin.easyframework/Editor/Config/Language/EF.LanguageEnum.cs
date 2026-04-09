@@ -75,6 +75,8 @@ namespace EasyFramework.Edit
 		Content,
 		/// <summary> 对比 </summary>
 		Compare,
+		/// <summary> 倒计时 </summary>
+		Countdown,
 		/// <summary> 目录 </summary>
 		Catalogue,
 		/// <summary> 一致的 </summary>

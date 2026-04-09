@@ -42,20 +42,20 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace) ? _setting.Namespace : _builder.Namespace;
             if (_builder.CreatePrefab)
                 _builder.PrefabPath = string.IsNullOrEmpty(_builder.PrefabPath)
-                    ? ProjectUtility.Path.UIPrefabPath
+                    ? ConfigManager.Path.UIPrefabPath
                     : _builder.PrefabPath;
             _builder.ScriptPath = string.IsNullOrEmpty(_builder.ScriptPath)
-                ? ProjectUtility.Path.UICodePath
+                ? ConfigManager.Path.UICodePath
                 : _builder.ScriptPath;
 
             _tempFiledNames = new List<string>();
             _tempComponentTypeNames = new List<string>();
             _componentsName = new Dictionary<string, int>();
 
-            _builder.SortByType = EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortType", 1) ==
+            _builder.SortByType = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortType", 1) ==
                                   1;
             _builder.SortByNameLength =
-                EditorPrefs.GetInt(ProjectUtility.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+                EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             _builder.PackUpBindList = true;
             AutoBindComponent();
             serializedObject.ApplyModifiedProperties();
@@ -113,11 +113,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Class, Lc.Name }), _builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
-            _builder.Describe = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Description }), _builder.Describe);
+            _builder.Describe =
+                EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Description }), _builder.Describe);
 
 
             EditorGUILayout.Space(6f, true);
-            _builder.AutoDestroy = EditorGUILayout.Toggle(LC.Combine(new []{Lc.Auto, Lc.Destroy}), _builder.AutoDestroy);
+            _builder.AutoDestroy = GUILayout.Toggle(_builder.AutoDestroy, LC.Combine(new Lc[] { Lc.Auto, Lc.Destroy }));
+            if (_builder.AutoDestroy)
+            {
+                _builder.AutoDestroyCountdown =
+                    EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Destroy, Lc.Countdown }),
+                        _builder.AutoDestroyCountdown);
+
+                EditorGUILayout.Space(6f, true);
+            }
+
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
             if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
                 _builder.ViewType = UIViewType.Page;
@@ -151,7 +161,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 //
                 // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
                 // {
-                //     _builder.PrefabPath = ProjectUtility.Path.UIPrefabPath;
+                //     _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
                 // }
                 //
                 // EditorGUILayout.EndHorizontal();
@@ -179,7 +189,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             //
             // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
             // {
-            //     _builder.ScriptPath = ProjectUtility.Path.UICodePath;
+            //     _builder.ScriptPath = ConfigManager.Path.UICodePath;
             // }
             //
             // EditorGUILayout.EndHorizontal();
@@ -286,7 +296,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (Application.isPlaying)
                 return;
-            
+
             _builder.BindDatas.Clear();
             _componentsName.Clear();
             Transform[] children = _builder.gameObject.GetComponentsInChildren<Transform>(true);
@@ -467,7 +477,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private const string StrChangeAuthor = "* ModifyAuthor:";
         private const string ButtonEventsStart = "#region Button invoke event. Do not change here.不要更改这行 -- Auto";
         private const string ButtonEventsEnd = "#endregion button invoke event. Do not change here.不要更改这行 -- Auto";
-        private const string ScriptExplain = "    //-----The script is auto generated. Please do not make any changes-----";
+
+        private const string ScriptExplain =
+            "    //-----The script is auto generated. Please do not make any changes-----";
 
         /// <summary>
         /// Gen auto bind code on the basis of special scriptName.
@@ -477,25 +489,25 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             string codePath = !string.IsNullOrEmpty(_builder.ScriptPath)
                 ? _builder.ScriptPath
-                : ProjectUtility.Path.UICodePath;
+                : ConfigManager.Path.UICodePath;
 
             string className = _builder.name;
             string viewPath = Path.Combine(codePath, "UiView", $"{className}");
             string logicPath = Path.Combine(codePath, "UiViewLogic", $"{className}");
-            
+
             if (!Directory.Exists(viewPath))
                 Directory.CreateDirectory(viewPath);
             if (!Directory.Exists(logicPath))
                 Directory.CreateDirectory(logicPath);
 
-            
+
             var buttonLst = new List<string>();
             var buttonProLst = new List<string>();
             var otherNameLst = new List<string>();
             var buttonNameLst = new List<string>();
             var buttonProNameLst = new List<string>();
             var otherComponent = new Dictionary<string, string>();
-            
+
             foreach (var bindingData in _builder.BindDatas)
             {
                 Type type = bindingData.BindCom.GetType();
@@ -523,10 +535,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             logicPath = Path.Combine(logicPath, $"{className}Logic.cs");
 
             #region Common start
-            
+
             StringBuilder commonSb = new StringBuilder();
             commonSb.AppendLine(GetFileHead());
-            
+
             commonSb.AppendLine();
             commonSb.AppendLine("using EasyFramework;");
             commonSb.AppendLine("using EasyFramework.UI;");
@@ -534,15 +546,16 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             commonSb.AppendLine("using EasyFramework.Manager.UI;");
             commonSb.AppendLine("using UnityEngine;");
             commonSb.AppendLine("using UnityEngine.UI;");
-            
+
             commonSb.AppendLine();
-            
-            string commonNamespace = !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : _setting.Namespace;
+
+            string commonNamespace =
+                !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : _setting.Namespace;
             commonSb.AppendLine($"namespace {commonNamespace}");
             commonSb.AppendLine("{");
-            
+
             #endregion
-            
+
             int btnIndex = -1;
             StringBuilder sb = new StringBuilder();
 
@@ -563,6 +576,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");
+            sb.AppendLine($"        float IUiView.AutoDestroyCountdown => {_builder.AutoDestroyCountdown}f;");
             sb.AppendLine($"        uint IUiView.SerialId {{ get; set; }}");
             sb.AppendLine($"        public UIViewType ViewType => UIViewType.{_builder.ViewType};");
             sb.AppendLine($"        public RectTransform View {{ get; private set; }}");
@@ -571,13 +585,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 sb.AppendLine($"        private {item.Value} {item.Key};");
             }
+
             sb.AppendLine($"        private List<Button> m_AllButtons;");
             sb.AppendLine($"        private List<ButtonPro> m_AllButtonPros;");
             sb.AppendLine();
             sb.AppendLine($"        void IUiView.Bind(RectTransform uiViewRect)");
             sb.AppendLine($"        {{");
             sb.AppendLine($"            View = uiViewRect;");
-            
+
             foreach (var item in otherComponent)
                 sb.AppendLine(
                     $"            {item.Key} = EF.Tool.Find<{item.Value}>(uiViewRect.transform, \"{otherNameLst[++btnIndex]}\");");
@@ -595,7 +610,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 sb.AppendLine(
                     $"            EF.Tool.Find<ButtonPro>(uiViewRect.transform, \"{buttonProNameLst[++btnIndex]}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
             }
-            
+
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        void IUiView.Dispose()");
@@ -614,7 +629,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             #endregion
 
             sb.Clear();
+
             #region Logic script
+
             if (!File.Exists(logicPath))
             {
                 sb.AppendLine($"    /// <summary>");
@@ -636,17 +653,18 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     Type type = bindData.BindCom.GetType();
                     if (type != typeof(ButtonPro) && type != typeof(UnityEngine.UI.Button))
                         continue;
-                    
+
                     sb.AppendLine();
                     sb.AppendLine($"        private void OnClick{bindData.ScriptName}()");
                     sb.AppendLine($"        {{");
                     sb.AppendLine($"            D.Log(\"OnClick:  {bindData.RealName}\");");
                     sb.AppendLine($"        }}");
                 }
+
                 sb.AppendLine();
                 sb.AppendLine("        " + ButtonEventsEnd);
                 sb.AppendLine($"    }}");
-                
+
                 sb.AppendLine($"}}");
                 File.WriteAllText(logicPath, commonSb + sb.ToString(), Encoding.UTF8);
             }
@@ -654,16 +672,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 List<string> logicList = new List<string>();
                 StringBuilder buttonFunction = new StringBuilder();
-                
+
                 logicList.AddRange(File.ReadAllLines(logicPath));
+
                 #region If have button component, than need write new event.
 
                 int endIndex = 0;
                 for (int i = logicList.Count - 1; i >= 0; i--)
                 {
-                    if (!logicList[i].Contains(ButtonEventsEnd)) 
+                    if (!logicList[i].Contains(ButtonEventsEnd))
                         continue;
-                    
+
                     endIndex = i;
                     break;
                 }
@@ -678,9 +697,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     bool contain = false;
                     foreach (var str in logicList)
                     {
-                        if (!str.Contains($"private void OnClick{btnPro}()")) 
+                        if (!str.Contains($"private void OnClick{btnPro}()"))
                             continue;
-                        
+
                         contain = true;
                         break;
                     }
@@ -692,20 +711,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     buttonFunction.AppendLine($"            D.Log(\"OnClick:  {btnPro}\");");
                     buttonFunction.AppendLine($"        }}");
                     //buttonFunction.AppendLine("");
-                    
+
                     logicList.Insert(endIndex, buttonFunction.ToString());
                     buttonFunction.Clear();
                     endIndex++;
                 }
-                
+
                 #endregion
 
                 ChangeFileHead(logicList);
                 File.WriteAllLines(logicPath, logicList);
-                
+
                 logicList.Clear();
                 buttonFunction.Clear();
             }
+
             #endregion
 
             sb.Clear();
@@ -734,7 +754,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
                 if (!strList[i].Contains(StrChangeTime))
                     continue;
-                
+
                 strList[i] = $" {StrChangeTime}    {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
                 return;
             }
@@ -748,7 +768,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             string authorName = GetAuthorName();
             string createTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            
+
             string annotationStr =
                 "/*\n"
                 + " * ================================================\r\n"
@@ -757,7 +777,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 + $" * CreationTime:  {createTime}\r\n"
                 + $" * ModifyAuthor:  {authorName}\r\n"
                 + $" * ModifyTime:    {createTime}\r\n"
-                + $" * ScriptVersion: {ProjectUtility.Project.ScriptVersion} \r\n"
+                + $" * ScriptVersion: {ConfigManager.Project.ScriptVersion} \r\n"
                 + " * ================================================\r\n"
                 + " */";
             return annotationStr;
@@ -765,8 +785,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private string GetAuthorName()
         {
-            string configName = ProjectUtility.Project.ScriptAuthor;
-            string authorName = EditorPrefs.GetString($"{ProjectUtility.Project.AppConst.AppPrefix}EditorUser");
+            string configName = ConfigManager.Project.ScriptAuthor;
+            string authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
             return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
         }
 

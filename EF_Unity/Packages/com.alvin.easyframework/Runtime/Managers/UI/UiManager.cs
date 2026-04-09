@@ -26,20 +26,15 @@ namespace EasyFramework.Manager
         public Camera UICamera { get; private set; }
 
         private uint _serialId; //	页面序列号
-        private IUiView _tipsView; //	通用提示窗
+        
         private Transform _target; //	UI根节点
-        private IUiView _currentPageView; //	当前页面视窗
-
-        #region Popup
+        
+        private IUiView _tipsView; //	通用提示窗
+        private IUiView _currentPageView; //    当前页面视窗
 
         private int _popupIndex; //	弹窗当前被使用的索引
         private const int PopupViewMax = 5; //	弹窗最大数量
-
-        #endregion
         
-        /// <summary> 自动销毁时间 </summary>
-        private const float AutoDestroyTimer = 10.0f;
-
         /// <summary> 自动销毁计时 </summary>
         private Dictionary<IUiView, float> _autoDestroyDic;
         

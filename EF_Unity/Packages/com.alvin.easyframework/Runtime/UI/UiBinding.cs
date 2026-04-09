@@ -57,6 +57,11 @@ namespace EasyFramework.UI
         public bool AutoDestroy = true;
         
         /// <summary>
+        /// 自动销毁时间
+        /// </summary>
+        public float AutoDestroyCountdown = 10.0f;
+        
+        /// <summary>
         /// 页面类型
         /// </summary>
         public UIViewType ViewType = UIViewType.Page;

@@ -210,7 +210,7 @@ namespace EasyFramework.Manager
             if (!cache || !uiView.AutoDestroy || _viewStackDic[UIViewType.Cache].Contains(uiView))
                 return true;
             
-            _autoDestroyDic[uiView] = AutoDestroyTimer;
+            _autoDestroyDic[uiView] = uiView.AutoDestroyCountdown;
             _viewStackDic[UIViewType.Cache].Add(uiView);
             _viewStackDic[uiView.ViewType].Remove(uiView);
             uiView.View.transform.SetParent(_viewParentDic[UIViewType.Cache], false);

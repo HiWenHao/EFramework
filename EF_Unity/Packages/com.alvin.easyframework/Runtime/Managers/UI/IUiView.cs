@@ -34,6 +34,11 @@ namespace EasyFramework.Manager.UI
         protected internal bool AutoDestroy { get; }
         
         /// <summary>
+        /// 自动销毁倒计时
+        /// </summary>
+        protected internal float AutoDestroyCountdown { get; }
+        
+        /// <summary>
         /// view serial number, do not change.
         /// <para>页面序列号,请勿改动</para>
         /// </summary>

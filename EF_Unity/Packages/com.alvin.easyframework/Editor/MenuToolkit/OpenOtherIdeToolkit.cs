@@ -26,28 +26,28 @@ namespace EasyFramework.Edit.MenuToolkit
         private static void OpenSublime()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIdeWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+            OpenIdeWithPath(ConfigManager.Path.SublimePath, args, _sublimePaths);
         }
 
         [MenuItem("Assets/EF/Open With IDE/Sublime *meta", false, 2)]
         private static void OpenSublimeMeta()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIdeWithPath(ProjectUtility.Path.SublimePath, args, _sublimePaths);
+            OpenIdeWithPath(ConfigManager.Path.SublimePath, args, _sublimePaths);
         }
 
         [MenuItem("Assets/EF/Open With IDE/Notepad++", false, 3)]
         private static void OpenNotepad()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, false));
-            OpenIdeWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+            OpenIdeWithPath(ConfigManager.Path.NotepadPath, args, _notepadPaths);
         }
 
         [MenuItem("Assets/EF/Open With IDE/Notepad++ *meta", false, 4)]
         private static void OpenNotepadMeta()
         {
             var args = string.Join(" ", GetPathsOfAssets(Selection.objects, true));
-            OpenIdeWithPath(ProjectUtility.Path.NotepadPath, args, _notepadPaths);
+            OpenIdeWithPath(ConfigManager.Path.NotepadPath, args, _notepadPaths);
         }
 
         private static string[] _notepadPaths = new string[]

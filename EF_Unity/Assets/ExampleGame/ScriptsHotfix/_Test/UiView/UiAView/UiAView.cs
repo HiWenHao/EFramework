@@ -24,6 +24,7 @@ namespace EFExample
         bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Page;
+        float IUiView.AutoDestroyCountdown => 10.0f;
         public RectTransform View { get; private set; }
 
         private List<Button> m_AllButtons;

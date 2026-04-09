@@ -29,6 +29,7 @@ namespace EasyFramework.UI
         }
         
         bool IUiView.AutoDestroy => true;
+        float IUiView.AutoDestroyCountdown => 10.0f;
         uint IUiView.SerialId { get; set; }
 
         public RectTransform View { get; private set; }

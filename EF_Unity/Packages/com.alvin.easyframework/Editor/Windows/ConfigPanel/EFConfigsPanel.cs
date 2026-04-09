@@ -38,9 +38,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             ;
             _settings ??= new[]
             {
-                new ProjectConfigPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ProjectUtility.Project) as
+                new ProjectConfigPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ConfigManager.Project) as
                     EFConfigPanelBase,
-                new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ProjectUtility.Path),
+                new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ConfigManager.Path),
                 //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
                 new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
                     EditorUtils.LoadSettingAtPath<AutoBindingConfig>())
@@ -138,7 +138,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <param name="pageIndex">页面索引</param>
         public static void Open(int pageIndex)
         {
-            if (!ProjectUtility.Project)
+            if (!ConfigManager.Project)
             {
                 D.Log("ProjectConfig has been created successfully. Please reopen this panel.");
                 return;
