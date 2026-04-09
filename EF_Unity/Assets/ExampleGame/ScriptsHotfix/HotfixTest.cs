@@ -42,6 +42,7 @@ namespace EFExample
             //});
 
             Test().Forget();
+            EF.Ui.ShowTipsView<TipsView>("sad", new TipsViewExtraData());
         }
 
         static async UniTask Test()
@@ -51,7 +52,6 @@ namespace EFExample
                 await UniTask.WaitForSeconds(0.1f);
                 D.Warning(i);
                 EF.Ui.ShowPopupView($"\t{i}\tIndex");
-                EF.Ui.ShowTipsView("sad", new TipsViewExtraData());
             }
         }
     }

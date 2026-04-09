@@ -207,7 +207,7 @@ namespace EasyFramework.Manager
                 uiView.View.gameObject.SetActive(false);
             }
 
-            if (!cache || _viewStackDic[UIViewType.Cache].Contains(uiView))
+            if (!cache || !uiView.AutoDestroy || _viewStackDic[UIViewType.Cache].Contains(uiView))
                 return true;
             
             _autoDestroyDic[uiView] = AutoDestroyTimer;
@@ -305,9 +305,9 @@ namespace EasyFramework.Manager
         /// </summary>
         /// <param name="contents">显示内容</param>
         /// <param name="viewExtraData">附加数据</param>
-        public void ShowTipsView(string contents, TipsViewExtraData viewExtraData)
+        public void ShowTipsView<T>(string contents, TipsViewExtraData viewExtraData) where T : IUiView, new()
         {
-            _tipsView ??= ViewCreate<TipsView>();
+            _tipsView ??= ViewCreate<T>();
             ViewEnable(_tipsView, false, contents, viewExtraData);
         }
         

@@ -11,7 +11,6 @@
 
 using System.Collections.Generic;
 using EasyFramework.Manager.UI;
-using EasyFramework.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +18,17 @@ namespace EasyFramework.UI
 {
     public partial class TipsView : IUiView
     {
-        bool IUiView.AutoDestroy => false;
+        public static TipsView Open(params object[] args)
+        {
+            return EF.Ui.OpenPageView<TipsView>(args);
+        }
+
+        public static bool Close(params object[] args)
+        {
+            return EF.Ui.CloseView<TipsView>(args);
+        }
+        
+        bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
 
         public RectTransform View { get; private set; }

@@ -40,18 +40,13 @@ namespace EasyFramework.UI
         {
         }
 
-        private void Hide()
-        {
-            View.gameObject.SetActive(false);
-        }
-
         /// <summary>
         /// 确定
         /// </summary>
         void OnClickClose()
         {
             _tipsExtraData.CloseCallBack?.Invoke();
-            Hide();
+            Close();
         }
 
         /// <summary>
@@ -60,7 +55,7 @@ namespace EasyFramework.UI
         void OnClickCancel()
         {
             _tipsExtraData.CancelCallBack?.Invoke();
-            Hide();
+            Close();
         }
 
         /// <summary>
@@ -69,7 +64,7 @@ namespace EasyFramework.UI
         void OnClickConfirm()
         {
             _tipsExtraData.ConfirmCallBack?.Invoke();
-            Hide();
+            Close();
         }
     }
 }

@@ -152,7 +152,7 @@ namespace EasyFramework.Managers
                 _ieCurrentIE = null;
                 if (_patchUpdater)
                 {
-                    EF.Ui.ShowTipsView(
+                    EF.Ui.ShowTipsView<TipsView>(
                         $"更新完成",
                         new TipsViewExtraData()
                         {
@@ -369,7 +369,7 @@ namespace EasyFramework.Managers
                     _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
                 }
 
-                EF.Ui.ShowTipsView(
+                EF.Ui.ShowTipsView<TipsView>(
                     $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
                     new TipsViewExtraData()
                     {

@@ -22,10 +22,10 @@ namespace EasyFramework.Edit.Create
 {
     public class CreateUITemplatePrefab
     {
-        [MenuItem("GameObject/UI/EF/New UI Page", false, 20)]
+        [MenuItem("GameObject/UI/EF/New Ui View", false, 20)]
         static void CreateUINewUIPage(MenuCommand menuCommand)
         {
-            RectTransform rect = CreateUIObject(menuCommand, "UiPage", new[] { typeof(Image) }).transform as RectTransform;
+            RectTransform rect = CreateUIObject(menuCommand, "New Ui View", new[] { typeof(Image) }).transform as RectTransform;
             
             if (rect == null) 
                 return;
