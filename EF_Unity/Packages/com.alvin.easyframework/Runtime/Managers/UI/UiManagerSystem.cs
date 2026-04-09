@@ -305,7 +305,7 @@ namespace EasyFramework.Manager
         /// </summary>
         /// <param name="contents">显示内容</param>
         /// <param name="viewExtraData">附加数据</param>
-        public void ShowTipsView<T>(string contents, TipsViewExtraData viewExtraData) where T : IUiView, new()
+        public void ShowTipsView<T>(string contents, TipsViewExtraData viewExtraData) where T : TipsView, new()
         {
             _tipsView ??= ViewCreate<T>();
             ViewEnable(_tipsView, false, contents, viewExtraData);

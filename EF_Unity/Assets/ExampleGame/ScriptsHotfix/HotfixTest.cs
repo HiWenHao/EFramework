@@ -42,7 +42,7 @@ namespace EFExample
             //});
 
             Test().Forget();
-            EF.Ui.ShowTipsView<TipsView>("sad", new TipsViewExtraData());
+            //EF.Ui.ShowTipsView<TipsView>("提示窗", new TipsViewExtraData());
         }
 
         static async UniTask Test()
