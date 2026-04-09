@@ -122,7 +122,7 @@ namespace EasyFramework.Edit
             /// </summary>
             public static string GetEfAssetsPath()
             {
-                return @"Packages\com.alvin.easyframework\Editor Resources";
+                return @"Packages\cn.efefef.core\Editor Resources";
             }
 
             public static string GetCurrentFolderPath()
