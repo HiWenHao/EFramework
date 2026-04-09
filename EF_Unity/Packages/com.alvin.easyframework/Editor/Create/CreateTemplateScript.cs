@@ -100,7 +100,7 @@ namespace EasyFramework.Edit.Create
                 sw.WriteLine();
                 
                 text = text.Replace("PleaseChangeTheNamespace",
-                    EditorUtils.LoadSettingAtPath<AutoBindingConfig>().Namespace);
+                    EditorUtils.LoadSettingAtPath<UiBindingConfig>().Namespace);
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);

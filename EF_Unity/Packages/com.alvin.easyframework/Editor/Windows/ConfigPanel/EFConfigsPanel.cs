@@ -42,8 +42,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     EFConfigPanelBase,
                 new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ConfigManager.Path),
                 //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
-                new AutoBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
-                    EditorUtils.LoadSettingAtPath<AutoBindingConfig>())
+                new UiBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
+                    EditorUtils.LoadSettingAtPath<UiBindingConfig>())
             };
 
             _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;

@@ -17,7 +17,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    internal class AutoBindingPanel : EFConfigPanelBase
+    internal class UiBindingPanel : EFConfigPanelBase
     {
         Vector2 _scrllPos;
 
@@ -25,7 +25,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _rulePrefixes;
         private SerializedObject _customSettings;
 
-        public AutoBindingPanel(string name, AutoBindingConfig target) : base(name, target)
+        public UiBindingPanel(string name, UiBindingConfig target) : base(name, target)
         {
         }
 

@@ -26,10 +26,10 @@ namespace EasyFramework.Edit.Create
             Instance<ProjectConfig>(folderPath: "Assets/Resources/Configs/");
         }
         
-        [MenuItem("Assets/Create/EF/AutoBindingConfig", priority = 210)]
+        [MenuItem("Assets/Create/EF/UiBindingConfig", priority = 210)]
         private static void CreatedAutoBindSetting()
         {
-            Instance<AutoBindingConfig>();
+            Instance<UiBindingConfig>();
         }
         
         [MenuItem("Assets/Create/EF/PathConfig", priority = 211)]

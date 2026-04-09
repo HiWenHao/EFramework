@@ -43,15 +43,15 @@ namespace EasyFramework.Edit
             }
         }
         
-        private static AutoBindingConfig _uiBindingConfig;
-        public static AutoBindingConfig UiBinding
+        private static UiBindingConfig _uiBindingConfig;
+        public static UiBindingConfig UiBinding
         {
             get
             {
-                if (_uiBindingConfig is null && EditorUtils.CheckAssets<AutoBindingConfig>(out var pathConfigPath))
-                    _uiBindingConfig = EditorUtils.LoadSettingAtPath<AutoBindingConfig>();
+                if (_uiBindingConfig is null && EditorUtils.CheckAssets<UiBindingConfig>(out var pathConfigPath))
+                    _uiBindingConfig = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
                 if (_uiBindingConfig is null)
-                    Create.CreateSettings.Instance<AutoBindingConfig>(true, "Assets/Resources/Configs");
+                    Create.CreateSettings.Instance<UiBindingConfig>(true, "Assets/Resources/Configs");
                 return _uiBindingConfig;
             }
         }

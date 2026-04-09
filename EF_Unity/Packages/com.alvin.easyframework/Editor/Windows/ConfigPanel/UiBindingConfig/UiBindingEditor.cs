@@ -28,7 +28,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     {
         private UiBinding _builder;
 
-        private AutoBindingConfig _setting;
+        private UiBindingConfig _setting;
 
         private List<string> _tempFiledNames;
         private List<string> _tempComponentTypeNames;
@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void OnEnable()
         {
             _builder = (UiBinding)target;
-            _setting = EditorUtils.LoadSettingAtPath<AutoBindingConfig>();
+            _setting = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
 
             _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace) ? _setting.Namespace : _builder.Namespace;
             if (_builder.CreatePrefab)

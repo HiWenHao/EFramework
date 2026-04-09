@@ -17,7 +17,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// 自动绑定全局设置
     /// </summary>
-    public class AutoBindingConfig : ScriptableObject
+    public class UiBindingConfig : ScriptableObject
     {
         /// <summary>
         /// 默认命名空间
