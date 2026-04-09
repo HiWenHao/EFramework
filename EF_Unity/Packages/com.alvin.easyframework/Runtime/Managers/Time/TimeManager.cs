@@ -89,33 +89,30 @@ namespace EasyFramework.Managers
 
             foreach (var timer in _events.Values)
             {
-                if (timer.IsCompleted)
+                TimeEvent timeEvent = timer;
+                if (!((timeEvent.PassedTime += elapse) >= timeEvent.DelayTime + timeEvent.CycleTime)) 
                     continue;
-
-                if ((timer.PassedTime += elapse) >= timer.DelayTime + timer.CycleTime)
+                
+                timeEvent.PassedTime = 0.0f;
+                timeEvent.DelayTime = 0.0f;
+                if (--timeEvent.CycleCount == 0)
                 {
-                    timer.PassedTime = 0.0f;
-                    timer.DelayTime = 0.0f;
-                    if (--timer.CycleCount == 0)
-                    {
-                        timer.IsCompleted = true;
-                        _removedEvents.Add(timer.Id);
-                    }
-                    //执行
-                    timer.EndCallback?.Invoke(timer.IsCompleted);
+                    timeEvent.IsCompleted = true;
+                    _removedEvents.Add(timeEvent.Id);
                 }
+                //执行
+                timeEvent.EndCallback?.Invoke(timeEvent.IsCompleted);
             }
 
-            if ((_handleCount = _removedEvents.Count) != 0)
+            if ((_handleCount = _removedEvents.Count) == 0) 
+                return;
+            
+            for (int i = 0; i < _handleCount; i++)
             {
-                for (int i = 0; i < _handleCount; i++)
-                {
-                    int _idx = _removedEvents[i];
-                    if (_events.ContainsKey(_idx))
-                        _events.Remove(_removedEvents[i]);
-                }
-                _removedEvents.Clear();
+                _events.Remove(_removedEvents[i]);
             }
+            
+            _removedEvents.Clear();
         }
 
         /// <summary>
@@ -154,6 +151,7 @@ namespace EasyFramework.Managers
         {
             return CreateTimeEvent(delayTime, 0, 1, callback);
         }
+        
         /// <summary>
         /// Add a timing event. <para>增加一次计时事件</para>
         /// <para>If the event needs to be executed repeatedly, you can set the number of cycles to 0 or -1.</para>
@@ -188,10 +186,11 @@ namespace EasyFramework.Managers
         /// </summary>
         public void RemoveAll()
         {
-            foreach (var e in _events)
+            for (var i = 0; i < _events.Count; i++)
             {
-                e.Value.IsCompleted = true;
-                _removedEvents.Add(e.Key);
+                var oneEvent = _events[i];
+                oneEvent.IsCompleted = true;
+                _removedEvents.Add(oneEvent.Id);
             }
         }
         #endregion
@@ -204,12 +203,12 @@ namespace EasyFramework.Managers
         /// <param name="scale">Between 0.0f ~ 4.0f. <para>在0~4之间</para></param>
         public void SetTimeScale(float scale)
         {
-            if (scale < 0.0f || scale > 4.0f)
+            if (scale is < 0.0f or > 4.0f)
             {
                 D.Error("In order to ensure the smooth running of the game, please standardize the settings.");
                 return;
             }
-            UnityEngine.Time.timeScale = scale;
+            Time.timeScale = scale;
         }
         #endregion
         #endregion

@@ -75,6 +75,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         public override void OnInspectorGUI()
         {
+            EditorGUI.BeginChangeCheck();
             serializedObject.Update();
 
             DrawSetting();
@@ -85,9 +86,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             DrawStartBind();
 
-            if (!target || !serializedObject.targetObject)
+            if (!EditorGUI.EndChangeCheck() || !target || !serializedObject.targetObject)
                 return;
             serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
         }
 
         #region Draw. 绘制编辑器内容

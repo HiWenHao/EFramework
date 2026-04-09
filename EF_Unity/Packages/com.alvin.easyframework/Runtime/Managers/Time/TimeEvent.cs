@@ -16,7 +16,7 @@ namespace EasyFramework.Managers.Timer
     /// <summary>
     /// 时间管理器管理的时间事件
     /// </summary>
-    public class TimeEvent : ITimeEvent
+    public struct TimeEvent : ITimeEvent
     {
         public int Id { get; set; }
         public bool IsCompleted { get; set; }
