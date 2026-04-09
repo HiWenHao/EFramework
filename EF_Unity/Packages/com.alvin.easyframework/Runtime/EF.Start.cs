@@ -12,7 +12,7 @@
 using EasyFramework.Managers;
 using System.Collections;
 using EasyFramework;
-using EasyFramework.Manager.UI;
+using EasyFramework.Manager;
 using UnityEngine;
 
 public sealed partial class EF
@@ -27,8 +27,7 @@ public sealed partial class EF
     public static ProjectConfig Projects { get; private set; }
 
     /// <summary> UI manager.<para>UI管理器</para></summary>
-    public static UIManager Ui => UIManager.Instance;
-    public static UiManager Uii => UiManager.Instance;
+    public static UiManager Ui => UiManager.Instance;
 
     /// <summary> Universal tools manager.<para>通用工具管理器</para></summary>
     public static ToolManager Tool => ToolManager.Instance;

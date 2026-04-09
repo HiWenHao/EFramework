@@ -24,7 +24,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// Ui builder with editor.
     /// </summary>
     [CustomEditor(typeof(UiBinding))]
-    public class UiBuilderEditor : Editor
+    public class UiBindingEditor : Editor
     {
         private UiBinding _builder;
 
@@ -552,12 +552,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine($"    {{");
             sb.AppendLine($"        public static {className} Open(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return EF.Uii.OpenPageView<{className}>(args);");
+            sb.AppendLine($"            return EF.Ui.OpenPageView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        public static bool Close(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return EF.Uii.CloseView<{className}>(args);");
+            sb.AppendLine($"            return EF.Ui.CloseView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");

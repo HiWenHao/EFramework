@@ -10,13 +10,14 @@
  */
 
 using System.Collections.Generic;
-using EasyFramework.Manager.UI.Tips;
+using EasyFramework.Manager.UI;
+using EasyFramework.UI;
 using EasyFramework.UI.Popup;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
-namespace EasyFramework.Manager.UI
+namespace EasyFramework.Manager
 {
     public partial class UiManager
     {

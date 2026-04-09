@@ -22,12 +22,12 @@ namespace EasyFramework.UI.Popup
     {
         public static void Open(params object[] args)
         {
-            EF.Uii.OpenPageView<PopupView>(args);
+            EF.Ui.OpenPageView<PopupView>(args);
         }
 
         public static void Close(params object[] args)
         {
-            EF.Uii.CloseView<PopupView>(args);
+            EF.Ui.CloseView<PopupView>(args);
         }
 
         bool IUiView.AutoDestroy => true;

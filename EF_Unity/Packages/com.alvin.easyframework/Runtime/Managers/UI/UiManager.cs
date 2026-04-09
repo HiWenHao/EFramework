@@ -10,9 +10,10 @@
  */
 
 using System.Collections.Generic;
+using EasyFramework.Manager.UI;
 using UnityEngine;
 
-namespace EasyFramework.Manager.UI
+namespace EasyFramework.Manager
 {
     /// <summary>
     /// 用户界面管理器

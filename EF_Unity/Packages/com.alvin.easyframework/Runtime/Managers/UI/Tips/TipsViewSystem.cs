@@ -9,7 +9,9 @@
  * ===============================================
  */
 
-namespace EasyFramework.Manager.UI.Tips
+using EasyFramework.Manager.UI;
+
+namespace EasyFramework.UI
 {
     /// <summary>
     /// 提示窗基类

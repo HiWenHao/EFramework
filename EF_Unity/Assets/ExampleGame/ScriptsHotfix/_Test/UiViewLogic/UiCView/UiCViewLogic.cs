@@ -1,10 +1,10 @@
-﻿/*
+/*
  * ================================================
  * Describe:      案例时间管理器.
  * Author:        Alvin8412
  * CreationTime:  2026-04-06 23:05:30
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-06 23:05:30
+ * ModifyTime:    2026-04-09 11:00:27
  * ScriptVersion: 0.1 
  * ================================================
  */
@@ -47,7 +47,7 @@ namespace EFExample
 
         private void OnClickBtn_QuitC()
         {
-            EF.Uii.CloseView<UiCView>("C页面退出，向即将被显示的页面B传递参数");
+            EF.Ui.CloseView<UiCView>("C页面退出，向即将被显示的页面B传递参数");
         }
 
         private void OnClickBtn_AddTimeEvent()

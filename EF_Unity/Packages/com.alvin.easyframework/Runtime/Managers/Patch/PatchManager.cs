@@ -12,7 +12,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using EasyFramework.Manager.UI.Tips;
+using EasyFramework.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;
@@ -152,7 +152,7 @@ namespace EasyFramework.Managers
                 _ieCurrentIE = null;
                 if (_patchUpdater)
                 {
-                    EF.Uii.ShowTipsView(
+                    EF.Ui.ShowTipsView(
                         $"更新完成",
                         new TipsViewExtraData()
                         {
@@ -365,11 +365,11 @@ namespace EasyFramework.Managers
                         .transform;
                     Canvas canvas = _patchUpdater.GetComponent<Canvas>();
                     canvas.renderMode = RenderMode.ScreenSpaceCamera;
-                    canvas.worldCamera = EF.Uii.UICamera;
+                    canvas.worldCamera = EF.Ui.UICamera;
                     _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
                 }
 
-                EF.Uii.ShowTipsView(
+                EF.Ui.ShowTipsView(
                     $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
                     new TipsViewExtraData()
                     {

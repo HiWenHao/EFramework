@@ -10,11 +10,12 @@
  */
 
 using System.Collections.Generic;
+using EasyFramework.Manager.UI;
 using EasyFramework.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Manager.UI.Tips
+namespace EasyFramework.UI
 {
     public partial class TipsView : IUiView
     {

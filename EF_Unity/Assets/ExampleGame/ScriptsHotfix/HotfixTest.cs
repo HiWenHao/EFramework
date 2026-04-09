@@ -11,7 +11,7 @@
 
 using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.Manager.UI.Tips;
+using EasyFramework.UI;
 using UnityEngine;
 
 namespace EFExample
@@ -30,9 +30,9 @@ namespace EFExample
             FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
-            EF.Uii.OpenPageView<UiAView>();
+            EF.Ui.OpenPageView<UiAView>();
 
-            //EF.Uii.ShowTips("这是一个测试提示窗", new TipsViewExtraData()
+            //EF.Ui.ShowTipsView("这是一个测试提示窗", new TipsViewExtraData()
             //{
             //    ConfirmName = "确定",
             //    CancelName = "取消",
@@ -50,7 +50,8 @@ namespace EFExample
             {
                 await UniTask.WaitForSeconds(0.1f);
                 D.Warning(i);
-                EF.Uii.ShowPopupView($"\t{i}\tIndex");
+                EF.Ui.ShowPopupView($"\t{i}\tIndex");
+                EF.Ui.ShowTipsView("sad", new TipsViewExtraData());
             }
         }
     }

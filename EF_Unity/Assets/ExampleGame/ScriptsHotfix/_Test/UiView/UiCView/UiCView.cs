@@ -1,10 +1,10 @@
 ﻿/*
  * ================================================
- * Describe:      案例时间管理器.
+ * Describe:      Please modify the description..
  * Author:        Alvin8412
- * CreationTime:  2026-04-06 23:05:30
+ * CreationTime:  2026-04-09 11:00:27
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-06 23:05:30
+ * ModifyTime:    2026-04-09 11:00:27
  * ScriptVersion: 0.1 
  * ================================================
  */
@@ -21,6 +21,16 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiCView : IUiView
     {
+        public static UiCView Open(params object[] args)
+        {
+            return EF.Ui.OpenPageView<UiCView>(args);
+        }
+
+        public static bool Close(params object[] args)
+        {
+            return EF.Ui.CloseView<UiCView>(args);
+        }
+
         bool IUiView.AutoDestroy => true;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Page;
