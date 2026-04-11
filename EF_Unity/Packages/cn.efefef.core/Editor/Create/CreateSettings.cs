@@ -56,7 +56,7 @@ namespace EasyFramework.Edit.Create
         /// <param name="single">是否全局唯一， 默认为True</param>
         /// <param name="folderPath">所属文件夹，基于Assets下</param>
         /// <typeparam name="T">设置类型</typeparam>
-        public static void Instance<T>(bool single = true, string folderPath = "")  where T : ScriptableObject
+        public static T Instance<T>(bool single = true, string folderPath = "")  where T : ScriptableObject
         {
             string typeName = typeof(T).Name;
             string path = !string.IsNullOrEmpty(folderPath) ? folderPath : Utility.Path.GetCurrentFolderPath();
@@ -67,7 +67,7 @@ namespace EasyFramework.Edit.Create
                 T existingAsset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
                 Selection.activeObject = existingAsset;
                 EditorGUIUtility.PingObject(existingAsset);
-                return;
+                return existingAsset;
             }
 
             T asset = ScriptableObject.CreateInstance<T>();
@@ -80,6 +80,7 @@ namespace EasyFramework.Edit.Create
             AssetDatabase.Refresh();
             
             Selection.activeObject = asset;
+            return asset;
         }
     }
 }
