@@ -192,3 +192,4 @@
 *.user filter=lfs diff=lfs merge=lfs -text
 *.p7m filter=lfs diff=lfs merge=lfs -text
 *.mixer filter=lfs diff=lfs merge=lfs -text
+*.asmref filter=lfs diff=lfs merge=lfs -text
