@@ -146,7 +146,7 @@ namespace EasyFramework.Managers
             Dictionary<string, string> headers = null, JsonSerializerSettings serializerSettings = null, int? timeout = null,
             CancellationToken cancellationToken = default)
         {
-            string jsonData = JsonUtility.ToJson(postData);
+            string jsonData = JsonConvert.SerializeObject(postData, serializerSettings);
             string response = await PostJsonAsync(url, jsonData, headers, timeout, cancellationToken);
             return JsonConvert.DeserializeObject<T2>(response, serializerSettings);
         }
