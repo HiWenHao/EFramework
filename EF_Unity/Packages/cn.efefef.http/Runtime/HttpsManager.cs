@@ -30,6 +30,12 @@ namespace EasyFramework.Managers
         /// </summary>
         public int DefaultTimeout { get; set; } = 30;
         
+        /// <summary>
+        /// 负责对通过 https 请求接收到的证书进行拒绝或接受处理。
+        /// <para>Responsible for rejecting or accepting certificates received on https requests.</para>
+        /// </summary>
+        public CertificateHandler CertificateHandler { get; set; }
+        
         void ISingleton.Init()
         {
         }
@@ -259,6 +265,7 @@ namespace EasyFramework.Managers
             Dictionary<string, string> headers, int? timeout, CancellationToken cancellationToken)
         {
             using var cts = CreateLinkedCancellationToken(request, cancellationToken);
+            SetDefaultCertificateHandler(request);
             SetHeadersAndTimeout(request, headers, timeout);
             await request.SendWebRequest().ToUniTask(cancellationToken: cts.Token);
             ValidateResponse(request);
@@ -271,9 +278,17 @@ namespace EasyFramework.Managers
             IProgress<float> progress = null)
         {
             using var cts = CreateLinkedCancellationToken(request, cancellationToken);
+            SetDefaultCertificateHandler(request);
             SetHeadersAndTimeout(request, headers, timeout);
             await request.SendWebRequest().ToUniTask(progress: progress, cancellationToken: cts.Token);
             ValidateResponse(request);
+        }
+    
+        /// <summary> 设置默认证书处理 </summary>
+        private void SetDefaultCertificateHandler(UnityWebRequest request)
+        {
+            if (null != CertificateHandler)
+                request.certificateHandler = CertificateHandler;
         }
 
         /// <summary> 设置请求头和超时阈值 </summary>
