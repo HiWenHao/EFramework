@@ -36,8 +36,9 @@ namespace EasyFramework.Managers
 
             UniversalAdditionalCameraData ucd = UICamera.GetUniversalAdditionalCameraData();
             ucd.renderType = CameraRenderType.Overlay;
-            if (null != ucd.scriptableRenderer)
-                ucd.cameraStack.Add(UICamera);
+            UniversalAdditionalCameraData ucdMain = Camera.main.GetUniversalAdditionalCameraData();
+            if (null != ucdMain.scriptableRenderer)
+                ucdMain.cameraStack.Add(UICamera);
 
             GameObject root = new GameObject("UIRoot");
             root.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
