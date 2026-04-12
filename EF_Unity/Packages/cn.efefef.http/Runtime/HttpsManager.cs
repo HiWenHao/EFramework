@@ -15,6 +15,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -66,13 +67,14 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="url">链接地址</param>
         /// <param name="headers">请求头</param>
+        /// <param name="serializerSettings">序列化设置</param>
         /// <param name="timeout">超时阈值</param>
         /// <param name="cancellationToken">取消令牌</param>
         public async UniTask<T> GetAsync<T>(string url, Dictionary<string, string> headers = null,
-            int? timeout = null, CancellationToken cancellationToken = default)
+            JsonSerializerSettings serializerSettings = null, int? timeout = null, CancellationToken cancellationToken = default)
         {
             string json = await GetStringAsync(url, headers, timeout, cancellationToken);
-            return JsonUtility.FromJson<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, serializerSettings);
         }
 
         /// <summary>
@@ -134,18 +136,19 @@ namespace EasyFramework.Managers
         /// <param name="url">链接地址</param>
         /// <param name="postData">请求数据</param>
         /// <param name="headers">请求头</param>
+        /// <param name="serializerSettings">序列化设置</param>
         /// <param name="timeout">超时阈值</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <typeparam name="T1">请求类型</typeparam>
         /// <typeparam name="T2">请求回复类型</typeparam>
         /// <returns>回复<typeparamref name="T2"/>类型数据</returns>
         public async UniTask<T2> PostJsonAsync<T1, T2>(string url, T1 postData,
-            Dictionary<string, string> headers = null, int? timeout = null,
+            Dictionary<string, string> headers = null, JsonSerializerSettings serializerSettings = null, int? timeout = null,
             CancellationToken cancellationToken = default)
         {
             string jsonData = JsonUtility.ToJson(postData);
             string response = await PostJsonAsync(url, jsonData, headers, timeout, cancellationToken);
-            return JsonUtility.FromJson<T2>(response);
+            return JsonConvert.DeserializeObject<T2>(response, serializerSettings);
         }
 
         /// <summary>
