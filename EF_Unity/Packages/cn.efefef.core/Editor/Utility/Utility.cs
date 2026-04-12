@@ -113,7 +113,7 @@ namespace EasyFramework.Edit
             /// </summary>
             public static string GetEfPath()
             {
-                return @"Packages\com.alvin.easyframework";
+                return @"Packages\cn.efefef.core";
             }
 
             /// <summary>

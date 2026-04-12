@@ -85,6 +85,8 @@ namespace EasyFramework.Edit
 		Component,
 		/// <summary> 压缩 </summary>
 		Compression,
+		/// <summary> 数据 </summary>
+		Data,
 		/// <summary> 样品 </summary>
 		Demo,
 		/// <summary> 完成 </summary>

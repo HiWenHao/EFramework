@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using EasyFramework.Manager.UI;
 using UnityEngine;
 
-namespace EasyFramework.Manager
+namespace EasyFramework.Managers
 {
     /// <summary>
     /// 用户界面管理器

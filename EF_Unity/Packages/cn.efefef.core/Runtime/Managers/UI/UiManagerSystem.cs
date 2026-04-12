@@ -17,7 +17,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
-namespace EasyFramework.Manager
+namespace EasyFramework.Managers
 {
     public partial class UiManager
     {

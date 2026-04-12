@@ -16,5 +16,7 @@ MonoBehaviour:
   _extractPath: Assets/
   _uiPrefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
   _uiCodePath: Assets/ExampleGame/ScriptsHotfix/_Test/
+  _lubanCodePath: Assets/ExampleGame/ScriptsHotfix/JsonConfig/
+  _lubanDataPath: Assets/ExampleGame/Resources/JsonData/
   _sublimePath: D:/Jobs/Sublime Text/sublime_text.exe
   _notepadPath: 

@@ -1,0 +1,19 @@
+{
+  "name": "cn.efefef.http",
+  "displayName": "EF.Http",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "A sample http request manager.",
+  "author": {
+    "name": "Alvin",
+    "url": "https://blog.csdn.net/Wenhao_China"
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}

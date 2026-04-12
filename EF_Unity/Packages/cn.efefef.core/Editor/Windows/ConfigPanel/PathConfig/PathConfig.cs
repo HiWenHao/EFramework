@@ -20,32 +20,39 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     {
         [SerializeField, Header(LanguagAttribute.AtlasFolder)]
         private string _atlasFolder = "Assets/";
-
         public string AtlasFolder => _atlasFolder;
 
         [SerializeField, Header(LanguagAttribute.ExtractPath)]
         private string _extractPath = "Assets/";
-
         public string ExtractPath => _extractPath;
 
         [SerializeField, Header(LanguagAttribute.UIPrefabPath)]
         private string _uiPrefabPath = "Assets/";
-
         public string UIPrefabPath => _uiPrefabPath;
 
         [SerializeField, Header(LanguagAttribute.UICodePath)]
         private string _uiCodePath = "Assets/";
-
         public string UICodePath => _uiCodePath;
+        
+        [SerializeField, Header("Luban Code Path")]
+        private string _lubanCodePath = "Assets/";
+        public string LubanCodePath => _lubanCodePath;
+        
+        [SerializeField, Header("Luban Data Path")]
+        private string _lubanDataPath = "Assets/";
+        public string LubanDataPath => _lubanDataPath;
+        
+        
 
+        //  ====================================================================
+        
+        
         [SerializeField, Header(LanguagAttribute.SublimePath)]
         private string _sublimePath = "";
-
         public string SublimePath => _sublimePath;
 
         [SerializeField, Header(LanguagAttribute.NotepadPath)]
         private string _notepadPath = "";
-
         public string NotepadPath => _notepadPath;
     }
 }

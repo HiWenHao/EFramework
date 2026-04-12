@@ -30,6 +30,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _extractPath;
         private SerializedProperty _uiCodePath;
         private SerializedProperty _uiPrefabPath;
+        private SerializedProperty _lubanCodePath;
+        private SerializedProperty _lubanDataPath;
         private SerializedObject _customSettings;
 
         public PathConfigPanel(string name, PathConfig target) : base(name, target)
@@ -61,6 +63,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _extractPath = _customSettings.FindProperty("_extractPath");
             _uiCodePath = _customSettings.FindProperty("_uiCodePath");
             _uiPrefabPath = _customSettings.FindProperty("_uiPrefabPath");
+            _lubanCodePath = _customSettings.FindProperty("_lubanCodePath");
+            _lubanDataPath = _customSettings.FindProperty("_lubanDataPath");
         }
 
         internal override void OnGUI()
@@ -80,6 +84,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }),
                 _uiCodePath);
             SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), _extractPath);
+            SelectionFolderPath("Luban" + LC.Combine(new Lc[] { Lc.Data, Lc.Path }), _lubanDataPath);
+            SelectionFolderPath("Luban" + LC.Combine(new Lc[] { Lc.Code, Lc.Path }), _lubanCodePath);
 
             EditorGUILayout.LabelField(
                 $"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----",

@@ -10,9 +10,11 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace EasyFramework.Edit.MenuToolkit
 {
@@ -29,37 +31,16 @@ namespace EasyFramework.Edit.MenuToolkit
             StartProgram(Application.dataPath + "/../../Tools/ExcelToByteFIle", "ExcelToByteFile.exe");
         }
 
-        [MenuItem("EFTools/Utility/Start Luabn", false, 10001)]
-        private static void StartLuabn()
+        [MenuItem("EFTools/Utility/Start Luban", false, 10001)]
+        private static void StartLuban()
         {
-            string assetsPath = $"{Application.dataPath}/Luban";
-
-            string asmdefContent = File.ReadAllText($"{assetsPath}/Luban.asmdef");
-            string asmdefMetaContent = File.ReadAllText($"{assetsPath}/Luban.asmdef.meta");
-
-            StartProgram(Application.dataPath + "/../../Tools/LubanTools", "gen.bat", assetsPath);
-
-            StreamWriter fs = File.CreateText($"{assetsPath}/Luban.asmdef");
-            try
-            {
-                fs.Write(asmdefContent);
-            }
-            finally
-            {
-                fs.Dispose();
-            }
-
-            StreamWriter fsMeta = File.CreateText($"{assetsPath}/Luban.asmdef.meta");
-            try
-            {
-                fsMeta.Write(asmdefMetaContent);
-            }
-            finally
-            {
-                fsMeta.Dispose();
-            }
-
-            D.Log("Luban run successfully.!!");
+            string[] collection = {
+                $"{Application.dataPath[..^6]}{ConfigManager.Path.LubanDataPath}",
+                $"{Application.dataPath[..^6]}{ConfigManager.Path.LubanCodePath}"
+            };
+            StartProgram(Application.dataPath + "/../../Tools/LubanTools", "gen.bat", collection);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
@@ -68,19 +49,26 @@ namespace EasyFramework.Edit.MenuToolkit
         /// <param name="programPath">运行文件所在绝对路径，不带名称</param>
         /// <param name="programName">运行文件名称，带后缀</param>
         /// <param name="arguments">启动运行文件时的参数</param>
-        private static void StartProgram(string programPath, string programName, string arguments = "")
+        private static void StartProgram(string programPath, string programName, string[] arguments = null)
         {
             try
             {
-                System.Diagnostics.Process myprocess = new System.Diagnostics.Process();
+                Process myprocess = new Process();
                 myprocess.StartInfo =
-                    new System.Diagnostics.ProcessStartInfo(programPath + "/" + programName, arguments)
+                    new ProcessStartInfo(programPath + "/" + programName)
                     {
                         WorkingDirectory = programPath,
                         CreateNoWindow = true,
                         UseShellExecute = false,
                         RedirectStandardOutput = true
                     };
+
+                if (arguments != null)
+                    foreach (string argument in arguments)
+                    {
+                        myprocess.StartInfo.ArgumentList.Add(argument);
+                    }
+
                 myprocess.Start();
             }
             catch (Exception ex)

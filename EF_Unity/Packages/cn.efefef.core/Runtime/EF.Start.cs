@@ -12,7 +12,6 @@
 using EasyFramework.Managers;
 using System.Collections;
 using EasyFramework;
-using EasyFramework.Manager;
 using UnityEngine;
 
 public sealed partial class EF
@@ -49,10 +48,7 @@ public sealed partial class EF
 
     /// <summary> Audio manager.<para>音频管理器</para></summary>
     public static AudioManager Audio => AudioManager.Instance;
-
-    /// <summary> Network (HTTP) manager.<para>网络HTTP管理器</para></summary>
-    public static HttpsManager Https => HttpsManager.Instance;
-
+    
     /// <summary> Scene manager.<para>场景管理器</para></summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
 
