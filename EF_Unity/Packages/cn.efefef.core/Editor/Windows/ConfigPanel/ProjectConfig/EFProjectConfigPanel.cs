@@ -19,7 +19,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// 项目设置面板
     /// </summary>
-    internal class ProjectConfigPanel : EFConfigPanelBase
+    [EFConfig]
+    internal class EFProjectConfigPanel : EFConfigPanelBase
     {
         bool _systemInfoSwitch;
         string _editorUser;
@@ -32,18 +33,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _appConstConfig;
         private SerializedProperty _appConstManagerList;
 
-        public ProjectConfigPanel(string name, ProjectConfig target) : base(name, target)
-        {
-        }
-
-        internal override void OnEnable(string assetsPath)
+        public override int Priority => 0;
+        public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Settings });
+        
+        public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
         }
 
-        internal override void LoadWindowData()
+        public override void LoadWindowData()
         {
-            _settingPanel = new SerializedObject(TargetScriptable);
+            _settingPanel = new SerializedObject(ConfigManager.Project);
             _appConstConfig = _settingPanel.FindProperty("_appConst");
             _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
             _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
@@ -57,14 +57,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             var userInfoType = userInfo.GetType();
             PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
             _editorUser = (string)propertyInfo.GetValue(userInfo);
-            EditorPrefs.SetString($"{((ProjectConfig)TargetScriptable).AppConst.AppPrefix}EditorUser", _editorUser);
+            EditorPrefs.SetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser", _editorUser);
 
             FindAllManager();
 
             _systemInfoSwitch = true;
         }
 
-        internal override void OnGUI()
+        public override void OnGUI()
         {
             SystemInfos();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();

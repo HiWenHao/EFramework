@@ -18,7 +18,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    internal class PathConfigPanel : EFConfigPanelBase
+    [EFConfig]
+    internal class EFPathConfigPanel : EFConfigPanelBase
     {
         Vector2 _scrollPos;
 
@@ -34,16 +35,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _lubanDataPath;
         private SerializedObject _customSettings;
 
-        public PathConfigPanel(string name, PathConfig target) : base(name, target)
-        {
-        }
-
-        internal override void OnEnable(string assetsPath)
+        public override string Name => LC.Combine(new Lc[] { Lc.Path, Lc.Config });
+        
+        public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
         }
 
-        internal override void LoadWindowData()
+        public override void LoadWindowData()
         {
             _uiStyle = new GUIStyle()
             {
@@ -55,7 +54,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             };
 
             //PathConfig pathConfig = EditorUtils.LoadSettingAtPath<PathConfig>();
-            _customSettings = new SerializedObject(TargetScriptable);
+            _customSettings = new SerializedObject(ConfigManager.Path);
 
             _sublimePath = _customSettings.FindProperty("_sublimePath");
             _notepadPath = _customSettings.FindProperty("_notepadPath");
@@ -67,7 +66,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _lubanDataPath = _customSettings.FindProperty("_lubanDataPath");
         }
 
-        internal override void OnGUI()
+        public override void OnGUI()
         {
             _customSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
@@ -101,7 +100,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _customSettings.ApplyModifiedProperties();
         }
 
-        internal override void OnDestroy()
+        public override void OnDestroy()
         {
             SaveAssetsInfo();
         }

@@ -15,33 +15,32 @@ using UnityEngine;
 namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
-    /// Please modify the description。
+    /// UI自动绑定设置
     /// </summary>
-    internal class UiBindingPanel : EFConfigPanelBase
+    [EFConfig]
+    internal class EFUiBindingConfigPanel : EFConfigPanelBase
     {
         Vector2 _scrllPos;
 
         private SerializedProperty _namespace;
         private SerializedProperty _rulePrefixes;
         private SerializedObject _customSettings;
+        
+        public override string Name => LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind });
 
-        public UiBindingPanel(string name, UiBindingConfig target) : base(name, target)
-        {
-        }
-
-        internal override void OnEnable(string assetsPath)
+        public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
         }
 
-        internal override void LoadWindowData()
+        public override void LoadWindowData()
         {
-            _customSettings = new SerializedObject(TargetScriptable);
+            _customSettings = new SerializedObject(ConfigManager.UiBinding);
             _namespace = _customSettings.FindProperty("_namespace");
             _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
         }
 
-        internal override void OnGUI()
+        public override void OnGUI()
         {
             _customSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();

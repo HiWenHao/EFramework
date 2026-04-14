@@ -432,6 +432,14 @@
     ]
   },
   {
+    "name": "Download",
+    "desc": "下载",
+    "array": [
+      "Download",
+      "下载"
+    ]
+  },
+  {
     "name": "Distance",
     "desc": "距离",
     "array": [
@@ -512,6 +520,14 @@
     ]
   },
   {
+    "name": "Exist",
+    "desc": "存在",
+    "array": [
+      "Exist",
+      "存在"
+    ]
+  },
+  {
     "name": "Editor",
     "desc": "编辑器",
     "array": [
@@ -525,6 +541,14 @@
     "array": [
       "Enable",
       "启动"
+    ]
+  },
+  {
+    "name": "Equals",
+    "desc": "相等",
+    "array": [
+      "Equals",
+      "相等"
     ]
   },
   {
@@ -953,10 +977,10 @@
   },
   {
     "name": "No",
-    "desc": "不",
+    "desc": "没有",
     "array": [
       "No",
-      "不"
+      "没有"
     ]
   },
   {
@@ -969,10 +993,10 @@
   },
   {
     "name": "Not",
-    "desc": "没",
+    "desc": "不",
     "array": [
       "Not",
-      "没"
+      "不"
     ]
   },
   {
@@ -1029,6 +1053,14 @@
     "array": [
       "Only",
       "只"
+    ]
+  },
+  {
+    "name": "Other",
+    "desc": "其他",
+    "array": [
+      "Other",
+      "其他"
     ]
   },
   {
@@ -1360,6 +1392,14 @@
     ]
   },
   {
+    "name": "Server",
+    "desc": "服务器",
+    "array": [
+      "Server",
+      "服务器"
+    ]
+  },
+  {
     "name": "System",
     "desc": "系统",
     "array": [
@@ -1533,6 +1573,22 @@
     "array": [
       "Under",
       "之下"
+    ]
+  },
+  {
+    "name": "Update",
+    "desc": "更新",
+    "array": [
+      "Update",
+      "更新"
+    ]
+  },
+  {
+    "name": "Upload",
+    "desc": "上传",
+    "array": [
+      "Upload",
+      "上传"
     ]
   },
   {

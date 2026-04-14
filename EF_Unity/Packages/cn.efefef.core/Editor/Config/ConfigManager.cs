@@ -1,4 +1,4 @@
-/* 
+/*
  * ================================================
  * Describe:      This script is used to .
  * Author:        Xiaohei.Wang(Wenhao)
@@ -7,52 +7,38 @@
  * ModifyTime:    2023-04-20 20:41:57
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using EasyFramework.Edit.Windows.ConfigPanel;
+using UnityEngine;
 
 namespace EasyFramework.Edit
 {
     /// <summary>
     /// Easy framework setting utils.框架设置工具
     /// </summary>
-    public static class ConfigManager
+    public static partial class ConfigManager
     {
-        private static ProjectConfig _projectConfig;
-        public static ProjectConfig Project
-        {
-            get
-            {
-                if (_projectConfig is null && EditorUtils.CheckAssets<ProjectConfig>(out var pathConfigPath))
-                    _projectConfig = EditorUtils.LoadSettingAtPath<ProjectConfig>();
-                _projectConfig ??= Create.CreateSettings.Instance<ProjectConfig>(true, "Assets/Resources/Configs");
-                return _projectConfig;
-            }
-        }
-    
+        private const string ConfigEditPath = "Assets/Editor Resources/Configs";
+        private const string ConfigRuntimePath = "Assets/Resources/Configs";
 
         private static PathConfig _pathConfig;
-        public static PathConfig Path
-        {
-            get
-            {
-                if (_pathConfig is null && EditorUtils.CheckAssets<PathConfig>(out var pathConfigPath))
-                    _pathConfig = EditorUtils.LoadSettingAtPath<PathConfig>();
-                return _pathConfig;
-            }
-        }
-        
+        private static ProjectConfig _projectConfig;
         private static UiBindingConfig _uiBindingConfig;
-        public static UiBindingConfig UiBinding
+
+
+        public static PathConfig Path => _pathConfig.GetConfig<PathConfig>(ConfigEditPath);
+        public static ProjectConfig Project => _projectConfig.GetConfig<ProjectConfig>(ConfigRuntimePath);
+        public static UiBindingConfig UiBinding => _uiBindingConfig.GetConfig<UiBindingConfig>(ConfigEditPath);
+        
+        
+        private static T GetConfig<T>(this ScriptableObject target, string path) where T : ScriptableObject, new()
         {
-            get
-            {
-                if (_uiBindingConfig is null && EditorUtils.CheckAssets<UiBindingConfig>(out var pathConfigPath))
-                    _uiBindingConfig = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
-                if (_uiBindingConfig is null)
-                    Create.CreateSettings.Instance<UiBindingConfig>(true, "Assets/Resources/Configs");
-                return _uiBindingConfig;
-            }
+            T config = target as T;
+            if (config is null && EditorUtils.CheckAssets<T>(out var pathConfigPath))
+                config = EditorUtils.LoadSettingAtPath<T>();
+            config ??= Create.CreateSettings.Instance<T>(true, path);
+            return config;
         }
     }
 }

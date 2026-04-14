@@ -36,12 +36,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         string _assetsPath;
         Vector2 _allPostation;
         AssetsInformation _assets;
+        
+        public override string Name => LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch });
 
-        internal AssetsSwitch(string name, ProjectConfig target) : base(name, target)
-        {
-        }
-
-        internal override void OnEnable(string assetsPath)
+        public override void OnEnable(string assetsPath)
         {
             _assetsPath = assetsPath;
             string configPath = Path.Combine(_assetsPath, ASSETSINFO);
@@ -51,7 +49,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _managerCount = _assets.Managers.Count;
         }
 
-        internal override void OnGUI()
+        public override void OnGUI()
         {
             //  ScrollView
             _allPostation = EditorGUILayout.BeginScrollView(_allPostation);
@@ -116,7 +114,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             #endregion
         }
 
-        internal override void OnDestroy()
+        public override void OnDestroy()
         {
             SaveAssetsInfo();
         }

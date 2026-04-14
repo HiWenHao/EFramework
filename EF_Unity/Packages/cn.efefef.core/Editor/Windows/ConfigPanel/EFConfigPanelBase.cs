@@ -9,50 +9,45 @@
  * ===============================================
  */
 
-using UnityEngine;
-
 namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
     /// 设置面板基类
     /// </summary>
-    internal abstract class EFConfigPanelBase
+    public abstract class EFConfigPanelBase
     {
-        internal EFConfigPanelBase(string name, ScriptableObject s)
-        {
-            Name = name;
-            TargetScriptable = s;
-        }
-
-        public string Name { get; private set; }
-
         /// <summary>
-        /// 序列化目标
+        /// 面板排序优先级, -1时不做排序, 默认最后
         /// </summary>
-        internal ScriptableObject TargetScriptable { get; private set; }
-
+        public virtual int Priority { get; } = -1;
+        
+        /// <summary>
+        /// 面板名称
+        /// </summary>
+        public abstract string Name { get; }
+        
         /// <summary>
         /// 当首次进入
         /// </summary>
         /// <param name="assetsPath">配置总路径</param>
-        internal abstract void OnEnable(string assetsPath);
+        public abstract void OnEnable(string assetsPath);
 
         /// <summary>
         /// 加载窗口数据
         /// </summary>
-        internal virtual void LoadWindowData()
+        public virtual void LoadWindowData()
         {
         }
 
         /// <summary>
         /// 界面绘制
         /// </summary>
-        internal abstract void OnGUI();
+        public abstract void OnGUI();
 
         /// <summary>
         /// 当销毁时
         /// </summary>
-        internal virtual void OnDestroy()
+        public virtual void OnDestroy()
         {
         }
     }

@@ -111,6 +111,8 @@ namespace EasyFramework.Edit
 		Display,
 		/// <summary> 默认 </summary>
 		Default,
+		/// <summary> 下载 </summary>
+		Download,
 		/// <summary> 距离 </summary>
 		Distance,
 		/// <summary> 方向 </summary>
@@ -131,10 +133,14 @@ namespace EasyFramework.Edit
 		Edges,
 		/// <summary> 错误 </summary>
 		Error,
+		/// <summary> 存在 </summary>
+		Exist,
 		/// <summary> 编辑器 </summary>
 		Editor,
 		/// <summary> 启动 </summary>
 		Enable,
+		/// <summary> 相等 </summary>
+		Equals,
 		/// <summary> 元素 </summary>
 		Element,
 		/// <summary> 特效 </summary>
@@ -241,11 +247,11 @@ namespace EasyFramework.Edit
 		MoveUp,
 		/// <summary> 下移 </summary>
 		MoveDown,
-		/// <summary> 不 </summary>
+		/// <summary> 没有 </summary>
 		No,
 		/// <summary> 非 </summary>
 		Non,
-		/// <summary> 没 </summary>
+		/// <summary> 不 </summary>
 		Not,
 		/// <summary> 名称 </summary>
 		Name,
@@ -261,6 +267,8 @@ namespace EasyFramework.Edit
 		Open,
 		/// <summary> 仅仅、只 </summary>
 		Only,
+		/// <summary> 其他 </summary>
+		Other,
 		/// <summary> 对象、物体 </summary>
 		Object,
 		/// <summary> 选项 </summary>
@@ -343,6 +351,8 @@ namespace EasyFramework.Edit
 		Screen,
 		/// <summary> 选择 </summary>
 		Select,
+		/// <summary> 服务器 </summary>
+		Server,
 		/// <summary> 系统 </summary>
 		System,
 		/// <summary> 开关 </summary>
@@ -387,6 +397,10 @@ namespace EasyFramework.Edit
 		User,
 		/// <summary> 之下 </summary>
 		Under,
+		/// <summary> 更新 </summary>
+		Update,
+		/// <summary> 上传 </summary>
+		Upload,
 		/// <summary> 卸载 </summary>
 		Unload,
 		/// <summary> 值 </summary>

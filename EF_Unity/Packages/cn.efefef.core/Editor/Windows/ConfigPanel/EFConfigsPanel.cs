@@ -9,6 +9,8 @@
  * ===============================================
  */
 
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +26,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private Vector2 _scrollPositionL;
 
         private static EFConfigsPanel _window;
-        private EFConfigPanelBase[] _settings;
+        private List<EFConfigPanelBase> _settings;
 
         [MenuItem("EFTools/Settings &E", priority = 0)]
         private static void OpenWindow()
@@ -34,17 +36,23 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         protected override void LoadWindowData()
         {
-            _assetsPath = Utility.Path.GetEfAssetsPath();
-            ;
-            _settings ??= new[]
+            if (null != _settings)
+                return;
+            
+            _settings = new List<EFConfigPanelBase>();
+
+            Type attribute = typeof(EFConfigAttribute);
+            Type[] types = EditorUtils.GetAssembly("EF.Editor").GetTypes();
+
+            foreach (Type oneType in types)
             {
-                new ProjectConfigPanel(LC.Combine(new Lc[] { Lc.Project, Lc.Settings }), ConfigManager.Project) as
-                    EFConfigPanelBase,
-                new PathConfigPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Config }), ConfigManager.Path),
-                //new AssetsSwitch(LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch })),
-                new UiBindingPanel(LC.Combine(new Lc[] { Lc.Code, Lc.Auto, Lc.Bind }),
-                    EditorUtils.LoadSettingAtPath<UiBindingConfig>())
-            };
+                if (!oneType.IsDefined(attribute, false))
+                    continue;
+
+                if (Activator.CreateInstance(oneType) is not EFConfigPanelBase configPanel)
+                    continue;
+                AddConfigPanel(configPanel);
+            }
 
             _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
             _settings[_panelIndex].LoadWindowData();
@@ -62,7 +70,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _scrollPositionL = EditorGUILayout.BeginScrollView(_scrollPositionL, GUILayout.Width(140f),
                 GUILayout.Height(position.height));
             EditorGUILayout.Space();
-            int length = _settings.Length;
+            int length = _settings.Count;
             for (int i = 0; i < length; i++)
             {
                 DrawButton(i, _settings[i]);
@@ -102,7 +110,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (null == _settings)
                 return;
-            int length = _settings.Length;
+            int length = _settings.Count;
             for (int i = 0; i < length; i++)
             {
                 if (null == _settings[i])
@@ -110,9 +118,40 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _settings[i].OnDestroy();
             }
 
+            _settings.Clear();
             _settings = null;
         }
 
+        private void AddConfigPanel(EFConfigPanelBase config)
+        {
+            if (config.Priority == -1)
+            {
+                _settings.Add(config);
+                return;
+            }
+            
+            int count = _settings.Count;
+            int insertIndex = -1;
+            for (int i = 0; i < count; i++)
+            {
+                int priority = _settings[i].Priority;
+                
+                if (priority == -1)
+                {
+                    insertIndex = i;
+                    break;
+                }
+
+                if (priority <= config.Priority)
+                    continue;
+
+                insertIndex = i;
+                break;
+            }
+            
+            _settings.Insert(insertIndex, config);
+        }
+        
         private void DrawButton(int index, EFConfigPanelBase configPanel)
         {
             if (!GUILayout.Button(configPanel.Name,
@@ -121,12 +160,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                         alignment = TextAnchor.MiddleLeft
                     }))
                 return;
-
-            if (!configPanel.TargetScriptable)
-            {
-                D.Warning("Please create assets of the corresponding type, and reopen the window.");
-                return;
-            }
 
             _panelIndex = index;
             configPanel.OnEnable(_assetsPath);
@@ -147,7 +180,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (null == _window)
             {
                 _window = CreateInstance<EFConfigsPanel>(); // GetWindow<EFConfigsPanel>(false, "EF Settings");
-                _window.titleContent = new GUIContent("EF Settings");
+                _window.titleContent = new GUIContent("EF " + LC.Combine(Lc.Config));
                 _window.minSize = new Vector2(650.0f, 350.0f);
                 _window.Show();
                 _window.Focus();

@@ -1,10 +1,10 @@
 {
-  "name": "cn.efefef.http",
-  "displayName": "EF.Http",
+  "name": "cn.efefef.packages",
+  "displayName": "EF.Packages",
   "version": "0.1.0",
   "unity": "2021.3",
   "unityRelease": "10f1",
-  "description": "\u4e00\u4e2a\u7b80\u5355\u7684HTTP\u8bf7\u6c42\u7ba1\u7406\u5668\u3002",
+  "description": "EF\u6846\u67b6\u76f8\u5173\u7684\u5305\u8d44\u6e90",
   "author": {
     "name": "Alvin",
     "url": "https://blog.csdn.net/Wenhao_China"
@@ -13,7 +13,6 @@
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
   "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
-    "cn.efefef.core": "0.0.1",
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "cn.efefef.core": "0.0.1"
   }
 }

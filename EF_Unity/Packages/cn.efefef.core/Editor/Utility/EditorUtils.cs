@@ -13,6 +13,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Edit
 {
@@ -171,6 +172,29 @@ namespace EasyFramework.Edit
                 CopyFolder(subDir, desSubDir);
             }
         }
+        #endregion
+
+        #region Assembly
+
+        /// <summary>
+        /// 获取程序集
+        /// </summary>
+        /// <param name="assemblyName">程序集名</param>
+        public static System.Reflection.Assembly GetAssembly(string assemblyName)
+        {
+            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                if (assembly.GetName().Name == assemblyName)
+                {
+                    return assembly;
+                }
+            }
+
+            D.Error($"Not found this assembly whit name: {assemblyName}");
+            return null;
+        }
+
         #endregion
     }
 }
