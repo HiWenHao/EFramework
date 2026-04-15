@@ -12,7 +12,7 @@
 using System;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Edit.Packages
 {
     /// <summary>
     /// 单个资源包信息

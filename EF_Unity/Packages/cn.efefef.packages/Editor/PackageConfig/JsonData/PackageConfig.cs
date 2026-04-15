@@ -12,7 +12,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Edit.Packages
 {
     /// <summary>
     /// 用来管理配置

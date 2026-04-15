@@ -1,6 +1,6 @@
 /*
  * ================================================
- * Describe:      This script is used to .
+ * Describe:      通过Unity.API获取到从GitHub拉下来的Package包信息
  * Author:        Alvin8412
  * CreationTime:  2026-04-15 22:58:50
  * ModifyAuthor:  Alvin8412
@@ -13,8 +13,11 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Edit.Packages
 {
+    /// <summary>
+    /// 通过Unity.API获取到从GitHub拉下来的Package信息
+    /// </summary>
     public class GitPackageConfig
     {
         [JsonProperty("name")]

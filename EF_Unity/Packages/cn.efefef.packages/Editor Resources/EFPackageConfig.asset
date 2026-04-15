@@ -13,23 +13,26 @@ MonoBehaviour:
   m_Name: EFPackageConfig
   m_EditorClassIdentifier: 
   autoUpdate: 1
-  lastUpdateTimestamp: 1776255944
+  lastUpdateTimestamp: 1776278020
   packagesInfo:
   - Name: cn.efefef.core
     DisplayName: EF.Core
     FromGit: 0
-    Description: 
-    ServerVersion: 0.0.1
-    CurrentVersion: 0.0.1
+    NeedUpdate: 0
+    Description: "EF\u6846\u67B6\u6838\u5FC3\u5E93"
+    ServerVersion: 0.1.0
+    CurrentVersion: 0.1.0
   - Name: cn.efefef.http
     DisplayName: EF.Http
     FromGit: 0
-    Description: 
+    NeedUpdate: 0
+    Description: "\u4E00\u4E2A\u7B80\u5355\u7684HTTP\u8BF7\u6C42\u7BA1\u7406\u5668\u3002"
     ServerVersion: 0.1.0
-    CurrentVersion: 0.0.1
+    CurrentVersion: 0.1.0
   - Name: cn.efefef.packages
     DisplayName: EF.Packages
     FromGit: 0
-    Description: 
-    ServerVersion: 0.0.1
-    CurrentVersion: 0.0.1
+    NeedUpdate: 0
+    Description: "EF\u6846\u67B6\u76F8\u5173\u7684\u5305\u8D44\u6E90"
+    ServerVersion: 0.1.0
+    CurrentVersion: 0.1.0

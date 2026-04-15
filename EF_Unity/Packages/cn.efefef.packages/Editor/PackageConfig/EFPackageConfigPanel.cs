@@ -10,7 +10,11 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using EasyFramework.Edit.Windows;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.PackageManager;
@@ -18,7 +22,7 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Edit.Packages
 {
     /// <summary>
     /// 管理项目相关包资产
@@ -40,9 +44,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private int _progressCount;
 
-        private bool _updatingInfos;
-        private bool _inEFFoldoutHeader = true;
-        private bool _noInEFFoldoutHeader = true;
+        private bool _updatingVersionInfos;
+        private bool _updatingPackageInfos;
+        private bool _inEfFoldoutHeader = true;
+        private bool _notInEfFoldoutHeader = true;
         private Vector2 _scrollPosition;
 
         private PackageConfig _config;
@@ -66,17 +71,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             DrawUpdateVersionsInfo();
 
-            if (_updatingInfos || _packageConfig == null || null == _config)
+            if (_updatingVersionInfos || _packageConfig == null || null == _config)
                 return;
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.Information }), GUIUtils.Button(Color.green, 16),
+            if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Information }), GUIUtils.Button(Color.green, 16),
                     GUILayout.Height(40)))
             {
-                UpdateLocationPackagesInfo();
-                StartCheckAllPackageVersions();
+                if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
+                    UpdateAll();
+                else
+                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                        $"{LC.Combine(new[] { Lc.Request, Lc.Too, Lc.Frequently })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
+                        LC.Combine(Lc.Ok));
             }
 
             // if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Framework, Lc.Package }),
@@ -96,11 +105,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             #region EFFoldoutHeader
 
-            _inEFFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_inEFFoldoutHeader,
-                _inEFFoldoutHeader
+            _inEfFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_inEfFoldoutHeader,
+                _inEfFoldoutHeader
                     ? LC.Combine(new Lc[] { Lc.Close, Lc.Assets, Lc.Package, Lc.List })
                     : LC.Combine(new Lc[] { Lc.Open, Lc.Assets, Lc.Package, Lc.List }));
-            if (_inEFFoldoutHeader)
+            if (_inEfFoldoutHeader)
             {
                 int count = _config.packagesInfo.Count;
                 for (int i = 0; i < count; i++)
@@ -116,11 +125,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             #region OtherFoldoutHeader
 
-            _noInEFFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_noInEFFoldoutHeader,
-                _noInEFFoldoutHeader
+            _notInEfFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_notInEfFoldoutHeader,
+                _notInEfFoldoutHeader
                     ? LC.Combine(new Lc[] { Lc.Close, Lc.Other, Lc.Package, Lc.List })
                     : LC.Combine(new Lc[] { Lc.Open, Lc.Other, Lc.Package, Lc.List }));
-            if (_noInEFFoldoutHeader)
+            if (_notInEfFoldoutHeader)
             {
             }
 
@@ -195,12 +204,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     default:
                         throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
                 }
+
                 D.Emphasize($"{versionType}        ");
             }
         }
 
         // 跟踪移除请求的状态
         private static RemoveRequest _removeRequest;
+
         private void RemovePackageProgress()
         {
             if (_removeRequest == null) return;
@@ -220,7 +231,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _removeRequest = null;
             }
         }
-        
+
         private Lc CompareVersion(string v1, string v2)
         {
             if (string.IsNullOrEmpty(v1))
@@ -248,11 +259,106 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             return Lc.Unload;
         }
 
+        #region Common
+
+        /// <summary>
+        /// 可以打开进度弹窗
+        /// </summary>
+        /// <param name="title">进度标题</param>
+        /// <param name="cancelAction">取消回调</param>
+        private bool CanOpenProgressWindow(string title, Action<bool> cancelAction)
+        {
+            if (CustomProgressWindow.ShowWindow(title, cancelAction))
+                return true;
+
+            EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                $"{LC.Combine(new[] { Lc.Already, Lc.Have, Lc.One, Lc.Request })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
+                LC.Combine(Lc.Ok));
+            return false;
+        }
+
+        #endregion
+
+        private async void UpdateAll()
+        {
+            try
+            {
+                UpdateLocationPackagesInfo();
+                await GetPackageListFromGithub();
+                await StartCheckAllPackageVersions();
+            }
+            catch (Exception e)
+            {
+                D.Exception(e);
+            }
+        }
+
+        #region Packages Update
+
+        private void CancelUpdatePackagesInfo(bool fromSelf)
+        {
+            if (!_updatingPackageInfos)
+                return;
+            _updatingPackageInfos = false;
+
+            if (fromSelf)
+                CustomProgressWindow.CloseWindow();
+        }
+
+        private const string BRANCH = "master";
+        private const string GITHUB_API_BASE = "https://api.github.com/repos/";
+
+        private List<string> packages = new List<string>();
+
+        private async Task GetPackageListFromGithub()
+        {
+            if (!CanOpenProgressWindow(LC.Combine(new[] { Lc.Update, Lc.Package, Lc.List }), CancelUpdatePackagesInfo))
+                return;
+
+            _updatingPackageInfos = true;
+            string apiUrl = $"{GITHUB_API_BASE}HiWenHao/EFramework/contents/EF_Unity/Packages?ref={BRANCH}";
+            using UnityWebRequest request = UnityWebRequest.Get(apiUrl);
+            request.SetRequestHeader("User-Agent", "UnityEditor");
+
+            var operation = request.SendWebRequest();
+            while (!operation.isDone)
+                await Task.Yield();
+
+            if (!_updatingPackageInfos)
+                return;
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                D.Error(
+                    $"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.List, Lc.Error })},[{request.responseCode}]\t {request.downloadHandler.text}");
+                CancelUpdatePackagesInfo(true);
+                return;
+            }
+
+            string json = request.downloadHandler.text;
+            var items = JsonConvert.DeserializeObject<List<GitHubContentItem>>(json);
+            packages.Clear();
+
+            string pattern = @"^cn\.efefef\.";
+            foreach (var item in items)
+            {
+                if (item.Type != "dir" || !Regex.IsMatch(item.Name, pattern))
+                    continue;
+
+                packages.Add(item.Name);
+            }
+
+            CancelUpdatePackagesInfo(true);
+        }
+
+        #endregion
+
         #region Version Update
 
+        //  绘制 - 更新版本号
         private void DrawUpdateVersionsInfo()
         {
-            if (!_updatingInfos)
+            if (!_updatingVersionInfos)
                 return;
 
             EditorGUILayout.Space(15);
@@ -263,45 +369,29 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 CancelUpdateVersionInfo(true);
         }
 
+        //  取消 - 更新版本号
         private void CancelUpdateVersionInfo(bool fromSelf)
         {
-            if (!_updatingInfos)
+            if (!_updatingVersionInfos)
                 return;
-            _updatingInfos = false;
+            _updatingVersionInfos = false;
 
             if (fromSelf)
                 CustomProgressWindow.CloseWindow();
         }
 
-        private void CheckAllPackageVersionsDone()
-        {
-            CancelUpdateVersionInfo(true);
-        }
-
-        private async void StartCheckAllPackageVersions()
+        //  开始 - 更新全部版本号
+        private async Task StartCheckAllPackageVersions()
         {
             try
             {
                 await Task.CompletedTask;
-                if (!EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
-                {
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
-                        $"{LC.Combine(new[] {  Lc.Request, Lc.Too, Lc.Frequently })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
-                        LC.Combine(Lc.Ok));
-                    return;
-                }
-
-                if (!CustomProgressWindow.ShowWindow(LC.Combine(new[] { Lc.Package, Lc.Information, Lc.Updating }),
+                if (!CanOpenProgressWindow(LC.Combine(new[] { Lc.Package, Lc.Information, Lc.Updating }),
                         CancelUpdateVersionInfo))
-                {
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
-                        $"{LC.Combine(new[] { Lc.Already, Lc.Have, Lc.One, Lc.Request })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
-                        LC.Combine(Lc.Ok));
                     return;
-                }
 
                 _progressCount = 0;
-                _updatingInfos = true;
+                _updatingVersionInfos = true;
                 _config.lastUpdateTimestamp = EditorUtils.GetCurrentTimestamp();
                 CustomProgressWindow.UpdateInfo(_progressCount, _config.packagesInfo.Count);
 
@@ -309,7 +399,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 {
                     await Task.Delay(500);
 
-                    if (!_updatingInfos)
+                    if (!_updatingVersionInfos)
                         return;
 
                     StartCheckPackageVersion(packageInfo.Name);
@@ -321,38 +411,39 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
         }
 
+        //  开始 - 更新单个版本号
         private async void StartCheckPackageVersion(string packageName)
         {
             try
             {
+                D.Emphasize(packageName);
                 string url = $"{ServerGitPath}/{packageName}/package.json";
                 using UnityWebRequest request = UnityWebRequest.Get(url);
                 var operation = request.SendWebRequest();
 
                 while (!operation.isDone)
-                {
                     await Task.Yield();
-                }
 
                 ++_progressCount;
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    D.Error($"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })},[{packageName}]\t {request.error}");
+                    D.Error(
+                        $"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })},[{packageName}]\t {request.error}");
 
                     if (_progressCount >= _config.packagesInfo.Count)
-                        CheckAllPackageVersionsDone();
+                        CancelUpdateVersionInfo(true);
 
                     return;
                 }
 
                 if (_progressCount >= _config.packagesInfo.Count)
                 {
-                    CheckAllPackageVersionsDone();
+                    CancelUpdateVersionInfo(true);
                     return;
                 }
 
-                if (!_updatingInfos)
+                if (!_updatingVersionInfos)
                     return;
 
                 GitPackageConfig packageNewInfo =
@@ -374,7 +465,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     _config.packagesInfo.Add(new EFPackageInfo()
                     {
                         Name = packageNewInfo.Name,
-                        DisplayName = string.IsNullOrEmpty(packageNewInfo.DisplayName) ? packageNewInfo.Name : packageNewInfo.DisplayName,
+                        DisplayName = string.IsNullOrEmpty(packageNewInfo.DisplayName)
+                            ? packageNewInfo.Name
+                            : packageNewInfo.DisplayName,
                         FromGit = true,
                         Description = packageNewInfo.Description,
                         CurrentVersion = packageNewInfo.Version,
@@ -389,7 +482,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 D.Exception($"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })},[{packageName}]\t {e.Message}");
             }
         }
-        
+
+        //  本地 - 更新全部版本号
         private void UpdateLocationPackagesInfo()
         {
             for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
