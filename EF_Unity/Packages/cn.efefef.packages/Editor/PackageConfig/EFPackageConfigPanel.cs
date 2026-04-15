@@ -33,6 +33,9 @@ namespace EasyFramework.Edit.Packages
         public override int Priority => -1;
         public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Package, Lc.Assets });
 
+        private const string GitPackagePath = "https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/";
+        private const string GiteePackagePath = "https://gitee.com/wang_xiaoheiiii/EFramework.git?path=EF_Unity/Packages/";
+        
         /// <summary> 远端服务地址 </summary>
         private const string ServerGitPath =
             "https://raw.githubusercontent.com/HiWenHao/EFramework/master/EF_Unity/Packages";
@@ -79,6 +82,15 @@ namespace EasyFramework.Edit.Packages
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
+            #region Use Git
+
+            _config.useGit = EditorGUILayout.ToggleLeft("GitHub", _config.useGit);
+            if (_config.useGit)
+                _config.gitToken = EditorGUILayout.TextField("Git Token", _config.gitToken);
+            EditorGUILayout.Space(12.0f);
+
+            #endregion
+            
             #region Top Button
 
             EditorGUILayout.BeginHorizontal();
@@ -205,9 +217,8 @@ namespace EasyFramework.Edit.Packages
                     case Lc.Update:
                         //Client.Add(packageInfo.Name);
                         CustomProgressWindow.ShowWindow(LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
-                        _addRequest =
-                            Client.Add(
-                                $"https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/{packageInfo.Name}");
+                        string path = _config.useGit ? GitPackagePath : GiteePackagePath;
+                        _addRequest = Client.Add($"{path}{packageInfo.Name}");
                         EditorApplication.update += AddPackageProgress;
                         break;
                     case Lc.Unload:
@@ -367,6 +378,9 @@ namespace EasyFramework.Edit.Packages
             string apiUrl = $"{GithubAPIBase}HiWenHao/EFramework/contents/EF_Unity/Packages?ref={Branch}";
             using UnityWebRequest request = UnityWebRequest.Get(apiUrl);
             request.SetRequestHeader("User-Agent", "UnityEditor");
+            request.SetRequestHeader("Accept", "application/vnd.github.v3+json");
+            if (_config.useGit && !string.IsNullOrEmpty(_config.gitToken))
+                request.SetRequestHeader("Authorization", $"Bearer {_config.gitToken}");
 
             var operation = request.SendWebRequest();
             while (!operation.isDone)

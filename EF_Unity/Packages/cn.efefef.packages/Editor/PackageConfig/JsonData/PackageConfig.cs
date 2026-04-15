@@ -19,8 +19,11 @@ namespace EasyFramework.Edit.Packages
     /// </summary>
     public class PackageConfig : ScriptableObject
     {
-        /// <summary> 自动更新 </summary>
-        [SerializeField] [HideInInspector] public bool autoUpdate = true;
+        /// <summary> 使用git地址 </summary>
+        [SerializeField] [HideInInspector] public bool useGit = true;
+
+        /// <summary> git请求令牌 </summary>
+        [SerializeField] [HideInInspector] public string gitToken;
 
         /// <summary> 上次更新时间戳 </summary>
         [SerializeField] [HideInInspector] public long lastUpdateTimestamp;
