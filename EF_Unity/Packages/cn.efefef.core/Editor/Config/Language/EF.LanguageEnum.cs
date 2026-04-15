@@ -197,6 +197,8 @@ namespace EasyFramework.Edit
 		Is,
 		/// <summary> 初始化 </summary>
 		Init,
+		/// <summary> 安装 </summary>
+		Install,
 		/// <summary> 导入 </summary>
 		Import,
 		/// <summary> 惯性 </summary>

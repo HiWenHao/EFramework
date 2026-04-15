@@ -43,12 +43,14 @@ namespace EasyFramework.Edit.Packages
         private const string LocationConfigPath = "Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset";
 
         private int _progressCount;
-
         private bool _updatingVersionInfos;
         private bool _updatingPackageInfos;
         private bool _inEfFoldoutHeader = true;
         private bool _notInEfFoldoutHeader = true;
         private Vector2 _scrollPosition;
+
+        private AddRequest _addRequest;
+        private RemoveRequest _removeRequest;
 
         private PackageConfig _config;
         private SerializedObject _packageConfig;
@@ -76,6 +78,8 @@ namespace EasyFramework.Edit.Packages
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
+            #region Top Button
+
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Information }), GUIUtils.Button(Color.green, 16),
                     GUILayout.Height(40)))
@@ -100,6 +104,8 @@ namespace EasyFramework.Edit.Packages
 
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(12.0f);
+
+            #endregion
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUIUtils.ScrollViewBackground());
 
@@ -188,50 +194,29 @@ namespace EasyFramework.Edit.Packages
                 Lc.Unload => GUIUtils.LightRed,
                 _ => Color.white
             };
+            
             if (GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(160)))
             {
                 switch (versionType)
                 {
                     case Lc.Download:
                     case Lc.Update:
-                        Client.Add(packageInfo.Name);
+                        //Client.Add(packageInfo.Name);
+                        _addRequest = Client.Add($"https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/{packageInfo.Name}");
+                        EditorApplication.update += AddPackageProgress;
                         break;
                     case Lc.Unload:
                         _removeRequest = Client.Remove(packageInfo.Name);
-
                         EditorApplication.update += RemovePackageProgress;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
                 }
 
-                D.Emphasize($"{versionType}        ");
+                D.Emphasize($"{versionType}");
             }
         }
-
-        // 跟踪移除请求的状态
-        private static RemoveRequest _removeRequest;
-
-        private void RemovePackageProgress()
-        {
-            if (_removeRequest == null) return;
-
-            if (_removeRequest.IsCompleted)
-            {
-                if (_removeRequest.Status == StatusCode.Success)
-                {
-                    Debug.Log($"操作成功: 包 {_removeRequest.PackageIdOrName} 已移除。");
-                }
-                else if (_removeRequest.Status >= StatusCode.Failure)
-                {
-                    Debug.LogError($"操作失败: {_removeRequest.Error.message}");
-                }
-
-                EditorApplication.update -= RemovePackageProgress;
-                _removeRequest = null;
-            }
-        }
-
+        
         private Lc CompareVersion(string v1, string v2)
         {
             if (string.IsNullOrEmpty(v1))
@@ -279,6 +264,34 @@ namespace EasyFramework.Edit.Packages
 
         #endregion
 
+        #region Download || Unload
+        
+        private void AddPackageProgress()
+        {
+            if (_addRequest is not { IsCompleted: true }) 
+                return;
+
+            if (_addRequest.Status != StatusCode.Success)
+                Debug.LogError($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
+            
+            EditorApplication.update -= AddPackageProgress;
+            _addRequest = null;
+        }
+        
+        private void RemovePackageProgress()
+        {
+            if (_removeRequest is not { IsCompleted: true }) 
+                return;
+
+            if (_removeRequest.Status != StatusCode.Success)
+                Debug.Log($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
+            
+            EditorApplication.update -= RemovePackageProgress;
+            _removeRequest = null;
+        }
+        
+        #endregion
+        
         private async void UpdateAll()
         {
             try
@@ -342,13 +355,19 @@ namespace EasyFramework.Edit.Packages
                 if (item.Type != "dir" || !Regex.IsMatch(item.Name, pattern))
                     continue;
 
+                bool needAdded = true;
                 for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
                 {
                     var packageInfo = _config.packagesInfo[i];
                     
-                    if (packageInfo.Name == item.Name)
+                    if (packageInfo.Name != item.Name)
                         continue;
 
+                    needAdded = false;
+                    break;
+                }
+
+                if (needAdded)
                     _config.packagesInfo.Add(new EFPackageInfo()
                     {
                         Name = item.Name,
@@ -358,8 +377,6 @@ namespace EasyFramework.Edit.Packages
                         CurrentVersion = "",
                         ServerVersion = "",
                     });
-                    break;
-                }
             }
 
             CancelUpdatePackagesInfo(true);

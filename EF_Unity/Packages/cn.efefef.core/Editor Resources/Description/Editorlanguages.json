@@ -777,6 +777,14 @@
       ]
     },
     {
+      "name": "Install",
+      "desc": "安装",
+      "array": [
+        "Install",
+        "安装"
+      ]
+    },
+    {
       "name": "Import",
       "desc": "导入",
       "array": [
