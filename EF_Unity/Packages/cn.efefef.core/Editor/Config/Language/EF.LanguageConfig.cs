@@ -9,11 +9,11 @@
  * ===============================================
  */
 
-using LitJson;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 using UnityEditor;
 
 namespace EasyFramework.Edit
@@ -30,6 +30,29 @@ namespace EasyFramework.Edit
     /// </summary>
     internal static class LC
     {
+        private class LcRoot
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            public List <LcItem > LcList { get; set; }
+        }
+        private class LcItem
+        {
+            /// <summary>
+            /// 名字
+            /// </summary>
+            public string name { get; set; }
+            /// <summary>
+            /// 描述
+            /// </summary>
+            public string desc { get; set; }
+            /// <summary>
+            /// 语言数组
+            /// </summary>
+            public List <string > array { get; set; }
+        }
+        
         public static ELanguage DisPlayLanguage
         {
             get => (ELanguage)m_currentIndex;
@@ -45,26 +68,27 @@ namespace EasyFramework.Edit
         static int m_currentIndex;
         static string m_Separator;
         static string m_AassetsPath;
-        static Dictionary<string, string> m_Dictionary;
+        static Dictionary<Lc, LcItem> m_Dictionary;
 
         static void LoadLanguage()
         {
             if (null != m_Dictionary && m_Dictionary.Count != 0) 
                 return;
-
+ 
             m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
             m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             DisPlayLanguage = (ELanguage)m_currentIndex;
-            JsonData jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
-            m_Dictionary = new Dictionary<string, string>();
+            
+            LcRoot lcRoot = JsonConvert.DeserializeObject<LcRoot>(File.ReadAllText(m_AassetsPath));
+            m_Dictionary = new Dictionary<Lc, LcItem>();
             m_Dictionary.Clear();
 
-            for (int i = 0; i < jd.Count; i++)
+            foreach (LcItem lcItem in lcRoot.LcList)
             {
-                m_Dictionary.Add(jd[i]["name"].ToString(), jd[i]["array"][m_currentIndex].ToString());
+                m_Dictionary.Add(Enum.Parse<Lc>(lcItem.name), lcItem);
             }
 
-            m_Separator = m_Dictionary["S"];
+            m_Separator = Combine(Lc.S);
         }
 
         #region Combine
@@ -72,20 +96,20 @@ namespace EasyFramework.Edit
         public static string Combine(Lc lc)
         {
             LoadLanguage();
-            return m_Dictionary[lc.ToString()];
+            return m_Dictionary[lc].array[m_currentIndex];
         }
 
         public static string Combine(Lc[] lc)
         {
             LoadLanguage();
 
-            StringBuilder _sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < lc.Length; i++)
             {
-                _sb.Append($"{m_Dictionary[lc[i].ToString()]}{m_Separator}");
+                sb.Append($"{m_Dictionary[lc[i]].array[m_currentIndex]}{m_Separator}");
             }
 
-            return _sb.ToString();
+            return sb.ToString();
         }
 
         #endregion
@@ -103,12 +127,12 @@ namespace EasyFramework.Edit
             string lcPath = Path.Combine(Utility.Path.GetEfPath(), "Runtime/Config/");
             try
             {
-                File.Delete(Path.Combine(lcPath, "LanguagAttribute.cs"));
-                File.Delete(Path.Combine(lcPath, "LanguagAttribute.cs.meta"));
+                File.Delete(Path.Combine(lcPath, "LanguageAttribute.cs"));
+                File.Delete(Path.Combine(lcPath, "LanguageAttribute.cs.meta"));
                 
                 File.Copy(
-                    Path.Combine(lcPath, $"{DisPlayLanguage}~/LanguagAttribute.cs"),
-                    Path.Combine(lcPath, "LanguagAttribute.cs"));
+                    Path.Combine(lcPath, $"{DisPlayLanguage}~/LanguageAttribute.cs"),
+                    Path.Combine(lcPath, "LanguageAttribute.cs"));
             }
             catch (Exception ex)
             {
@@ -127,17 +151,17 @@ namespace EasyFramework.Edit
             if (string.IsNullOrEmpty(m_AassetsPath))
                 m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
 
-            JsonData _jd = JsonMapper.ToObject(File.ReadAllText(m_AassetsPath));
+            LcRoot lcRoot = JsonConvert.DeserializeObject<LcRoot>(File.ReadAllText(m_AassetsPath));
 
             StringBuilder _sb = new StringBuilder();
             _sb.AppendLine("namespace EasyFramework.Edit\n{");
             _sb.AppendLine("\t/// <summary> This script is used to set the editor panel language <summary>");
             _sb.AppendLine("\tpublic enum Lc\n\t{");
 
-            for (int i = 0; i < _jd.Count; i++)
+            foreach (LcItem lcItem in lcRoot.LcList)
             {
-                _sb.AppendLine($"\t\t/// <summary> {_jd[i]["desc"]} </summary>");
-                _sb.AppendLine($"\t\t{_jd[i]["name"]},");
+                _sb.AppendLine($"\t\t/// <summary> {lcItem.desc} </summary>");
+                _sb.AppendLine($"\t\t{lcItem.name},");
             }
 
             _sb.AppendLine("\t}\n}");

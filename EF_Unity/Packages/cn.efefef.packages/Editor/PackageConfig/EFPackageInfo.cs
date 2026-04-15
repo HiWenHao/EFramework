@@ -25,10 +25,18 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         [SerializeField] public string Name;
         
+        /// <summary> 展示名 </summary>
+        [SerializeField] public string DisplayName;
+        
         /// <summary>
         /// 来源于Git
         /// </summary>
         [SerializeField] public bool FromGit;
+        
+        /// <summary>
+        /// 需要更新
+        /// </summary>
+        [SerializeField] public bool NeedUpdate;
         
         /// <summary>
         /// 包体描述

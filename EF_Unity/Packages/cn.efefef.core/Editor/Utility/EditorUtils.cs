@@ -9,6 +9,7 @@
  * ===============================================
 */
 
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -193,6 +194,30 @@ namespace EasyFramework.Edit
 
             D.Error($"Not found this assembly whit name: {assemblyName}");
             return null;
+        }
+
+        #endregion
+
+        #region Time
+        
+        /// <summary>
+        /// 获取当前 Unix 时间戳（秒）
+        /// </summary>
+        public static long GetCurrentTimestamp()
+        {
+            return DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        }
+
+        /// <summary>
+        /// 给定的时间戳是否已经超过当前时间 <paramref name="seconds"/> 秒
+        /// </summary>
+        /// <param name="timestamp">目标时间戳（秒）</param>
+        /// <param name="seconds">要判断的秒数</param>
+        /// <returns>如果当前时间 > timestamp + seconds 返回 true，否则 false</returns>
+        public static bool TimestampIsExceeded(long timestamp, int seconds)
+        {
+            long now = GetCurrentTimestamp();
+            return now > timestamp + seconds;
         }
 
         #endregion

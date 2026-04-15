@@ -13,16 +13,23 @@ MonoBehaviour:
   m_Name: EFPackageConfig
   m_EditorClassIdentifier: 
   autoUpdate: 1
+  lastUpdateTimestamp: 1776255944
   packagesInfo:
   - Name: cn.efefef.core
-    Description: This is a description
-    ServerVersion: 0.0.2
+    DisplayName: EF.Core
+    FromGit: 0
+    Description: 
+    ServerVersion: 0.0.1
     CurrentVersion: 0.0.1
   - Name: cn.efefef.http
-    Description: This is a description
-    ServerVersion: 0.0.1
-    CurrentVersion: 0.0.2
+    DisplayName: EF.Http
+    FromGit: 0
+    Description: 
+    ServerVersion: 0.1.0
+    CurrentVersion: 0.0.1
   - Name: cn.efefef.packages
-    Description: This is a description
+    DisplayName: EF.Packages
+    FromGit: 0
+    Description: 
     ServerVersion: 0.0.1
     CurrentVersion: 0.0.1

@@ -27,6 +27,8 @@ namespace EasyFramework.Edit
 		Animat,
 		/// <summary> 对齐 </summary>
 		AlignAt,
+		/// <summary> 已经 </summary>
+		Already,
 		/// <summary> 活动的 </summary>
 		Activity,
 		/// <summary> 放弃 </summary>
@@ -165,10 +167,14 @@ namespace EasyFramework.Edit
 		Found,
 		/// <summary> 文件夹 </summary>
 		Folder,
+		/// <summary> 朋友 </summary>
+		Friend,
 		/// <summary> 筛选 </summary>
 		Filtrate,
 		/// <summary> 框架 </summary>
 		Framework,
+		/// <summary> 频繁 </summary>
+		Frequently,
 		/// <summary> 计算器显卡、图形处理器 </summary>
 		GPU,
 		/// <summary> 拥有、具备 </summary>
@@ -219,6 +225,8 @@ namespace EasyFramework.Edit
 		Length,
 		/// <summary> 语言 </summary>
 		Language,
+		/// <summary> 我的 </summary>
+		My,
 		/// <summary> 最小 </summary>
 		Min,
 		/// <summary> 最大 </summary>
@@ -237,6 +245,8 @@ namespace EasyFramework.Edit
 		Mouse,
 		/// <summary> 缺失 </summary>
 		Missing,
+		/// <summary> 分钟 </summary>
+		Minutes,
 		/// <summary> 管理者 </summary>
 		Manager,
 		/// <summary> 材质球 </summary>
@@ -263,6 +273,10 @@ namespace EasyFramework.Edit
 		Or,
 		/// <summary> .....的 </summary>
 		Of,
+		/// <summary> 老 </summary>
+		Old,
+		/// <summary> 一个 </summary>
+		One,
 		/// <summary> 打开 </summary>
 		Open,
 		/// <summary> 仅仅、只 </summary>
@@ -319,6 +333,8 @@ namespace EasyFramework.Edit
 		Related,
 		/// <summary> 刷新 </summary>
 		Refresh,
+		/// <summary> 请求 </summary>
+		Request,
 		/// <summary> 弧度 </summary>
 		Radian,
 		/// <summary> 去除、解除 </summary>
@@ -369,6 +385,8 @@ namespace EasyFramework.Edit
 		Sensitivity,
 		/// <summary> 到 </summary>
 		To,
+		/// <summary> 太 </summary>
+		Too,
 		/// <summary> 时间 </summary>
 		Time,
 		/// <summary> 这个 </summary>
@@ -399,8 +417,12 @@ namespace EasyFramework.Edit
 		Under,
 		/// <summary> 更新 </summary>
 		Update,
+		/// <summary> 更新中 </summary>
+		Updating,
 		/// <summary> 上传 </summary>
 		Upload,
+		/// <summary> 上传中 </summary>
+		Uploading,
 		/// <summary> 卸载 </summary>
 		Unload,
 		/// <summary> 值 </summary>
@@ -419,6 +441,12 @@ namespace EasyFramework.Edit
 		Width,
 		/// <summary> 是的 </summary>
 		Yes,
+		/// <summary> 再试试 </summary>
+		TryAgain,
+		/// <summary> 好久不见 </summary>
+		LongTimeNoSee,
+		/// <summary> 请稍后 </summary>
+		PleaseWaitMoment,
 		/// <summary> 当前收集器中已经存在图集，请检查！ </summary>
 		SC_AtlasExistInCollection,
 		/// <summary> 图集已存在，是否覆盖？ </summary>

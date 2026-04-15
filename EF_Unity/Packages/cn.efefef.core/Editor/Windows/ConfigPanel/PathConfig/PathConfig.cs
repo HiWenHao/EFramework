@@ -18,19 +18,19 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// </summary>
     public class PathConfig : ScriptableObject
     {
-        [SerializeField, Header(LanguagAttribute.AtlasFolder)]
+        [SerializeField, Header(LanguageAttribute.AtlasFolder)]
         private string _atlasFolder = "Assets/";
         public string AtlasFolder => _atlasFolder;
 
-        [SerializeField, Header(LanguagAttribute.ExtractPath)]
+        [SerializeField, Header(LanguageAttribute.ExtractPath)]
         private string _extractPath = "Assets/";
         public string ExtractPath => _extractPath;
 
-        [SerializeField, Header(LanguagAttribute.UIPrefabPath)]
+        [SerializeField, Header(LanguageAttribute.UIPrefabPath)]
         private string _uiPrefabPath = "Assets/";
         public string UIPrefabPath => _uiPrefabPath;
 
-        [SerializeField, Header(LanguagAttribute.UICodePath)]
+        [SerializeField, Header(LanguageAttribute.UICodePath)]
         private string _uiCodePath = "Assets/";
         public string UICodePath => _uiCodePath;
         
@@ -47,11 +47,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         //  ====================================================================
         
         
-        [SerializeField, Header(LanguagAttribute.SublimePath)]
+        [SerializeField, Header(LanguageAttribute.SublimePath)]
         private string _sublimePath = "";
         public string SublimePath => _sublimePath;
 
-        [SerializeField, Header(LanguagAttribute.NotepadPath)]
+        [SerializeField, Header(LanguageAttribute.NotepadPath)]
         private string _notepadPath = "";
         public string NotepadPath => _notepadPath;
     }

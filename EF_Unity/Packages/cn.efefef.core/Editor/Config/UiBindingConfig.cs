@@ -22,7 +22,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <summary>
         /// 默认命名空间
         /// </summary>
-        [SerializeField, Header(LanguagAttribute.Namespace)]
+        [SerializeField, Header(LanguageAttribute.Namespace)]
         private string _namespace = "PleaseChangeTheNamespace";
         /// <summary> 默认命名空间 </summary>
         public string Namespace => _namespace;
@@ -30,7 +30,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <summary>
         /// 组件的缩略名字映射
         /// </summary>
-        [SerializeField, Header(LanguagAttribute.RulePrefixes)]
+        [SerializeField, Header(LanguageAttribute.RulePrefixes)]
         private List<RulePrefixes> _rulePrefixes = new List<RulePrefixes>()
         {
             new RulePrefixes("Btn","Button"),

@@ -9,11 +9,14 @@
  * ===============================================
  */
 
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace EasyFramework.Edit.Windows.ConfigPanel
 {
@@ -27,53 +30,71 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Package, Lc.Assets });
 
         /// <summary> 远端服务地址 </summary>
-        private const string ServerPath = "https://gitee.com/wang_xiaoheiiii/EFramework.git?path=EF_Unity/Packages/";
+        private const string ServerGitPath =
+            "https://raw.githubusercontent.com/HiWenHao/EFramework/master/EF_Unity/Packages";
 
-        private static GUIStyle _backgroundStyle;
+        /// <summary>
+        /// 本地资源配置路径
+        /// </summary>
+        private const string LocationConfigPath = "Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset";
 
+        private int _progressCount;
+
+        private bool _updatingInfos;
         private bool _inEFFoldoutHeader = true;
         private bool _noInEFFoldoutHeader = true;
         private Vector2 _scrollPosition;
-        
+
         private PackageConfig _config;
         private SerializedObject _packageConfig;
-        private SerializedProperty _autoUpdate;
-        private SerializedProperty _packagesInfoList;
 
         public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
         }
-        
+
         public override void LoadWindowData()
         {
             if (null != _config)
                 return;
 
-            _config = AssetDatabase.LoadAssetAtPath<PackageConfig>(
-                "Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset");
+            _config = AssetDatabase.LoadAssetAtPath<PackageConfig>(LocationConfigPath);
             _packageConfig = new SerializedObject(_config);
-            _autoUpdate = _packageConfig.FindProperty("autoUpdate");
-            _packagesInfoList = _packageConfig.FindProperty("packagesInfo");
-            
-            _backgroundStyle = new GUIStyle(GUI.skin.box)
-            {
-                padding = new RectOffset(10, 10, 10, 10),
-                margin = new RectOffset(5, 5, 5, 5)
-            };
-            
-            UpdatePackagesInfo();
         }
 
         public override void OnGUI()
         {
-            if (_packageConfig == null)
+            DrawUpdateVersionsInfo();
+
+            if (_updatingInfos || _packageConfig == null || null == _config)
                 return;
 
-            _packageConfig.Update();
-            _packageConfig.ApplyModifiedProperties();
-            
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+            using var changeCheckScope = new EditorGUI.ChangeCheckScope();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.Information }), GUIUtils.Button(Color.green, 16),
+                    GUILayout.Height(40)))
+            {
+                UpdateLocationPackagesInfo();
+                StartCheckAllPackageVersions();
+            }
+
+            // if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Framework, Lc.Package }),
+            //         GUIUtils.Button(Color.green, 16), GUILayout.Height(40)))
+            // {
+            // }
+
+            if (GUILayout.Button(LC.Combine(new[] { Lc.Create, Lc.Package }), GUIUtils.Button(Color.cyan, 16),
+                    GUILayout.Height(40)))
+            {
+            }
+
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space(12.0f);
+
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUIUtils.ScrollViewBackground());
+
+            #region EFFoldoutHeader
 
             _inEFFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_inEFFoldoutHeader,
                 _inEFFoldoutHeader
@@ -87,49 +108,59 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     DrawOnePackage(_config.packagesInfo[i]);
                 }
             }
+
             EditorGUILayout.Space(12.0f);
             EditorGUILayout.EndFoldoutHeaderGroup();
-            
-            
+
+            #endregion
+
+            #region OtherFoldoutHeader
+
             _noInEFFoldoutHeader = EditorGUILayout.BeginFoldoutHeaderGroup(_noInEFFoldoutHeader,
                 _noInEFFoldoutHeader
                     ? LC.Combine(new Lc[] { Lc.Close, Lc.Other, Lc.Package, Lc.List })
                     : LC.Combine(new Lc[] { Lc.Open, Lc.Other, Lc.Package, Lc.List }));
             if (_noInEFFoldoutHeader)
             {
-                
             }
+
             EditorGUILayout.Space(12.0f);
             EditorGUILayout.EndFoldoutHeaderGroup();
-            
-            
+
+            #endregion
+
             EditorGUILayout.EndScrollView();
             EditorGUILayout.Space(12.0f);
+
+            if (!changeCheckScope.changed) return;
+            _packageConfig.ApplyModifiedPropertiesWithoutUndo();
+            _packageConfig.ApplyModifiedProperties();
         }
 
         private void DrawOnePackage(EFPackageInfo packageInfo)
         {
             Lc versionType = CompareVersion(packageInfo.CurrentVersion, packageInfo.ServerVersion);
-            
-            EditorGUILayout.BeginVertical(_backgroundStyle, GUILayout.ExpandWidth(true));
-            
-            EditorGUILayout.SelectableLabel(packageInfo.Name, GUIUtils.Title);
+            EditorGUILayout.BeginVertical(GUIUtils.BackgroundStyle(), GUILayout.ExpandWidth(true));
+
+            EditorGUILayout.SelectableLabel(packageInfo.DisplayName, GUIUtils.Title());
             EditorGUILayout.LabelField(packageInfo.Description, GUILayout.ExpandWidth(true));
             EditorGUILayout.Space();
-            
+
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(new []{Lc.Current, Lc.Version}), GUIUtils.Text, GUILayout.Width(80));
-            EditorGUILayout.LabelField(packageInfo.CurrentVersion, GUIUtils.Text,GUILayout.ExpandWidth(true));
+            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Current, Lc.Version }), GUIUtils.Text(),
+                GUILayout.Width(80));
+            EditorGUILayout.LabelField(packageInfo.CurrentVersion, GUIUtils.Text(), GUILayout.ExpandWidth(true));
             DrawButton(versionType, packageInfo);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(new []{Lc.Server, Lc.Version}), GUIUtils.Text, GUILayout.Width(80));
+            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Server, Lc.Version }), GUIUtils.Text(),
+                GUILayout.Width(80));
             string serverContents = versionType == Lc.Non
                 ? LC.Combine(new[] { Lc.Not, Lc.Exist })
                 : packageInfo.ServerVersion;
-                EditorGUILayout.LabelField(serverContents, GUIUtils.Text, GUILayout.ExpandWidth(true));
+            EditorGUILayout.LabelField(serverContents, GUIUtils.Text(), GUILayout.ExpandWidth(true));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -140,43 +171,53 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (versionType == Lc.Upload && packageInfo.FromGit)
                 return;
-            
-            Lc type = versionType == Lc.Non? Lc.Unload: versionType;
-            GUIUtils.Button.normal.textColor = type switch
+
+            Lc type = versionType == Lc.Non ? Lc.Unload : versionType;
+            Color textColor = type switch
             {
                 Lc.Download or Lc.Update => Color.green,
                 Lc.Unload => GUIUtils.LightRed,
                 _ => Color.white
             };
-            if (GUILayout.Button(LC.Combine(type), GUIUtils.Button,GUILayout.Width(160)))
+            if (GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(160)))
             {
-                
+                switch (versionType)
+                {
+                    case Lc.Download:
+                    case Lc.Update:
+                        Client.Add(packageInfo.Name);
+                        break;
+                    case Lc.Unload:
+                        _removeRequest = Client.Remove(packageInfo.Name);
+
+                        EditorApplication.update += RemovePackageProgress;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
+                }
+                D.Emphasize($"{versionType}        ");
             }
         }
 
-        private void UpdatePackagesInfo()
+        // 跟踪移除请求的状态
+        private static RemoveRequest _removeRequest;
+        private void RemovePackageProgress()
         {
-            for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
-            {
-                _config.packagesInfo.RemoveAt(i);
-            }
-            _config.packagesInfo.Clear();
-            
-            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
-            {
-                var name = packageInfo.name;
-                if (!name.Contains("cn.efefef."))
-                    continue;
+            if (_removeRequest == null) return;
 
-                //packageInfo.git.
-                _config.packagesInfo.Add(new EFPackageInfo()
+            if (_removeRequest.IsCompleted)
+            {
+                if (_removeRequest.Status == StatusCode.Success)
                 {
-                    Name = string.IsNullOrEmpty(packageInfo.displayName) ?  name : packageInfo.displayName,
-                    FromGit = packageInfo.source == PackageSource.Git,
-                    Description = packageInfo.description,
-                    CurrentVersion = packageInfo.version,
-                    ServerVersion = packageInfo.source == PackageSource.Git ? packageInfo.git.revision : "0.1.0"//.git.revision,
-                });
+                    Debug.Log($"操作成功: 包 {_removeRequest.PackageIdOrName} 已移除。");
+                }
+                else if (_removeRequest.Status >= StatusCode.Failure)
+                {
+                    Debug.LogError($"操作失败: {_removeRequest.Error.message}");
+                }
+
+                EditorApplication.update -= RemovePackageProgress;
+                _removeRequest = null;
             }
         }
         
@@ -186,7 +227,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 return Lc.Download;
             if (string.IsNullOrEmpty(v2))
                 return Lc.Non;
-            
+
             var parts1 = v1.Split('.');
             var parts2 = v2.Split('.');
 
@@ -197,7 +238,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
                 int n1 = int.Parse(parts1[i]);
                 int n2 = int.Parse(parts2[i]);
-                
+
                 if (n1 < n2)
                     return Lc.Update;
                 if (n1 > n2)
@@ -206,5 +247,178 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             return Lc.Unload;
         }
+
+        #region Version Update
+
+        private void DrawUpdateVersionsInfo()
+        {
+            if (!_updatingInfos)
+                return;
+
+            EditorGUILayout.Space(15);
+            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Updating, Lc.PleaseWaitMoment }), EditorStyles.boldLabel);
+            EditorGUILayout.Space(15);
+
+            if (GUILayout.Button(LC.Combine(Lc.Cancel), GUILayout.Height(25)))
+                CancelUpdateVersionInfo(true);
         }
+
+        private void CancelUpdateVersionInfo(bool fromSelf)
+        {
+            if (!_updatingInfos)
+                return;
+            _updatingInfos = false;
+
+            if (fromSelf)
+                CustomProgressWindow.CloseWindow();
+        }
+
+        private void CheckAllPackageVersionsDone()
+        {
+            CancelUpdateVersionInfo(true);
+        }
+
+        private async void StartCheckAllPackageVersions()
+        {
+            try
+            {
+                await Task.CompletedTask;
+                if (!EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
+                {
+                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                        $"{LC.Combine(new[] {  Lc.Request, Lc.Too, Lc.Frequently })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
+                        LC.Combine(Lc.Ok));
+                    return;
+                }
+
+                if (!CustomProgressWindow.ShowWindow(LC.Combine(new[] { Lc.Package, Lc.Information, Lc.Updating }),
+                        CancelUpdateVersionInfo))
+                {
+                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                        $"{LC.Combine(new[] { Lc.Already, Lc.Have, Lc.One, Lc.Request })}, {LC.Combine(new[] { Lc.PleaseWaitMoment, Lc.TryAgain })}",
+                        LC.Combine(Lc.Ok));
+                    return;
+                }
+
+                _progressCount = 0;
+                _updatingInfos = true;
+                _config.lastUpdateTimestamp = EditorUtils.GetCurrentTimestamp();
+                CustomProgressWindow.UpdateInfo(_progressCount, _config.packagesInfo.Count);
+
+                foreach (var packageInfo in _config.packagesInfo)
+                {
+                    await Task.Delay(500);
+
+                    if (!_updatingInfos)
+                        return;
+
+                    StartCheckPackageVersion(packageInfo.Name);
+                }
+            }
+            catch (Exception e)
+            {
+                D.Exception($"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })}, {e.Message}");
+            }
+        }
+
+        private async void StartCheckPackageVersion(string packageName)
+        {
+            try
+            {
+                string url = $"{ServerGitPath}/{packageName}/package.json";
+                using UnityWebRequest request = UnityWebRequest.Get(url);
+                var operation = request.SendWebRequest();
+
+                while (!operation.isDone)
+                {
+                    await Task.Yield();
+                }
+
+                ++_progressCount;
+
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    D.Error($"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })},[{packageName}]\t {request.error}");
+
+                    if (_progressCount >= _config.packagesInfo.Count)
+                        CheckAllPackageVersionsDone();
+
+                    return;
+                }
+
+                if (_progressCount >= _config.packagesInfo.Count)
+                {
+                    CheckAllPackageVersionsDone();
+                    return;
+                }
+
+                if (!_updatingInfos)
+                    return;
+
+                GitPackageConfig packageNewInfo =
+                    JsonConvert.DeserializeObject<GitPackageConfig>(request.downloadHandler.text);
+
+                bool hasInfo = false;
+                foreach (var packageInfo in _config.packagesInfo)
+                {
+                    if (!packageInfo.Name.Equals(packageName))
+                        continue;
+                    hasInfo = true;
+                    packageInfo.ServerVersion = packageNewInfo.Version;
+                    packageInfo.Description = packageNewInfo.Description;
+                    break;
+                }
+
+                if (!hasInfo)
+                {
+                    _config.packagesInfo.Add(new EFPackageInfo()
+                    {
+                        Name = packageNewInfo.Name,
+                        DisplayName = string.IsNullOrEmpty(packageNewInfo.DisplayName) ? packageNewInfo.Name : packageNewInfo.DisplayName,
+                        FromGit = true,
+                        Description = packageNewInfo.Description,
+                        CurrentVersion = packageNewInfo.Version,
+                        ServerVersion = packageNewInfo.Version,
+                    });
+                }
+
+                CustomProgressWindow.UpdateInfo(_progressCount, _config.packagesInfo.Count);
+            }
+            catch (Exception e)
+            {
+                D.Exception($"{LC.Combine(new[] { Lc.Request, Lc.Package, Lc.Error })},[{packageName}]\t {e.Message}");
+            }
+        }
+        
+        private void UpdateLocationPackagesInfo()
+        {
+            for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
+            {
+                _config.packagesInfo.RemoveAt(i);
+            }
+
+            _config.packagesInfo.Clear();
+
+            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
+            {
+                var name = packageInfo.name;
+                if (!name.Contains("cn.efefef."))
+                    continue;
+
+                //packageInfo.git.
+                _config.packagesInfo.Add(new EFPackageInfo()
+                {
+                    Name = name,
+                    DisplayName = string.IsNullOrEmpty(packageInfo.displayName) ? name : packageInfo.displayName,
+                    FromGit = packageInfo.source == PackageSource.Git,
+                    Description = packageInfo.description,
+                    CurrentVersion = packageInfo.version,
+                    ServerVersion = "0.1.0",
+                    //packageInfo.source == PackageSource.Git ? packageInfo.git.revision : "0.1.0" //.git.revision = "HEAD"
+                });
+            }
+        }
+
+        #endregion
+    }
 }

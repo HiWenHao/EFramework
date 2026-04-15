@@ -70,12 +70,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             _customSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos); //"Badge"
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
 
 
             EditorGUILayout.LabelField(
                 $"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----",
-                SetUIStyle(new Color(0.3f, 0.8f, 0.3f), 14));
+                SetUIStyle(GUIUtils.LightGreen, 14));
             SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), _atlasFolder);
             SelectionFolderPath(
                 LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }),
@@ -88,7 +88,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.LabelField(
                 $"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----",
-                SetUIStyle(new Color(0.9f, 0.4f, 0.4f), 14));
+                SetUIStyle(GUIUtils.LightRed, 14));
             SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, _sublimePath);
             SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, _notepadPath);
 

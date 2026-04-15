@@ -22,7 +22,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <summary> 自动更新 </summary>
         [SerializeField] [HideInInspector] public bool autoUpdate = true;
 
+        /// <summary> 上次更新时间戳 </summary>
+        [SerializeField] [HideInInspector] public long lastUpdateTimestamp;
+        
         /// <summary> 全部包名 </summary>
-        [SerializeField] [HideInInspector] public List<EFPackageInfo> packagesInfo;
+        [SerializeField]  public List<EFPackageInfo> packagesInfo;
     }
 }

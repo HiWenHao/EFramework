@@ -73,7 +73,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
 
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, "Badge");
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
 
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
             _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }),

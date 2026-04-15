@@ -128,7 +128,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 LC.Combine(new Lc[] { (managers == null) ? Lc.Plugins : Lc.Manager, Lc.Switch }));
             if (mySwitch)
             {
-                EditorGUILayout.BeginHorizontal("Badge");
+                EditorGUILayout.BeginHorizontal(GUIUtils.ScrollViewBackground());
 
                 //Left List
                 pos = EditorGUILayout.BeginScrollView(pos, GUILayout.Width(130f), GUILayout.Height(255f));

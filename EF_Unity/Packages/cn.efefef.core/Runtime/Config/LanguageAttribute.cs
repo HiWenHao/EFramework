@@ -10,7 +10,7 @@
 */
 namespace EasyFramework.Edit
 {
-    public struct LanguagAttribute
+    public struct LanguageAttribute
     {
         #region ProjectConfig - 项目设置
         public const string ScriptAuthor = "脚本作者名。";
