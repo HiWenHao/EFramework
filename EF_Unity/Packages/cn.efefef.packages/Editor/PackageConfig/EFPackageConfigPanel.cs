@@ -272,6 +272,31 @@ namespace EasyFramework.Edit.Packages
 
         #region Download || Unload
 
+        private async Task SetPackageInfo(bool added)
+        {
+            await Task.CompletedTask;
+            if (null == _currentPackageInfo) 
+                return;
+            
+            await Task.Delay(2000);
+            if (!added)
+            {
+                _config.packagesInfo.Remove(_currentPackageInfo);
+                _currentPackageInfo = null;
+                return;
+            }
+
+            var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(_currentPackageInfo.Name);
+            if (null != package)
+            {
+                _currentPackageInfo.DisplayName = package.displayName;
+                _currentPackageInfo.Description = package.description;
+                _currentPackageInfo.FromGit = true;
+                _currentPackageInfo.CurrentVersion = package.version;
+                _currentPackageInfo.ServerVersion = package.version;
+            }
+        }
+        
         private void AddPackageProgress()
         {
             if (_addRequest is not { IsCompleted: true })
@@ -280,18 +305,7 @@ namespace EasyFramework.Edit.Packages
             if (_addRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
             else
-            {
-                var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(_currentPackageInfo.Name);
-                if (null != _currentPackageInfo && null != package)
-                {
-                    _currentPackageInfo.DisplayName = package.displayName;
-                    _currentPackageInfo.Description = package.description;
-                    _currentPackageInfo.FromGit = true;
-                    _currentPackageInfo.CurrentVersion = package.version;
-                    _currentPackageInfo.ServerVersion = package.version;
-                }
-            }
-
+                _ = SetPackageInfo(true);
             CustomProgressWindow.CloseWindow();
             EditorApplication.update -= AddPackageProgress;
             _currentPackageInfo = null;
@@ -305,6 +319,8 @@ namespace EasyFramework.Edit.Packages
 
             if (_removeRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
+            else
+                _ = SetPackageInfo(false);
 
             EditorApplication.update -= RemovePackageProgress;
             _currentPackageInfo = null;
