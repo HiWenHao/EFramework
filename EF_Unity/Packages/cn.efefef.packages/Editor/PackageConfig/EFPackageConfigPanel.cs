@@ -82,7 +82,8 @@ namespace EasyFramework.Edit.Packages
             #region Top Button
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Information }), GUIUtils.Button(Color.green, 16),
+            if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Information }),
+                    GUIUtils.Button(Color.green, 16),
                     GUILayout.Height(40)))
             {
                 if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
@@ -195,7 +196,7 @@ namespace EasyFramework.Edit.Packages
                 Lc.Unload => GUIUtils.LightRed,
                 _ => Color.white
             };
-            
+
             if (GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(160)))
             {
                 switch (versionType)
@@ -203,7 +204,10 @@ namespace EasyFramework.Edit.Packages
                     case Lc.Download:
                     case Lc.Update:
                         //Client.Add(packageInfo.Name);
-                        _addRequest = Client.Add($"https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/{packageInfo.Name}");
+                        CustomProgressWindow.ShowWindow(LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
+                        _addRequest =
+                            Client.Add(
+                                $"https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/{packageInfo.Name}");
                         EditorApplication.update += AddPackageProgress;
                         break;
                     case Lc.Unload:
@@ -218,7 +222,7 @@ namespace EasyFramework.Edit.Packages
                 D.Emphasize($"{versionType}");
             }
         }
-        
+
         private Lc CompareVersion(string v1, string v2)
         {
             if (string.IsNullOrEmpty(v1))
@@ -267,45 +271,48 @@ namespace EasyFramework.Edit.Packages
         #endregion
 
         #region Download || Unload
-        
+
         private void AddPackageProgress()
         {
-            if (_addRequest is not { IsCompleted: true }) 
+            if (_addRequest is not { IsCompleted: true })
                 return;
 
             if (_addRequest.Status != StatusCode.Success)
-                Debug.LogError($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
-
-            if (null != _currentPackageInfo)
+                D.Error($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
+            else
             {
                 var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(_currentPackageInfo.Name);
-                _currentPackageInfo.DisplayName = package.displayName;
-                _currentPackageInfo.Description = package.description;
-                _currentPackageInfo.FromGit = true;
-                _currentPackageInfo.CurrentVersion = package.version;
-                _currentPackageInfo.ServerVersion = package.version;
+                if (null != _currentPackageInfo && null != package)
+                {
+                    _currentPackageInfo.DisplayName = package.displayName;
+                    _currentPackageInfo.Description = package.description;
+                    _currentPackageInfo.FromGit = true;
+                    _currentPackageInfo.CurrentVersion = package.version;
+                    _currentPackageInfo.ServerVersion = package.version;
+                }
             }
-            
+
+            CustomProgressWindow.CloseWindow();
             EditorApplication.update -= AddPackageProgress;
             _currentPackageInfo = null;
             _addRequest = null;
         }
-        
+
         private void RemovePackageProgress()
         {
-            if (_removeRequest is not { IsCompleted: true }) 
+            if (_removeRequest is not { IsCompleted: true })
                 return;
 
             if (_removeRequest.Status != StatusCode.Success)
-                Debug.Log($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
-            
+                D.Error($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
+
             EditorApplication.update -= RemovePackageProgress;
             _currentPackageInfo = null;
             _removeRequest = null;
         }
-        
+
         #endregion
-        
+
         private async void UpdateAll()
         {
             try
@@ -324,7 +331,7 @@ namespace EasyFramework.Edit.Packages
 
         private const string Branch = "master";
         private const string GithubAPIBase = "https://api.github.com/repos/";
-        
+
         private void CancelUpdatePackagesInfo(bool fromSelf)
         {
             if (!_updatingPackageInfos)
@@ -334,7 +341,7 @@ namespace EasyFramework.Edit.Packages
             if (fromSelf)
                 CustomProgressWindow.CloseWindow();
         }
-        
+
         private async Task GetPackageListFromGithub()
         {
             if (!CanOpenProgressWindow(LC.Combine(new[] { Lc.Update, Lc.Package, Lc.List }), CancelUpdatePackagesInfo))
@@ -373,7 +380,7 @@ namespace EasyFramework.Edit.Packages
                 for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
                 {
                     var packageInfo = _config.packagesInfo[i];
-                    
+
                     if (packageInfo.Name != item.Name)
                         continue;
 

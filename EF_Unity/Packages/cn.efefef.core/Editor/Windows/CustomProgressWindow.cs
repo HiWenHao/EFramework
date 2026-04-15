@@ -100,6 +100,9 @@ namespace EasyFramework.Edit
             EditorGUI.ProgressBar(rect, _progress, $"{_progress:F2}%");
             
             EditorGUILayout.Space(10);
+            
+            if (null == _cancelCallback)
+                return;
             if (GUILayout.Button(LC.Combine(Lc.Cancel), GUILayout.Height(25)))
                 CloseWindow();
         }
