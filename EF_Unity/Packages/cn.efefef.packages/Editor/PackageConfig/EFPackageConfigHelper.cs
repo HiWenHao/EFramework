@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Edit.Packages
 {
 	/// <summary>
 	/// Please modify the description。

@@ -295,6 +295,9 @@ namespace EasyFramework.Edit.Packages
 
         #region Packages Update
 
+        private const string Branch = "master";
+        private const string GithubAPIBase = "https://api.github.com/repos/";
+        
         private void CancelUpdatePackagesInfo(bool fromSelf)
         {
             if (!_updatingPackageInfos)
@@ -304,19 +307,14 @@ namespace EasyFramework.Edit.Packages
             if (fromSelf)
                 CustomProgressWindow.CloseWindow();
         }
-
-        private const string BRANCH = "master";
-        private const string GITHUB_API_BASE = "https://api.github.com/repos/";
-
-        private List<string> packages = new List<string>();
-
+        
         private async Task GetPackageListFromGithub()
         {
             if (!CanOpenProgressWindow(LC.Combine(new[] { Lc.Update, Lc.Package, Lc.List }), CancelUpdatePackagesInfo))
                 return;
 
             _updatingPackageInfos = true;
-            string apiUrl = $"{GITHUB_API_BASE}HiWenHao/EFramework/contents/EF_Unity/Packages?ref={BRANCH}";
+            string apiUrl = $"{GithubAPIBase}HiWenHao/EFramework/contents/EF_Unity/Packages?ref={Branch}";
             using UnityWebRequest request = UnityWebRequest.Get(apiUrl);
             request.SetRequestHeader("User-Agent", "UnityEditor");
 
@@ -337,7 +335,6 @@ namespace EasyFramework.Edit.Packages
 
             string json = request.downloadHandler.text;
             var items = JsonConvert.DeserializeObject<List<GitHubContentItem>>(json);
-            packages.Clear();
 
             string pattern = @"^cn\.efefef\.";
             foreach (var item in items)
@@ -345,7 +342,24 @@ namespace EasyFramework.Edit.Packages
                 if (item.Type != "dir" || !Regex.IsMatch(item.Name, pattern))
                     continue;
 
-                packages.Add(item.Name);
+                for (int i = _config.packagesInfo.Count - 1; i >= 0; i--)
+                {
+                    var packageInfo = _config.packagesInfo[i];
+                    
+                    if (packageInfo.Name == item.Name)
+                        continue;
+
+                    _config.packagesInfo.Add(new EFPackageInfo()
+                    {
+                        Name = item.Name,
+                        DisplayName = item.Name,
+                        FromGit = true,
+                        Description = "",
+                        CurrentVersion = "",
+                        ServerVersion = "",
+                    });
+                    break;
+                }
             }
 
             CancelUpdatePackagesInfo(true);
