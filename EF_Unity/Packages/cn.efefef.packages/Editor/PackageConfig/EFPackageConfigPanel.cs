@@ -53,6 +53,7 @@ namespace EasyFramework.Edit.Packages
         private RemoveRequest _removeRequest;
 
         private PackageConfig _config;
+        private EFPackageInfo _currentPackageInfo;
         private SerializedObject _packageConfig;
 
         public override void OnEnable(string assetsPath)
@@ -213,6 +214,7 @@ namespace EasyFramework.Edit.Packages
                         throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
                 }
 
+                _currentPackageInfo = packageInfo;
                 D.Emphasize($"{versionType}");
             }
         }
@@ -273,8 +275,19 @@ namespace EasyFramework.Edit.Packages
 
             if (_addRequest.Status != StatusCode.Success)
                 Debug.LogError($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
+
+            if (null != _currentPackageInfo)
+            {
+                var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(_currentPackageInfo.Name);
+                _currentPackageInfo.DisplayName = package.displayName;
+                _currentPackageInfo.Description = package.description;
+                _currentPackageInfo.FromGit = true;
+                _currentPackageInfo.CurrentVersion = package.version;
+                _currentPackageInfo.ServerVersion = package.version;
+            }
             
             EditorApplication.update -= AddPackageProgress;
+            _currentPackageInfo = null;
             _addRequest = null;
         }
         
@@ -287,6 +300,7 @@ namespace EasyFramework.Edit.Packages
                 Debug.Log($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
             
             EditorApplication.update -= RemovePackageProgress;
+            _currentPackageInfo = null;
             _removeRequest = null;
         }
         
