@@ -87,9 +87,8 @@ namespace EasyFramework.Managers
                 _addedEvents.Clear();
             }
 
-            foreach (var timer in _events.Values)
+            foreach (var timeEvent in _events.Values)
             {
-                TimeEvent timeEvent = timer;
                 if (!((timeEvent.PassedTime += elapse) >= timeEvent.DelayTime + timeEvent.CycleTime)) 
                     continue;
                 
