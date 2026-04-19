@@ -265,7 +265,8 @@ namespace EasyFramework.Managers
             if (needCreate)
                 uiView = ViewCreate<T>();
 
-            ViewClose(_currentPageView, false, args);
+            if (_currentPageView is { ViewType: UIViewType.Page })
+                ViewClose(_currentPageView, false, args);
             ViewEnable(uiView, true, args);
             
             return (T)uiView;
