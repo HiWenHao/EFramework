@@ -98,9 +98,13 @@ namespace EasyFramework.Managers
                 for (var i = 0; i < uiViews.Value.Count; i++)
                 {
                     var uiView = uiViews.Value[i];
-                    uiView.Update(elapse, realElapse);
+                    if (uiView.ViewType != UIViewType.Cache)
+                    {
+                        uiView.Update(elapse, realElapse);
+                        continue;
+                    }
 
-                    if (uiViews.Key != UIViewType.Cache || !((_autoDestroyDic[uiView] -= elapse) <= 0.0f))
+                    if ((_autoDestroyDic[uiView] -= elapse) > 0.0f)
                         continue;
                     ViewDestroy(uiView, uiViews.Value);
                 }
@@ -246,30 +250,35 @@ namespace EasyFramework.Managers
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
         public T OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
-            IUiView uiView;
+            IUiView openView;
+            IUiView closeView;
             bool needCreate = true;
 
-            if (InViewList<T>(out uiView, UIViewType.Page))
+            if (InViewList<T>(out openView, UIViewType.Page))
             {
-                if (_currentPageView == uiView)
-                    return (T)uiView;
+                if (_currentPageView == openView)
+                    return (T)openView;
                 needCreate = false;
             }
 
-            if (InViewList<T>(out uiView, UIViewType.Cache))
+            if (needCreate && InViewList<T>(out openView, UIViewType.Cache))
             {
-                _viewStackDic[UIViewType.Cache].Remove(uiView);
+                _viewStackDic[UIViewType.Cache].Remove(openView);
                 needCreate = false;
             }
 
             if (needCreate)
-                uiView = ViewCreate<T>();
+                openView = ViewCreate<T>();
 
-            if (_currentPageView is { ViewType: UIViewType.Page })
-                ViewClose(_currentPageView, false, args);
-            ViewEnable(uiView, true, args);
+            if ((openView.ViewType is UIViewType.TopPermanent or UIViewType.BottomPermanent) && _viewStackDic[openView.ViewType].Count > 0)
+                closeView = _viewStackDic[openView.ViewType][0];
+            else
+                closeView = _currentPageView;
             
-            return (T)uiView;
+            ViewClose(closeView, false, args);
+            ViewEnable(openView, true, args);
+            
+            return (T)openView;
         }
 
         /// <summary>
@@ -278,8 +287,12 @@ namespace EasyFramework.Managers
         /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
         public T GetPageView<T>() where T : IUiView
         {
-            InViewList<T>(out IUiView uiView, UIViewType.Page);
-            return (T)uiView;
+            if (InViewList<T>(out IUiView uiView, UIViewType.Page) || 
+                InViewList<T>(out uiView, UIViewType.TopPermanent) || 
+                InViewList<T>(out uiView, UIViewType.BottomPermanent))
+                return (T)uiView;
+            
+            return default;
         }
 
         /// <summary>
