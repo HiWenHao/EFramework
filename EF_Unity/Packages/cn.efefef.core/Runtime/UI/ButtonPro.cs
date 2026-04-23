@@ -1,13 +1,13 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to custom UGUI`s button. 
+ * Describe:      This script is used to custom UGUI`s button.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-10-26 16:43:48
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
  * ModifyTime:    2023-02-13 15:59:18
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 using System;
 using UnityEngine;
@@ -33,6 +33,10 @@ namespace EasyFramework.UI
         [FormerlySerializedAs("onClickRight")]
         [SerializeField]
         private UnityEvent _oClickRight = new UnityEvent();
+        
+        [FormerlySerializedAs("onDrag"), Header("Left => False, Right => True")]
+        [SerializeField]
+        private UnityEvent<bool> _onDrag = new UnityEvent<bool>();
 
         [FormerlySerializedAs("onLongPressLeft")]
         [SerializeField]
@@ -46,36 +50,38 @@ namespace EasyFramework.UI
         [SerializeField]
         private UnityEvent _onKeepPressLeft = new UnityEvent();
 
-        public UnityEvent OnClickLeft
-        {
-            get { return _onClickLeft; }
-        }
-        public UnityEvent OnClickRight
-        {
-            get { return _oClickRight; }
-        }
-        public UnityEvent OnDoubleClickLeft
-        {
-            get { return _onDoubleClickLeft; }
-        }
-        public UnityEvent OnLongPressLeft
-        {
-            get { return _onLongPressLeft; }
-        }
-        public UnityEvent OnKeepPressLeft
-        {
-            get { return _onKeepPressLeft; }
-        }
+        /// <summary>
+        /// 被拖拽, Left => False, Right => True
+        /// </summary>
+        public UnityEvent<bool> OnDrag => _onDrag;
+        public UnityEvent OnClickLeft => _onClickLeft;
+        public UnityEvent OnClickRight => _oClickRight;
+        public UnityEvent OnDoubleClickLeft => _onDoubleClickLeft;
+        public UnityEvent OnLongPressLeft => _onLongPressLeft;
+        public UnityEvent OnKeepPressLeft => _onKeepPressLeft;
 
-        private float _longPressIntervalTime = 600.0f;
-        private float _doubleClcikIntervalTime = 170.0f;
+        /// <summary>
+        /// 拖拽时移动的最小间隔(像素)
+        /// </summary>
+        public float IntervalPixelOfDrag { get; set; } = 20;
 
-        private float _clickCount = 0;
-        private bool _onHoldDown = false;
-        private bool _isKeepPress = false;
-        private bool _onEventTrigger = false;
-        private double _clickIntervalTime = 0;
+        /// <summary>
+        /// 长按判定的最少时间(毫秒)
+        /// </summary>
+        public float IntervalTimeOfLongPress { get; set; } = 600.0f;
+        
+        /// <summary>
+        /// 双击判定间隔的最长时间(毫秒)
+        /// </summary>
+        public float IntervalTimeOfDoubleClick { get; set; } = 170.0f;
+
+        private float _clickCount;
+        private bool _onHoldDown;
+        private bool _isKeepPress;
+        private bool _onEventTrigger;
+        private double _clickIntervalTime;
         private DateTime _clickStartTime;
+        private Vector3 _clickStartPos;
 
         private void OnAnyEventTrigger()
         {
@@ -91,7 +97,7 @@ namespace EasyFramework.UI
 
             if (!_onHoldDown && 0 != _clickCount)
             {
-                if (_clickIntervalTime >= _doubleClcikIntervalTime && _clickIntervalTime < _longPressIntervalTime)
+                if (_clickIntervalTime >= IntervalTimeOfDoubleClick && _clickIntervalTime < IntervalTimeOfLongPress)
                 {
                     if (_clickCount == 2)
                         _onDoubleClickLeft?.Invoke();
@@ -103,7 +109,7 @@ namespace EasyFramework.UI
 
             if (_onHoldDown && !_onEventTrigger)
             {
-                if (_clickIntervalTime >= _longPressIntervalTime)
+                if (_clickIntervalTime >= IntervalTimeOfLongPress)
                 {
                     _onHoldDown = false;
                     _onLongPressLeft?.Invoke();
@@ -116,6 +122,7 @@ namespace EasyFramework.UI
 
         public override void OnPointerDown(PointerEventData eventData)
         {
+            _clickStartPos = Input.mousePosition;
             if (eventData.button == InputButton.Left)
             {
                 _onHoldDown = true;
@@ -128,6 +135,14 @@ namespace EasyFramework.UI
 
         public override void OnPointerUp(PointerEventData eventData)
         {
+            Vector3 magnitude = Input.mousePosition - _clickStartPos;
+            if (magnitude.magnitude >= IntervalPixelOfDrag)
+            {
+                OnDrag?.Invoke(magnitude.x > 0);
+                OnAnyEventTrigger();
+                return;
+            }
+            
             if (eventData.button == InputButton.Right)
             {
                 OnClickRight?.Invoke();
@@ -142,11 +157,9 @@ namespace EasyFramework.UI
                     OnAnyEventTrigger();
                     return;
                 }
-                else
-                {
-                    _onHoldDown = false;
-                    _isKeepPress = false;
-                }
+
+                _onHoldDown = false;
+                _isKeepPress = false;
             }
             _isKeepPress = false;
 
