@@ -82,7 +82,7 @@ namespace EasyFramework.UI
             {
                 list = new List<ButtonPro>();
             }
-            button.OnClickLeft.AddListener(events);
+            button.AddClickListener(events);
             list.Add(button);
             return button;
         }
@@ -105,7 +105,7 @@ namespace EasyFramework.UI
             int tempLength = buttons.Count;
 
             while (--tempLength >= 0)
-                buttons[tempLength].OnClickLeft.RemoveAllListeners();
+                buttons[tempLength].RemoveAllClickListeners();;
 
             buttons.Clear();
             return buttons;
