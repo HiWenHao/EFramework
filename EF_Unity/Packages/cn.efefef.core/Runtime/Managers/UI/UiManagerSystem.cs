@@ -98,7 +98,7 @@ namespace EasyFramework.Managers
                 for (var i = 0; i < uiViews.Value.Count; i++)
                 {
                     var uiView = uiViews.Value[i];
-                    if (uiView.ViewType != UIViewType.Cache)
+                    if (uiViews.Key != UIViewType.Cache)
                     {
                         uiView.Update(elapse, realElapse);
                         continue;
