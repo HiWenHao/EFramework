@@ -251,7 +251,7 @@ namespace EasyFramework.Managers
         public T OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
             IUiView openView;
-            IUiView closeView;
+            IUiView closeView = null;
             bool needCreate = true;
 
             if (InViewList<T>(out openView, UIViewType.Page))
@@ -270,11 +270,17 @@ namespace EasyFramework.Managers
             if (needCreate)
                 openView = ViewCreate<T>();
 
-            if ((openView.ViewType is UIViewType.TopPermanent or UIViewType.BottomPermanent) && _viewStackDic[openView.ViewType].Count > 0)
-                closeView = _viewStackDic[openView.ViewType][0];
+            if (openView.ViewType is not (UIViewType.TopPermanent or UIViewType.BottomPermanent))
+            {
+                if (_currentPageView is { ViewType: not (UIViewType.TopPermanent or UIViewType.BottomPermanent) })
+                    closeView = _currentPageView;
+            }
             else
-                closeView = _currentPageView;
-            
+            {
+                if (_viewStackDic[openView.ViewType].Count > 0)
+                    closeView = _viewStackDic[openView.ViewType][0];
+            }
+
             ViewClose(closeView, false, args);
             ViewEnable(openView, true, args);
             
