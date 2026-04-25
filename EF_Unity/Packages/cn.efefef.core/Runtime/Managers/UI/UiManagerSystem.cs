@@ -1,10 +1,10 @@
-/*
+﻿/*
  * ================================================
  * Describe:      承载UI管理器的逻辑编写.
  * Author:        Alvin8412
  * CreationTime:  2026-04-03 22:11:25
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-03 22:11:25
+ * ModifyTime:    2026-04-25 11:28:04
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -270,18 +270,12 @@ namespace EasyFramework.Managers
             if (needCreate)
                 openView = ViewCreate<T>();
 
-            if (openView.ViewType is not (UIViewType.TopPermanent or UIViewType.BottomPermanent))
-            {
-                if (_currentPageView is { ViewType: not (UIViewType.TopPermanent or UIViewType.BottomPermanent) })
-                    closeView = _currentPageView;
-            }
-            else
-            {
-                if (_viewStackDic[openView.ViewType].Count > 0)
-                    closeView = _viewStackDic[openView.ViewType][0];
-            }
-
-            ViewClose(closeView, false, args);
+            if (_viewStackDic[openView.ViewType].Count > 0)
+                closeView = _viewStackDic[openView.ViewType][^1];
+            
+            bool needCache = closeView is { ViewType: UIViewType.TopPermanent or UIViewType.BottomPermanent };
+            
+            ViewClose(closeView, needCache, args);
             ViewEnable(openView, true, args);
             
             return (T)openView;

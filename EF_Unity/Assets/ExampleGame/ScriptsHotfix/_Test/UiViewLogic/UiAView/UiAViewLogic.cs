@@ -25,6 +25,8 @@ namespace EFExample
     {
         void IUiView.Awake()
         {
+            EF.Ui.OpenPageView<TestTopView>();
+            EF.Ui.OpenPageView<TestBottomViewOne>();
         }
 
         void IUiView.Quit()

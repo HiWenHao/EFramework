@@ -2,9 +2,9 @@
  * ================================================
  * Describe:      Please modify the description..
  * Author:        Alvin8412
- * CreationTime:  2026-04-24 21:58:47
+ * CreationTime:  2026-04-25 11:24:58
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-24 21:58:47
+ * ModifyTime:    2026-04-25 11:24:58
  * ScriptVersion: 0.1 
  * ================================================
  */
@@ -43,6 +43,7 @@ namespace EFExample
         void IUiView.Bind(RectTransform uiViewRect)
         {
             View = uiViewRect;
+            EF.Tool.Find<Button>(uiViewRect.transform, "Btn_OpenOne").RegisterInListAndBindEvent(OnClickBtn_OpenOne, ref m_AllButtons);
         }
 
         void IUiView.Dispose()
