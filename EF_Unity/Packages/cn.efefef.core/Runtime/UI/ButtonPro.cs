@@ -24,7 +24,7 @@ namespace EasyFramework
     [AddComponentMenu("UI/Button Pro", 101)]
     [RequireComponent(typeof(Image))]
     [RequireComponent(typeof(CanvasRenderer))]
-    public class ButtonPro : Selectable, IDragHandler, IPointerClickHandler
+    public class ButtonPro : Selectable, IPointerClickHandler
     {
         protected ButtonPro() { }
         
@@ -47,7 +47,6 @@ namespace EasyFramework
         private Coroutine _clickDelayCoroutine;     //  用于延迟单击等待双击
 
         private int _clickCount;                //  点击计数
-        private bool _isDragging;               //  是否正在拖拽
         private bool _isLongPressTriggered;     //  本次按压是否已经触发了长按事件
         private float _lastClickTime;           //  上次单击发生的时间
         private Vector2 _pointerDownPosition;   //  按下时的屏幕坐标
@@ -123,7 +122,7 @@ namespace EasyFramework
                 yield return null;
             }
 
-            if (_isLongPressTriggered || _isDragging) 
+            if (_isLongPressTriggered) 
                 yield break;
             
             _isLongPressTriggered = true;
@@ -200,23 +199,31 @@ namespace EasyFramework
             StopClickDelayCoroutine();
             
             _isLongPressTriggered = false;
-            _isDragging = false;
             _clickCount = 0;
             _lastClickTime = 0f;
         }
         
         //  处理拖拽
-        private void OnDragDirection(Vector2 current)
+        private bool OnDragTriggered(Vector2 current)
         {
-            if (!_isDragging)
-                return;
+            if (_isLongPressTriggered)
+                return false;
 
             Vector2 delta = current - _pointerDownPosition;
+            
+            float absX = Mathf.Abs(delta.x);
+            float absY = Mathf.Abs(delta.y);
+
+            if (absX < dragThresholdPixels && absY < dragThresholdPixels)
+                return false;
+            
             MoveDirection direction = Mathf.Abs(delta.x) > Mathf.Abs(delta.y) ? 
                 delta.x > 0 ? MoveDirection.Right : MoveDirection.Left :
                 delta.y > 0 ? MoveDirection.Up : MoveDirection.Down;
             
+            OnAnyEventTriggered();
             onDragging.Invoke(direction);
+            return true;
         }
         
         //  处理单击或双击操作
@@ -251,6 +258,10 @@ namespace EasyFramework
         {
             _clickCount = 0;
             _lastClickTime = 0f;
+            StopLongPressCoroutine();
+            StopClickDelayCoroutine();
+            
+            _isLongPressTriggered = false;
         }
         
         #endregion
@@ -269,7 +280,6 @@ namespace EasyFramework
             
             _pointerDownPosition = eventData.position;
             _isLongPressTriggered = false;
-            _isDragging = false;
 
             _longPressCoroutine = StartCoroutine(LongPressDetect());
             _keepPressCoroutine = StartCoroutine(KeepPressLoop());
@@ -284,25 +294,10 @@ namespace EasyFramework
             StopLongPressCoroutine();
             StopKeepPressCoroutine();
 
-            if (_isLongPressTriggered || _isDragging)
+            if (_isLongPressTriggered || OnDragTriggered(eventData.position))
                 return;
 
             HandleClickOrDoubleClick();
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            if (!IsActive() || !IsInteractable()) return;
-            if (_isLongPressTriggered) return;
-
-            float dragDistance = Vector2.Distance(eventData.position, _pointerDownPosition);
-            if (!_isDragging && dragDistance >= dragThresholdPixels)
-            {
-                _isDragging = true;
-                StopClickDelayCoroutine();
-            }
-
-            OnDragDirection(eventData.position);
         }
         
         public void OnPointerClick(PointerEventData eventData)
