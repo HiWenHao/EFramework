@@ -31,10 +31,10 @@ namespace EasyFramework.Edit.Packages
     public class EFPackageConfigPanel : EFConfigPanelBase
     {
         public override int Priority => -1;
-        public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Package, Lc.Assets });
+        public override string Name => LC.Combine(new Lc[] { Lc.Package, Lc.Assets });
 
         private const string GitPackagePath = "https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/";
-        private const string GiteePackagePath = "https://gitee.com/wang_xiaoheiiii/EFramework.git?path=EF_Unity/Packages/";
+        private const string GiteePackagePath = "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/";
         
         /// <summary> 远端服务地址 </summary>
         private const string ServerGitPath =

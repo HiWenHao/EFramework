@@ -20,8 +20,8 @@ namespace EasyFramework.Edit
 {
     public enum ELanguage
     {
-        English,
-        Chinese,
+        English = 0,
+        中文,
     }
 
     /// <summary>
@@ -55,29 +55,35 @@ namespace EasyFramework.Edit
         
         public static ELanguage DisPlayLanguage
         {
-            get => (ELanguage)m_currentIndex;
+            get
+            {
+                if (m_currentIndex == -1)
+                    m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
+                return (ELanguage)m_currentIndex;
+            }
             set
             {
                 if (m_currentIndex.Equals((int)value))
                     return;
                 m_currentIndex = (int)value;
-                ChangeLanguage();
+                AppConstConfig.LanguageIndex = m_currentIndex;
+                EditorPrefs.SetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", m_currentIndex);
             }
         }
 
-        static int m_currentIndex;
+        static int m_currentIndex = -1;
         static string m_Separator;
         static string m_AassetsPath;
         static Dictionary<Lc, LcItem> m_Dictionary;
 
         static void LoadLanguage()
         {
+            if (m_currentIndex == -1)
+                m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
             if (null != m_Dictionary && m_Dictionary.Count != 0) 
                 return;
  
             m_AassetsPath = Path.Combine(Utility.Path.GetEfAssetsPath(), "Description/Editorlanguages.json");
-            m_currentIndex = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", 0);
-            DisPlayLanguage = (ELanguage)m_currentIndex;
             
             LcRoot lcRoot = JsonConvert.DeserializeObject<LcRoot>(File.ReadAllText(m_AassetsPath));
             m_Dictionary = new Dictionary<Lc, LcItem>();
@@ -112,36 +118,6 @@ namespace EasyFramework.Edit
             return sb.ToString();
         }
 
-        #endregion
-
-        #region ChangeLanguage
-
-        /*
-         * Change the relevant description language under the Settings panel.
-         * 改变设置面板下的相关说明语言
-         */
-        private static void ChangeLanguage()
-        {
-            EditorPrefs.SetInt(ConfigManager.Project.AppConst.AppPrefix + "LanguageIndex", m_currentIndex);
-
-            string lcPath = Path.Combine(Utility.Path.GetEfPath(), "Runtime/Config/");
-            try
-            {
-                File.Delete(Path.Combine(lcPath, "LanguageAttribute.cs"));
-                File.Delete(Path.Combine(lcPath, "LanguageAttribute.cs.meta"));
-                
-                File.Copy(
-                    Path.Combine(lcPath, $"{DisPlayLanguage}~/LanguageAttribute.cs"),
-                    Path.Combine(lcPath, "LanguageAttribute.cs"));
-            }
-            catch (Exception ex)
-            {
-                D.Exception(ex.Message);
-            }
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-        
         #endregion
 
         [MenuItem("EFTools/Utility/Update Edit Language", priority = 10002)]

@@ -67,9 +67,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void OnGUI()
         {
             SystemInfos();
+            LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
+            
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-
-            //LC.DisPlayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisPlayLanguage);
 
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
 
