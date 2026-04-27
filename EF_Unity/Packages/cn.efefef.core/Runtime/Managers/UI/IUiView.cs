@@ -77,7 +77,7 @@ namespace EasyFramework.Manager.UI
         /// <para>当页面被禁用时</para>
         /// </summary>
         /// <param name="args">Send this params to closed ui page.<para>给要被关闭的页面传递的参数</para></param>
-        protected internal void DisEnable(params object[] args)
+        protected internal void Disable(params object[] args)
         {
         }
 

@@ -198,7 +198,7 @@ namespace EasyFramework.Managers
 
             if (uiView.View.gameObject.activeSelf)
             {
-                uiView.DisEnable(args);
+                uiView.Disable(args);
                 uiView.View.gameObject.SetActive(false);
             }
 

@@ -37,7 +37,7 @@ namespace EFExample
             }
         }
 
-        void IUiView.DisEnable(params object[] args)
+        void IUiView.Disable(params object[] args)
         {
             foreach (var item in args)
             {
