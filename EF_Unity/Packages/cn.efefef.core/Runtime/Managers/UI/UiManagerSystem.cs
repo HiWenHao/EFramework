@@ -113,17 +113,7 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            foreach (var uiViews in _viewStackDic)
-            {
-                for (int i = uiViews.Value.Count - 1; i >= 0; i--)
-                {
-                    ViewDestroy(uiViews.Value[i], uiViews.Value);
-                }
-
-                uiViews.Value.Clear();
-
-                Destroy(_viewParentDic[uiViews.Key].gameObject);
-            }
+            CloseAllView(true);
 
             _currentPageView = null;
             
@@ -223,6 +213,35 @@ namespace EasyFramework.Managers
             return true;
         }
 
+        /// <summary>
+        /// 关闭某个类型的全部视窗
+        /// </summary>
+        /// <param name="uiViewType">视窗类型</param>
+        /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
+        /// <param name="keepFirstView">保留一个视窗</param>
+        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView)
+        {
+            var uiViews = _viewStackDic[uiViewType];
+            for (int i = uiViews.Count - 1; i >= 0; i--)
+            {
+                if (i == 0 && keepFirstView)
+                {
+                    ViewEnable(uiViews[i], true);
+                    continue;
+                }
+                
+                if (immediateDestroy)
+                    ViewDestroy(uiViews[i], uiViews);
+                else
+                    ViewClose(uiViews[i], true);
+            }
+
+            if (!immediateDestroy) 
+                return;
+            uiViews.Clear();
+            Destroy(_viewParentDic[uiViewType].gameObject);
+        }
+        
         /// <summary>
         /// 判断特定属性视窗是否存在
         /// </summary>
@@ -325,6 +344,16 @@ namespace EasyFramework.Managers
             _tipsView ??= ViewCreate<T>();
             ViewEnable(_tipsView, false, contents, viewExtraData);
         }
+
+        /// <summary>
+        /// 某一类型视窗返回到首页
+        /// </summary>
+        /// <param name="uiViewType">视窗类型</param>
+        /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
+        public void BackToFirstViewWithType(UIViewType uiViewType, bool immediateDestroy = false)
+        {
+            ViewCloseAllWithType(uiViewType, immediateDestroy, true);
+        } 
         
         /// <summary>
         /// 关闭UI视窗
@@ -362,6 +391,17 @@ namespace EasyFramework.Managers
         {
             return ViewClose(uiView, true, args);
         }
-
+        
+        /// <summary>
+        /// 关闭全部视窗
+        /// </summary>
+        /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
+        public void CloseAllView(bool immediateDestroy = false)
+        {
+            foreach (var uiViews in _viewStackDic)
+            {
+                ViewCloseAllWithType(uiViews.Key, immediateDestroy, false);
+            }
+        }
     }
 }

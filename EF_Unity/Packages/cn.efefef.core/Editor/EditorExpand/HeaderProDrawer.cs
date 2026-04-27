@@ -22,9 +22,14 @@ namespace EasyFramework.Edit
         public override void OnGUI(Rect position)
         {
             HeaderProAttribute headerAttribute = attribute as HeaderProAttribute;
-            string headerText = LC.DisPlayLanguage == ELanguage.English ? headerAttribute?.English : headerAttribute?.Chinese;
+            if (headerAttribute == null)
+                return;
+            
+            bool isEnglish = LC.DisPlayLanguage == ELanguage.English;
+            string headerText =  isEnglish ? headerAttribute.English : headerAttribute.Chinese;
+            string toolText =  isEnglish ? headerAttribute.Chinese : headerAttribute.English;
             position.yMin += EditorGUIUtility.singleLineHeight * 0.2f;
-            GUI.Label(position, headerText, EditorStyles.label);
+            GUI.Label(position, new GUIContent(headerText, toolText), EditorStyles.label);
         }
     }
 }

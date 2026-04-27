@@ -4,17 +4,13 @@
  * Author:        Alvin8412
  * CreationTime:  2026-04-24 21:58:47
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-25 11:24:58
+ * ModifyTime:    2026-04-27 16:14:58
  * ScriptVersion: 0.1 
  * ================================================
  */
 
 using EasyFramework;
-using EasyFramework.UI;
-using System.Collections.Generic;
 using EasyFramework.Manager.UI;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace EFExample
 {
@@ -38,6 +34,11 @@ namespace EFExample
         private void OnClickBtn_OpenOne()
         {
             EF.Ui.OpenPageView<TestTopView>();
+        }
+
+        private void OnClickBtn_CloseAll()
+        {
+            EF.Ui.BackToFirstViewWithType(UIViewType.Page);
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto
