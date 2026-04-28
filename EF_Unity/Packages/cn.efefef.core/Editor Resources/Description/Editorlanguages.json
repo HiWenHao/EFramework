@@ -393,6 +393,14 @@
       ]
     },
     {
+      "name": "Delay",
+      "desc": "延迟",
+      "array": [
+        "Delay",
+        "延迟"
+      ]
+    },
+    {
       "name": "Delete",
       "desc": "删除",
       "array": [

@@ -101,6 +101,8 @@ namespace EasyFramework.Edit
 		Dock,
 		/// <summary> 正在做 </summary>
 		Doing,
+		/// <summary> 延迟 </summary>
+		Delay,
 		/// <summary> 删除 </summary>
 		Delete,
 		/// <summary> 详情 </summary>
