@@ -334,7 +334,7 @@ namespace EasyFramework.Managers
                 openView = ViewCreate<T>();
 
             ViewCloseByType(openView.ViewType);
-            ViewEnable(openView, true, args);
+            ViewEnable(openView, args);
 
             return (T)openView;
         }
