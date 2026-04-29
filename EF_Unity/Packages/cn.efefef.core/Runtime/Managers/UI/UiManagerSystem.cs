@@ -347,7 +347,7 @@ namespace EasyFramework.Managers
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
         public bool OpenPageView(IUiView uiView, params object[] args)
         {
-            if (uiView == _currentPageView ||
+            if (null == uiView || uiView == _currentPageView ||
                 uiView.ViewType is not (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent))
                 return false;
 
@@ -444,6 +444,9 @@ namespace EasyFramework.Managers
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
         public bool CloseView(IUiView uiView, params object[] args)
         {
+            if (null == uiView)
+                return false;
+            
             if (uiView.ViewType == UIViewType.Page && _viewStackDic[UIViewType.Page].Count >= 2)
                 ViewEnable(_viewStackDic[UIViewType.Page][^2], args);
 
