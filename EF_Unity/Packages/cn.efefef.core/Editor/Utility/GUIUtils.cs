@@ -40,10 +40,9 @@ namespace EasyFramework.Edit.Windows
                 fontStyle = fontStyle,
                 normal =
                 {
-                    textColor = color == default ? Color.white : color,
+                    textColor = color == default ? new Color(0.7f, 0.7f, 0.7f) : color,
                 },
-                alignment = anchor,
-                margin = new RectOffset(5, 5, 5, 5)
+                alignment = anchor
             };
             return _titleStyle;
         }

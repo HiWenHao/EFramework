@@ -11,6 +11,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EasyFramework.Edit.Windows;
@@ -40,10 +42,12 @@ namespace EasyFramework.Edit.Packages
         private const string ServerGitPath =
             "https://raw.githubusercontent.com/HiWenHao/EFramework/master/EF_Unity/Packages";
 
-        /// <summary>
-        /// 本地资源配置路径
-        /// </summary>
-        private const string LocationConfigPath = "Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset";
+        
+        private const string EditorResourcesPath = "Packages/cn.efefef.packages/Editor Resources/";
+        /// <summary> 本地资源配置路径 </summary>
+        private const string LocationConfigPath = EditorResourcesPath + "EFPackageConfig.asset";
+
+        private string _packageRootPath;
 
         private int _progressCount;
         private bool _updatingVersionInfos;
@@ -59,6 +63,8 @@ namespace EasyFramework.Edit.Packages
         private EFPackageInfo _currentPackageInfo;
         private SerializedObject _packageConfig;
 
+        private string[] _createPackageTips;
+        
         public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
@@ -71,6 +77,14 @@ namespace EasyFramework.Edit.Packages
 
             _config = AssetDatabase.LoadAssetAtPath<PackageConfig>(LocationConfigPath);
             _packageConfig = new SerializedObject(_config);
+
+            _createPackageTips = new[]
+            {
+                LC.Combine(new []{Lc.Package, Lc.Name}) + "cn.efefef.{0}",
+                LC.Combine(new []{Lc.Package, Lc.Description}),
+                LC.Combine(new []{Lc.Author, Lc.Name}),
+            };
+            _packageRootPath = Application.dataPath[..^6] + "Packages";
         }
 
         public override void OnGUI()
@@ -95,8 +109,8 @@ namespace EasyFramework.Edit.Packages
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new[] { Lc.Update, Lc.All, Lc.Information }),
-                    GUIUtils.Button(Color.green, 16),
-                    GUILayout.Height(40)))
+                    GUIUtils.Button(Color.green),
+                    GUILayout.Height(25)))
             {
                 if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
                     UpdateAll();
@@ -111,9 +125,10 @@ namespace EasyFramework.Edit.Packages
             // {
             // }
 
-            if (GUILayout.Button(LC.Combine(new[] { Lc.Create, Lc.Package }), GUIUtils.Button(Color.cyan, 16),
-                    GUILayout.Height(40)))
+            if (GUILayout.Button(LC.Combine(new[] { Lc.Create, Lc.Package }), GUIUtils.Button(Color.cyan),
+                    GUILayout.Height(25)))
             {
+                CustomInputWindow.ShowWindow(LC.Combine(new[] { Lc.Create, Lc.Package }), _createPackageTips, CreatePackage);
             }
 
             EditorGUILayout.EndHorizontal();
@@ -166,6 +181,92 @@ namespace EasyFramework.Edit.Packages
             _packageConfig.ApplyModifiedProperties();
         }
 
+        #region Create Package - 创建一个新包
+
+        private void CreatePackage(string packageName, string packageDes, string author)
+        {
+            if (string.IsNullOrEmpty(packageName))
+                return;
+
+            string packageNameToLower = $"cn.efefef.{packageName.ToLower()}";
+            string packagePath = $"{_packageRootPath}/{packageNameToLower}";
+            Directory.CreateDirectory(packagePath);
+
+            try
+            {
+                CreatePackageJson(packageName, packageDes, author, packagePath);
+                CreateAssemblyReference(packageName, packagePath);
+            }
+            finally
+            {
+                _packageConfig.ApplyModifiedProperties();
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+        }
+
+        private void CreatePackageJson(string packageName, string packageDes, string author, string rootPath)
+        {
+            string authorName = author;
+            if (string.IsNullOrEmpty(author))
+            {
+                authorName = ConfigManager.Project.ScriptAuthor;
+                if (string.IsNullOrEmpty(authorName))
+                    authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
+                if (string.IsNullOrEmpty(authorName))
+                    authorName = "Empty Author";
+            }
+            
+            GitPackageConfig config = new GitPackageConfig()
+            {
+                Name = $"cn.efefef.{packageName.ToLower()}",
+                DisplayName = $"EF.{packageName}",
+                Version = "0.0.1",
+                Unity = "2021.3",
+                UnityRelease = "10f1",
+                Description = packageDes,
+                Author = new Author()
+                {
+                    Name = authorName,
+                },
+                ChangelogUrl = "https://github.com/HiWenHao/EFramework",
+                DocumentationUrl = "https://github.com/HiWenHao/EFramework",
+                LicensesUrl = "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+                Dependencies = new Dictionary<string, string>()
+                {
+                    { "cn.efefef.core", "0.0.1" }
+                }
+            };
+            
+            _config.packagesInfo.Add(new EFPackageInfo()
+            {
+                Name = config.Name,
+                DisplayName = config.DisplayName,
+                FromGit = false,
+                Description = config.Description,
+                CurrentVersion = config.Version,
+                ServerVersion = "",
+            });
+            
+            string packageJson = Path.Combine(rootPath, "package.json");
+            File.WriteAllText(packageJson, JsonConvert.SerializeObject(config, Formatting.Indented));
+        }
+
+        private void CreateAssemblyReference(string packageName, string rootPath)
+        {
+            string editorGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Editor.asmdef");
+            string runtimeGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Runtime.asmdef");
+            string packageEditorPath = $"{rootPath}/Editor";
+            string packageRuntimePath = $"{rootPath}/Runtime";
+            
+            Directory.CreateDirectory(packageEditorPath);
+            Directory.CreateDirectory(packageRuntimePath);
+            File.WriteAllText($"{packageEditorPath}/EF.{packageName}.Editor.asmref", $"{{\"reference\": \"GUID:{editorGuid}\"}}");
+            File.WriteAllText($"{packageRuntimePath}/EF.{packageName}.Runtime.asmref", $"{{\"reference\": \"GUID:{runtimeGuid}\"}}");
+        }
+
+        #endregion
+
         private void DrawOnePackage(EFPackageInfo packageInfo)
         {
             Lc versionType = CompareVersion(packageInfo.CurrentVersion, packageInfo.ServerVersion);
@@ -176,22 +277,13 @@ namespace EasyFramework.Edit.Packages
             EditorGUILayout.Space();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Current, Lc.Version }), GUIUtils.Text(),
-                GUILayout.Width(80));
-            EditorGUILayout.LabelField(packageInfo.CurrentVersion, GUIUtils.Text(), GUILayout.ExpandWidth(true));
+            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Current, Lc.Version }) + $":  {packageInfo.CurrentVersion}", GUIUtils.Text(),GUILayout.Width(150));
+            string serverContents = versionType == Lc.Non ? LC.Combine(new[] { Lc.Not, Lc.Exist }) : packageInfo.ServerVersion;
+            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Server, Lc.Version }) + $":  {serverContents}", GUIUtils.Text(),GUILayout.Width(150));
             DrawButton(versionType, packageInfo);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Server, Lc.Version }), GUIUtils.Text(),
-                GUILayout.Width(80));
-            string serverContents = versionType == Lc.Non
-                ? LC.Combine(new[] { Lc.Not, Lc.Exist })
-                : packageInfo.ServerVersion;
-            EditorGUILayout.LabelField(serverContents, GUIUtils.Text(), GUILayout.ExpandWidth(true));
-            EditorGUILayout.EndHorizontal();
-
+            
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
         }
@@ -209,29 +301,29 @@ namespace EasyFramework.Edit.Packages
                 _ => Color.white
             };
 
-            if (GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(160)))
+            if (!GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor),GUILayout.Width(140))) 
+                return;
+            
+            switch (versionType)
             {
-                switch (versionType)
-                {
-                    case Lc.Download:
-                    case Lc.Update:
-                        //Client.Add(packageInfo.Name);
-                        CustomProgressWindow.ShowWindow(LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
-                        string path = _config.useGit ? GitPackagePath : GiteePackagePath;
-                        _addRequest = Client.Add($"{path}{packageInfo.Name}");
-                        EditorApplication.update += AddPackageProgress;
-                        break;
-                    case Lc.Unload:
-                        _removeRequest = Client.Remove(packageInfo.Name);
-                        EditorApplication.update += RemovePackageProgress;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
-                }
-
-                _currentPackageInfo = packageInfo;
-                D.Emphasize($"{versionType}");
+                case Lc.Download:
+                case Lc.Update:
+                    //Client.Add(packageInfo.Name);
+                    CustomProgressWindow.ShowWindow(LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
+                    string path = _config.useGit ? GitPackagePath : GiteePackagePath;
+                    _addRequest = Client.Add($"{path}{packageInfo.Name}");
+                    EditorApplication.update += AddPackageProgress;
+                    break;
+                case Lc.Unload:
+                    _removeRequest = Client.Remove(packageInfo.Name);
+                    EditorApplication.update += RemovePackageProgress;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
             }
+
+            _currentPackageInfo = packageInfo;
+            D.Emphasize($"{versionType}");
         }
 
         private Lc CompareVersion(string v1, string v2)

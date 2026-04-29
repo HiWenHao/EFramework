@@ -785,6 +785,14 @@
       ]
     },
     {
+      "name": "Input",
+      "desc": "输入",
+      "array": [
+        "Input",
+        "输入"
+      ]
+    },
+    {
       "name": "Install",
       "desc": "安装",
       "array": [
@@ -1198,6 +1206,14 @@
       "array": [
         "Prefab",
         "预制件"
+      ]
+    },
+    {
+      "name": "Please",
+      "desc": "请",
+      "array": [
+        "Please",
+        "请"
       ]
     },
     {

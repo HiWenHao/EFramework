@@ -199,6 +199,8 @@ namespace EasyFramework.Edit
 		Is,
 		/// <summary> 初始化 </summary>
 		Init,
+		/// <summary> 输入 </summary>
+		Input,
 		/// <summary> 安装 </summary>
 		Install,
 		/// <summary> 导入 </summary>
@@ -303,6 +305,8 @@ namespace EasyFramework.Edit
 		Pack,
 		/// <summary> 预制件 </summary>
 		Prefab,
+		/// <summary> 请 </summary>
+		Please,
 		/// <summary> 插件 </summary>
 		Plugins,
 		/// <summary> 项目 </summary>

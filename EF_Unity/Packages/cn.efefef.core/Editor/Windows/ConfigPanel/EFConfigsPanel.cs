@@ -88,11 +88,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             #region Title
 
-            EditorGUILayout.LabelField(_settings[_panelIndex].Name, new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleLeft,
-                fontSize = 24
-            }, GUILayout.Height(35f));
+            EditorGUILayout.LabelField(_settings[_panelIndex].Name, GUIUtils.Title(), GUILayout.Height(35f));
             GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
             EditorGUILayout.Space();
 

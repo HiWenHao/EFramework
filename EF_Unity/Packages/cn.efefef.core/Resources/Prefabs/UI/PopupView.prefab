@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b23a4df8d22c0e145b26744e6cf0589f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a0a5ec5b5e0fdb641b2566c196c430fb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -215,6 +215,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Namespace: PleaseChangeTheNamespace
   Describe: 
+  AutoDestroy: 1
+  AutoDestroyCountdown: 10
   ViewType: 2
   PrefabPath: 
   ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/

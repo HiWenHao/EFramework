@@ -11,6 +11,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -181,9 +182,9 @@ namespace EasyFramework.Edit
         /// 获取程序集
         /// </summary>
         /// <param name="assemblyName">程序集名</param>
-        public static System.Reflection.Assembly GetAssembly(string assemblyName)
+        public static Assembly GetAssembly(string assemblyName)
         {
-            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies)
             {
                 if (assembly.GetName().Name == assemblyName)
