@@ -242,9 +242,9 @@ namespace EasyFramework.Managers.Pool
             if (item == null) 
                 return;
             
-            ObjectPool<T> pool = null;
-            if (_objectPools.TryGetValue(typeof(T), out var poolObject))
-                pool = poolObject as ObjectPool<T>;
+            if (!_objectPools.TryGetValue(typeof(T), out var poolObject))
+                return;
+            ObjectPool<T> pool = poolObject as ObjectPool<T>;
             pool?.Recycle(item);
         }
 

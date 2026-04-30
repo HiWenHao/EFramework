@@ -1,9 +1,9 @@
 /*
  * ================================================
- * Describe:      This script is used to .
- * Author:        Alvin8412
+ * Describe:      挂载在池化 GameObject 上的组件，管理状态和生命周期回调。
+ * Author:        Alvin5100
  * CreationTime:  2026-04-30 14:33:44
- * ModifyAuthor:  Alvin8412
+ * ModifyAuthor:  Alvin5100
  * ModifyTime:    2026-04-30 14:33:44
  * ScriptVersion: 0.3
  * ===============================================
@@ -19,25 +19,26 @@ using System.Diagnostics;
 namespace EasyFramework.Managers.Pool
 {
     /// <summary>
-    /// 池化对象
+    /// 池化对象组件，每个通过池生成的 GameObject 都会附带此组件。
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PooledObject : MonoBehaviour
     {
-        public GameObject Prefab { get; private set; }
-        public Transform CachedTransform { get; private set; }
-        public IPool<GameObject> OwnerPool { get; private set; }
-
-        private IPoolable[] _poolables;
-
-        public bool IsInPool { get; internal set; }
-        public bool DebugMode { get; private set; }
+        public GameObject Prefab { get; private set; }                // 原始预制体
+        public Transform CachedTransform { get; private set; }        // 缓存的 Transform
+        public IPool<GameObject> OwnerPool { get; private set; }      // 所属的 GameObjectPool
+        public bool IsInPool { get; internal set; }                   // 是否处于池中（未激活）
+        public bool DebugMode { get; private set; }                   // 是否开启调试（记录泄漏堆栈）
 
 #if POOL_DEBUG
-        public string SpawnStackTrace { get; private set; }
-        public float SpawnTime { get; private set; }
+        public string SpawnStackTrace { get; private set; }           // 产生该对象的调用堆栈
+        public float SpawnTime { get; private set; }                  // 产生时的时间戳
 #endif
 
+        private IPoolable[] _poolables;                               // 所有实现 IPoolable 的组件
+        /// <summary>
+        /// 由 GameObjectPool 调用，初始化组件。
+        /// </summary>
         internal void Init(GameObject prefab, bool debug, GameObjectPool owner)
         {
             Prefab = prefab;
@@ -48,6 +49,9 @@ namespace EasyFramework.Managers.Pool
             _poolables = GetComponents<IPoolable>();
         }
 
+        /// <summary>
+        /// 对象从池中取出时调用（激活前）。
+        /// </summary>
         internal void OnSpawn()
         {
             if (DebugMode && !IsInPool)
@@ -61,19 +65,22 @@ namespace EasyFramework.Managers.Pool
             if (DebugMode)
             {
                 SpawnTime = Time.time;
-                var stack = new StackTrace(2, true);
+                var stack = new StackTrace(2, true);   // 跳过当前方法和 OnSpawn 调用帧
                 SpawnStackTrace = stack.ToString();
             }
 #endif
 
             var arr = _poolables;
-            if (arr != null)
-            {
-                for (int i = 0; i < arr.Length; i++)
-                    arr[i].OnSpawn();
-            }
+            if (arr == null)
+                return;
+            
+            foreach (var t in arr)
+                t.OnSpawn();
         }
 
+        /// <summary>
+        /// 对象放回池中时调用（停用前）。
+        /// </summary>
         internal void OnDespawn()
         {
             if (IsInPool)
@@ -97,6 +104,9 @@ namespace EasyFramework.Managers.Pool
             }
         }
 
+        /// <summary>
+        /// 便捷方法：将此对象归还给所属池。
+        /// </summary>
         internal void ReturnToPool()
         {
             if (OwnerPool is GameObjectPool pool)

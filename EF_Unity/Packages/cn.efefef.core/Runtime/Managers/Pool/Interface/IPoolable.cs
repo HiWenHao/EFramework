@@ -22,12 +22,12 @@ namespace EasyFramework.Managers.Pool
 		bool IsFromPool { get; set; }
 		
 		/// <summary>
-		/// 从池中取出时调用
+		///  从池中取出时调用（此时对象已激活）
 		/// </summary>
 		void OnSpawn();
 
 		/// <summary>
-		/// 放回池中时调用
+		/// 放回池中时调用（对象仍处于激活状态）
 		/// </summary>
 		void OnDespawn();
 	}
