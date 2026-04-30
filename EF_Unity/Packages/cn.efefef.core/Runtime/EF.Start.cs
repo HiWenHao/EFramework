@@ -12,6 +12,7 @@
 using EasyFramework.Managers;
 using System.Collections;
 using EasyFramework;
+using EasyFramework.Managers.Pool;
 using UnityEngine;
 
 public sealed partial class EF

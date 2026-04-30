@@ -1,344 +1,254 @@
 /*
  * ================================================
- * Describe:      This script is used to .
+ * Describe:      对象池管理器，统一管理 GameObjectPool 和 ObjectPool<T>。
  * Author:        Alvin5100(Wang)
- * CreationTime:  2025-12-02 16:12:15
+ * CreationTime:  2026-04-30 14:23:19
  * ModifyAuthor:  Alvin5100(Wang)
- * ModifyTime:    2025-12-02 16:12:15
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-04-30 14:23:19
+ * ScriptVersion: 0.5
  * ===============================================
  */
 
 using System;
 using System.Collections.Generic;
-using EasyFramework.Managers.Pool;
 using UnityEngine;
 
-namespace EasyFramework.Managers
+namespace EasyFramework.Managers.Pool
 {
     /// <summary>
-    /// Pooled manager.
-    /// <para>对象池管理器</para>
+    /// 池管理器，负责初始化、获取和回收所有类型的池对象。
     /// </summary>
-    public class PoolManager : MonoSingleton<PoolManager>, IManager
+    public class PoolManager : MonoSingleton<PoolManager>, ISingleton
     {
-        public static event EventHandler<PoolEventArgs> OnPoolCreated;
-        public static event EventHandler<PoolEventArgs> OnPoolDestroyed;
-        public static event EventHandler<PoolEventArgs> OnGlobalStatisticsUpdated;
-
-        private bool _enableGlobalStatistics = true;
-        private float _statisticsUpdateInterval = 5f;
-        private float _lastStatisticsUpdateTime;
-
-        private const int MaxSize = 1000;
-
-        private Dictionary<Type, ObjectPool> _objectPools;
-        private List<PoolStatistics> _globalStatistics;
-        private Dictionary<object, string> _objectToPool;
-        private Dictionary<string, IPool<GameObject>> _unityObjectPools;
-
+        private int _poolIdAutoIncrements;
+        private Dictionary<Type, object> _objectPools;
+        private Dictionary<int, GameObjectPool> _gameObjectPools;
+        
         void ISingleton.Init()
         {
-            _objectPools = new Dictionary<Type, ObjectPool>();
-            _globalStatistics = new List<PoolStatistics>();
-            _objectToPool = new Dictionary<object, string>();
-            _unityObjectPools = new Dictionary<string, IPool<GameObject>>();
+            _objectPools = new Dictionary<Type, object>();
+            _gameObjectPools = new Dictionary<int, GameObjectPool>();
         }
 
         void ISingleton.Quit()
         {
-            DisposeAll();
-            _objectPools = null;
+            ClearAll();
+        }
+        
+        /// <summary>
+        /// 清除所有池
+        /// </summary>
+        public void ClearAll()
+        {
+            foreach (GameObjectPool pool in _gameObjectPools.Values)
+                pool.Clear();
+            foreach (object poolObj in _objectPools.Values)
+            {
+                if (poolObj is IClearablePool clearable)
+                    clearable.Clear();
+            }
         }
 
-        #region Mono挂载相关对象池
+        #region GameObjectPool
+        
+        /// <summary>
+        /// 创建一个可挂载对象池
+        /// </summary>
+        /// <param name="prefab">预制件</param>
+        /// <param name="parent">父节点</param>
+        /// <param name="initial">初始数量</param>
+        /// <param name="max">最大数量</param>
+        /// <param name="openDebug">开启日志</param>
+        /// <returns>对象池ID</returns>
+        public int CreateGameObjectPool(GameObject prefab, Transform parent, int initial, int max, bool openDebug)
+        {
+            _gameObjectPools[++_poolIdAutoIncrements] =
+                new GameObjectPool(prefab, initial, max, parent, openDebug);
+            
+            return _poolIdAutoIncrements;
+        }
 
         /// <summary>
-        /// 获取池
+        /// 销毁一个可挂载对象池
         /// </summary>
-        public IPool<T> GetPool<T>(string poolName) where T : class
+        /// <param name="poolId">对象池ID</param>
+        /// <returns>是否销毁成功</returns>
+        public bool DestroyGameObjectPool(int poolId)
         {
-            if (_unityObjectPools.TryGetValue(poolName, out var pool))
+            if (_gameObjectPools.TryGetValue(poolId, out var pool))
+                pool.Clear();
+            return _gameObjectPools.Remove(poolId);
+        }
+        
+        /// <summary>
+        /// 从对应池中获取一个 GameObject 实例
+        /// </summary>
+        /// <param name="poolId">对象池ID</param>
+        /// <returns>激活的游戏对象</returns>
+        public GameObject Spawn(int poolId)
+        {
+            if (_gameObjectPools.TryGetValue(poolId, out var pool))
             {
-                return pool as IPool<T>;
+                return pool.Get();
             }
-
-            D.Error($"Pool '{poolName}' not found");
+            
+            D.Error("Pool doesn't exist or was destroyed.");
+            return null;
+        }
+        
+        /// <summary>
+        /// 从对应池中获取一个 GameObject 实例，并设置位置和旋转。
+        /// </summary>
+        /// <param name="poolId">对象池ID</param>
+        /// <param name="pos">世界位置</param>
+        /// <param name="rot">旋转角度</param>
+        /// <returns>激活的游戏对象</returns>
+        public GameObject Spawn(int poolId, Vector3 pos, Quaternion rot)
+        {
+            if (_gameObjectPools.TryGetValue(poolId, out var pool))
+            {
+                var go = pool.Get();
+                go.transform.SetPositionAndRotation(pos, rot);
+                return go;
+            }
+            
+            D.Error("Pool doesn't exist or was destroyed.");
             return null;
         }
 
         /// <summary>
-        /// 销毁池
+        /// 回收一个池化对象（推荐）
+        /// <para>会判断自身归属者是否为 GameObjectPool， 不是则直接销毁</para>
         /// </summary>
-        /// <param name="poolName">池名称</param>
-        /// <returns>是否销毁成功</returns>
-        public bool DestroyPool(string poolName)
+        /// <param name="item">PooledObject 组件</param>
+        public void Despawn(PooledObject item)
         {
-            if (!_unityObjectPools.TryGetValue(poolName, out var pool))
-            {
-                D.Warning($"Pool '{poolName}' not found");
-                return false;
-            }
+            if (item == null) return;
 
-            pool.Dispose();
-            if (pool is MonoBehaviour monoPool)
-                Destroy(monoPool.gameObject);
-
-            _unityObjectPools.Remove(poolName);
-            OnPoolDestroyed?.Invoke(this, PoolEventArgs.Create(poolName, PoolEventType.Destroyed));
-            return true;
+            if (item.OwnerPool is GameObjectPool pool)
+                pool.Recycle(item);
+            else
+                Destroy(item.gameObject);
         }
 
         /// <summary>
-        /// 创建 GameObject 池
+        /// 回收一个游戏对象（不推荐）
+        /// <para>会从自身查找 PooledObject 组件， 没有则直接销毁</para>
         /// </summary>
-        public UnityGameObjectPool CreateGameObjectPools(GameObject prefab, PoolConfig config)
+        /// <param name="go">游戏对象</param>
+        public void Despawn(GameObject go)
         {
-            if (_unityObjectPools.TryGetValue(config.poolName, out var objectPool))
-            {
-                Debug.LogWarning($"Pool '{config.poolName}' already exists");
-                return objectPool as UnityGameObjectPool;
-            }
+            if (go == null) return;
 
-            GameObject poolObject = new GameObject(config.poolName);
-            poolObject.transform.SetParent(transform);
-
-            UnityGameObjectPool pool = poolObject.AddComponent<UnityGameObjectPool>();
-
-            pool.Initialize(prefab, config);
-
-            if (pool is IPool<GameObject> iPool)
-            {
-                _unityObjectPools.Add(config.poolName, iPool);
-                D.Warning("Pool '" + config.poolName + "' created");
-            }
-
-            // 触发事件
-            OnPoolCreated?.Invoke(this, PoolEventArgs.Create(config.poolName, PoolEventType.Created));
-
-            if (config.enableShowDebugInfo)
-                Debug.Log($"GameObject pool '{config.poolName}' created");
-
-            return pool;
+            var item = go.GetComponent<PooledObject>();
+            if (item != null)
+                Despawn(item);
+            else
+                Destroy(go);
         }
 
         /// <summary>
-        /// 从指定池中获取对象
+        /// 输出所有 GameObjectPool 中泄漏的活动对象（需打开 debug）。
         /// </summary>
-        public T GetFromPool<T>(string poolName) where T : class
+        public void DumpAllLeaks()
         {
-            var pool = GetPool<T>(poolName);
-            if (pool == null)
-            {
-                D.Error($"Pool '{poolName}' not found or type mismatch");
-                return null;
-            }
-
-            T obj = pool.Get();
-            if (obj != null)
-                _objectToPool[obj] = poolName;
-
-            return obj;
+            foreach (var p in _gameObjectPools.Values)
+                p.DumpLeaks();
         }
-
-        /// <summary>
-        /// 回收对象到对应的池
-        /// </summary>
-        public bool RecycleToPool<T>(T obj) where T : class
-        {
-            if (obj == null)
-            {
-                Debug.LogWarning("Attempted to recycle null object");
-                return false;
-            }
-
-            if (!_objectToPool.TryGetValue(obj, out var poolName))
-            {
-                Debug.LogWarning($"Object does not belong to any managed pool: {obj}");
-                return false;
-            }
-
-            var pool = GetPool<T>(poolName);
-            if (pool == null)
-            {
-                Debug.LogError($"Pool '{poolName}' not found for object: {obj}");
-                return false;
-            }
-
-            bool result = pool.Recycle(obj);
-            if (result)
-            {
-                _objectToPool.Remove(obj);
-            }
-
-            return result;
-        }
-
+        
         #endregion
-
-
-        #region --------------------------------------------------------------------------------
+        
+        #region ObjectPool<T>
 
         /// <summary>
-        /// 获取一个非挂载类型对象
+        /// 创建一个类型对象池
+        /// </summary>
+        /// <param name="max">最大容量</param>
+        /// <param name="factory">创建函数</param>
+        /// <param name="reset">重置方法</param>
+        /// <typeparam name="T"></typeparam>
+        public void CreateObjectPool<T>(int max, Func<T> factory, Action<T> reset) where T : class
+        {
+            Type type = typeof(T);
+            if (_objectPools.ContainsKey(type))
+            {
+                D.Warning("Object pool already exists.");
+                return;
+            }
+            
+            var pool = new ObjectPool<T>(
+                maxSize: max,
+                factory: factory,
+                reset: reset
+            );
+
+            _objectPools[type] = pool;
+        }
+
+        /// <summary>
+        /// 销毁类型对象池
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public bool DestroyObjectPool<T>()
+        {
+            Type type = typeof(T);
+            if (!_objectPools.TryGetValue(type, out var pool))
+            {
+                D.Warning("Object pool doesn't exist.");
+                return false;
+            }
+
+            if (pool is IClearablePool clearable)
+                clearable.Clear();
+            return _objectPools.Remove(type);
+        }
+        
+        /// <summary>
+        /// 获取已注册的 ObjectPool(T)
+        /// </summary>
+        /// <typeparam name="T">池中对象类型</typeparam>
+        /// <returns>对象池实例，不存在则返回 null</returns>
+        public ObjectPool<T> GetObjectPool<T>() where T : class
+        {
+            var key = typeof(T);
+            if (_objectPools.TryGetValue(key, out var pool))
+                return pool as ObjectPool<T>;
+            return null;
+        }
+
+        /// <summary>
+        /// 从对应的 ObjectPool(T)  中取一个对象。
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
-        /// <returns>对象</returns>
-        public T Get<T>() where T : class
+        /// <returns>对象实例，若池不存在则返回 null</returns>
+        public T GetFromPool<T>() where T : class
         {
             Type type = typeof(T);
-
-            // if (PoolTools.IsMountableMonoType(type))
-            // {
-            //     if (!_unityObjectPools.ContainsKey(type))
-            //         _unityObjectPools.Add(type, new UnityGameObjectPool(new GameObject(), transform, PoolConfig.Default));
-            //     
-            //     return _unityObjectPools[type].Get() as T;
-            // }
-
-            if (!_objectPools.ContainsKey(type))
-                _objectPools.Add(type, new ObjectPool(MaxSize));
-
-            return _objectPools[type].Get<T>();
+            ObjectPool<T> pool = null;
+            
+            if (_objectPools.TryGetValue(type, out var poolObject))
+                pool = poolObject as ObjectPool<T>;
+            return pool?.Get();
         }
 
         /// <summary>
-        /// 回收对象
+        /// 将对象归还到对应的 ObjectPool(T)
         /// </summary>
-        /// <param name="item">元素</param>
-        /// <typeparam name="T">元素类型</typeparam>
-        public void Recycle<T>(T item) where T : class
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="item">要归还的对象实例</param>
+        public void ReturnToPool<T>(T item) where T : class
         {
-            Type type = item.GetType();
-
-            if (PoolTools.IsMountableMonoType(type))
-            {
-                // if (!_unityObjectPools.ContainsKey(type))
-                //     _unityObjectPools.Add(type, new UnityObjectPool(new GameObject(), transform, PoolConfig.Default));
-                //
-                // _unityObjectPools[type].Recycle(item as GameObject);
+            if (item == null) 
                 return;
-            }
-
-
-            if (!_objectPools.ContainsKey(type))
-            {
-                D.Error($"Type of [ {type.FullName} ] recycle object pool doesn't exist");
-                return;
-            }
-
-            _objectPools[type].Recycle(item);
-        }
-
-        /// <summary>
-        /// 释放 <typeparamref name="T"/> 类型对象池
-        /// </summary>
-        /// <typeparam name="T">相关类型</typeparam>
-        public void DisposeOf<T>() where T : class
-        {
-            Type type = typeof(T);
-            if (PoolTools.IsMountableMonoType(type))
-            {
-                _unityObjectPools[type.Name].ClearAll();
-                return;
-            }
-
-            _objectPools[type].Dispose();
-        }
-
-        /// <summary>
-        /// 释放全部对象池
-        /// </summary>
-        public void DisposeAll()
-        {
-            foreach (var objectPool in _objectPools.Values)
-            {
-                objectPool.Dispose();
-            }
-
-            foreach (var unityPool in _unityObjectPools.Values)
-            {
-                unityPool.ClearAll();
-            }
-
-            _objectPools.Clear();
-            _unityObjectPools.Clear();
+            
+            ObjectPool<T> pool = null;
+            if (_objectPools.TryGetValue(typeof(T), out var poolObject))
+                pool = poolObject as ObjectPool<T>;
+            pool?.Recycle(item);
         }
 
         #endregion
 
-
-        #region 统计信息
-
-        /// <summary>
-        /// 获取所有池的统计信息
-        /// </summary>
-        public List<PoolStatistics> GetAllPoolStatistics()
-        {
-            var stats = new List<PoolStatistics>();
-
-            foreach (var pool in _unityObjectPools.Values)
-            {
-                stats.Add(pool.GetStatistics());
-            }
-
-            return stats;
-        }
-
-        /// <summary>
-        /// 获取全局统计信息
-        /// </summary>
-        public GlobalPoolStatistics GetGlobalStatistics()
-        {
-            var allStats = GetAllPoolStatistics();
-
-            return new GlobalPoolStatistics
-            {
-                //TotalPools = allStats.Count,
-                //TotalAvailable = allStats.Sum(s => s.AvailableCount),
-                //TotalActive = allStats.Sum(s => s.ActiveCount),
-                //TotalCreated = allStats.Sum(s => s.TotalCreated),
-                //PeakActive = allStats.Sum(s => s.PeakActiveCount),
-                //LastUpdateTime = DateTime.Now
-            };
-        }
-
-        /// <summary>
-        /// 打印所有池的统计信息
-        /// </summary>
-        public void PrintAllStatistics()
-        {
-            var stats = GetAllPoolStatistics();
-
-            Debug.Log("=== Object Pool Statistics ===");
-            foreach (var stat in stats)
-            {
-                Debug.Log(stat.ToString());
-            }
-
-            var global = GetGlobalStatistics();
-            Debug.Log($"=== Global Statistics ===");
-            Debug.Log($"Total Pools: {global.TotalPools}");
-            Debug.Log($"Total Available: {global.TotalAvailable}");
-            Debug.Log($"Total Active: {global.TotalActive}");
-            Debug.Log($"Total Created: {global.TotalCreated}");
-            Debug.Log($"Peak Active: {global.PeakActive}");
-        }
-
-        protected virtual void Updates()
-        {
-            if (_enableGlobalStatistics &&
-                UnityEngine.Time.time - _lastStatisticsUpdateTime > _statisticsUpdateInterval)
-            {
-                _globalStatistics.AddRange(GetAllPoolStatistics());
-                _lastStatisticsUpdateTime = UnityEngine.Time.time;
-
-                // 触发事件
-                OnGlobalStatisticsUpdated?.Invoke(this,
-                    PoolEventArgs.Create("Global", PoolEventType.StatisticsUpdated, GetGlobalStatistics()));
-            }
-        }
-
-        #endregion
     }
 }

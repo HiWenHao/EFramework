@@ -13,6 +13,7 @@ using System.IO;
 using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.TodoList;
 using EasyFramework.Edit.Windows.ConfigPanel;
+using EasyFramework.Managers.Pool;
 using UnityEditor;
 using UnityEngine;
 
@@ -38,13 +39,19 @@ namespace EasyFramework.Edit.Create
             Instance<PathConfig>();
         }
         
-        [MenuItem("Assets/Create/EF/TodoListConfig", priority = 300)]
+        [MenuItem("Assets/Create/EF/PoolConfig", priority = 300)]
+        private static void CreatedPoolConfig()
+        {
+            Instance<PoolConfig>(false);
+        }
+        
+        [MenuItem("Assets/Create/EF/TodoListConfig", priority = 310)]
         private static void CreatedTaskListConfig()
         {
             Instance<TodoListConfig>(false);
         }
         
-        [MenuItem("Assets/Create/EF/SpriteCollection", priority = 301)]
+        [MenuItem("Assets/Create/EF/SpriteCollection", priority = 320)]
         private static void CreatedSpriteCollection()
         {
             Instance<SpriteCollection>(false);

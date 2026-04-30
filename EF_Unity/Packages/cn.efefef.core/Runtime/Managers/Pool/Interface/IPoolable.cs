@@ -3,13 +3,11 @@
  * Describe:      This script is pooling object interface.
  * Author:        Alvin5100(Wang)
  * CreationTime:  2025-12-09 18:49:42
- * ModifyAuthor:  Alvin5100(Wang)
- * ModifyTime:    2025-12-09 18:49:42
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-04-30 16:29:22
  * ScriptVersion: 0.1
  * ===============================================
-*/
-
-using UnityEngine;
+ */
 
 namespace EasyFramework.Managers.Pool
 {
@@ -19,29 +17,18 @@ namespace EasyFramework.Managers.Pool
 	public interface IPoolable
 	{
 		/// <summary>
-		/// 归属对象池
+		/// 来自池中
 		/// </summary>
-		IPool<GameObject> Pool { get; }
+		bool IsFromPool { get; set; }
 		
 		/// <summary>
-		/// 初始化，定义当前对象归属池
+		/// 从池中取出时调用
 		/// </summary>
-		/// <param name="ownerPool"></param>
-		void Initialize(IPool<GameObject> ownerPool);
-		
+		void OnSpawn();
+
 		/// <summary>
-		/// 当从对象池中获取时调用
+		/// 放回池中时调用
 		/// </summary>
-		void OnGet();
-    
-		/// <summary>
-		/// 当返回到对象池时调用
-		/// </summary>
-		void OnRecycle();
-    
-		/// <summary>
-		/// 重置对象
-		/// </summary>
-		void ResetState();
+		void OnDespawn();
 	}
 }
