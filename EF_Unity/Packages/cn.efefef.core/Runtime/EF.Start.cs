@@ -13,6 +13,7 @@ using EasyFramework.Managers;
 using System.Collections;
 using EasyFramework;
 using EasyFramework.Managers.Pool;
+using EFExample;
 using UnityEngine;
 
 public sealed partial class EF
@@ -34,6 +35,9 @@ public sealed partial class EF
 
     /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
     public static LoadManager Load => LoadManager.Instance;
+    
+    /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
+    public static AssetsRootManager Assets => AssetsRootManager.Instance;
 
     /// <summary> Time manager.<para>时间管理器</para></summary>
     public static TimeManager Timer => TimeManager.Instance;
