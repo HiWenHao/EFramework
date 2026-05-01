@@ -155,14 +155,10 @@ namespace EasyFramework.Managers
 
             string viewName = uiView.GetType().Name;
 
-            GameObject prefab = null;
-            if (EF.Patch.IsUse)
-                prefab = EF.Load.LoadInYooSync<GameObject>(viewName);
-            if (null == prefab)
-                prefab = EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
+            GameObject prefab = EF.Assets.Load<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
             if (!prefab)
             {
-                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources Folder.");
+                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources{EF.Projects.AppConst.UIPrefabsPath} Folder.");
                 return null;
             }
 
@@ -190,6 +186,7 @@ namespace EasyFramework.Managers
             Destroy(uiView.View.gameObject);
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
+            EF.Assets.Release(EF.Projects.AppConst.UIPrefabsPath + uiView.View.name);
         }
 
         private bool ViewEnable(IUiView uiView, params object[] args)
@@ -257,10 +254,6 @@ namespace EasyFramework.Managers
         /// <summary>
         /// 关闭某个类型的全部视窗
         /// </summary>
-        /// <param name="uiViewType">视窗类型</param>
-        /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
-        /// <param name="keepFirstView">保留一个视窗</param>
-        /// <param name="args">参数</param>
         private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView,
             params object[] args)
         {
