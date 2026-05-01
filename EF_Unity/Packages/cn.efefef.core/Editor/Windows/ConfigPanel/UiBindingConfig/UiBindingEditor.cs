@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using EasyFramework.Manager.UI;
+using EasyFramework.Managers.UI;
 using UnityEditor;
 using UnityEngine;
 
@@ -543,7 +543,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             commonSb.AppendLine("using EasyFramework;");
             commonSb.AppendLine("using EasyFramework.UI;");
             commonSb.AppendLine("using System.Collections.Generic;");
-            commonSb.AppendLine("using EasyFramework.Manager.UI;");
+            commonSb.AppendLine("using EasyFramework.Managers.UI;");
             commonSb.AppendLine("using UnityEngine;");
             commonSb.AppendLine("using UnityEngine.UI;");
 

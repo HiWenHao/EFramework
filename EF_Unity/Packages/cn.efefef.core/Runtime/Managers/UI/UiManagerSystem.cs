@@ -10,7 +10,7 @@
  */
 
 using System.Collections.Generic;
-using EasyFramework.Manager.UI;
+using EasyFramework.Managers.UI;
 using EasyFramework.UI;
 using EasyFramework.UI.Popup;
 using UnityEngine;

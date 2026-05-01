@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-using EasyFramework.Manager.UI;
+using EasyFramework.Managers.UI;
 using UnityEngine;
 
 namespace EasyFramework.UI.Popup

@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Manager.UI
+namespace EasyFramework.Managers.UI
 {
     /// <summary>
     /// UI视窗类型

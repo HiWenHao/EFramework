@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Manager.UI
+namespace EasyFramework.Managers.UI
 {
     /// <summary>
     /// 所有UI视窗接口

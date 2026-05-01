@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-using EasyFramework.Manager.UI;
+using EasyFramework.Managers.UI;
 
 namespace EasyFramework.UI
 {
