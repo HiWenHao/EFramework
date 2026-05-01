@@ -56,8 +56,8 @@ namespace EasyFramework.Edit.UI
             _pro = target as ScrollRectPro;
 
             EditorGUILayout.Separator();
-            _pro.Content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scrol, Lc.Content }), _pro.Content, typeof(RectTransform), true);
-            _pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scrol, Lc.Direction }), _pro.Direction);
+            _pro.Content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scroll, Lc.Content }), _pro.Content, typeof(RectTransform), true);
+            _pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scroll, Lc.Direction }), _pro.Direction);
             _lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { _pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), _lines.intValue);
             _maxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), _maxCount.intValue);
             EditorGUILayout.Separator();

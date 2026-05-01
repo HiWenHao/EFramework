@@ -1433,14 +1433,6 @@
       ]
     },
     {
-      "name": "Scrol",
-      "desc": "滚动",
-      "array": [
-        "Scrol",
-        "滚动"
-      ]
-    },
-    {
       "name": "Score",
       "desc": "分数",
       "array": [
@@ -1478,6 +1470,14 @@
       "array": [
         "Screen",
         "屏幕"
+      ]
+    },
+    {
+      "name": "Scroll",
+      "desc": "滚动",
+      "array": [
+        "Scroll",
+        "滚动"
       ]
     },
     {
