@@ -18,7 +18,7 @@ namespace EasyFramework.Managers.Pool
     /// <summary>
     /// 池管理器，负责初始化、获取和回收所有类型的池对象。
     /// </summary>
-    public class PoolManager : MonoSingleton<PoolManager>, ISingleton
+    public class PoolManager : MonoSingleton<PoolManager>, IManager
     {
         private int _poolIdAutoIncrements;
         private Dictionary<Type, object> _objectPools;

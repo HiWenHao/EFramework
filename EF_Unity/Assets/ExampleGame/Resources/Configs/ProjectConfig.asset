@@ -32,6 +32,8 @@ MonoBehaviour:
     _managerLevel:
     - TimeManager
     - ToolManager
+    - PoolManager
+    - AssetsRootManager
     - EventManager
     - HttpsManager
     - SocketManager
@@ -40,5 +42,4 @@ MonoBehaviour:
     - ScenesManager
     - AudioManager
     - UIManager
-    - PoolManager
     - UiManager
