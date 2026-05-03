@@ -5,7 +5,7 @@
  * CreationTime:  2026-05-01 21:26:21
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-05-01 21:26:21
- * ScriptVersion: 0.1
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -20,50 +20,41 @@ namespace EasyFramework.Managers.Assets
     /// </summary>
     public class DefaultAssetsManager : IAssetsManager
     {
-        private Dictionary<string, AssetsObject> _assetsDictionary;
-        
         public AssetsManagerType ManagerType => AssetsManagerType.Default;
-        public void Initialize()
+        public bool OpenDebug { get; set; }
+
+        private Dictionary<string, Object> _assetsDictionary;
+
+        public async UniTask Initialize()
         {
-            _assetsDictionary = new Dictionary<string, AssetsObject>();
+            await UniTask.CompletedTask;
+            _assetsDictionary = new Dictionary<string, Object>();
         }
 
-        public void Destroy()
+        public async UniTask Destroy()
         {
-            ReleaseAll();
-            CleanupUnusedAssets();
+            await ReleaseAll();
+            await CleanupUnusedAssets();
             _assetsDictionary = null;
         }
 
         public T Load<T>(string path) where T : Object
         {
             if (_assetsDictionary.TryGetValue(path, out var assetsObject))
-            {
-                assetsObject.RefCount++;
-                return assetsObject.Asset as T;
-            }
+                return assetsObject as T;
 
             T asset = Resources.Load<T>(path);
             if (asset == null)
                 return null;
 
-            _assetsDictionary[path] = new AssetsObject()
-            {
-                RefCount = 1,
-                Asset = asset,
-                IsReleased = false
-            };
-
+            _assetsDictionary[path] = asset;
             return asset;
         }
 
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             if (_assetsDictionary.TryGetValue(path, out var existing))
-            {
-                existing.RefCount++;
-                return existing.Asset as T;
-            }
+                return existing as T;
 
             var asyncOp = Resources.LoadAsync<T>(path);
             await asyncOp;
@@ -71,28 +62,20 @@ namespace EasyFramework.Managers.Assets
             if (asyncOp.asset == null)
                 return null;
 
-            _assetsDictionary[path] = new AssetsObject()
-            {
-                RefCount = 1,
-                IsReleased = false,
-                Asset = asyncOp.asset,
-            };
+            _assetsDictionary[path] = asyncOp.asset;
             return asyncOp.asset as T;
         }
 
-        public int GetRefCount(string path)
+        public async UniTask Release(string path)
         {
-            return _assetsDictionary.TryGetValue(path, out var assetsObject) ? assetsObject.RefCount : 0;
+            await UniTask.CompletedTask;
+            ReleaseHelper(path);
+            _assetsDictionary.Remove(path);
         }
 
-        public void Release(string path)
+        public async UniTask ReleaseAll()
         {
-            if (ReleaseHelper(path))
-                _assetsDictionary.Remove(path);
-        }
-
-        public void ReleaseAll()
-        {
+            await UniTask.CompletedTask;
             if (_assetsDictionary == null)
                 return;
 
@@ -104,26 +87,20 @@ namespace EasyFramework.Managers.Assets
             _assetsDictionary.Clear();
         }
 
-        public void CleanupUnusedAssets()
+        public async UniTask CleanupUnusedAssets()
         {
-            Resources.UnloadUnusedAssets();
+            await UniTask.CompletedTask;
+            await Resources.UnloadUnusedAssets();
         }
 
         //  释放助手
-        private bool ReleaseHelper(string path)
+        private void ReleaseHelper(string path)
         {
             if (!_assetsDictionary.TryGetValue(path, out var assetsObject))
-                return false;
+                return;
 
-            assetsObject.RefCount--;
-            if (assetsObject.RefCount > 0 || assetsObject.IsReleased)
-                return false;
-            assetsObject.IsReleased = true;
-
-            if (assetsObject.Asset is not (GameObject or Component))
-                Resources.UnloadAsset(assetsObject.Asset);
-            
-            return true;
+            if (assetsObject is not (GameObject or Component))
+                Resources.UnloadAsset(assetsObject);
         }
     }
 }

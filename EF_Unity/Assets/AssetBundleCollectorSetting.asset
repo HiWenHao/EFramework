@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AssetBundleCollectorSetting
   m_EditorClassIdentifier: 
   ShowPackageView: 0
-  ShowEditorAlias: 0
+  ShowEditorAlias: 1
   UniqueBundleName: 0
   Packages:
   - PackageName: DefaultPackage
@@ -81,7 +81,15 @@ MonoBehaviour:
         CollectorGUID: 09b33bafaca989445a79b96c761a410b
         CollectorType: 0
         AddressRuleName: AddressByFileName
-        PackRuleName: PackDirectory
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Packages/cn.efefef.core/Resources/Prefabs/UI
+        CollectorGUID: 0c034a85274a83245ae9ea454b9a144b
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 

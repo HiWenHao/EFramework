@@ -9,9 +9,7 @@
  * ===============================================
  */
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using EasyFramework.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,70 +27,37 @@ namespace EasyFramework.Managers
         /// 是否使用Yoo
         /// </summary>
         public bool IsUse { get; private set; }
+        
+        /// <summary>
+        /// 当前被更新的包名
+        /// </summary>
+        public string PackageName { get; private set; }
 
         /// <summary>
         /// 启用可寻址资源定位
         /// </summary>
         public bool EnableAddressable => _package.GetPackageDetails().EnableAddressable;
-
-        /// <summary>
-        /// The patch update flow.
-        /// <para>补丁更新流程</para>
-        /// </summary>
-        private enum EUpdateFlow
-        {
-            /// <summary> 初始化 </summary>
-            Initialize,
-
-            /// <summary> 获取版本 </summary>
-            GetStaticVersion,
-
-            /// <summary> 获取配置信息 </summary>
-            GetManifestInfo,
-
-            /// <summary> 创建下载 </summary>
-            CreateDownloader,
-
-            /// <summary> 开始下载 </summary>
-            BeginDownload,
-
-            /// <summary> 更新完成 </summary>
-            Done
-        }
-
+        
+        /// 当前运行模式
         private EPlayMode _playMode = EPlayMode.EditorSimulateMode;
-
-        private Transform _patchUpdater;
-        private RectTransform _rectUpdater;
+        
         private Text _txtUpdaterTips;
         private Slider _sldUpdaterSlider;
 
         private string _packageVersion;
         private ResourcePackage _package;
-        private Dictionary<string, bool> _cacheData;
-        private ResourceDownloaderOperation _downloader;
-
-        private Action _callback;
-        private IEnumerator _ieCurrentIE;
-        private Queue<IEnumerator> _updateStateQueue;
 
         void ISingleton.Init()
         {
-            // 初始化资源系统
             YooAssets.Initialize();
-            _updateStateQueue = new Queue<IEnumerator>();
+            IsUse = true;
         }
 
         void ISingleton.Quit()
         {
             IsUse = false;
-
             _package = null;
-            _downloader = null;
-
-            _updateStateQueue.Clear();
-            _updateStateQueue = null;
-            _callback = null;
+            YooAssets.Destroy();
         }
 
         /// <summary>
@@ -100,89 +65,45 @@ namespace EasyFramework.Managers
         /// <para>开始更新补丁</para>
         /// </summary>
         /// <param name="mode">Refresh scheme.<para>更新模式</para></param>
-        /// <param name="callback">Update the completion callback.<para>更新完成回调</para></param>
         /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
-        public void StartUpdatePatch(EPlayMode mode, Action callback = null, string packageName = "DefaultPackage")
+        /// <param name="autoStart">Auto start the downloading.<para>自动开始下载</para></param>
+        public async UniTask StartUpdatePatch(EPlayMode mode, string packageName = "DefaultPackage", bool autoStart = true)
         {
-            _cacheData = new Dictionary<string, bool>(1000);
-            _playMode = mode;
             D.Emphasize($"资源系统运行模式：{mode}");
-            _callback = callback;
+            
+            _playMode = mode;
+            PackageName = packageName;
             _package = YooAssets.TryGetPackage(packageName);
             if (_package == null)
             {
-                // 创建默认的资源包
                 _package = YooAssets.CreatePackage(packageName);
-
-                //设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
                 YooAssets.SetDefaultPackage(_package);
-            }
-            else
-            {
-                _package = YooAssets.GetPackage(packageName);
             }
 
             EF.Load.AddResourcePackage(_package);
-
-            _updateStateQueue.Clear();
             if (_package.InitializeStatus != EOperationStatus.Succeed)
             {
-                _updateStateQueue.Enqueue(Initialize());
-                _updateStateQueue.Enqueue(GetStaticVersion());
-                _updateStateQueue.Enqueue(GetManifest());
+                await CreateInitializeParameters();
+                await GetRemotePackageVersionAsync();
+                await UpdatePackageManifestAsync();
             }
 
-            _updateStateQueue.Enqueue(CreateDownloader());
-            _updateStateQueue.Enqueue(BeginDownload());
-
-            Run(EUpdateFlow.Initialize);
+            if (!autoStart)
+                return;
+            
+            var downloader = await CreateDownloader();
+            await BeforeDownloading(downloader);
+            await StartDownloader(downloader);
         }
 
         #region Run progress. 跑更新流程
 
-        void Run(EUpdateFlow nextFlow)
-        {
-            //D.Emphasize($"Next state is {nextFlow}       IEnumerator.Count = {_updateStateQueue.Count}");
-
-            if (null != _ieCurrentIE)
-                EF.StopCoroutines(_ieCurrentIE);
-            if (nextFlow.Equals(EUpdateFlow.Done) || _updateStateQueue.Count <= 0)
-            {
-                IsUse = true;
-                _ieCurrentIE = null;
-                if (_patchUpdater)
-                {
-                    EF.Ui.ShowTipsView(
-                        $"更新完成",
-                        new TipsViewExtraData()
-                        {
-                            ConfirmName = "好的",
-                            ConfirmCallBack = UpdateDone,
-                        });
-                }
-                else
-                    _callback?.Invoke();
-
-                return;
-            }
-
-            _ieCurrentIE = _updateStateQueue.Dequeue();
-            EF.StartCoroutines(_ieCurrentIE);
-        }
 
         void UpdateDone()
         {
-            _rectUpdater = null;
             _txtUpdaterTips = null;
             _sldUpdaterSlider = null;
-
-            Object.Destroy(_patchUpdater.gameObject);
-            _patchUpdater = null;
-            _callback?.Invoke();
-
-            _cacheData.Clear();
-            _cacheData = null;
-            _callback = null;
+            
             _package = null;
         }
 
@@ -190,7 +111,10 @@ namespace EasyFramework.Managers
 
         #region Setting config Initialize.初始化更新设置
 
-        IEnumerator Initialize()
+        /// <summary>
+        /// 根据 EPlayMode 创建初始化参数
+        /// </summary>
+        private async UniTask<bool> CreateInitializeParameters()
         {
             InitializeParameters initParameters = null;
             switch (_playMode)
@@ -240,26 +164,186 @@ namespace EasyFramework.Managers
                             )
                         );
 #else
-                        //WebServerFileSystemParameters =
-                        //    FileSystemParameters.CreateDefaultWebServerFileSystemParameters()
+                        WebServerFileSystemParameters =
+                            FileSystemParameters.CreateDefaultWebServerFileSystemParameters()
 #endif
                     };
                     break;
             }
 
             InitializationOperation initializationOperation = _package.InitializeAsync(initParameters);
-            yield return initializationOperation;
+            await initializationOperation.ToUniTask();
 
-            if (initializationOperation.Status != EOperationStatus.Succeed)
+            if (initializationOperation.Status == EOperationStatus.Succeed)
             {
-                D.Error(initializationOperation.Error);
+                D.Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {_playMode}");
+                return true;
             }
-            else
-            {
-                Run(EUpdateFlow.GetStaticVersion);
-            }
+
+            D.Error($"[YooAssetsManager] 资源包初始化失败: {initializationOperation.Error}");
+            return false;
         }
 
+        #endregion
+
+        #region Update the StaticViersion file.更新静态版本文件
+
+        /// <summary>
+        /// Update the StaticVersion file. 获取远程资源版本
+        /// </summary>
+        private async UniTask<bool> GetRemotePackageVersionAsync()
+        {
+            var operation = _package.RequestPackageVersionAsync(false);
+            await operation.ToUniTask();
+            if (operation.Status == EOperationStatus.Succeed)
+            {
+                //更新成功
+                string packageVersion = operation.PackageVersion;
+                _packageVersion = packageVersion;
+                D.Log($"Updated package Version : {packageVersion}");
+
+                //拿到版本号接下来去获取Manifest信息     GetManifestInfo
+                return true;
+            }
+
+            //更新失败
+            D.Error($"Get the StaticVersion file error: {operation.Error}");
+            return false;
+        }
+
+        #endregion
+
+        #region Update the GetManifest file.更新配置文件清单
+
+        /// <summary>
+        /// Update the Manifest file.更新配置文件清单
+        /// </summary>
+        private async UniTask<bool> UpdatePackageManifestAsync()
+        {
+            var operation = _package.UpdatePackageManifestAsync(_packageVersion);
+            await operation.ToUniTask();
+            if (operation.Status == EOperationStatus.Succeed)
+            {
+                //拿到配置信息接下来去获取热更资源
+                return true;
+            }
+
+            //更新失败
+            D.Error($"Get the Manifest file error: {operation.Error}");
+            return false;
+        }
+
+        #endregion
+
+        #region Create one downloader.创建一个下载器
+        
+        /// <summary>
+        /// Create a downloader.创建一个下载器
+        /// </summary>
+        /// <param name="tags">资源标签列表</param>
+        /// <param name="downloadMaxCount">同时最大下载数</param>
+        /// <param name="failedTryAgain">失败后的再次下载尝试次数</param>
+        /// <returns>下载器</returns>
+        public async UniTask<ResourceDownloaderOperation> CreateDownloader(string[] tags = null, int downloadMaxCount = 10, int failedTryAgain = 3)
+        {
+            await UniTask.CompletedTask;
+            
+            var downloader = null == tags
+                ? _package.CreateResourceDownloader(downloadMaxCount, failedTryAgain)
+                : _package.CreateResourceDownloader(tags, downloadMaxCount, failedTryAgain);
+
+            return downloader;
+        }
+        
+        #endregion
+
+        #region Start download.开始下载
+        
+        /// <summary>
+        /// Download service pack.下载补丁包
+        /// </summary>
+        /// <param name="downloader">下载器</param>
+        /// <returns>下载完成结果通知</returns>
+        private async UniTask<bool> StartDownloader(ResourceDownloaderOperation downloader)
+        {
+            await UniTask.CompletedTask;
+            
+            if (downloader.TotalDownloadCount == 0)
+                return false;
+
+            downloader.BeginDownload();
+            await downloader.ToUniTask();
+
+            return downloader.Status == EOperationStatus.Succeed;
+        }
+        
+        #endregion
+
+        #region Private function - 内部调用
+
+        private async UniTask BeforeDownloading(ResourceDownloaderOperation downloader)
+        {
+            await UniTask.CompletedTask;
+            if (downloader == null || downloader.TotalDownloadCount == 0)
+                return;
+            
+            downloader.DownloadErrorCallback = OnDownloadErrorFunction;
+            downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
+            downloader.DownloadFinishCallback = OnDownloadOverFunction;
+            downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
+            
+            EF.Ui.ShowTipsView(
+                $"一共发现了{downloader.TotalDownloadCount}个资源，总大小为{downloader.TotalDownloadBytes / 1048576f:F1}mb需要更新,是否下载。",
+                new TipsViewExtraData()
+                {
+                    ConfirmName = "下载",
+                    CancelName = "取消",
+                    ConfirmCallBack = OnClickDownloadBegin,
+                    CancelCallBack = UpdateDone
+                });
+        }
+
+        /// <summary>
+        /// 当点击开始下载
+        /// </summary>
+        void OnClickDownloadBegin()
+        {
+            Transform patchUpdater = Object
+                .Instantiate(Resources.Load<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
+            Canvas canvas = patchUpdater.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = EF.Ui.UICamera;
+            _txtUpdaterTips = EF.Tool.Find<Text>(patchUpdater, "Txt_UpdaterTips");
+            _sldUpdaterSlider = EF.Tool.Find<Slider>(patchUpdater, "Sld_UpdaterSlider");
+        }
+        private void OnDownloadErrorFunction(DownloadErrorData errorData)
+        {
+            D.Error(
+                $"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
+        }
+
+        private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
+        {
+            _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
+
+            string currentSizeMb = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
+            string totalSizeMb = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
+            _txtUpdaterTips.text =
+                $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMb}MB/{totalSizeMb}MB";
+        }
+
+        private void OnStartDownloadFileFunction(DownloadFileData fileData)
+        {
+            D.Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
+        }
+
+        private void OnDownloadOverFunction(DownloaderFinishData finishData)
+        {
+            D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
+        }
+        
+        #endregion
+        
         /// <summary>
         /// 远端资源地址查询服务类
         /// </summary>
@@ -283,171 +367,6 @@ namespace EasyFramework.Managers
             {
                 return $"{_fallbackHostServer}/{fileName}";
             }
-        }
-
-        #endregion
-
-        #region Update the StaticViersion file.更新静态版本文件
-
-        /// <summary>
-        /// Update the StaticViersion file.更新静态版本文件
-        /// </summary>
-        IEnumerator GetStaticVersion()
-        {
-            var operation = _package.RequestPackageVersionAsync(false);
-            yield return operation;
-
-            if (operation.Status == EOperationStatus.Succeed)
-            {
-                //更新成功
-                string packageVersion = operation.PackageVersion;
-                _packageVersion = packageVersion;
-                D.Log($"Updated package Version : {packageVersion}");
-
-                //拿到版本号接下来去获取Manifest信息     GetManifestInfo
-                Run(EUpdateFlow.GetManifestInfo);
-            }
-            else
-            {
-                //更新失败
-                D.Error($"Get the StaticVersion file error: {operation.Error}");
-            }
-        }
-
-        #endregion
-
-        #region Update the GetManifest file.更新配置文件清单
-
-        /// <summary>
-        /// Update the Manifest file.更新配置文件清单
-        /// </summary>
-        IEnumerator GetManifest()
-        {
-            var operation = _package.UpdatePackageManifestAsync(_packageVersion);
-            yield return operation;
-
-            if (operation.Status == EOperationStatus.Succeed)
-            {
-                //拿到配置信息接下来去获取热更资源
-                Run(EUpdateFlow.CreateDownloader);
-            }
-            else
-            {
-                //更新失败
-                D.Error($"Get the Manifest file error: {operation.Error}");
-            }
-        }
-
-        #endregion
-
-        #region Create one downloader.创建一个下载器
-
-        /// <summary>
-        /// CreateTimeEvent one downloader.创建一个下载器
-        /// </summary>
-        IEnumerator CreateDownloader()
-        {
-            _downloader = _package.CreateResourceDownloader(10, 3);
-
-            yield return null;
-
-            if (_downloader.TotalDownloadCount == 0)
-            {
-                Run(EUpdateFlow.Done);
-            }
-            else
-            {
-                if (null == _patchUpdater)
-                {
-                    _patchUpdater = Object
-                        .Instantiate(
-                            EF.Load.LoadInResources<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater"))
-                        .transform;
-                    Canvas canvas = _patchUpdater.GetComponent<Canvas>();
-                    canvas.renderMode = RenderMode.ScreenSpaceCamera;
-                    canvas.worldCamera = EF.Ui.UICamera;
-                    _rectUpdater = EF.Tool.Find<RectTransform>(_patchUpdater, "Tran_Updater");
-                }
-
-                EF.Ui.ShowTipsView(
-                    $"一共发现了{_downloader.TotalDownloadCount}个资源，总大小为{(int)(_downloader.TotalDownloadBytes / (1024f * 1024f))}mb需要更新,是否下载。",
-                    new TipsViewExtraData()
-                    {
-                        ConfirmName = "下载",
-                        CancelName = "取消",
-                        ConfirmCallBack = OnClickDownloadBegin,
-                        CancelCallBack = UpdateDone
-                    });
-            }
-        }
-
-        #endregion
-
-        #region Download service pack.下载补丁包
-
-        /// <summary>
-        /// Download service pack.下载补丁包
-        /// </summary>
-        IEnumerator BeginDownload()
-        {
-            if (null == _txtUpdaterTips)
-            {
-                _txtUpdaterTips = EF.Tool.Find<Text>(_patchUpdater, "Txt_UpdaterTips");
-                _sldUpdaterSlider = EF.Tool.Find<Slider>(_patchUpdater, "Sld_UpdaterSlider");
-            }
-
-            //注册下载回调
-            _downloader.DownloadErrorCallback = OnDownloadErrorFunction;
-            _downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
-            _downloader.DownloadFinishCallback = OnDownloadOverFunction;
-            _downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
-
-            //开启下载
-            _downloader.BeginDownload();
-            yield return _downloader;
-
-            // 检测下载结果
-            if (_downloader.Status != EOperationStatus.Succeed)
-                yield break;
-
-            Run(EUpdateFlow.Done);
-        }
-
-        private void OnDownloadErrorFunction(DownloadErrorData errorData)
-        {
-            D.Error(
-                $"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
-        }
-
-        private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
-        {
-            _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
-
-            string currentSizeMB = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
-            string totalSizeMB = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
-            _txtUpdaterTips.text =
-                $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMB}MB/{totalSizeMB}MB";
-        }
-
-        private void OnStartDownloadFileFunction(DownloadFileData fileData)
-        {
-            D.Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
-        }
-
-        private void OnDownloadOverFunction(DownloaderFinishData finishData)
-        {
-            D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
-        }
-
-        #endregion
-
-        /// <summary>
-        /// 当点击开始下载
-        /// </summary>
-        void OnClickDownloadBegin()
-        {
-            _rectUpdater.gameObject.SetActive(true);
-            Run(EUpdateFlow.BeginDownload);
         }
     }
 }

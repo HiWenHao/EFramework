@@ -13,6 +13,8 @@ using EasyFramework;
 using Luban;
 using SimpleJSON;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using YooAsset;
 
@@ -91,21 +93,9 @@ namespace EFExample
                     EF.Socket.DisposeDesignation(_ws);
                 });
             }
-
-            //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
-            // Yoo现在需要有首包资源，并且会产生[ BuildinCatalog ]文件
-            // 在[ HostPlayMode ]模式下加载某个资源时，
-            // 会先从[ StreamingAssetsPath ] 下寻找，找不到再去沙河路径下寻找
-            // 如何测试:
-            // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
-            // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
-            // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            //EF.Patch.StartUpdatePatch(PlayMode, callback: delegate{
-            //    AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
-            //    EF.Audio.Play2DEffectSouceByClip(clip);
-            //    LoadMetadataForAOTAssemblies();
-            //});
-            LoadMetadataForAOTAssemblies();
+            
+            StartUpdatePatch().Forget();
+            //LoadMetadataForAOTAssemblies();
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
@@ -137,6 +127,27 @@ namespace EFExample
 
         }
 
+        #region YooAssets
+
+        private async UniTask StartUpdatePatch()
+        {
+            //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
+            // Yoo现在需要有首包资源，并且会产生[ BuildinCatalog ]文件
+            // 在[ HostPlayMode ]模式下加载某个资源时，
+            // 会先从[ StreamingAssetsPath ] 下寻找，找不到再去沙河路径下寻找
+            // 如何测试:
+            // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
+            // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
+            // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
+            await EF.Assets.ConfirmAssetsManagerType(AssetsManagerType.Default);
+            await EF.Patch.StartUpdatePatch(PlayMode);
+            AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
+            EF.Audio.Play2DEffectSouceByClip(clip);
+            LoadMetadataForAOTAssemblies();
+        }
+
+        #endregion
+        
         #region HybirdCLR
         /// <summary>
         /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。

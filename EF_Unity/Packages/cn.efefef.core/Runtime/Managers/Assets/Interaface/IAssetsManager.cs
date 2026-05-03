@@ -25,14 +25,19 @@ namespace EasyFramework.Managers.Assets
         AssetsManagerType ManagerType { get; }
 
         /// <summary>
+        /// 开启日志
+        /// </summary>
+        bool OpenDebug { get; set; }
+        
+        /// <summary>
         /// 初始化
         /// </summary>
-        void Initialize();
+        UniTask Initialize();
         
         /// <summary>
         /// 销毁
         /// </summary>
-        void Destroy();
+        UniTask Destroy();
         
         /// <summary>
         /// 同步加载资源
@@ -49,28 +54,21 @@ namespace EasyFramework.Managers.Assets
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns>资源</returns>
         UniTask<T> LoadAsync<T>(string path) where T : Object;
-
-        /// <summary>
-        /// 获取资源引用计数
-        /// </summary>
-        /// <param name="path">资源地址</param>
-        /// <returns>引用数量</returns>
-        int GetRefCount(string path);
-
+        
         /// <summary>
         /// 释放资源
         /// </summary>
         /// <param name="path">资源地址</param>
-        void Release(string path);
+        UniTask Release(string path);
         
         /// <summary>
         /// 释放全部资源
         /// </summary>
-        void ReleaseAll();
+        UniTask ReleaseAll();
 
         /// <summary>
         /// 主动清理未使用的资源（包括之前被 Release 的 GameObject预制体 或 Component 资源）
         /// </summary>
-        void CleanupUnusedAssets();
+        UniTask CleanupUnusedAssets();
     }
 }

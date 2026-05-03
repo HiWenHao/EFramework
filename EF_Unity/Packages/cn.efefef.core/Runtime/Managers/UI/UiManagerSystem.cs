@@ -10,6 +10,8 @@
  */
 
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Assets;
 using EasyFramework.Managers.UI;
 using EasyFramework.UI;
 using EasyFramework.UI.Popup;
@@ -155,10 +157,14 @@ namespace EasyFramework.Managers
 
             string viewName = uiView.GetType().Name;
 
-            GameObject prefab = EF.Assets.Load<GameObject>(EF.Projects.AppConst.UIPrefabsPath + viewName);
+            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+                ? EF.Projects.AppConst.UIPrefabsPath + viewName
+                : viewName;
+            
+            GameObject prefab = EF.Assets.Load<GameObject>(path);
             if (!prefab)
             {
-                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources{EF.Projects.AppConst.UIPrefabsPath} Folder.");
+                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
                 return null;
             }
 
@@ -186,7 +192,10 @@ namespace EasyFramework.Managers
             Destroy(uiView.View.gameObject);
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
-            EF.Assets.Release(EF.Projects.AppConst.UIPrefabsPath + uiView.View.name);
+            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+                ? EF.Projects.AppConst.UIPrefabsPath + uiView.View.name
+                : uiView.View.name;
+            EF.Assets.Release(path).Forget();
         }
 
         private bool ViewEnable(IUiView uiView, params object[] args)
