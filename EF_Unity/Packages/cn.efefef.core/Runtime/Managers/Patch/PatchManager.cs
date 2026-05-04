@@ -83,7 +83,6 @@ namespace EasyFramework.Managers
                 YooAssets.SetDefaultPackage(_package);
             }
 
-            EF.Load.AddResourcePackage(_package);
             if (_package.InitializeStatus != EOperationStatus.Succeed)
             {
                 await CreateInitializeParameters();

@@ -456,7 +456,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   StartWebSocket: 0
-  PlayMode: 2
+  PlayMode: 0
 --- !u!4 &1357331762
 Transform:
   m_ObjectHideFlags: 0

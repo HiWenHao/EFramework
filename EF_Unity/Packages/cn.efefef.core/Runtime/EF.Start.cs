@@ -11,6 +11,7 @@
 
 using EasyFramework.Managers;
 using System.Collections;
+using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Pool;
 using EFExample;
@@ -32,9 +33,6 @@ public sealed partial class EF
 
     /// <summary> Universal tools manager.<para>通用工具管理器</para></summary>
     public static ToolManager Tool => ToolManager.Instance;
-
-    /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
-    public static LoadManager Load => LoadManager.Instance;
     
     /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
     public static AssetsRootManager Assets => AssetsRootManager.Instance;
@@ -123,7 +121,8 @@ public sealed partial class EF
     public static void ClearMemory()
     {
         System.GC.Collect();
-        Load.ClearAllMemory();
+        Assets.CleanupUnusedAssets().Forget();
+        Assets.ReleaseAll().Forget();
     }
 
     /// <summary>

@@ -35,8 +35,7 @@ namespace EasyFramework.Managers
 		Action _callback;
         void ISingleton.Init()
         {
-            _loadCanvas = Object.Instantiate(EF.Load.LoadInResources<Transform>("Prefabs/UI/LoadCanvas"));
-            _loadCanvas.SetParent(EF.Singleton);
+            _loadCanvas = Object.Instantiate(EF.Assets.Load<Transform>("Prefabs/UI/LoadCanvas"), EF.Singleton, true);
             _bg = _loadCanvas.GetChild(0).GetComponent<Image>();
             _progressBar = _bg.transform.GetChild(0).GetComponent<Slider>();
             _pcTN = _progressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();

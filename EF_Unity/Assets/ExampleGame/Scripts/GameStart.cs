@@ -163,7 +163,7 @@ namespace EFExample
             System.Reflection.Assembly _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "ExampleGameHotfix");
             RunHotfixCode(_hotUpdateAss);
 #else
-            TextAsset handle = EF.Load.LoadInYooSync<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
+            TextAsset handle = EF.Assets.Load<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
             RunHotfixCode(System.Reflection.Assembly.Load(handle.bytes));
 #endif
         }
