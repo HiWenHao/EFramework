@@ -139,9 +139,12 @@ namespace EFExample
             // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            await EF.Assets.ConfirmAssetsManagerType(AssetsManagerType.Default);
             await EF.Patch.StartUpdatePatch(PlayMode);
-            AudioClip clip = EF.Load.LoadInYooSync<AudioClip>("Haoheng");
+            await EF.Assets.ConfirmAssetsManagerType(AssetsManagerType.YooAsset);
+            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+                ? EF.Projects.AppConst.AudioPath + "Haoheng"
+                : "Haoheng";
+            AudioClip clip = await EF.Assets.LoadAsync<AudioClip>(path);
             EF.Audio.Play2DEffectSouceByClip(clip);
             LoadMetadataForAOTAssemblies();
         }

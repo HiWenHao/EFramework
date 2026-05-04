@@ -99,8 +99,10 @@ namespace EasyFramework.Managers.Assets
             if (!_assetsDictionary.TryGetValue(path, out var assetsObject))
                 return;
 
-            if (assetsObject is not (GameObject or Component))
-                Resources.UnloadAsset(assetsObject);
+            if (assetsObject is GameObject or Component)
+                return;
+
+            Resources.UnloadAsset(assetsObject);
         }
     }
 }

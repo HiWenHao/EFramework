@@ -29,63 +29,67 @@ namespace EFExample
         private bool _isInitialized;
 
         private IAssetsManager _assetsManager;
-
         private Dictionary<string, int> _refCounts;
 
         void ISingleton.Init()
         {
-            _openDebug = true;
+            _openDebug = false;
             _refCounts = new Dictionary<string, int>();
+            ConfirmAssetsManagerType(AssetsManagerType.Default).Forget();
         }
 
         void ISingleton.Quit()
         {
             if (null != _assetsManager)
             {
-                _assetsManager.Destroy();
+                _assetsManager.Destroy().Forget();
                 _assetsManager = null;
             }
 
-            if (null != _refCounts)
-            {
-                _refCounts.Clear();
-                _refCounts = null;
-            }
+            _refCounts?.Clear();
+            _refCounts = null;
         }
 
+        /// <summary>
+        /// 确认/切换资源管理器类型（需在加载任何资源前调用）
+        /// </summary>
         public async UniTask ConfirmAssetsManagerType(AssetsManagerType managerType)
         {
-            if (!_isInitialized)
-            {
-                //  初始化
-
-
-                _isInitialized = true;
-            }
-
-            if (CurrentManagerType == managerType)
+            if (_isInitialized && CurrentManagerType == managerType)
             {
                 Warning($"The current manager [ {CurrentManagerType} ] you are using is exactly the one you want to switch to.");
                 return;
             }
-            
-            CurrentManagerType = managerType;
-            //  切换
 
-            switch (managerType)
+            if (_assetsManager != null)
             {
-                case AssetsManagerType.Default:
-                    _assetsManager = new DefaultAssetsManager();
-                    break;
-                case AssetsManagerType.YooAsset:
-                    _assetsManager = new YooAssetsManager();
-                    break;
-                default:
-                    break;
+                Log($"Destroying old assets manager: {CurrentManagerType}");
+                await _assetsManager.Destroy();
+                _assetsManager = null;
             }
-            
-            _assetsManager.OpenDebug = _openDebug;
-            await _assetsManager.Initialize();
+
+            _refCounts?.Clear();
+
+            IAssetsManager newManager = managerType switch
+            {
+                AssetsManagerType.Default => new DefaultAssetsManager(),
+                AssetsManagerType.YooAsset => new YooAssetsManager(),
+                _ => null
+            };
+
+            if (newManager == null)
+            {
+                Error($"Unsupported AssetsManagerType: {managerType}");
+                return;
+            }
+
+            newManager.OpenDebug = _openDebug;
+            await newManager.Initialize();
+
+            _assetsManager = newManager;
+            CurrentManagerType = managerType;
+            _isInitialized = true;
+
             Log($"[ AssetsRootManager ] initialized by type[ {managerType} ].");
         }
 
@@ -128,8 +132,10 @@ namespace EFExample
         public async UniTask<int> GetRefCount(string path)
         {
             await UniTask.CompletedTask;
+            if (!CheckInitialization()) 
+                return 0;
             Log($"[ AssetsRootManager ] Get refCount by path: {path}");
-            return !CheckInitialization() ? 0 : _refCounts.GetValueOrDefault(path, 0);
+            return _refCounts.GetValueOrDefault(path, 0);
         }
 
         /// <summary>
@@ -144,7 +150,7 @@ namespace EFExample
             
             if (!_refCounts.TryGetValue(path, out var count))
             {
-                Warning($"[ AssetsRootManager ] Attempt to release unloaded resources: {path}");
+                Warning($"[ AssetsRootManager ] Attempt to release unloaded assets: {path}");
                 return;
             }
 
@@ -174,6 +180,7 @@ namespace EFExample
                 return;
             
             await _assetsManager.ReleaseAll();
+            _refCounts.Clear();   // 清空所有引用计数
             Log("[ AssetsRootManager ] Release all succeed.");
         }
 
@@ -187,52 +194,44 @@ namespace EFExample
                 return;
 
             await _assetsManager.CleanupUnusedAssets();
-            Log("[ AssetsRootManager ] Cleanup ths unused assets succeed.");
+            Log("[ AssetsRootManager ] Cleanup the unused assets succeed.");
         }
 
         private bool CheckInitialization()
         {
-            if (_isInitialized)
+            if (_isInitialized && _assetsManager != null)
                 return true;
-            
-            Error("Your should been initialize the [ AssetsRootManager ], through the ConfirmAssetsManagerType function");
+
+            Error("You should first initialize [AssetsRootManager] via ConfirmAssetsManagerType() before using any asset operations.");
             return false;
         }
 
-        private void CheckObject<T>(T obj, string path)
+        private void CheckObject<T>(T obj, string path) where T : Object
         {
             if (null == obj)
             {
-                Error($"[ AssetsRootManager ] Loading resources fail: {path}");
+                Error($"[ AssetsRootManager ] Loading assets fail: {path}");
                 return;
             }
-            Log($"[ AssetsRootManager ] Loading resources succeed: {path}");
+
+            Log($"[ AssetsRootManager ] Loading assets succeed: {path}");
             int refCount = 1;
-            if (_refCounts.TryGetValue(path, out int count))
-                refCount += count;
+            if (_refCounts.TryGetValue(path, out int existing))
+                refCount += existing;
             _refCounts[path] = refCount;
         }
-        
+
         private void Log(string msg)
         {
-            if (_openDebug)
-            {
-                D.Log(msg);
-            }
+            if (_openDebug) D.Log(msg);
         }
         private void Warning(string msg)
         {
-            if (_openDebug)
-            {
-                D.Warning(msg);
-            }
+            if (_openDebug) D.Warning(msg);
         }
         private void Error(string msg)
         {
-            if (_openDebug)
-            {
-                D.Error(msg);
-            }
+            if (_openDebug) D.Error(msg);
         }
     }
 }

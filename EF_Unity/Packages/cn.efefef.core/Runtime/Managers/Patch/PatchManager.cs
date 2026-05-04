@@ -21,7 +21,7 @@ namespace EasyFramework.Managers
     /// <summary>
     /// 资源更新
     /// </summary>
-    public class PatchManager : Singleton<PatchManager>, ISingleton
+    public class PatchManager : Singleton<PatchManager>, IManager
     {
         /// <summary>
         /// 是否使用Yoo
@@ -40,7 +40,10 @@ namespace EasyFramework.Managers
         
         /// 当前运行模式
         private EPlayMode _playMode = EPlayMode.EditorSimulateMode;
-        
+
+        private bool _openDebug;
+        private bool _needDownloading;
+        private bool _waitDownloading;
         private Text _txtUpdaterTips;
         private Slider _sldUpdaterSlider;
 
@@ -51,6 +54,7 @@ namespace EasyFramework.Managers
         {
             YooAssets.Initialize();
             IsUse = true;
+            _openDebug = false;
         }
 
         void ISingleton.Quit()
@@ -69,8 +73,7 @@ namespace EasyFramework.Managers
         /// <param name="autoStart">Auto start the downloading.<para>自动开始下载</para></param>
         public async UniTask StartUpdatePatch(EPlayMode mode, string packageName = "DefaultPackage", bool autoStart = true)
         {
-            D.Emphasize($"资源系统运行模式：{mode}");
-            
+            Log($"资源系统运行模式：{mode}");
             _playMode = mode;
             PackageName = packageName;
             _package = YooAssets.TryGetPackage(packageName);
@@ -93,21 +96,14 @@ namespace EasyFramework.Managers
             
             var downloader = await CreateDownloader();
             await BeforeDownloading(downloader);
-            await StartDownloader(downloader);
+            while (_waitDownloading)
+            {
+                await UniTask.Yield();
+            }
+            if (_needDownloading)
+                await StartDownloader(downloader);
+            UpdateDone();
         }
-
-        #region Run progress. 跑更新流程
-
-
-        void UpdateDone()
-        {
-            _txtUpdaterTips = null;
-            _sldUpdaterSlider = null;
-            
-            _package = null;
-        }
-
-        #endregion
 
         #region Setting config Initialize.初始化更新设置
 
@@ -176,11 +172,11 @@ namespace EasyFramework.Managers
 
             if (initializationOperation.Status == EOperationStatus.Succeed)
             {
-                D.Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {_playMode}");
+                Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {_playMode}");
                 return true;
             }
 
-            D.Error($"[YooAssetsManager] 资源包初始化失败: {initializationOperation.Error}");
+            Error($"[YooAssetsManager] 资源包初始化失败: {initializationOperation.Error}");
             return false;
         }
 
@@ -200,14 +196,14 @@ namespace EasyFramework.Managers
                 //更新成功
                 string packageVersion = operation.PackageVersion;
                 _packageVersion = packageVersion;
-                D.Log($"Updated package Version : {packageVersion}");
+                Log($"Updated package Version : {packageVersion}");
 
                 //拿到版本号接下来去获取Manifest信息     GetManifestInfo
                 return true;
             }
 
             //更新失败
-            D.Error($"Get the StaticVersion file error: {operation.Error}");
+            Error($"Get the StaticVersion file error: {operation.Error}");
             return false;
         }
 
@@ -225,11 +221,12 @@ namespace EasyFramework.Managers
             if (operation.Status == EOperationStatus.Succeed)
             {
                 //拿到配置信息接下来去获取热更资源
+                Log("Get the Manifest file succeed...");
                 return true;
             }
 
             //更新失败
-            D.Error($"Get the Manifest file error: {operation.Error}");
+            Error($"Get the Manifest file error: {operation.Error}");
             return false;
         }
 
@@ -264,16 +261,18 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="downloader">下载器</param>
         /// <returns>下载完成结果通知</returns>
-        private async UniTask<bool> StartDownloader(ResourceDownloaderOperation downloader)
+        public async UniTask<bool> StartDownloader(ResourceDownloaderOperation downloader)
         {
             await UniTask.CompletedTask;
             
             if (downloader.TotalDownloadCount == 0)
                 return false;
 
+            Log($"Start download, this download is for: {downloader.TotalDownloadCount}");
             downloader.BeginDownload();
             await downloader.ToUniTask();
 
+            Log($"Downloading is over, this downloader status is {downloader.Status}");
             return downloader.Status == EOperationStatus.Succeed;
         }
         
@@ -287,6 +286,7 @@ namespace EasyFramework.Managers
             if (downloader == null || downloader.TotalDownloadCount == 0)
                 return;
             
+            _waitDownloading = true;
             downloader.DownloadErrorCallback = OnDownloadErrorFunction;
             downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
             downloader.DownloadFinishCallback = OnDownloadOverFunction;
@@ -315,13 +315,32 @@ namespace EasyFramework.Managers
             canvas.worldCamera = EF.Ui.UICamera;
             _txtUpdaterTips = EF.Tool.Find<Text>(patchUpdater, "Txt_UpdaterTips");
             _sldUpdaterSlider = EF.Tool.Find<Slider>(patchUpdater, "Sld_UpdaterSlider");
+            _waitDownloading = false;
+            _needDownloading = true;
         }
+        
+        /// <summary>
+        /// 更新取消或完成
+        /// </summary>
+        void UpdateDone()
+        {
+            if (null != _sldUpdaterSlider)
+            {
+                Object.Destroy(_sldUpdaterSlider.transform.parent.parent.gameObject);
+                _txtUpdaterTips = null;
+                _sldUpdaterSlider = null;
+            }
+            _needDownloading = false;
+            _waitDownloading = false;
+            
+            _package = null;
+        }
+        
         private void OnDownloadErrorFunction(DownloadErrorData errorData)
         {
-            D.Error(
+            Error(
                 $"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
         }
-
         private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
         {
             _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
@@ -331,18 +350,25 @@ namespace EasyFramework.Managers
             _txtUpdaterTips.text =
                 $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMb}MB/{totalSizeMb}MB";
         }
-
         private void OnStartDownloadFileFunction(DownloadFileData fileData)
         {
-            D.Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
+            Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
         }
-
         private void OnDownloadOverFunction(DownloaderFinishData finishData)
         {
-            D.Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
+            Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
         }
         
         #endregion
+        
+        private void Log(string msg)
+        {
+            if (_openDebug) D.Log(msg);
+        }
+        private void Error(string msg)
+        {
+            if (_openDebug) D.Error(msg);
+        }
         
         /// <summary>
         /// 远端资源地址查询服务类

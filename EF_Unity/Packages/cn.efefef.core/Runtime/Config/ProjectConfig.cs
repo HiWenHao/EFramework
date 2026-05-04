@@ -246,6 +246,9 @@ namespace EasyFramework
         {
             "TimeManager",
             "ToolManager",
+            "PoolManager",
+            "PatchManager",
+            "AssetsRootManager",
             "EventManager",
             "HttpsManager",
             "SocketManager",
@@ -253,7 +256,7 @@ namespace EasyFramework
             "LoadManager",
             "ScenesManager",
             "AudioManager",
-            "UIManager",
+            "UiManager",
         };
 
         public List<string> ManagerLevels => _managerLevel;

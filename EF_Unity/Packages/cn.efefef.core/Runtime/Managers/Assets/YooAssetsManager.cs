@@ -12,6 +12,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using YooAsset;
+using UnityEngine;
 
 namespace EasyFramework.Managers.Assets
 {
@@ -26,18 +27,21 @@ namespace EasyFramework.Managers.Assets
         private ResourcePackage _package;
         private Dictionary<string, AssetHandle> _assetHandles;
 
+        // 默认包名，可根据项目配置修改
+        private const string DefaultPackageName = "DefaultPackage";
+
         public async UniTask Initialize()
         {
             await UniTask.CompletedTask;
 
-            if (YooAssets.Initialized)
-            {
-                _package = YooAssets.GetPackage(EF.Patch.PackageName);
-            }
-            else
-            {
+            if (!YooAssets.Initialized)
                 YooAssets.Initialize();
-                _package = YooAssets.CreatePackage("DefaultPackage");
+            else
+                _package = YooAssets.GetPackage(EF.Patch.PackageName);
+            
+            if (_package == null)
+            {
+                _package = YooAssets.CreatePackage(DefaultPackageName);
                 YooAssets.SetDefaultPackage(_package);
             }
 
@@ -51,32 +55,38 @@ namespace EasyFramework.Managers.Assets
             _package = null;
         }
 
-        public T Load<T>(string path) where T : UnityEngine.Object
+        public T Load<T>(string path) where T : Object
         {
-            if (_assetHandles.TryGetValue(path, out var handleAssets) && handleAssets.IsValid)
-                return handleAssets.AssetObject as T;
-
-            var handle = _package.LoadAssetSync<T>(path);
-            if (!handle.IsValid || null == handle.AssetObject)
+            if (_package == null)
                 return null;
 
-            _assetHandles[path] = handle;
-            return handle.AssetObject as T;
+            if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
+                return handle.AssetObject as T;
+
+            var newHandle = _package.LoadAssetSync<T>(path);
+            if (!newHandle.IsValid || newHandle.AssetObject == null)
+                return null;
+
+            _assetHandles[path] = newHandle;
+            return newHandle.AssetObject as T;
         }
 
-        public async UniTask<T> LoadAsync<T>(string path) where T : UnityEngine.Object
+        public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
-            if (_assetHandles.TryGetValue(path, out var handleAssets) && handleAssets.IsValid)
-                return handleAssets.AssetObject as T;
-
-            var handle = _package.LoadAssetAsync<T>(path);
-            await handle.ToUniTask();
-
-            if (!handle.IsValid || null == handle.AssetObject)
+            if (_package == null)
                 return null;
 
-            _assetHandles[path] = handle;
-            return handle.AssetObject as T;
+            if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
+                return handle.AssetObject as T;
+
+            var newHandle = _package.LoadAssetAsync<T>(path);
+            await newHandle.ToUniTask();
+
+            if (!newHandle.IsValid || newHandle.AssetObject == null)
+                return null;
+
+            _assetHandles[path] = newHandle;
+            return newHandle.AssetObject as T;
         }
 
         public async UniTask Release(string path)
@@ -98,12 +108,14 @@ namespace EasyFramework.Managers.Assets
             }
 
             _assetHandles.Clear();
-            _package?.UnloadUnusedAssetsAsync();
+            if (_package != null)
+                await _package.UnloadUnusedAssetsAsync().ToUniTask();
         }
 
         public async UniTask CleanupUnusedAssets()
         {
-            await _package.UnloadUnusedAssetsAsync().ToUniTask();
+            if (_package != null)
+                await _package.UnloadUnusedAssetsAsync().ToUniTask();
         }
     }
 }

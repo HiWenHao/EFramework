@@ -17,11 +17,6 @@ namespace EasyFramework.Managers.Assets
     public enum AssetsManagerType
     {
         /// <summary>
-        /// 无
-        /// </summary>
-        None = 0,
-        
-        /// <summary>
         /// 默认资源管理器 - Resources
         /// </summary>
         Default,
