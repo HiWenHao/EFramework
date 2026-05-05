@@ -20,16 +20,6 @@ namespace EasyFramework.UI.Popup
     /// </summary>
     public partial class PopupView : IUiView
     {
-        public static void Open(params object[] args)
-        {
-            EF.Ui.OpenPageView<PopupView>(args);
-        }
-
-        public static void Close(params object[] args)
-        {
-            EF.Ui.CloseView<PopupView>(args);
-        }
-
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 10.0f;
         uint IUiView.SerialId { get; set; }

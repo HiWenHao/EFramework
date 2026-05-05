@@ -18,16 +18,6 @@ namespace EasyFramework.UI
 {
     public partial class TipsView : IUiView
     {
-        public static TipsView Open(params object[] args)
-        {
-            return EF.Ui.OpenPageView<TipsView>(args);
-        }
-
-        public static bool Close(params object[] args)
-        {
-            return EF.Ui.CloseView<TipsView>(args);
-        }
-        
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 10.0f;
         uint IUiView.SerialId { get; set; }

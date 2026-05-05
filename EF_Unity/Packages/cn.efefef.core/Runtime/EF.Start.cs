@@ -27,10 +27,7 @@ public sealed partial class EF
 
     /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
     public static ProjectConfig Projects { get; private set; }
-
-    /// <summary> UI manager.<para>UI管理器</para></summary>
-    public static UiManager Ui => UiManager.Instance;
-
+    
     /// <summary> Universal tools manager.<para>通用工具管理器</para></summary>
     public static ToolManager Tool => ToolManager.Instance;
     

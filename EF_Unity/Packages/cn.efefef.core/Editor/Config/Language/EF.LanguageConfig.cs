@@ -32,7 +32,7 @@ namespace EasyFramework.Edit
     /// 编辑器本地化辅助类
     /// 提供多语言文本获取、拼接以及枚举自动生成功能
     /// </summary>
-    internal static class LC
+    public static class LC
     {
         private const string EnumOutputFile = "EF.LanguageEnum.cs";             // 枚举输出文件名
         private const string EnumOutputDir = "Editor/Config/Language";          // 枚举输出目录
