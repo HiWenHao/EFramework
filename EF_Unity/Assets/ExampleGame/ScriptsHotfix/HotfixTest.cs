@@ -11,7 +11,6 @@
 
 using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.UI;
 using UnityEngine;
 
 namespace EFExample

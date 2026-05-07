@@ -144,7 +144,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 insertIndex = i;
                 break;
             }
-            
+
+            if (insertIndex == -1)
+                insertIndex = count;
             _settings.Insert(insertIndex, config);
         }
         
