@@ -197,6 +197,8 @@ namespace EFExample
             Log("[ AssetsRootManager ] Cleanup the unused assets succeed.");
         }
 
+        #region 私有函数
+
         private bool CheckInitialization()
         {
             if (_isInitialized && _assetsManager != null)
@@ -233,5 +235,7 @@ namespace EFExample
         {
             if (_openDebug) D.Error(msg);
         }
+        
+        #endregion
     }
 }

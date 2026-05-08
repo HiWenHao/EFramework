@@ -123,7 +123,6 @@ public sealed partial class EF
     {
         System.GC.Collect();
         Assets.CleanupUnusedAssets().Forget();
-        Assets.ReleaseAll().Forget();
     }
 
     /// <summary>

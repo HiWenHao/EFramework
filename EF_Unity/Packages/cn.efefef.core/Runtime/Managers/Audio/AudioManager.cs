@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -94,6 +95,18 @@ namespace EasyFramework.Managers
         }
 
         #region Play
+        
+        /// <summary>
+        /// Play bgm by name.
+        /// <para>通过名字播放背景音乐</para>
+        /// </summary>
+        /// <param name="clip">The background source clip.<para>音频的clip</para></param>
+        /// <param name="isLoop">the bgm is loop.<para>是否循环</para></param>
+        public void PlayBGMByClip(AudioClip clip, bool isLoop = false)
+        {
+            PlayBGM(clip, isLoop);
+        }
+        
         /// <summary>
         /// Play bgm by name.
         /// <para>通过名字播放背景音乐</para>
@@ -395,7 +408,10 @@ namespace EasyFramework.Managers
 
         private AudioClip GetClipByName(string name)
         {
-            return EF.Assets.Load<AudioClip>($"{EF.Projects.AppConst.AudioPath}{name}");
+            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+                ? $"{EF.Projects.AppConst.AudioPath}{name}"
+                : name;
+            return EF.Assets.Load<AudioClip>(path);
         }
         #endregion
     }
