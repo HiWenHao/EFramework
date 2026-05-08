@@ -15,12 +15,16 @@ using UnityEngine;
 
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
 {
+    private static bool _isQuitting;
+    private static bool _quitEventRegistered;
     private static readonly Lazy<T> _lazy = new(CreateInstance);
-    private static bool _isQuitting = false;
-    private static bool _quitEventRegistered = false;
 
     public static T Instance => _isQuitting ? null : _lazy.Value;
-
+    
+    /// <summary>
+    /// Current type name
+    /// <para>当前类型名字</para>
+    /// </summary>
     public string TypeName => typeof(T).Name;
 
     private static T CreateInstance()
