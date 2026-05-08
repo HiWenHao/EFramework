@@ -1,58 +1,60 @@
 /*
  * ================================================
- * Describe:      This script is used to .
+ * Describe:      流程上下文，提供子流程启动、结束自身等方法
  * Author:        Alvin5100
  * CreationTime:  2026-05-07 18:46:41
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-07 18:46:41
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-05-08
+ * ScriptVersion: 0.3
  * ===============================================
  */
-
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Procedure
 {
-    /// <summary>
-    /// 流程上下文提供子流程启动、结束自身、获取参数、获取 UID 等方法
-    /// </summary>
     public sealed class ProcedureContext
     {
-        /// <summary>
-        /// 当前流程实例的唯一 ID
-        /// </summary>
-        public uint UID { get; internal set; }
+        public uint UID;
+        public uint ParentUID;
+        public int Depth;
+        public uint RuntimeVersion;
+        public IReadOnlyDictionary<string, object> Params;
 
-        /// <summary>
-        /// 父流程实例的 UID（0 表示根流程）
-        /// </summary>
-        public uint ParentUID { get; internal set; }
+        internal bool IsDisposed;
 
-        /// <summary>
-        /// 当前嵌套深度
-        /// </summary>
-        public int Depth { get; internal set; }
-
-        /// <summary>
-        /// 携带的参数
-        /// </summary>
-        public Dictionary<string, object> Params { get; internal set; }
-
-        /// <summary>
-        /// 在流程内部启动一个同步并行子流程（父流程被挂起，直到子流程退出）
-        /// </summary>
-        public async UniTask StartSubProcedure<T>(object parameters = null) where T : IProcedure
+        internal void Reset()
         {
-            await ProcedureManager.Instance.StartSubProcedureInternal<T>(this, parameters);
+            UID = 0;
+            ParentUID = 0;
+            Depth = 0;
+            RuntimeVersion = 0;
+            Params = null;
+            IsDisposed = false;
         }
 
-        /// <summary>
-        /// 结束当前流程（如果是子流程则返回到父流程，否则整个流程系统停止）
-        /// </summary>
-        public void EndProcedure()
+        private void CheckDisposed()
         {
-            ProcedureManager.Instance.EndProcedureInternal(this);
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(ProcedureContext));
+
+            var inst = ProcedureManager.Instance.GetInstanceByUidInternal(UID);
+            if (inst == null || inst.RuntimeVersion != RuntimeVersion)
+                throw new ObjectDisposedException(nameof(ProcedureContext));
+        }
+
+        public async UniTask StartSubProcedure<T>(Dictionary<string, object> parameters = null)
+            where T : IProcedure
+        {
+            CheckDisposed();
+            await ProcedureManager.Instance.StartSubProcedureAndWait<T>(this, parameters);
+        }
+
+        public async UniTask EndProcedure()
+        {
+            CheckDisposed();
+            await ProcedureManager.Instance.EndProcedureInternal(this);
         }
     }
 }

@@ -2,9 +2,9 @@
  * ================================================
  * Describe:      Please modify the description..
  * Author:        Alvin5100
- * CreationTime:  2026-05-08 14:33:48
+ * CreationTime:  2026-05-08 17:13:02
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-08 14:33:48
+ * ModifyTime:    2026-05-08 17:13:02
  * ScriptVersion: 0.1 
  * ================================================
  */
@@ -38,7 +38,6 @@ namespace EFExample
         public UIViewType ViewType => UIViewType.Page;
         public RectTransform View { get; private set; }
 
-        private RectTransform Tran_ToB;
 
         private Button btn_Btn_ToB;
         private Button btn_Btn_Quit;
@@ -47,8 +46,7 @@ namespace EFExample
         void IUiView.Bind(RectTransform uiViewRect)
         {
             View = uiViewRect;
-            Tran_ToB = EF.Tool.Find<RectTransform>(uiViewRect.transform, "Tran_Btn_ToB");
-            btn_Btn_ToB = EF.Tool.Find<Button>(uiViewRect.transform, "Tran_Btn_ToB");
+            btn_Btn_ToB = EF.Tool.Find<Button>(uiViewRect.transform, "Btn_ToB");
             btn_Btn_ToB.onClick.AddListener(OnClickBtn_ToB);
             btn_Btn_Quit = EF.Tool.Find<Button>(uiViewRect.transform, "Btn_Quit");
             btn_Btn_Quit.onClick.AddListener(OnClickBtn_Quit);
@@ -60,7 +58,6 @@ namespace EFExample
             btn_Btn_ToB = null;
             btn_Btn_Quit?.onClick.RemoveListener(OnClickBtn_Quit);
             btn_Btn_Quit = null;
-            Tran_ToB = null;
         }
     }
     //-----The script is auto generated. Please do not make any changes-----

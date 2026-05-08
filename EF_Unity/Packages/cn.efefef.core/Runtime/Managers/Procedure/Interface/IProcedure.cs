@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Procedure
@@ -21,12 +22,12 @@ namespace EasyFramework.Managers.Procedure
         /// <summary>
         /// 进入流程（异步），传入上下文
         /// </summary>
-        UniTask OnEnter(ProcedureContext context);
-        
+        UniTask OnEnter(ProcedureContext context, CancellationToken token);
+
         /// <summary>
         /// 离开流程（异步），无论正常或异常退出均会调用
         /// </summary>
-        UniTask OnLeave();
+        UniTask OnLeave(CancellationToken token);
         
         /// <summary>
         /// 更新本流程

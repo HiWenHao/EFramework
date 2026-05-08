@@ -173,8 +173,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Namespace: PleaseChangeTheNamespace
+  Namespace: EFExample
   Describe: Please modify the description.
+  AutoDestroy: 1
+  AutoDestroyCountdown: 10
   ViewType: 2
   PrefabPath: 
   ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/
