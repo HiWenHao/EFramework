@@ -28,6 +28,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     {
         private UiBinding _builder;
         private UiBindingConfig _setting;
+        private Vector2 _bindListScrollPos;
         private List<string> _tempFiledNames;
         private List<string> _tempComponentTypeNames;
         private Dictionary<string, int> _componentsName;
@@ -91,7 +92,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private void DrawSetting()
         {
-            // 命名空间行
             EditorGUILayout.BeginHorizontal();
             _builder.Namespace =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _builder.Namespace);
@@ -99,17 +99,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _builder.Namespace = _setting.Namespace;
             EditorGUILayout.EndHorizontal();
 
-            // 类名（只读）
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Class, Lc.Name }), _builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
 
-            // 描述
             _builder.Describe =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Description }), _builder.Describe);
             EditorGUILayout.Space(6f, true);
 
-            // AutoDestroy
             _builder.AutoDestroy =
                 EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Destroy }), _builder.AutoDestroy);
             if (_builder.AutoDestroy)
@@ -120,14 +117,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 EditorGUILayout.Space(6f, true);
             }
 
-            // ViewType
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
             if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
                 _builder.ViewType = UIViewType.Page;
 
             EditorGUILayout.Space(12f, true);
 
-            // CreatePrefab 开关
             EditorGUI.BeginChangeCheck();
             _builder.CreatePrefab = EditorGUILayout.Toggle(
                 _builder.CreatePrefab
@@ -142,7 +137,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 EditorUtility.SetDirty(_builder);
             }
 
-            // 路径行：使用水平布局，内部根据条件显示控件
             EditorGUILayout.BeginHorizontal();
             if (_builder.CreatePrefab)
             {
@@ -175,7 +169,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
             else
             {
-                GUILayout.FlexibleSpace(); // 占位保持平衡
+                GUILayout.FlexibleSpace();
             }
 
             EditorGUILayout.EndHorizontal();
@@ -205,30 +199,29 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawKvData()
         {
             _builder.PackUpBindList = EditorGUILayout.BeginFoldoutHeaderGroup(_builder.PackUpBindList,
-                _builder.PackUpBindList
-                    ? LC.Combine(new Lc[] { Lc.Close, Lc.List })
-                    : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
-
+                _builder.PackUpBindList ? LC.Combine(new Lc[] { Lc.Close, Lc.List }) : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
+    
             if (_builder.PackUpBindList)
             {
+                EditorGUILayout.BeginVertical("box");
+                _bindListScrollPos = EditorGUILayout.BeginScrollView(_bindListScrollPos, GUILayout.MaxHeight(300));
+        
+                int needDeleteIndex = -1;
                 for (int i = 0; i < _builder.BindDatas.Count; i++)
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
                     EditorGUILayout.PrefixLabel(_builder.BindDatas[i].ScriptName);
-                    _builder.BindDatas[i].BindCom =
-                        (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
-                    if (GUILayout.Button("X", GUILayout.Width(20)))
-                    {
-                        _builder.BindDatas.RemoveAt(i);
-                        Repaint();
-                        break; // 删除后退出循环，避免索引错误
-                    }
-
+                    _builder.BindDatas[i].BindCom = (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
+                    if (GUILayout.Button("X")) needDeleteIndex = i;
                     EditorGUILayout.EndHorizontal();
                 }
+                if (needDeleteIndex != -1) _builder.BindDatas.RemoveAt(needDeleteIndex);
+        
+                EditorGUILayout.EndScrollView();
+                EditorGUILayout.EndVertical();
             }
-
+    
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
@@ -238,6 +231,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder.DeleteScript = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Unload, Lc.This, Lc.Script }),
                 _builder.DeleteScript);
             EditorGUILayout.Space(12f);
+            
+            GUI.contentColor = GUIUtils.LightGreen;
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Bind, Lc.Create }), GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
@@ -245,6 +240,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (_builder.DeleteScript) DestroyImmediate(_builder);
                 AssetDatabase.Refresh();
             }
+            GUI.contentColor = Color.white;
         }
 
         #endregion
@@ -388,9 +384,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private const string StrChangeAuthor = "* ModifyAuthor:";
         private const string ButtonEventsStart = "#region Button invoke event. Do not change here.不要更改这行 -- Auto";
         private const string ButtonEventsEnd = "#endregion button invoke event. Do not change here.不要更改这行 -- Auto";
-
-        private const string ScriptExplain =
-            "    //-----The script is auto generated. Please do not make any changes-----";
+        private const string ScriptExplain = "    //-----The script is auto generated. Please do not make any changes-----";
 
         /// <summary>
         /// Gen auto bind code on the basis of special scriptName.
