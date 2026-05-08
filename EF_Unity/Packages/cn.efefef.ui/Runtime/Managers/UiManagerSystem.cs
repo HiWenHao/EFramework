@@ -103,6 +103,12 @@ namespace EasyFramework.Managers
                 for (int i = uiViews.Value.Count - 1; i >= 0; i--)
                 {
                     var uiView = uiViews.Value[i];
+                    if (uiView.View == null || uiView.View.gameObject == null)
+                    {
+                        _viewStackDic[uiViews.Key].RemoveAt(i);
+                        _autoDestroyDic.Remove(uiView);
+                        continue;
+                    }
                     if (uiViews.Key != UIViewType.Cache)
                     {
                         uiView.Update(elapse, realElapse);
@@ -127,7 +133,7 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            CloseAllView(true);
+            CloseAllView(true).Forget();
 
             _currentPageView = null;
 
@@ -184,18 +190,25 @@ namespace EasyFramework.Managers
 
         private void ViewDestroy(IUiView uiView, List<IUiView> viewList)
         {
-            if (_currentPageView == uiView)
-                _currentPageView = null;
+            if (uiView == null) return;
 
-            uiView.Quit();
-            uiView.Dispose();
-            Destroy(uiView.View.gameObject);
+            if (null != uiView.View && null != uiView.View.gameObject)
+            {
+                if (_currentPageView == uiView)
+                    _currentPageView = null;
+
+                uiView.Quit();
+                uiView.Dispose();
+                Destroy(uiView.View.gameObject);
+                
+                string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+                    ? EF.Projects.AppConst.UIPrefabsPath + uiView.View.name
+                    : uiView.View.name;
+                EF.Assets.Release(path).Forget();
+            }
+            
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
-            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
-                ? EF.Projects.AppConst.UIPrefabsPath + uiView.View.name
-                : uiView.View.name;
-            EF.Assets.Release(path).Forget();
         }
 
         private bool ViewEnable(IUiView uiView, params object[] args)
@@ -213,8 +226,8 @@ namespace EasyFramework.Managers
                 _currentPageView = uiView;
             _autoDestroyDic.Remove(uiView);
 
-            uiView.Enable(args);
             uiView.View.gameObject.SetActive(true);
+            uiView.Enable(args);
 
             return true;
         }
@@ -287,7 +300,7 @@ namespace EasyFramework.Managers
             var targetType = typeof(T);
             foreach (IUiView view in _viewStackDic[viewType])
             {
-                if (!targetType.IsAssignableFrom(view.GetType()))
+                if (view.GetType() != targetType)
                     continue;
 
                 uiView = view;
@@ -306,7 +319,7 @@ namespace EasyFramework.Managers
             var targetType = uiView.GetType();
             foreach (IUiView view in _viewStackDic[viewType])
             {
-                if (targetType.IsAssignableFrom(view.GetType()))
+                if (view.GetType() == targetType)
                     return true;
             }
 
@@ -318,8 +331,9 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public T OpenPageView<T>(params object[] args) where T : IUiView, new()
+        public async UniTask<T> OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
+            await UniTask.CompletedTask;
             IUiView openView;
             bool needCreate = true;
 
@@ -335,6 +349,12 @@ namespace EasyFramework.Managers
             else
                 openView = ViewCreate<T>();
 
+            if (openView == null)
+            {
+                D.Error($"OpenPageView<{typeof(T).Name}> failed: ViewCreate returned null");
+                return default;
+            }
+            
             ViewCloseByType(openView.ViewType);
             ViewEnable(openView, args);
 
@@ -347,8 +367,9 @@ namespace EasyFramework.Managers
         /// <param name="uiView">要被打开的页面</param>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public bool OpenPageView(IUiView uiView, params object[] args)
+        public async UniTask<bool> OpenPageView(IUiView uiView, params object[] args)
         {
+            await UniTask.CompletedTask;
             if (null == uiView || uiView == _currentPageView ||
                 uiView.ViewType is not (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent))
                 return false;
@@ -367,8 +388,9 @@ namespace EasyFramework.Managers
         /// 获取视窗
         /// </summary>
         /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
-        public T GetPageView<T>() where T : IUiView
+        public async UniTask<T> GetPageView<T>() where T : IUiView
         {
+            await UniTask.CompletedTask;
             if (InViewList<T>(out IUiView uiView, UIViewType.Page) ||
                 InViewList<T>(out uiView, UIViewType.TopPermanent) ||
                 InViewList<T>(out uiView, UIViewType.BottomPermanent))
@@ -381,7 +403,7 @@ namespace EasyFramework.Managers
         /// 显示通用弹窗
         /// </summary>
         /// <param name="contents">显示内容</param>
-        public void ShowPopupView(string contents)
+        public async UniTask ShowPopupView(string contents)
         {
             if (InViewList<PopupView>(out var view, UIViewType.Cache))
                 _viewStackDic[UIViewType.Cache].Remove(view);
@@ -396,15 +418,19 @@ namespace EasyFramework.Managers
 
             view ??= ViewCreate<PopupView>();
             ViewEnable(view, contents);
+            await UniTask.CompletedTask;
         }
 
         /// <summary>
         /// 显示通用提示窗
         /// </summary>
-        public void ShowTipsView(string contents, TipsViewExtraData viewExtraData)
+        public async UniTask ShowTipsView(string contents, TipsViewExtraData viewExtraData)
         {
-            _tipsView ??= ViewCreate<TipsView>();
-            ViewEnable(_tipsView, contents, viewExtraData);
+            if (InViewList<TipsView>(out var view, UIViewType.Cache))
+                _viewStackDic[UIViewType.Cache].Remove(view);
+            view ??= ViewCreate<TipsView>();
+            ViewEnable(view, contents, viewExtraData);
+            await UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -413,9 +439,10 @@ namespace EasyFramework.Managers
         /// <param name="uiViewType">视窗类型</param>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void BackToFirstViewWithType(UIViewType uiViewType, params object[] args)
+        public async UniTask BackToFirstViewWithType(UIViewType uiViewType, params object[] args)
         {
             ViewCloseAllWithType(uiViewType, false, true, args);
+            await UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -423,8 +450,9 @@ namespace EasyFramework.Managers
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public bool CloseView<T>(params object[] args) where T : IUiView
+        public async UniTask<bool> CloseView<T>(params object[] args) where T : IUiView
         {
+            await UniTask.CompletedTask;
             var allViewTypes = System.Enum.GetValues(typeof(UIViewType));
             for (int i = allViewTypes.Length - 1; i >= 0; i--)
             {
@@ -432,7 +460,7 @@ namespace EasyFramework.Managers
                 if (viewType == UIViewType.Cache || !InViewList<T>(out IUiView uiView, viewType))
                     continue;
 
-                return CloseView(uiView, args);
+                return await CloseView(uiView, args);
             }
 
             return false;
@@ -444,8 +472,9 @@ namespace EasyFramework.Managers
         /// <param name="uiView">要被关闭的视窗</param>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public bool CloseView(IUiView uiView, params object[] args)
+        public async UniTask<bool> CloseView(IUiView uiView, params object[] args)
         {
+            await UniTask.CompletedTask;
             if (null == uiView)
                 return false;
             
@@ -461,12 +490,13 @@ namespace EasyFramework.Managers
         /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public void CloseAllView(bool immediateDestroy = false, params object[] args)
+        public async UniTask CloseAllView(bool immediateDestroy = false, params object[] args)
         {
             foreach (var uiViews in _viewStackDic)
             {
                 ViewCloseAllWithType(uiViews.Key, immediateDestroy, false, args);
             }
+            await UniTask.CompletedTask;
         }
     }
 }

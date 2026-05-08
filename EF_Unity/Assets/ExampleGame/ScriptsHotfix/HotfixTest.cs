@@ -29,7 +29,7 @@ namespace EFExample
             FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
-            EF.Ui.OpenPageView<UiAView>();
+            EF.Ui.OpenPageView<UiAView>().Forget();
 
             //EF.Ui.ShowTipsView("这是一个测试提示窗", new TipsViewExtraData()
             //{
@@ -50,7 +50,7 @@ namespace EFExample
             {
                 await UniTask.WaitForSeconds(0.1f);
                 D.Warning(i);
-                EF.Ui.ShowPopupView($"\t{i}\tIndex");
+                await EF.Ui.ShowPopupView($"\t{i}\tIndex");
             }
         }
     }

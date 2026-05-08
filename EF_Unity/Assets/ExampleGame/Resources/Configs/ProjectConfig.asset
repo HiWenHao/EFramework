@@ -43,3 +43,5 @@ MonoBehaviour:
     - ScenesManager
     - AudioManager
     - UiManager
+    - ProcedureManager
+    - EventSystem

@@ -16,7 +16,7 @@ namespace EasyFramework.UI
     /// <summary>
     /// 提示窗附加数据
     /// </summary>
-    public struct TipsViewExtraData : IDisposable
+    public class TipsViewExtraData
     {
         /// <summary>
         /// 确定按钮换名字
@@ -42,14 +42,5 @@ namespace EasyFramework.UI
         /// 关闭方法
         /// </summary>
         public Action CloseCallBack;
-
-        public void Dispose()
-        {
-            CancelName = string.Empty;
-            ConfirmName = string.Empty;
-            CloseCallBack = null;
-            CancelCallBack = null;
-            ConfirmCallBack = null;
-        }
     }
 }

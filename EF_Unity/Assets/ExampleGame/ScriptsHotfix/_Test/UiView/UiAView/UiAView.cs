@@ -1,48 +1,66 @@
 ﻿/*
  * ================================================
  * Describe:      Please modify the description..
- * Author:        Alvin8412
- * CreationTime:  2026-04-06 23:37:16
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-06 23:37:16
+ * Author:        Alvin5100
+ * CreationTime:  2026-05-08 14:33:48
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-05-08 14:33:48
  * ScriptVersion: 0.1 
  * ================================================
  */
 
-using EasyFramework;
-using EasyFramework.UI;
-using System.Collections.Generic;
-using EasyFramework.Managers.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using EasyFramework;
+using EasyFramework.UI;
+using EasyFramework.Managers.UI;
 
 namespace EFExample
 {
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiAView : IUiView
     {
+        public static async UniTask<UiAView> Open(params object[] args)
+        {
+            return await EF.Ui.OpenPageView<UiAView>(args);
+        }
+
+        public static async UniTask<bool> Close(params object[] args)
+        {
+            return await EF.Ui.CloseView<UiAView>(args);
+        }
+
         bool IUiView.AutoDestroy => true;
+        float IUiView.AutoDestroyCountdown => 10f;
         uint IUiView.SerialId { get; set; }
         public UIViewType ViewType => UIViewType.Page;
-        float IUiView.AutoDestroyCountdown => 10.0f;
         public RectTransform View { get; private set; }
 
-        private List<Button> m_AllButtons;
-        private List<ButtonPro> m_AllButtonPros;
+        private RectTransform Tran_ToB;
+
+        private Button btn_Btn_ToB;
+        private Button btn_Btn_Quit;
+
 
         void IUiView.Bind(RectTransform uiViewRect)
         {
             View = uiViewRect;
-            EF.Tool.Find<Button>(uiViewRect.transform, "Btn_ToB").RegisterInListAndBindEvent(OnClickBtn_ToB, ref m_AllButtons);
-            EF.Tool.Find<Button>(uiViewRect.transform, "Btn_Quit").RegisterInListAndBindEvent(OnClickBtn_Quit, ref m_AllButtons);
+            Tran_ToB = EF.Tool.Find<RectTransform>(uiViewRect.transform, "Tran_Btn_ToB");
+            btn_Btn_ToB = EF.Tool.Find<Button>(uiViewRect.transform, "Tran_Btn_ToB");
+            btn_Btn_ToB.onClick.AddListener(OnClickBtn_ToB);
+            btn_Btn_Quit = EF.Tool.Find<Button>(uiViewRect.transform, "Btn_Quit");
+            btn_Btn_Quit.onClick.AddListener(OnClickBtn_Quit);
         }
 
         void IUiView.Dispose()
         {
-            m_AllButtons.ReleaseAndRemoveEvent();
-            m_AllButtons = null;
-            m_AllButtonPros.ReleaseAndRemoveEvent();
-            m_AllButtonPros = null;
+            btn_Btn_ToB?.onClick.RemoveListener(OnClickBtn_ToB);
+            btn_Btn_ToB = null;
+            btn_Btn_Quit?.onClick.RemoveListener(OnClickBtn_Quit);
+            btn_Btn_Quit = null;
+            Tran_ToB = null;
         }
     }
     //-----The script is auto generated. Please do not make any changes-----

@@ -21,16 +21,6 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class TestBottomViewOne : IUiView
     {
-        public static TestBottomViewOne Open(params object[] args)
-        {
-            return EF.Ui.OpenPageView<TestBottomViewOne>(args);
-        }
-
-        public static bool Close(params object[] args)
-        {
-            return EF.Ui.CloseView<TestBottomViewOne>(args);
-        }
-
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 60f;
         uint IUiView.SerialId { get; set; }

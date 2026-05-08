@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.UI;
 using UnityEngine;
 
@@ -37,7 +38,7 @@ namespace EasyFramework.UI.Popup
             {
                 //View.gameObject.SetActive(false);
                 
-                EF.Ui.CloseView(this);
+                EF.Ui.CloseView(this).Forget();
                 
                 return;
             }

@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.UI;
 
 namespace EasyFramework.UI
@@ -24,7 +25,6 @@ namespace EasyFramework.UI
 
         void IUiView.Enable(params object[] args)
         {
-            _tipsExtraData.Dispose();
             _tipsExtraData = (TipsViewExtraData)args[1];
 
             Txt_Display.text = $"{args[0]}";
@@ -46,7 +46,7 @@ namespace EasyFramework.UI
         void OnClickClose()
         {
             _tipsExtraData.CloseCallBack?.Invoke();
-            EF.Ui.CloseView(this);
+            EF.Ui.CloseView(this).Forget();
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace EasyFramework.UI
         void OnClickCancel()
         {
             _tipsExtraData.CancelCallBack?.Invoke();
-            EF.Ui.CloseView(this);
+            EF.Ui.CloseView(this).Forget();
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace EasyFramework.UI
         void OnClickConfirm()
         {
             _tipsExtraData.ConfirmCallBack?.Invoke();
-            EF.Ui.CloseView(this);
+            EF.Ui.CloseView(this).Forget();
         }
     }
 }

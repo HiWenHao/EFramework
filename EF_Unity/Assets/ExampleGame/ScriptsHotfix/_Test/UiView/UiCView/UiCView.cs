@@ -21,16 +21,6 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiCView : IUiView
     {
-        public static UiCView Open(params object[] args)
-        {
-            return EF.Ui.OpenPageView<UiCView>(args);
-        }
-
-        public static bool Close(params object[] args)
-        {
-            return EF.Ui.CloseView<UiCView>(args);
-        }
-
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 10.0f;
         uint IUiView.SerialId { get; set; }

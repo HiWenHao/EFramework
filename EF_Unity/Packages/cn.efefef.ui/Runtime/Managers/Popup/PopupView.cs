@@ -45,11 +45,6 @@ namespace EasyFramework.UI.Popup
             Rect_Bg = EF.Tool.Find<RectTransform>(uiViewRect, "Rect_Bg");
 
             #endregion Find components end. -- Auto
-
-            View.anchorMax = Vector3.one;
-            View.anchorMin = Vector3.zero;
-            View.sizeDelta = Vector3.zero;
-            View.localPosition = Vector3.zero;
         }
 
         void IUiView.Dispose()

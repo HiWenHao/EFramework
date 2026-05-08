@@ -13,6 +13,7 @@ using EasyFramework.Managers;
 using System.Collections;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
+using EasyFramework.Managers.Event;
 using EasyFramework.Managers.Pool;
 using EFExample;
 using UnityEngine;
@@ -42,6 +43,9 @@ public sealed partial class EF
 
     /// <summary> Event manager.<para>事件管理器</para></summary>
     public static EventManager Event => EventManager.Instance;
+    
+    /// <summary> Event manager.<para>系统级事件管理器</para></summary>
+    public static EventSystem Events => EventSystem.Instance;
 
     /// <summary> Patch update manager.<para>补丁更新管理器</para></summary>
     public static PatchManager Patch => PatchManager.Instance;

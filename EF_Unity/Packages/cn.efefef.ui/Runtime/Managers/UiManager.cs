@@ -29,7 +29,6 @@ namespace EasyFramework.Managers
         
         private Transform _target; //	UI根节点
         
-        private IUiView _tipsView; //	通用提示窗
         private IUiView _currentPageView; //    当前页面视窗
 
         private int _popupIndex; //	弹窗当前被使用的索引

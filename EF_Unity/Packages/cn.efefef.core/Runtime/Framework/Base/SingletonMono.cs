@@ -20,7 +20,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
     /// Current type name
     /// <para>当前类型名字</para>
     /// </summary>
-    public string TypeName = typeof(T).Name;
+    public string TypeName { get; private set; }
     
     private static T _instance;
     public static T Instance {
@@ -31,7 +31,8 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
             _instance = FindObjectOfType<T>();
             if (_instance == null)
             {
-                _instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                _instance = new GameObject($"[ {typeof(T).Name} ]").AddComponent<T>();
+                _instance.TypeName = _instance.name;
             }
             if (_instance is IManager manager)
             {

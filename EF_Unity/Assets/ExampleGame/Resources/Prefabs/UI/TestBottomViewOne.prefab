@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8623681138873924136}
   - component: {fileID: 2674099423747821779}
+  - component: {fileID: -5692372140364916087}
   m_Layer: 5
   m_Name: TestBottomViewOne
   m_TagString: Untagged
@@ -44,3 +45,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8366960033313526934}
   m_CullTransparentMesh: 1
+--- !u!114 &-5692372140364916087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8366960033313526934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Namespace: 
+  Describe: Please modify the description.
+  AutoDestroy: 1
+  AutoDestroyCountdown: 10
+  ViewType: 2
+  PrefabPath: 
+  ScriptPath: 
+  CreatePrefab: 0
+  PackUpBindList: 0
+  SortByType: 0
+  SortByNameLength: 0
+  DeleteScript: 0

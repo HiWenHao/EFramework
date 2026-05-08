@@ -9,6 +9,7 @@
  * ================================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.UI;
 
@@ -29,16 +30,22 @@ namespace EFExample
             D.Log("TestTopViewOther Quit");
         }
 
+        public async UniTask CloseAll()
+        {
+            await EF.Ui.CloseAllView();
+            EF.Ui.OpenPageView<UiAView>().Forget();
+        }
+
         #region Button invoke event. Do not change here.不要更改这行 -- Auto
 
         private void OnClickBtn_OpenOne()
         {
-            EF.Ui.OpenPageView<TestTopView>();
+            EF.Ui.OpenPageView<TestTopView>().Forget();
         }
 
         private void OnClickBtn_CloseAll()
         {
-            EF.Ui.BackToFirstViewWithType(UIViewType.Page);
+            CloseAll().Forget();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

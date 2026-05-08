@@ -3,9 +3,9 @@
  * Describe:      This script is used to builder with editor.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-02-13 16:46:15
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
- * ScriptVersion: 0.1
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-05-08 15:30:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -27,9 +27,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     public class UiBindingEditor : Editor
     {
         private UiBinding _builder;
-
         private UiBindingConfig _setting;
-
         private List<string> _tempFiledNames;
         private List<string> _tempComponentTypeNames;
         private Dictionary<string, int> _componentsName;
@@ -52,12 +50,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _tempComponentTypeNames = new List<string>();
             _componentsName = new Dictionary<string, int>();
 
-            _builder.SortByType = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortType", 1) ==
-                                  1;
-            _builder.SortByNameLength =
-                EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+            _builder.SortByType = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
+            _builder.SortByNameLength = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             _builder.PackUpBindList = true;
-            AutoBindComponent();
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -66,7 +62,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _tempFiledNames.Clear();
             _componentsName.Clear();
             _tempComponentTypeNames.Clear();
-
             _setting = null;
             _tempFiledNames = null;
             _componentsName = null;
@@ -94,192 +89,160 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         #region Draw. 绘制编辑器内容
 
-        /// <summary>
-        /// Draw setting
-        /// 绘制设置项
-        /// </summary>
         private void DrawSetting()
         {
+            // 命名空间行
             EditorGUILayout.BeginHorizontal();
             _builder.Namespace =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _builder.Namespace);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-            {
                 _builder.Namespace = _setting.Namespace;
-            }
-
             EditorGUILayout.EndHorizontal();
 
+            // 类名（只读）
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Class, Lc.Name }), _builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
+
+            // 描述
             _builder.Describe =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Description }), _builder.Describe);
-
-
             EditorGUILayout.Space(6f, true);
-            _builder.AutoDestroy = GUILayout.Toggle(_builder.AutoDestroy, LC.Combine(new Lc[] { Lc.Auto, Lc.Destroy }));
+
+            // AutoDestroy
+            _builder.AutoDestroy =
+                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Destroy }), _builder.AutoDestroy);
             if (_builder.AutoDestroy)
             {
                 _builder.AutoDestroyCountdown =
                     EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Destroy, Lc.Countdown }),
                         _builder.AutoDestroyCountdown);
-
                 EditorGUILayout.Space(6f, true);
             }
 
+            // ViewType
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
             if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
                 _builder.ViewType = UIViewType.Page;
 
             EditorGUILayout.Space(12f, true);
 
-            _builder.CreatePrefab = GUILayout.Toggle(_builder.CreatePrefab,
-                    _builder.CreatePrefab
-                        ? LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path })
-                        : LC.Combine(new Lc[] { Lc.Create, Lc.Prefab }))
-                ;
-            if (_builder.CreatePrefab)
+            // CreatePrefab 开关
+            EditorGUI.BeginChangeCheck();
+            _builder.CreatePrefab = EditorGUILayout.Toggle(
+                _builder.CreatePrefab
+                    ? LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path })
+                    : LC.Combine(new Lc[] { Lc.Create, Lc.Prefab }),
+                _builder.CreatePrefab);
+            if (EditorGUI.EndChangeCheck())
             {
-                EditorGUILayout.LabelField(_builder.PrefabPath);
-                // EditorGUILayout.BeginHorizontal();
-                // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
-                // {
-                //     string folder = Path.Combine(Application.dataPath, _builder.PrefabPath);
-                //     if (!Directory.Exists(folder))
-                //     {
-                //         folder = Application.dataPath;
-                //     }
-                //
-                //     string path =
-                //         EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
-                //     if (!string.IsNullOrEmpty(path))
-                //     {
-                //         _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-                //     }
-                // }
-                //
-                // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-                // {
-                //     _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
-                // }
-                //
-                // EditorGUILayout.EndHorizontal();
+                if (_builder.CreatePrefab && string.IsNullOrEmpty(_builder.PrefabPath))
+                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+                Repaint();
+                EditorUtility.SetDirty(_builder);
             }
 
-            EditorGUILayout.Space(12f, true);
+            // 路径行：使用水平布局，内部根据条件显示控件
+            EditorGUILayout.BeginHorizontal();
+            if (_builder.CreatePrefab)
+            {
+                if (string.IsNullOrEmpty(_builder.PrefabPath))
+                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
 
+                EditorGUILayout.LabelField(_builder.PrefabPath, GUILayout.ExpandWidth(true));
+
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), GUILayout.Width(60)))
+                {
+                    string folder = Path.Combine(Application.dataPath, _builder.PrefabPath);
+                    if (!Directory.Exists(folder)) folder = Application.dataPath;
+                    string path =
+                        EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                        EditorUtility.SetDirty(_builder);
+                    }
+
+                    Repaint();
+                }
+
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings }), GUILayout.Width(60)))
+                {
+                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+                    EditorUtility.SetDirty(_builder);
+                    Repaint();
+                }
+            }
+            else
+            {
+                GUILayout.FlexibleSpace(); // 占位保持平衡
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(12f, true);
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }));
             EditorGUILayout.LabelField(_builder.ScriptPath);
-            // EditorGUILayout.BeginHorizontal();
-            // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
-            // {
-            //     string folder = Application.dataPath + "/" + _builder.ScriptPath;
-            //     if (!Directory.Exists(folder))
-            //     {
-            //         folder = Application.dataPath;
-            //     }
-            //
-            //     string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
-            //     if (!string.IsNullOrEmpty(path))
-            //     {
-            //         _builder.ScriptPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-            //     }
-            // }
-            //
-            // if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-            // {
-            //     _builder.ScriptPath = ConfigManager.Path.UICodePath;
-            // }
-            //
-            // EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// Draw auto binding
-        /// 绘制绑定按钮
-        /// </summary>
         private void DrawAutoBind()
         {
-            GUILayout.Space(12.0f);
-            GUILayout.BeginHorizontal();
+            EditorGUILayout.Space(12f);
+            EditorGUILayout.BeginHorizontal();
             _builder.SortByType =
-                GUILayout.Toggle(_builder.SortByType, LC.Combine(new Lc[] { Lc.By, Lc.Type, Lc.Sort }));
-            _builder.SortByNameLength = GUILayout.Toggle(_builder.SortByNameLength,
-                LC.Combine(new Lc[] { Lc.By, Lc.Name, Lc.Length, Lc.Sort }));
-            GUILayout.EndHorizontal();
+                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.By, Lc.Type, Lc.Sort }), _builder.SortByType);
+            _builder.SortByNameLength =
+                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.By, Lc.Name, Lc.Length, Lc.Sort }),
+                    _builder.SortByNameLength);
+            EditorGUILayout.EndHorizontal();
+
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Auto, Lc.Bind, Lc.Component })))
             {
                 AutoBindComponent();
             }
         }
 
-        /// <summary>
-        /// Draw key and value data
-        /// 绘制键值对数据
-        /// </summary>
         private void DrawKvData()
         {
             _builder.PackUpBindList = EditorGUILayout.BeginFoldoutHeaderGroup(_builder.PackUpBindList,
                 _builder.PackUpBindList
                     ? LC.Combine(new Lc[] { Lc.Close, Lc.List })
                     : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
-            if (!_builder.PackUpBindList)
-                return;
 
-            int needDeleteIndex = -1;
-            EditorGUILayout.BeginVertical();
-
-            for (int i = 0; i < _builder.BindDatas.Count; i++)
+            if (_builder.PackUpBindList)
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
-                EditorGUILayout.PrefixLabel(_builder.BindDatas[i].ScriptName);
-                _builder.BindDatas[i].BindCom =
-                    (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
-
-                if (GUILayout.Button("X"))
+                for (int i = 0; i < _builder.BindDatas.Count; i++)
                 {
-                    //将元素下标添加进删除list
-                    needDeleteIndex = i;
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
+                    EditorGUILayout.PrefixLabel(_builder.BindDatas[i].ScriptName);
+                    _builder.BindDatas[i].BindCom =
+                        (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
+                    if (GUILayout.Button("X", GUILayout.Width(20)))
+                    {
+                        _builder.BindDatas.RemoveAt(i);
+                        Repaint();
+                        break; // 删除后退出循环，避免索引错误
+                    }
+
+                    EditorGUILayout.EndHorizontal();
                 }
-
-                EditorGUILayout.EndHorizontal();
             }
 
-            //删除data
-            if (needDeleteIndex != -1)
-            {
-                _builder.BindDatas.RemoveAt(needDeleteIndex);
-            }
-
-            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        /// <summary>
-        /// Draw start bind button
-        /// 绘制开始绑定按钮
-        /// </summary>
         private void DrawStartBind()
         {
-            GUILayout.Space(24f);
-            _builder.DeleteScript =
-                GUILayout.Toggle(_builder.DeleteScript, LC.Combine(new Lc[] { Lc.Unload, Lc.Script }));
-
-            GUILayout.Space(12f);
+            EditorGUILayout.Space(24f);
+            _builder.DeleteScript = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Unload, Lc.This, Lc.Script }),
+                _builder.DeleteScript);
+            EditorGUILayout.Space(12f);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Bind, Lc.Create }), GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
-                if (_builder.CreatePrefab)
-                {
-                    CreateOrModifyPrefab();
-                }
-
-                if (_builder.DeleteScript)
-                {
-                    DestroyImmediate(_builder);
-                }
-
+                if (_builder.CreatePrefab) CreateOrModifyPrefab();
+                if (_builder.DeleteScript) DestroyImmediate(_builder);
                 AssetDatabase.Refresh();
             }
         }
@@ -288,10 +251,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         #region Bind. 绑定数据内容
 
-        /// <summary>
-        /// Auto bind component.
-        /// 自动绑定组件
-        /// </summary>
         private void AutoBindComponent()
         {
             if (Application.isPlaying)
@@ -302,43 +261,26 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             Transform[] children = _builder.gameObject.GetComponentsInChildren<Transform>(true);
             foreach (Transform child in children)
             {
-                _tempFiledNames.Clear();
-                _tempComponentTypeNames.Clear();
+                if (child == _builder.transform) continue;
 
-                if (child == _builder.transform)
-                    continue;
-
+                // 跳过属于其他 UiBinding 子物体的控件
                 UiBinding autoSelf = child.gameObject.GetComponent<UiBinding>();
                 UiBinding autoParent = child.gameObject.GetComponentInParent<UiBinding>(true);
+                if (autoSelf == null && autoParent != null && autoParent != _builder) continue;
 
-                if (autoSelf == null && autoParent != null && autoParent != _builder)
-                    continue;
-
-                if (!IsValidBind(child, _tempFiledNames, _tempComponentTypeNames))
-                    continue;
+                _tempFiledNames.Clear();
+                _tempComponentTypeNames.Clear();
+                if (!IsValidBind(child, _tempFiledNames, _tempComponentTypeNames)) continue;
 
                 for (int i = 0; i < _tempFiledNames.Count; i++)
                 {
                     Component com = child.GetComponent(_tempComponentTypeNames[i]);
-                    if (com == null)
-                    {
-                        D.Error($"{child.name}上不存在{_tempComponentTypeNames[i]}的组件");
-                    }
-                    else
-                    {
-                        AddBindData(child.name, _tempFiledNames[i], child.GetComponent(_tempComponentTypeNames[i]));
-                    }
+                    if (com == null) D.Error($"{child.name}上不存在{_tempComponentTypeNames[i]}的组件");
+                    else AddBindData(child.name, _tempFiledNames[i], com);
                 }
             }
         }
 
-        /// <summary>
-        /// Add bind data.
-        /// 添加绑定数据
-        /// </summary>
-        /// <param name="rectName">物体对象名</param>
-        /// <param name="filedName">生成的字段名</param>
-        /// <param name="needBindingComponent">需要绑定的组件</param>
         private void AddBindData(string rectName, string filedName, Component needBindingComponent)
         {
             int bindingCount = _builder.BindDatas.Count;
@@ -349,32 +291,26 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (elementName == filedName)
                 {
                     D.Error($"有重复名字！请检查后重新生成！Name:{rectName}");
-                    nameList.Clear();
                     return;
                 }
 
                 nameList.Add(elementName);
             }
 
-            List<string> comNameList = new List<string>();
             string componentsName = needBindingComponent.GetType().Name;
+            List<string> comNameList = new List<string>();
             if (_builder.SortByType && _builder.SortByNameLength)
             {
                 if (!_componentsName.TryAdd(componentsName, bindingCount))
                 {
-                    foreach (var item in this._componentsName.Keys)
-                        comNameList.Add(item);
-
+                    foreach (var item in _componentsName.Keys) comNameList.Add(item);
                     int indexOf = comNameList.IndexOf(componentsName) + 1;
-                    for (int i = indexOf; i < comNameList.Count; i++)
-                        ++_componentsName[comNameList[i]];
-
+                    for (int i = indexOf; i < comNameList.Count; i++) ++_componentsName[comNameList[i]];
                     int endIndex = indexOf >= comNameList.Count
                         ? _builder.BindDatas.Count
                         : _componentsName[comNameList[indexOf]] - 1;
                     bindingCount = EditorUtils.GetIndexWithLengthSort(filedName.Length, nameList,
-                        this._componentsName[comNameList[indexOf - 1]], endIndex);
-                    comNameList.Clear();
+                        _componentsName[comNameList[indexOf - 1]], endIndex);
                 }
             }
             else if (_builder.SortByType && !_builder.SortByNameLength)
@@ -382,11 +318,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (!_componentsName.TryAdd(componentsName, bindingCount))
                 {
                     bindingCount = ++_componentsName[componentsName];
-                    foreach (var item in _componentsName.Keys)
-                        comNameList.Add(item);
+                    foreach (var item in _componentsName.Keys) comNameList.Add(item);
                     for (int i = comNameList.IndexOf(componentsName) + 1; i < comNameList.Count; i++)
                         ++_componentsName[comNameList[i]];
-                    comNameList.Clear();
                 }
             }
             else if (!_builder.SortByType && _builder.SortByNameLength)
@@ -400,22 +334,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 RealName = rectName,
                 ScriptName = filedName,
             });
-            nameList.Clear();
         }
 
-        /// <summary>
-        /// 查找是否为有效绑定
-        /// </summary>
-        /// <param name="trans">目标</param>
-        /// <param name="filedNames">对象名</param>
-        /// <param name="componentTypeNames">对象组件</param>
-        /// <returns>是否有效</returns>
         private bool IsValidBind(Transform trans, List<string> filedNames, List<string> componentTypeNames)
         {
             string[] strArray = trans.name.Split('_');
-
-            if (strArray.Length == 1)
-                return false;
+            if (strArray.Length == 1) return false;
 
             bool isFind = false;
             string filedName = strArray[^1];
@@ -426,20 +350,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 string prefixes = strArray[i];
                 foreach (RulePrefixes autoBindRulePrefix in _setting.RulePrefixes)
                 {
-                    if (!autoBindRulePrefix.Prefixe.Equals(prefixes))
-                        continue;
-
-                    var comName = autoBindRulePrefix.FullName;
+                    if (!autoBindRulePrefix.Prefixe.Equals(prefixes)) continue;
                     filedNames.Add($"{prefixes}_{filedName}");
-                    componentTypeNames.Add(comName);
+                    componentTypeNames.Add(autoBindRulePrefix.FullName);
                     isFind = true;
                     break;
                 }
 
-                if (!isFind)
-                {
-                    D.Warning($"{trans.name}的命名中{prefixes}不存在对应的组件类型，绑定失败");
-                }
+                if (!isFind) D.Warning($"{trans.name}的命名中{prefixes}不存在对应的组件类型，绑定失败");
             }
 
             return isFind;
@@ -451,21 +369,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private void CreateOrModifyPrefab()
         {
-            string path = Application.dataPath.Equals(_builder.PrefabPath)
-                ? $"{_builder.PrefabPath}/{_builder.name}.prefab"
-                : $"{Application.dataPath}/{_builder.PrefabPath}/{_builder.name}.prefab";
-            if (path.Contains("Assets/Assets"))
-                path = path.Replace("Assets/Assets", "Assets");
+            string fullPath = Path.Combine(Application.dataPath, _builder.PrefabPath, $"{_builder.name}.prefab");
+            fullPath = fullPath.Replace("Assets/Assets", "Assets");
+            fullPath = fullPath.Replace("Assets\\Assets", "Assets");
+            string dir = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
 
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-                File.Delete(path + ".meta");
-            }
-
-            GameObject prefabAsset = PrefabUtility.SaveAsPrefabAsset(_builder.gameObject, path);
-            DestroyImmediate(prefabAsset.GetComponent<UiBinding>(), true);
-
+            PrefabUtility.SaveAsPrefabAssetAndConnect(_builder.gameObject, fullPath, InteractionMode.UserAction);
             AssetDatabase.SaveAssets();
         }
 
@@ -500,79 +411,106 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (!Directory.Exists(logicPath))
                 Directory.CreateDirectory(logicPath);
 
-
-            var buttonLst = new List<string>();
-            var buttonProLst = new List<string>();
-            var otherNameLst = new List<string>();
-            var buttonNameLst = new List<string>();
-            var buttonProNameLst = new List<string>();
-            var otherComponent = new Dictionary<string, string>();
+            // 修复：使用同步列表存储其他组件信息，避免 Dictionary 遍历顺序不确定导致的字段绑定错位
+            var buttonNames = new List<string>(); // Button 的真实物体名 (RealName)
+            var buttonScriptNames = new List<string>(); // Button 的字段名 (ScriptName)
+            var buttonProNames = new List<string>();
+            var buttonProScriptNames = new List<string>();
+            var otherRealNames = new List<string>(); // 其他组件的真实物体名
+            var otherScriptNames = new List<string>(); // 其他组件的字段名
+            var otherTypeNames = new List<string>(); // 其他组件的类型名 (如 "Text", "Image")
 
             foreach (var bindingData in _builder.BindDatas)
             {
                 Type type = bindingData.BindCom.GetType();
-
-                string ns = type.Namespace;
-
                 if (type == typeof(ButtonPro))
                 {
-                    buttonProNameLst.Add(bindingData.RealName);
-                    buttonProLst.Add(bindingData.ScriptName);
+                    buttonProNames.Add(bindingData.RealName);
+                    buttonProScriptNames.Add(bindingData.ScriptName);
                 }
                 else if (type == typeof(UnityEngine.UI.Button))
                 {
-                    buttonNameLst.Add(bindingData.RealName);
-                    buttonLst.Add(bindingData.ScriptName);
+                    buttonNames.Add(bindingData.RealName);
+                    buttonScriptNames.Add(bindingData.ScriptName);
                 }
                 else
                 {
-                    otherNameLst.Add(bindingData.RealName);
-                    otherComponent.Add(bindingData.ScriptName, bindingData.BindCom.GetType().Name);
+                    otherRealNames.Add(bindingData.RealName);
+                    otherScriptNames.Add(bindingData.ScriptName);
+                    otherTypeNames.Add(type.Name);
                 }
             }
 
             viewPath = Path.Combine(viewPath, $"{className}.cs");
             logicPath = Path.Combine(logicPath, $"{className}Logic.cs");
 
-            #region Common start
+            List<string> usingNamespaces = new List<string>();
+
+            string[] baseNamespaces = new string[]
+            {
+                "UnityEngine",
+                "UnityEngine.UI",
+                "System.Collections.Generic",
+                "Cysharp.Threading.Tasks",
+                "EasyFramework",
+                "EasyFramework.UI",
+                "EasyFramework.Managers.UI"
+            };
+            foreach (string ns in baseNamespaces)
+            {
+                if (!usingNamespaces.Contains(ns))
+                    usingNamespaces.Add(ns);
+            }
+
+            foreach (var bindingData in _builder.BindDatas)
+            {
+                Type type = bindingData.BindCom.GetType();
+                string ns = type.Namespace;
+                if (!string.IsNullOrEmpty(ns) && !usingNamespaces.Contains(ns))
+                    usingNamespaces.Add(ns);
+            }
+
+            bool hasTMPro = false;
+            foreach (var bindingData in _builder.BindDatas)
+            {
+                if (bindingData.BindCom.GetType().Name == "TextMeshProUGUI")
+                {
+                    hasTMPro = true;
+                    break;
+                }
+            }
+
+            if (hasTMPro && !usingNamespaces.Contains("TMPro"))
+                usingNamespaces.Add("TMPro");
 
             StringBuilder commonSb = new StringBuilder();
             commonSb.AppendLine(GetFileHead());
+            commonSb.AppendLine();
+            foreach (string ns in usingNamespaces)
+            {
+                commonSb.AppendLine($"using {ns};");
+            }
 
             commonSb.AppendLine();
-            commonSb.AppendLine("using EasyFramework;");
-            commonSb.AppendLine("using EasyFramework.UI;");
-            commonSb.AppendLine("using System.Collections.Generic;");
-            commonSb.AppendLine("using EasyFramework.Managers.UI;");
-            commonSb.AppendLine("using UnityEngine;");
-            commonSb.AppendLine("using UnityEngine.UI;");
-
-            commonSb.AppendLine();
-
             string commonNamespace =
                 !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : _setting.Namespace;
             commonSb.AppendLine($"namespace {commonNamespace}");
             commonSb.AppendLine("{");
 
-            #endregion
-
-            int btnIndex = -1;
+            // ========== 生成 View 文件 ==========
             StringBuilder sb = new StringBuilder();
-
-            #region view script
-
             string autoDestroy = _builder.AutoDestroy ? "true" : "false";
             sb.AppendLine(ScriptExplain);
             sb.AppendLine($"    public partial class {className} : IUiView");
             sb.AppendLine($"    {{");
-            sb.AppendLine($"        public static {className} Open(params object[] args)");
+            sb.AppendLine($"        public static async UniTask<{className}> Open(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return EF.Ui.OpenPageView<{className}>(args);");
+            sb.AppendLine($"            return await EF.Ui.OpenPageView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
-            sb.AppendLine($"        public static bool Close(params object[] args)");
+            sb.AppendLine($"        public static async UniTask<bool> Close(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return EF.Ui.CloseView<{className}>(args);");
+            sb.AppendLine($"            return await EF.Ui.CloseView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");
@@ -581,59 +519,71 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine($"        public UIViewType ViewType => UIViewType.{_builder.ViewType};");
             sb.AppendLine($"        public RectTransform View {{ get; private set; }}");
             sb.AppendLine();
-            foreach (var item in otherComponent)
-            {
-                sb.AppendLine($"        private {item.Value} {item.Key};");
-            }
-
-            sb.AppendLine($"        private List<Button> m_AllButtons;");
-            sb.AppendLine($"        private List<ButtonPro> m_AllButtonPros;");
+            for (int i = 0; i < otherScriptNames.Count; i++)
+                sb.AppendLine($"        private {otherTypeNames[i]} {otherScriptNames[i]};");
+            sb.AppendLine();
+            foreach (var scriptName in buttonScriptNames)
+                sb.AppendLine($"        private Button btn_{scriptName};");
+            sb.AppendLine();
+            foreach (var scriptName in buttonProScriptNames)
+                sb.AppendLine($"        private ButtonPro btnPro_{scriptName};");
             sb.AppendLine();
             sb.AppendLine($"        void IUiView.Bind(RectTransform uiViewRect)");
             sb.AppendLine($"        {{");
             sb.AppendLine($"            View = uiViewRect;");
 
-            foreach (var item in otherComponent)
+            for (int i = 0; i < otherScriptNames.Count; i++)
                 sb.AppendLine(
-                    $"            {item.Key} = EF.Tool.Find<{item.Value}>(uiViewRect.transform, \"{otherNameLst[++btnIndex]}\");");
+                    $"            {otherScriptNames[i]} = EF.Tool.Find<{otherTypeNames[i]}>(uiViewRect.transform, \"{otherRealNames[i]}\");");
 
-            btnIndex = -1;
-            foreach (var btn in buttonLst)
+            for (int i = 0; i < buttonScriptNames.Count; i++)
             {
                 sb.AppendLine(
-                    $"            EF.Tool.Find<Button>(uiViewRect.transform, \"{buttonNameLst[++btnIndex]}\").RegisterInListAndBindEvent(OnClick{btn}, ref m_AllButtons);");
+                    $"            btn_{buttonScriptNames[i]} = EF.Tool.Find<Button>(uiViewRect.transform, \"{buttonNames[i]}\");");
+                sb.AppendLine(
+                    $"            btn_{buttonScriptNames[i]}.onClick.AddListener(OnClick{buttonScriptNames[i]});");
             }
 
-            btnIndex = -1;
-            foreach (var btnPro in buttonProLst)
+            for (int i = 0; i < buttonProScriptNames.Count; i++)
             {
                 sb.AppendLine(
-                    $"            EF.Tool.Find<ButtonPro>(uiViewRect.transform, \"{buttonProNameLst[++btnIndex]}\").RegisterInListAndBindEvent(OnClick{btnPro}, ref m_AllButtonPros);");
+                    $"            btnPro_{buttonProScriptNames[i]} = EF.Tool.Find<ButtonPro>(uiViewRect.transform, \"{buttonProNames[i]}\");");
+                sb.AppendLine(
+                    $"            btnPro_{buttonProScriptNames[i]}.AddClickListener(OnClick{buttonProScriptNames[i]});");
             }
 
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        void IUiView.Dispose()");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            m_AllButtons.ReleaseAndRemoveEvent();");
-            sb.AppendLine($"            m_AllButtons = null;");
-            sb.AppendLine($"            m_AllButtonPros.ReleaseAndRemoveEvent();");
-            sb.AppendLine($"            m_AllButtonPros = null;");
+            foreach (var scriptName in buttonScriptNames)
+            {
+                sb.AppendLine($"            btn_{scriptName}?.onClick.RemoveListener(OnClick{scriptName});");
+                sb.AppendLine($"            btn_{scriptName} = null;");
+            }
+
+            foreach (var scriptName in buttonProScriptNames)
+            {
+                sb.AppendLine($"            btnPro_{scriptName}?.RemoveClickListener(OnClick{scriptName});");
+                sb.AppendLine($"            btnPro_{scriptName} = null;");
+            }
+
+            foreach (var scriptName in otherScriptNames)
+            {
+                sb.AppendLine($"            {scriptName} = null;");
+            }
+
             sb.AppendLine($"        }}");
             sb.AppendLine($"    }}");
             sb.AppendLine(ScriptExplain);
             sb.AppendLine($"}}");
-
             File.WriteAllText(viewPath, commonSb + sb.ToString(), Encoding.UTF8);
 
-            #endregion
-
+            // ========== 生成/更新 Logic 文件 ==========
             sb.Clear();
-
-            #region Logic script
-
             if (!File.Exists(logicPath))
             {
+                // 首次创建 Logic 文件
                 sb.AppendLine($"    /// <summary>");
                 sb.AppendLine($"    /// {_builder.Describe}");
                 sb.AppendLine($"    /// </summary>");
@@ -648,100 +598,75 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 sb.AppendLine($"        }}");
                 sb.AppendLine();
                 sb.AppendLine($"        " + ButtonEventsStart);
-                foreach (var bindData in _builder.BindDatas)
+                foreach (var scriptName in buttonProScriptNames)
                 {
-                    Type type = bindData.BindCom.GetType();
-                    if (type != typeof(ButtonPro) && type != typeof(UnityEngine.UI.Button))
-                        continue;
-
                     sb.AppendLine();
-                    sb.AppendLine($"        private void OnClick{bindData.ScriptName}()");
+                    sb.AppendLine($"        private void OnClick{scriptName}()");
                     sb.AppendLine($"        {{");
-                    sb.AppendLine($"            D.Log(\"OnClick:  {bindData.RealName}\");");
+                    sb.AppendLine($"            D.Log(\"OnClick:  {scriptName}\");");
+                    sb.AppendLine($"        }}");
+                }
+
+                foreach (var scriptName in buttonScriptNames)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"        private void OnClick{scriptName}()");
+                    sb.AppendLine($"        {{");
+                    sb.AppendLine($"            D.Log(\"OnClick:  {scriptName}\");");
                     sb.AppendLine($"        }}");
                 }
 
                 sb.AppendLine();
                 sb.AppendLine("        " + ButtonEventsEnd);
                 sb.AppendLine($"    }}");
-
                 sb.AppendLine($"}}");
                 File.WriteAllText(logicPath, commonSb + sb.ToString(), Encoding.UTF8);
             }
             else
             {
-                List<string> logicList = new List<string>();
-                StringBuilder buttonFunction = new StringBuilder();
-
-                logicList.AddRange(File.ReadAllLines(logicPath));
-
-                #region If have button component, than need write new event.
-
-                int endIndex = 0;
+                List<string> logicList = new List<string>(File.ReadAllLines(logicPath));
+                int endIndex = -1;
                 for (int i = logicList.Count - 1; i >= 0; i--)
                 {
-                    if (!logicList[i].Contains(ButtonEventsEnd))
-                        continue;
-
-                    endIndex = i;
-                    break;
-                }
-
-                for (int i = buttonLst.Count - 1; i >= 0; i--)
-                {
-                    buttonProLst.Insert(0, buttonLst[i]);
-                }
-
-                foreach (var btnPro in buttonProLst)
-                {
-                    bool contain = false;
-                    foreach (var str in logicList)
+                    if (logicList[i].Contains(ButtonEventsEnd))
                     {
-                        if (!str.Contains($"private void OnClick{btnPro}()"))
-                            continue;
-
-                        contain = true;
+                        endIndex = i;
                         break;
                     }
-
-                    if (contain) continue;
-
-                    buttonFunction.AppendLine($"        private void OnClick{btnPro}()");
-                    buttonFunction.AppendLine($"        {{");
-                    buttonFunction.AppendLine($"            D.Log(\"OnClick:  {btnPro}\");");
-                    buttonFunction.AppendLine($"        }}");
-                    //buttonFunction.AppendLine("");
-
-                    logicList.Insert(endIndex, buttonFunction.ToString());
-                    buttonFunction.Clear();
-                    endIndex++;
                 }
 
-                #endregion
+                if (endIndex != -1)
+                {
+                    // 合并所有按钮的字段名（用于去重）
+                    var allButtonScriptNames = new List<string>();
+                    allButtonScriptNames.AddRange(buttonProScriptNames);
+                    allButtonScriptNames.AddRange(buttonScriptNames);
+                    foreach (var btnScript in allButtonScriptNames)
+                    {
+                        bool alreadyExists = false;
+                        foreach (var line in logicList)
+                        {
+                            if (!line.Contains($"private void OnClick{btnScript}()"))
+                                continue;
+
+                            alreadyExists = true;
+                            break;
+                        }
+
+                        if (alreadyExists) continue;
+
+                        string newEvent =
+                            $"        private void OnClick{btnScript}()\n        {{\n            D.Log(\"OnClick:  {btnScript}\");\n        }}\n";
+                        logicList.Insert(endIndex, newEvent);
+                        endIndex++; // 插入后索引后移
+                    }
+                }
 
                 ChangeFileHead(logicList);
                 File.WriteAllLines(logicPath, logicList);
-
-                logicList.Clear();
-                buttonFunction.Clear();
             }
-
-            #endregion
-
-            sb.Clear();
-            commonSb.Clear();
-            buttonLst.Clear();
-            otherNameLst.Clear();
-            buttonProLst.Clear();
-            buttonNameLst.Clear();
-            otherComponent.Clear();
-            buttonProNameLst.Clear();
         }
 
-        /// <summary>
-        /// Amend head with changed the file.
-        /// 更改文件头内容
-        /// </summary>
         private void ChangeFileHead(List<string> strList)
         {
             for (int i = 0; i < strList.Count; i++)
@@ -752,35 +677,28 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     continue;
                 }
 
-                if (!strList[i].Contains(StrChangeTime))
-                    continue;
-
-                strList[i] = $" {StrChangeTime}    {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                return;
+                if (strList[i].Contains(StrChangeTime))
+                {
+                    strList[i] = $" {StrChangeTime}    {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                    return;
+                }
             }
         }
 
-        /// <summary>
-        /// Get file head.
-        /// 获取文件头内容
-        /// </summary>
         private string GetFileHead()
         {
             string authorName = GetAuthorName();
             string createTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-            string annotationStr =
-                "/*\n"
-                + " * ================================================\r\n"
-                + $" * Describe:      {_builder.Describe}.\r\n"
-                + $" * Author:        {authorName}\r\n"
-                + $" * CreationTime:  {createTime}\r\n"
-                + $" * ModifyAuthor:  {authorName}\r\n"
-                + $" * ModifyTime:    {createTime}\r\n"
-                + $" * ScriptVersion: {ConfigManager.Project.ScriptVersion} \r\n"
-                + " * ================================================\r\n"
-                + " */";
-            return annotationStr;
+            return "/*\n"
+                   + " * ================================================\r\n"
+                   + $" * Describe:      {_builder.Describe}.\r\n"
+                   + $" * Author:        {authorName}\r\n"
+                   + $" * CreationTime:  {createTime}\r\n"
+                   + $" * ModifyAuthor:  {authorName}\r\n"
+                   + $" * ModifyTime:    {createTime}\r\n"
+                   + $" * ScriptVersion: {ConfigManager.Project.ScriptVersion} \r\n"
+                   + " * ================================================\r\n"
+                   + " */";
         }
 
         private string GetAuthorName()

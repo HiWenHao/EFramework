@@ -12,6 +12,7 @@
 using EasyFramework;
 using EasyFramework.UI;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,14 +22,14 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class TestBottomViewTwo : IUiView
     {
-        public static TestBottomViewTwo Open(params object[] args)
+        public static async UniTask<TestBottomViewTwo> Open(params object[] args)
         {
-            return EF.Ui.OpenPageView<TestBottomViewTwo>(args);
+            return await EF.Ui.OpenPageView<TestBottomViewTwo>(args);
         }
 
-        public static bool Close(params object[] args)
+        public static async UniTask<bool> Close(params object[] args)
         {
-            return EF.Ui.CloseView<TestBottomViewTwo>(args);
+            return await EF.Ui.CloseView<TestBottomViewTwo>(args);
         }
 
         bool IUiView.AutoDestroy => true;

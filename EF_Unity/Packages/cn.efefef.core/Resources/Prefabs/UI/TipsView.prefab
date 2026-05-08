@@ -530,6 +530,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7127897411786035333}
   - component: {fileID: 5682038936580938503}
+  - component: {fileID: 327926739478351518}
   m_Layer: 5
   m_Name: TipsView
   m_TagString: Untagged
@@ -566,6 +567,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8173729399935711482}
   m_CullTransparentMesh: 1
+--- !u!114 &327926739478351518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8173729399935711482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4e43f871e4d2848b330c0f70ec9e63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Namespace: EFExample
+  Describe: Please modify the description.
+  AutoDestroy: 1
+  AutoDestroyCountdown: 10
+  ViewType: 2
+  PrefabPath: 
+  ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/
+  CreatePrefab: 0
+  PackUpBindList: 1
+  SortByType: 1
+  SortByNameLength: 1
+  DeleteScript: 0
 --- !u!1 &8255450304489406826
 GameObject:
   m_ObjectHideFlags: 0

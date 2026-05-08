@@ -299,7 +299,7 @@ namespace EasyFramework.Managers
                     CancelName = "取消",
                     ConfirmCallBack = OnClickDownloadBegin,
                     CancelCallBack = UpdateDone
-                });
+                }).Forget();
         }
 
         /// <summary>
