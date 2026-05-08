@@ -3,31 +3,35 @@
  * Describe:        The class singleton base.
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-14:33:01
- * ModifyAuthor:    Xiaohei.Wang(Wenhao)
- * ModifyTime:      2022-05-14:33:01
- * Version:         1.0
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-08 22:30:14
+ * ScriptVersion:   0.2
  * ===============================================
  */
+
 using System;
 using EasyFramework;
 
-public abstract class Singleton<T> where T : class, ISingleton
+public abstract class Singleton<T> where T : class, ISingleton, new()
 {
     protected Singleton() { }
+    
     /// <summary>
     /// Current type name
     /// <para>当前类型名字</para>
     /// </summary>
-    public string Name = typeof(T).Name;
-    public static T Instance => _instance;
-    private static readonly T _instance = new Lazy<T>(delegate
+    public string Name => typeof(T).Name;
+    
+    public static T Instance => _instance.Value;
+
+    private static readonly Lazy<T> _instance = new(() =>
     {
-        T t = Activator.CreateInstance<T>();
-        if (t is IManager)
-            EF.Register(t as IManager);
+        T t = new T();
+        if (t is IManager manager)
+            EF.Register(manager);
         else
             EF.Register(t);
         t.Init();
         return t;
-    }).Value;
+    });
 }

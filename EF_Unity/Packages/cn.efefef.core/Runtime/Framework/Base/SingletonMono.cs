@@ -3,56 +3,69 @@
  * Describe:        The class is monobehavior singleton base.
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-14:33:01
- * ModifyAuthor:    Xiaohei.Wang(Wenhao)
- * ModifyTime:      2022-05-14:33:01
- * Version:         1.0
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-08 22:42:46
+ * ScriptVersion:   0.2
  * ===============================================
  */
+
+using System;
 using EasyFramework;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton, new()
+public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
 {
-    protected MonoSingleton() { }
-    
-    /// <summary>
-    /// Current type name
-    /// <para>当前类型名字</para>
-    /// </summary>
-    public string TypeName { get; private set; }
-    
-    private static T _instance;
-    public static T Instance {
-        get{
-            if (null != _instance) 
-                return _instance;
-            
-            _instance = FindObjectOfType<T>();
-            if (_instance == null)
-            {
-                _instance = new GameObject($"[ {typeof(T).Name} ]").AddComponent<T>();
-                _instance.TypeName = _instance.name;
-            }
-            if (_instance is IManager manager)
-            {
-                _instance.transform.SetParent(EF.Managers);
-                EF.Register(manager);
-            }
-            else
-            {
-                _instance.transform.SetParent(EF.Singleton);
-                EF.Register(_instance);
-            }
-            _instance.Init();
-            return _instance;
+    private static readonly Lazy<T> _lazy = new(CreateInstance);
+    private static bool _isQuitting = false;
+    private static bool _quitEventRegistered = false;
+
+    public static T Instance => _isQuitting ? null : _lazy.Value;
+
+    public string TypeName => typeof(T).Name;
+
+    private static T CreateInstance()
+    {
+        if (!_quitEventRegistered)
+        {
+            Application.quitting += OnApplicationQuitting;
+            _quitEventRegistered = true;
         }
+
+        var existing = FindObjectsByType<T>(FindObjectsSortMode.None);
+        if (existing.Length > 0)
+        {
+            for (int i = 1; i < existing.Length; i++)
+                Destroy(existing[i].gameObject);
+            RegisterAndInit(existing[0]);
+            return existing[0];
+        }
+
+        GameObject go = new($"[ {typeof(T).Name} ]");
+        T instance = go.AddComponent<T>();
+        RegisterAndInit(instance);
+        return instance;
     }
 
-    private void OnApplicationQuit()
+    private static void OnApplicationQuitting()
     {
-        Destroy(_instance);
-        Destroy(gameObject);
-        _instance = null;
+        _isQuitting = true;
+        if (_lazy.IsValueCreated)
+            Destroy(_lazy.Value.gameObject);
+    }
+
+    private static void RegisterAndInit(T instance)
+    {
+        if (instance is IManager manager)
+        {
+            instance.transform.SetParent(EF.Managers);
+            EF.Register(manager);
+        }
+        else
+        {
+            instance.transform.SetParent(EF.Singleton);
+            EF.Register(instance);
+        }
+
+        instance.Init();
     }
 }

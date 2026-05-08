@@ -71,9 +71,9 @@ namespace EasyFramework.Edit.MenuToolkit
                     : configName;
                 if (!contents[5].Contains("ModifyAuthor:"))
                     continue;
-                contents[5] = $" * ModifyAuthor:  {authorName}";
-                contents[6] = $" * ModifyTime:    {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                contents[7] = $" * ScriptVersion: {ConfigManager.Project.ScriptVersion}";
+                contents[5] = $" * ModifyAuthor:    {authorName}";
+                contents[6] = $" * ModifyTime:      {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                contents[7] = $" * ScriptVersion:   {ConfigManager.Project.ScriptVersion}";
 
                 File.WriteAllLines(absPath, contents, Encoding.UTF8);
             }
