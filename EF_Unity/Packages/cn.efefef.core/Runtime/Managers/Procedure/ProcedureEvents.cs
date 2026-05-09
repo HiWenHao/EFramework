@@ -91,4 +91,25 @@ namespace EasyFramework.Managers.Procedure
         /// <summary>当前嵌套深度</summary>
         public int Depth;
     }
+    
+    /// <summary>
+    /// 流程超时事件（当流程进入阶段超过设定时间未完成时发布）
+    /// </summary>
+    public struct ProcedureTimeoutEvent
+    {
+        /// <summary>
+        /// 超时的流程实例 UID
+        /// </summary>
+        public uint Uid;
+        
+        /// <summary>
+        /// 流程的具体类型
+        /// </summary>
+        public Type ProcedureType;
+
+        /// <summary>
+        /// 当前嵌套深度
+        /// </summary>
+        public int Depth;
+    }
 }

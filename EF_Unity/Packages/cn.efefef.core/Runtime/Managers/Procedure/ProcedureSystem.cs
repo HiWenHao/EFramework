@@ -81,10 +81,12 @@ namespace EasyFramework.Managers.Procedure
         
         void ISingleton.Quit()
         {
+            // 清空待退出队列并重置处理标志
             _pendingExits.Clear();
             _processingExit = false;
             _isClearing = false;
-    
+            
+            // 清理流程栈
             while (_instanceStack.Count > 0)
             {
                 var inst = _instanceStack.Pop();
@@ -317,7 +319,7 @@ namespace EasyFramework.Managers.Procedure
                 Depth = newDepth
             });
 
-            TimeoutAsync(inst).Forget();
+            TimeoutAsync(inst.Uid, inst.RuntimeVersion, inst.EnterTimeoutCts.Token).Forget();
 
             try
             {
@@ -343,6 +345,13 @@ namespace EasyFramework.Managers.Procedure
             {
                 Error(e);
                 RequestExit(inst);
+                
+                if (!waitForExit)
+                    return;
+                
+                var completion = inst.CompletionSource;
+                if (completion != null)
+                    await completion.Task;
                 return;
             }
 
@@ -503,7 +512,7 @@ namespace EasyFramework.Managers.Procedure
                 if (_instanceStack.Count > 0)
                 {
                     var parent = _instanceStack.Peek();
-                    if (parent.ExitState == 0 && parent.State == ProcedureState.Suspended)
+                    if (parent.ExitQueued == 0 && parent.ExitState == 0 && parent.State == ProcedureState.Suspended)
                     {
                         parent.State = ProcedureState.Active;
                         EF.Events.Publish(new ProcedureResumeEvent
@@ -534,20 +543,28 @@ namespace EasyFramework.Managers.Procedure
         }
 
         // 超时监控
-        private async UniTask TimeoutAsync(ProcedureInstance inst)
+        private async UniTask TimeoutAsync(uint uid, uint version, CancellationToken token)
         {
-            uint version = inst.RuntimeVersion;
             try
             {
-                await UniTask.Delay(
-                    TimeSpan.FromSeconds(defaultTimeoutSeconds),
-                    cancellationToken: inst.EnterTimeoutCts.Token);
-
+                await UniTask.Delay(TimeSpan.FromSeconds(defaultTimeoutSeconds), cancellationToken: token);
+        
+                var inst = GetInstanceByUid(uid);
+                if (inst == null) return;
                 if (inst.RuntimeVersion != version) return;
                 if (inst.ExitState != 0) return;
                 if (inst.State != ProcedureState.Entering) return;
 
                 inst.State = ProcedureState.Timeout;
+        
+                // 发布超时事件，让外部可以观测到超时
+                EF.Events.Publish(new ProcedureTimeoutEvent
+                {
+                    Uid = inst.Uid,
+                    ProcedureType = inst.ProcedureType,
+                    Depth = inst.Depth
+                });
+        
                 Warning($"Procedure Timeout: {inst.Uid}");
                 RequestExit(inst);
             }
@@ -594,13 +611,11 @@ namespace EasyFramework.Managers.Procedure
             return inst;
         }
 
-        // 输出警告日志
         private void Warning(string msg)
         {
             if (_openDebug)
                 D.Warning(msg);
         }
-        // 输出错误日志
         private void Error(object msg)
         {
             if (_openDebug)
