@@ -32,7 +32,10 @@ namespace EasyFramework.Managers.Procedure
         /// <summary>当前嵌套深度（根流程深度为1）</summary>
         public int Depth { get; internal set; }
 
-        /// <summary>启动时传入的参数集合（只读）</summary>
+        /// <summary>
+        /// 启动时传入的参数集合（只读）
+        /// <para>注意：Params 底层来自对象池。Context Dispose 后禁止继续访问。</para>
+        /// </summary>
         public IReadOnlyDictionary<string, object> Params { get; internal set; }
 
         /// <summary>上下文是否已被释放</summary>

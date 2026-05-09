@@ -112,6 +112,7 @@ namespace EasyFramework.Managers.Procedure
                 }
                 catch (Exception e) { D.Error(e); }
                 inst.CompletionSource?.TrySetResult();
+                inst.ResultSource?.TrySetResult(new ProcedureResult(false, ProcedureExitType.Cancelled));
                 if (inst.State != ProcedureState.None)
                 {
                     inst.Reset();
@@ -366,7 +367,8 @@ namespace EasyFramework.Managers.Procedure
                         ? ProcedureExitType.Timeout
                         : ProcedureExitType.Cancelled;
                     RequestExit(inst, reason, e);
-                    await ProcessPendingExits();
+                    if (inst.CompletionSource != null)
+                        await inst.CompletionSource.Task; 
                     return true;
                 }
                 
@@ -381,7 +383,8 @@ namespace EasyFramework.Managers.Procedure
                 {
                     // 已入栈后异常（包含 OnEnter 异常），触发退出流程
                     RequestExit(inst, ProcedureExitType.Exception, e);
-                    await ProcessPendingExits();
+                    if (inst.CompletionSource != null)
+                        await inst.CompletionSource.Task;
                     return true;    // 已入栈，退出流程会接管后续
                 }
                 
@@ -501,7 +504,8 @@ namespace EasyFramework.Managers.Procedure
                 return; // 拒绝，防止破坏栈结构
             }
 
-            // 首次退出标记，负责执行 OnLeave 及发布事件
+            // 先将实例从栈中移除，再执行异步 OnLeave，避免清理僵尸实例时发生竞态
+            _instanceStack.Pop();
             if (Interlocked.Exchange(ref inst.ExitState, 1) == 0)
             {
                 inst.State = ProcedureState.Exiting;
@@ -531,9 +535,6 @@ namespace EasyFramework.Managers.Procedure
                     {
                         // 正常取消（LifecycleCts 触发），无需额外处理
                     }
-
-                    inst.LifecycleCts?.Dispose();
-                    inst.EnterTimeoutCts?.Dispose();
                 }
                 catch (Exception e)
                 {
@@ -541,14 +542,14 @@ namespace EasyFramework.Managers.Procedure
                 }
                 finally
                 {
+                    try { inst.LifecycleCts?.Dispose(); } catch { /* Ignore */ }
+                    try { inst.EnterTimeoutCts?.Dispose(); } catch { /* Ignore */ }
                     inst.LifecycleCts = null;
                     inst.EnterTimeoutCts = null;
                 }
             }
 
-            // 此时一定是栈顶，安全弹出并清理
-            _instanceStack.Pop();
-
+            // 实例已从栈中移除，下面进行资源回收和父流程恢复
             inst.CompletionSource?.TrySetResult();
             var result = new ProcedureResult(
                 inst.ExitReason == ProcedureExitType.Completed,
@@ -580,7 +581,7 @@ namespace EasyFramework.Managers.Procedure
                 if (_instanceStack.Count > 0)
                 {
                     var parent = _instanceStack.Peek();
-                    if (parent.ExitQueued == 0 && parent.ExitState == 0 && parent.State == ProcedureState.Suspended)
+                    if (parent.ExitState == 0 && parent.State == ProcedureState.Suspended)
                     {
                         parent.State = ProcedureState.Active;
                         EF.Events.Publish(new ProcedureResumeEvent(parent.Uid, parent.ProcedureType, parent.Depth));
@@ -623,8 +624,6 @@ namespace EasyFramework.Managers.Procedure
 
                 // 超时：不再设置 Timeout 状态（已移除），而是直接发布事件并请求退出
                 EF.Events.Publish(new ProcedureTimeoutEvent(inst.Uid, inst.ProcedureType, inst.Depth));
-        
-                Warning($"Procedure Timeout: {inst.Uid}");
                 RequestExit(inst, ProcedureExitType.Timeout);
             }
             catch (OperationCanceledException) { }
@@ -666,21 +665,13 @@ namespace EasyFramework.Managers.Procedure
         // 在栈中按 Uid 查找实例（O(n)，n 很小）
         private ProcedureInstance FindInstance(long uid)
         {
-            var snapshot = _instanceStack.ToArray();
-            foreach (var inst in snapshot)
+            foreach (var inst in _instanceStack)  // struct enumerator，零 GC
             {
                 if (inst.Uid == uid)
                     return inst;
             }
             return null;
         }
-
-        private void Warning(string msg)
-        {
-            if (_openDebug)
-                D.Warning(msg);
-        }
-        
         #endregion
     }
 }
