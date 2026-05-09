@@ -5,7 +5,7 @@
  * CreationTime:  2026-05-07 18:52:16
  * ModifyAuthor:  Alvin5100
  * ModifyTime:    2026-05-08
- * ScriptVersion: 0.1
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -19,16 +19,24 @@ namespace EasyFramework.Managers.Procedure
     public struct ProcedureEnterEvent
     {
         /// <summary>新流程实例的唯一标识符</summary>
-        public uint Uid;
+        public uint Uid { get; }
 
         /// <summary>父流程实例的 Uid（0 表示根流程）</summary>
-        public uint ParentUid;
+        public uint ParentUid { get; }
 
         /// <summary>流程的具体类型</summary>
-        public Type ProcedureType;
+        public Type ProcedureType { get; }
 
         /// <summary>当前嵌套深度（根深度为 1）</summary>
-        public int Depth;
+        public int Depth { get; }
+
+        public ProcedureEnterEvent(uint uid, uint parentUid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ParentUid = parentUid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
 
     /// <summary>
@@ -38,13 +46,20 @@ namespace EasyFramework.Managers.Procedure
     public struct ProcedureActivateEvent
     {
         /// <summary>被激活的流程实例 Uid</summary>
-        public uint Uid;
+        public uint Uid { get; }
 
         /// <summary>流程的具体类型</summary>
-        public Type ProcedureType;
+        public Type ProcedureType { get; }
 
         /// <summary>当前嵌套深度</summary>
-        public int Depth;
+        public int Depth { get; }
+
+        public ProcedureActivateEvent(uint uid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
 
     /// <summary>
@@ -53,13 +68,20 @@ namespace EasyFramework.Managers.Procedure
     public struct ProcedureSuspendEvent
     {
         /// <summary>被挂起的流程实例 Uid</summary>
-        public uint Uid;
+        public uint Uid { get; }
 
         /// <summary>流程的具体类型</summary>
-        public Type ProcedureType;
+        public Type ProcedureType { get; }
 
         /// <summary>当前嵌套深度</summary>
-        public int Depth;
+        public int Depth { get; }
+
+        public ProcedureSuspendEvent(uint uid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
 
     /// <summary>
@@ -68,13 +90,20 @@ namespace EasyFramework.Managers.Procedure
     public struct ProcedureResumeEvent
     {
         /// <summary>被恢复的流程实例 Uid</summary>
-        public uint Uid;
+        public uint Uid { get; }
 
         /// <summary>流程的具体类型</summary>
-        public Type ProcedureType;
+        public Type ProcedureType { get; }
 
         /// <summary>当前嵌套深度</summary>
-        public int Depth;
+        public int Depth { get; }
+
+        public ProcedureResumeEvent(uint uid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
 
     /// <summary>
@@ -83,13 +112,20 @@ namespace EasyFramework.Managers.Procedure
     public struct ProcedureExitEvent
     {
         /// <summary>正在退出的流程实例 Uid</summary>
-        public uint Uid;
+        public uint Uid { get; }
 
         /// <summary>流程的具体类型</summary>
-        public Type ProcedureType;
+        public Type ProcedureType { get; }
 
         /// <summary>当前嵌套深度</summary>
-        public int Depth;
+        public int Depth { get; }
+
+        public ProcedureExitEvent(uint uid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
     
     /// <summary>
@@ -97,19 +133,20 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public struct ProcedureTimeoutEvent
     {
-        /// <summary>
-        /// 超时的流程实例 UID
-        /// </summary>
-        public uint Uid;
+        /// <summary>超时的流程实例 UID</summary>
+        public uint Uid { get; }
         
-        /// <summary>
-        /// 流程的具体类型
-        /// </summary>
-        public Type ProcedureType;
+        /// <summary>流程的具体类型</summary>
+        public Type ProcedureType { get; }
 
-        /// <summary>
-        /// 当前嵌套深度
-        /// </summary>
-        public int Depth;
+        /// <summary>当前嵌套深度</summary>
+        public int Depth { get; }
+
+        public ProcedureTimeoutEvent(uint uid, Type procedureType, int depth)
+        {
+            Uid = uid;
+            ProcedureType = procedureType;
+            Depth = depth;
+        }
     }
 }

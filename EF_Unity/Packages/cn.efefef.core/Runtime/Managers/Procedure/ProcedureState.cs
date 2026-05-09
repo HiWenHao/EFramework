@@ -44,11 +44,6 @@ namespace EasyFramework.Managers.Procedure
         /// <summary>
         /// 退出后
         /// </summary>
-        Exited,
-        
-        /// <summary>
-        /// 超时
-        /// </summary>
-        Timeout
+        Exited
     }
 }

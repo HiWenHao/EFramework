@@ -30,11 +30,14 @@ namespace EasyFramework.Managers.Procedure
         public Type ProcedureType;                          // 流程的具体类型
         public ProcedureState State;                        // 当前状态
         public IProcedure Procedure;                        // 流程实例对象
+        public Exception ExitException;                     // 退出异常
+        public ProcedureExitType ExitReason;                // 退出原因
         public ProcedureContext Context;                    // 关联的上下文
         public Dictionary<string, object> Params;           // 启动参数（可变字典）
         public CancellationTokenSource LifecycleCts;        // 生命周期取消令牌源
         public CancellationTokenSource EnterTimeoutCts;     // 进入超时取消令牌源
         public UniTaskCompletionSource CompletionSource;    // 完成通知源，供外部等待流程退出
+        public UniTaskCompletionSource<ProcedureResult> ResultSource; // 结果源（可选，用于返回详细结果）
 
         /// <summary>
         /// 是否已退出
@@ -48,9 +51,6 @@ namespace EasyFramework.Managers.Procedure
 
         public void Reset()
         {
-            // 先递增版本，避免旧引用误判
-            RuntimeVersion++;
-
             Uid = 0;
             ExitQueued = 0;
             ParentUid = 0;
@@ -86,6 +86,9 @@ namespace EasyFramework.Managers.Procedure
                 // ignored
             }
 
+            ExitReason = ProcedureExitType.Completed;
+            ResultSource = null;
+            ExitException = null;
             EnterTimeoutCts = null;
             CompletionSource = null;
         }
