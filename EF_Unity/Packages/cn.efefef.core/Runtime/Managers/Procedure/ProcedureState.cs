@@ -16,13 +16,39 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public enum ProcedureState
     {
+        /// <summary>
+        /// 无状态
+        /// </summary>
         None,
+        
+        /// <summary>
+        /// 进入中
+        /// </summary>
         Entering,
+        
+        /// <summary>
+        /// 活跃
+        /// </summary>
         Active,
+        
+        /// <summary>
+        /// 挂起
+        /// </summary>
         Suspended,
+        
+        /// <summary>
+        /// 退出中
+        /// </summary>
         Exiting,
+        
+        /// <summary>
+        /// 退出后
+        /// </summary>
         Exited,
-        Faulted,
+        
+        /// <summary>
+        /// 超时
+        /// </summary>
         Timeout
     }
 }

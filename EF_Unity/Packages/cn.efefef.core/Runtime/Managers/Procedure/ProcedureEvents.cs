@@ -20,10 +20,13 @@ namespace EasyFramework.Managers.Procedure
     {
         /// <summary>新流程实例的唯一标识符</summary>
         public uint Uid;
-        /// <summary>父流程实例的 UID（0 表示根流程）</summary>
+
+        /// <summary>父流程实例的 Uid（0 表示根流程）</summary>
         public uint ParentUid;
+
         /// <summary>流程的具体类型</summary>
         public Type ProcedureType;
+
         /// <summary>当前嵌套深度（根深度为 1）</summary>
         public int Depth;
     }
@@ -34,10 +37,12 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public struct ProcedureActivateEvent
     {
-        /// <summary>被激活的流程实例 UID</summary>
+        /// <summary>被激活的流程实例 Uid</summary>
         public uint Uid;
+
         /// <summary>流程的具体类型</summary>
         public Type ProcedureType;
+
         /// <summary>当前嵌套深度</summary>
         public int Depth;
     }
@@ -47,10 +52,12 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public struct ProcedureSuspendEvent
     {
-        /// <summary>被挂起的流程实例 UID</summary>
+        /// <summary>被挂起的流程实例 Uid</summary>
         public uint Uid;
+
         /// <summary>流程的具体类型</summary>
         public Type ProcedureType;
+
         /// <summary>当前嵌套深度</summary>
         public int Depth;
     }
@@ -60,10 +67,12 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public struct ProcedureResumeEvent
     {
-        /// <summary>被恢复的流程实例 UID</summary>
+        /// <summary>被恢复的流程实例 Uid</summary>
         public uint Uid;
+
         /// <summary>流程的具体类型</summary>
         public Type ProcedureType;
+
         /// <summary>当前嵌套深度</summary>
         public int Depth;
     }
@@ -73,10 +82,12 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public struct ProcedureExitEvent
     {
-        /// <summary>正在退出的流程实例 UID</summary>
+        /// <summary>正在退出的流程实例 Uid</summary>
         public uint Uid;
+
         /// <summary>流程的具体类型</summary>
         public Type ProcedureType;
+
         /// <summary>当前嵌套深度</summary>
         public int Depth;
     }

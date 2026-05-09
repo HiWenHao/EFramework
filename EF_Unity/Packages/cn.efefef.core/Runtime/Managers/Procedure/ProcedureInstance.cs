@@ -8,6 +8,7 @@
  * ScriptVersion: 0.2
  * ===============================================
  */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -15,24 +16,34 @@ using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Procedure
 {
+    /// <summary>
+    /// 单流程实例
+    /// </summary>
     internal sealed class ProcedureInstance
     {
-        public uint UID;
-        public uint ParentUID;
-        public int Depth;
-        public uint RuntimeVersion;
-        public int ExitQueued;
-        public Type ProcedureType;
-        public IProcedure Procedure;
-        public ProcedureContext Context;
-        public Dictionary<string, object> Params;
-        public CancellationTokenSource LifecycleCts;
-        public CancellationTokenSource EnterTimeoutCts;
-        public ProcedureState State;
-        public int ExitState;
-        public UniTaskCompletionSource CompletionSource;
+        public uint Uid;                                    // 流程实例唯一标识符
+        public uint ParentUid;                              // 父流程实例 Uid
+        public uint RuntimeVersion;                         // 运行时版本，用于检测陈旧引用
+        public int Depth;                                   // 嵌套深度
+        public int ExitQueued;                              // 退出排队标记（0未排队，1已排队）
+        public int ExitState;                               // 是否已开始退出（0未开始，1已开始）
+        public Type ProcedureType;                          // 流程的具体类型
+        public ProcedureState State;                        // 当前状态
+        public IProcedure Procedure;                        // 流程实例对象
+        public ProcedureContext Context;                    // 关联的上下文
+        public Dictionary<string, object> Params;           // 启动参数（可变字典）
+        public CancellationTokenSource LifecycleCts;        // 生命周期取消令牌源
+        public CancellationTokenSource EnterTimeoutCts;     // 进入超时取消令牌源
+        public UniTaskCompletionSource CompletionSource;    // 完成通知源，供外部等待流程退出
 
+        /// <summary>
+        /// 是否已退出
+        /// </summary>
         public bool IsExited => ExitState != 0;
+        
+        /// <summary>
+        /// 是否处于活动状态
+        /// </summary>
         public bool IsActive => State == ProcedureState.Active;
 
         public void Reset()
@@ -40,13 +51,15 @@ namespace EasyFramework.Managers.Procedure
             // 先递增版本，避免旧引用误判
             RuntimeVersion++;
 
-            UID = 0;
+            Uid = 0;
             ExitQueued = 0;
-            ParentUID = 0;
+            ParentUid = 0;
             Depth = 0;
             ProcedureType = null;
             Procedure = null;
             Context = null;
+            ExitState = 0;
+            State = ProcedureState.None;
 
             Params?.Clear();
             Params = null;
@@ -56,7 +69,11 @@ namespace EasyFramework.Managers.Procedure
                 LifecycleCts?.Cancel();
                 LifecycleCts?.Dispose();
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
+
             LifecycleCts = null;
 
             try
@@ -64,11 +81,12 @@ namespace EasyFramework.Managers.Procedure
                 EnterTimeoutCts?.Cancel();
                 EnterTimeoutCts?.Dispose();
             }
-            catch { }
-            EnterTimeoutCts = null;
+            catch
+            {
+                // ignored
+            }
 
-            State = ProcedureState.None;
-            ExitState = 0;
+            EnterTimeoutCts = null;
             CompletionSource = null;
         }
     }

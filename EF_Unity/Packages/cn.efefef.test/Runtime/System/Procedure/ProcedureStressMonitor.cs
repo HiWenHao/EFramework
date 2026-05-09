@@ -15,15 +15,15 @@ public class ProcedureStressMonitor : MonoBehaviour
 
     private void Start()
     {
-        var mgr = ProcedureManager.Instance;
+        var mgr = ProcedureSystem.Instance;
 
-        _stackField = typeof(ProcedureManager)
+        _stackField = typeof(ProcedureSystem)
             .GetField(
                 "_instanceStack",
                 BindingFlags.NonPublic |
                 BindingFlags.Instance);
 
-        _uidField = typeof(ProcedureManager)
+        _uidField = typeof(ProcedureSystem)
             .GetField(
                 "_uidToInstance",
                 BindingFlags.NonPublic |
@@ -47,11 +47,11 @@ public class ProcedureStressMonitor : MonoBehaviour
     private void PrintStats()
     {
         var stack =
-            _stackField.GetValue(ProcedureManager.Instance)
+            _stackField.GetValue(ProcedureSystem.Instance)
                 as System.Collections.ICollection;
 
         var uidMap =
-            _uidField.GetValue(ProcedureManager.Instance)
+            _uidField.GetValue(ProcedureSystem.Instance)
                 as System.Collections.IDictionary;
 
         long memory = GC.GetTotalMemory(false);

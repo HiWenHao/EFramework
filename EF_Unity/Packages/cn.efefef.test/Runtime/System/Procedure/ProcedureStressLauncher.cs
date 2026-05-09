@@ -23,13 +23,13 @@ public class ProcedureStressLauncher : MonoBehaviour
     {
         await UniTask.DelayFrame(5);
 
-        var mgr = ProcedureManager.Instance;
+        var mgr = ProcedureSystem.Instance;
 
         // 注册
         mgr.Register<CommercialStressProcedure>();
 
         // 缩短超时便于测试
-        var field = typeof(ProcedureManager)
+        var field = typeof(ProcedureSystem)
             .GetField(
                 "defaultTimeoutSeconds",
                 System.Reflection.BindingFlags.NonPublic |
@@ -70,7 +70,7 @@ public class ProcedureStressLauncher : MonoBehaviour
         Debug.Log("等待剩余流程结束...");
 
         await UniTask.WaitUntil(
-            () => !ProcedureManager.Instance.HasRunningProcedure);
+            () => !ProcedureSystem.Instance.HasRunningProcedure);
 
         Debug.Log(
             "<color=green>========== 全部流程结束 =========</color>");
@@ -93,7 +93,7 @@ public class ProcedureStressLauncher : MonoBehaviour
     {
         try
         {
-            await ProcedureManager.Instance.Switch
+            await ProcedureSystem.Instance.Switch
                 <CommercialStressProcedure>(
                     new Dictionary<string, object>
                     {

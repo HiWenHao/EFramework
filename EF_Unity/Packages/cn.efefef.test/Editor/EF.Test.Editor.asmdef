@@ -1,0 +1,16 @@
+{
+    "name": "EF.Test.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a4a7eea321f5a024bb7118f90940975f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

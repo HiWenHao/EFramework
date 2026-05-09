@@ -14,9 +14,9 @@ public class ProcedureTestSuite : MonoBehaviour
         await UniTask.Yield();
         await UniTask.Yield();
         // 临时将默认超时改为 3 秒以便测试超时（也可以不改，但需要等待 300 秒）
-        // 注意：ProcedureManager 的 defaultTimeoutSeconds 是 private，这里通过反射修改（仅测试用）
-        var mgr = ProcedureManager.Instance;
-        var field = typeof(ProcedureManager).GetField("defaultTimeoutSeconds", 
+        // 注意：ProcedureSystem 的 defaultTimeoutSeconds 是 private，这里通过反射修改（仅测试用）
+        var mgr = ProcedureSystem.Instance;
+        var field = typeof(ProcedureSystem).GetField("defaultTimeoutSeconds", 
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         if (field != null) field.SetValue(mgr, 3f);
 
@@ -92,7 +92,7 @@ public class ProcedureTestSuite : MonoBehaviour
         protected override async UniTask OnEnterAsync()
         {
             _myId = ++_instanceCount;
-            Debug.Log($"[Deep#{_myId}] 进入，Depth={Depth}, UID={UID}");
+            Debug.Log($"[Deep#{_myId}] 进入，Depth={Depth}, Uid={Uid}");
             // 如果是第一次进入的 DeepProcedure（ID=1），等待 2 秒后自动退出
             if (_myId == 1)
             {

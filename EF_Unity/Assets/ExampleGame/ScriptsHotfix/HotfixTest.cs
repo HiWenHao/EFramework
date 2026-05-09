@@ -49,7 +49,7 @@ namespace EFExample
             for (int i = 0; i < 20; i++)
             {
                 await UniTask.WaitForSeconds(0.1f);
-                D.Warning(i);
+                //D.Warning(i);
                 await EF.Ui.ShowPopupView($"\t{i}\tIndex");
             }
         }

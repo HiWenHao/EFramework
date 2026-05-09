@@ -8,6 +8,7 @@
  * ScriptVersion: 0.8
  * ===============================================
  */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,43 +18,52 @@ using UnityEngine;
 
 namespace EasyFramework.Managers.Procedure
 {
-    public sealed class ProcedureManager : MonoSingleton<ProcedureManager>, IManager, IUpdate
+    /// <summary>
+    /// 流程系统
+    /// </summary>
+    public sealed class ProcedureSystem : MonoSingleton<ProcedureSystem>, IManager, IUpdate
     {
-        private uint _nextUid = 1;
-        private bool _isClearing;
-        private bool _processingExit;
-        private readonly Stack<ProcedureInstance> _instanceStack = new();
-        private readonly Dictionary<uint, ProcedureInstance> _uidToInstance = new();
-        private readonly Dictionary<Type, Func<IProcedure>> _factories = new();
-        private readonly Queue<ProcedureInstance> _pendingExits = new();
 
-        [SerializeField] private int maxDepth = 100;
-        [SerializeField] private int maxChainRepeat = 5;
-        [SerializeField] private float defaultTimeoutSeconds = 300f;
+        [SerializeField] 
+        private int maxDepth = 100;                    // 最大嵌套深度限制
+        [SerializeField]
+        private int maxChainRepeat = 5;                // 链式同类型重复最大次数
+        [SerializeField] 
+        private float defaultTimeoutSeconds = 300f;    // 进入流程默认超时时间（秒）
+        
+        private uint _nextUid = 1;          // 下一个可用的流程 Uid
+        private bool _openDebug;            // 是否开启调试日志
+        private bool _isClearing;           // 是否正在清空流程栈（Switch 期间）
+        private bool _processingExit;       // 是否正在处理退出队列（防止重入）
+        private Queue<ProcedureInstance> _pendingExits;             // 待退出的流程队列
+        private Stack<ProcedureInstance> _instanceStack;            // 流程实例栈（栈顶为当前活动流程）
+        private Dictionary<Type, Func<IProcedure>> _factories;      // 类型 -> 工厂方法
+        private Dictionary<uint, ProcedureInstance> _uidToInstance; // Uid -> 流程实例 映射
 
+        /// <summary>
+        /// 是否有正在运行的流程
+        /// <para>Whether there is a running procedure</para>
+        /// </summary>
         public bool HasRunningProcedure => _instanceStack.Count > 0;
 
-        void ISingleton.Init() => InitPools();
-        void ISingleton.Quit() => ForceClear();
-
-        private void InitPools()
+        void ISingleton.Init()
         {
+            _pendingExits =  new Queue<ProcedureInstance>();
+            _instanceStack =  new Stack<ProcedureInstance>();
+            _factories = new Dictionary<Type, Func<IProcedure>>();
+            _uidToInstance = new Dictionary<uint, ProcedureInstance>();
+            
             var pool = PoolManager.Instance;
-            pool.CreateObjectPool<ProcedureInstance>(4096,
-                () => new ProcedureInstance(),
-                x => x.Reset());
-            pool.CreateObjectPool<ProcedureContext>(4096,
-                () => new ProcedureContext(),
-                x => x.Reset());
-            pool.CreateObjectPool<Dictionary<string, object>>(4096,
-                () => new Dictionary<string, object>(8),
-                x => x.Clear());
+            pool.CreateObjectPool(4096,() => new ProcedureContext(),x => x.Reset());
+            pool.CreateObjectPool(4096,() => new ProcedureInstance(),x => x.Reset());
+            pool.CreateObjectPool(4096,() => new Dictionary<string, object>(8),x => x.Clear());
         }
 
+        //  驱动当前活动流程并处理待退出队列
         void IUpdate.Update(float elapse, float realElapse)
         {
             var inst = GetActiveInstance();
-            if (inst != null && inst.IsActive)
+            if (inst is { IsActive: true })
             {
                 try
                 {
@@ -61,19 +71,71 @@ namespace EasyFramework.Managers.Procedure
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    Error(e);
                     RequestExit(inst);
                 }
             }
 
             ProcessPendingExits().Forget();
         }
+        
+        void ISingleton.Quit()
+        {
+            _pendingExits.Clear();
+            _processingExit = false;
+            _isClearing = false;
+    
+            while (_instanceStack.Count > 0)
+            {
+                var inst = _instanceStack.Pop();
+                CancelTimeoutSafe(inst);
+                try
+                {
+                    if (inst.Context != null)
+                    {
+                        inst.Context.IsDisposed = true;
+                        PoolManager.Instance.ReturnToPool(inst.Context);
+                        inst.Context = null;
+                    }
 
+                    if (inst.Params != null)
+                    {
+                        PoolManager.Instance.ReturnToPool(inst.Params);
+                        inst.Params = null;
+                    }
+                }
+                catch (Exception e) { Error(e); }
+                inst.CompletionSource?.TrySetResult();
+                if (inst.State == ProcedureState.None) 
+                    continue;
+                
+                inst.Reset();
+                PoolManager.Instance.ReturnToPool(inst);
+            }
+            _instanceStack.Clear();
+            _uidToInstance.Clear();
+            _factories.Clear();
+            
+            _openDebug = false;
+            _nextUid = 1;
+        }
+
+        /// <summary>
+        /// 注册流程类型
+        /// <para>Register procedure type (using parameterless constructor)</para>
+        /// </summary>
+        /// <typeparam name="T">流程类型，必须有无参构造函数</typeparam>
         public void Register<T>() where T : IProcedure, new()
         {
             _factories[typeof(T)] = () => new T();
         }
 
+        /// <summary>
+        /// 注册流程类型
+        /// <para>Register procedure type (using custom factory delegate)</para>
+        /// </summary>
+        /// <param name="factory">创建流程实例的工厂方法</param>
+        /// <typeparam name="T">流程类型</typeparam>
         public void Register<T>(Func<T> factory) where T : IProcedure
         {
             _factories[typeof(T)] = () => factory();
@@ -81,7 +143,11 @@ namespace EasyFramework.Managers.Procedure
 
         /// <summary>
         /// 启动一个新的根流程（先同步清空当前流程栈）
+        /// <para>Start a new root procedure (clear current stack synchronously first)</para>
         /// </summary>
+        /// <param name="parameters">启动参数</param>
+        /// <typeparam name="T">根流程类型</typeparam>
+        /// <returns>异步操作，等待根流程完全结束后返回</returns>
         public async UniTask Switch<T>(Dictionary<string, object> parameters = null) where T : IProcedure
         {
             _isClearing = true;
@@ -104,33 +170,70 @@ namespace EasyFramework.Managers.Procedure
 
         /// <summary>
         /// 供 ProcedureContext 调用，启动子流程并等待其完全退出
+        /// <para>Called by ProcedureContext to start a sub-procedure and wait for its full exit</para>
         /// </summary>
-        internal async UniTask StartSubProcedureAndWait<T>(ProcedureContext parentCtx,
-            Dictionary<string, object> parameters) where T : IProcedure
+        /// <param name="parentCtx">父流程上下文</param>
+        /// <param name="parameters">启动参数</param>
+        /// <typeparam name="T">子流程类型</typeparam>
+        /// <returns>异步操作，等待子流程完全退出</returns>
+        internal async UniTask StartSubProcedureAndWait<T>(ProcedureContext parentCtx, Dictionary<string, object> parameters) where T : IProcedure
         {
-            var parentInst = GetInstanceByUid(parentCtx.UID);
-            if (parentInst == null || !_uidToInstance.ContainsKey(parentCtx.UID) || parentInst.ExitState != 0)
+            var parentInst = GetInstanceByUid(parentCtx.Uid);
+            if (parentInst == null || !_uidToInstance.ContainsKey(parentCtx.Uid) || parentInst.ExitState != 0)
             {
-                Debug.LogError("Parent procedure not found or already exited.");
+                Error("Parent procedure not found or already exited.");
                 return;
             }
 
             if (parentInst.State != ProcedureState.Active && parentInst.State != ProcedureState.Entering)
             {
-                Debug.LogError("Parent procedure is not active.");
+                Error("Parent procedure is not active.");
                 return;
             }
 
+            // 记录启动前的活动实例（应为父流程）
+            var previousTop = GetActiveInstance();
+            
+            // 挂起父流程
             SuspendInstance(parentInst);
-            await StartProcedureInternal(typeof(T), parameters, parentCtx.UID, true);
+            
+            try
+            {
+                // 尝试启动子流程
+                await StartProcedureInternal(typeof(T), parameters, parentCtx.Uid, true);
+            }
+            finally
+            {
+                // 检查子流程是否成功启动并成为新的栈顶
+                var currentTop = GetActiveInstance();
+                // 如果当前栈顶还是原来的父流程，说明子流程未能启动（或同步失败且未入栈），需要恢复父流程
+                if (currentTop == previousTop && parentInst.State == ProcedureState.Suspended)
+                {
+                    // 恢复父流程
+                    parentInst.State = ProcedureState.Active;
+                    EF.Events.Publish(new ProcedureResumeEvent
+                    {
+                        Uid = parentInst.Uid,
+                        ProcedureType = parentInst.ProcedureType,
+                        Depth = parentInst.Depth
+                    });
+                    Warning($"Sub-procedure {typeof(T).Name} failed to start, parent procedure resumed.");
+                }
+            }
         }
 
+        /// <summary>
+        /// 结束当前流程（主动退出），由上下文调用
+        /// <para>End current procedure (voluntary exit), called by context</para>
+        /// </summary>
+        /// <param name="ctx">当前流程上下文</param>
+        /// <returns>异步操作，等待流程完全退出</returns>
         internal async UniTask EndProcedureInternal(ProcedureContext ctx)
         {
             var inst = GetActiveInstance();
-            if (inst == null || inst.UID != ctx.UID)
+            if (inst == null || inst.Uid != ctx.Uid)
             {
-                Debug.LogError("EndProcedure mismatch: not the active instance.");
+                Error("EndProcedure mismatch: not the active instance.");
                 return;
             }
 
@@ -140,36 +243,43 @@ namespace EasyFramework.Managers.Procedure
                 await completion.Task;
         }
 
+        /// <summary>
+        /// 根据 Uid 获取内部实例（供上下文检查释放状态）
+        /// <para>Get internal instance by Uid (for context disposal check)</para>
+        /// </summary>
+        /// <param name="uid">实例 Uid</param>
+        /// <returns>流程实例，可能为 null</returns>
         internal ProcedureInstance GetInstanceByUidInternal(uint uid)
         {
             return GetInstanceByUid(uid);
         }
 
+        // 启动流程内部逻辑
         private async UniTask StartProcedureInternal(Type targetType,
             Dictionary<string, object> parameters, uint parentUid, bool waitForExit)
         {
             int newDepth = parentUid == 0 ? 1 : (GetInstanceByUid(parentUid)?.Depth + 1 ?? 1);
             if (newDepth > maxDepth)
             {
-                Debug.LogError($"MaxDepth reached: {targetType.Name}");
+                Error($"MaxDepth reached: {targetType.Name}");
                 return;
             }
 
             if (parentUid != 0 && WouldExceedChainLimit(targetType, parentUid))
             {
-                Debug.LogError("Chain limit exceeded");
+                Error("Chain limit exceeded");
                 return;
             }
 
             if (!_factories.TryGetValue(targetType, out var factory))
             {
-                Debug.LogError($"Unregistered Procedure: {targetType}");
+                Error($"Unregistered Procedure: {targetType}");
                 return;
             }
 
             var inst = PoolManager.Instance.GetFromPool<ProcedureInstance>();
-            inst.UID = _nextUid++;
-            inst.ParentUID = parentUid;
+            inst.Uid = _nextUid++;
+            inst.ParentUid = parentUid;
             inst.Depth = newDepth;
             inst.ProcedureType = targetType;
             inst.Procedure = factory();
@@ -186,8 +296,8 @@ namespace EasyFramework.Managers.Procedure
             inst.Params = paramDict;
 
             var ctx = PoolManager.Instance.GetFromPool<ProcedureContext>();
-            ctx.UID = inst.UID;
-            ctx.ParentUID = parentUid;
+            ctx.Uid = inst.Uid;
+            ctx.ParentUid = parentUid;
             ctx.Depth = newDepth;
             ctx.RuntimeVersion = inst.RuntimeVersion;
             ctx.Params = paramDict;
@@ -197,11 +307,11 @@ namespace EasyFramework.Managers.Procedure
             inst.EnterTimeoutCts = new CancellationTokenSource();
 
             _instanceStack.Push(inst);
-            _uidToInstance[inst.UID] = inst;
+            _uidToInstance[inst.Uid] = inst;
 
             EF.Events.Publish(new ProcedureEnterEvent
             {
-                Uid = inst.UID,
+                Uid = inst.Uid,
                 ParentUid = parentUid,
                 ProcedureType = targetType,
                 Depth = newDepth
@@ -219,7 +329,7 @@ namespace EasyFramework.Managers.Procedure
                     CancelTimeoutSafe(inst);
                     EF.Events.Publish(new ProcedureActivateEvent
                     {
-                        Uid = inst.UID,
+                        Uid = inst.Uid,
                         ProcedureType = targetType,
                         Depth = newDepth
                     });
@@ -231,7 +341,7 @@ namespace EasyFramework.Managers.Procedure
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                Error(e);
                 RequestExit(inst);
                 return;
             }
@@ -244,6 +354,7 @@ namespace EasyFramework.Managers.Procedure
             }
         }
 
+        // 挂起指定实例（暂停更新）
         private void SuspendInstance(ProcedureInstance inst)
         {
             if (inst.State != ProcedureState.Active && inst.State != ProcedureState.Entering)
@@ -253,12 +364,13 @@ namespace EasyFramework.Managers.Procedure
             CancelTimeoutSafe(inst);
             EF.Events.Publish(new ProcedureSuspendEvent
             {
-                Uid = inst.UID,
+                Uid = inst.Uid,
                 ProcedureType = inst.ProcedureType,
                 Depth = inst.Depth
             });
         }
 
+        // 请求退出指定实例（加入待退出队列）
         private void RequestExit(ProcedureInstance inst)
         {
             if (inst == null) return;
@@ -268,6 +380,7 @@ namespace EasyFramework.Managers.Procedure
             _pendingExits.Enqueue(inst);
         }
 
+        // 处理待退出队列
         private async UniTaskVoid ProcessPendingExits()
         {
             if (_processingExit) return;
@@ -280,14 +393,13 @@ namespace EasyFramework.Managers.Procedure
                     var inst = _pendingExits.Dequeue();
                     if (inst == null) continue;
 
-                    // 由 PopAndResumeInternal 统一处理幂等与退出逻辑
                     try
                     {
                         await PopAndResumeInternal(inst);
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError(e);
+                        Error(e);
                     }
                 }
             }
@@ -297,9 +409,7 @@ namespace EasyFramework.Managers.Procedure
             }
         }
 
-        /// <summary>
-        /// 执行退出并清理实例（幂等，可处理已退出实例的回收）
-        /// </summary>
+        // 执行退出并清理实例（幂等，可处理已退出实例的回收）
         private async UniTask PopAndResumeInternal(ProcedureInstance inst)
         {
             if (inst == null) return;
@@ -312,7 +422,7 @@ namespace EasyFramework.Managers.Procedure
 
                 EF.Events.Publish(new ProcedureExitEvent
                 {
-                    Uid = inst.UID,
+                    Uid = inst.Uid,
                     ProcedureType = inst.ProcedureType,
                     Depth = inst.Depth
                 });
@@ -324,7 +434,7 @@ namespace EasyFramework.Managers.Procedure
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    Error(e);
                 }
             }
 
@@ -337,11 +447,11 @@ namespace EasyFramework.Managers.Procedure
             }
             else
             {
-                Debug.LogError(
-                    $"Illegal non-top exit detected. UID={inst.UID}, Type={inst.ProcedureType?.Name}. " +
+                Error(
+                    $"Illegal non-top exit detected. Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. " +
                     "Instance will be removed from lookup but stack structure preserved.");
                 // 不破坏栈，标记为僵尸，由后续 GetActiveInstance 清理
-                _uidToInstance.Remove(inst.UID);
+                _uidToInstance.Remove(inst.Uid);
                 if (inst.Context != null)
                 {
                     inst.Context.IsDisposed = true;
@@ -361,7 +471,7 @@ namespace EasyFramework.Managers.Procedure
             }
 
             // 正常从栈顶移除后的回收
-            _uidToInstance.Remove(inst.UID);
+            _uidToInstance.Remove(inst.Uid);
 
             if (inst.Context != null)
             {
@@ -398,7 +508,7 @@ namespace EasyFramework.Managers.Procedure
                         parent.State = ProcedureState.Active;
                         EF.Events.Publish(new ProcedureResumeEvent
                         {
-                            Uid = parent.UID,
+                            Uid = parent.Uid,
                             ProcedureType = parent.ProcedureType,
                             Depth = parent.Depth
                         });
@@ -407,12 +517,13 @@ namespace EasyFramework.Managers.Procedure
             }
         }
 
+        // 清理栈顶已退出的僵尸实例
         private void CleanupZombiesAtTop()
         {
             while (_instanceStack.Count > 0)
             {
                 var top = _instanceStack.Peek();
-                if (top == null || top.State != ProcedureState.Exited)
+                if (top is not { State: ProcedureState.Exited })
                     break;
 
                 _instanceStack.Pop();
@@ -422,11 +533,7 @@ namespace EasyFramework.Managers.Procedure
             }
         }
 
-        private UniTask PopAndResumeAsync(ProcedureInstance inst)
-        {
-            return PopAndResumeInternal(inst);
-        }
-
+        // 超时监控
         private async UniTask TimeoutAsync(ProcedureInstance inst)
         {
             uint version = inst.RuntimeVersion;
@@ -441,18 +548,24 @@ namespace EasyFramework.Managers.Procedure
                 if (inst.State != ProcedureState.Entering) return;
 
                 inst.State = ProcedureState.Timeout;
-                Debug.LogWarning($"Procedure Timeout: {inst.UID}");
+                Warning($"Procedure Timeout: {inst.Uid}");
                 RequestExit(inst);
             }
             catch (OperationCanceledException) { }
-            catch (Exception e) { Debug.LogError(e); }
+            catch (Exception e) { Error(e); }
         }
 
+        // 安全取消超时
         private void CancelTimeoutSafe(ProcedureInstance inst)
         {
-            try { inst.EnterTimeoutCts?.Cancel(); } catch { }
+            try { inst.EnterTimeoutCts?.Cancel(); }
+            catch
+            {
+                // ignored
+            }
         }
 
+        // 检查链式重复限制
         private bool WouldExceedChainLimit(Type targetType, uint parentUid)
         {
             int count = 0;
@@ -462,55 +575,36 @@ namespace EasyFramework.Managers.Procedure
                 var inst = GetInstanceByUid(uid);
                 if (inst == null) break;
                 if (inst.ProcedureType == targetType) count++;
-                uid = inst.ParentUID;
+                uid = inst.ParentUid;
             }
             return count >= maxChainRepeat;
         }
 
+        // 获取当前活动实例（栈顶）
         private ProcedureInstance GetActiveInstance()
         {
             CleanupZombiesAtTop();
             return _instanceStack.Count > 0 ? _instanceStack.Peek() : null;
         }
 
+        // 根据 Uid 获取实例
         private ProcedureInstance GetInstanceByUid(uint uid)
         {
             _uidToInstance.TryGetValue(uid, out var inst);
             return inst;
         }
 
-        private void ForceClear()
+        // 输出警告日志
+        private void Warning(string msg)
         {
-            _pendingExits.Clear();
-            _processingExit = false;
-            while (_instanceStack.Count > 0)
-            {
-                var inst = _instanceStack.Pop();
-                CancelTimeoutSafe(inst);
-                try
-                {
-                    if (inst.Context != null)
-                    {
-                        inst.Context.IsDisposed = true;
-                        PoolManager.Instance.ReturnToPool(inst.Context);
-                        inst.Context = null;
-                    }
-
-                    if (inst.Params != null)
-                    {
-                        PoolManager.Instance.ReturnToPool(inst.Params);
-                        inst.Params = null;
-                    }
-                }
-                catch (Exception e) { Debug.LogError(e); }
-                inst.CompletionSource?.TrySetResult();
-                if (inst.State != ProcedureState.None)
-                {
-                    inst.Reset();
-                    PoolManager.Instance.ReturnToPool(inst);
-                }
-            }
-            _uidToInstance.Clear();
+            if (_openDebug)
+                D.Warning(msg);
+        }
+        // 输出错误日志
+        private void Error(object msg)
+        {
+            if (_openDebug)
+                D.Error(msg);
         }
     }
 }
