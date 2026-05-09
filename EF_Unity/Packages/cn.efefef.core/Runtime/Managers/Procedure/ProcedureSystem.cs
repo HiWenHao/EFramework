@@ -158,6 +158,9 @@ namespace EasyFramework.Managers.Procedure
         public async UniTask Switch<T>(Dictionary<string, object> parameters = null) where T : IProcedure
         {
             _isClearing = true;
+            // 抢占退出处理权，并清空待处理队列
+            Interlocked.Exchange(ref _processingExit, 1);
+            while (_pendingExits.TryDequeue(out _)) { } // 清空队列
             try
             {
                 while (_instanceStack.Count > 0)
@@ -169,7 +172,8 @@ namespace EasyFramework.Managers.Procedure
             finally
             {
                 _isClearing = false;
-                CleanupZombiesAtTop(); // 保证栈底干净
+                Interlocked.Exchange(ref _processingExit, 0);
+                CleanupZombiesAtTop();
             }
 
             await StartProcedureInternal(typeof(T), parameters, 0, false, null);
@@ -213,17 +217,16 @@ namespace EasyFramework.Managers.Procedure
             var resultSource = new UniTaskCompletionSource<ProcedureResult>();
             bool started = await StartProcedureInternal(typeof(T), parameters, parentCtx.Uid, true, resultSource);
 
-            // 等待子流程退出结果
             if (started) 
                 return await resultSource.Task;
             
-            // 未能入栈，立即恢复父流程并返回失败结果
-            if (parentInst.State != ProcedureState.Suspended)
-                return new ProcedureResult(false, ProcedureExitType.NotRegistered);
-                
-            parentInst.State = ProcedureState.Active;
-            EF.Events.Publish(new ProcedureResumeEvent(parentInst.Uid, parentInst.ProcedureType, parentInst.Depth));
-            return new ProcedureResult(false, ProcedureExitType.NotRegistered); // 具体原因会在内部设置，这里简化
+            if (parentInst.State == ProcedureState.Suspended)
+            {
+                parentInst.State = ProcedureState.Active;
+                EF.Events.Publish(new ProcedureResumeEvent(parentInst.Uid, parentInst.ProcedureType, parentInst.Depth));
+            }
+
+            return new ProcedureResult(false, ProcedureExitType.NotRegistered);
         }
 
         /// <summary>
@@ -330,7 +333,7 @@ namespace EasyFramework.Managers.Procedure
                 ctx.Depth = newDepth;
                 inst.RuntimeVersion = ++_runtimeVersionSeed;
                 ctx.RuntimeVersion = inst.RuntimeVersion;
-                ctx.Params = paramDict;
+                ctx.Params = new System.Collections.ObjectModel.ReadOnlyDictionary<string, object>(paramDict);
                 inst.Context = ctx;
 
                 inst.LifecycleCts = new CancellationTokenSource();
@@ -364,13 +367,12 @@ namespace EasyFramework.Managers.Procedure
                         : ProcedureExitType.Cancelled;
                     RequestExit(inst, reason, e);
                     await ProcessPendingExits();
+                    return true;
                 }
-                else
-                {
-                    // 未入栈就取消（极端边缘情况），清理资源
-                    CleanupResources(inst, paramDict, ctx);
-                    return false;
-                }
+                
+                // 未入栈就取消（极端边缘情况），清理资源
+                CleanupResources(inst, paramDict, ctx);
+                return false;
             }
             catch (Exception e)
             {
@@ -382,12 +384,10 @@ namespace EasyFramework.Managers.Procedure
                     await ProcessPendingExits();
                     return true;    // 已入栈，退出流程会接管后续
                 }
-                else
-                {
-                    // 未入栈异常（factory() / 池分配等），安全清理并通知调用方启动失败
-                    CleanupResources(inst, paramDict, ctx);
-                    return false;
-                }
+                
+                // 未入栈异常（factory() / 池分配等），安全清理并通知调用方启动失败
+                CleanupResources(inst, paramDict, ctx);
+                return false;
             }
 
             // 等待子流程完全退出（如果调用方需要）
@@ -413,20 +413,10 @@ namespace EasyFramework.Managers.Procedure
                 PoolManager.Instance.ReturnToPool(paramDict);
             }
 
-            if (inst == null)
-                return;
+            if (inst == null) return;
 
-            inst.CompletionSource?.TrySetResult();
-            if (inst.CompletionSource is { Task: { Status: UniTaskStatus.Pending } })
-            {
-                D.Error($"Procedure UID={inst.Uid} CompletionSource not completed during cleanup! Force complete.");
-                inst.CompletionSource.TrySetResult();
-            }
-            if (inst.ResultSource is { Task: { Status: UniTaskStatus.Pending } })
-            {
-                D.Error($"Procedure UID={inst.Uid} ResultSource not completed during cleanup! Force failure.");
-                inst.ResultSource.TrySetResult(new ProcedureResult(false, ProcedureExitType.Cancelled));
-            }
+            // 【移除】对 CompletionSource 和 ResultSource 的强制结束
+            // 因为此时流程未入栈，外部不会等待这些源，且错误原因未知，强制设置会掩盖真实情况。
 
             inst.Reset();
             PoolManager.Instance.ReturnToPool(inst);
@@ -451,7 +441,7 @@ namespace EasyFramework.Managers.Procedure
             if (Interlocked.Exchange(ref inst.ExitQueued, 1) == 1) return;
 
             var top = GetActiveInstance();
-            if (inst != top && inst.State != ProcedureState.Entering)
+            if (inst != top)
             {
                 D.Error($"Attempt to exit non-top procedure Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Request ignored.");
                 Interlocked.Exchange(ref inst.ExitQueued, 0);
@@ -510,13 +500,16 @@ namespace EasyFramework.Managers.Procedure
                 D.Error($"FATAL: Attempt to exit non-top instance Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Exit denied.");
                 return; // 拒绝，防止破坏栈结构
             }
-            
+
             // 首次退出标记，负责执行 OnLeave 及发布事件
             if (Interlocked.Exchange(ref inst.ExitState, 1) == 0)
             {
                 inst.State = ProcedureState.Exiting;
+                // 如果调用者指定了非 Completed 的原因（例如 Switch 时传入 Cancelled），应覆盖默认值
+                if (defaultReason != ProcedureExitType.Completed)
+                    inst.ExitReason = defaultReason;
+                
                 CancelTimeoutSafe(inst);
-
                 EF.Events.Publish(new ProcedureExitEvent(inst.Uid, inst.ProcedureType, inst.Depth));
 
                 try
@@ -524,14 +517,13 @@ namespace EasyFramework.Managers.Procedure
                     inst.LifecycleCts?.Cancel();
 
                     using var leaveCts = new CancellationTokenSource();
-                    var leaveTimeout = TimeSpan.FromSeconds(leaveTimeoutSeconds);
-                    leaveCts.CancelAfter(leaveTimeout);
-                    
+                    leaveCts.CancelAfter(TimeSpan.FromSeconds(leaveTimeoutSeconds));
                     try
                     {
-                        await inst.Procedure.OnLeave(CancellationToken.None).Timeout(TimeSpan.FromSeconds(leaveTimeoutSeconds));
+                        // 使用 leaveCts.Token，让 OnLeave 能响应超时取消
+                        await inst.Procedure.OnLeave(leaveCts.Token);
                     }
-                    catch (TimeoutException)
+                    catch (OperationCanceledException) when (leaveCts.IsCancellationRequested)
                     {
                         D.Error($"OnLeave timeout for procedure UID={inst.Uid}, Type={inst.ProcedureType?.Name}. Force exiting.");
                     }
@@ -554,51 +546,26 @@ namespace EasyFramework.Managers.Procedure
                 }
             }
 
-            // 以下为清理和栈移除（无论首次还是重复调用均执行）
-            bool isTop = _instanceStack.Count > 0 && _instanceStack.Peek() == inst;
+            // 此时一定是栈顶，安全弹出并清理
+            _instanceStack.Pop();
 
-            if (isTop)
+            inst.CompletionSource?.TrySetResult();
+            var result = new ProcedureResult(
+                inst.ExitReason == ProcedureExitType.Completed,
+                inst.ExitReason,
+                inst.ExitException);
+            inst.ResultSource?.TrySetResult(result);
+
+            if (inst.Context != null)
             {
-                _instanceStack.Pop();
+                inst.Context.IsDisposed = true;
+                PoolManager.Instance.ReturnToPool(inst.Context);
+                inst.Context = null;
             }
-            else
+            if (inst.Params != null)
             {
-                D.Error($"Illegal non-top exit detected. Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. "
-                        + "Instance will be removed from lookup but stack structure preserved.");
-                if (inst.Context != null)
-                {
-                    inst.Context.IsDisposed = true;
-                    PoolManager.Instance.ReturnToPool(inst.Context);
-                    inst.Context = null;
-                }
-
-                if (inst.Params != null)
-                {
-                    PoolManager.Instance.ReturnToPool(inst.Params);
-                    inst.Params = null;
-                }
-
-                inst.CompletionSource?.TrySetResult();
-                // 设置结果（如果有 ResultSource）
-                if (inst.ResultSource != null)
-                {
-                    // 根据实际情况构造结果，这里简化
-                    var result = new ProcedureResult(false, ProcedureExitType.Cancelled);
-                    inst.ResultSource.TrySetResult(result);
-                }
-                return;
-            }
-
-            if (inst.CompletionSource is { Task: { Status: UniTaskStatus.Pending } })
-            {
-                D.Error($"Procedure UID={inst.Uid} CompletionSource not completed before recycle! Force complete.");
-                inst.CompletionSource.TrySetResult();
-            }
-
-            if (inst.ResultSource is { Task: { Status: UniTaskStatus.Pending } })
-            {
-                D.Error($"Procedure UID={inst.Uid} ResultSource not completed before recycle! Force failure.");
-                inst.ResultSource.TrySetResult(new ProcedureResult(false, ProcedureExitType.Cancelled));
+                PoolManager.Instance.ReturnToPool(inst.Params);
+                inst.Params = null;
             }
 
             if (inst.State != ProcedureState.None)
@@ -610,7 +577,6 @@ namespace EasyFramework.Managers.Procedure
             if (!_isClearing && _instanceStack.Count > 0)
             {
                 CleanupZombiesAtTop();
-
                 if (_instanceStack.Count > 0)
                 {
                     var parent = _instanceStack.Peek();
@@ -623,21 +589,6 @@ namespace EasyFramework.Managers.Procedure
             }
         }
         
-        // 辅助方法：从栈中移除指定实例（保留栈顺序）
-        private void RemoveInstanceFromStack(ProcedureInstance target)
-        {
-            var temp = new Stack<ProcedureInstance>();
-            while (_instanceStack.TryPop(out var current))
-            {
-                if (current == target) break;
-                temp.Push(current);
-            }
-            while (temp.TryPop(out var restored))
-                _instanceStack.Push(restored);
-            // 清理栈顶可能残留的僵尸
-            CleanupZombiesAtTop();
-        }
-
         // 清理栈顶已退出的僵尸实例
         private void CleanupZombiesAtTop()
         {
@@ -715,7 +666,8 @@ namespace EasyFramework.Managers.Procedure
         // 在栈中按 Uid 查找实例（O(n)，n 很小）
         private ProcedureInstance FindInstance(long uid)
         {
-            foreach (var inst in _instanceStack)
+            var snapshot = _instanceStack.ToArray();
+            foreach (var inst in snapshot)
             {
                 if (inst.Uid == uid)
                     return inst;

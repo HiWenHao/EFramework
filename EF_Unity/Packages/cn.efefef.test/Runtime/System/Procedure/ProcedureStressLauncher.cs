@@ -35,7 +35,7 @@ public class ProcedureStressLauncher : MonoBehaviour
                 System.Reflection.BindingFlags.NonPublic |
                 System.Reflection.BindingFlags.Instance);
 
-        field?.SetValue(mgr, 8f);
+        field?.SetValue(mgr, 0.2f);
 
         Debug.Log(
             "<color=yellow>========== PROCEDURE STRESS TEST START =========</color>");
