@@ -10,10 +10,9 @@
  */
 
 using EasyFramework;
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.UI;
 using UnityEngine;
 using UnityEngine.UI;
 

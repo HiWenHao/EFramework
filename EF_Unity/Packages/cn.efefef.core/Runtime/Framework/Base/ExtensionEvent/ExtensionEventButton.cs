@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace EasyFramework.UI
+namespace EasyFramework.Systems.Ui
 {
     /// <summary>
     /// Extension button event.扩展按钮事件

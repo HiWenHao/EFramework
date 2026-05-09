@@ -10,11 +10,8 @@
  */
 
 using EasyFramework;
-using EasyFramework.UI;
-using System.Collections.Generic;
-using EasyFramework.Managers.UI;
+using EasyFramework.Systems.Ui;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace EFExample
 {

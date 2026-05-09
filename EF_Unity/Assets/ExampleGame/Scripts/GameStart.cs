@@ -14,7 +14,7 @@ using Luban;
 using SimpleJSON;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Assets;
+using EasyFramework.Systems.Assets;
 using UnityEngine;
 using YooAsset;
 
@@ -140,12 +140,8 @@ namespace EFExample
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
             await EF.Patch.StartUpdatePatch(PlayMode);
-            await EF.Assets.ConfirmAssetsManagerType(AssetsManagerType.YooAsset);
-            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
-                ? EF.Projects.AppConst.AudioPath + "Haoheng"
-                : "Haoheng";
-            AudioClip clip = await EF.Assets.LoadAsync<AudioClip>(path);
-            EF.Audio.Play2DEffectSouceByClip(clip);
+            await EF.Assets.ConfirmAssetsManagerType(AssetsSystemType.YooAsset);
+            EF.Audio.Play2DEffectSouceByName("Haoheng");
             LoadMetadataForAOTAssemblies();
         }
 

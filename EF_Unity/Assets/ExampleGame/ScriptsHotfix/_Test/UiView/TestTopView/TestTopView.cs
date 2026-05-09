@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:      Please modify the description..
+ * Describe:      Please modify the description.
  * Author:        Alvin8412
  * CreationTime:  2026-04-24 21:45:15
  * ModifyAuthor:  Alvin8412
@@ -10,10 +10,9 @@
  */
 
 using EasyFramework;
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.UI;
 using UnityEngine;
 using UnityEngine.UI;
 

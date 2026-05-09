@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 using UnityEngine;
 
 public class ProcedureTestSuite : MonoBehaviour
@@ -15,7 +15,7 @@ public class ProcedureTestSuite : MonoBehaviour
         await UniTask.Yield();
         // 临时将默认超时改为 3 秒以便测试超时（也可以不改，但需要等待 300 秒）
         // 注意：ProcedureSystem 的 defaultTimeoutSeconds 是 private，这里通过反射修改（仅测试用）
-        var mgr = ProcedureSystem.Instance;
+        var mgr = EF.Procedure;
         var field = typeof(ProcedureSystem).GetField("defaultTimeoutSeconds", 
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         if (field != null) field.SetValue(mgr, 3f);

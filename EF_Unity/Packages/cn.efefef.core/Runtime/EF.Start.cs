@@ -13,9 +13,11 @@ using EasyFramework.Managers;
 using System.Collections;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.Managers.Event;
-using EasyFramework.Managers.Pool;
-using EFExample;
+using EasyFramework.Systems.Assets;
+using EasyFramework.Systems.Event;
+using EasyFramework.Systems.Patch;
+using EasyFramework.Systems.Pool;
+using EasyFramework.Systems.Procedure;
 using UnityEngine;
 
 public sealed partial class EF
@@ -29,26 +31,30 @@ public sealed partial class EF
     /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
     public static ProjectConfig Projects { get; private set; }
     
+    /// <summary> Pool manager.<para>对象池系统</para></summary>
+    public static PoolSystem Pool => PoolSystem.Instance;
+
+    /// <summary> Event manager.<para>事件系统</para></summary>
+    public static EventManager Event => EventManager.Instance;
+    
+    /// <summary> Procedure system.<para>流程系统</para></summary>
+    public static ProcedureSystem Procedure => ProcedureSystem.Instance;
+    
+    /// <summary> Load the resources system.<para>加载资源系统</para></summary>
+    public static AssetsSystem Assets => AssetsSystem.Instance;
+    
+    
     /// <summary> Universal tools manager.<para>通用工具管理器</para></summary>
     public static ToolManager Tool => ToolManager.Instance;
-    
-    /// <summary> Load the resources manager.<para>加载资源管理器</para></summary>
-    public static AssetsRootManager Assets => AssetsRootManager.Instance;
 
     /// <summary> Time manager.<para>时间管理器</para></summary>
     public static TimeManager Timer => TimeManager.Instance;
-    
-    /// <summary> Pool manager.<para>对象池管理器</para></summary>
-    public static PoolManager Pool => PoolManager.Instance;
-
-    /// <summary> Event manager.<para>事件管理器</para></summary>
-    public static EventManager Event => EventManager.Instance;
     
     /// <summary> Event manager.<para>系统级事件管理器</para></summary>
     public static EventSystem Events => EventSystem.Instance;
 
     /// <summary> Patch update manager.<para>补丁更新管理器</para></summary>
-    public static PatchManager Patch => PatchManager.Instance;
+    public static PatchSystem Patch => PatchSystem.Instance;
 
     /// <summary> Audio manager.<para>音频管理器</para></summary>
     public static AudioManager Audio => AudioManager.Instance;

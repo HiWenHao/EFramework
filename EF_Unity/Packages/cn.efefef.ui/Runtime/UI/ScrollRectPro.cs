@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace EasyFramework.UI
+namespace EasyFramework.Systems.Ui
 {
     /// <summary>
     /// A super component for making a child RectTransform scroll.

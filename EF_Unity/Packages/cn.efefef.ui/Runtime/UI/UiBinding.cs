@@ -10,10 +10,10 @@
  */
 
 using System.Collections.Generic;
-using EasyFramework.Managers.UI;
+using EasyFramework.Systems.Ui;
 using UnityEngine;
 
-namespace EasyFramework.UI
+namespace EasyFramework.Systems.Ui
 {
     /// <summary>
     /// UI视窗自动绑定代码

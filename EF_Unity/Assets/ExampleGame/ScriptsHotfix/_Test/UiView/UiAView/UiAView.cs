@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:      Please modify the description..
+ * Describe:      Please modify the description.
  * Author:        Alvin5100
  * CreationTime:  2026-05-08 17:13:02
  * ModifyAuthor:  Alvin5100
@@ -11,11 +11,8 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework;
-using EasyFramework.UI;
-using EasyFramework.Managers.UI;
+using EasyFramework.Systems.Ui;
 
 namespace EFExample
 {

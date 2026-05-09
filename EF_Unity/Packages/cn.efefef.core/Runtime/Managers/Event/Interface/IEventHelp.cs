@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:      This script is used to help manager events.
  * Author:        Xiaohei.Wang(Wenhao)

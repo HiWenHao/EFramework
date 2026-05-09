@@ -1,19 +1,19 @@
 /*
  * ================================================
  * Describe:      This script is used to .
- * Author:        青衫磊落长歌行
+ * Author:        Alvin8412
  * CreationTime:  2026-05-05 21:48:32
- * ModifyAuthor:  青衫磊落长歌行
+ * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-05-05 21:48:32
  * ScriptVersion: 0.1
  * ===============================================
  */
 
-using EasyFramework.Managers;
+using EasyFramework.Systems.Ui;
 
 public sealed partial class EF
 {
-    /// <summary> UI manager.<para>UI管理器</para></summary>
-    public static UiManager Ui => UiManager.Instance;
+    /// <summary> UI system.<para>UI系统</para></summary>
+    public static UiSystem Ui => UiSystem.Instance;
 
 }

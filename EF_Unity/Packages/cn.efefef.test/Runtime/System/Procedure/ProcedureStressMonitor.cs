@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Reflection;
 using System.Collections;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 
 public class ProcedureStressMonitor : MonoBehaviour
 {
@@ -15,7 +15,7 @@ public class ProcedureStressMonitor : MonoBehaviour
 
     private void Start()
     {
-        var mgr = ProcedureSystem.Instance;
+        var mgr = EF.Procedure;
 
         _stackField = typeof(ProcedureSystem)
             .GetField(
@@ -47,11 +47,11 @@ public class ProcedureStressMonitor : MonoBehaviour
     private void PrintStats()
     {
         var stack =
-            _stackField.GetValue(ProcedureSystem.Instance)
+            _stackField.GetValue(EF.Procedure)
                 as System.Collections.ICollection;
 
         var uidMap =
-            _uidField.GetValue(ProcedureSystem.Instance)
+            _uidField.GetValue(EF.Procedure)
                 as System.Collections.IDictionary;
 
         long memory = GC.GetTotalMemory(false);

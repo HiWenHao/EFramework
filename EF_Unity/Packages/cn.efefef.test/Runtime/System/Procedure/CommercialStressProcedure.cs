@@ -1,7 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 
 public class CommercialStressProcedure : ProcedureBase
 {

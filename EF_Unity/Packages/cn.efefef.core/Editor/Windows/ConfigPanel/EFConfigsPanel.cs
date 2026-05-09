@@ -185,6 +185,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
 
             _window._panelIndex = pageIndex;
+            if (null == _window._settings || _window._settings.Count <= pageIndex)
+                return;
             _window._settings[pageIndex].OnEnable(_window._assetsPath);
         }
     }

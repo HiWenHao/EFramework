@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-namespace EasyFramework.UI
+namespace EasyFramework.Systems.Ui
 {
     /// <summary>
     /// 轮播图、幻灯片

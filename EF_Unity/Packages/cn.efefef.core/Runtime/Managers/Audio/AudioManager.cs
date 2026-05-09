@@ -11,7 +11,7 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework.Managers.Assets;
+using EasyFramework.Systems.Assets;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -408,7 +408,7 @@ namespace EasyFramework.Managers
 
         private AudioClip GetClipByName(string name)
         {
-            string path = EF.Assets.CurrentManagerType == AssetsManagerType.Default
+            string path = EF.Assets.CurrentSystemType == AssetsSystemType.Default
                 ? $"{EF.Projects.AppConst.AudioPath}{name}"
                 : name;
             return EF.Assets.Load<AudioClip>(path);

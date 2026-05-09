@@ -12,8 +12,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 
 public class CommercialProcedureBomb : ProcedureBase
 {
@@ -164,7 +163,7 @@ public class CommercialProcedureBomb : ProcedureBase
 
                 for (int i = 0; i < count; i++)
                 {
-                    ProcedureSystem.Instance
+                    EF.Procedure
                         .Switch<CommercialProcedureBomb>()
                         .Forget();
                 }

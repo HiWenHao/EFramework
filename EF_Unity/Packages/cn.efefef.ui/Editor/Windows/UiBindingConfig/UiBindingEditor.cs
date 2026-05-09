@@ -9,12 +9,11 @@
  * ===============================================
  */
 
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using EasyFramework.Managers.UI;
 using UnityEditor;
 using UnityEngine;
 
@@ -448,7 +447,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 "Cysharp.Threading.Tasks",
                 "EasyFramework",
                 "EasyFramework.UI",
-                "EasyFramework.Managers.UI"
+                "EasyFramework.Systems.Ui"
             };
             foreach (string ns in baseNamespaces)
             {

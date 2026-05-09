@@ -10,9 +10,8 @@
  */
 
 using EasyFramework;
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using System.Collections.Generic;
-using EasyFramework.Managers.UI;
 using UnityEngine;
 using UnityEngine.UI;
 

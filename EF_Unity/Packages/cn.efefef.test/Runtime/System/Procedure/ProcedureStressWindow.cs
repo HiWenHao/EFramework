@@ -12,7 +12,7 @@
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 
 public class ProcedureStressWindow : MonoBehaviour
 {
@@ -32,7 +32,7 @@ public class ProcedureStressWindow : MonoBehaviour
     {
         ProcedureStressRuntime.Reset();
 
-        var mgr = ProcedureSystem.Instance;
+        var mgr = EF.Procedure;
 
         mgr.Register<CommercialProcedureBomb>();
 
@@ -62,7 +62,7 @@ public class ProcedureStressWindow : MonoBehaviour
     {
         for (int i = 0; i < startCount; i++)
         {
-            ProcedureSystem.Instance
+            EF.Procedure
                 .Switch<CommercialProcedureBomb>()
                 .Forget();
         }
@@ -74,7 +74,7 @@ public class ProcedureStressWindow : MonoBehaviour
         {
             if (Random.value < 0.8f)
             {
-                ProcedureSystem.Instance
+                EF.Procedure
                     .Switch<CommercialProcedureBomb>()
                     .Forget();
             }
@@ -127,7 +127,7 @@ public class ProcedureStressWindow : MonoBehaviour
         {
             for (int i = 0; i < 100; i++)
             {
-                ProcedureSystem.Instance
+                EF.Procedure
                     .Switch<CommercialProcedureBomb>()
                     .Forget();
             }
@@ -137,7 +137,7 @@ public class ProcedureStressWindow : MonoBehaviour
         {
             for (int i = 0; i < 1000; i++)
             {
-                ProcedureSystem.Instance
+                EF.Procedure
                     .Switch<CommercialProcedureBomb>()
                     .Forget();
             }
@@ -147,7 +147,7 @@ public class ProcedureStressWindow : MonoBehaviour
         {
             for (int i = 0; i < 10000; i++)
             {
-                ProcedureSystem.Instance
+                EF.Procedure
                     .Switch<CommercialProcedureBomb>()
                     .Forget();
             }
@@ -157,7 +157,7 @@ public class ProcedureStressWindow : MonoBehaviour
         {
             for (int i = 0; i < 5000; i++)
             {
-                ProcedureSystem.Instance
+                EF.Procedure
                     .Switch<CommercialProcedureBomb>()
                     .Forget();
             }
@@ -176,7 +176,7 @@ public class ProcedureStressWindow : MonoBehaviour
     private int GetStackCount()
     {
         var stack =
-            _stackField.GetValue(ProcedureSystem.Instance)
+            _stackField.GetValue(EF.Procedure)
                 as System.Collections.ICollection;
 
         return stack?.Count ?? 0;
@@ -185,7 +185,7 @@ public class ProcedureStressWindow : MonoBehaviour
     private int GetUidMapCount()
     {
         var map =
-            _uidField.GetValue(ProcedureSystem.Instance)
+            _uidField.GetValue(EF.Procedure)
                 as System.Collections.IDictionary;
 
         return map?.Count ?? 0;

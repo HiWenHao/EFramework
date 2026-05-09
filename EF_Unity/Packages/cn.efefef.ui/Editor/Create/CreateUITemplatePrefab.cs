@@ -12,7 +12,7 @@
 using System;
 using System.Reflection;
 using EasyFramework.Edit.Windows.ConfigPanel;
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using TMPro;
 using UnityEditor;
 using UnityEngine;

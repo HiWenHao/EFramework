@@ -9,7 +9,7 @@
  * ===============================================
 */
 
-using EasyFramework.UI;
+using EasyFramework.Systems.Ui;
 using UnityEditor;
 using UnityEngine;
 

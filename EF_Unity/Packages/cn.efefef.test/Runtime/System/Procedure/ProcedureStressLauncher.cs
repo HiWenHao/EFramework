@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Procedure;
 using UnityEngine;
 
 public class ProcedureStressLauncher : MonoBehaviour
@@ -23,7 +23,7 @@ public class ProcedureStressLauncher : MonoBehaviour
     {
         await UniTask.DelayFrame(5);
 
-        var mgr = ProcedureSystem.Instance;
+        var mgr = EF.Procedure;
 
         // 注册
         mgr.Register<CommercialStressProcedure>();
@@ -70,7 +70,7 @@ public class ProcedureStressLauncher : MonoBehaviour
         Debug.Log("等待剩余流程结束...");
 
         await UniTask.WaitUntil(
-            () => !ProcedureSystem.Instance.HasRunningProcedure);
+            () => !EF.Procedure.HasRunningProcedure);
 
         Debug.Log(
             "<color=green>========== 全部流程结束 =========</color>");
@@ -93,7 +93,7 @@ public class ProcedureStressLauncher : MonoBehaviour
     {
         try
         {
-            await ProcedureSystem.Instance.Switch
+            await EF.Procedure.Switch
                 <CommercialStressProcedure>(
                     new Dictionary<string, object>
                     {

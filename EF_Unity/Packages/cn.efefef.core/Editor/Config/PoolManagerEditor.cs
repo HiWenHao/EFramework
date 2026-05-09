@@ -2,16 +2,16 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Pool.Editor
+namespace EasyFramework.Systems.Pool.Editor
 {
-    [CustomEditor(typeof(PoolManager))]
+    [CustomEditor(typeof(PoolSystem))]
     public class PoolManagerEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
-            var mgr = (PoolManager)target;
+            var mgr = (PoolSystem)target;
 
             GUILayout.Space(10);
 

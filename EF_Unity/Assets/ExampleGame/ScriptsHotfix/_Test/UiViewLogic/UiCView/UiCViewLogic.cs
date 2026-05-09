@@ -11,11 +11,7 @@
 
 using System;
 using EasyFramework;
-using EasyFramework.UI;
-using System.Collections.Generic;
-using EasyFramework.Managers.UI;
-using UnityEngine;
-using UnityEngine.UI;
+using EasyFramework.Systems.Ui;
 
 namespace EFExample
 {

@@ -9,10 +9,10 @@
  * ===============================================
  */
 
-using EasyFramework.Managers;
+using EasyFramework.Systems.Http;
 
 public sealed partial class EF
 {
     /// <summary> Network (HTTP) manager.<para>网络HTTP管理器</para></summary>
-    public static HttpManager Http => HttpManager.Instance;
+    public static HttpsSystem Http => HttpsSystem.Instance;
 }
