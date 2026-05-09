@@ -40,10 +40,5 @@ namespace EasyFramework.Managers.Procedure
         /// 退出中
         /// </summary>
         Exiting,
-        
-        /// <summary>
-        /// 退出后
-        /// </summary>
-        Exited
     }
 }

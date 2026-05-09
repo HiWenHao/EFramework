@@ -8,7 +8,7 @@ public class ProcedureHierarchyVisualizer : MonoBehaviour
 {
     [SerializeField] private Transform rootDisplayParent;
 
-    private readonly Dictionary<uint, GameObject> _nodes = new();
+    private readonly Dictionary<long, GameObject> _nodes = new();
 
     private IDisposable _enterToken;
     private IDisposable _activateToken;
@@ -105,7 +105,7 @@ public class ProcedureHierarchyVisualizer : MonoBehaviour
 #endif
     }
 
-    private void SetState(uint uid, string state)
+    private void SetState(long uid, string state)
     {
         if (!_nodes.TryGetValue(uid, out var go))
             return;

@@ -24,8 +24,7 @@ namespace EasyFramework.Managers.Procedure
     {
         protected ProcedureContext Ctx { get; private set; }
         protected CancellationToken Token { get; private set; }
-
-        protected uint Uid => Ctx?.Uid ?? 0;
+        protected long Uid => Ctx?.Uid ?? 0;
         protected int Depth => Ctx?.Depth ?? 0;
         private IReadOnlyDictionary<string, object> Params => Ctx?.Params;
 

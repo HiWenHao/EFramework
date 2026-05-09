@@ -21,8 +21,8 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     internal sealed class ProcedureInstance
     {
-        public uint Uid;                                    // 流程实例唯一标识符
-        public uint ParentUid;                              // 父流程实例 Uid
+        public long Uid;                                    // 流程实例唯一标识符
+        public long ParentUid;                              // 父流程实例 Uid
         public uint RuntimeVersion;                         // 运行时版本，用于检测陈旧引用
         public int Depth;                                   // 嵌套深度
         public int ExitQueued;                              // 退出排队标记（0未排队，1已排队）
@@ -64,33 +64,19 @@ namespace EasyFramework.Managers.Procedure
             Params?.Clear();
             Params = null;
 
-            try
-            {
-                LifecycleCts?.Cancel();
-                LifecycleCts?.Dispose();
-            }
-            catch
-            {
-                // ignored
-            }
-
+            try { LifecycleCts?.Cancel(); } catch { /* ignore */ }
+            try { LifecycleCts?.Dispose(); } catch { /* ignore */ }
             LifecycleCts = null;
 
-            try
-            {
-                EnterTimeoutCts?.Cancel();
-                EnterTimeoutCts?.Dispose();
-            }
-            catch
-            {
-                // ignored
-            }
+            try { EnterTimeoutCts?.Cancel(); } catch { /* ignore */ }
+            try { EnterTimeoutCts?.Dispose(); } catch { /* ignore */ }
+            EnterTimeoutCts = null;
 
             ExitReason = ProcedureExitType.Completed;
-            ResultSource = null;
             ExitException = null;
-            EnterTimeoutCts = null;
+
             CompletionSource = null;
+            ResultSource = null;
         }
     }
 }

@@ -20,13 +20,23 @@ namespace EasyFramework.Managers.Procedure
     /// </summary>
     public sealed class ProcedureContext
     {
-        public uint Uid;                                    // 当前流程实例唯一标识符
-        public uint ParentUid;                              // 父流程实例唯一标识符（0表示根流程）
-        public uint RuntimeVersion;                         // 运行时版本号，用于检测上下文是否失效
-        public int Depth;                                   // 当前嵌套深度（根流程深度为1）
-        public IReadOnlyDictionary<string, object> Params;  // 启动时传入的参数集合（只读）
+        /// <summary>当前流程实例唯一标识符</summary>
+        public long Uid { get; internal set; }
 
-        internal bool IsDisposed;                           // 上下文是否已被释放
+        /// <summary>父流程实例唯一标识符（0表示根流程）</summary>
+        public long ParentUid { get; internal set; }
+
+        /// <summary>运行时版本号，用于检测上下文是否失效</summary>
+        public uint RuntimeVersion { get; internal set; }
+
+        /// <summary>当前嵌套深度（根流程深度为1）</summary>
+        public int Depth { get; internal set; }
+
+        /// <summary>启动时传入的参数集合（只读）</summary>
+        public IReadOnlyDictionary<string, object> Params { get; internal set; }
+
+        /// <summary>上下文是否已被释放</summary>
+        internal bool IsDisposed { get; set; }
 
         /// <summary>
         /// 重置上下文状态，供对象池使用
@@ -71,11 +81,11 @@ namespace EasyFramework.Managers.Procedure
         /// 结束当前流程（主动退出）
         /// <para>End the current procedure (voluntary exit)</para>
         /// </summary>
-        /// <returns>异步操作，等待流程完全退出</returns>
-        public async UniTask EndProcedure()
+        /// <returns>异步操作，返回是否成功退出</returns>
+        public async UniTask<bool> EndProcedure()
         {
             CheckDisposed();
-            await ProcedureSystem.Instance.EndProcedureInternal(this);
+            return await ProcedureSystem.Instance.EndProcedureInternal(this);
         }
     }
 }
