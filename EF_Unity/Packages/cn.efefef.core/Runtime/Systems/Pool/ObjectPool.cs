@@ -23,8 +23,6 @@ namespace EasyFramework.Systems.Pool
     /// <typeparam name="T">池中对象类型，必须是引用类型<para>The object type in the pool must be a reference type.</para></typeparam>
     public sealed class ObjectPool<T> : IPool<T>, IClearablePool where T : class
     {
-        private int _count;                            // 当前空闲对象数量（近似值）
-        
         private readonly int _maxSize;                 // 最大空闲对象数量
         private readonly Func<T> _factory;             // 创建新对象的方法
         private readonly Action<T> _reset;             // 归还时的重置方法（可选）
@@ -52,13 +50,9 @@ namespace EasyFramework.Systems.Pool
         /// 从池中获取一个对象。如果池中有空闲，则弹出；否则调用 factory 新建。
         /// <para>Obtain an object from the pool. If there is an available one in the pool, pop it out; otherwise, call the factory to create a new one.</para>
         /// </summary>
-        public T Get(bool isFromPool = true)
+        public T Get()
         {
-            if (!_stack.TryPop(out var item)) 
-                return _factory();
-            
-            Interlocked.Decrement(ref _count);
-            return item;
+            return _stack.TryPop(out var item) ? item : _factory();
         }
 
         /// <summary>
@@ -69,26 +63,23 @@ namespace EasyFramework.Systems.Pool
         /// <para>The object to be returned</para></param>
         public void Recycle(T item)
         {
-            if (item == null) 
+            if (item == null)
                 return;
 
             _reset?.Invoke(item);
 
-            // 尝试增加空闲计数，如果不超过最大容量则入栈
-            if (Interlocked.Increment(ref _count) <= _maxSize)
+            // 如果当前空闲数量未达上限，则入栈
+            if (_stack.Count < _maxSize)
                 _stack.Push(item);
-            else
-                Interlocked.Decrement(ref _count);
         }
 
         /// <summary>
-        /// 清空池：移除所有空闲对象，重置计数。
-        /// <para>Clear pool: Remove all idle objects and reset the counts.</para>
+        /// 清空池：移除所有空闲对象。
+        /// <para>Clear pool: Remove all idle objects.</para>
         /// </summary>
         public void Clear()
         {
             _stack.Clear();
-            _count = 0;
         }
     }
 }

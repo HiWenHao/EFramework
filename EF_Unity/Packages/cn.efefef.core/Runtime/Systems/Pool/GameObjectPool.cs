@@ -21,7 +21,7 @@ namespace EasyFramework.Systems.Pool
     /// <summary>
     /// GameObject 对象池，实现 IPool(GameObject)  和 IClearablePool。
     /// </summary>
-    public sealed class GameObjectPool : IPool<GameObject>, IClearablePool
+    public sealed class GameObjectPool : IGameObjectPool
     {
         private bool _disposed;                         // 池是否已被销毁（防止继续操作）
 
@@ -37,10 +37,18 @@ namespace EasyFramework.Systems.Pool
         private readonly int _maxSize;                  // 最大空闲对象数量（超过则直接销毁）
         private readonly Stack<PooledObject> _stack;    // 空闲对象栈
 
-#if POOL_DEBUG
-        private readonly HashSet<PooledObject> _active = new();   // 调试用：记录当前激活的对象
-#endif
+        private readonly List<PooledObject> _tempKeepList;          // 临时保存列表
 
+#if POOL_DEBUG
+        private readonly HashSet<PooledObject> _active = new();     // 调试用：记录当前激活的对象
+        private readonly HashSet<PooledObject> _pooledSet = new();  // 调试用：记录池中空闲对象（用于重复回收检测）
+#endif
+        /// <summary>
+        /// 池是否未被销毁（可用状态）。
+        /// <para>Whether the pool is not disposed (available).</para>
+        /// </summary>
+        public bool IsAlive => !_disposed;
+        
         /// <summary>
         /// 是否开启日志（泄漏跟踪）
         /// <para>Whether to enable the log (leak tracking)</para>
@@ -87,6 +95,7 @@ namespace EasyFramework.Systems.Pool
 
             int init = Mathf.Min(initial > 0 ? initial : 4, _maxSize);
             _stack = new Stack<PooledObject>(init);
+            _tempKeepList = new List<PooledObject>();
 
             // 为这个池创建一个独立的根节点，方便管理
             _root = new GameObject($"{prefab.name}_Pool").transform;
@@ -105,9 +114,19 @@ namespace EasyFramework.Systems.Pool
         /// <para>Pre-allocated quantity</para></param>
         public void Prewarm(int count)
         {
+            if (_disposed)
+            {
+                if (OpenDebug) Warning($"[Pool] Cannot Prewarm on disposed pool: {_prefab.name}");
+                return;
+            }
+
             for (int i = 0; i < count; i++)
             {
-                _stack.Push(Create());
+                var obj = Create();
+                _stack.Push(obj);
+#if POOL_DEBUG
+                _pooledSet.Add(obj);
+#endif
             }
         }
 
@@ -115,10 +134,8 @@ namespace EasyFramework.Systems.Pool
         /// 从池中获取一个对象（激活并返回）。
         /// <para>Obtain an object from the pool (activate and return it).</para>
         /// </summary>
-        /// <param name="isFromPool">对象是否来自池中
-        /// <para>The object comes from the pool.</para></param>
         /// <returns>游戏对象 GameObject</returns>
-        public GameObject Get(bool isFromPool = true)
+        public GameObject Get()
         {
             if (_disposed)
             {
@@ -126,20 +143,15 @@ namespace EasyFramework.Systems.Pool
                 return null;
             }
 
-            PooledObject m;
-
-            // 从栈中取，跳过可能为空的引用（理论上不会出现，但防御）
-            while (_stack.Count > 0)
+            if (_stack.TryPop(out var m))
             {
-                m = _stack.Pop();
-                if (m != null)
-                {
-                    Activate(m);
-                    return m.gameObject;
-                }
+#if POOL_DEBUG
+                _pooledSet.Remove(m);
+#endif
+                Activate(m);
+                return m.gameObject;
             }
 
-            // 池空则创建
             m = Create();
             Activate(m);
             return m.gameObject;
@@ -165,6 +177,14 @@ namespace EasyFramework.Systems.Pool
             if (m == null) 
                 return;
 
+            if (!m.IsFromPool)
+            {
+                if (OpenDebug)
+                    Warning($"[Pool] Object not from pool, destroy directly: {m.name}");
+                DestroyInternal(m);
+                return;
+            }
+
             // 池已销毁 → 直接销毁对象
             if (_disposed)
             {
@@ -186,8 +206,16 @@ namespace EasyFramework.Systems.Pool
             _activeCount = Mathf.Max(0, _activeCount - 1);
 
 #if POOL_DEBUG
-            if (OpenDebug) 
-                _active.Remove(m);
+            // 重复回收检测：如果对象已经在 _pooledSet 中，说明已经处于空闲池
+            if (!_pooledSet.Add(m))
+            {
+                if (OpenDebug) Error($"[Pool] Duplicate recycle detected! Object {m.name} is already in the pool.");
+                // 根据需求：可以选择直接销毁对象，或者直接返回不处理
+                // 这里选择销毁，避免池状态混乱
+                DestroyInternal(m);
+                return;
+            }
+            _active.Remove(m);
 #endif
 
             var go = m.gameObject;
@@ -236,23 +264,22 @@ namespace EasyFramework.Systems.Pool
         {
             _disposed = true;
 
-            // 销毁栈中所有对象
             while (_stack.Count > 0)
             {
                 var m = _stack.Pop();
-                if (m != null)
-                    DestroyInternal(m);
+                if (m != null) DestroyInternal(m);
             }
 
 #if POOL_DEBUG
-            _active.Clear();
+            // 注意：不清除 _active，让激活对象仍然可以被泄漏检测
+            _pooledSet.Clear();
 #endif
 
-            if (_root != null)
-            {
-                Object.Destroy(_root.gameObject);
-                _root = null;
-            }
+            if (_root == null)
+                return;
+            
+            Object.Destroy(_root.gameObject);
+            _root = null;
         }
 
         #endregion
@@ -260,18 +287,37 @@ namespace EasyFramework.Systems.Pool
         #region 内部函数
 
         /// <summary>
+        /// 内部预热辅助：创建一个新对象并直接压入空闲栈（不激活）。
+        /// <para>Internal preheating helper: create a new object and push it directly to the idle stack (not activated).</para>
+        /// </summary>
+        internal void CreateOneAndPush()
+        {
+            if (_disposed) 
+                return;
+            
+            var obj = Create();
+            _stack.Push(obj);
+#if POOL_DEBUG
+            // 注意：这里不要加 _active.Add(obj)，因为对象尚未激活
+            _pooledSet.Add(obj);
+#endif
+        }
+        
+        /// <summary>
         /// 清理闲置超时的对象（由外部定时调用）。
         /// </summary>
         internal void CleanupIdleObjects(float now)
         {
-            if (_idleTimeout <= 0f) return;
+            if (_idleTimeout <= 0f) 
+                return;
 
-            // 将栈转为数组遍历，不会修改栈（但会分配小数组，可接受）
-            var snapshot = _stack.ToArray();
-            _stack.Clear();
+            // 复用列表，避免 GC 分配
+            _tempKeepList.Clear();
 
-            foreach (var m in snapshot)
+            // 遍历原栈，将未超时的对象暂存
+            while (_stack.Count > 0)
             {
+                var m = _stack.Pop();
                 if (m == null) continue;
 
                 // 空闲超时则销毁，否则重新入栈
@@ -281,16 +327,23 @@ namespace EasyFramework.Systems.Pool
                 }
                 else
                 {
-                    _stack.Push(m);
+                    _tempKeepList.Add(m);
                 }
             }
+
+            // 将未超时的对象重新压回栈（顺序会被反转，但栈顺序不重要）
+            for (int i = _tempKeepList.Count - 1; i >= 0; i--)
+            {
+                _stack.Push(_tempKeepList[i]);
+            }
+            _tempKeepList.Clear();
         }
 
         #endregion
 
         #region 私有函数
 
-        // 创建一个新实例（不激活）。
+        // 创建一个新实例（不激活），并标记 IsFromPool = true。
         private PooledObject Create()
         {
             var go = Object.Instantiate(_prefab, _root);
@@ -299,6 +352,9 @@ namespace EasyFramework.Systems.Pool
             var m = go.GetComponent<PooledObject>() ?? go.AddComponent<PooledObject>();
             m.Init(_prefab, OpenDebug, this);
             m.IsInPool = true;
+            
+            // 标记该对象是由池创建的，之后不再更改
+            m.SetIsFromPool(true);
             
             // 初始进入池也记录时间
             m.IdleEnterTime = Time.time;
@@ -324,13 +380,16 @@ namespace EasyFramework.Systems.Pool
         // 彻底销毁一个 PooledObject 对应的 GameObject。
         private void DestroyInternal(PooledObject m)
         {
-            if (m == null) return;
+            if (m == null) 
+                return;
 
 #if POOL_DEBUG
             _active.Remove(m);
+            _pooledSet.Remove(m);
 #endif
 
-            _activeCount = Mathf.Max(0, _activeCount - 1);
+            if (!m.IsInPool)
+                _activeCount = Mathf.Max(0, _activeCount - 1);
             _aliveCount = Mathf.Max(0, _aliveCount - 1);
 
             Object.Destroy(m.gameObject);

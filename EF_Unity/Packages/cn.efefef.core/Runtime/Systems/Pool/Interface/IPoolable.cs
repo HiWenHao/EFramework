@@ -15,6 +15,12 @@ namespace EasyFramework.Systems.Pool
     /// 池化对象接口
     /// <para>Interface for poolable objects</para>
     /// </summary>
+    /// <remarks>
+    /// 实现此接口的组件应确保在对象池化期间始终存在（即预制体或创建时已挂载），
+    /// 不支持运行时动态添加/删除，因为 PooledObject 会缓存所有 IPoolable 组件。
+    /// <para>Components implementing this interface must always exist during object pooling (attached on prefab or at creation);
+    /// dynamic addition/removal at runtime is not supported because PooledObject caches all IPoolable components.</para>
+    /// </remarks>
     public interface IPoolable
     {
         /// <summary>

@@ -22,7 +22,7 @@ namespace EasyFramework.Systems.Pool
         /// 从池中获取一个对象
         /// <para>Obtain an object from the pool</para>
         /// </summary>
-        T Get(bool isFromPool);
+        T Get();
 
         /// <summary>
         /// 将对象归还池中

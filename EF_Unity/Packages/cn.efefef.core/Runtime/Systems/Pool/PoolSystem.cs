@@ -11,6 +11,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Pool
@@ -27,20 +29,30 @@ namespace EasyFramework.Systems.Pool
         /// <para>Enable output logging</para>
         /// </summary>
         public bool OpenDebug { get; private set; }
+
+        /// <summary>
+        /// 清理计时器
+        /// <para>Cleanup tick</para>
+        /// </summary>
+        public float CleanupTick { get; set; } = 5;
         
-        private int _poolIdAutoIncrements;
+        private float _gameObjectPoolCleanupTick;
         private Dictionary<Type, object> _objectPools;
-        private Dictionary<int, GameObjectPool> _gameObjectPools;
+        private Dictionary<GameObject, GameObjectPool> _gameObjectPools;
 
         void ISingleton.Init()
         {
             _objectPools = new Dictionary<Type, object>();
-            _gameObjectPools = new Dictionary<int, GameObjectPool>();
+            _gameObjectPools = new Dictionary<GameObject, GameObjectPool>();
         }
 
         // 驱动所有 GameObjectPool 的闲置超时清理
         void IUpdate.Update(float elapse, float realElapse)
         {
+            if ((_gameObjectPoolCleanupTick += elapse) < CleanupTick)
+                return;
+            
+            _gameObjectPoolCleanupTick = 0;
             foreach (var pool in _gameObjectPools.Values)
             {
                 pool.CleanupIdleObjects(Time.time);
@@ -59,12 +71,17 @@ namespace EasyFramework.Systems.Pool
         public void ClearAll()
         {
             foreach (GameObjectPool pool in _gameObjectPools.Values)
+            {
                 pool.Clear();
+            }
             foreach (object poolObj in _objectPools.Values)
             {
                 if (poolObj is IClearablePool clearable)
                     clearable.Clear();
             }
+            
+            _gameObjectPools.Clear();
+            _objectPools.Clear();
         }
 
         #region GameObjectPool
@@ -79,67 +96,64 @@ namespace EasyFramework.Systems.Pool
         /// <param name="max">最大数量</param>
         /// <param name="idleTimeout">空闲超时销毁时间（秒），≤0 不启用
         /// <para>Idle timeout destruction time (seconds), ≤ 0 means not enabled</para></param>
-        /// <returns>对象池ID  <para>The GameObject Pool ID</para></returns>
-        public int CreateGameObjectPool(GameObject prefab, Transform parent, int initial, int max, float idleTimeout = -1f)
+        public void CreateGameObjectPool(GameObject prefab, Transform parent, int initial, int max, float idleTimeout = -1f)
         {
-            var pool = new GameObjectPool(prefab, initial, max, parent, idleTimeout)
+            if (_gameObjectPools.ContainsKey(prefab))
             {
-                OpenDebug = OpenDebug
-            };
-            
-            _gameObjectPools[++_poolIdAutoIncrements] = pool;
-            return _poolIdAutoIncrements;
+                Warning($"Pool for prefab {prefab.name} already exists.");
+                return;
+            }
+            var pool = new GameObjectPool(prefab, initial, max, parent, idleTimeout) { OpenDebug = OpenDebug };
+            _gameObjectPools[prefab] = pool;
         }
 
         /// <summary>
         /// 销毁一个可挂载对象池
         /// <para>Destroy a mountable object pool</para>
         /// </summary>
-        /// <param name="poolId">对象池ID<para>The GameObject Pool ID</para></param>
+        /// <param name="prefab">对象池预制件<para>The GameObject Pool Prefab</para></param>
         /// <returns>是否销毁成功
         /// <para>The Destroy succeed</para></returns>
-        public bool DestroyGameObjectPool(int poolId)
+        public bool DestroyGameObjectPool(GameObject prefab)
         {
-            if (_gameObjectPools.TryGetValue(poolId, out var pool))
+            if (_gameObjectPools.TryGetValue(prefab, out var pool))
                 pool.Clear();
-            return _gameObjectPools.Remove(poolId);
+            return _gameObjectPools.Remove(prefab);
         }
         
         /// <summary>
         /// 从对应池中获取一个 GameObject 实例
         /// <para>Obtain an instance of GameObject from the corresponding pool</para>
         /// </summary>
-        /// <param name="poolId">对象池ID
-        /// <para>The GameObject Pool ID</para></param>
+        /// <param name="prefab">对象池预制件
+        /// <para>The GameObject Pool Prefab</para></param>
         /// <returns>激活的游戏对象
         /// <para>Activated game object</para></returns>
-        public GameObject Spawn(int poolId)
+        public GameObject Spawn(GameObject prefab)
         {
-            if (_gameObjectPools.TryGetValue(poolId, out var pool))
+            if (TryGetPool(prefab, out var pool))
                 return pool.Get();
 
-            D.Error("Pool doesn't exist or was destroyed.");
+            D.Error($"Pool for prefab {prefab.name} not created. Please call CreateGameObjectPool first.");
             return null;
         }
         
         /// <summary>
-        /// 从对应池中获取一个 GameObject 实例，并设置位置和旋转。
+        /// 从对应池中获取一个 GameObject 实例
+        /// <para>Obtain an instance of GameObject from the corresponding pool</para>
         /// </summary>
-        /// <param name="poolId">对象池ID</param>
+        /// <param name="prefab">对象池预制件
+        /// <para>The GameObject Pool Prefab</para></param>
         /// <param name="pos">世界位置</param>
         /// <param name="rot">旋转角度</param>
-        /// <returns>激活的游戏对象</returns>
-        public GameObject Spawn(int poolId, Vector3 pos, Quaternion rot)
+        /// <returns>激活的游戏对象
+        /// <para>Activated game object</para></returns>
+        public GameObject Spawn(GameObject prefab, Vector3 pos, Quaternion rot)
         {
-            if (_gameObjectPools.TryGetValue(poolId, out var pool))
-            {
-                var go = pool.Get();
+            var go = Spawn(prefab);
+            if (go != null) 
                 go.transform.SetPositionAndRotation(pos, rot);
-                return go;
-            }
-
-            D.Error("Pool doesn't exist or was destroyed.");
-            return null;
+            return go;
         }
 
         /// <summary>
@@ -182,6 +196,70 @@ namespace EasyFramework.Systems.Pool
             foreach (var p in _gameObjectPools.Values)
                 p.DumpLeaks();
         }
+        
+        #region 异步预热（UniTask）
+
+        /// <summary>
+        /// 异步预热 GameObject 池（分帧创建，避免卡顿）。基于 UniTask，支持进度报告和取消。
+        /// <para>Asynchronously preheat GameObject pool (create objects across frames to avoid stuttering). Based on UniTask, supports progress reporting and cancellation.</para>
+        /// </summary>
+        /// <param name="prefab">对象池预制件</param>
+        /// <param name="totalCount">要创建的总数量</param>
+        /// <param name="perFrame">每帧创建的数量（建议 1~10）</param>
+        /// <param name="progress">进度回调（已创建数量，总数量）</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>UniTask，等待预热完成</returns>
+        public async UniTask WarmupGameObjectPoolAsync(GameObject prefab, int totalCount, int perFrame = 5,
+            IProgress<(int current, int total)> progress = null, CancellationToken cancellationToken = default)
+        {
+            if (!TryGetPool(prefab, out var pool))
+            {
+                D.Error($"Pool for prefab {prefab.name} not found.");
+                return;
+            }
+
+            if (totalCount <= 0) return;
+            if (perFrame <= 0) perFrame = 1;
+
+            int created = 0;
+            while (created < totalCount)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 如果池已被销毁，提前退出
+                if (!pool.IsAlive)
+                {
+                    Warning($"Pool for {prefab.name} was disposed during warmup. Warmup stopped.");
+                    return;
+                }
+
+                int toCreate = Mathf.Min(perFrame, totalCount - created);
+                for (int i = 0; i < toCreate; i++)
+                {
+                    pool.CreateOneAndPush();
+                }
+                created += toCreate;
+                progress?.Report((created, totalCount));
+
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// 异步预热 GameObject 池（分帧创建，避免卡顿）。基于 UniTask，支持进度报告和取消。
+        /// <para>Asynchronously preheat GameObject pool (create objects across frames to avoid stuttering). Based on UniTask, supports progress reporting and cancellation.</para>
+        /// </summary>
+        /// <param name="prefab">对象池预制件</param>
+        /// <param name="totalCount">要创建的总数量</param>
+        /// <param name="perFrame">每帧创建的数量（建议 1~10）</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>UniTask，等待预热完成</returns>
+        public UniTask WarmupGameObjectPoolAsync(GameObject prefab, int totalCount, int perFrame = 5, CancellationToken cancellationToken = default)
+        {
+            return WarmupGameObjectPoolAsync(prefab, totalCount, perFrame, null, cancellationToken);
+        }
+
+        #endregion
 
         #endregion
 
@@ -306,6 +384,11 @@ namespace EasyFramework.Systems.Pool
         #endregion
         
         #region 私有函数
+        
+        private bool TryGetPool(GameObject prefab, out GameObjectPool pool)
+        {
+            return _gameObjectPools.TryGetValue(prefab, out pool);
+        }
         
         private void Warning(string msg)
         {
