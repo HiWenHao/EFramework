@@ -19,6 +19,8 @@ namespace EasyFramework.Edit
 		Axis,
 		/// <summary> 图集 </summary>
 		Atlas,
+		/// <summary> 等待 </summary>
+		Await,
 		/// <summary> 活跃 </summary>
 		Active,
 		/// <summary> 作者 </summary>
@@ -113,6 +115,8 @@ namespace EasyFramework.Edit
 		Doing,
 		/// <summary> 延迟 </summary>
 		Delay,
+		/// <summary> 深度 </summary>
+		Depth,
 		/// <summary> 删除 </summary>
 		Delete,
 		/// <summary> 详情 </summary>
@@ -147,12 +151,18 @@ namespace EasyFramework.Edit
 		Deceleration,
 		/// <summary> 结束 </summary>
 		End,
+		/// <summary> 退出 </summary>
+		Exit,
 		/// <summary> 边数 </summary>
 		Edges,
+		/// <summary> 空的 </summary>
+		Empty,
 		/// <summary> 错误 </summary>
 		Error,
 		/// <summary> 存在 </summary>
 		Exist,
+		/// <summary> 进入 </summary>
+		Enter,
 		/// <summary> 编辑器 </summary>
 		Editor,
 		/// <summary> 启动 </summary>
@@ -169,6 +179,8 @@ namespace EasyFramework.Edit
 		Extract,
 		/// <summary> 加密 </summary>
 		Encrypt,
+		/// <summary> 异常 </summary>
+		Exception,
 		/// <summary> 弹性 </summary>
 		Elasticity,
 		/// <summary> 编辑器数据存档 </summary>
@@ -275,14 +287,16 @@ namespace EasyFramework.Edit
 		Minutes,
 		/// <summary> 管理者 </summary>
 		Manager,
-		/// <summary> 材质球 </summary>
-		Matrials,
 		/// <summary> 内存 </summary>
 		Memory,
 		/// <summary> 上移 </summary>
 		MoveUp,
 		/// <summary> 下移 </summary>
 		MoveDown,
+		/// <summary> 手动 </summary>
+		Manually,
+		/// <summary> 材质球 </summary>
+		Materials,
 		/// <summary> 没有 </summary>
 		No,
 		/// <summary> 非 </summary>
@@ -327,10 +341,16 @@ namespace EasyFramework.Edit
 		Pack,
 		/// <summary> 池 </summary>
 		Pool,
+		/// <summary> 参数 </summary>
+		Param,
+		/// <summary> 父 </summary>
+		Parent,
 		/// <summary> 预制件 </summary>
 		Prefab,
 		/// <summary> 请 </summary>
 		Please,
+		/// <summary> 待 </summary>
+		Pending,
 		/// <summary> 插件 </summary>
 		Plugins,
 		/// <summary> 项目 </summary>
@@ -343,6 +363,8 @@ namespace EasyFramework.Edit
 		Package,
 		/// <summary> 进度 </summary>
 		Progress,
+		/// <summary> 流程 </summary>
+		Procedure,
 		/// <summary> 游戏存档 </summary>
 		PlayerPrefs,
 		/// <summary> 预设、偏好 </summary>
@@ -361,6 +383,8 @@ namespace EasyFramework.Edit
 		Right,
 		/// <summary> 重置 </summary>
 		Reset,
+		/// <summary> 原因 </summary>
+		Reason,
 		/// <summary> 反射 </summary>
 		Reflect,
 		/// <summary> 运行时 </summary>
@@ -415,6 +439,8 @@ namespace EasyFramework.Edit
 		Simplex,
 		/// <summary> 设置 </summary>
 		Settings,
+		/// <summary> 挂起 </summary>
+		Suspended,
 		/// <summary> 滑动条 </summary>
 		Scrollbar,
 		/// <summary> 灵敏度 </summary>
@@ -435,6 +461,8 @@ namespace EasyFramework.Edit
 		Tool,
 		/// <summary> 类型 </summary>
 		Type,
+		/// <summary> 树 </summary>
+		Tree,
 		/// <summary> 标题 </summary>
 		Title,
 		/// <summary> 总数 </summary>

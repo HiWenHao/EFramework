@@ -36,7 +36,7 @@ public class CommercialStressProcedure : ProcedureBase
         }
         if (_timer >= 3f)
         {
-            Ctx.EndProcedure().Forget();
+            Context.EndProcedure().Forget();
         }
     }
 
@@ -48,6 +48,6 @@ public class CommercialStressProcedure : ProcedureBase
         if (Token.IsCancellationRequested)
             return;
         // StartSubProcedure 现在等待子流程退出，从而形成串行深度嵌套
-        await Ctx.StartSubProcedure<CommercialStressProcedure>();
+        await Context.StartSubProcedure<CommercialStressProcedure>();
     }
 }

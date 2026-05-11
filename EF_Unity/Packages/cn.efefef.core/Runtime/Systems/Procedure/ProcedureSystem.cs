@@ -14,6 +14,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Edit;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Procedure
@@ -23,14 +24,17 @@ namespace EasyFramework.Systems.Procedure
     /// </summary>
     public sealed class ProcedureSystem : MonoSingleton<ProcedureSystem>, IManager, IUpdate
     {
-        [SerializeField]
-        private int maxDepth = 100;                     // 最大嵌套深度限制
-        [SerializeField]
-        private int maxChainRepeat = 5;                 // 链式同类型重复最大次数
-        [SerializeField]
-        private float defaultTimeoutSeconds = 300f;     // 进入流程默认超时时间（秒）
-        [SerializeField]
-        private float leaveTimeoutSeconds = 30f;        // OnLeave 超时时间（秒）
+        [HeaderPro("最大嵌套深度限制", "Maximum nesting depth limit")] [SerializeField]
+        private int maxDepth = 100;
+
+        [HeaderPro("链式同类型重复最大次数", "Maximum number of consecutive same type repetitions")] [SerializeField]
+        private int maxChainRepeat = 5;
+
+        [HeaderPro("进入流程默认超时时间（秒）", "Default timeout time for entering the process (seconds)")] [SerializeField]
+        private float defaultTimeoutSeconds = 300f;
+
+        [HeaderPro("OnLeave 超时时间（秒）", "OnLeave timeout duration (seconds)")] [SerializeField]
+        private float leaveTimeoutSeconds = 30f; // 
         
         private long _nextUid = 1;          // 下一个可用的流程 Uid
         private uint _runtimeVersionSeed;   // 递增版本号

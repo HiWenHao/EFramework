@@ -174,7 +174,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(30);
-            MaxMatrials = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Matrials, Lc.Count }), MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
+            MaxMatrials = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Materials, Lc.Count }), MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
             GUILayout.FlexibleSpace();
             MaxParticels = EditorGUILayout.IntSlider(LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Particle, Lc.Count }), MaxParticels, 1, AssetsCheckerConfig.EffectMaxParticles);
             GUILayout.EndHorizontal();

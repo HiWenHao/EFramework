@@ -90,6 +90,18 @@ namespace EasyFramework.Edit.Windows
             _text.fontStyle = fontStyle;
             return _text;
         }
+        
+        
+        private static GUIStyle _colorText;
+        /// <summary> 彩色文本 </summary>
+        public static GUIStyle ColorText(int fontSize = 12, FontStyle fontStyle = FontStyle.Normal, Color textColor = default)
+        {
+            _colorText ??= new GUIStyle(GUI.skin.label);
+            _colorText.fontSize = fontSize;
+            _colorText.fontStyle = fontStyle;
+            _colorText.normal.textColor = textColor;
+            return _colorText;
+        }
 
 
         /// <summary>

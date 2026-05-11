@@ -49,6 +49,14 @@
       ]
     },
     {
+      "name": "Await",
+      "desc": "等待",
+      "array": [
+        "Await",
+        "等待"
+      ]
+    },
+    {
       "name": "Active",
       "desc": "活跃",
       "array": [
@@ -425,6 +433,14 @@
       ]
     },
     {
+      "name": "Depth",
+      "desc": "深度",
+      "array": [
+        "Depth",
+        "深度"
+      ]
+    },
+    {
       "name": "Delete",
       "desc": "删除",
       "array": [
@@ -561,11 +577,27 @@
       ]
     },
     {
+      "name": "Exit",
+      "desc": "退出",
+      "array": [
+        "Exit",
+        "退出"
+      ]
+    },
+    {
       "name": "Edges",
       "desc": "边数",
       "array": [
         "Edges",
         "边数"
+      ]
+    },
+    {
+      "name": "Empty",
+      "desc": "空的",
+      "array": [
+        "Empty",
+        "空的"
       ]
     },
     {
@@ -582,6 +614,14 @@
       "array": [
         "Exist",
         "存在"
+      ]
+    },
+    {
+      "name": "Enter",
+      "desc": "进入",
+      "array": [
+        "Enter",
+        "进入"
       ]
     },
     {
@@ -646,6 +686,14 @@
       "array": [
         "Encrypt",
         "加密"
+      ]
+    },
+    {
+      "name": "Exception",
+      "desc": "异常",
+      "array": [
+        "Exception",
+        "异常"
       ]
     },
     {
@@ -1073,14 +1121,6 @@
       ]
     },
     {
-      "name": "Matrials",
-      "desc": "材质球",
-      "array": [
-        "Matrials",
-        "材质"
-      ]
-    },
-    {
       "name": "Memory",
       "desc": "内存",
       "array": [
@@ -1102,6 +1142,22 @@
       "array": [
         "MoveDown",
         "下移"
+      ]
+    },
+    {
+      "name": "Manually",
+      "desc": "手动",
+      "array": [
+        "Manually",
+        "手动"
+      ]
+    },
+    {
+      "name": "Materials",
+      "desc": "材质球",
+      "array": [
+        "Materials",
+        "材质"
       ]
     },
     {
@@ -1281,6 +1337,22 @@
       ]
     },
     {
+      "name": "Param",
+      "desc": "参数",
+      "array": [
+        "Param",
+        "参数"
+      ]
+    },
+    {
+      "name": "Parent",
+      "desc": "父",
+      "array": [
+        "Parent",
+        "父"
+      ]
+    },
+    {
       "name": "Prefab",
       "desc": "预制件",
       "array": [
@@ -1294,6 +1366,14 @@
       "array": [
         "Please",
         "请"
+      ]
+    },
+    {
+      "name": "Pending",
+      "desc": "待",
+      "array": [
+        "Pending",
+        "待"
       ]
     },
     {
@@ -1342,6 +1422,14 @@
       "array": [
         "Progress",
         "进度"
+      ]
+    },
+    {
+      "name": "Procedure",
+      "desc": "流程",
+      "array": [
+        "Procedure",
+        "流程"
       ]
     },
     {
@@ -1414,6 +1502,14 @@
       "array": [
         "Reset",
         "重置"
+      ]
+    },
+    {
+      "name": "Reason",
+      "desc": "原因",
+      "array": [
+        "Reason",
+        "原因"
       ]
     },
     {
@@ -1633,6 +1729,14 @@
       ]
     },
     {
+      "name": "Suspended",
+      "desc": "挂起",
+      "array": [
+        "Suspended",
+        "挂起"
+      ]
+    },
+    {
       "name": "Scrollbar",
       "desc": "滑动条",
       "array": [
@@ -1710,6 +1814,14 @@
       "array": [
         "Type",
         "类型"
+      ]
+    },
+    {
+      "name": "Tree",
+      "desc": "树",
+      "array": [
+        "Tree",
+        "树"
       ]
     },
     {

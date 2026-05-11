@@ -46,7 +46,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             _openEffect = EditorGUILayout.BeginFoldoutHeaderGroup(_openEffect, LC.Combine(new Lc[] { Lc.Effects, Lc.Information, Lc.Settings} ));
             if (_openEffect)
             {
-                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Matrials} ), AssetsCheckerConfig.EffectMaxMatrials, 15);
+                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Materials} ), AssetsCheckerConfig.EffectMaxMatrials, 15);
                 AssetsCheckerConfig.EffectMaxParticles = DrawIntInfo("      " + LC.Combine(new Lc[] { Lc.Effects, Lc.Max, Lc.Particle} ), AssetsCheckerConfig.EffectMaxParticles, 1000);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();

@@ -102,7 +102,7 @@ public class CommercialProcedureBomb : ProcedureBase
         {
             _exitTriggered = true;
 
-            Ctx.EndProcedure().Forget();
+            Context.EndProcedure().Forget();
         }
 
         // 仅活几帧
@@ -112,7 +112,7 @@ public class CommercialProcedureBomb : ProcedureBase
             {
                 _exitTriggered = true;
 
-                Ctx.EndProcedure().Forget();
+                Context.EndProcedure().Forget();
             }
         }
     }
@@ -134,7 +134,7 @@ public class CommercialProcedureBomb : ProcedureBase
             // 串行深度
             case 0:
             {
-                await Ctx.StartSubProcedure<CommercialProcedureBomb>();
+                await Context.StartSubProcedure<CommercialProcedureBomb>();
                 break;
             }
 
@@ -148,7 +148,7 @@ public class CommercialProcedureBomb : ProcedureBase
                 for (int i = 0; i < count; i++)
                 {
                     tasks.Add(
-                        Ctx.StartSubProcedure<CommercialProcedureBomb>());
+                        Context.StartSubProcedure<CommercialProcedureBomb>());
                 }
 
                 await UniTask.WhenAll(tasks);
@@ -176,7 +176,7 @@ public class CommercialProcedureBomb : ProcedureBase
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    Ctx.EndProcedure().Forget();
+                    Context.EndProcedure().Forget();
                 }
 
                 break;

@@ -47,7 +47,7 @@ public class ProcedureTestSuite : MonoBehaviour
 
             // 启动子流程
             var childParams = new Dictionary<string, object> { { "message", "Hello from Root" } };
-            await Ctx.StartSubProcedure<ChildProcedure>(childParams);
+            await Context.StartSubProcedure<ChildProcedure>(childParams);
         }
 
         protected override async UniTask OnLeaveAsync()
@@ -74,7 +74,7 @@ public class ProcedureTestSuite : MonoBehaviour
             await UniTask.Delay(500);
 
             // 启动一个深层流程
-            await Ctx.StartSubProcedure<DeepProcedure>();
+            await Context.StartSubProcedure<DeepProcedure>();
         }
 
         protected override async UniTask OnLeaveAsync()
@@ -98,7 +98,7 @@ public class ProcedureTestSuite : MonoBehaviour
             {
                 await UniTask.Delay(2000);
                 Debug.Log($"[Deep#{_myId}] 2 秒到期，主动退出");
-                await Ctx.EndProcedure();
+                await Context.EndProcedure();
             }
             else
             {
