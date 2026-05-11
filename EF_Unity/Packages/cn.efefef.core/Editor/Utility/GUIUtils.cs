@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using UnityEditor;
 using UnityEngine;
 
 namespace EasyFramework.Edit.Windows
@@ -20,6 +21,9 @@ namespace EasyFramework.Edit.Windows
     {
         #region Color
 
+        /// <summary> 浅黄色 </summary>
+        public static Color LightYellow = new Color(0.9f, 0.9f, 0.8f);
+        
         /// <summary> 浅红色 </summary>
         public static Color LightRed = new Color(1f, 0.4f, 0.4f);
 
@@ -29,32 +33,78 @@ namespace EasyFramework.Edit.Windows
 
         #region Text
 
+        private static GUIStyle _inspectorTitleStyle;
+        /// <summary> Inspector通用标题 </summary>
+        public static GUIStyle InspectorTitle()
+        {
+            _inspectorTitleStyle ??= new GUIStyle(EditorStyles.boldLabel)
+            {
+                fontSize = 16,
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(10, 10, 8, 8),
+                margin = new RectOffset(5, 5, 5, 5),
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(0.9f, 0.9f, 0.8f) }
+            };
+            return _inspectorTitleStyle;
+        }
+
+        
         private static GUIStyle _titleStyle;
         /// <summary> 通用标题 </summary>
-        public static GUIStyle Title(int fontSize = 20, Color color = default,
-            FontStyle fontStyle = FontStyle.Bold, TextAnchor anchor = TextAnchor.UpperLeft)
+        public static GUIStyle Title()
         {
             _titleStyle ??= new GUIStyle()
             {
-                fontSize = fontSize,
-                fontStyle = fontStyle,
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
                 normal =
                 {
-                    textColor = color == default ? new Color(0.7f, 0.7f, 0.7f) : color,
+                    textColor = new Color(0.7f, 0.7f, 0.7f),
                 },
-                alignment = anchor
+                alignment = TextAnchor.UpperLeft
             };
             return _titleStyle;
         }
 
+
+        private static GUIStyle _smallNote;
+        /// <summary> 小提示 </summary>
+        public static GUIStyle SmallNote()
+        {
+            _smallNote ??= new GUIStyle()
+            {
+                fontSize = 10,
+                normal = { textColor = Color.gray }
+            };
+            return _smallNote;
+        }
+        
+        
         private static GUIStyle _text;
         /// <summary> 通用文本 </summary>
-        public static GUIStyle Text()
+        public static GUIStyle Text(int fontSize = 12, FontStyle fontStyle = FontStyle.Normal)
         {
             _text ??= new GUIStyle(GUI.skin.label);
+            _text.fontSize = fontSize;
+            _text.fontStyle = fontStyle;
             return _text;
         }
 
+
+        /// <summary>
+        /// 带图标的文本
+        /// </summary>
+        /// <param name="text">文本内容</param>
+        /// <param name="iconName">图标名 以 d_ 开头</param>
+        public static GUIContent IconText(string text, string iconName)
+        {
+            GUIContent iconText = EditorGUIUtility.IconContent(iconName);
+            iconText.text = text;
+            return iconText;
+        }
+        
+        
         #endregion
 
         #region Button
@@ -81,11 +131,12 @@ namespace EasyFramework.Edit.Windows
         {
             _backgroundStyle ??= new GUIStyle(GUI.skin.box)
             {
-                padding = new RectOffset(15, 15, 15, 15),
-                margin = new RectOffset(5, 5, 5, 5)
+                padding = new RectOffset(15, 15, 11, 11),
+                margin = new RectOffset(5, 5, 3, 3)
             };
             return _backgroundStyle;
         }
+        
         
         private static GUIStyle _scrollViewBackground;
         /// <summary> 滑动背景框 </summary>
@@ -98,6 +149,8 @@ namespace EasyFramework.Edit.Windows
             };
             return _scrollViewBackground;
         }
+        
+        
         #endregion
     }
 }

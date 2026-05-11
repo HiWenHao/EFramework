@@ -49,6 +49,14 @@
       ]
     },
     {
+      "name": "Active",
+      "desc": "活跃",
+      "array": [
+        "Active",
+        "活跃"
+      ]
+    },
+    {
       "name": "Author",
       "desc": "作者",
       "array": [
@@ -62,14 +70,6 @@
       "array": [
         "Assets",
         "资源"
-      ]
-    },
-    {
-      "name": "Active",
-      "desc": "积极的、动态",
-      "array": [
-        "Active",
-        "动态"
       ]
     },
     {
@@ -193,6 +193,14 @@
       ]
     },
     {
+      "name": "Check",
+      "desc": "检查",
+      "array": [
+        "Check",
+        "检查"
+      ]
+    },
+    {
       "name": "Color",
       "desc": "颜色",
       "array": [
@@ -297,6 +305,14 @@
       ]
     },
     {
+      "name": "Capacity",
+      "desc": "容量",
+      "array": [
+        "Capacity",
+        "容量"
+      ]
+    },
+    {
       "name": "Countdown",
       "desc": "倒计时",
       "array": [
@@ -385,6 +401,14 @@
       ]
     },
     {
+      "name": "Debug",
+      "desc": "调试",
+      "array": [
+        "Debug",
+        "调试"
+      ]
+    },
+    {
       "name": "Doing",
       "desc": "正在做",
       "array": [
@@ -441,11 +465,27 @@
       ]
     },
     {
+      "name": "Disable",
+      "desc": "禁用",
+      "array": [
+        "Disable",
+        "禁用"
+      ]
+    },
+    {
       "name": "Default",
       "desc": "默认",
       "array": [
         "Default",
         "默认"
+      ]
+    },
+    {
+      "name": "Dynamic",
+      "desc": "动态",
+      "array": [
+        "Dynamic",
+        "动态"
       ]
     },
     {
@@ -777,6 +817,14 @@
       ]
     },
     {
+      "name": "Idle",
+      "desc": "空闲",
+      "array": [
+        "Idle",
+        "空闲"
+      ]
+    },
+    {
       "name": "Init",
       "desc": "初始化",
       "array": [
@@ -814,6 +862,14 @@
       "array": [
         "Inertia",
         "惯性"
+      ]
+    },
+    {
+      "name": "Interval",
+      "desc": "间隔",
+      "array": [
+        "Interval",
+        "间隔"
       ]
     },
     {
@@ -982,6 +1038,14 @@
       "array": [
         "Mouse",
         "鼠标"
+      ]
+    },
+    {
+      "name": "Monitor",
+      "desc": "监控",
+      "array": [
+        "Monitor",
+        "监控"
       ]
     },
     {
@@ -1169,6 +1233,14 @@
       ]
     },
     {
+      "name": "Occupancy",
+      "desc": "占用",
+      "array": [
+        "Occupancy",
+        "占用"
+      ]
+    },
+    {
       "name": "Overwrite",
       "desc": "覆写",
       "array": [
@@ -1198,6 +1270,14 @@
       "array": [
         "Pack",
         "打包"
+      ]
+    },
+    {
+      "name": "Pool",
+      "desc": "池",
+      "array": [
+        "Pool",
+        "池"
       ]
     },
     {
@@ -1334,6 +1414,22 @@
       "array": [
         "Reset",
         "重置"
+      ]
+    },
+    {
+      "name": "Reflect",
+      "desc": "反射",
+      "array": [
+        "Reflect",
+        "反射"
+      ]
+    },
+    {
+      "name": "Running",
+      "desc": "运行时",
+      "array": [
+        "Running",
+        "运行时"
       ]
     },
     {
@@ -1622,6 +1718,14 @@
       "array": [
         "Title",
         "标题"
+      ]
+    },
+    {
+      "name": "Total",
+      "desc": "总数",
+      "array": [
+        "Total",
+        "总数"
       ]
     },
     {

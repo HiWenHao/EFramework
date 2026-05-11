@@ -19,12 +19,12 @@ namespace EasyFramework.Edit
 		Axis,
 		/// <summary> 图集 </summary>
 		Atlas,
+		/// <summary> 活跃 </summary>
+		Active,
 		/// <summary> 作者 </summary>
 		Author,
 		/// <summary> 资源 </summary>
 		Assets,
-		/// <summary> 积极的、动态 </summary>
-		Active,
 		/// <summary> 缺失 </summary>
 		Absent,
 		/// <summary> 动画 </summary>
@@ -55,6 +55,8 @@ namespace EasyFramework.Edit
 		Clear,
 		/// <summary> 类 </summary>
 		Class,
+		/// <summary> 检查 </summary>
+		Check,
 		/// <summary> 颜色 </summary>
 		Color,
 		/// <summary> 关闭 </summary>
@@ -81,6 +83,8 @@ namespace EasyFramework.Edit
 		Content,
 		/// <summary> 对比 </summary>
 		Compare,
+		/// <summary> 容量 </summary>
+		Capacity,
 		/// <summary> 倒计时 </summary>
 		Countdown,
 		/// <summary> 目录 </summary>
@@ -103,6 +107,8 @@ namespace EasyFramework.Edit
 		Drag,
 		/// <summary> 停靠 </summary>
 		Dock,
+		/// <summary> 调试 </summary>
+		Debug,
 		/// <summary> 正在做 </summary>
 		Doing,
 		/// <summary> 延迟 </summary>
@@ -117,8 +123,12 @@ namespace EasyFramework.Edit
 		Device,
 		/// <summary> 显示 </summary>
 		Display,
+		/// <summary> 禁用 </summary>
+		Disable,
 		/// <summary> 默认 </summary>
 		Default,
+		/// <summary> 动态 </summary>
+		Dynamic,
 		/// <summary> 下载 </summary>
 		Download,
 		/// <summary> 距离 </summary>
@@ -201,6 +211,8 @@ namespace EasyFramework.Edit
 		Id,
 		/// <summary> 是 </summary>
 		Is,
+		/// <summary> 空闲 </summary>
+		Idle,
 		/// <summary> 初始化 </summary>
 		Init,
 		/// <summary> 输入 </summary>
@@ -211,6 +223,8 @@ namespace EasyFramework.Edit
 		Import,
 		/// <summary> 惯性 </summary>
 		Inertia,
+		/// <summary> 间隔 </summary>
+		Interval,
 		/// <summary> 信息 </summary>
 		Information,
 		/// <summary> 键 </summary>
@@ -253,6 +267,8 @@ namespace EasyFramework.Edit
 		Model,
 		/// <summary> 鼠标 </summary>
 		Mouse,
+		/// <summary> 监控 </summary>
+		Monitor,
 		/// <summary> 缺失 </summary>
 		Missing,
 		/// <summary> 分钟 </summary>
@@ -299,6 +315,8 @@ namespace EasyFramework.Edit
 		Options,
 		/// <summary> 总览 </summary>
 		Overview,
+		/// <summary> 占用 </summary>
+		Occupancy,
 		/// <summary> 覆写 </summary>
 		Overwrite,
 		/// <summary> 操作 </summary>
@@ -307,6 +325,8 @@ namespace EasyFramework.Edit
 		Path,
 		/// <summary> 打包 </summary>
 		Pack,
+		/// <summary> 池 </summary>
+		Pool,
 		/// <summary> 预制件 </summary>
 		Prefab,
 		/// <summary> 请 </summary>
@@ -341,6 +361,10 @@ namespace EasyFramework.Edit
 		Right,
 		/// <summary> 重置 </summary>
 		Reset,
+		/// <summary> 反射 </summary>
+		Reflect,
+		/// <summary> 运行时 </summary>
+		Running,
 		/// <summary> 相关 </summary>
 		Related,
 		/// <summary> 刷新 </summary>
@@ -413,6 +437,8 @@ namespace EasyFramework.Edit
 		Type,
 		/// <summary> 标题 </summary>
 		Title,
+		/// <summary> 总数 </summary>
+		Total,
 		/// <summary> 目标 </summary>
 		Target,
 		/// <summary> 材质、贴图 </summary>

@@ -375,6 +375,9 @@ namespace EasyFramework.Systems.Pool
         public void SetOpenDebug(bool openDebug)
         {
             OpenDebug = openDebug;
+            if (null == _gameObjectPools)
+                return;
+            
             foreach (var pool in _gameObjectPools.Values)
             {
                 pool.OpenDebug = OpenDebug;
