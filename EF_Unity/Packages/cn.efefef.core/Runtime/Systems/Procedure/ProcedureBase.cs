@@ -22,15 +22,34 @@ namespace EasyFramework.Systems.Procedure
     /// </summary>
     public abstract class ProcedureBase : IProcedure
     {
-        protected ProcedureContext Ctx { get; private set; }
+        /// <summary>
+        ///当前流程上下文
+        /// <para>The context of the current procedure</para>
+        /// </summary>
+        protected ProcedureContext Context { get; private set; }
+        
+        /// <summary>
+        /// 当前流程取消令牌
+        /// <para>Current procedure cancellation token</para>
+        /// </summary>
         protected CancellationToken Token { get; private set; }
-        protected long Uid => Ctx?.Uid ?? 0;
-        protected int Depth => Ctx?.Depth ?? 0;
-        private IReadOnlyDictionary<string, object> Params => Ctx?.Params;
+        
+        /// <summary>
+        /// 当前流程实例唯一标识符
+        /// <para>The unique identifier of the current process instance</para>
+        /// </summary>
+        protected long Uid => Context?.Uid ?? 0;
+        
+        /// <summary>
+        /// 当前嵌套深度（根流程深度为1）
+        /// <para>Current nesting depth (root process depth is 1)</para>
+        /// </summary>
+        protected int Depth => Context?.Depth ?? 0;
+        private IReadOnlyDictionary<string, object> Params => Context?.Params;
 
         async UniTask IProcedure.OnEnter(ProcedureContext context, CancellationToken token)
         {
-            Ctx = context;
+            Context = context;
             Token = token;
             await OnEnterAsync();
         }
@@ -53,7 +72,7 @@ namespace EasyFramework.Systems.Procedure
                     Debug.LogError(e);
                 }
 
-                Ctx = null;
+                Context = null;
                 Token = CancellationToken.None;
             }
         }

@@ -20,21 +20,35 @@ namespace EasyFramework.Systems.Procedure
     /// </summary>
     public sealed class ProcedureContext
     {
-        /// <summary>当前流程实例唯一标识符</summary>
+        /// <summary>
+        /// 当前流程实例唯一标识符
+        /// <para>The unique identifier of the current process instance</para>
+        /// </summary>
         public long Uid { get; internal set; }
 
-        /// <summary>父流程实例唯一标识符（0表示根流程）</summary>
+        /// <summary>
+        /// 父流程实例唯一标识符（0表示根流程）
+        /// <para>Unique identifier of the parent process instance (0 represents the root process)</para>
+        /// </summary>
         public long ParentUid { get; internal set; }
 
-        /// <summary>运行时版本号，用于检测上下文是否失效</summary>
+        /// <summary>
+        /// 运行时版本号，用于检测上下文是否失效
+        /// <para>Runtime version number, used to detect whether the context is invalid</para>
+        /// </summary>
         public uint RuntimeVersion { get; internal set; }
 
-        /// <summary>当前嵌套深度（根流程深度为1）</summary>
+        /// <summary>
+        /// 当前嵌套深度（根流程深度为1）
+        /// <para>Current nesting depth (root process depth is 1)</para>
+        /// </summary>
         public int Depth { get; internal set; }
 
         /// <summary>
         /// 启动时传入的参数集合（只读）
         /// <para>注意：Params 底层来自对象池。Context Dispose 后禁止继续访问。</para>
+        /// <para>The collection of parameters passed during startup (read-only)</para>
+        /// <para>Note: The Params is derived from the object pool. Access is prohibited after Context Dispose.</para>
         /// </summary>
         public IReadOnlyDictionary<string, object> Params { get; internal set; }
 

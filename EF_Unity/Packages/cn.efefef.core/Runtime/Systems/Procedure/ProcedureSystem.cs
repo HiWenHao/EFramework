@@ -68,7 +68,7 @@ namespace EasyFramework.Systems.Procedure
                 }
                 catch (Exception e)
                 {
-                    D.Error(e);
+                    Error(e);
                     RequestExit(inst, ProcedureExitType.Exception, e);
                 }
             }
@@ -77,7 +77,7 @@ namespace EasyFramework.Systems.Procedure
                 return;
             
             if (!_pendingExits.IsEmpty)
-                ProcessPendingExits().Forget(D.Exception);
+                ProcessPendingExits().Forget(Exception);
             else
                 Interlocked.Exchange(ref _processingExit, 0); // 无需处理，恢复标记
         }
@@ -107,7 +107,7 @@ namespace EasyFramework.Systems.Procedure
                         inst.Params = null;
                     }
                 }
-                catch (Exception e) { D.Error(e); }
+                catch (Exception e) { Error(e); }
                 inst.CompletionSource?.TrySetResult();
                 inst.ResultSource?.TrySetResult(new ProcedureResult(false, ProcedureExitType.Cancelled));
                 if (inst.State != ProcedureState.None)
@@ -199,13 +199,13 @@ namespace EasyFramework.Systems.Procedure
             var parentInst = FindInstance(parentCtx.Uid);
             if (parentInst is not { ExitState: 0 })
             {
-                D.Error("Parent procedure not found or already exited.");
+                Error("Parent procedure not found or already exited.");
                 return new ProcedureResult(false, ProcedureExitType.Cancelled);
             }
 
             if (parentInst.State != ProcedureState.Active && parentInst.State != ProcedureState.Entering)
             {
-                D.Error("Parent procedure is not active.");
+                Error("Parent procedure is not active.");
                 return new ProcedureResult(false, ProcedureExitType.Cancelled);
             }
 
@@ -237,7 +237,7 @@ namespace EasyFramework.Systems.Procedure
             var inst = GetActiveInstance();
             if (inst == null || inst.Uid != ctx.Uid)
             {
-                D.Error("EndProcedure mismatch: not the active instance.");
+                Error("EndProcedure mismatch: not the active instance.");
                 return false;
             }
 
@@ -277,21 +277,21 @@ namespace EasyFramework.Systems.Procedure
             int newDepth = parentUid == 0 ? 1 : (FindInstance(parentUid)?.Depth + 1 ?? 1);
             if (newDepth > maxDepth)
             {
-                D.Error($"MaxDepth reached: {targetType.Name}");
+                Error($"MaxDepth reached: {targetType.Name}");
                 resultSource?.TrySetResult(new ProcedureResult(false, ProcedureExitType.DepthExceeded));
                 return false;
             }
 
             if (parentUid != 0 && WouldExceedChainLimit(targetType, parentUid))
             {
-                D.Error("Chain limit exceeded");
+                Error("Chain limit exceeded");
                 resultSource?.TrySetResult(new ProcedureResult(false, ProcedureExitType.ChainRepeated));
                 return false;
             }
 
             if (!_factories.TryGetValue(targetType, out var factory))
             {
-                D.Error($"Unregistered Procedure: {targetType}");
+                Error($"Unregistered Procedure: {targetType}");
                 resultSource?.TrySetResult(new ProcedureResult(false, ProcedureExitType.NotRegistered));
                 return false;
             }
@@ -343,7 +343,7 @@ namespace EasyFramework.Systems.Procedure
                 // ------ 阶段2：进入异步逻辑（已入栈，异常通过退出流程处理）------
                 EF.Events.Publish(new ProcedureEnterEvent(inst.Uid, parentUid, targetType, newDepth));
                 
-                TimeoutAsync(inst.Uid, inst.RuntimeVersion, inst.EnterTimeoutCts.Token).Forget(D.Exception);
+                TimeoutAsync(inst.Uid, inst.RuntimeVersion, inst.EnterTimeoutCts.Token).Forget(Exception);
 
                 await inst.Procedure.OnEnter(ctx, inst.LifecycleCts.Token);
 
@@ -374,7 +374,7 @@ namespace EasyFramework.Systems.Procedure
             }
             catch (Exception e)
             {
-                D.Error(e);
+                Error(e);
                 if (pushed)
                 {
                     // 已入栈后异常（包含 OnEnter 异常），触发退出流程
@@ -442,7 +442,7 @@ namespace EasyFramework.Systems.Procedure
             var top = GetActiveInstance();
             if (inst != top)
             {
-                D.Error($"Attempt to exit non-top procedure Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Request ignored.");
+                Error($"Attempt to exit non-top procedure Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Request ignored.");
                 Interlocked.Exchange(ref inst.ExitQueued, 0);
                 return;
             }
@@ -455,7 +455,7 @@ namespace EasyFramework.Systems.Procedure
             _pendingExits.Enqueue(inst);
     
             if (Interlocked.CompareExchange(ref _processingExit, 1, 0) == 0)
-                ProcessPendingExits().Forget(D.Exception);
+                ProcessPendingExits().Forget(Exception);
         }
 
         // 处理待退出队列
@@ -473,7 +473,7 @@ namespace EasyFramework.Systems.Procedure
                     }
                     catch (Exception e)
                     {
-                        D.Error(e);
+                        Error(e);
                     }
                     // 循环继续，无需中断，因为可能有新入队的元素
                 }
@@ -484,7 +484,7 @@ namespace EasyFramework.Systems.Procedure
         
                 // 处理期间又有新请求入队？立即再启动一次，避免依赖下一帧 Update
                 if (!_pendingExits.IsEmpty && Interlocked.CompareExchange(ref _processingExit, 1, 0) == 0)
-                    ProcessPendingExits().Forget(D.Exception);
+                    ProcessPendingExits().Forget(Exception);
             }
         }
 
@@ -496,7 +496,7 @@ namespace EasyFramework.Systems.Procedure
             // 栈顶校验（仅允许栈顶退出）
             if (_instanceStack.Count == 0 || _instanceStack.Peek() != inst)
             {
-                D.Error($"FATAL: Attempt to exit non-top instance Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Exit denied.");
+                Error($"FATAL: Attempt to exit non-top instance Uid={inst.Uid}, Type={inst.ProcedureType?.Name}. Exit denied.");
                 return; // 拒绝，防止破坏栈结构
             }
 
@@ -525,7 +525,7 @@ namespace EasyFramework.Systems.Procedure
                     }
                     catch (OperationCanceledException) when (leaveCts.IsCancellationRequested)
                     {
-                        D.Error($"OnLeave timeout for procedure UID={inst.Uid}, Type={inst.ProcedureType?.Name}. Force exiting.");
+                        Error($"OnLeave timeout for procedure UID={inst.Uid}, Type={inst.ProcedureType?.Name}. Force exiting.");
                     }
                     catch (OperationCanceledException)
                     {
@@ -534,7 +534,7 @@ namespace EasyFramework.Systems.Procedure
                 }
                 catch (Exception e)
                 {
-                    D.Error(e);
+                    Error(e);
                 }
                 finally
                 {
@@ -623,7 +623,7 @@ namespace EasyFramework.Systems.Procedure
                 RequestExit(inst, ProcedureExitType.Timeout);
             }
             catch (OperationCanceledException) { }
-            catch (Exception e) { D.Error(e); }
+            catch (Exception e) { Error(e); }
         }
 
         // 安全取消超时
@@ -668,6 +668,16 @@ namespace EasyFramework.Systems.Procedure
             }
             return null;
         }
+
+        private void Error(object message)
+        {
+            D.Error($"[ProcedureSystem] {message}]");
+        }
+        private void Exception(object message)
+        {
+            D.Exception($"[ProcedureSystem] {message}]");
+        }
+        
         #endregion
     }
 }
