@@ -201,6 +201,14 @@
       ]
     },
     {
+      "name": "Chain",
+      "desc": "链",
+      "array": [
+        "Chain",
+        "链"
+      ]
+    },
+    {
       "name": "Check",
       "desc": "检查",
       "array": [
@@ -697,6 +705,14 @@
       ]
     },
     {
+      "name": "Execution",
+      "desc": "执行",
+      "array": [
+        "Execution",
+        "执行"
+      ]
+    },
+    {
       "name": "Elasticity",
       "desc": "弹性",
       "array": [
@@ -910,6 +926,14 @@
       "array": [
         "Inertia",
         "惯性"
+      ]
+    },
+    {
+      "name": "Instance",
+      "desc": "实例",
+      "array": [
+        "Instance",
+        "实例"
       ]
     },
     {
@@ -1585,11 +1609,27 @@
       ]
     },
     {
+      "name": "Register",
+      "desc": "注册",
+      "array": [
+        "Register",
+        "注册"
+      ]
+    },
+    {
       "name": "Rendering",
       "desc": "渲染",
       "array": [
         "Rendering",
         "渲染"
+      ]
+    },
+    {
+      "name": "Repetition",
+      "desc": "重复",
+      "array": [
+        "Repetition",
+        "重复"
       ]
     },
     {
@@ -1625,6 +1665,14 @@
       ]
     },
     {
+      "name": "Self",
+      "desc": "自身",
+      "array": [
+        "Self",
+        "自身"
+      ]
+    },
+    {
       "name": "Score",
       "desc": "分数",
       "array": [
@@ -1638,6 +1686,14 @@
       "array": [
         "Scene",
         "场景"
+      ]
+    },
+    {
+      "name": "State",
+      "desc": "状态",
+      "array": [
+        "State",
+        "状态"
       ]
     },
     {
@@ -1726,6 +1782,14 @@
       "array": [
         "Settings",
         "设置"
+      ]
+    },
+    {
+      "name": "Surviving",
+      "desc": "存活",
+      "array": [
+        "Surviving",
+        "存活"
       ]
     },
     {

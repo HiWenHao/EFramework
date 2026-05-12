@@ -57,6 +57,8 @@ namespace EasyFramework.Edit
 		Clear,
 		/// <summary> 类 </summary>
 		Class,
+		/// <summary> 链 </summary>
+		Chain,
 		/// <summary> 检查 </summary>
 		Check,
 		/// <summary> 颜色 </summary>
@@ -181,6 +183,8 @@ namespace EasyFramework.Edit
 		Encrypt,
 		/// <summary> 异常 </summary>
 		Exception,
+		/// <summary> 执行 </summary>
+		Execution,
 		/// <summary> 弹性 </summary>
 		Elasticity,
 		/// <summary> 编辑器数据存档 </summary>
@@ -235,6 +239,8 @@ namespace EasyFramework.Edit
 		Import,
 		/// <summary> 惯性 </summary>
 		Inertia,
+		/// <summary> 实例 </summary>
+		Instance,
 		/// <summary> 间隔 </summary>
 		Interval,
 		/// <summary> 信息 </summary>
@@ -403,8 +409,12 @@ namespace EasyFramework.Edit
 		Resource,
 		/// <summary> 雷达图 </summary>
 		RadarMap,
+		/// <summary> 注册 </summary>
+		Register,
 		/// <summary> 渲染 </summary>
 		Rendering,
+		/// <summary> 重复 </summary>
+		Repetition,
 		/// <summary> 分辨率 </summary>
 		Resolution,
 		/// <summary> 尺寸 </summary>
@@ -413,10 +423,14 @@ namespace EasyFramework.Edit
 		Sort,
 		/// <summary> 保存 </summary>
 		Save,
+		/// <summary> 自身 </summary>
+		Self,
 		/// <summary> 分数 </summary>
 		Score,
 		/// <summary> 场景 </summary>
 		Scene,
+		/// <summary> 状态 </summary>
+		State,
 		/// <summary> 速度、只表示大小，不涉及方向 </summary>
 		Speed,
 		/// <summary> 脚本 </summary>
@@ -439,6 +453,8 @@ namespace EasyFramework.Edit
 		Simplex,
 		/// <summary> 设置 </summary>
 		Settings,
+		/// <summary> 存活 </summary>
+		Surviving,
 		/// <summary> 挂起 </summary>
 		Suspended,
 		/// <summary> 滑动条 </summary>

@@ -675,7 +675,7 @@ namespace EasyFramework.Systems.Procedure
 
         private void Error(object message)
         {
-            D.Error($"[ProcedureSystem] {message}]");
+            D.Error($"[ProcedureSystem] {message}");
         }
         private void Exception(object message)
         {
