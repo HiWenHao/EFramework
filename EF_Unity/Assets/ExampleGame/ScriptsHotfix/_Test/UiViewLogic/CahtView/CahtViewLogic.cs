@@ -1,0 +1,43 @@
+﻿/*
+ * ================================================
+ * Describe:      Please modify the description..
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-29 11:00:25
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-04-29 11:00:25
+ * ScriptVersion: 0.1 
+ * ================================================
+ */
+
+using EasyFramework;
+
+using System.Collections.Generic;
+using EasyFramework.Systems.Ui;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace EFExample
+{
+    /// <summary>
+    /// Please modify the description.
+    /// </summary>
+    public partial class CahtView
+    {
+        void IUiView.Awake()
+        {
+        }
+
+        void IUiView.Quit()
+        {
+        }
+
+        #region Button invoke event. Do not change here.不要更改这行 -- Auto
+
+        private void OnClickBtn_ToChatMessage()
+        {
+            EF.Ui.OpenPageView<ChatMessageView>();
+        }
+
+        #endregion button invoke event. Do not change here.不要更改这行 -- Auto
+    }
+}
