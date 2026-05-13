@@ -13,22 +13,22 @@ using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.RedDot
 {
-	/// <summary>
-	/// 红点渲染器接口
-	/// <para>English: Interface for red dot renderer</para>
-	/// </summary>
-	public interface IRedDotRenderer
-	{
-		/// <summary>
-		/// 渲染红点节点
-		/// <para>English: Render the red dot node</para>
-		/// </summary>
-		UniTask Render(RedDotNode node);
+    /// <summary>
+    /// 红点渲染器接口
+    /// <para>Interface for red dot renderer</para>
+    /// </summary>
+    public interface IRedDotRenderer
+    {
+        /// <summary>
+        /// 渲染红点节点
+        /// <para>Render the red dot node</para>
+        /// </summary>
+        UniTask Render(RedDotNode node);
 
-		/// <summary>
-		/// 隐藏渲染器
-		/// <para>English: Hide the renderer</para>
-		/// </summary>
-		void Hide();
-	}
+        /// <summary>
+        /// 隐藏渲染器
+        /// <para>Hide the renderer</para>
+        /// </summary>
+        void Hide();
+    }
 }
