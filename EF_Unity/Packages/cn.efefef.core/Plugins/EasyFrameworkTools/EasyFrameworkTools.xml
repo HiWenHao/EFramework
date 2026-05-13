@@ -16,26 +16,32 @@
         <member name="F:EasyFramework.ELogStyleType.Multicolour">
             <summary> 多色彩，日志类型与内容前后分离 </summary>
         </member>
-        <member name="T:EasyFramework.LogType">
+        <member name="T:EasyFramework.EFLogType">
             <summary>
-            The log type.
-            <para>记录类型</para>
+            The log type (supports bit flags for caching filters).
+            <para>记录类型（支持位掩码，用于缓存过滤）</para>
             </summary>
         </member>
-        <member name="F:EasyFramework.LogType.Log">
+        <member name="F:EasyFramework.EFLogType.None">
+            <summary> 无类型（内部用）</summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.Log">
             <summary> Regular log <para>常规记录</para></summary>
         </member>
-        <member name="F:EasyFramework.LogType.Emp">
+        <member name="F:EasyFramework.EFLogType.Emp">
             <summary> Emphasize log <para>突出记录</para></summary>
         </member>
-        <member name="F:EasyFramework.LogType.War">
+        <member name="F:EasyFramework.EFLogType.War">
             <summary> Warning log <para>警告记录</para></summary>
         </member>
-        <member name="F:EasyFramework.LogType.Err">
+        <member name="F:EasyFramework.EFLogType.Err">
             <summary> Error log <para>错误记录</para></summary>
         </member>
-        <member name="F:EasyFramework.LogType.Exc">
+        <member name="F:EasyFramework.EFLogType.Exc">
             <summary> Exceptions or Fatal log <para>异常或崩溃记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.All">
+            <summary> All types <para>全部类型</para></summary>
         </member>
         <member name="T:EasyFramework.D">
             <summary>
@@ -45,7 +51,7 @@
         </member>
         <member name="M:EasyFramework.D.Init(System.Boolean,EasyFramework.ELogStyleType,System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            Initialize the debuger system.<para>初始化记录系统</para>
+            Initialize the debug system.<para>初始化记录系统</para>
             </summary>
             <param name="openLog">Whether to enable logging.<para>是否打开记录</para></param>
             <param name="logColor">the color with log.<para>普通颜色</para></param>
@@ -56,11 +62,11 @@
         </member>
         <member name="M:EasyFramework.D.Clear">
             <summary>
-            CLear all log.
+            Clear all cached logs.
             <para>清空全部日志</para>
             </summary>
         </member>
-        <member name="M:EasyFramework.D.GetAllLogs(EasyFramework.LogType)">
+        <member name="M:EasyFramework.D.GetAllLogs(EasyFramework.EFLogType)">
             <summary>
             Obtain all logs by type.
             <para>按类型获取全部日志</para>
@@ -90,6 +96,27 @@
         <member name="M:EasyFramework.D.Exception(System.Object)">
             <summary>
             打印异常记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.SetMaxCachedEntries(System.Int32)">
+            <summary>设置最大缓存条目数，需 Init 之后调用，会清空已有缓存</summary>
+        </member>
+        <member name="M:EasyFramework.D.SetThrowOnException(System.Boolean)">
+            <summary>
+            设置是否在 Exception 方法中抛出异常 (默认 false，推荐 false)
+            <para>Set whether exceptions are thrown within the Exception method (default: false, recommended: false)</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.SetCachedLogTypes(EasyFramework.EFLogType)">
+            <summary>
+            设置需要缓存的日志类型（位掩码组合），只对后续日志生效，已缓存的不受影响。
+            <para>Specify the types of logs that need to be cached (bit mask combination), which will only take effect for subsequent logs. Cached logs will not be affected.</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.IsColor(System.String)">
+            <summary>
+            Check the string is color
+            <para>检查当前字符串是否为颜色值</para>
             </summary>
         </member>
         <member name="T:EasyFramework.TStatic">
@@ -143,12 +170,6 @@
             <summary>
             Check the string is a phone number.
             检查是否为手机号
-            </summary>
-        </member>
-        <member name="M:EasyFramework.TStatic.MakeTexture2D(System.String)">
-            <summary>
-            Use the string to make texture.
-            将string转为texture
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.BytesToAudioClip(System.Byte[])">
