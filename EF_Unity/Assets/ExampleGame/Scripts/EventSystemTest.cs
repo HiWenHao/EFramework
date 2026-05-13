@@ -233,14 +233,12 @@ public class EventSystemTest : MonoBehaviour
     private void Test_Cancellation()
     {
         Debug.Log(">>> 测试10：CancellationToken 取消异步发布");
-        bool cancelled = false;
         var cts = new CancellationTokenSource();
         cts.Cancel(); // 立即取消
 
         _eventSystem.Subscribe<TestEventB>(async e =>
         {
             await UniTask.Delay(1000); // 永远不会执行完
-            cancelled = false;
         });
 
         try

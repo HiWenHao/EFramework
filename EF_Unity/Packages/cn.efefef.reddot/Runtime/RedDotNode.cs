@@ -1,10 +1,10 @@
 /*
  * ================================================
- * Describe:      红点系统单个节点
+ * Describe:      This script is used to .
  * Author:        Alvin5100
- * CreationTime:  2026-05-12 17:57:26
+ * CreationTime:  2026-05-13 15:11:19
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-12 17:57:26
+ * ModifyTime:    2026-05-13 15:11:19
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -15,146 +15,183 @@ using System.Collections.Generic;
 namespace EasyFramework.Managers.RedDot
 {
     /// <summary>
-    /// 红点系统单个节点
-    /// <para>Red dot system single node</para>
+    /// 红点树节点
+    /// <para>English: Red dot tree node</para>
     /// </summary>
-    public class RedDotNode
+    public class RedDotNode : IDisposable
     {
-        /// <summary>
-        /// 当前红点: 键 - 名字
-        /// <para>The current red dot: key - name</para>
-        /// </summary>
-        public string Key { get; private set; }
+        public string Key { get; private set; }                     // 节点唯一标识
+        public int Number { get; private set; }                     // 当前数值（已应用）
+        public string ImagePath { get; private set; }               // 图片路径（仅 Image/ImageNumber 使用）
+        public RedDotDisplayType DisplayType { get; private set; }  // 显示类型
+        public RedDotNode Parent { get; private set; }              // 父节点
+        
+        private List<RedDotNode> _children = new();                 // 子节点列表
+        public IReadOnlyList<RedDotNode> Children => _children;     // 子节点只读访问
+
+        public event Action<RedDotNode> OnValueChanged;             // 数值变更事件
+
+        private bool _disposed;          // 是否已释放
+        private int _pendingNumber;       // 暂存的待应用数值
+        private bool _hasPendingNumber;   // 是否有待应用的数值
 
         /// <summary>
-        /// 当前红点展示类型
-        /// <para>Current red dot display type</para>
+        /// 节点深度（根节点深度为0）
+        /// <para>English: Node depth (root depth = 0)</para>
         /// </summary>
-        public RedDotDisplayType DisplayType { get; private set; }
+        public int Depth
+        {
+            get
+            {
+                int depth = 0;
+                var current = Parent;
+                while (current != null)
+                {
+                    depth++;
+                    current = current.Parent;
+                }
+                return depth;
+            }
+        }
 
         /// <summary>
-        /// 红点计数值（0表示无红点）
-        /// <para>The count of red dots (0 indicates no red dots)</para>
+        /// 构造函数
+        /// <para>English: Constructor</para>
         /// </summary>
-        public int Number { get; private set; }
-
-        /// <summary>
-        /// 当前节点要展示的图片地址
-        /// <para>The address of the image to be displayed at the current node</para>
-        /// </summary>
-        public string ImagePath { get; set; }
-
-        /// <summary>
-        /// 启用动画播放
-        /// <para>Enable animation playback</para>
-        /// </summary>
-        public bool EnableAnimation { get; set; } = false;
-
-        /// <summary>
-        /// 当节点的Number发生变化时触发
-        /// <para>It triggers when the Number of the node changes</para>
-        /// </summary>
-        public event Action<RedDotNode> OnValueChanged;
-
-        /// <summary>
-        /// 当前节点的父节点
-        /// <para>The parent node of the current node</para>
-        /// </summary>
-        public RedDotNode Parent { get; private set; }
-
-        /// <summary>
-        /// 当前节点的全部子节点
-        /// <para>All the child nodes of the current node</para>
-        /// </summary>
-        public IReadOnlyList<RedDotNode> Children => _childrenNode;
-
-        private readonly List<RedDotNode> _childrenNode = new(); // 全部子节点
-
-        /// <summary>
-        /// 创建一个节点
-        /// </summary>
-        internal RedDotNode(string key, RedDotDisplayType type = RedDotDisplayType.Dot, string imagePath = null)
+        public RedDotNode(string key, RedDotDisplayType displayType, string imagePath = null)
         {
             Key = key;
-            DisplayType = type;
+            DisplayType = displayType;
             ImagePath = imagePath;
-            Number = 0;
+            _children = new List<RedDotNode>();
         }
 
-        //设置父节点
-        internal void SetParent(RedDotNode parent)
-        {
-            if (Parent == parent || null == parent) return;
-            RemoveFromParent();
-            Parent = parent;
-            parent._childrenNode.Add(this);
-            parent.RefreshNumberFromChildren();
-        }
-
-        #region 公开函数
-        
         /// <summary>
-        /// 从父节点中移除自身
-        /// <para>Remove oneself from the parent node</para>
+        /// 设置节点数值（实际生效在本帧的 LateUpdate 或手动 Flush 时）
+        /// <para>English: Set node number (will be applied in LateUpdate or manual Flush)</para>
+        /// </summary>
+        public void SetNumber(int number)
+        {
+            if (DisplayType == RedDotDisplayType.Dot)
+                number = number > 0 ? 1 : 0;
+            if (Number == number) return;
+    
+            _pendingNumber = number;
+            _hasPendingNumber = true;
+            RedDotManager.Instance.DirtySystem.MarkDirty(this);
+        }
+
+        // 刷新节点：应用 pending 数值 或 聚合子节点数值
+        internal void Refresh()
+        {
+            // 先应用暂存的数值（优先于子节点聚合）
+            if (_hasPendingNumber)
+            {
+                Number = _pendingNumber;
+                _hasPendingNumber = false;
+                NotifyValueChanged();
+            }
+            else if (_children.Count > 0)
+            {
+                int total = 0;
+                foreach (var child in _children)
+                {
+                    if (child.DisplayType == RedDotDisplayType.Dot)
+                        total += child.Number > 0 ? 1 : 0;
+                    else
+                        total += child.Number;
+                }
+                int newNumber = total;
+                if (DisplayType == RedDotDisplayType.Dot)
+                    newNumber = newNumber > 0 ? 1 : 0;
+                if (Number != newNumber)
+                {
+                    Number = newNumber;
+                    NotifyValueChanged();
+                }
+            }
+    
+            if (Parent != null)
+                RedDotManager.Instance.DirtySystem.MarkDirty(Parent);
+        }
+
+        /// <summary>
+        /// 设置父节点
+        /// <para>English: Set parent node</para>
+        /// </summary>
+        public void SetParent(RedDotNode parent)
+        {
+            if (Parent == parent)
+                return;
+
+            if (parent != null && parent.IsChildOf(this))
+            {
+                UnityEngine.Debug.LogError($"RedDot Cycle Detected : {Key}");
+                return;
+            }
+
+            Parent?._children.Remove(this);
+            Parent = parent;
+            if (parent != null && !parent._children.Contains(this))
+            {
+                parent._children.Add(this);
+            }
+        }
+
+        // 检查当前节点是否是 target 的子孙节点（防止循环引用）
+        private bool IsChildOf(RedDotNode target)
+        {
+            var current = Parent;
+            while (current != null)
+            {
+                if (current == target)
+                    return true;
+                current = current.Parent;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 从父节点移除自身
+        /// <para>English: Remove itself from parent</para>
         /// </summary>
         public void RemoveFromParent()
         {
-            if (Parent == null) return;
-            Parent._childrenNode.Remove(this);
-            Parent.RefreshNumberFromChildren();
+            Parent?._children.Remove(this);
             Parent = null;
         }
 
-        /// <summary>
-        /// 设置红点数值
-        /// <para>Set the red dot value</para>
-        /// </summary>
-        /// <param name="value">具体的数量<para>Specific number</para></param>
-        public void SetNumber(int value)
+        // 通知数值变更
+        private void NotifyValueChanged()
         {
-            if (Number == value) return;
-            Number = Math.Max(0, value);
             OnValueChanged?.Invoke(this);
-
-            // 向上通知父节点重新计算
-            Parent?.RefreshNumberFromChildren();
+            RedDotManager.Instance.EventSystem.SendNodeChanged(this);
         }
 
         /// <summary>
-        /// 增加红点数值（data可为负数）
-        /// <para>Increase the value of the red dot (the value can be a negative number)</para>
+        /// 释放节点资源
+        /// <para>English: Dispose node resources</para>
         /// </summary>
-        /// <param name="value">要增加或减少的数量<para>The quantity to be increased or decreased</para></param>
-        public void AddNumber(int value)
+        public void Dispose()
         {
-            SetNumber(Number + value);
-        }
+            if (_disposed)
+                return;
 
-        #endregion
-
-        // 根据子节点数据刷新自身Number（求和模式）
-        private void RefreshNumberFromChildren()
-        {
-            int newNumber = 0;
-            foreach (var child in _childrenNode)
+            _disposed = true;
+            RemoveFromParent();
+            if (_children != null)
             {
-                // 若子节点显示类型为Dot，将其Number>0视为1参与求和；否则直接加Number
-                if (child.DisplayType == RedDotDisplayType.Dot)
-                    newNumber += child.Number > 0 ? 1 : 0;
-                else
-                    newNumber += child.Number;
+                var childrenCopy = new List<RedDotNode>(_children);
+                foreach (var child in childrenCopy)
+                {
+                    child.RemoveFromParent();
+                }
+                _children.Clear();
             }
-
-            // 若自身显示类型为Dot，求和结果仅用于判断是否>0（保持Boolean语义）
-            if (DisplayType == RedDotDisplayType.Dot)
-                newNumber = newNumber > 0 ? 1 : 0;
-
-            if (Number != newNumber)
-            {
-                Number = newNumber;
-                OnValueChanged?.Invoke(this);
-                Parent?.RefreshNumberFromChildren();
-            }
+            Parent = null;
+            OnValueChanged = null;
+            _pendingNumber = 0;
+            _hasPendingNumber = false;
         }
     }
 }
