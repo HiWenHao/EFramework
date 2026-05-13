@@ -25,18 +25,18 @@ namespace EasyFramework.Managers.RedDot
         [HeaderPro("红点节点 key", "Red dot node key")]
         [SerializeField] private string key;
 
-        [HeaderPro("点红点渲染器组件", "Dot renderer component")]
+        [HeaderPro("点红点渲染器组件", "Dot render component")]
         [SerializeField] private MonoBehaviour dotRenderer;
 
-        [HeaderPro("数字红点渲染器组件", "Number renderer component")]
+        [HeaderPro("数字红点渲染器组件", "Number render component")]
         [SerializeField] private MonoBehaviour numberRenderer;
 
-        [HeaderPro("图片红点渲染器组件", "Image renderer component")]
+        [HeaderPro("图片红点渲染器组件", "Image render component")]
         [SerializeField] private MonoBehaviour imageRenderer;
 
+        private RedDotNode _node; // 绑定的红点节点
         private readonly List<IRedDotRenderer> _allRenderers = new(); // 所有渲染器
         private readonly Dictionary<RedDotDisplayType, List<IRedDotRenderer>> _rendererMap = new(); // 按类型分组
-        private RedDotNode _node; // 绑定的红点节点
 
         private void Start()
         {
@@ -121,6 +121,58 @@ namespace EasyFramework.Managers.RedDot
                     await render.Render(node);
                 }
             }
+        }
+        
+        /// <summary>
+        /// 设置红点节点的键
+        /// <para>Set the key of the red dot node</para>
+        /// </summary>
+        /// <param name="newKey">新的节点键 <para>New node key</para></param>
+        public void SetKey(string newKey) => key = newKey;
+
+        /// <summary>
+        /// 设置点红点渲染器（Dot类型）
+        /// <para>Set dot red dot render (Dot type)</para>
+        /// </summary>
+        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
+        public void SetDotRenderer(IRedDotRenderer render)
+        {
+            if (render is not MonoBehaviour mono)
+            {
+                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
+                return;
+            }
+            dotRenderer = mono;
+        }
+
+        /// <summary>
+        /// 设置数字红点渲染器（Number类型）
+        /// <para>Set number red dot render (Number type)</para>
+        /// </summary>
+        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
+        public void SetNumberRenderer(IRedDotRenderer render)
+        {
+            if (render is not MonoBehaviour mono)
+            {
+                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
+                return;
+            }
+            numberRenderer = mono;
+        }
+
+        /// <summary>
+        /// 设置图片红点渲染器（Image类型或ImageNumber类型共用图片部分）
+        /// <para>Set image red dot render (for Image or ImageNumber display type)</para>
+        /// </summary>
+        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
+        public void SetImageRenderer(IRedDotRenderer render)
+        {
+            if (render is not MonoBehaviour mono)
+            {
+                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
+                return;
+            }
+            imageRenderer = mono;
         }
     }
 }

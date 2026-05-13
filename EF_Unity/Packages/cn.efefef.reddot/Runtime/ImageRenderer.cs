@@ -20,12 +20,21 @@ namespace EasyFramework.Managers.RedDot
     /// 红点渲染器：显示图片（Image类型）
     /// <para>Red dot renderer for Image type</para>
     /// </summary>
+    [RequireComponent(typeof(Image))]
+    [RequireComponent(typeof(RedDotView))]
     public class ImageRenderer : MonoBehaviour, IRedDotRenderer
     {
         [HeaderPro("显示图片的组件", "Component for displaying images")]
         [SerializeField] private Image image;
 
         private int _renderVersion = 0; // 渲染版本号（防止异步错位）
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            image = GetComponent<Image>();
+        }
+#endif
 
         /// <summary>
         /// 渲染图片节点

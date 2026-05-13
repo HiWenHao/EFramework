@@ -17,7 +17,7 @@ namespace EasyFramework.Managers.RedDot
     /// 红点管理器（单例）
     /// <para>Red dot manager (singleton)</para>
     /// </summary>
-    public class RedDotManager : MonoSingleton<RedDotManager>, IManager
+    public class RedDotManager : MonoSingleton<RedDotManager>, ISingleton
     {
         /// <summary>
         /// 脏系统，负责收集和刷新被标记为脏的红点节点。
@@ -49,7 +49,7 @@ namespace EasyFramework.Managers.RedDot
         /// </summary>
         private Dictionary<string, RedDotNode> _nodes;
 
-        public void Init()
+        void ISingleton.Init()
         {
             _nodes = new Dictionary<string, RedDotNode>();
             DirtySystem = new RedDotDirtySystem();
@@ -66,7 +66,7 @@ namespace EasyFramework.Managers.RedDot
             }
         }
 
-        public void Quit()
+        void ISingleton.Quit()
         {
             foreach (var node in _nodes.Values)
             {

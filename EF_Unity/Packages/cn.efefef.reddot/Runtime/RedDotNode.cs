@@ -104,7 +104,9 @@ namespace EasyFramework.Managers.RedDot
 
         /// <summary>
         /// 设置节点数值（实际生效在本帧的 LateUpdate 或手动 Flush 时）
+        /// <para><c>警告：所以在执行完这个函数后，立即调用 RedDotNode.Number，那么你得到的结果可能会是错误的。</c></para>
         /// <para>Set node number (will be applied in LateUpdate or manual Flush)</para>
+        /// <para><c>Warning: So,immediately call RedDotNode.Number after this function, and the result you get might be incorrect.</c></para>
         /// </summary>
         /// <param name="number">要设置的数值 <para>Number to set</para></param>
         public void SetNumber(int number)
@@ -165,7 +167,7 @@ namespace EasyFramework.Managers.RedDot
 
             if (parent != null && parent.IsChildOf(this))
             {
-                UnityEngine.Debug.LogError($"RedDot Cycle Detected : {Key}");
+                D.Error($"RedDot Cycle Detected : {Key}");
                 return;
             }
 

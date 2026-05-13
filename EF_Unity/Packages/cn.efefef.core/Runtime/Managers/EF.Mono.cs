@@ -49,7 +49,7 @@ public sealed partial class EF : MonoBehaviour
 
     #region Initialize application
     static EF _monoEF;
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void Initialize()
     {
         Managers = new GameObject("GM.Managers").transform;

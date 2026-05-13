@@ -20,10 +20,19 @@ namespace EasyFramework.Managers.RedDot
     /// 红点渲染器：显示数字（Number类型）
     /// <para>Red dot renderer for Number type</para>
     /// </summary>
+    [RequireComponent(typeof(Text))]
+    [RequireComponent(typeof(RedDotView))]
     public class NumberRenderer : MonoBehaviour, IRedDotRenderer
     {
         [HeaderPro("显示数字的文本组件","Text component displaying numbers")]
         [SerializeField] private Text text;
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            text = GetComponent<Text>();
+        }
+#endif
 
         /// <summary>
         /// 渲染数字节点
