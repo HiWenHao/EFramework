@@ -14,7 +14,7 @@ using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点渲染器：显示图片（Image类型）
@@ -48,7 +48,7 @@ namespace EasyFramework.Managers.RedDot
             if (!active) return;
             if (string.IsNullOrEmpty(node.ImagePath)) return;
 
-            var sprite = await RedDotManager.Instance.LoadSpriteAsync(node.ImagePath);
+            var sprite = await RedDotSystem.Instance.LoadSpriteAsync(node.ImagePath);
             if (currentVersion != _renderVersion) return; // 旧的请求被丢弃
             image.sprite = sprite;
         }

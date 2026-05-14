@@ -14,7 +14,7 @@ using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点渲染器：显示/隐藏红点（Dot类型）

@@ -9,8 +9,8 @@
  * ===============================================
  */
 
+using EasyFramework.Systems.RedDot;
 using UnityEngine;
-using EasyFramework.Managers.RedDot;
 
 namespace EasyFramework.Test.RedDot
 {
@@ -35,20 +35,22 @@ namespace EasyFramework.Test.RedDot
 
         private void RegisterTree()
         {
+            // 初始化子系统
+            RedDotSystem.Instance.InitSubsystem();
             // 根节点（Dot类型，聚合子节点）
-            RedDotManager.Instance.RegisterNode("Root");
+            RedDotSystem.Instance.RegisterNode("Root");
             // 任务节点（纯红点）
-            RedDotManager.Instance.RegisterNode("TaskRoot", "Root");
+            RedDotSystem.Instance.RegisterNode("TaskRoot", "Root");
             // 邮件节点（数字）
-            RedDotManager.Instance.RegisterNode("MailRoot", "Root", RedDotDisplayType.Number);
+            RedDotSystem.Instance.RegisterNode("MailRoot", "Root", RedDotDisplayType.Number);
             // 好友节点（图片）
-            RedDotManager.Instance.RegisterNode("FriendRoot", "Root", RedDotDisplayType.Image, "FriendRequestIcon");
+            RedDotSystem.Instance.RegisterNode("FriendRoot", "Root", RedDotDisplayType.Image, "FriendRequestIcon");
             
-            RedDotManager.Instance.RegisterNode("Mail - 0", "MailRoot");
-            RedDotManager.Instance.RegisterNode("Mail - 1", "MailRoot");
-            RedDotManager.Instance.RegisterNode("Mail - 2", "MailRoot");
-            RedDotManager.Instance.RegisterNode("Mail - 3", "MailRoot");
-            RedDotManager.Instance.RegisterNode("Mail - 4", "MailRoot");
+            RedDotSystem.Instance.RegisterNode("Mail - 0", "MailRoot");
+            RedDotSystem.Instance.RegisterNode("Mail - 1", "MailRoot");
+            RedDotSystem.Instance.RegisterNode("Mail - 2", "MailRoot");
+            RedDotSystem.Instance.RegisterNode("Mail - 3", "MailRoot");
+            RedDotSystem.Instance.RegisterNode("Mail - 4", "MailRoot");
         }
         
         private void SetupTaskUI()

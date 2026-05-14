@@ -1,13 +1,13 @@
 {
   "name": "cn.efefef.reddot",
   "displayName": "EF.RedDot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "unity": "2021.3",
   "unityRelease": "10f1",
-  "description": "一套完整且成熟的红点系统",
+  "description": "\u4e00\u5957\u5b8c\u6574\u4e14\u6210\u719f\u7684\u7ea2\u70b9\u7cfb\u7edf",
   "author": {
     "name": "Alvin",
-    "url": null
+    "url": ""
   },
   "changelogUrl": "https://github.com/HiWenHao/EFramework",
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
@@ -15,5 +15,11 @@
   "dependencies": {
     "cn.efefef.core": "0.0.1"
   },
-  "samples": null
+  "samples": [
+    {
+      "displayName": "Example Sample",
+      "description": "\u7ea2\u70b9\u4f7f\u7528\u6d4b\u8bd5\u6848\u4f8b.",
+      "path": "Samples~/RedDotExample"
+    }
+  ]
 }

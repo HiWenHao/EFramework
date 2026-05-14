@@ -99,6 +99,8 @@ namespace EasyFramework.Edit
 		Component,
 		/// <summary> 压缩 </summary>
 		Compression,
+		/// <summary> 点 </summary>
+		Dot,
 		/// <summary> 数据 </summary>
 		Data,
 		/// <summary> 样品 </summary>
@@ -311,6 +313,8 @@ namespace EasyFramework.Edit
 		Not,
 		/// <summary> 名称 </summary>
 		Name,
+		/// <summary> 节点 </summary>
+		Node,
 		/// <summary> 命名空间 </summary>
 		Namespace,
 		/// <summary> 好的 </summary>
@@ -377,6 +381,8 @@ namespace EasyFramework.Edit
 		Preferences,
 		/// <summary> 查询 </summary>
 		Query,
+		/// <summary> 红 </summary>
+		Red,
 		/// <summary> 行 </summary>
 		Row,
 		/// <summary> 比率 </summary>

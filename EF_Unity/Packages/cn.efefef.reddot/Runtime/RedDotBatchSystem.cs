@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 批处理系统：支持批量修改后统一刷新
@@ -45,7 +45,7 @@ namespace EasyFramework.Managers.RedDot
                 _batchDepth = 0;
             if (_batchDepth == 0)
             {
-                RedDotManager.Instance.DirtySystem.Flush();
+                RedDotSystem.Instance.DirtySystem.Flush();
             }
         }
     }

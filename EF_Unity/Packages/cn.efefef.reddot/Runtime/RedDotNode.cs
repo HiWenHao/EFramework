@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点树节点
@@ -117,7 +117,7 @@ namespace EasyFramework.Managers.RedDot
 
             _pendingNumber = number;
             _hasPendingNumber = true;
-            RedDotManager.Instance.DirtySystem.MarkDirty(this);
+            RedDotSystem.Instance.DirtySystem.MarkDirty(this);
         }
 
         // 刷新节点：应用 pending 数值 或 聚合子节点数值
@@ -152,7 +152,7 @@ namespace EasyFramework.Managers.RedDot
             }
 
             if (Parent != null)
-                RedDotManager.Instance.DirtySystem.MarkDirty(Parent);
+                RedDotSystem.Instance.DirtySystem.MarkDirty(Parent);
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ namespace EasyFramework.Managers.RedDot
         private void NotifyValueChanged()
         {
             OnValueChanged?.Invoke(this);
-            RedDotManager.Instance.EventSystem.SendNodeChanged(this);
+            RedDotSystem.Instance.EventSystem.SendNodeChanged(this);
         }
 
         /// <summary>

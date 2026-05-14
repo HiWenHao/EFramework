@@ -11,7 +11,7 @@
 
 using System.Collections.Generic;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 脏节点系统：管理需要刷新的节点集合

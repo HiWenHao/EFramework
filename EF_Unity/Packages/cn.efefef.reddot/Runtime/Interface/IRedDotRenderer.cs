@@ -11,7 +11,7 @@
 
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点渲染器接口

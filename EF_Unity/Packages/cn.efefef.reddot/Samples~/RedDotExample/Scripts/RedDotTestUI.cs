@@ -11,7 +11,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using EasyFramework.Managers.RedDot;
+using EasyFramework.Systems.RedDot;
 
 namespace EasyFramework.Test.RedDot
 {
@@ -46,7 +46,7 @@ namespace EasyFramework.Test.RedDot
 
         void OnMailClick()
         {
-            var node = RedDotManager.Instance.GetNode("MailRoot");
+            var node = RedDotSystem.Instance.GetNode("MailRoot");
             node?.SetNumber(node.Number + 1);
         }
 
@@ -64,23 +64,23 @@ namespace EasyFramework.Test.RedDot
 
         void OnButtonClick(string key)
         {
-            var node = RedDotManager.Instance.GetNode(key);
+            var node = RedDotSystem.Instance.GetNode(key);
             node?.SetNumber(node.Number == 0 ? 1 : 0);
         }
         void OnResetClick()
         {
             // 批量重置所有数值，使用批处理避免多次刷新
-            RedDotManager.Instance.BeginBatch();
-            RedDotManager.Instance.GetNode("MailRoot")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("TaskRoot")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("FriendRoot")?.SetNumber(0);
+            RedDotSystem.Instance.BeginBatch();
+            RedDotSystem.Instance.GetNode("MailRoot")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("TaskRoot")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("FriendRoot")?.SetNumber(0);
             
-            RedDotManager.Instance.GetNode("Mail - 0")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("Mail - 1")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("Mail - 2")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("Mail - 3")?.SetNumber(0);
-            RedDotManager.Instance.GetNode("Mail - 4")?.SetNumber(0);
-            RedDotManager.Instance.EndBatch();
+            RedDotSystem.Instance.GetNode("Mail - 0")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("Mail - 1")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("Mail - 2")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("Mail - 3")?.SetNumber(0);
+            RedDotSystem.Instance.GetNode("Mail - 4")?.SetNumber(0);
+            RedDotSystem.Instance.EndBatch();
             D.Log("所有红点已重置");
         }
     }

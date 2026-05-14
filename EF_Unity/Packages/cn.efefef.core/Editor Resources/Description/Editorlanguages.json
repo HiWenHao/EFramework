@@ -369,6 +369,14 @@
       ]
     },
     {
+      "name": "Dot",
+      "desc": "点",
+      "array": [
+        "Dot",
+        "点"
+      ]
+    },
+    {
       "name": "Data",
       "desc": "数据",
       "array": [
@@ -1217,6 +1225,14 @@
       ]
     },
     {
+      "name": "Node",
+      "desc": "节点",
+      "array": [
+        "Node",
+        "节点"
+      ]
+    },
+    {
       "name": "Namespace",
       "desc": "命名空间",
       "array": [
@@ -1478,6 +1494,14 @@
       "array": [
         "Query",
         "查询"
+      ]
+    },
+    {
+      "name": "Red",
+      "desc": "红",
+      "array": [
+        "Red",
+        "红"
       ]
     },
     {

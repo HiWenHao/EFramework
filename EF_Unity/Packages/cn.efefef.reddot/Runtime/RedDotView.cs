@@ -14,7 +14,7 @@ using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
 using UnityEngine;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点视图组件：挂载到UI元素上，自动绑定红点节点并渲染
@@ -55,7 +55,7 @@ namespace EasyFramework.Managers.RedDot
         private async UniTaskVoid Initialize()
         {
             await UniTask.Yield();
-            _node = RedDotManager.Instance.GetNode(key);
+            _node = RedDotSystem.Instance.GetNode(key);
             if (_node == null)
             {
                 D.Error($"RedDot Node Not Found : {key}");

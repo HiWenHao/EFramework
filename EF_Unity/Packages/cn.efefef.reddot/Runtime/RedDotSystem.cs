@@ -14,13 +14,13 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Managers.RedDot
+namespace EasyFramework.Systems.RedDot
 {
     /// <summary>
     /// 红点管理器（单例）
     /// <para>Red dot manager (singleton)</para>
     /// </summary>
-    public class RedDotManager : MonoSingleton<RedDotManager>, ISingleton
+    public class RedDotSystem : MonoSingleton<RedDotSystem>, ISingleton
     {
         /// <summary>
         /// 脏系统，负责收集和刷新被标记为脏的红点节点。
@@ -84,7 +84,7 @@ namespace EasyFramework.Managers.RedDot
         private bool EnsureSubsystemsReady()
         {
             if (_subsystemsSet) return true;
-            D.Error("[RedDotManager] Subsystems not set. Call SetupNewSystem before using red dot features. Operation ignored.");
+            D.Error("[ RedDotManager ] Subsystems not set. Call SetupNewSystem before using red dot features. Operation ignored.");
             return false;
         }
 
@@ -106,13 +106,13 @@ namespace EasyFramework.Managers.RedDot
         #region 系统设置
 
         /// <summary>
-        /// 设置新的子系统（脏系统、批处理系统、事件系统）。参数为 null 时将自动创建默认实例。
-        /// <para>Setup new subsystems (dirty, batch, event). If a parameter is null, a default instance will be created automatically.</para>
+        /// 初始化子系统（脏系统、批处理系统、事件系统）。参数为 null 时将自动创建默认实例。
+        /// <para>Initialize the subsystems (dirty, batch, event). If a parameter is null, a default instance will be created automatically.</para>
         /// </summary>
         /// <param name="dirtySystem">新的脏系统（为 null 则创建默认）<para>New dirty system (creates default if null)</para></param>
         /// <param name="batchSystem">新的批处理系统（为 null 则创建默认）<para>New batch system (creates default if null)</para></param>
         /// <param name="eventSystem">新的事件系统（为 null 则创建默认）<para>New event system (creates default if null)</para></param>
-        public void SetupNewSystem(RedDotDirtySystem dirtySystem = null, RedDotBatchSystem batchSystem = null,
+        public void InitSubsystem(RedDotDirtySystem dirtySystem = null, RedDotBatchSystem batchSystem = null,
             RedDotEventSystem eventSystem = null)
         {
             if (_subsystemsSet)
