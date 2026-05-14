@@ -9,7 +9,10 @@
  * ================================================
  */
 
+using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace EasyFramework.Managers.RedDot
 {
@@ -38,10 +41,10 @@ namespace EasyFramework.Managers.RedDot
         public RedDotEventSystem EventSystem { get; private set; }
 
         /// <summary>
-        /// 资源提供者，用于加载红点图标等资源。
-        /// <para>Resource provider, used to load red dot icons and other resources.</para>
+        /// 异步加载精灵图片的委托，用户可替换为自定义加载逻辑（如 Addressables、AssetBundle 等）。
+        /// <para>Delegate for asynchronous sprite loading. User can replace with custom logic (e.g. Addressables, AssetBundle).</para>
         /// </summary>
-        public IResourceProvider ResourceProvider { get; private set; }
+        public Func<string, UniTask<Sprite>> LoadSpriteAsync { get; private set; }
 
         /// <summary>
         /// 节点字典，存储所有已注册的红点节点（key -> node）。
@@ -49,18 +52,18 @@ namespace EasyFramework.Managers.RedDot
         /// </summary>
         private Dictionary<string, RedDotNode> _nodes;
 
+        private bool _subsystemsSet; //  判断是否已经注册子系统
+        private readonly Dictionary<string, Sprite> _spriteCache = new(); // 简单缓存
+
         void ISingleton.Init()
         {
             _nodes = new Dictionary<string, RedDotNode>();
-            DirtySystem = new RedDotDirtySystem();
-            BatchSystem = new RedDotBatchSystem();
-            EventSystem = new RedDotEventSystem();
-            ResourceProvider = new DefaultResourceProvider();
+            LoadSpriteAsync = DefaultLoadSpriteAsync;
         }
 
         private void LateUpdate()
         {
-            if (!BatchSystem.IsBatching)
+            if (_subsystemsSet && !BatchSystem.IsBatching)
             {
                 DirtySystem.Flush();
             }
@@ -72,7 +75,79 @@ namespace EasyFramework.Managers.RedDot
             {
                 node.Dispose();
             }
+
             _nodes.Clear();
+            _spriteCache.Clear();
+        }
+
+        // 确保子系统准备就绪
+        private bool EnsureSubsystemsReady()
+        {
+            if (_subsystemsSet) return true;
+            D.Error("[RedDotManager] Subsystems not set. Call SetupNewSystem before using red dot features. Operation ignored.");
+            return false;
+        }
+
+        // 默认Resources加载
+        private async UniTask<Sprite> DefaultLoadSpriteAsync(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            if (_spriteCache.TryGetValue(path, out var cached) && cached != null)
+                return cached;
+
+            var request = Resources.LoadAsync<Sprite>(path);
+            await request;
+            var sprite = request.asset as Sprite;
+            if (sprite != null)
+                _spriteCache[path] = sprite;
+            return sprite;
+        }
+
+        #region 系统设置
+
+        /// <summary>
+        /// 设置新的子系统（脏系统、批处理系统、事件系统）。参数为 null 时将自动创建默认实例。
+        /// <para>Setup new subsystems (dirty, batch, event). If a parameter is null, a default instance will be created automatically.</para>
+        /// </summary>
+        /// <param name="dirtySystem">新的脏系统（为 null 则创建默认）<para>New dirty system (creates default if null)</para></param>
+        /// <param name="batchSystem">新的批处理系统（为 null 则创建默认）<para>New batch system (creates default if null)</para></param>
+        /// <param name="eventSystem">新的事件系统（为 null 则创建默认）<para>New event system (creates default if null)</para></param>
+        public void SetupNewSystem(RedDotDirtySystem dirtySystem = null, RedDotBatchSystem batchSystem = null,
+            RedDotEventSystem eventSystem = null)
+        {
+            if (_subsystemsSet)
+            {
+                D.Error("[RedDotManager] Subsystems have already been set. Re-setting may cause state loss. Skipped.");
+                return;
+            }
+
+            _subsystemsSet = true;
+
+            DirtySystem = dirtySystem ?? new RedDotDirtySystem();
+            BatchSystem = batchSystem ?? new RedDotBatchSystem();
+            EventSystem = eventSystem ?? new RedDotEventSystem();
+        }
+
+        /// <summary>
+        /// 设置资源加载代理器
+        /// <para>Set up resource loading proxy</para>
+        /// </summary>
+        /// <param name="spriteLoader">资源加载代理器<para>Resource proxy</para></param>
+        public void SetResourceProvider(Func<string, UniTask<Sprite>> spriteLoader)
+        {
+            LoadSpriteAsync = spriteLoader;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 清理默认加载的全部图片缓存, 如果你通过“SetResourceProvider”函数重新设置了加载器，那么此函数将不会对该图像进行清理操作。
+        /// <para>Clear all the cached images that are loaded by default.
+        /// If you newly set a loader through the SetResourceProvider function, the image will not be cleaned up by this function.</para>
+        /// </summary>
+        public void ClearSpriteCache()
+        {
+            _spriteCache.Clear();
         }
 
         /// <summary>
@@ -87,7 +162,7 @@ namespace EasyFramework.Managers.RedDot
         public RedDotNode RegisterNode(string key, string parentKey = null,
             RedDotDisplayType displayType = RedDotDisplayType.Dot, string imagePath = null)
         {
-            if (string.IsNullOrEmpty(key))
+            if (!EnsureSubsystemsReady() || string.IsNullOrEmpty(key))
                 return null;
 
             if (_nodes.TryGetValue(key, out var exist))
@@ -118,6 +193,7 @@ namespace EasyFramework.Managers.RedDot
         /// <returns>节点实例，如果不存在则返回null <para>Node instance, or null if not found</para></returns>
         public RedDotNode GetNode(string key)
         {
+            if (!EnsureSubsystemsReady()) return null;
             _nodes.TryGetValue(key, out var node);
             return node;
         }
@@ -131,7 +207,11 @@ namespace EasyFramework.Managers.RedDot
         /// <returns>是否成功获取节点 <para>Whether the node was successfully obtained</para></returns>
         public bool TryGetNode(string key, out RedDotNode node)
         {
-            return _nodes.TryGetValue(key, out node);
+            if (EnsureSubsystemsReady())
+                return _nodes.TryGetValue(key, out node);
+
+            node = null;
+            return false;
         }
 
         /// <summary>
@@ -141,6 +221,7 @@ namespace EasyFramework.Managers.RedDot
         /// <param name="key">节点的唯一标识键 <para>Unique key of the node</para></param>
         public void UnregisterNode(string key)
         {
+            if (!EnsureSubsystemsReady()) return;
             if (!_nodes.TryGetValue(key, out var node))
                 return;
 
@@ -160,6 +241,7 @@ namespace EasyFramework.Managers.RedDot
         /// </summary>
         public void BeginBatch()
         {
+            if (!EnsureSubsystemsReady()) return;
             BatchSystem.Begin();
         }
 
@@ -169,13 +251,18 @@ namespace EasyFramework.Managers.RedDot
         /// </summary>
         public void EndBatch()
         {
+            if (!EnsureSubsystemsReady()) return;
             BatchSystem.End();
         }
-        
+
         /// <summary>
         /// 手动刷新所有脏节点（忽略批处理状态）。
         /// <para>Manually flushes all dirty nodes (ignores batch status).</para>
         /// </summary>
-        public void Flush() => DirtySystem.Flush();
+        public void Flush()
+        {
+            if (!EnsureSubsystemsReady()) return;
+            DirtySystem.Flush();
+        }
     }
 }

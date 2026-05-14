@@ -48,7 +48,7 @@ namespace EasyFramework.Managers.RedDot
             if (!active) return;
             if (string.IsNullOrEmpty(node.ImagePath)) return;
 
-            var sprite = await RedDotManager.Instance.ResourceProvider.LoadSpriteAsync(node.ImagePath);
+            var sprite = await RedDotManager.Instance.LoadSpriteAsync(node.ImagePath);
             if (currentVersion != _renderVersion) return; // 旧的请求被丢弃
             image.sprite = sprite;
         }
