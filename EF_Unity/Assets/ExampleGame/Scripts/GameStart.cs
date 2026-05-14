@@ -25,7 +25,6 @@ namespace EFExample
     /// </summary>
     public class GameStart : MonoBehaviour
     {
-        public bool StartWebSocket;
         public EPlayMode PlayMode;
         private void Start()
         {
@@ -55,47 +54,9 @@ namespace EFExample
             //ExcelDataCacheManager.CacheAllData();
             //for (int i = 0; i < EDC_Example.Ids.Length; i++)
             //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
-
-            //网络部分，还待完善
-            if (StartWebSocket)
-            {
-                BestHTTP.WebSocket.WebSocket _ws = EF.Socket.CreateAndOpenWebSocket(
-                    new System.Uri("wss://echo.websocket.events"),
-                    onOpen: (ws) =>
-                    {
-                        D.Log("Socket onOpen !!!");
-                    },
-                    onMessage: (ws, msg) =>
-                    {
-                        D.Log("Socket onMessage !!!   msg = " + msg);
-                    },
-                    onBinary: (ws, bytes) =>
-                    {
-                        D.Log("Socket onBinary !!!   bytes length = " + bytes.Length);
-                    },
-                    onError: (ws, error) =>
-                    {
-                        D.Error("Socket onError !!!   error = " + error);
-                    },
-                    onClosed: (ws, code, msg) =>
-                    {
-                        D.Log("Socket onClosed !!!");
-                    },
-                    onErrorDescription: null,
-                    onIncompleteFrame: null
-                );
-                EF.Timer.AddOnce(1.0f, delegate
-                {
-                    _ws.Send("Hello gamer..");
-                });
-                EF.Timer.AddOnce(3.0f, delegate
-                {
-                    EF.Socket.DisposeDesignation(_ws);
-                });
-            }
             
-            StartUpdatePatch().Forget();
-            //LoadMetadataForAOTAssemblies();
+            //StartUpdatePatch().Forget();
+            LoadMetadataForAOTAssemblies();
 
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];

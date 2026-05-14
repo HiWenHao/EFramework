@@ -61,10 +61,7 @@ public sealed partial class EF
     
     /// <summary> Scene manager.<para>场景管理器</para></summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
-
-    /// <summary> Network (Socket) manager.<para>网络Socket管理器</para></summary>
-    public static SocketManager Socket => SocketManager.Instance;
-
+    
     /// <summary> Folder manager.<para>文件夹管理器</para></summary>
     public static FolderManager Folder => FolderManager.Instance;
 
