@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:        This is singleton interface.
+ * Describe:        框架单例接口
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2022-05-14:42:36
  * ModifyAuthor:    Xiaohei.Wang(Wenhao)
@@ -8,6 +8,7 @@
  * Version:         1.0
  * ===============================================
  */
+
 namespace EasyFramework
 {
     /// <summary>
@@ -21,6 +22,7 @@ namespace EasyFramework
         /// <para>初始化</para>
         /// </summary>
         public void Init();
+
         /// <summary>
         /// Quit
         /// <para>退出</para>

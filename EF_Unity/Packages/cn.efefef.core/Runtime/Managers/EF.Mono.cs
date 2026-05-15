@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using System;
 using EasyFramework;
 using System.Collections.Generic;
 using UnityEngine;
@@ -82,6 +83,12 @@ public sealed partial class EF : MonoBehaviour
             _updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
+
+    private void LateUpdate()
+    {
+        
+    }
+
     #endregion
 
     #region Control Mamager and update

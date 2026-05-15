@@ -1,13 +1,13 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to update project.
+ * Describe:      框架更新接口
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-03-02 16:24:48
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
  * ModifyTime:    2023-03-02 16:24:48
  * ScriptVersion: 0.1
  * ===============================================
-*/
+ */
 
 namespace EasyFramework
 {
@@ -16,7 +16,7 @@ namespace EasyFramework
     /// <para>项目中的更新接口</para>
     /// </summary>
     public interface IUpdate
-	{
+    {
         /// <summary>
         /// 轮询更新
         /// </summary>
