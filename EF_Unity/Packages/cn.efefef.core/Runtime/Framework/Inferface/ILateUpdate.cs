@@ -21,6 +21,12 @@ namespace EasyFramework
         /// 延迟更新,每帧中最后更新的内容
         /// <para>Delayed update, the last updated content in each frame</para>
         /// </summary>
-        void LateUpdate();
+        /// <param name="elapse">The interval in seconds from the last frame to the current one.
+        /// <para>逻辑流逝时间，以秒为单位</para>
+        /// </param>
+        /// <param name="realElapse">The timeScale-independent interval in seconds from the last frame to the current one.
+        /// <para>真实流逝时间，以秒为单位</para>
+        /// </param>
+        void LateUpdate(float elapse, float realElapse);
     }
 }

@@ -5,36 +5,25 @@
  * CreationTime:    2022-05-14:33:01
  * ModifyAuthor:    Alvin8412
  * ModifyTime:      2026-05-08 22:42:46
- * ScriptVersion:   0.2
+ * ScriptVersion:   1.0
  * ===============================================
  */
 
 using System;
+using System.Collections.Generic;
 using EasyFramework;
 using UnityEngine;
 
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
 {
-    private static bool _isQuitting;
-    private static bool _quitEventRegistered;
-    private static readonly Lazy<T> _lazy = new(CreateInstance);
-
-    public static T Instance => _isQuitting ? null : _lazy.Value;
-    
-    /// <summary>
-    /// Current type name
-    /// <para>当前类型名字</para>
-    /// </summary>
+    public static T Instance => SelfLazy.Value;
     public string TypeName => typeof(T).Name;
+
+    private static readonly HashSet<T> Registered = new();
+    private static readonly Lazy<T> SelfLazy = new(CreateInstance);
 
     private static T CreateInstance()
     {
-        if (!_quitEventRegistered)
-        {
-            Application.quitting += OnApplicationQuitting;
-            _quitEventRegistered = true;
-        }
-
         var existing = FindObjectsByType<T>(FindObjectsSortMode.None);
         if (existing.Length > 0)
         {
@@ -50,15 +39,9 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
         return instance;
     }
 
-    private static void OnApplicationQuitting()
-    {
-        _isQuitting = true;
-        if (_lazy.IsValueCreated)
-            Destroy(_lazy.Value.gameObject);
-    }
-
     private static void RegisterAndInit(T instance)
     {
+        if (!Registered.Add(instance)) return;
         if (instance is IManager manager)
         {
             instance.transform.SetParent(EF.Managers);
@@ -69,7 +52,11 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
             instance.transform.SetParent(EF.Singleton);
             EF.Register(instance);
         }
-
         instance.Init();
+    }
+
+    protected virtual void OnDestroy()
+    {
+        Registered.Remove((T)this);
     }
 }
