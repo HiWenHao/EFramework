@@ -16,7 +16,8 @@ using EasyFramework.Managers.Timer;
 
 namespace EasyFramework.Managers
 {
-    public class TimeManager : Singleton<TimeManager>, IManager, IUpdate
+    [Manager]
+    public class TimeManager : Singleton<TimeManager>, ISingleton, IUpdate
     {
         /// <summary>
         /// Globally unique time.

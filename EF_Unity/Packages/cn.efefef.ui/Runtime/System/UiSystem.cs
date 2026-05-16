@@ -10,6 +10,7 @@
  */
 
 using System.Collections.Generic;
+using EasyFramework.Managers;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Ui
@@ -17,7 +18,8 @@ namespace EasyFramework.Systems.Ui
     /// <summary>
     /// 用户界面系统
     /// </summary>
-    public partial class UiSystem : Singleton<UiSystem>, IManager, IUpdate
+    [Manager]
+    public partial class UiSystem : Singleton<UiSystem>, ISingleton, IUpdate
     {
         /// <summary>
         /// UI相机

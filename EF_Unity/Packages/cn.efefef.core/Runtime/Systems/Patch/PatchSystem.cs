@@ -10,6 +10,7 @@
  */
 
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
 using EasyFramework.Systems.Ui;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,8 @@ namespace EasyFramework.Systems.Patch
     /// <summary>
     /// 资源更新
     /// </summary>
-    public class PatchSystem : Singleton<PatchSystem>, IManager
+    [Manager]
+    public class PatchSystem : Singleton<PatchSystem>, ISingleton
     {
         /// <summary>
         /// 是否使用Yoo

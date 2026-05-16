@@ -29,11 +29,10 @@ public abstract class Singleton<T> where T : class, ISingleton, new()
     private static readonly Lazy<T> SelfLazy = new(() =>
     {
         T t = new T();
-        if (t is IManager manager)
-            EF.Register(manager);
-        else
-            EF.Register(t);
-        t.Init();
+        if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+            return t;
+
+        EF.Register(t);
         return t;
     });
 }

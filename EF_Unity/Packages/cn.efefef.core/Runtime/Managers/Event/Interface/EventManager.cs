@@ -15,7 +15,8 @@ using System.Collections.Generic;
 
 namespace EasyFramework.Managers
 {
-    public class EventManager : Singleton<EventManager>, IManager
+    [Manager]
+    public class EventManager : Singleton<EventManager>, ISingleton
     {
         /// <summary>
         /// 操作类型

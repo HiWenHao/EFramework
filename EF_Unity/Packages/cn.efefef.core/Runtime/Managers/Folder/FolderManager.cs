@@ -19,7 +19,8 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Control all folder.
     /// </summary>
-    public class FolderManager : Singleton<FolderManager>, IManager
+    [Manager]
+    public class FolderManager : Singleton<FolderManager>, ISingleton
     {
         private string _assetsPath;
         void ISingleton.Init()

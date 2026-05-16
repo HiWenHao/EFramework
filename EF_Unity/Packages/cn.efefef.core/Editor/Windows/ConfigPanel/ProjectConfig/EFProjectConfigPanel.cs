@@ -31,7 +31,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _scriptVersion;
         private SerializedProperty _resourcesArea;
         private SerializedProperty _appConstConfig;
-        private SerializedProperty _appConstManagerList;
 
         public override int Priority => 0;
         public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Settings });
@@ -48,7 +47,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
             _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
             _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
-            _appConstManagerList = _appConstConfig.FindPropertyRelative("_managerLevel");
 
             var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
             MethodInfo methodInfo = type.GetMethod("GetUserInfo");
@@ -58,8 +56,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
             _editorUser = (string)propertyInfo.GetValue(userInfo);
             EditorPrefs.SetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser", _editorUser);
-
-            FindAllManager();
 
             _systemInfoSwitch = true;
         }
@@ -86,8 +82,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Project, Lc.Settings })))
             {
-                ResetManagerLevel();
-
                 string _name = Application.dataPath.Split('/')[^2];
                 _appConstConfig.FindPropertyRelative("_appName").stringValue = _name;
                 _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = _name + "_";
@@ -95,12 +89,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _appConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
                 _appConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
             }
-
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Only, Lc.Reset, Lc.Manager, Lc.Level })))
-            {
-                ResetManagerLevel();
-            }
-
+            
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(6);
@@ -155,59 +144,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-        }
-
-        /// <summary>
-        /// 重置管理者级别
-        /// </summary>
-        private void ResetManagerLevel()
-        {
-            _appConstManagerList.ClearArray();
-            for (int i = 0; i < 10; i++)
-            {
-                _appConstManagerList.InsertArrayElementAtIndex(0);
-            }
-
-            _appConstManagerList.GetArrayElementAtIndex(0).stringValue = "TimeManager";
-            _appConstManagerList.GetArrayElementAtIndex(1).stringValue = "ToolManager";
-            _appConstManagerList.GetArrayElementAtIndex(2).stringValue = "EventManager";
-            _appConstManagerList.GetArrayElementAtIndex(3).stringValue = "HttpsManager";
-            _appConstManagerList.GetArrayElementAtIndex(4).stringValue = "SocketManager";
-            _appConstManagerList.GetArrayElementAtIndex(5).stringValue = "FolderManager";
-            _appConstManagerList.GetArrayElementAtIndex(6).stringValue = "LoadManager";
-            _appConstManagerList.GetArrayElementAtIndex(7).stringValue = "ScenesManager";
-            _appConstManagerList.GetArrayElementAtIndex(8).stringValue = "AudioManager";
-            _appConstManagerList.GetArrayElementAtIndex(9).stringValue = "UIManager";
-        }
-
-        /// <summary>
-        /// 查找全部管理器
-        /// </summary>
-        private void FindAllManager()
-        {
-            List<string> managerNameList = new List<string>();
-            for (int i = 0; i < _appConstManagerList.arraySize; i++)
-            {
-                managerNameList.Add(_appConstManagerList.GetArrayElementAtIndex(i).stringValue);
-            }
-
-            bool changed = false;
-            TypeCache.TypeCollection collection = TypeCache.GetTypesDerivedFrom(typeof(IManager));
-            for (int i = 0; i < collection.Count; i++)
-            {
-                if (!managerNameList.Contains(collection[i].Name))
-                {
-                    changed = true;
-                    int _cot = managerNameList.Count;
-                    _appConstManagerList.InsertArrayElementAtIndex(_cot);
-                    _appConstManagerList.GetArrayElementAtIndex(_cot).stringValue = collection[i].Name;
-                }
-            }
-
-            if (changed)
-            {
-                _settingPanel.ApplyModifiedPropertiesWithoutUndo();
-            }
         }
     }
 }

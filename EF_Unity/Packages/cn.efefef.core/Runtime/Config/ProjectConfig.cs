@@ -239,26 +239,5 @@ namespace EasyFramework
         private string _audioPath = "Sources/";
 
         public string AudioPath => _audioPath;
-
-        [SerializeField,
-         HeaderPro("自上而下，更新越靠前，退出越靠后", "From top to bottom, the more forward the update, the more backward the exit")]
-        private List<string> _managerLevel = new List<string>()
-        {
-            "TimeManager",
-            "ToolManager",
-            "PoolManager",
-            "PatchManager",
-            "AssetsRootManager",
-            "EventManager",
-            "HttpsManager",
-            "SocketManager",
-            "FolderManager",
-            "LoadManager",
-            "ScenesManager",
-            "AudioManager",
-            "UiManager",
-        };
-
-        public List<string> ManagerLevels => _managerLevel;
     }
 }

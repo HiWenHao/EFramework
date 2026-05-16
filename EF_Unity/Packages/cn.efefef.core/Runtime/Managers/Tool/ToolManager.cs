@@ -20,7 +20,8 @@ namespace EasyFramework.Managers
     /// To help other managers.
     /// <para>工具管理器</para>
     /// </summary>
-    public class ToolManager : Singleton<ToolManager>, IManager
+    [Manager]
+    public class ToolManager : Singleton<ToolManager>, ISingleton
     {
         Vector3 _screenHalf;
         void ISingleton.Init()

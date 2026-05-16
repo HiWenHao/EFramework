@@ -11,6 +11,7 @@
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Assets
@@ -18,7 +19,8 @@ namespace EasyFramework.Systems.Assets
     /// <summary>
     /// 资源管理器
     /// </summary>
-    public class AssetsSystem : MonoSingleton<AssetsSystem>, IManager
+    [Manager]
+    public class AssetsSystem : MonoSingleton<AssetsSystem>, ISingleton
     {
         /// <summary> 当前管理器类型 </summary>
         public AssetsSystemType CurrentSystemType { get; private set; }

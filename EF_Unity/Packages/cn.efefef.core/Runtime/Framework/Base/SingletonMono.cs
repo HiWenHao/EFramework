@@ -12,51 +12,51 @@
 using System;
 using System.Collections.Generic;
 using EasyFramework;
+using EasyFramework.Managers;
 using UnityEngine;
 
 public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
 {
     public static T Instance => SelfLazy.Value;
-    public string TypeName => typeof(T).Name;
 
     private static readonly HashSet<T> Registered = new();
     private static readonly Lazy<T> SelfLazy = new(CreateInstance);
 
     private static T CreateInstance()
     {
-        var existing = FindObjectsByType<T>(FindObjectsSortMode.None);
+        T instance;
+        var existing = FindObjectsOfType<T>();
         if (existing.Length > 0)
         {
             for (int i = 1; i < existing.Length; i++)
                 Destroy(existing[i].gameObject);
-            RegisterAndInit(existing[0]);
-            return existing[0];
+            instance = existing[0];
         }
+        else
+            instance = new GameObject().AddComponent<T>();
 
-        GameObject go = new($"[ {typeof(T).Name} ]");
-        T instance = go.AddComponent<T>();
+        instance.name = $"[ {typeof(T).Name} ]";
         RegisterAndInit(instance);
         return instance;
     }
 
     private static void RegisterAndInit(T instance)
     {
-        if (!Registered.Add(instance)) return;
-        if (instance is IManager manager)
-        {
-            instance.transform.SetParent(EF.Managers);
-            EF.Register(manager);
-        }
-        else
-        {
-            instance.transform.SetParent(EF.Singleton);
-            EF.Register(instance);
-        }
-        instance.Init();
+        bool ignore = Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute));
+        if (ignore || !Registered.Add(instance)) return;
+
+        instance.transform.SetParent(Attribute.IsDefined(typeof(T), typeof(ManagerAttribute))
+            ? EF.Managers
+            : EF.Singleton);
+
+        EF.Register(instance);
     }
 
     protected virtual void OnDestroy()
     {
         Registered.Remove((T)this);
+        if (!Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+            EF.Unregister((ISingleton)this, false);
+
     }
 }

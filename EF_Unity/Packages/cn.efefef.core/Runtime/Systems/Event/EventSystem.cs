@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
+using EasyFramework.Systems.Pool;
 
 namespace EasyFramework.Systems.Event
 {
@@ -20,7 +22,9 @@ namespace EasyFramework.Systems.Event
     /// 事件服务实现——类型安全、支持分组、延迟发送、异步等待
     /// <para>Event service implementation - type-safe, group support, delayed dispatch, async awaiting</para>
     /// </summary>
-    public class EventSystem : MonoSingleton<EventSystem>, IEventService, IManager
+    [Manager(Order = -999)]
+    [Dependency(typeof(PoolSystem))]
+    public sealed class EventSystem : MonoSingleton<EventSystem>, IEventService, ISingleton
     {
         private bool _openDebug;
         private object _flushLock; // 用于延迟发布的锁

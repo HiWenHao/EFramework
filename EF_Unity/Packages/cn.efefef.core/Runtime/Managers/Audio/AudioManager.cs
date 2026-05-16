@@ -20,7 +20,8 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Sources manager.
     /// </summary>
-    public class AudioManager : Singleton<AudioManager>, IManager, IUpdate
+    [Manager]
+    public class AudioManager : Singleton<AudioManager>, ISingleton, IUpdate
     {
         private bool _isPausing;
         private bool _isMute;

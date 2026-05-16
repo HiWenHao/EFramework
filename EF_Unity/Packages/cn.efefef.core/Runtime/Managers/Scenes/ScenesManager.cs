@@ -21,7 +21,8 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    public class ScenesManager : Singleton<ScenesManager>, IManager
+    [Manager]
+    public class ScenesManager : Singleton<ScenesManager>, ISingleton
     {
         bool _isLoading;
 		float _transition = 1.0f;

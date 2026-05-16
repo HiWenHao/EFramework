@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Pool
@@ -22,7 +23,8 @@ namespace EasyFramework.Systems.Pool
     /// <para>The pool system is responsible for initializing, obtaining and recycling all types of pool objects,
     /// and driving the automatic destruction of idle objects after a certain timeout period.</para>
     /// </summary>
-    public class PoolSystem : MonoSingleton<PoolSystem>, IManager, IUpdate
+    [Manager(Order = -1000)]
+    public class PoolSystem : MonoSingleton<PoolSystem>, ISingleton, IUpdate
     {
         /// <summary>
         /// 开启输出日志

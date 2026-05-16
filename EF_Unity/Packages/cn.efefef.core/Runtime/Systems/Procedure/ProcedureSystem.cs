@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
+using EasyFramework.Managers;
+using EasyFramework.Systems.Event;
+using EasyFramework.Systems.Pool;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Procedure
@@ -22,7 +25,10 @@ namespace EasyFramework.Systems.Procedure
     /// <summary>
     /// 流程系统
     /// </summary>
-    public sealed class ProcedureSystem : MonoSingleton<ProcedureSystem>, IManager, IUpdate
+    [Manager]
+    [Dependency(typeof(PoolSystem))]
+    [Dependency(typeof(EventSystem))]
+    public sealed class ProcedureSystem : MonoSingleton<ProcedureSystem>, ISingleton, IUpdate
     {
         [HeaderPro("最大嵌套深度限制", "Maximum nesting depth limit")] [SerializeField]
         private int maxDepth = 100;
