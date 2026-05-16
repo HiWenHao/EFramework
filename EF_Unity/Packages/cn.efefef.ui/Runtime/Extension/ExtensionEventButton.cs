@@ -11,9 +11,8 @@
 
 using System.Collections.Generic;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// Extension button event.扩展按钮事件

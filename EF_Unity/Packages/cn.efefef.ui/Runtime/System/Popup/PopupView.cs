@@ -12,7 +12,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Ui.Popup
+namespace EasyFramework.Managers.Ui.Popup
 {
     /// <summary>
     /// 弹窗面板

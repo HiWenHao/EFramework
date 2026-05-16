@@ -12,7 +12,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Ui.Popup
+namespace EasyFramework.Managers.Ui.Popup
 {
     /// <summary>
     /// 弹窗接口

@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// 提示窗附加数据

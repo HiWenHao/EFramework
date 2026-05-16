@@ -17,7 +17,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     [AddComponentMenu("UI/ScrollbarPro", 36)]
     [ExecuteAlways]

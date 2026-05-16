@@ -11,7 +11,7 @@
 
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
-using EasyFramework.Systems.Ui;
+using EasyFramework.Managers.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 using YooAsset;

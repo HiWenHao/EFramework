@@ -12,7 +12,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// Radar map with image.

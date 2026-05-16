@@ -11,7 +11,7 @@
 
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// 提示窗基类

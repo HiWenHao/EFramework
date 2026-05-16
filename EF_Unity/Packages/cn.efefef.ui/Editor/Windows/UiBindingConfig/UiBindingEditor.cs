@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-using EasyFramework.Systems.Ui;
+using EasyFramework.Managers.Ui;
 using System;
 using System.Collections.Generic;
 using System.IO;

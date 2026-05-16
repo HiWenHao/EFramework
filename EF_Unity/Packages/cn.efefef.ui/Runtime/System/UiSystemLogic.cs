@@ -11,13 +11,13 @@
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Ui.Popup;
 using EasyFramework.Systems.Assets;
-using EasyFramework.Systems.Ui.Popup;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     public partial class UiSystem
     {

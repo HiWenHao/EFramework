@@ -9,7 +9,7 @@
  * ================================================
  */
 
-using EasyFramework.Systems.Ui;
+using EasyFramework.Managers.Ui;
 
 namespace EFExample
 {

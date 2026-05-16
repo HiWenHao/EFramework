@@ -8,12 +8,13 @@
  * ScriptVersion: 0.2
  * ===============================================
 */
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace EasyFramework.Systems.Ui
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// A super component for making a child RectTransform scroll.
