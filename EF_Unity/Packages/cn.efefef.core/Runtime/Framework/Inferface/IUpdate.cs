@@ -18,6 +18,12 @@ namespace EasyFramework
     public interface IUpdate
     {
         /// <summary>
+        /// 暂停, 自身不再轮询迭代
+        /// <para>Is paused, and it is not being updated itself.</para>
+        /// </summary>
+        bool IsPaused { get; }
+
+        /// <summary>
         /// 轮询更新
         /// </summary>
         /// <param name="elapse">The interval in seconds from the last frame to the current one.

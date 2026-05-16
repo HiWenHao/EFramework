@@ -37,6 +37,8 @@ namespace EasyFramework.Systems.Pool
         /// <para>Cleanup tick</para>
         /// </summary>
         public float CleanupTick { get; set; } = 5;
+
+        public bool IsPaused { get; private set; }
         
         private float _gameObjectPoolCleanupTick;
         private Dictionary<Type, object> _objectPools;

@@ -26,6 +26,8 @@ namespace EasyFramework.Systems.Ui
         /// </summary>
         public Camera UICamera { get; private set; }
 
+        public bool IsPaused { get; private set; }
+
         private uint _serialId; //	页面序列号
         
         private Transform _target; //	UI根节点

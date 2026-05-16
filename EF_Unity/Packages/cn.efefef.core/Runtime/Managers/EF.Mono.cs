@@ -21,7 +21,7 @@ public sealed partial class EF : MonoBehaviour
 {
     private static EF _monoEF;
 
-    private static bool _inRunning;
+    private static volatile bool _inRunning;
 
     private static List<ISingleton> _managers;
     private static List<ISingleton> _singletons;
@@ -30,9 +30,9 @@ public sealed partial class EF : MonoBehaviour
     private static List<ILateUpdate> _lateUpdaters;
 
     private static HashSet<Type> _resolvingSet;
-    private static Dictionary<Type, int> _managerOrderCache;
+    private static Dictionary<Type, int> _orderCache;
     private static Dictionary<Type, ISingleton> _singletonMap;
-
+    private static Dictionary<Type, Func<object>> _monoSingletonInstanceGetters;
     private static readonly object _lockObj = new object();
 
     private EF()
@@ -60,9 +60,10 @@ public sealed partial class EF : MonoBehaviour
         _lateUpdaters = new List<ILateUpdate>();
         _fixedUpdaters = new List<IFixedUpdate>();
 
-        _managerOrderCache = new Dictionary<Type, int>();
+        _orderCache = new Dictionary<Type, int>();
         _singletonMap = new Dictionary<Type, ISingleton>();
         _resolvingSet = new HashSet<Type>();
+        _monoSingletonInstanceGetters = new Dictionary<Type, Func<object>>();
 
         Projects = Resources.Load<ProjectConfig>("Configs/ProjectConfig");
 
@@ -76,6 +77,7 @@ public sealed partial class EF : MonoBehaviour
         {
             for (int i = 0; i < _updater.Count; i++)
             {
+                if (_updater[i].IsPaused) continue;
                 _updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
@@ -88,6 +90,7 @@ public sealed partial class EF : MonoBehaviour
         {
             for (int i = 0; i < _fixedUpdaters.Count; i++)
             {
+                if (_fixedUpdaters[i].IsPaused) continue;
                 _fixedUpdaters[i].FixedUpdate(Time.fixedDeltaTime);
             }
         }
@@ -100,6 +103,7 @@ public sealed partial class EF : MonoBehaviour
         {
             for (int i = 0; i < _lateUpdaters.Count; i++)
             {
+                if (_lateUpdaters[i].IsPaused) continue;
                 _lateUpdaters[i].LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
@@ -112,27 +116,26 @@ public sealed partial class EF : MonoBehaviour
     {
         if (!_inRunning) return;
         _inRunning = false;
-    
+
         lock (_lockObj)
         {
-            // 先注销普通单例
-            for (int i = _singletons.Count - 1; i >= 0; i--)
-                Unregister(_singletons[i], destroyGameObject: true);
+            var allSingletons = new List<ISingleton>(_managers);
+            allSingletons.AddRange(_singletons);
+            allSingletons.Sort((a, b) => GetOrder(a).CompareTo(GetOrder(b)));
+
+            foreach (var singleton in allSingletons)
+                Unregister(singleton, destroyGameObject: true);
+
             _singletons.Clear();
-        
-            // 再注销管理器
-            for (int i = _managers.Count - 1; i >= 0; i--)
-                Unregister(_managers[i], destroyGameObject: true);
             _managers.Clear();
-        
             _updater.Clear();
             _fixedUpdaters.Clear();
             _lateUpdaters.Clear();
             _singletonMap.Clear();
         }
         _resolvingSet.Clear();
-        _managerOrderCache.Clear();
-        
+        _orderCache.Clear();
+
         _updater = null;
         _managers = null;
         _singletons = null;
@@ -140,7 +143,7 @@ public sealed partial class EF : MonoBehaviour
         _lateUpdaters = null;
         _singletonMap = null;
         _fixedUpdaters = null;
-        _managerOrderCache = null;
+        _orderCache = null;
     }
 
     #endregion
@@ -149,48 +152,52 @@ public sealed partial class EF : MonoBehaviour
     private static int GetOrder(ISingleton singleton)
     {
         Type type = singleton.GetType();
-        if (_managerOrderCache.TryGetValue(type, out int cached))
+        if (_orderCache.TryGetValue(type, out int cached))
             return cached;
-        var attr = type.GetCustomAttribute<ManagerAttribute>();
+        var attr = type.GetCustomAttribute<SingletonPriorityAttribute>(true);
         int order = attr?.Order ?? 0;
-        _managerOrderCache[type] = order;
+        _orderCache[type] = order;
         return order;
     }
     
-    // 按order升序插入到列表中
+    // 按 order 降序插入到列表中（大的在前）
     private static void InsertByOrder<T>(List<T> list, T item, int order)
     {
         int index = 0;
         for (; index < list.Count; index++)
         {
             int existingOrder = GetOrder((ISingleton)list[index]);
-            if (order < existingOrder)
+            if (order > existingOrder)
                 break;
         }
         list.Insert(index, item);
     }
 
-    #region 依赖解析和自动注册
-
-    /// <summary>
-    /// 尝试获取已注册的单例.
-    /// <para>Try to get a registered singleton</para>
-    /// </summary>
-    public static bool TryGetSingleton<T>(out T singleton) where T : ISingleton
+    private static object GetOrCreateMonoSingleton(Type type)
     {
-        Type t = typeof(T);
-        lock (_lockObj)
+        if (!_monoSingletonInstanceGetters.TryGetValue(type, out var getter))
         {
-            if (_singletonMap.TryGetValue(t, out var inst))
+            var instanceProp = type.GetProperty("Instance",
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            if (instanceProp == null || !instanceProp.CanRead)
             {
-                singleton = (T)inst;
-                return true;
+                D.Error($"Type {type.Name} is a MonoBehaviour singleton but has no static Instance property. Please ensure it derives from MonoSingleton<T>.");
+                return null;
             }
+
+            var methodInfo = instanceProp.GetMethod;
+            getter = (Func<object>)Delegate.CreateDelegate(typeof(Func<object>), methodInfo);
+            _monoSingletonInstanceGetters[type] = getter;
         }
 
-        singleton = default;
-        return false;
+        var instance = getter();
+        if (instance is ISingleton singleton && !_singletonMap.ContainsKey(type))
+            D.Warning($"MonoSingleton {type.Name} was created but not registered in EF. Ensure its Instance property calls EF.Register.");
+
+        return instance;
     }
+
+    #region 依赖解析和自动注册
 
     /// <summary>
     /// 强制获取或创建单例
@@ -211,20 +218,26 @@ public sealed partial class EF : MonoBehaviour
     {
         if (type.IsValueType)
         {
-            D.Error(
-                $"Type {type.Name} cannot be used as a singleton dependency: must be a reference type (class). / 类型 {type.Name} 不能作为单例依赖：必须是引用类型。");
+            D.Error($"Type {type.Name} cannot be used as a singleton dependency: must be a reference type (class).");
             return;
         }
 
         if (!typeof(ISingleton).IsAssignableFrom(type))
         {
-            D.Error($"Type {type.Name} does not implement ISingleton. / 类型 {type.Name} 未实现 ISingleton 接口。");
+            D.Error($"Type {type.Name} does not implement ISingleton.");
             return;
         }
 
+        if (typeof(MonoBehaviour).IsAssignableFrom(type))
+        {
+            GetOrCreateMonoSingleton(type);
+            return;
+        }
+
+        // 普通单例：需要无参构造函数
         if (type.GetConstructor(Type.EmptyTypes) == null)
         {
-            D.Error($"Type {type.Name} must have a parameterless constructor. / 类型 {type.Name} 必须有一个无参构造函数。");
+            D.Error($"Type {type.Name} must have a parameterless constructor.");
             return;
         }
 
@@ -239,6 +252,13 @@ public sealed partial class EF : MonoBehaviour
     /// </summary>
     private static void EnsureDependencies(Type managerType)
     {
+        // 已注册的单例不再重复解析依赖
+        lock (_lockObj)
+        {
+            if (_singletonMap.ContainsKey(managerType))
+                return;
+        }
+
         if (!_resolvingSet.Add(managerType))
             D.Exception($"[EasyFramework] Circular dependency detected: {managerType.Name} is already in the resolution chain.");
 
@@ -254,6 +274,13 @@ public sealed partial class EF : MonoBehaviour
         foreach (Type dep in dependencies)
         {
             if (dep == managerType) continue;
+
+            if (Attribute.IsDefined(dep, typeof(IgnoreAutoRegisterAttribute)))
+            {
+                D.Error($"Dependency {dep.Name} is marked with IgnoreAutoRegister, cannot be used as a dependency of {managerType.Name}." +
+                        "Remove the dependency or remove the IgnoreAutoRegister attribute.");
+                continue;
+            }
             EnsureDependencies(dep);
             GetOrCreateSingletonByType(dep);
         }
@@ -282,18 +309,8 @@ public sealed partial class EF : MonoBehaviour
             if (_singletonMap.ContainsKey(type))
                 return;
 
-            // 1. 插入到管理器列表或普通单例列表（仅用于生命周期管理，不影响更新顺序）
             if (isManager)
-            {
-                // 按 Order 插入 _managers
-                int index = 0;
-                for (; index < _managers.Count; index++)
-                {
-                    int existingOrder = GetOrder(_managers[index]);
-                    if (order < existingOrder) break;
-                }
-                _managers.Insert(index, item);
-            }
+                InsertByOrder(_managers, item, order);
             else
                 _singletons.Add(item);
 
@@ -338,6 +355,26 @@ public sealed partial class EF : MonoBehaviour
 
         if (destroyGameObject && item is MonoBehaviour mono)
             Destroy(mono.gameObject);
+    }
+
+    /// <summary>
+    /// 尝试获取已注册的单例.
+    /// <para>Try to get a registered singleton</para>
+    /// </summary>
+    public static bool TryGetSingleton<T>(out T singleton) where T : ISingleton
+    {
+        Type t = typeof(T);
+        lock (_lockObj)
+        {
+            if (_singletonMap.TryGetValue(t, out var inst))
+            {
+                singleton = (T)inst;
+                return true;
+            }
+        }
+
+        singleton = default;
+        return false;
     }
 
     #endregion

@@ -11,52 +11,53 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework;
 using EasyFramework.Managers;
 using UnityEngine;
 
-public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
+namespace EasyFramework
 {
-    public static T Instance => SelfLazy.Value;
-
-    private static readonly HashSet<T> Registered = new();
-    private static readonly Lazy<T> SelfLazy = new(CreateInstance);
-
-    private static T CreateInstance()
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>, ISingleton
     {
-        T instance;
-        var existing = FindObjectsOfType<T>();
-        if (existing.Length > 0)
+        public static T Instance => SelfLazy.Value;
+
+        private static readonly HashSet<T> Registered = new();
+        private static readonly Lazy<T> SelfLazy = new(CreateInstance);
+
+        private static T CreateInstance()
         {
-            for (int i = 1; i < existing.Length; i++)
-                Destroy(existing[i].gameObject);
-            instance = existing[0];
+            T instance;
+            var existing = FindObjectsOfType<T>();
+            if (existing.Length > 0)
+            {
+                for (int i = 1; i < existing.Length; i++)
+                    Destroy(existing[i].gameObject);
+                instance = existing[0];
+            }
+            else
+                instance = new GameObject().AddComponent<T>();
+
+            instance.name = $"[ {typeof(T).Name} ]";
+            RegisterAndInit(instance);
+            return instance;
         }
-        else
-            instance = new GameObject().AddComponent<T>();
 
-        instance.name = $"[ {typeof(T).Name} ]";
-        RegisterAndInit(instance);
-        return instance;
-    }
+        private static void RegisterAndInit(T instance)
+        {
+            bool ignore = Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute));
+            if (ignore || !Registered.Add(instance)) return;
 
-    private static void RegisterAndInit(T instance)
-    {
-        bool ignore = Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute));
-        if (ignore || !Registered.Add(instance)) return;
+            instance.transform.SetParent(Attribute.IsDefined(typeof(T), typeof(ManagerAttribute))
+                ? EF.Managers
+                : EF.Singleton);
 
-        instance.transform.SetParent(Attribute.IsDefined(typeof(T), typeof(ManagerAttribute))
-            ? EF.Managers
-            : EF.Singleton);
+            EF.Register(instance);
+        }
 
-        EF.Register(instance);
-    }
-
-    protected virtual void OnDestroy()
-    {
-        Registered.Remove((T)this);
-        if (!Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
-            EF.Unregister((ISingleton)this, false);
-
+        protected virtual void OnDestroy()
+        {
+            Registered.Remove((T)this);
+            if (!Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+                EF.Unregister((ISingleton)this, false);
+        }
     }
 }

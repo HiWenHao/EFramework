@@ -34,6 +34,7 @@ namespace EasyFramework.Managers
         private List<Action> _audioCallback;
         private List<AudioSource> _audioInUse;
         private Queue<AudioSource> _audioCanUse;
+        public bool IsPaused { get; private set; }
         void ISingleton.Init()
         {
             _traget = new GameObject("Source").transform;

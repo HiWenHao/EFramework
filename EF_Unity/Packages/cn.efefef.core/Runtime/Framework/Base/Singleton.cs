@@ -10,29 +10,31 @@
  */
 
 using System;
-using EasyFramework;
 
-public abstract class Singleton<T> where T : class, ISingleton, new()
+namespace EasyFramework
 {
-    protected Singleton()
+    public abstract class Singleton<T> where T : class, ISingleton, new()
     {
-    }
+        protected Singleton()
+        {
+        }
 
-    /// <summary>
-    /// Current type name
-    /// <para>当前类型名字</para>
-    /// </summary>
-    public string Name => typeof(T).Name;
+        /// <summary>
+        /// Current type name
+        /// <para>当前类型名字</para>
+        /// </summary>
+        public string Name => typeof(T).Name;
 
-    public static T Instance => SelfLazy.Value;
+        public static T Instance => SelfLazy.Value;
 
-    private static readonly Lazy<T> SelfLazy = new(() =>
-    {
-        T t = new T();
-        if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+        private static readonly Lazy<T> SelfLazy = new(() =>
+        {
+            T t = new T();
+            if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+                return t;
+
+            EF.Register(t);
             return t;
-
-        EF.Register(t);
-        return t;
-    });
+        });
+    }
 }

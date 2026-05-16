@@ -44,6 +44,8 @@ namespace EasyFramework.Managers
             }
         }
 
+        public bool IsPaused { get; private set; }
+
         private float _globalTime;
         private int _sleepTimeout;
         /// <summary>  Number of events to be processed. 待处理事件数量 </summary>

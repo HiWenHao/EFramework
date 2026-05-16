@@ -18,6 +18,12 @@ namespace EasyFramework
     public interface ILateUpdate
     {
         /// <summary>
+        /// 暂停, 自身不再轮询迭代
+        /// <para>Is paused, and it is not being updated itself.</para>
+        /// </summary>
+        bool IsPaused { get; }
+
+        /// <summary>
         /// 延迟更新,每帧中最后更新的内容
         /// <para>Delayed update, the last updated content in each frame</para>
         /// </summary>

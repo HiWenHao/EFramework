@@ -26,6 +26,8 @@ namespace EFExample
         //GUI 的样式
         private GUIStyle style;
 
+        public bool IsPaused { get; private set; }
+
         FpsCounter m_FpsCounter;
         void ISingleton.Init()
         {

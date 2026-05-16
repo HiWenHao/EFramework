@@ -55,6 +55,8 @@ namespace EasyFramework.Systems.Procedure
         /// </summary>
         public bool HasRunningProcedure => _instanceStack.Count > 0;
 
+        public bool IsPaused { get; private set; }
+
         void ISingleton.Init()
         {
             _instanceStack = new Stack<ProcedureInstance>();
