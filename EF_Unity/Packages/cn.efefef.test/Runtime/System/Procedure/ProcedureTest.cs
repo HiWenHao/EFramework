@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Procedure;
 using UnityEngine;
 
 namespace EasyFramework.Test

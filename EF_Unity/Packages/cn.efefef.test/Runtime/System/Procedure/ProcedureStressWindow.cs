@@ -12,7 +12,7 @@
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Procedure;
 
 public class ProcedureStressWindow : MonoBehaviour
 {
@@ -37,14 +37,14 @@ public class ProcedureStressWindow : MonoBehaviour
         mgr.Register<CommercialProcedureBomb>();
 
         _stackField =
-            typeof(ProcedureSystem)
+            typeof(ProcedureManager)
                 .GetField(
                     "_instanceStack",
                     BindingFlags.NonPublic |
                     BindingFlags.Instance);
 
         _uidField =
-            typeof(ProcedureSystem)
+            typeof(ProcedureManager)
                 .GetField(
                     "_uidToInstance",
                     BindingFlags.NonPublic |

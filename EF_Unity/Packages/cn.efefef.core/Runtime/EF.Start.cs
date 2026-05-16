@@ -13,11 +13,11 @@ using EasyFramework.Managers;
 using System.Collections;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
+using EasyFramework.Managers.Event;
+using EasyFramework.Managers.Procedure;
 using EasyFramework.Systems.Assets;
-using EasyFramework.Systems.Event;
 using EasyFramework.Systems.Patch;
-using EasyFramework.Systems.Pool;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Pool;
 using UnityEngine;
 
 public sealed partial class EF
@@ -32,13 +32,13 @@ public sealed partial class EF
     public static ProjectConfig Projects { get; private set; }
     
     /// <summary> Pool manager.<para>对象池系统</para></summary>
-    public static PoolSystem Pool => PoolSystem.Instance;
+    public static PoolManager Pool => PoolManager.Instance;
 
     /// <summary> Event manager.<para>事件系统</para></summary>
-    public static EventManager Event => EventManager.Instance;
+    public static EventsManager Event => EventsManager.Instance;
     
     /// <summary> Procedure system.<para>流程系统</para></summary>
-    public static ProcedureSystem Procedure => ProcedureSystem.Instance;
+    public static ProcedureManager Procedure => ProcedureManager.Instance;
     
     /// <summary> Load the resources system.<para>加载资源系统</para></summary>
     public static AssetsSystem Assets => AssetsSystem.Instance;
@@ -51,7 +51,7 @@ public sealed partial class EF
     public static TimeManager Timer => TimeManager.Instance;
     
     /// <summary> Event manager.<para>系统级事件管理器</para></summary>
-    public static EventSystem Events => EventSystem.Instance;
+    public static EventManager Events => EventManager.Instance;
 
     /// <summary> Patch update manager.<para>补丁更新管理器</para></summary>
     public static PatchSystem Patch => PatchSystem.Instance;

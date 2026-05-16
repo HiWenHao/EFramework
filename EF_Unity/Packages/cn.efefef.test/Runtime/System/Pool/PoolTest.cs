@@ -14,9 +14,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using EasyFramework.Systems.Pool;
+using EasyFramework.Managers.Pool;
 
-namespace EasyFramework.Systems.Pool.Tests
+namespace EasyFramework.Managers.Pool.Tests
 {
     /// <summary>
     /// 高频率、大数据量的持续压力测试（用于展示监控面板的动态效果）
@@ -33,7 +33,7 @@ namespace EasyFramework.Systems.Pool.Tests
         [SerializeField] private float _maxDelay = 0.15f;            // 最大延迟（秒）
         [SerializeField] private Transform _poolRoot;                // 池根节点（可选）
 
-        private PoolSystem _poolSystem;
+        private PoolManager _PoolManager;
         private bool _isRunning = true;
         private int _totalSpawned;
         private int _totalRecycled;
@@ -74,14 +74,14 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private IEnumerator RunContinuousTest()
         {
-            _poolSystem = PoolSystem.Instance;
-            if (_poolSystem == null)
+            _PoolManager =PoolManager.Instance;
+            if (_PoolManager == null)
             {
-                Debug.LogError("PoolSystem 不存在，测试终止");
+                Debug.LogError("PoolManager 不存在，测试终止");
                 yield break;
             }
 
-            _poolSystem.SetOpenDebug(true);
+            _PoolManager.SetOpenDebug(true);
             Debug.Log($"[PoolTest] 开始扩展压力测试，将持续 {(_testDuration > 0 ? _testDuration + "秒" : "无限")}");
             Debug.Log($"池容量: {_poolCapacity}, 每批数量: {_spawnBatchSize}, 间隔: {_minDelay}~{_maxDelay}s");
 
@@ -117,7 +117,7 @@ namespace EasyFramework.Systems.Pool.Tests
                 }
             }
 
-            Debug.Log("[PoolTest] 测试结束。请查看 PoolSystem Inspector 中的最终状态。");
+            Debug.Log("[PoolTest] 测试结束。请查看 PoolManager Inspector 中的最终状态。");
         }
 
         private void CreateAllPools()
@@ -134,63 +134,63 @@ namespace EasyFramework.Systems.Pool.Tests
             CreatePrimitivePrefab(PrimitiveType.Sphere, "SpherePrefab", out _spherePrefab);
             CreatePrimitivePrefab(PrimitiveType.Capsule, "CapsulePrefab", out _capsulePrefab);
 
-            // 注册到 PoolSystem
-            _poolSystem.CreateGameObjectPool(_cubePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
-            _poolSystem.CreateGameObjectPool(_spherePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
-            _poolSystem.CreateGameObjectPool(_capsulePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
+            // 注册到 PoolManager
+            _PoolManager.CreateGameObjectPool(_cubePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
+            _PoolManager.CreateGameObjectPool(_spherePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
+            _PoolManager.CreateGameObjectPool(_capsulePrefab, _poolRoot, initial: 5, _poolCapacity, idleTimeout: 10f);
             Debug.Log($"创建 3 个 GameObject 池，容量={_poolCapacity}");
 
             // ---------- 2. 自定义类池 ----------
             // EnemyData
-            _poolSystem.CreateObjectPool<EnemyData>(
+            _PoolManager.CreateObjectPool<EnemyData>(
                 max: _poolCapacity,
                 factory: () => new EnemyData(),
                 reset: (d) => d.Reset()
             );
-            _enemyPool = _poolSystem.GetObjectPool<EnemyData>();
+            _enemyPool = _PoolManager.GetObjectPool<EnemyData>();
 
             // BulletData
-            _poolSystem.CreateObjectPool<BulletData>(
+            _PoolManager.CreateObjectPool<BulletData>(
                 max: _poolCapacity,
                 factory: () => new BulletData(),
                 reset: (d) => d.Reset()
             );
-            _bulletPool = _poolSystem.GetObjectPool<BulletData>();
+            _bulletPool = _PoolManager.GetObjectPool<BulletData>();
 
             // ParticleData
-            _poolSystem.CreateObjectPool<ParticleData>(
+            _PoolManager.CreateObjectPool<ParticleData>(
                 max: _poolCapacity,
                 factory: () => new ParticleData(),
                 reset: (d) => d.Reset()
             );
-            _particlePool = _poolSystem.GetObjectPool<ParticleData>();
+            _particlePool = _PoolManager.GetObjectPool<ParticleData>();
 
             // TransformData (模拟变换数据)
-            _poolSystem.CreateObjectPool<TransformData>(
+            _PoolManager.CreateObjectPool<TransformData>(
                 max: _poolCapacity,
                 factory: () => new TransformData(),
                 reset: (d) => d.Reset()
             );
-            _transformPool = _poolSystem.GetObjectPool<TransformData>();
+            _transformPool = _PoolManager.GetObjectPool<TransformData>();
 
             Debug.Log($"创建 4 个自定义类池，容量={_poolCapacity}");
 
             // ---------- 3. 基础类型池（包装类） ----------
             // 字符串池（虽不可变但可测试池管理逻辑）
-            _poolSystem.CreateObjectPool<string>(
+            _PoolManager.CreateObjectPool<string>(
                 max: _poolCapacity,
                 factory: () => "DynamicString_" + UnityEngine.Random.Range(0, 100000),
                 reset: null
             );
-            _stringPool = _poolSystem.GetObjectPool<string>();
+            _stringPool = _PoolManager.GetObjectPool<string>();
 
             // Vector3 包装类池（因为 ObjectPool<T> 要求 T 是 class）
-            _poolSystem.CreateObjectPool<Vector3Wrapper>(
+            _PoolManager.CreateObjectPool<Vector3Wrapper>(
                 max: _poolCapacity,
                 factory: () => new Vector3Wrapper(),
                 reset: (v) => v.Reset()
             );
-            _vectorPool = _poolSystem.GetObjectPool<Vector3Wrapper>();
+            _vectorPool = _PoolManager.GetObjectPool<Vector3Wrapper>();
 
             Debug.Log($"创建 2 个基础类型池，容量={_poolCapacity}");
         }
@@ -246,7 +246,7 @@ namespace EasyFramework.Systems.Pool.Tests
         // ----- GameObject 产生 -----
         private void SpawnGameObject(GameObject prefab, List<GameObject> activeList)
         {
-            var go = _poolSystem.Spawn(prefab);
+            var go = _PoolManager.Spawn(prefab);
             if (go != null)
             {
                 // 随机位置、旋转，模拟使用
@@ -259,7 +259,7 @@ namespace EasyFramework.Systems.Pool.Tests
         // ----- 自定义类产生 -----
         private void SpawnEnemyData()
         {
-            var data = _poolSystem.GetFromPool<EnemyData>();
+            var data = _PoolManager.GetFromPool<EnemyData>();
             data.EnemyId = UnityEngine.Random.Range(1, 50000);
             data.Health = UnityEngine.Random.Range(50, 500);
             data.Position = UnityEngine.Random.insideUnitSphere * 20f;
@@ -268,7 +268,7 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private void SpawnBulletData()
         {
-            var data = _poolSystem.GetFromPool<BulletData>();
+            var data = _PoolManager.GetFromPool<BulletData>();
             data.Damage = UnityEngine.Random.Range(5, 100);
             data.Speed = UnityEngine.Random.Range(10f, 50f);
             data.Direction = UnityEngine.Random.onUnitSphere;
@@ -277,7 +277,7 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private void SpawnParticleData()
         {
-            var data = _poolSystem.GetFromPool<ParticleData>();
+            var data = _PoolManager.GetFromPool<ParticleData>();
             data.Lifetime = UnityEngine.Random.Range(0.5f, 3f);
             data.Color = UnityEngine.Random.ColorHSV();
             data.Size = UnityEngine.Random.Range(0.1f, 1f);
@@ -286,7 +286,7 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private void SpawnTransformData()
         {
-            var data = _poolSystem.GetFromPool<TransformData>();
+            var data = _PoolManager.GetFromPool<TransformData>();
             data.Position = UnityEngine.Random.insideUnitSphere * 10f;
             data.Rotation = UnityEngine.Random.rotation;
             data.Scale = Vector3.one * UnityEngine.Random.Range(0.5f, 2f);
@@ -295,7 +295,7 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private void SpawnString()
         {
-            string str = _poolSystem.GetFromPool<string>();
+            string str = _PoolManager.GetFromPool<string>();
             // 模拟使用：拼接内容（实际应用中会重新赋值）
             string used = str + "_used_" + UnityEngine.Random.Range(0, 100);
             _activeStrings.Add(str);
@@ -303,7 +303,7 @@ namespace EasyFramework.Systems.Pool.Tests
 
         private void SpawnVectorWrapper()
         {
-            var wrapper = _poolSystem.GetFromPool<Vector3Wrapper>();
+            var wrapper = _PoolManager.GetFromPool<Vector3Wrapper>();
             wrapper.Value = UnityEngine.Random.insideUnitSphere * 15f;
             _activeVectors.Add(wrapper);
         }
@@ -324,15 +324,15 @@ namespace EasyFramework.Systems.Pool.Tests
 
                 switch (type)
                 {
-                    case 0: recycled = RecycleFromList(_activeCubes, go => _poolSystem.Despawn(go)); break;
-                    case 1: recycled = RecycleFromList(_activeSpheres, go => _poolSystem.Despawn(go)); break;
-                    case 2: recycled = RecycleFromList(_activeCapsules, go => _poolSystem.Despawn(go)); break;
-                    case 3: recycled = RecycleFromList(_activeEnemies, data => _poolSystem.ReturnToPool(data)); break;
-                    case 4: recycled = RecycleFromList(_activeBullets, data => _poolSystem.ReturnToPool(data)); break;
-                    case 5: recycled = RecycleFromList(_activeParticles, data => _poolSystem.ReturnToPool(data)); break;
-                    case 6: recycled = RecycleFromList(_activeTransforms, data => _poolSystem.ReturnToPool(data)); break;
-                    case 7: recycled = RecycleFromList(_activeStrings, str => _poolSystem.ReturnToPool(str)); break;
-                    case 8: recycled = RecycleFromList(_activeVectors, v => _poolSystem.ReturnToPool(v)); break;
+                    case 0: recycled = RecycleFromList(_activeCubes, go => _PoolManager.Despawn(go)); break;
+                    case 1: recycled = RecycleFromList(_activeSpheres, go => _PoolManager.Despawn(go)); break;
+                    case 2: recycled = RecycleFromList(_activeCapsules, go => _PoolManager.Despawn(go)); break;
+                    case 3: recycled = RecycleFromList(_activeEnemies, data => _PoolManager.ReturnToPool(data)); break;
+                    case 4: recycled = RecycleFromList(_activeBullets, data => _PoolManager.ReturnToPool(data)); break;
+                    case 5: recycled = RecycleFromList(_activeParticles, data => _PoolManager.ReturnToPool(data)); break;
+                    case 6: recycled = RecycleFromList(_activeTransforms, data => _PoolManager.ReturnToPool(data)); break;
+                    case 7: recycled = RecycleFromList(_activeStrings, str => _PoolManager.ReturnToPool(str)); break;
+                    case 8: recycled = RecycleFromList(_activeVectors, v => _PoolManager.ReturnToPool(v)); break;
                 }
 
                 if (recycled)
@@ -358,9 +358,9 @@ namespace EasyFramework.Systems.Pool.Tests
         private void OnDestroy()
         {
             _isRunning = false;
-            if (_poolSystem != null)
+            if (_PoolManager != null)
             {
-                _poolSystem.ClearAll();
+                _PoolManager.ClearAll();
                 Debug.Log("[PoolTest] 已清空所有池");
             }
 

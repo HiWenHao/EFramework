@@ -20,12 +20,12 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Procedure.Editor
+namespace EasyFramework.Managers.Procedure.Editor
 {
-    [CustomEditor(typeof(ProcedureSystem))]
+    [CustomEditor(typeof(ProcedureManager))]
     public class ProcedureSystemInspector : UnityEditor.Editor
     {
-        private ProcedureSystem _targetSystem;
+        private ProcedureManager _targetSystem;
 
         private FieldInfo _stackField;
         private FieldInfo _factoriesField;
@@ -58,7 +58,7 @@ namespace EasyFramework.Systems.Procedure.Editor
 
         private void OnEnable()
         {
-            _targetSystem = (ProcedureSystem)target;
+            _targetSystem = (ProcedureManager)target;
             CacheReflectionInfo();
             EditorApplication.update += OnEditorUpdate;
         }
@@ -102,7 +102,7 @@ namespace EasyFramework.Systems.Procedure.Editor
         {
             try
             {
-                var sysType = typeof(ProcedureSystem);
+                var sysType = typeof(ProcedureManager);
                 _stackField = sysType.GetField("_instanceStack", BindingFlags.NonPublic | BindingFlags.Instance);
                 _factoriesField = sysType.GetField("_factories", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -191,11 +191,11 @@ namespace EasyFramework.Systems.Procedure.Editor
             }
 
             // 显示系统配置参数（直接从 target 中读取）
-            var sys = (ProcedureSystem)target;
-            var maxDepthField = typeof(ProcedureSystem).GetField("maxDepth", BindingFlags.NonPublic | BindingFlags.Instance);
-            var maxChainField = typeof(ProcedureSystem).GetField("maxChainRepeat", BindingFlags.NonPublic | BindingFlags.Instance);
-            var timeoutField = typeof(ProcedureSystem).GetField("defaultTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var leaveTimeoutField = typeof(ProcedureSystem).GetField("leaveTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
+            var sys = (ProcedureManager)target;
+            var maxDepthField = typeof(ProcedureManager).GetField("maxDepth", BindingFlags.NonPublic | BindingFlags.Instance);
+            var maxChainField = typeof(ProcedureManager).GetField("maxChainRepeat", BindingFlags.NonPublic | BindingFlags.Instance);
+            var timeoutField = typeof(ProcedureManager).GetField("defaultTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
+            var leaveTimeoutField = typeof(ProcedureManager).GetField("leaveTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
             int maxDepth = maxDepthField != null ? (int)maxDepthField.GetValue(sys) : 0;
             int maxChain = maxChainField != null ? (int)maxChainField.GetValue(sys) : 0;
             float enterTimeout = timeoutField != null ? (float)timeoutField.GetValue(sys) : 0;

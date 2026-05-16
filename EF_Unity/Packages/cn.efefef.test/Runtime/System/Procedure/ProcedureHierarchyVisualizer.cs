@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Procedure;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 

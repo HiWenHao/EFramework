@@ -1,8 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework;
-using EasyFramework.Systems.Event;
+using EasyFramework.Managers.Event;
 using UnityEngine;
 
 /// <summary>
@@ -16,11 +15,11 @@ public class EventSystemTest : MonoBehaviour
     public struct TestEventB { public string Message; }
     public struct TestEventC { public float Float; }
 
-    private EventSystem _eventSystem;
+    private EventManager _eventSystem;
 
     private async void Start()
     {
-        _eventSystem = EventSystem.Instance;
+        _eventSystem = EventManager.Instance;
         Debug.Log("===== EventSystem 测试开始 =====");
 
         // 1. 基础同步订阅与发布

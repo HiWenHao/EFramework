@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Reflection;
 using System.Collections;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Procedure;
 
 public class ProcedureStressMonitor : MonoBehaviour
 {
@@ -17,13 +17,13 @@ public class ProcedureStressMonitor : MonoBehaviour
     {
         var mgr = EF.Procedure;
 
-        _stackField = typeof(ProcedureSystem)
+        _stackField = typeof(ProcedureManager)
             .GetField(
                 "_instanceStack",
                 BindingFlags.NonPublic |
                 BindingFlags.Instance);
 
-        _uidField = typeof(ProcedureSystem)
+        _uidField = typeof(ProcedureManager)
             .GetField(
                 "_uidToInstance",
                 BindingFlags.NonPublic |

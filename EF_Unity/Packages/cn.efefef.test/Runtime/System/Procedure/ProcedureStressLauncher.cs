@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Systems.Procedure;
+using EasyFramework.Managers.Procedure;
 using UnityEngine;
 
 public class ProcedureStressLauncher : MonoBehaviour
@@ -29,7 +29,7 @@ public class ProcedureStressLauncher : MonoBehaviour
         mgr.Register<CommercialStressProcedure>();
 
         // 缩短超时便于测试
-        var field = typeof(ProcedureSystem)
+        var field = typeof(ProcedureManager)
             .GetField(
                 "defaultTimeoutSeconds",
                 System.Reflection.BindingFlags.NonPublic |

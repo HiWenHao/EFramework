@@ -135,15 +135,6 @@ public sealed partial class EF : MonoBehaviour
         }
         _resolvingSet.Clear();
         _orderCache.Clear();
-
-        _updater = null;
-        _managers = null;
-        _singletons = null;
-        _resolvingSet = null;
-        _lateUpdaters = null;
-        _singletonMap = null;
-        _fixedUpdaters = null;
-        _orderCache = null;
     }
 
     #endregion

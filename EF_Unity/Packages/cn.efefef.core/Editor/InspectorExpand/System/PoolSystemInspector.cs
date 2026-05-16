@@ -19,12 +19,12 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Pool.Editor
+namespace EasyFramework.Managers.Pool.Editor
 {
-    [CustomEditor(typeof(PoolSystem))]
-    public class PoolSystemInspector : UnityEditor.Editor
+    [CustomEditor(typeof(PoolManager))]
+    public class PoolManagerInspector : UnityEditor.Editor
     {
-        private PoolSystem _target;
+        private PoolManager _target;
         private Vector2 _goScrollPos;      // GameObject 池区域滚动位置
         private Vector2 _objScrollPos;     // 通用对象池区域滚动位置
 
@@ -46,7 +46,7 @@ namespace EasyFramework.Systems.Pool.Editor
 
         private void OnEnable()
         {
-            _target = (PoolSystem)target;
+            _target = (PoolManager)target;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             EditorApplication.update += OnEditorUpdate;
             InitReflection();
@@ -61,8 +61,8 @@ namespace EasyFramework.Systems.Pool.Editor
 
         private void InitReflection()
         {
-            _gameObjectPoolsField = typeof(PoolSystem).GetField("_gameObjectPools", BindingFlags.NonPublic | BindingFlags.Instance);
-            _objectPoolsField = typeof(PoolSystem).GetField("_objectPools", BindingFlags.NonPublic | BindingFlags.Instance);
+            _gameObjectPoolsField = typeof(PoolManager).GetField("_gameObjectPools", BindingFlags.NonPublic | BindingFlags.Instance);
+            _objectPoolsField = typeof(PoolManager).GetField("_objectPools", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)

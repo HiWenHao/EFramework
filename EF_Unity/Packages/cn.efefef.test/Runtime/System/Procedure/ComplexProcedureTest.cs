@@ -15,7 +15,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace EasyFramework.Systems.Procedure.Test
+namespace EasyFramework.Managers.Procedure.Test
 {
     public class ComplexProcedureTest : MonoBehaviour
     {
@@ -268,7 +268,7 @@ namespace EasyFramework.Systems.Procedure.Test
 
         private async UniTask SwitchRootDynamic(Type procType, Dictionary<string, object> param)
         {
-            var method = typeof(ProcedureSystem).GetMethod("Switch");
+            var method = typeof(ProcedureManager).GetMethod("Switch");
             if (method == null)
             {
                 Debug.LogError("Switch 方法未找到");
