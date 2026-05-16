@@ -1,11 +1,11 @@
 /*
  * ================================================
- * Describe:      框架延迟更新接口
- * Author:        Alvin5100
- * CreationTime:  2026-05-15 16:48:42
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-15 16:48:42
- * ScriptVersion: 0.1
+ * Describe:        框架延迟更新接口
+ * Author:          Alvin5100
+ * CreationTime:    2026-05-15 16:48:42
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-05-15 16:48:42
+ * ScriptVersion:   0.1
  * ===============================================
  */
 

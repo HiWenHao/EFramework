@@ -1,11 +1,11 @@
 ﻿/*
  * ================================================
- * Describe:      This script is used to builder with editor.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-02-13 16:46:15
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-08 15:30:00
- * ScriptVersion: 0.2
+ * Describe:        This script is used to builder with editor.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-02-13 16:46:15
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-16 20:46:53
+ * ScriptVersion:   0.3
  * ===============================================
  */
 
@@ -684,12 +684,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             string createTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             return "/*\n"
                    + " * ================================================\r\n"
-                   + $" * Describe:      {_builder.Describe}.\r\n"
-                   + $" * Author:        {authorName}\r\n"
-                   + $" * CreationTime:  {createTime}\r\n"
-                   + $" * ModifyAuthor:  {authorName}\r\n"
-                   + $" * ModifyTime:    {createTime}\r\n"
-                   + $" * ScriptVersion: {ConfigManager.Project.ScriptVersion} \r\n"
+                   + $" * Describe:        {_builder.Describe}.\r\n"
+                   + $" * Author:          {authorName}\r\n"
+                   + $" * CreationTime:    {createTime}\r\n"
+                   + $" * ModifyAuthor:    {authorName}\r\n"
+                   + $" * ModifyTime:      {createTime}\r\n"
+                   + $" * ScriptVersion:   {ConfigManager.Project.ScriptVersion} \r\n"
                    + " * ================================================\r\n"
                    + " */";
         }

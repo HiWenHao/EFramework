@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      框架更新接口
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-03-02 16:24:48
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-03-02 16:24:48
- * ScriptVersion: 0.1
+ * Describe:        框架更新接口
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-03-02 16:24:48
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-16 20:44:22
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
