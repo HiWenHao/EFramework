@@ -106,7 +106,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                 _stackField = sysType.GetField("_instanceStack", BindingFlags.NonPublic | BindingFlags.Instance);
                 _factoriesField = sysType.GetField("_factories", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                _procedureInstanceType = sysType.Assembly.GetType("EasyFramework.Systems.Procedure.ProcedureInstance");
+                _procedureInstanceType = sysType.Assembly.GetType("EasyFramework.Managers.Procedure.ProcedureInstance");
                 if (_procedureInstanceType == null)
                     throw new Exception("无法获取 ProcedureInstance 类型");
 
