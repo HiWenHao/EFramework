@@ -36,7 +36,7 @@ namespace EasyFramework
             else
                 instance = new GameObject().AddComponent<T>();
 
-            instance.name = $"[ {typeof(T).Name} ]";
+            instance.name = $"--------------- [ {typeof(T).Name} ] ---------------";
             RegisterAndInit(instance);
             return instance;
         }

@@ -61,9 +61,6 @@ public sealed partial class EF
     
     /// <summary> Scene manager.<para>场景管理器</para></summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
-    
-    /// <summary> Folder manager.<para>文件夹管理器</para></summary>
-    public static FolderManager Folder => FolderManager.Instance;
 
     #region Coroutine  协程
     /// <summary>
