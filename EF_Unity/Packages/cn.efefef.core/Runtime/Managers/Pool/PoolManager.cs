@@ -22,7 +22,7 @@ namespace EasyFramework.Managers.Pool
     /// <para>The pool system is responsible for initializing, obtaining and recycling all types of pool objects,
     /// and driving the automatic destruction of idle objects after a certain timeout period.</para>
     /// </summary>
-    [Manager(Order = -1000)]
+    [Manager(Order = 99900)]
     public class PoolManager : MonoSingleton<PoolManager>, ISingleton, IUpdate
     {
         /// <summary>

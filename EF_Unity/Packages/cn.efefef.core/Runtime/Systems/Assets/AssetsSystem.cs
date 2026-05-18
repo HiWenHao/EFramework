@@ -19,7 +19,7 @@ namespace EasyFramework.Systems.Assets
     /// <summary>
     /// 资源管理器
     /// </summary>
-    [Manager]
+    [Manager(Order = 99600)]
     public class AssetsSystem : MonoSingleton<AssetsSystem>, ISingleton
     {
         /// <summary> 当前管理器类型 </summary>
@@ -233,7 +233,7 @@ namespace EasyFramework.Systems.Assets
         }
         private void Error(string msg)
         {
-            if (_openDebug) D.Error(msg);
+            D.Error(msg);
         }
         
         #endregion

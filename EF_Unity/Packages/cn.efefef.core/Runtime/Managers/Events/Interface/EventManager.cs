@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace EasyFramework.Managers
 {
-    [Manager]
+    [Manager(Order = 89800)]
     public class EventsManager : Singleton<EventsManager>, ISingleton
     {
         /// <summary>

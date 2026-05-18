@@ -21,13 +21,13 @@ namespace EasyFramework.Managers.Event
     /// 事件服务实现——类型安全、支持分组、延迟发送、异步等待
     /// <para>Event service implementation - type-safe, group support, delayed dispatch, async awaiting</para>
     /// </summary>
-    [Manager(Order = -999)]
+    [Manager(Order = 99800)]
     [Dependency(typeof(PoolManager))]
     public sealed class EventManager : MonoSingleton<EventManager>, IEventService, ISingleton
     {
         private bool _openDebug;
-        private object _flushLock; // 用于延迟发布的锁
-        private Queue<object> _delayedEvents; // 延迟事件队列（弱类型存储，发布时再确定类型）
+        private object _flushLock;              // 用于延迟发布的锁
+        private Queue<object> _delayedEvents;   // 延迟事件队列
         private Dictionary<Type, EventSubscriptions> _subscriptions; // 存储每种事件类型的订阅列表
 
         public void Init()

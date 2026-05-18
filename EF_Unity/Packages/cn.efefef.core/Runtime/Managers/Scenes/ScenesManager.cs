@@ -21,7 +21,7 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    [Manager]
+    [Manager(Order = 99200)]
     public class ScenesManager : Singleton<ScenesManager>, ISingleton
     {
         bool _isLoading;

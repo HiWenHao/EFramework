@@ -24,7 +24,7 @@ namespace EasyFramework.Managers.Procedure
     /// <summary>
     /// 流程系统
     /// </summary>
-    [Manager]
+    [Manager(Order = 99700)]
     [Dependency(typeof(PoolManager))]
     [Dependency(typeof(EventManager))]
     public sealed class ProcedureManager : MonoSingleton<ProcedureManager>, ISingleton, IUpdate

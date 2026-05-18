@@ -20,7 +20,7 @@ namespace EasyFramework.Managers
     /// To help other managers.
     /// <para>工具管理器</para>
     /// </summary>
-    [Manager]
+    [Manager(Order = 99500)]
     public class ToolManager : Singleton<ToolManager>, ISingleton
     {
         Vector3 _screenHalf;

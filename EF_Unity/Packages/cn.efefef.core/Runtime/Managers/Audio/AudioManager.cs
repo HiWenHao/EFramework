@@ -20,7 +20,8 @@ namespace EasyFramework.Managers
     /// <summary>
     /// Sources manager.
     /// </summary>
-    [Manager]
+    [Manager(Order = 89700)]
+    [Dependency(typeof(AssetsSystem))]
     public class AudioManager : Singleton<AudioManager>, ISingleton, IUpdate
     {
         private bool _isPausing;

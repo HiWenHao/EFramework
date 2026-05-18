@@ -16,7 +16,7 @@ using EasyFramework.Managers.Timer;
 
 namespace EasyFramework.Managers
 {
-    [Manager]
+    [Manager(Order = 89900)]
     public class TimeManager : Singleton<TimeManager>, ISingleton, IUpdate
     {
         /// <summary>

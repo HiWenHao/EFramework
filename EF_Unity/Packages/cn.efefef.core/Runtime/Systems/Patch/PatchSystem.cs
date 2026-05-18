@@ -22,7 +22,7 @@ namespace EasyFramework.Systems.Patch
     /// <summary>
     /// 资源更新
     /// </summary>
-    [Manager]
+    [Manager(Order = 99300)]
     public class PatchSystem : Singleton<PatchSystem>, ISingleton
     {
         /// <summary>
