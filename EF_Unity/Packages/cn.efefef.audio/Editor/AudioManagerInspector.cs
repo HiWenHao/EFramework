@@ -10,7 +10,6 @@
  */
 
 #if UNITY_EDITOR
-using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
 using UnityEditor;
@@ -92,27 +91,6 @@ namespace EasyFramework.Editor.Audio
                 }
 
                 EditorGUILayout.Space();
-
-                // 调试工具
-                EditorGUILayout.LabelField("调试 / Debug", EditorStyles.boldLabel);
-                testClip = (AudioClip)EditorGUILayout.ObjectField("测试音频", testClip, typeof(AudioClip), false);
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("播放 2D"))
-                {
-                    if (testClip) sys.Play2DEffect(testClip).Forget();
-                    else Debug.LogWarning("请先拖入测试音频");
-                }
-                if (GUILayout.Button("播放 3D (原点)"))
-                {
-                    if (testClip) sys.Play3DEffect(testClip, Vector3.zero).Forget();
-                    else Debug.LogWarning("请先拖入测试音频");
-                }
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("停止所有音效")) sys.StopAllEffects();
-                if (GUILayout.Button("停止全部音频")) sys.StopAll();
-                EditorGUILayout.EndHorizontal();
             }
 
             if (GUI.changed)
