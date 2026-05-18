@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectConfig
   m_EditorClassIdentifier: 
-  _scriptAuthor: Default
+  _scriptAuthor: Alvin8412
   _scriptVersion: 0.1
   _resourcesArea:
     m_CopyResToCommit: 0
@@ -29,20 +29,3 @@ MonoBehaviour:
     _appStage: 1
     _uiPath: Prefabs/UI/
     _audioPath: Sources/
-    _managerLevel:
-    - TimeManager
-    - ToolManager
-    - EventManager
-    - HttpsManager
-    - SocketManager
-    - FolderManager
-    - LoadManager
-    - ScenesManager
-    - AudioManager
-    - UIManager
-    - PatchManager
-    - EventSystem
-    - ProcedureSystem
-    - UiSystem
-    - AssetsRootManager
-    - PoolManager

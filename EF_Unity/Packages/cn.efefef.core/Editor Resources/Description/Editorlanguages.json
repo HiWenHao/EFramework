@@ -49,6 +49,14 @@
       ]
     },
     {
+      "name": "Audio",
+      "desc": "音频",
+      "array": [
+        "Audio",
+        "音频"
+      ]
+    },
+    {
       "name": "Async",
       "desc": "异步",
       "array": [
@@ -1409,6 +1417,14 @@
       ]
     },
     {
+      "name": "Panel",
+      "desc": "面板",
+      "array": [
+        "Panel",
+        "面板"
+      ]
+    },
+    {
       "name": "Parent",
       "desc": "父",
       "array": [
@@ -1814,6 +1830,14 @@
       "array": [
         "Switch",
         "开关"
+      ]
+    },
+    {
+      "name": "Source",
+      "desc": "源",
+      "array": [
+        "Source",
+        "源"
       ]
     },
     {

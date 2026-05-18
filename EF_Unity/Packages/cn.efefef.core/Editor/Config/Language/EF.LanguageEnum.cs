@@ -19,6 +19,8 @@ namespace EasyFramework.Edit
 		Auto,
 		/// <summary> 轴 </summary>
 		Axis,
+		/// <summary> 音频 </summary>
+		Audio,
 		/// <summary> 异步 </summary>
 		Async,
 		/// <summary> 图集 </summary>
@@ -359,6 +361,8 @@ namespace EasyFramework.Edit
 		Pool,
 		/// <summary> 参数 </summary>
 		Param,
+		/// <summary> 面板 </summary>
+		Panel,
 		/// <summary> 父 </summary>
 		Parent,
 		/// <summary> 预制件 </summary>
@@ -461,6 +465,8 @@ namespace EasyFramework.Edit
 		System,
 		/// <summary> 开关 </summary>
 		Switch,
+		/// <summary> 源 </summary>
+		Source,
 		/// <summary> 间距 </summary>
 		Spacing,
 		/// <summary> 单一的 </summary>

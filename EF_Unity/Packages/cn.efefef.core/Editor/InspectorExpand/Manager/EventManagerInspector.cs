@@ -43,7 +43,7 @@ namespace EasyFramework.Managers.Event.Editor
             
             if (!EditorApplication.isPlaying)
             {
-                EditorGUILayout.HelpBox( LC.Combine(Lc.Non, Lc.Running, Lc.Not, Lc.Data), MessageType.Info);
+                EditorGUILayout.HelpBox( LC.Combine(Lc.Non, Lc.Running, Lc.No, Lc.Data), MessageType.Info);
                 return;
             }
 
