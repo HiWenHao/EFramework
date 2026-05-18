@@ -23,7 +23,7 @@ using UnityEngine;
 namespace EasyFramework.Managers.Procedure.Editor
 {
     [CustomEditor(typeof(ProcedureManager))]
-    public class ProcedureSystemInspector : UnityEditor.Editor
+    public class ProcedureManagerInspector : UnityEditor.Editor
     {
         private ProcedureManager _targetSystem;
 

@@ -25,6 +25,14 @@
       ]
     },
     {
+      "name": "Any",
+      "desc": "任何",
+      "array": [
+        "Any",
+        "任何"
+      ]
+    },
+    {
       "name": "Auto",
       "desc": "自动",
       "array": [
@@ -38,6 +46,14 @@
       "array": [
         "Axis",
         "轴"
+      ]
+    },
+    {
+      "name": "Async",
+      "desc": "异步",
+      "array": [
+        "Async",
+        "异步"
       ]
     },
     {
@@ -638,6 +654,14 @@
       "array": [
         "Enter",
         "进入"
+      ]
+    },
+    {
+      "name": "Event",
+      "desc": "事件",
+      "array": [
+        "Event",
+        "事件"
       ]
     },
     {
@@ -1673,6 +1697,14 @@
       ]
     },
     {
+      "name": "Sync",
+      "desc": "同步",
+      "array": [
+        "Sync",
+        "同步"
+      ]
+    },
+    {
       "name": "Sort",
       "desc": "排序",
       "array": [
@@ -1838,6 +1870,14 @@
       "array": [
         "Sensitivity",
         "灵敏度"
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "desc": "订阅",
+      "array": [
+        "Subscriptions",
+        "订阅"
       ]
     },
     {

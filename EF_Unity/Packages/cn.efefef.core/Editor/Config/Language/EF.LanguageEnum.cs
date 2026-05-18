@@ -13,10 +13,14 @@ namespace EasyFramework.Edit
 		All,
 		/// <summary> 添加 </summary>
 		Add,
+		/// <summary> 任何 </summary>
+		Any,
 		/// <summary> 自动 </summary>
 		Auto,
 		/// <summary> 轴 </summary>
 		Axis,
+		/// <summary> 异步 </summary>
+		Async,
 		/// <summary> 图集 </summary>
 		Atlas,
 		/// <summary> 等待 </summary>
@@ -167,6 +171,8 @@ namespace EasyFramework.Edit
 		Exist,
 		/// <summary> 进入 </summary>
 		Enter,
+		/// <summary> 事件 </summary>
+		Event,
 		/// <summary> 编辑器 </summary>
 		Editor,
 		/// <summary> 启动 </summary>
@@ -425,6 +431,8 @@ namespace EasyFramework.Edit
 		Resolution,
 		/// <summary> 尺寸 </summary>
 		Size,
+		/// <summary> 同步 </summary>
+		Sync,
 		/// <summary> 排序 </summary>
 		Sort,
 		/// <summary> 保存 </summary>
@@ -467,6 +475,8 @@ namespace EasyFramework.Edit
 		Scrollbar,
 		/// <summary> 灵敏度 </summary>
 		Sensitivity,
+		/// <summary> 订阅 </summary>
+		Subscriptions,
 		/// <summary> 到 </summary>
 		To,
 		/// <summary> 太 </summary>
