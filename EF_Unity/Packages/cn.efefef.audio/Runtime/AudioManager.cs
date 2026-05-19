@@ -12,12 +12,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers;
 using EasyFramework.Systems.Assets;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace EasyFramework.Systems.Audio
+namespace EasyFramework.Managers.Audio
 {
     /// <summary>
     /// 音频系统，统一管理 BGM 与音效，支持混音器、对象池、异步播放。

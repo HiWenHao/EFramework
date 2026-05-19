@@ -13,7 +13,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Audio
+namespace EasyFramework.Managers.Audio
 {
     /// <summary>
     /// 内部类：记录一条正在播放的音效及其生命周期信息。用于在 Update 中检测播放结束、响应外部取消、以及回收到对象池。

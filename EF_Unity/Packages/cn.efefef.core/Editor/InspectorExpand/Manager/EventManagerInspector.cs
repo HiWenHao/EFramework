@@ -15,9 +15,9 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using EasyFramework.Edit;
-using EasyFramework.Edit.Windows;
 
 namespace EasyFramework.Managers.Event.Editor
 {
@@ -25,75 +25,105 @@ namespace EasyFramework.Managers.Event.Editor
     /// 事件管理器监控面板
     /// </summary>
     [CustomEditor(typeof(EventManager))]
-    public class EventManagerInspector : UnityEditor.Editor
+    public class EventManagerInspector : EFInspectorBase<EventManager>
     {
-        private Vector2 _scrollPos;
-        private bool _autoRefresh;
-        private GUIStyle _labelStyle;
-        
-        public override void OnInspectorGUI()
+        /// <summary>
+        /// 编辑器内部使用, 事件信息
+        /// </summary>
+        private struct EventInfo
         {
-            DrawDefaultInspector();
+            public string Name; // 事件结构名
+            public int SyncHandlersCount; // 同步句柄数量
+            public int AsyncHandlersCount; // 异步句柄数量
+        }
 
-            EditorGUILayout.Space(10);
-            var titleRect = GUILayoutUtility.GetRect(GUIContent.none, GUIUtils.InspectorTitle());
-            EditorGUI.DrawRect(titleRect, new Color(0.2f, 0.2f, 0.2f, 0.3f));
-            EditorGUI.LabelField(titleRect, LC.Combine(Lc.Event, Lc.Data, Lc.Monitor ), GUIUtils.InspectorTitle());
+        private const float Width = 80f;
 
-            
-            if (!EditorApplication.isPlaying)
+        private string _errorMessage;
+        private Vector2 _scrollPos;
+        private GUIStyle _labelStyle;
+        private List<EventInfo> _eventInfos;
+
+        protected override string Title => LC.Combine(Lc.Event, Lc.Data, Lc.Monitor);
+
+        protected override void OnEditorEnable()
+        {
+            _eventInfos = new List<EventInfo>();
+
+            _labelStyle ??= new GUIStyle(EditorStyles.label)
             {
-                EditorGUILayout.HelpBox( LC.Combine(Lc.Non, Lc.Running, Lc.No, Lc.Data), MessageType.Info);
-                return;
-            }
+                alignment = TextAnchor.MiddleCenter
+            };
+        }
 
-            var eventManager = (EventManager)target;
-            EditorGUILayout.Space(10);
-            // 尝试获取订阅数据
-            var subscriptionsDict = GetSubscriptionsDictionary(eventManager);
+        protected override void OnEditorUpdate()
+        {
+            var subscriptionsDict = GetSubscriptionsDictionary(Target);
             if (subscriptionsDict == null)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Reflect, Lc.Error), MessageType.Error);
+                _errorMessage = LC.Combine(Lc.Reflect, Lc.Error);
                 return;
             }
 
-            if (subscriptionsDict.Count == 0)
+            _eventInfos.Clear();
+            foreach (DictionaryEntry kv in subscriptionsDict)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Current, Lc.No, Lc.Any, Lc.Event, Lc.Subscriptions), MessageType.Info);
+                Type eventType = kv.Key as Type;
+                object subs = kv.Value;
+                if (eventType == null || subs == null) continue;
+                _eventInfos.Add(new EventInfo()
+                {
+                    Name = eventType.Name,
+                    SyncHandlersCount = GetHandlerCount(subs, "SyncHandlers"),
+                    AsyncHandlersCount = GetHandlerCount(subs, "AsyncHandlers"),
+                });
+            }
+        }
+
+        protected override void OnEditorDisable()
+        {
+            _eventInfos.Clear();
+            _eventInfos = null;
+        }
+
+        protected override void OnEditorGUI()
+        {
+            EditorGUILayout.Space(10);
+            if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                EditorGUILayout.HelpBox(_errorMessage, MessageType.Error);
+                return;
+            }
+
+            if (_eventInfos.Count == 0)
+            {
+                EditorGUILayout.HelpBox(LC.Combine(Lc.Current, Lc.No, Lc.Any, Lc.Event, Lc.Subscriptions),
+                    MessageType.Info);
             }
             else
             {
-                _labelStyle ??= new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter
-                };
                 EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
                 EditorGUILayout.LabelField(LC.Combine(Lc.Event, Lc.Type), GUILayout.Width(200));
                 GUILayout.FlexibleSpace();
-                EditorGUILayout.LabelField(LC.Combine(Lc.Sync, Lc.Count), _labelStyle, GUILayout.Width(70));
-                EditorGUILayout.LabelField(LC.Combine(Lc.Async, Lc.Count), _labelStyle, GUILayout.Width(70));
+                EditorGUILayout.LabelField(LC.Combine(Lc.Sync, Lc.Count), _labelStyle, GUILayout.Width(Width));
+                EditorGUILayout.LabelField(LC.Combine(Lc.Async, Lc.Count), _labelStyle, GUILayout.Width(Width));
                 EditorGUILayout.EndHorizontal();
 
-                _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(150), GUILayout.MaxHeight(550));
-                foreach (DictionaryEntry kv in subscriptionsDict)
+                _scrollPos =
+                    EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.MinHeight(150), GUILayout.MaxHeight(550));
+                foreach (var kv in _eventInfos)
                 {
-                    Type eventType = kv.Key as Type;
-                    object subs = kv.Value;
-                    if (eventType == null || subs == null) continue;
-
-                    int syncCount = GetHandlerCount(subs, "SyncHandlers");
-                    int asyncCount = GetHandlerCount(subs, "AsyncHandlers");
-
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField(eventType.Name, GUILayout.Width(200));
+                    EditorGUILayout.LabelField(kv.Name, GUILayout.Width(200));
                     GUILayout.FlexibleSpace();
-                    EditorGUILayout.LabelField(syncCount.ToString(), _labelStyle, GUILayout.Width(70));
-                    EditorGUILayout.LabelField(asyncCount.ToString(), _labelStyle, GUILayout.Width(70));
+                    EditorGUILayout.LabelField($"{kv.SyncHandlersCount}", _labelStyle, GUILayout.Width(Width));
+                    EditorGUILayout.LabelField($"{kv.AsyncHandlersCount}", _labelStyle, GUILayout.Width(Width));
                     EditorGUILayout.EndHorizontal();
                 }
 
                 EditorGUILayout.EndScrollView();
-                EditorGUILayout.HelpBox($"{LC.Combine(Lc.Event, Lc.Total, Lc.Is)}: {subscriptionsDict.Count}", MessageType.None);
+                EditorGUILayout.HelpBox($"{LC.Combine(Lc.Event, Lc.Total, Lc.Is)}: {_eventInfos.Count}",
+                    MessageType.None);
             }
         }
 
@@ -106,9 +136,8 @@ namespace EasyFramework.Managers.Event.Editor
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 if (field == null)
                     return null;
-                
-                var value = field.GetValue(mgr);
-                return value as IDictionary;
+
+                return field.GetValue(mgr) as IDictionary;
             }
             catch (Exception e)
             {

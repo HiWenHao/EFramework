@@ -23,10 +23,8 @@ using UnityEngine;
 namespace EasyFramework.Managers.Procedure.Editor
 {
     [CustomEditor(typeof(ProcedureManager))]
-    public class ProcedureManagerInspector : UnityEditor.Editor
+    public class ProcedureManagerInspector : EFInspectorBase<ProcedureManager>
     {
-        private ProcedureManager _targetSystem;
-
         private FieldInfo _stackField;
         private FieldInfo _factoriesField;
 
@@ -43,63 +41,24 @@ namespace EasyFramework.Managers.Procedure.Editor
         private FieldInfo _exitExceptionField;
         private FieldInfo _runtimeVersionField;
 
-        private double _lastRepaintTime;
         private bool _reflectionReady;
         private bool _showActivityTree = true;
         private bool _showRegisteredProcedures = true;
 
-        private readonly Dictionary<long, bool> _nodeFoldouts = new();
-        private readonly Dictionary<long, bool> _paramFoldouts = new();
+        private Dictionary<long, bool> _nodeFoldouts;
+        private Dictionary<long, bool> _paramFoldouts;
 
-        private const double RepaintInterval = 0.3f;
         private Vector2 _treeScrollPos;
 
         private Dictionary<Type, Func<IProcedure>> _cachedFactories;
 
-        private void OnEnable()
-        {
-            _targetSystem = (ProcedureManager)target;
-            CacheReflectionInfo();
-            EditorApplication.update += OnEditorUpdate;
-        }
+        protected override string Title => LC.Combine(Lc.Procedure, Lc.Running, Lc.Monitor);
 
-        private void OnDisable()
+        protected override void OnEditorEnable()
         {
-            EditorApplication.update -= OnEditorUpdate;
-        }
+            _nodeFoldouts = new Dictionary<long, bool>();
+            _paramFoldouts = new Dictionary<long, bool>();
 
-        private void OnEditorUpdate()
-        {
-            if (!Application.isPlaying) return;
-            if (_targetSystem == null) return;
-
-            if (!(EditorApplication.timeSinceStartup - _lastRepaintTime >= RepaintInterval)) return;
-            _lastRepaintTime = EditorApplication.timeSinceStartup;
-            RefreshFactoriesCache();
-            Repaint();
-        }
-
-        private void RefreshFactoriesCache()
-        {
-            if (!_reflectionReady || _factoriesField == null) return;
-            var factoriesObj = _factoriesField.GetValue(_targetSystem);
-            if (factoriesObj is IDictionary dict)
-            {
-                _cachedFactories = new Dictionary<Type, Func<IProcedure>>();
-                foreach (DictionaryEntry entry in dict)
-                {
-                    if (entry.Key is Type t && entry.Value is Func<IProcedure> factory)
-                        _cachedFactories[t] = factory;
-                }
-            }
-            else
-            {
-                _cachedFactories = new Dictionary<Type, Func<IProcedure>>();
-            }
-        }
-
-        private void CacheReflectionInfo()
-        {
             try
             {
                 var sysType = typeof(ProcedureManager);
@@ -108,7 +67,7 @@ namespace EasyFramework.Managers.Procedure.Editor
 
                 _procedureInstanceType = sysType.Assembly.GetType("EasyFramework.Managers.Procedure.ProcedureInstance");
                 if (_procedureInstanceType == null)
-                    throw new Exception("无法获取 ProcedureInstance 类型");
+                    D.Exception("无法获取 ProcedureInstance 类型");
 
                 _uidField = GetInstanceField("Uid");
                 _parentUidField = GetInstanceField("ParentUid");
@@ -123,8 +82,9 @@ namespace EasyFramework.Managers.Procedure.Editor
                 _paramsField = GetInstanceField("Params");
 
                 if (_stackField == null || _factoriesField == null ||
-                    _procedureInstanceType == null || _uidField == null || _parentUidField == null || _depthField == null)
-                    throw new Exception("关键反射字段缺失，请检查 ProcedureSystem 和 ProcedureInstance 的字段定义");
+                    _procedureInstanceType == null || _uidField == null || _parentUidField == null ||
+                    _depthField == null)
+                    D.Exception("关键反射字段缺失，请检查 ProcedureSystem 和 ProcedureInstance 的字段定义");
 
                 _reflectionReady = true;
                 RefreshFactoriesCache();
@@ -132,41 +92,43 @@ namespace EasyFramework.Managers.Procedure.Editor
             catch (Exception e)
             {
                 _reflectionReady = false;
-                Debug.LogError($"[ProcedureSystemInspector] 反射初始化失败: {e}");
+                D.Error($"[ProcedureSystemInspector] 反射初始化失败: {e}");
             }
 
-            FieldInfo GetInstanceField(string instanceName) => _procedureInstanceType?.GetField(instanceName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo GetInstanceField(string instanceName) => _procedureInstanceType?.GetField(instanceName,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnEditorUpdate()
         {
-            DrawDefaultInspector();
-            EditorGUILayout.Space(10);
-            var titleRect = GUILayoutUtility.GetRect(GUIContent.none, GUIUtils.InspectorTitle());
-            EditorGUI.DrawRect(titleRect, new Color(0.2f, 0.2f, 0.2f, 0.3f));
-            EditorGUI.LabelField(titleRect, LC.Combine(Lc.Procedure, Lc.Running, Lc.Monitor), GUIUtils.InspectorTitle());
+            RefreshFactoriesCache();
+        }
 
-            if (!EditorApplication.isPlaying)
-            {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Non, Lc.Running, Lc.Not, Lc.Data), MessageType.Info);
-                return;
-            }
-
+        protected override void OnEditorGUI()
+        {
             if (!_reflectionReady)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Reflect, Lc.Error, Lc.Please, Lc.Check, Lc.Code), MessageType.Error);
+                EditorGUILayout.HelpBox(LC.Combine(Lc.Reflect, Lc.Error, Lc.Please, Lc.Check, Lc.Code),
+                    MessageType.Error);
                 return;
             }
 
-            DrawGlobalInfo();           // 新增全局信息
+            DrawGlobalInfo(); // 新增全局信息
             DrawRegisteredProcedures();
-            DrawRuntimeMonitor();       // 活动树
+            DrawRuntimeMonitor(); // 活动树
+        }
 
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(Lc.Manually, Lc.Refresh), GUILayout.Width(80)))
-                Repaint();
-            EditorGUILayout.LabelField(LC.Combine(Lc.Auto, Lc.Refresh, Lc.Interval) + $": {RepaintInterval:F1} s", GUIUtils.SmallNote());
-            EditorGUILayout.EndHorizontal();
+        private void RefreshFactoriesCache()
+        {
+            if (!_reflectionReady || _factoriesField == null) return;
+            var factoriesObj = _factoriesField.GetValue(Target);
+            _cachedFactories = new Dictionary<Type, Func<IProcedure>>();
+            if (factoriesObj is not IDictionary dict) return;
+            foreach (DictionaryEntry entry in dict)
+            {
+                if (entry is { Key: Type t, Value: Func<IProcedure> factory })
+                    _cachedFactories[t] = factory;
+            }
         }
 
         // ---------- 全局信息 ----------
@@ -180,11 +142,14 @@ namespace EasyFramework.Managers.Procedure.Editor
             if (activeTop != null)
             {
                 EditorGUILayout.LabelField($"{LC.Combine(Lc.Current, Lc.Depth)}: {stackDepth}", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField($"● {LC.Combine(Lc.Current, Lc.Active, Lc.Procedure)}   {GetProcedureType(activeTop)?.Name}   UID [ {GetUid(activeTop)} ]", GUIUtils.ColorText(textColor: Color.green));
+                EditorGUILayout.LabelField(
+                    $"● {LC.Combine(Lc.Current, Lc.Active, Lc.Procedure)}   {GetProcedureType(activeTop)?.Name}   UID [ {GetUid(activeTop)} ]",
+                    GUIUtils.ColorText(textColor: Color.green));
             }
             else
             {
-                EditorGUILayout.LabelField(LC.Combine(Lc.Current, Lc.No, Lc.Active, Lc.Procedure), EditorStyles.miniLabel);
+                EditorGUILayout.LabelField(LC.Combine(Lc.Current, Lc.No, Lc.Active, Lc.Procedure),
+                    EditorStyles.miniLabel);
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(5);
                 return;
@@ -192,16 +157,22 @@ namespace EasyFramework.Managers.Procedure.Editor
 
             // 显示系统配置参数（直接从 target 中读取）
             var sys = (ProcedureManager)target;
-            var maxDepthField = typeof(ProcedureManager).GetField("maxDepth", BindingFlags.NonPublic | BindingFlags.Instance);
-            var maxChainField = typeof(ProcedureManager).GetField("maxChainRepeat", BindingFlags.NonPublic | BindingFlags.Instance);
-            var timeoutField = typeof(ProcedureManager).GetField("defaultTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var leaveTimeoutField = typeof(ProcedureManager).GetField("leaveTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
+            var maxDepthField =
+                typeof(ProcedureManager).GetField("maxDepth", BindingFlags.NonPublic | BindingFlags.Instance);
+            var maxChainField =
+                typeof(ProcedureManager).GetField("maxChainRepeat", BindingFlags.NonPublic | BindingFlags.Instance);
+            var timeoutField = typeof(ProcedureManager).GetField("defaultTimeoutSeconds",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            var leaveTimeoutField = typeof(ProcedureManager).GetField("leaveTimeoutSeconds",
+                BindingFlags.NonPublic | BindingFlags.Instance);
             int maxDepth = maxDepthField != null ? (int)maxDepthField.GetValue(sys) : 0;
             int maxChain = maxChainField != null ? (int)maxChainField.GetValue(sys) : 0;
             float enterTimeout = timeoutField != null ? (float)timeoutField.GetValue(sys) : 0;
             float leaveTimeout = leaveTimeoutField != null ? (float)leaveTimeoutField.GetValue(sys) : 0;
 
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Config)}: {LC.Combine(Lc.Max, Lc.Depth)}={maxDepth}, {LC.Combine(Lc.Chain, Lc.Repetition)}={maxChain}, {LC.Combine(Lc.Enter, Lc.Timeout)}={enterTimeout}s, {LC.Combine(Lc.Exit, Lc.Timeout)}={leaveTimeout}s", GUIUtils.SmallNote());
+            EditorGUILayout.LabelField(
+                $"{LC.Combine(Lc.Config)}: {LC.Combine(Lc.Max, Lc.Depth)}={maxDepth}, {LC.Combine(Lc.Chain, Lc.Repetition)}={maxChain}, {LC.Combine(Lc.Enter, Lc.Timeout)}={enterTimeout}s, {LC.Combine(Lc.Exit, Lc.Timeout)}={leaveTimeout}s",
+                GUIUtils.SmallNote());
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(5);
         }
@@ -225,7 +196,8 @@ namespace EasyFramework.Managers.Procedure.Editor
                     GUILayout.ExpandWidth(true));
 
                 if (rootInstances.Count == 0)
-                    EditorGUILayout.LabelField(LC.Combine(Lc.No, Lc.Procedure, Lc.Exist), EditorStyles.centeredGreyMiniLabel);
+                    EditorGUILayout.LabelField(LC.Combine(Lc.No, Lc.Procedure, Lc.Exist),
+                        EditorStyles.centeredGreyMiniLabel);
                 else
                 {
                     var childMap = BuildChildMap(activeInstances);
@@ -237,11 +209,11 @@ namespace EasyFramework.Managers.Procedure.Editor
 
                 EditorGUILayout.EndScrollView();
             }
+
             EditorGUILayout.EndVertical();
         }
 
         // ---------- 注册流程列表（显示所有存活实例）----------
-        // 注册列表（已优化）
         private void DrawRegisteredProcedures()
         {
             if (_cachedFactories == null || _cachedFactories.Count == 0)
@@ -287,12 +259,15 @@ namespace EasyFramework.Managers.Procedure.Editor
                 }
                 else
                 {
-                    EditorGUILayout.LabelField($"  ({LC.Combine(Lc.No, Lc.Surviving, Lc.Instance)})", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField($"  ({LC.Combine(Lc.No, Lc.Surviving, Lc.Instance)})",
+                        EditorStyles.miniLabel);
                 }
+
                 EditorGUI.indentLevel--;
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(2);
             }
+
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndVertical();
         }
@@ -302,7 +277,7 @@ namespace EasyFramework.Managers.Procedure.Editor
         {
             var list = new List<object>();
             if (_stackField == null) return list;
-            var stackObj = _stackField.GetValue(_targetSystem);
+            var stackObj = _stackField.GetValue(Target);
             if (stackObj == null) return list;
             if (stackObj is not IEnumerable enumerable) return list;
 
@@ -316,6 +291,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                 if (exitState == 0)
                     temp.Add(inst);
             }
+
             temp.Reverse(); // 让根流程在顶部，子流程在下方，符合树形展示习惯
             return temp;
         }
@@ -328,8 +304,6 @@ namespace EasyFramework.Managers.Procedure.Editor
         private ProcedureState GetState(object inst) => (ProcedureState)(_stateField?.GetValue(inst) ?? ProcedureState.None);
         private Type GetProcedureType(object inst) => _procedureTypeField?.GetValue(inst) as Type;
         private Exception GetExitException(object inst) => _exitExceptionField?.GetValue(inst) as Exception;
-        private ProcedureExitType GetExitReason(object inst) => (ProcedureExitType)(_exitReasonField?.GetValue(inst) ?? ProcedureExitType.Completed);
-        private IDictionary GetParams(object inst) => _paramsField?.GetValue(inst) as IDictionary;
 
         private Dictionary<long, List<object>> BuildChildMap(List<object> instances)
         {
@@ -341,6 +315,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                     map[parent] = new List<object>();
                 map[parent].Add(inst);
             }
+
             foreach (var kv in map)
                 kv.Value.Sort((a, b) => GetDepth(a).CompareTo(GetDepth(b)));
             return map;
@@ -350,8 +325,11 @@ namespace EasyFramework.Managers.Procedure.Editor
         {
             var roots = new List<object>();
             foreach (var inst in instances)
+            {
                 if (GetParentUid(inst) == 0)
                     roots.Add(inst);
+            }
+
             roots.Sort((a, b) => GetDepth(a).CompareTo(GetDepth(b)));
             return roots;
         }
@@ -388,12 +366,11 @@ namespace EasyFramework.Managers.Procedure.Editor
             if (children.Count > 0)
             {
                 _nodeFoldouts.TryAdd(uid, true);
-                _nodeFoldouts[uid] = EditorGUILayout.Foldout(_nodeFoldouts[uid], displayName, true, GUIUtils.ColorText(textColor: GUIUtils.LightYellow));
+                _nodeFoldouts[uid] = EditorGUILayout.Foldout(_nodeFoldouts[uid], displayName, true,
+                    GUIUtils.ColorText(textColor: GUIUtils.LightYellow));
             }
             else
-            {
                 EditorGUILayout.LabelField(displayName, GUIUtils.ColorText(textColor: GUIUtils.LightYellow), GUILayout.MinWidth(200));
-            }
 
             GUILayout.EndHorizontal();
 
@@ -408,8 +385,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             GUILayout.EndHorizontal();
 
             // 参数折叠
-            var paramsDict = GetParams(inst);
-            if (paramsDict != null && paramsDict.Count > 0)
+            if (_paramsField?.GetValue(inst) is IDictionary { Count: > 0 } paramsDict)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(actualIndent + indentStep);
@@ -426,6 +402,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                     {
                         EditorGUILayout.LabelField($"{kv.Key}: {kv.Value}", EditorStyles.miniLabel);
                     }
+
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
                 }

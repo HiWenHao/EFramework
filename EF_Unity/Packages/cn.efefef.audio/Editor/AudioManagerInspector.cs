@@ -14,9 +14,8 @@ using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
-using EasyFramework.Systems.Audio;
 
-namespace EasyFramework.Editor.Audio
+namespace EasyFramework.Managers.Audio.Editor
 {
     [CustomEditor(typeof(AudioManager))]
     public class AudioManagerInspector : UnityEditor.Editor

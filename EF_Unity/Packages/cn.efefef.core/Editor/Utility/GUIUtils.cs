@@ -75,6 +75,7 @@ namespace EasyFramework.Edit.Windows
             _smallNote ??= new GUIStyle()
             {
                 fontSize = 10,
+                alignment = TextAnchor.MiddleLeft,
                 normal = { textColor = Color.gray }
             };
             return _smallNote;
