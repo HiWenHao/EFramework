@@ -249,10 +249,16 @@ namespace EasyFramework.Edit
                     string path = ServerToolkit.GetFrameworkPath(_config.serverType) + PackageFolderPath;
                     _addRequest = Client.Add($"{path}{packageInfo.Name}");
                     EditorApplication.update += AddPackageProgress;
+
+                    packageInfo.CurrentVersion = packageInfo.ServerVersion;
+                    packageInfo.NeedUpdate = false;
                     break;
                 case Lc.Unload:
                     _removeRequest = Client.Remove(packageInfo.Name);
                     EditorApplication.update += RemovePackageProgress;
+
+                    packageInfo.CurrentVersion = "";
+                    packageInfo.NeedUpdate = true;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
@@ -296,7 +302,7 @@ namespace EasyFramework.Edit
             if (_addRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
             else
-                SetPackageInfo(true).Dispose();
+                _ = SetPackageInfo(true);
             CustomProgressWindow.CloseWindow();
             EditorApplication.update -= AddPackageProgress;
             _currentPackageInfo = null;
@@ -312,14 +318,14 @@ namespace EasyFramework.Edit
             if (_removeRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
             else
-                SetPackageInfo(false).Dispose();
+                _ = SetPackageInfo(false);
 
             EditorApplication.update -= RemovePackageProgress;
             _currentPackageInfo = null;
             _removeRequest = null;
         }
 
-        #region 更新数据
+        #region Update all package info - 更新数据
 
         private void GetLocalPackages()
         {
