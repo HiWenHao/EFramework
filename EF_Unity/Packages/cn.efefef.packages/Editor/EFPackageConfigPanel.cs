@@ -426,8 +426,6 @@ namespace EasyFramework.Edit
             }
             finally
             {
-                D.Emphasize($"CreatePackage succeed， {packageName}");
-                
                 _config.packagesInfo.Add(_newPackageInfo);
                 _packageFolder.TryAdd(_newPackageInfo.DisplayName, true);
                 ServerToolkit.SavePackageConfig(_config);
