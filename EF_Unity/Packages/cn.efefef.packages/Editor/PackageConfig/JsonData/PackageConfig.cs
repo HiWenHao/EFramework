@@ -25,14 +25,15 @@ namespace EasyFramework.Edit.Packages
         GitHub,
         Local,
     }
-    
+
     /// <summary>
     /// 用来管理配置
     /// </summary>
-    public class PackageConfig : ScriptableObject
+    [Serializable]
+    public class PackageConfig
     {
         /// <summary> 服务地址 </summary>
-        [SerializeField] public ServerType serverType;
+        [SerializeField] public ServerType serverType = ServerType.Gitee;
 
         /// <summary> git请求令牌 </summary>
         [SerializeField] public string token;
@@ -41,6 +42,9 @@ namespace EasyFramework.Edit.Packages
         [SerializeField] public long lastUpdateTimestamp;
 
         /// <summary> 全部包名 </summary>
-        [SerializeField] public List<EFPackageInfo> packagesInfo;
+        [SerializeField] public List<EFPackageInfo> packagesInfo = new();
+
+        public static PackageConfig FromJson(string json) => JsonUtility.FromJson<PackageConfig>(json);
+        public string ToJson() => JsonUtility.ToJson(this);
     }
 }

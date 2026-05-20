@@ -10,7 +10,9 @@
  */
 
 using System;
+using System.IO;
 using UnityEditor;
+using UnityEngine;
 
 namespace EasyFramework.Edit.Packages
 {
@@ -19,6 +21,35 @@ namespace EasyFramework.Edit.Packages
     /// </summary>
     public static class ServerToolkit
     {
+        private static string ConfigPath => Path.Combine(Application.dataPath, "../ProjectSettings/EFPackageCache.json");
+
+        /// <summary>
+        /// 获取包配置数据
+        /// </summary>
+        public static PackageConfig GetPackageConfig()
+        {
+            if (!File.Exists(ConfigPath))
+                return null;
+
+            string json = File.ReadAllText(ConfigPath);
+            var packageConfig = JsonUtility.FromJson<PackageConfig>(json);
+            return packageConfig;
+        }
+
+        /// <summary>
+        /// 保存包配置数据
+        /// </summary>
+        public static void SavePackageConfig(PackageConfig packageConfig)
+        {
+            string json = JsonUtility.ToJson(packageConfig);
+            File.WriteAllText(ConfigPath,  json);
+        }
+        
+        public static void SavePackageConfig(string packageConfig)
+        {
+            File.WriteAllText(ConfigPath,  packageConfig);
+        }
+        
         /// <summary>
         /// 获取请求链接地址
         /// </summary>
@@ -28,7 +59,7 @@ namespace EasyFramework.Edit.Packages
             return platform switch
             {
                 ServerType.GitHub => "https://github.com/HiWenHao/EFramework",
-                ServerType.Gitee  => "https://gitee.com/AlvinCN/EFramework",
+                ServerType.Gitee => "https://gitee.com/AlvinCN/EFramework",
                 ServerType.Local => "file://",
                 _ => throw new NotSupportedException()
             };
@@ -43,20 +74,10 @@ namespace EasyFramework.Edit.Packages
             return platform switch
             {
                 ServerType.GitHub => "HiWenHao",
-                ServerType.Gitee  => "AlvinCN",
+                ServerType.Gitee => "AlvinCN",
                 ServerType.Local => "Alvin",
                 _ => throw new NotSupportedException()
             };
-        }
-        
-        public static string GetToken(ServerType platform)
-        {
-            return EditorPrefs.GetString(UnityEngine.Application.productName + GetKey(platform), "");
-        }
-
-        public static void SetToken(ServerType platform,  string token)
-        {
-            EditorPrefs.SetString(UnityEngine.Application.productName + GetKey(platform), token);
         }
 
         /// <summary>
@@ -75,9 +96,19 @@ namespace EasyFramework.Edit.Packages
             return platform switch
             {
                 ServerType.GitHub => $"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{encodedPath}",
-                ServerType.Gitee  => $"https://gitee.com/{owner}/{repo}/raw/{branch}/{encodedPath}",
+                ServerType.Gitee => $"https://gitee.com/{owner}/{repo}/raw/{branch}/{encodedPath}",
                 _ => throw new NotSupportedException()
             };
+        }
+        
+        public static string GetToken(ServerType platform)
+        {
+            return EditorPrefs.GetString(Application.productName + GetKey(platform), "");
+        }
+
+        public static void SetToken(ServerType platform, string token)
+        {
+            EditorPrefs.SetString(UnityEngine.Application.productName + GetKey(platform), token);
         }
 
         private static string GetKey(ServerType platform)

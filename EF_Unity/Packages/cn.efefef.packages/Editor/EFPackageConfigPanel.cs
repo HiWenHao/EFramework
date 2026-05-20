@@ -35,26 +35,23 @@ namespace EasyFramework.Edit
     public class EFPackageConfigPanel : EFConfigPanelBase
     {
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
-        private const string EditorResourcesPath = "Packages/cn.efefef.packages/Editor Resources/";     // 包相关资源存放路径
-        private const string LocationConfigPath = EditorResourcesPath + "EFPackageConfig.asset";        // 本地资源配置路径
-        private const string EFPackageConfigPath = "EF_Unity/Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset";
+        private const string EFPackageCachePath = "Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json";
 
         public override string Name => "EF" + LC.Combine(Lc.S, Lc.Package, Lc.Assets);
 
-        private bool _isAlvin;
         private bool _allUnfold;
         private string _token;
-        private string _packageRootPath;
         private string[] _createPackageTips;
 
         private ServerType _serverType;
         private Vector2 _scrollPosition;
 
         private Dictionary<string, bool> _packageFolder;
+
+        private List<EFPackageInfo> _packages;
         
         private PackageConfig _config;
         private EFPackageInfo _currentPackageInfo;
-        private SerializedObject _packageConfig;
 
         private AddRequest _addRequest;
         private RemoveRequest _removeRequest;
@@ -62,9 +59,14 @@ namespace EasyFramework.Edit
         public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
-            _isAlvin = EditorPrefs.GetString("EF_EditorUser").StartsWith("Alvin");
-            if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
-                FindCustomPackages();
+            // if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
+            //     GetLocalPackages();//FindCustomPackages();
+        }
+
+        public override void OnDestroy()
+        {
+            if (null == _config) return;
+            ServerToolkit.SavePackageConfig(_config);
         }
 
         public override void LoadWindowData()
@@ -81,17 +83,15 @@ namespace EasyFramework.Edit
                 LC.Combine(Lc.Author, Lc.Name),
             };
 
-            _packageRootPath = Application.dataPath + "../Packages";
             _allUnfold = true;
-            
-            _config = AssetDatabase.LoadAssetAtPath<PackageConfig>(LocationConfigPath);
-            _packageConfig = new SerializedObject(_config);
+
+            _packages = new List<EFPackageInfo>();
+            _config = ServerToolkit.GetPackageConfig() ?? new PackageConfig();
+
             foreach (EFPackageInfo packageInfo in _config.packagesInfo)
             {
                 _packageFolder.Add(packageInfo.DisplayName, true);
             }
-
-            _serverType = _config.serverType;
             _token = ServerToolkit.GetToken(_config.serverType);
         }
 
@@ -106,7 +106,7 @@ namespace EasyFramework.Edit
                 if (_serverType != _config.serverType)
                 {
                     _serverType = _config.serverType;
-                    _token =  ServerToolkit.GetToken(_config.serverType);
+                    _token = ServerToolkit.GetToken(_config.serverType);
                 }
                 EditorGUILayout.BeginHorizontal();
                 _token = EditorGUILayout.TextField($"{_config.serverType} Token", _token);
@@ -124,7 +124,10 @@ namespace EasyFramework.Edit
             if (GUILayout.Button(LC.Combine(Lc.Update, Lc.All, Lc.Information), GUIUtils.Button(Color.green)))
             {
                 if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
+                {
+                    GetLocalPackages();
                     UpdateAllFromGitOrGitee().Forget();
+                }
                 else
                     EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
                         $"{LC.Combine(Lc.Request, Lc.Too, Lc.Frequently)}, {LC.Combine(Lc.PleaseWaitMoment, Lc.TryAgain)}",
@@ -316,44 +319,12 @@ namespace EasyFramework.Edit
             _removeRequest = null;
         }
 
-        private void FindCustomPackages()
+        #region 更新数据
+
+        private void GetLocalPackages()
         {
-            string[] allSubDirs = Directory.GetDirectories(Path.GetFullPath("Packages"));
-
-            List<string> matchedDirs = new List<string>();
-
-            foreach (string dir in allSubDirs)
-            {
-                if (!Path.GetFileName(dir).StartsWith("cn.efefef."))
-                    continue;
-                matchedDirs.Add(dir);
-            }
-
-            _packageFolder.Clear();
-            _config.packagesInfo.Clear();
-            foreach (string dirPath in matchedDirs)
-            {
-                string jsonPath = Path.Combine(dirPath, "package.json");
-                if (!File.Exists(jsonPath))
-                    continue;
-                GitPackageConfig config = JsonConvert.DeserializeObject<GitPackageConfig>(File.ReadAllText(jsonPath));
-                _config.packagesInfo.Add(new EFPackageInfo
-                {
-                    Name = config.Name,
-                    DisplayName = config.DisplayName,
-                    FromGit = false,
-                    NeedUpdate = false,
-                    Description = config.Description,
-                    ServerVersion = config.Version,
-                    CurrentVersion = config.Version
-                });
-                
-                _packageFolder.Add(config.DisplayName, true);
-            }
-        }
-
-        private void GetPackages()
-        {
+            _packages.Clear();
+            _packages = new List<EFPackageInfo>(_config.packagesInfo);
             _config.packagesInfo.Clear();
 
             foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
@@ -362,10 +333,11 @@ namespace EasyFramework.Edit
                 if (!name.Contains("cn.efefef."))
                     continue;
 
+                string displayName = string.IsNullOrEmpty(packageInfo.displayName) ? name : packageInfo.displayName;
                 _config.packagesInfo.Add(new EFPackageInfo()
                 {
                     Name = name,
-                    DisplayName = string.IsNullOrEmpty(packageInfo.displayName) ? name : packageInfo.displayName,
+                    DisplayName = displayName,
                     FromGit = true,
                     Description = packageInfo.description,
                     CurrentVersion = packageInfo.version,
@@ -377,27 +349,52 @@ namespace EasyFramework.Edit
 
         private async UniTask UpdateAllFromGitOrGitee()
         {
-            byte[] assetData = await DownloadFileAsync(ServerToolkit.GetRawUrl(_config.serverType,
-                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master", EFPackageConfigPath));
-    
-            if (assetData == null) 
-                return;
+            var assetData = await DownloadFileAsync(ServerToolkit.GetRawUrl(_config.serverType,
+                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master", "EF_Unity/" + EFPackageCachePath));
 
-            if (_isAlvin)
+            if (string.IsNullOrEmpty(assetData))
             {
-                D.Log($"配置加载成功");
+                _config.packagesInfo =  new List<EFPackageInfo>(_packages);
                 return;
             }
+            _packageFolder.Clear();
+            PackageConfig newConfig = PackageConfig.FromJson(assetData);
+
+            var infoList = new List<EFPackageInfo>();
+            for (var i = 0; i < newConfig.packagesInfo.Count; i++)
+            {
+                bool needAdded = true;
+                var newInfo = newConfig.packagesInfo[i];
+                _packageFolder.Add(newInfo.DisplayName, true);
+                for (var j = 0; j < _config.packagesInfo.Count; j++)
+                {
+                    var oldInfo = _config.packagesInfo[j];
+                    if (oldInfo.Name != newInfo.Name) continue;
+                    if (EditorUtils.CompareVersion(oldInfo.CurrentVersion, newInfo.CurrentVersion))
+                        continue;
+                    oldInfo.ServerVersion = newInfo.CurrentVersion;
+                    oldInfo.NeedUpdate = true;
+                    oldInfo.DisplayName = newInfo.DisplayName;
+                    oldInfo.Description = newInfo.Description;
+                    _config.packagesInfo[j] = oldInfo;
+                    needAdded = false;
+                    break;
+                }
+
+                if (needAdded)
+                    infoList.Add(newInfo);
+            }
+
+            foreach (var info in infoList)
+            {
+                _config.packagesInfo.Add(info);
+            }
+            infoList.Clear();
             
-            await File.WriteAllBytesAsync(LocationConfigPath, assetData);
-    
-            EditorCommands.Refresh();
-            
-            _config = AssetDatabase.LoadAssetAtPath<PackageConfig>(LocationConfigPath);
+            ServerToolkit.SavePackageConfig(_config.ToJson());
         }
 
-        // 异步下载指定 URL 的文件内容
-        private async UniTask<byte[]> DownloadFileAsync(string url)
+        private async UniTask<string> DownloadFileAsync(string url)
         {
             using UnityWebRequest request = UnityWebRequest.Get(url);
             if (!string.IsNullOrEmpty(_config.token))
@@ -406,12 +403,13 @@ namespace EasyFramework.Edit
             await request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success) 
-                return request.downloadHandler.data;
+                return request.downloadHandler.text;
             
             D.Error(LC.Combine(Lc.Update, Lc.Error));
             return null;
         }
 
+        #endregion
 
         #region Create Package - 创建一个新包
 
@@ -423,8 +421,7 @@ namespace EasyFramework.Edit
                 return;
             }
 
-            string packageNameToLower = $"cn.efefef.{packageName.ToLower()}";
-            string packagePath = $"{_packageRootPath}/{packageNameToLower}";
+            string packagePath = Application.dataPath + $"../Packages/cn.efefef.{packageName.ToLower()}";
             Directory.CreateDirectory(packagePath);
 
             try
@@ -435,7 +432,6 @@ namespace EasyFramework.Edit
             finally
             {
                 D.Emphasize($"CreatePackage succeed， {packageName}");
-                _packageConfig.ApplyModifiedProperties();
                 EditorCommands.SaveAssets();
                 EditorCommands.Refresh();
             }
