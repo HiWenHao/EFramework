@@ -18,7 +18,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// Please modify the description。
     /// </summary>
-    [EFConfig]
+    [EFConfigPanel]
     internal class EFPathConfigPanel : EFConfigPanelBase
     {
         Vector2 _scrollPos;

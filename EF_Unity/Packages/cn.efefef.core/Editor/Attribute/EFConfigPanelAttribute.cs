@@ -17,8 +17,12 @@ namespace EasyFramework.Edit
     /// EF配置面板特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class EFConfigAttribute : Attribute
+    public class EFConfigPanelAttribute : Attribute
     {
-        
+        /// <summary>
+        /// 面板排序优先级， 数值越小排名越靠前, 默认为9999
+        /// <para>Panel sorting priority: The smaller the value, the top of the ranking. The default value is 9999.</para>
+        /// </summary>
+        public int Priority { get; set; } = 9999;
     }
 }

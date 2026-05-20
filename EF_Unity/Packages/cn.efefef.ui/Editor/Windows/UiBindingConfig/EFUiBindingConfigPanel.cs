@@ -17,7 +17,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// UI自动绑定设置
     /// </summary>
-    [EFConfig]
+    [EFConfigPanel]
     internal class EFUiBindingConfigPanel : EFConfigPanelBase
     {
         Vector2 _scrllPos;

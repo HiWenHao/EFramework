@@ -145,6 +145,25 @@ namespace EasyFramework.Edit
             return endIdx;
         }
 
+        /// <summary>
+        /// 对比版本号格式为: x.x.x
+        /// <para>x为纯数字</para>
+        /// </summary>
+        /// <param name="version1">版本号1</param>
+        /// <param name="version2">版本号2</param>
+        /// <returns></returns>
+        public static bool CompareVersion(string version1, string version2)
+        {
+            if (Version.TryParse(version1, out Version ver1) && Version.TryParse(version2, out Version ver2))
+            {
+                return ver1 > ver2;
+            }
+            else
+            {
+                D.Error($"Version info is error, version1 = {version1},  version2 = {version2}");
+                return false;
+            }
+        }
         #endregion
 
         #region IO

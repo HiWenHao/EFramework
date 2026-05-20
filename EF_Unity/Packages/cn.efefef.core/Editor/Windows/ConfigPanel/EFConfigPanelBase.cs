@@ -17,15 +17,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     public abstract class EFConfigPanelBase
     {
         /// <summary>
-        /// 面板排序优先级, -1时不做排序, 默认最后
-        /// </summary>
-        public virtual int Priority { get; } = -1;
-        
-        /// <summary>
         /// 面板名称
         /// </summary>
         public abstract string Name { get; }
-        
+
         /// <summary>
         /// 当首次进入
         /// </summary>

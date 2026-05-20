@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:      This script is used to .
+ * Describe:      EF配置面板 - 可通过快捷键 Alt + E 快速打开
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2024-10-10 14:39:19
  * ModifyAuthor:  Alvin5100
@@ -9,15 +9,18 @@
  * ===============================================
  */
 
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace EasyFramework.Edit.Windows.ConfigPanel
 {
     /// <summary>
-    /// Please modify the description。
+    /// EF配置面板 - 可通过快捷键 Alt + E 快速打开  
     /// </summary>
     public class EFConfigsPanel : EditorWindowBase
     {
@@ -27,6 +30,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private static EFConfigsPanel _window;
         private List<EFConfigPanelBase> _settings;
+        private Dictionary<Type, int> _priorityCache;
 
         [MenuItem("EFTools/Settings &E", priority = 0)]
         private static void OpenWindow()
@@ -38,20 +42,22 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (null != _settings)
                 return;
-            
+
             _settings = new List<EFConfigPanelBase>();
+            _priorityCache = new Dictionary<Type, int>();
+            var allTypesWithAttr = TypeCache.GetTypesWithAttribute<EFConfigPanelAttribute>();
 
-            Type attribute = typeof(EFConfigAttribute);
-            Type[] types = EditorUtils.GetAssembly("EF.Editor").GetTypes();
-
-            foreach (Type oneType in types)
+            foreach (Type oneType in allTypesWithAttr)
             {
-                if (!oneType.IsDefined(attribute, false))
+                if (oneType.IsAbstract || !typeof(EFConfigPanelBase).IsAssignableFrom(oneType))
                     continue;
-
-                if (Activator.CreateInstance(oneType) is not EFConfigPanelBase configPanel)
+                
+                if (oneType.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    D.Warning($"{oneType.Name} 缺少无参构造函数，跳过实例化");
                     continue;
-                AddConfigPanel(configPanel);
+                }
+                Insert(_settings, Activator.CreateInstance(oneType) as EFConfigPanelBase);
             }
 
             _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
@@ -114,42 +120,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _settings[i].OnDestroy();
             }
 
+            _priorityCache.Clear();
+            _priorityCache = null;
+
             _settings.Clear();
             _settings = null;
         }
 
-        private void AddConfigPanel(EFConfigPanelBase config)
-        {
-            if (config.Priority == -1)
-            {
-                _settings.Add(config);
-                return;
-            }
-            
-            int count = _settings.Count;
-            int insertIndex = -1;
-            for (int i = 0; i < count; i++)
-            {
-                int priority = _settings[i].Priority;
-                
-                if (priority == -1)
-                {
-                    insertIndex = i;
-                    break;
-                }
-
-                if (priority <= config.Priority)
-                    continue;
-
-                insertIndex = i;
-                break;
-            }
-
-            if (insertIndex == -1)
-                insertIndex = count;
-            _settings.Insert(insertIndex, config);
-        }
-        
         private void DrawButton(int index, EFConfigPanelBase configPanel)
         {
             if (!GUILayout.Button(configPanel.Name,
@@ -161,6 +138,32 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             _panelIndex = index;
             configPanel.OnEnable(_assetsPath);
+        }
+
+        private int GetOrder(EFConfigPanelBase configPanel)
+        {
+            Type type = configPanel.GetType();
+
+            if (_priorityCache.TryGetValue(type, out int cached))
+                return cached;
+            var attr = type.GetCustomAttribute<EFConfigPanelAttribute>(true);
+            int order = attr?.Priority ?? -1;
+            _priorityCache[type] = order;
+            return order;
+        }
+
+        // 按 Priority 插入到列表中（小的在前）
+        private void Insert<T>(List<T> list, T item)
+        {
+            int priority = GetOrder(item as EFConfigPanelBase);
+            int index = 0;
+            for (; index < list.Count; index++)
+            {
+                if (priority < GetOrder(list[index] as EFConfigPanelBase))
+                    break;
+            }
+
+            list.Insert(index, item);
         }
 
         /// <summary>
@@ -191,3 +194,5 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         }
     }
 }
+
+#endif

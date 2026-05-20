@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29c6f2f928dbaae48afe53d054e8d3be, type: 3}
   m_Name: EFPackageConfig
   m_EditorClassIdentifier: 
-  autoUpdate: 1
+  useGit: 1
+  gitToken: 
   lastUpdateTimestamp: 1776278020
   packagesInfo:
   - Name: cn.efefef.core

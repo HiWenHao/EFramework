@@ -203,6 +203,8 @@ namespace EasyFramework.Edit
 		File,
 		/// <summary> 查找 </summary>
 		Find,
+		/// <summary> 折叠 </summary>
+		Fold,
 		/// <summary> 强制 </summary>
 		Force,
 		/// <summary> 找到 </summary>
@@ -319,6 +321,8 @@ namespace EasyFramework.Edit
 		Non,
 		/// <summary> 不 </summary>
 		Not,
+		/// <summary> 新 </summary>
+		New,
 		/// <summary> 名称 </summary>
 		Name,
 		/// <summary> 节点 </summary>
@@ -407,6 +411,8 @@ namespace EasyFramework.Edit
 		Reset,
 		/// <summary> 原因 </summary>
 		Reason,
+		/// <summary> 记录 </summary>
+		Record,
 		/// <summary> 反射 </summary>
 		Reflect,
 		/// <summary> 运行时 </summary>
@@ -517,10 +523,14 @@ namespace EasyFramework.Edit
 		Up,
 		/// <summary> 用户 </summary>
 		User,
+		/// <summary> 使用 </summary>
+		Use,
 		/// <summary> 之下 </summary>
 		Under,
 		/// <summary> 更新 </summary>
 		Update,
+		/// <summary> 展开 </summary>
+		Unfold,
 		/// <summary> 更新中 </summary>
 		Updating,
 		/// <summary> 上传 </summary>

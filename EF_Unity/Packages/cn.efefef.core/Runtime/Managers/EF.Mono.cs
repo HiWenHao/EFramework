@@ -33,7 +33,7 @@ public sealed partial class EF : MonoBehaviour
     private static Dictionary<Type, int> _orderCache;
     private static Dictionary<Type, ISingleton> _singletonMap;
     private static Dictionary<Type, Func<object>> _monoSingletonInstanceGetters;
-    private static readonly object _lockObj = new object();
+    private static readonly object LockObj = new object();
 
     private EF()
     {
@@ -73,7 +73,7 @@ public sealed partial class EF : MonoBehaviour
     private void Update()
     {
         if (!_inRunning) return;
-        lock (_lockObj)
+        lock (LockObj)
         {
             for (int i = 0; i < _updater.Count; i++)
             {
@@ -86,7 +86,7 @@ public sealed partial class EF : MonoBehaviour
     private void FixedUpdate()
     {
         if (!_inRunning) return;
-        lock (_lockObj)
+        lock (LockObj)
         {
             for (int i = 0; i < _fixedUpdaters.Count; i++)
             {
@@ -99,7 +99,7 @@ public sealed partial class EF : MonoBehaviour
     private void LateUpdate()
     {
         if (!_inRunning) return;
-        lock (_lockObj)
+        lock (LockObj)
         {
             for (int i = 0; i < _lateUpdaters.Count; i++)
             {
@@ -117,7 +117,7 @@ public sealed partial class EF : MonoBehaviour
         if (!_inRunning) return;
         _inRunning = false;
 
-        lock (_lockObj)
+        lock (LockObj)
         {
             var allSingletons = new List<ISingleton>(_managers);
             allSingletons.AddRange(_singletons);
@@ -244,7 +244,7 @@ public sealed partial class EF : MonoBehaviour
     private static void EnsureDependencies(Type managerType)
     {
         // 已注册的单例不再重复解析依赖
-        lock (_lockObj)
+        lock (LockObj)
         {
             if (_singletonMap.ContainsKey(managerType))
                 return;
@@ -295,7 +295,7 @@ public sealed partial class EF : MonoBehaviour
 
         EnsureDependencies(type);
 
-        lock (_lockObj)
+        lock (LockObj)
         {
             if (_singletonMap.ContainsKey(type))
                 return;
@@ -326,7 +326,7 @@ public sealed partial class EF : MonoBehaviour
         Type type = item.GetType();
         bool isManager = Attribute.IsDefined(type, typeof(ManagerAttribute));
 
-        lock (_lockObj)
+        lock (LockObj)
         {
             if (!_singletonMap.ContainsKey(type))
                 return;
@@ -355,7 +355,7 @@ public sealed partial class EF : MonoBehaviour
     public static bool TryGetSingleton<T>(out T singleton) where T : ISingleton
     {
         Type t = typeof(T);
-        lock (_lockObj)
+        lock (LockObj)
         {
             if (_singletonMap.TryGetValue(t, out var inst))
             {

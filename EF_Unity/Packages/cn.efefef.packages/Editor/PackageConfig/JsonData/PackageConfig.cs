@@ -9,26 +9,38 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace EasyFramework.Edit.Packages
 {
     /// <summary>
+    /// 服务器类型
+    /// </summary>
+    [Serializable]
+    public enum ServerType
+    {
+        Gitee,
+        GitHub,
+        Local,
+    }
+    
+    /// <summary>
     /// 用来管理配置
     /// </summary>
     public class PackageConfig : ScriptableObject
     {
-        /// <summary> 使用git地址 </summary>
-        [SerializeField] [HideInInspector] public bool useGit = true;
+        /// <summary> 服务地址 </summary>
+        [SerializeField] public ServerType serverType;
 
         /// <summary> git请求令牌 </summary>
-        [SerializeField] [HideInInspector] public string gitToken;
+        [SerializeField] public string token;
 
         /// <summary> 上次更新时间戳 </summary>
-        [SerializeField] [HideInInspector] public long lastUpdateTimestamp;
-        
+        [SerializeField] public long lastUpdateTimestamp;
+
         /// <summary> 全部包名 </summary>
-        [SerializeField]  public List<EFPackageInfo> packagesInfo;
+        [SerializeField] public List<EFPackageInfo> packagesInfo;
     }
 }

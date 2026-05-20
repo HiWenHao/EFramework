@@ -19,7 +19,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <summary>
     /// 项目设置面板
     /// </summary>
-    [EFConfig]
+    [EFConfigPanel(Priority = 0)]
     internal class EFProjectConfigPanel : EFConfigPanelBase
     {
         bool _systemInfoSwitch;
@@ -32,7 +32,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _resourcesArea;
         private SerializedProperty _appConstConfig;
 
-        public override int Priority => 0;
         public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Settings });
         
         public override void OnEnable(string assetsPath)

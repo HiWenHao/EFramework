@@ -785,6 +785,14 @@
       ]
     },
     {
+      "name": "Fold",
+      "desc": "折叠",
+      "array": [
+        "Fold",
+        "折叠"
+      ]
+    },
+    {
       "name": "Force",
       "desc": "强制",
       "array": [
@@ -1249,6 +1257,14 @@
       ]
     },
     {
+      "name": "New",
+      "desc": "新",
+      "array": [
+        "New",
+        "新"
+      ]
+    },
+    {
       "name": "Name",
       "desc": "名称",
       "array": [
@@ -1598,6 +1614,14 @@
       "array": [
         "Reason",
         "原因"
+      ]
+    },
+    {
+      "name": "Record",
+      "desc": "记录",
+      "array": [
+        "Record",
+        "记录"
       ]
     },
     {
@@ -2041,6 +2065,14 @@
       ]
     },
     {
+      "name": "Use",
+      "desc": "使用",
+      "array": [
+        "Use",
+        "使用"
+      ]
+    },
+    {
       "name": "Under",
       "desc": "之下",
       "array": [
@@ -2054,6 +2086,14 @@
       "array": [
         "Update",
         "更新"
+      ]
+    },
+    {
+      "name": "Unfold",
+      "desc": "展开",
+      "array": [
+        "Unfold",
+        "展开"
       ]
     },
     {
