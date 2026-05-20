@@ -479,7 +479,6 @@ namespace EasyFramework.Edit
 
         private void CreateAssemblyReference(string packageName, string rootPath)
         {
-            D.Warning(rootPath);
             string editorGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Editor.asmdef");
             string runtimeGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Runtime/EF.Runtime.asmdef");
             string packageEditorPath = $"{rootPath}/Editor";
