@@ -381,8 +381,11 @@ namespace EasyFramework.Edit
                     break;
                 }
 
-                if (needAdded)
-                    infoList.Add(newInfo);
+                if (!needAdded) continue;
+                newInfo.FromGit = true;
+                newInfo.NeedUpdate = true;
+                newInfo.CurrentVersion = "";
+                infoList.Add(newInfo);
             }
 
             foreach (var info in infoList)
