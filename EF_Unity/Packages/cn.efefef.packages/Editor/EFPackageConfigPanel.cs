@@ -40,6 +40,7 @@ namespace EasyFramework.Edit
         public override string Name => "EF" + LC.Combine(Lc.S, Lc.Package, Lc.Assets);
 
         private bool _allUnfold;
+        private bool _hasProcess;
         private string _token;
         private string[] _createPackageTips;
 
@@ -51,7 +52,7 @@ namespace EasyFramework.Edit
         private List<EFPackageInfo> _packages;
         
         private PackageConfig _config;
-        private EFPackageInfo _currentPackageInfo;
+        private EFPackageInfo _newPackageInfo;
 
         private AddRequest _addRequest;
         private RemoveRequest _removeRequest;
@@ -238,14 +239,21 @@ namespace EasyFramework.Edit
                 _ => Color.white
             };
 
-            if (!GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor),GUILayout.Width(140))) 
+            if (!GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(140)))
                 return;
-            
+
+            if (_hasProcess)
+            {
+                D.Warning(LC.Combine(Lc.Current, Lc.Have, Lc.One, Lc.Task, Lc.PleaseWaitMoment, Lc.TryAgain));
+                return;
+            }
+
             switch (versionType)
             {
                 case Lc.Download:
                 case Lc.Update:
-                    CustomProgressWindow.ShowWindow(LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
+                    CustomProgressWindow.ShowWindow(
+                        LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
                     string path = ServerToolkit.GetFrameworkPath(_config.serverType) + PackageFolderPath;
                     _addRequest = Client.Add($"{path}{packageInfo.Name}");
                     EditorApplication.update += AddPackageProgress;
@@ -264,34 +272,10 @@ namespace EasyFramework.Edit
                     throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
             }
 
-            _currentPackageInfo = packageInfo;
+            _hasProcess = true;
         }
 
-        // 设置Package信息，增加或删除某个包
-        private async Task SetPackageInfo(bool added)
-        {
-            await Task.CompletedTask;
-            if (null == _currentPackageInfo) 
-                return;
-            
-            await Task.Delay(2000);
-            if (!added)
-            {
-                _config.packagesInfo.Remove(_currentPackageInfo);
-                _currentPackageInfo = null;
-                return;
-            }
-
-            var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(_currentPackageInfo.Name);
-            if (null != package)
-            {
-                _currentPackageInfo.DisplayName = package.displayName;
-                _currentPackageInfo.Description = package.description;
-                _currentPackageInfo.FromGit = true;
-                _currentPackageInfo.CurrentVersion = package.version;
-                _currentPackageInfo.ServerVersion = package.version;
-            }
-        }
+        #region Client Task - 客户端任务
 
         // 增加一个Package包的相关进程
         private void AddPackageProgress()
@@ -301,12 +285,11 @@ namespace EasyFramework.Edit
 
             if (_addRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Install, Lc.Error })}: {_addRequest.Error.message}");
-            else
-                _ = SetPackageInfo(true);
+
             CustomProgressWindow.CloseWindow();
             EditorApplication.update -= AddPackageProgress;
-            _currentPackageInfo = null;
             _addRequest = null;
+            _hasProcess = false;
         }
 
         // 删除一个Package包的相关进程
@@ -317,13 +300,13 @@ namespace EasyFramework.Edit
 
             if (_removeRequest.Status != StatusCode.Success)
                 D.Error($"{LC.Combine(new[] { Lc.Unload, Lc.Error })}{_removeRequest.Error.message}");
-            else
-                _ = SetPackageInfo(false);
 
             EditorApplication.update -= RemovePackageProgress;
-            _currentPackageInfo = null;
             _removeRequest = null;
+            _hasProcess = false;
         }
+
+        #endregion
 
         #region Update all package info - 更新数据
 
@@ -429,8 +412,7 @@ namespace EasyFramework.Edit
                 D.Warning("Please try again, param: packageName, packageDes, author, all three are indispensable.");
                 return;
             }
-
-            string packagePath = Application.dataPath + $"../Packages/cn.efefef.{packageName.ToLower()}";
+            string packagePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Packages", $"cn.efefef.{packageName.ToLower()}"));
             Directory.CreateDirectory(packagePath);
 
             try
@@ -438,11 +420,22 @@ namespace EasyFramework.Edit
                 CreatePackageJson(packageName, packageDes, author, packagePath);
                 CreateAssemblyReference(packageName, packagePath);
             }
+            catch (Exception e)
+            {
+                D.Warning(e);
+            }
             finally
             {
                 D.Emphasize($"CreatePackage succeed， {packageName}");
+                
+                _config.packagesInfo.Add(_newPackageInfo);
+                _packageFolder.TryAdd(_newPackageInfo.DisplayName, true);
+                ServerToolkit.SavePackageConfig(_config);
+                
+                Client.Resolve();
                 EditorCommands.SaveAssets();
                 EditorCommands.Refresh();
+                _newPackageInfo = null;
             }
         }
 
@@ -470,7 +463,7 @@ namespace EasyFramework.Edit
                 }
             };
 
-            _config.packagesInfo.Add(new EFPackageInfo()
+            _newPackageInfo = new EFPackageInfo()
             {
                 Name = config.Name,
                 DisplayName = config.DisplayName,
@@ -478,7 +471,7 @@ namespace EasyFramework.Edit
                 Description = config.Description,
                 CurrentVersion = config.Version,
                 ServerVersion = "",
-            });
+            };
 
             string packageJson = Path.Combine(rootPath, "package.json");
             File.WriteAllText(packageJson, JsonConvert.SerializeObject(config, Formatting.Indented));
@@ -486,6 +479,7 @@ namespace EasyFramework.Edit
 
         private void CreateAssemblyReference(string packageName, string rootPath)
         {
+            D.Warning(rootPath);
             string editorGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Editor.asmdef");
             string runtimeGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Runtime/EF.Runtime.asmdef");
             string packageEditorPath = $"{rootPath}/Editor";
