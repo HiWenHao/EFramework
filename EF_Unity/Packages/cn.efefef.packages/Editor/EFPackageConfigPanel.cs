@@ -37,6 +37,7 @@ namespace EasyFramework.Edit
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
         private const string EditorResourcesPath = "Packages/cn.efefef.packages/Editor Resources/";     // 包相关资源存放路径
         private const string LocationConfigPath = EditorResourcesPath + "EFPackageConfig.asset";        // 本地资源配置路径
+        private const string EFPackageConfigPath = "EF_Unity/Packages/cn.efefef.packages/Editor Resources/EFPackageConfig.asset";
 
         public override string Name => "EF" + LC.Combine(Lc.S, Lc.Package, Lc.Assets);
 
@@ -376,10 +377,8 @@ namespace EasyFramework.Edit
 
         private async UniTask UpdateAllFromGitOrGitee()
         {
-            string filePath = "EF_Unity/Packages/cn.efefef.packages/Editor%20Resources/EFPackageConfig.asset";
-
             byte[] assetData = await DownloadFileAsync(ServerToolkit.GetRawUrl(_config.serverType,
-                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master", filePath));
+                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master", EFPackageConfigPath));
     
             if (assetData == null) 
                 return;
