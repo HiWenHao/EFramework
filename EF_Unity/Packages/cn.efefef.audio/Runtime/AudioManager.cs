@@ -12,6 +12,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Pool;
 using EasyFramework.Systems.Assets;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -20,132 +21,131 @@ namespace EasyFramework.Managers.Audio
 {
     /// <summary>
     /// 音频系统，统一管理 BGM 与音效，支持混音器、对象池、异步播放。
-    /// <para>Audio system, managing BGM and SFX with mixer, pool and async playback.</para>
+    /// <para>Audio system, managing BGM and Effect with mixer, pool and async playback.</para>
     /// </summary>
     [Manager(Order = 89700)]
+    [Dependency(typeof(PoolManager)), Dependency(typeof(AssetsSystem))]
     public sealed class AudioManager : MonoSingleton<AudioManager>, ISingleton, IUpdate
     {
+        /// <summary>
+        /// 获取当前混音器
+        /// <para>Get the current AudioMixer.</para>
+        /// </summary>
+        public AudioMixer CurrentMixer => audioMixer;
+
+        /// <summary>
+        /// 是否全局静音
+        /// <para>Is globally muted.</para>
+        /// </summary>
+        public bool IsMuted { get; private set; }
+
+        /// <summary>
+        /// 音频系统暂停
+        /// <para>Audio system paused</para>
+        /// </summary>
+        public bool IsPaused { get; private set; }
+
+        /// <summary>
+        /// 开启调试日志
+        /// <para>Enable debug log</para>
+        /// </summary>
+        public bool OpenDebug { get; set; }
+
         #region 配置字段（仅通过 Editor 或运行时设置）
 
-        [HideInInspector] [SerializeField] private AudioMixer audioMixer; // 主混音器资源
-
-        [HideInInspector] [SerializeField] [Range(0f, 1f)]
-        private float defaultBgmVolume = 1f; // 默认背景音乐音量
-
-        [HideInInspector] [SerializeField] [Range(0f, 1f)]
-        private float defaultSfxVolume = 1f; // 默认音效音量
-
-        [HideInInspector] [SerializeField] private int maxSfxPoolSize = 20; // 音效对象池最大空闲数量
-        [HideInInspector] [SerializeField] private int prewarmCount = 1; // 音效对象池预热数量
-        [HideInInspector] [SerializeField] private float sfxIdleTimeout = 30f; // 音效播放器闲置超时销毁时间（秒），≤0 不启用
+        [HideInInspector, SerializeField] private AudioMixer audioMixer; // 主混音器资源
+        [HideInInspector, SerializeField] private int maxEffectPoolSize = 20; // 音效对象池最大空闲数量
+        [HideInInspector, SerializeField] private int prewarmCount = 1; // 音效对象池预热数量
+        [HideInInspector, SerializeField] private float effectIdleTimeout = 30f; // 音效播放器闲置超时销毁时间（秒），≤0 不启用
+        [HideInInspector, SerializeField, Range(0f, 1f)] private float defaultBgmVolume = 1f; // 默认背景音乐音量
+        [HideInInspector, SerializeField, Range(0f, 1f)] private float defaultEffectVolume = 1f; // 默认音效音量
 
         #endregion
 
         #region 私有变量
 
-        private bool _isPaused; // 是否全局暂停
-        private bool _isMuted; // 是否全局静音
-
-        private AudioMixerGroup _masterGroup; // 主混音器组
-        private AudioMixerGroup _bgmGroup; // 背景音乐混音器组
-        private AudioMixerGroup _sfxGroup; // 音效混音器组
-
-        private AudioSource _bgmSource; // BGM 专用播放器
-        private Transform _sfxRoot; // 音效对象池根节点
-        private List<ActiveEffect> _activeEffects; // 当前活动的音效列表
-
-        private GameObject _sfxPrefab; // 音效对象池预制件
-
-        private CancellationTokenSource _lifetimeCts; // 系统生命周期取消令牌
-
         // 混音器通道名称
         private const string MasterGroupName = "Master";
         private const string BgmGroupName = "BGM";
-        private const string SfxGroupName = "SFX";
+        private const string EffectGroupName = "Effect";
+
+        private uint _autoIncrementID;  // 音频自增ID
 
         // PlayerPrefs 键
-        private string _muteKey; // 静音键
-        private string _bgmVolumeKey; // BGM 音量键
-        private string _sfxVolumeKey; // SFX 音量键
-        private string _masterVolumeKey; // 主音量键
+        private string _muteKey;            // 静音键
+        private string _bgmVolumeKey;       // BGM 音量键
+        private string _effectVolumeKey;    // Effect 音量键
+        private string _masterVolumeKey;    // 主音量键
+
+        private AudioMixerGroup _masterGroup;   // 主混音器组
+        private AudioMixerGroup _bgmGroup;      // 背景音乐混音器组
+        private AudioMixerGroup _effectGroup;   // 音效混音器组
+
+        private AudioSource _bgmSource; // BGM 专用播放器
+        private List<ActiveEffect> _activeEffects; // 当前活动的音效列表
+        private Dictionary<uint, ActiveEffect> _activeEffectDict; // 活动音效映射图
+
+        private Transform _effectRoot;      // 音效对象池根节点
+        private GameObject _effectPrefab;   // 音效对象池预制件
+
+        private CancellationTokenSource _lifetimeCts; // 系统生命周期取消令牌
 
         #endregion
-
-        public bool IsPaused { get; private set; }
 
         void ISingleton.Init()
         {
             _muteKey = Application.productName + "Audio_Muted";
             _bgmVolumeKey = Application.productName + "Audio_BGM_Volume";
-            _sfxVolumeKey = Application.productName + "Audio_SFX_Volume";
+            _effectVolumeKey = Application.productName + "Audio_Effect_Volume";
             _masterVolumeKey = Application.productName + "Audio_Master_Volume";
 
             _lifetimeCts = new CancellationTokenSource();
 
             // 创建音效对象池根节点
-            _sfxRoot = new GameObject("SfxRoot").transform;
-            _sfxRoot.SetParent(EF.Managers);
-            DontDestroyOnLoad(_sfxRoot.gameObject);
+            _effectRoot = new GameObject("EffectRoot").transform;
+            _effectRoot.SetParent(transform);
 
             // 初始化混音器组
             if (audioMixer)
             {
                 _masterGroup = audioMixer.FindMatchingGroups(MasterGroupName)[0];
                 _bgmGroup = audioMixer.FindMatchingGroups(BgmGroupName)[0];
-                _sfxGroup = audioMixer.FindMatchingGroups(SfxGroupName)[0];
+                _effectGroup = audioMixer.FindMatchingGroups(EffectGroupName)[0];
             }
 
             // 创建 BGM 播放器
             var bgmGo = new GameObject("BGM_Source");
-            bgmGo.transform.SetParent(_sfxRoot);
+            bgmGo.transform.SetParent(_effectRoot);
             _bgmSource = bgmGo.AddComponent<AudioSource>();
             _bgmSource.outputAudioMixerGroup = _bgmGroup;
             _bgmSource.loop = true;
             _bgmSource.playOnAwake = false;
 
-            // 创建音效对象池（使用 GameObjectPool，支持空闲超时销毁）
-            _sfxPrefab = CreateSfxPrefab();
-            EF.Pool.CreateGameObjectPool(_sfxPrefab, _sfxRoot, prewarmCount, maxSfxPoolSize, sfxIdleTimeout);
+            _effectPrefab = CreateEffectPrefab();
+            EF.Pool.CreateGameObjectPool(_effectPrefab, _effectRoot, prewarmCount, maxEffectPoolSize, effectIdleTimeout);
 
-            // 活动效果列表
             _activeEffects = new List<ActiveEffect>();
+            _activeEffectDict = new Dictionary<uint, ActiveEffect>();
 
-            // 从 PlayerPrefs 恢复音量等设置
             LoadSettings();
-        }
-
-        // 创建用于对象池的预制体（只有一个 AudioSource 的空物体）
-        private GameObject CreateSfxPrefab()
-        {
-            var go = new GameObject("SfxPrototype");
-            go.transform.SetParent(_sfxRoot);
-            var source = go.AddComponent<AudioSource>();
-            source.outputAudioMixerGroup = _sfxGroup;
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            go.SetActive(false);
-            return go;
         }
 
         void IUpdate.Update(float elapse, float realElapse)
         {
-            if (_isPaused) return;
-
             // 回收播放完毕的非循环音效
             for (int i = _activeEffects.Count - 1; i >= 0; i--)
             {
                 var effect = _activeEffects[i];
-                if (effect.Source.loop || effect.Source.isPlaying) continue;
-
+                if (effect.IsPaused || effect.Source.loop || effect.Source.isPlaying) continue;
+                if (effect.IsReleased) continue;
+                effect.IsReleased = true;
                 effect.CompletionSource?.TrySetResult();
                 effect.CompletionSource = null;
                 effect.Cancellation.Dispose();
-                ReturnSfxToPool(effect.Source);
+                ReturnEffectToPool(effect.Source);
                 _activeEffects.RemoveAt(i);
+                _activeEffectDict.Remove(effect.ID);
             }
-
-            // 空闲超时销毁由 PoolManager 的 Update 自动驱动，无需额外处理
         }
 
         void ISingleton.Quit()
@@ -153,41 +153,242 @@ namespace EasyFramework.Managers.Audio
             _lifetimeCts.Cancel();
             _lifetimeCts.Dispose();
 
-            // 停止所有活跃音效并回收
-            foreach (var effect in _activeEffects)
-            {
-                effect.CompletionSource?.TrySetCanceled();
-                effect.CompletionSource = null;
-                effect.Cancellation.Dispose();
-                if (effect.Source)
-                {
-                    effect.Source.Stop();
-                    ReturnSfxToPool(effect.Source);
-                }
-            }
+            StopAll();
 
             _activeEffects.Clear();
+            _activeEffectDict.Clear();
 
             if (_bgmSource)
-            {
-                _bgmSource.Stop();
                 Destroy(_bgmSource.gameObject);
-            }
 
-            if (_sfxRoot)
-                Destroy(_sfxRoot.gameObject);
+            if (_effectRoot)
+                Destroy(_effectRoot.gameObject);
 
             // 销毁音效对象池
-            if (_sfxPrefab)
-                EF.Pool.DestroyGameObjectPool(_sfxPrefab);
+            if (_effectPrefab)
+                EF.Pool.DestroyGameObjectPool(_effectPrefab);
 
             SaveSettings();
         }
 
+        #region 内部函数
+
+        // 创建用于对象池的预制体
+        private GameObject CreateEffectPrefab()
+        {
+            var go = new GameObject("EffectPrototype");
+            go.transform.SetParent(_effectRoot);
+            var source = go.AddComponent<AudioSource>();
+            source.outputAudioMixerGroup = _effectGroup;
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0f;
+            go.SetActive(false);
+            return go;
+        }
+
+        #region 对象池辅助
+
+        // 从池中获取激活的 AudioSource
+        private AudioSource GetEffectFromPool()
+        {
+            var go = EF.Pool.Spawn(_effectPrefab);
+            if (go)
+            {
+                var source = go.GetComponent<AudioSource>();
+                ResetEffectSource(source);
+                return source;
+            }
+            else
+            {
+                D.Error("[ AudioSystem ] Failed to get AudioSource from pool. Creating fallback.");
+                var goFallback = new GameObject("EffectFallback");
+                goFallback.transform.SetParent(_effectRoot);
+                var source = goFallback.AddComponent<AudioSource>();
+                source.outputAudioMixerGroup = _effectGroup;
+                source.playOnAwake = false;
+                return source;
+            }
+        }
+
+        // 归还音效播放器到对象池
+        private void ReturnEffectToPool(AudioSource source)
+        {
+            if (!source) return;
+            source.Stop();
+            source.gameObject.SetActive(false);
+            source.transform.SetParent(_effectRoot, false);
+            EF.Pool.Despawn(source.gameObject);
+        }
+
+        // 重置从池中取出的 AudioSource 状态
+        private void ResetEffectSource(AudioSource source)
+        {
+            if (!source) return;
+            source.Stop();
+            source.clip = null;
+            source.loop = false;
+            source.spatialBlend = 0f;
+            source.mute = false;
+            source.volume = 1f;
+            source.priority = 128;
+            source.pitch = 1f;
+            source.outputAudioMixerGroup = _effectGroup;
+            source.transform.localPosition = Vector3.zero;
+            source.transform.localRotation = Quaternion.identity;
+        }
+
+        #endregion
+
+        // 内部音效播放实现
+        private ActiveEffect PlayEffect(AudioClip clip, bool loop, Vector3 pos, CancellationToken token, bool is3D, float startTime = 0f)
+        {
+            var source = GetEffectFromPool();
+
+            if (token.IsCancellationRequested)
+            {
+                ReturnEffectToPool(source);
+                return null;
+            }
+
+            source.clip = clip;
+            source.loop = loop;
+
+            if (is3D)
+            {
+                source.spatialBlend = 1f;
+                source.transform.position = pos;
+            }
+            else
+            {
+                source.spatialBlend = 0f;
+                source.transform.localPosition = Vector3.zero;
+            }
+
+            source.volume = GetEffectVolume();
+            source.mute = IsMuted;
+            source.time = Mathf.Clamp(startTime, 0f, clip.length);
+            source.Play();
+
+            var effect = new ActiveEffect
+            {
+                ID = ++_autoIncrementID,
+                IsPaused = false,
+                IsReleased = false,
+                Source = source,
+                CompletionSource = null
+            };
+
+            if (!loop)
+                effect.CompletionSource = new UniTaskCompletionSource();
+
+            RegisterCancelCallback(effect, token);
+
+            _activeEffects.Add(effect);
+            _activeEffectDict.Add(effect.ID, effect);
+            return effect;
+        }
+
+        // 注册取消回调
+        private void RegisterCancelCallback(ActiveEffect effect, CancellationToken token)
+        {
+            if (!token.CanBeCanceled) return;
+
+            effect.Cancellation = token.RegisterWithoutCaptureExecutionContext(() =>
+            {
+                UniTask.Post(() =>
+                {
+                    if (effect.IsReleased) return;
+                    effect.IsReleased = true;
+                    effect.IsPaused = false;
+
+                    effect.CompletionSource?.TrySetCanceled();
+                    effect.CompletionSource = null;
+
+                    if (effect.Source)
+                    {
+                        effect.Source.Stop();
+                        ReturnEffectToPool(effect.Source);
+                    }
+
+                    _activeEffects.Remove(effect);
+                    _activeEffectDict.Remove(effect.ID);
+                    effect.Cancellation.Dispose();
+                });
+            });
+        }
+
+        #region Assist - 辅助
+
+        // 设置混音器组音量（分贝）
+        private void SetMixerVolume(AudioMixerGroup group, float db)
+        {
+            if (audioMixer && group)
+                audioMixer.SetFloat(group.name + "Volume", db);
+        }
+
+        // 线性值转分贝
+        private static float ToDecibel(float linear)
+        {
+            return linear <= 0.0001f ? -80f : 20f * Mathf.Log10(linear);
+        }
+
+        // 加载音频资源
+        private AudioClip LoadClip(string clipName)
+        {
+            string path = EF.Assets.CurrentSystemType == AssetsSystemType.Default
+                ? $"{EF.Projects.AppConst.AudioPath}{clipName}"
+                : clipName;
+            return EF.Assets.Load<AudioClip>(path);
+        }
+
+        // 从 PlayerPrefs 恢复设置
+        private void LoadSettings()
+        {
+            float master = PlayerPrefs.GetFloat(_masterVolumeKey, 1f);
+            float bgm = PlayerPrefs.GetFloat(_bgmVolumeKey, defaultBgmVolume);
+            float effect = PlayerPrefs.GetFloat(_effectVolumeKey, defaultEffectVolume);
+            bool muted = PlayerPrefs.GetInt(_muteKey, 0) == 1;
+
+            SetMasterVolume(master);
+            SetBgmVolume(bgm);
+            SetEffectVolume(effect);
+            if (muted) SetMute(true);
+        }
+
+        // 保存设置到 PlayerPrefs
+        private void SaveSettings()
+        {
+            PlayerPrefs.SetFloat(_masterVolumeKey, GetMasterVolume());
+            PlayerPrefs.SetFloat(_bgmVolumeKey, GetBgmVolume());
+            PlayerPrefs.SetFloat(_effectVolumeKey, GetEffectVolume());
+            PlayerPrefs.SetInt(_muteKey, IsMuted ? 1 : 0);
+        }
+
+        // 安全获取混音器组
+        private AudioMixerGroup GetMixerGroupSafe(string groupName)
+        {
+            if (audioMixer == null) return null;
+            var groups = audioMixer.FindMatchingGroups(groupName);
+            if (groups.Length > 0) return groups[0];
+            Warning($"Mixer group '{groupName}' not found");
+            return null;
+        }
+
+        #endregion
+
+        private void Warning(string message)
+        {
+            if (OpenDebug)
+                D.Warning($"[ AudioSystem ] {message}");
+        }
+
+        #endregion
+
         #region 运行时配置方法
 
         /// <summary>
-        /// 设置主混音器（运行时更换）
+        /// 设置主混音器
         /// <para>Set the main AudioMixer at runtime.</para>
         /// </summary>
         public void SetAudioMixer(AudioMixer newMixer)
@@ -195,38 +396,26 @@ namespace EasyFramework.Managers.Audio
             if (newMixer == audioMixer) return;
             audioMixer = newMixer;
 
-            if (audioMixer)
-            {
-                _masterGroup = GetMixerGroupSafe(MasterGroupName);
-                _bgmGroup = GetMixerGroupSafe(BgmGroupName);
-                _sfxGroup = GetMixerGroupSafe(SfxGroupName);
-            }
-            else
-            {
-                _masterGroup = null;
-                _bgmGroup = null;
-                _sfxGroup = null;
-            }
+            var newMaster = GetMixerGroupSafe(MasterGroupName);
+            var newBgm = GetMixerGroupSafe(BgmGroupName);
+            var newEffect = GetMixerGroupSafe(EffectGroupName);
+
+            bool effectGroupChanged = (newEffect != _effectGroup);
+            _masterGroup = newMaster;
+            _bgmGroup = newBgm;
+            _effectGroup = newEffect;
 
             if (_bgmSource)
                 _bgmSource.outputAudioMixerGroup = _bgmGroup;
 
-            // 更新所有活动音效的输出组
-            if (_activeEffects != null)
+            if (!effectGroupChanged || _activeEffects == null) return;
+            for (var i = 0; i < _activeEffects.Count; i++)
             {
-                foreach (var effect in _activeEffects)
-                {
-                    if (effect.Source)
-                        effect.Source.outputAudioMixerGroup = _sfxGroup;
-                }
+                var effect = _activeEffects[i];
+                if (effect.Source)
+                    effect.Source.outputAudioMixerGroup = _effectGroup;
             }
         }
-
-        /// <summary>
-        /// 获取当前混音器
-        /// <para>Get the current AudioMixer.</para>
-        /// </summary>
-        public AudioMixer CurrentMixer => audioMixer;
 
         /// <summary>
         /// 设置默认背景音乐音量（0~1），仅影响后续播放，已播放的不变。
@@ -239,96 +428,16 @@ namespace EasyFramework.Managers.Audio
 
         /// <summary>
         /// 设置默认音效音量（0~1），仅影响后续播放，已播放的不变。
-        /// <para>Set default SFX volume, only affects future playback.</para>
+        /// <para>Set default Effect volume, only affects future playback.</para>
         /// </summary>
-        public void SetDefaultSfxVolume(float volume)
+        public void SetDefaultEffectVolume(float volume)
         {
-            defaultSfxVolume = Mathf.Clamp01(volume);
-        }
-
-        /// <summary>
-        /// 设置音效对象池最大空闲数量（需在下次初始化前调用，或重建池）
-        /// <para>Set max idle count of SFX pool (needs re-init to take effect).</para>
-        /// </summary>
-        public void SetMaxSfxPoolSize(int size)
-        {
-            maxSfxPoolSize = Mathf.Max(1, size);
-        }
-
-        /// <summary>
-        /// 设置音效对象池预热数量（需在下次初始化前调用）
-        /// <para>Set prewarm count of SFX pool.</para>
-        /// </summary>
-        public void SetPrewarmCount(int count)
-        {
-            prewarmCount = Mathf.Max(0, count);
-        }
-
-        /// <summary>
-        /// 设置音效播放器闲置超时销毁时间（秒），≤0 关闭自动销毁。
-        /// <para>Set idle timeout for SFX pool auto-destruction. ≤0 to disable.</para>
-        /// </summary>
-        public void SetSfxIdleTimeout(float timeout)
-        {
-            sfxIdleTimeout = timeout;
+            defaultEffectVolume = Mathf.Clamp01(volume);
         }
 
         #endregion
 
-        #region 对象池辅助
-
-        // 从池中获取激活的 AudioSource
-        private AudioSource GetSfxFromPool()
-        {
-            var go = EF.Pool.Spawn(_sfxPrefab);
-            if (go)
-            {
-                var source = go.GetComponent<AudioSource>();
-                // 重置必要属性（池化对象可能保留之前的状态）
-                ResetSfxSource(source);
-                return source;
-            }
-            else
-            {
-                Debug.LogError("[AudioSystem] Failed to get AudioSource from pool. Creating fallback.");
-                // 极端情况：手动创建临时播放器（不会被池管理，用完即毁）
-                var goFallback = new GameObject("SfxFallback");
-                goFallback.transform.SetParent(_sfxRoot);
-                var source = goFallback.AddComponent<AudioSource>();
-                source.outputAudioMixerGroup = _sfxGroup;
-                source.playOnAwake = false;
-                return source;
-            }
-        }
-
-        // 归还音效播放器到对象池
-        private void ReturnSfxToPool(AudioSource source)
-        {
-            if (!source) return;
-            source.Stop();
-            source.gameObject.SetActive(false);
-            source.transform.SetParent(_sfxRoot, false);
-            EF.Pool.Despawn(source.gameObject);
-        }
-
-        // 重置从池中取出的 AudioSource 状态
-        private void ResetSfxSource(AudioSource source)
-        {
-            if (!source) return;
-            source.Stop();
-            source.clip = null;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            source.mute = false;
-            source.volume = 1f;
-            source.priority = 128;
-            source.pitch = 1f;
-            source.outputAudioMixerGroup = _sfxGroup;
-        }
-
-        #endregion
-
-        #region 背景音乐 (BGM)
+        #region BGM - 背景音乐
 
         /// <summary>
         /// 播放背景音乐（可指定起始时间，单位秒）
@@ -375,52 +484,57 @@ namespace EasyFramework.Managers.Audio
 
         #endregion
 
-        #region 音效播放 (2D & 3D)
+        #region Effect - 音效
 
         /// <summary>
         /// 播放 2D 音效，等待自然结束
         /// <para>Play 2D effect and await its completion.</para>
         /// </summary>
-        public async UniTask Play2DEffect(AudioClip clip, CancellationToken token = default, float startTime = 0f)
+        public async UniTask<uint> Play2DEffect(AudioClip clip, CancellationToken token = default, float startTime = 0f)
         {
-            if (!clip) return;
+            if (!clip) return 0;
             var effect = PlayEffect(clip, false, Vector3.zero, token, is3D: false, startTime: startTime);
-            if (effect?.CompletionSource != null)
+            if (null == effect) return 0;
+            if (effect.CompletionSource != null)
                 await effect.CompletionSource.Task;
+            return effect.ID;
         }
 
         /// <summary>
         /// 播放 2D 音效（通过资源名）
         /// <para>Play 2D effect by asset name.</para>
         /// </summary>
-        public async UniTask Play2DEffect(string clipName, CancellationToken token = default, float startTime = 0f)
+        public async UniTask<uint> Play2DEffect(string clipName, CancellationToken token = default,
+            float startTime = 0f)
         {
             var clip = LoadClip(clipName);
-            await Play2DEffect(clip, token, startTime);
+            return await Play2DEffect(clip, token, startTime);
         }
 
         /// <summary>
         /// 播放 3D 音效，等待自然结束
         /// <para>Play 3D effect at world position and await its completion.</para>
         /// </summary>
-        public async UniTask Play3DEffect(AudioClip clip, Vector3 worldPos, CancellationToken token = default,
+        public async UniTask<uint> Play3DEffect(AudioClip clip, Vector3 worldPos, CancellationToken token = default,
             float startTime = 0f)
         {
-            if (!clip) return;
+            if (!clip) return 0;
             var effect = PlayEffect(clip, false, worldPos, token, is3D: true, startTime: startTime);
-            if (effect?.CompletionSource != null)
+            if (null == effect) return 0;
+            if (effect.CompletionSource != null)
                 await effect.CompletionSource.Task;
+            return effect.ID;
         }
 
         /// <summary>
         /// 播放 3D 音效（通过资源名）
         /// <para>Play 3D effect by asset name.</para>
         /// </summary>
-        public async UniTask Play3DEffect(string clipName, Vector3 worldPos, CancellationToken token = default,
+        public async UniTask<uint> Play3DEffect(string clipName, Vector3 worldPos, CancellationToken token = default,
             float startTime = 0f)
         {
             var clip = LoadClip(clipName);
-            await Play3DEffect(clip, worldPos, token, startTime);
+            return await Play3DEffect(clip, worldPos, token, startTime);
         }
 
         /// <summary>
@@ -430,118 +544,117 @@ namespace EasyFramework.Managers.Audio
         public AudioSource PlayLoopEffect(AudioClip clip, bool is3D = false, Vector3 pos = default,
             float startTime = 0f)
         {
-            if (!clip) return null;
-            return PlayEffect(clip, true, pos, CancellationToken.None, is3D, startTime).Source;
+            return !clip ? null : PlayEffect(clip, true, pos, CancellationToken.None, is3D, startTime).Source;
         }
 
-        #endregion
-
-        #region 播放核心
-
-        // 内部音效播放实现
-        private ActiveEffect PlayEffect(AudioClip clip, bool loop, Vector3 pos, CancellationToken token, bool is3D,
-            float startTime = 0f)
+        /// <summary>
+        /// 通过 ID 停止指定的音效
+        /// <para>Stop the specified sound effect by id</para>
+        /// </summary>
+        public void StopEffect(uint id)
         {
-            var source = GetSfxFromPool();
+            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
+            if (effect.IsReleased) return;
+            effect.IsReleased = true;
+            effect.IsPaused = false;
+            effect.Source.Stop();
+            effect.CompletionSource?.TrySetCanceled();
+            effect.CompletionSource = null;
+            effect.Cancellation.Dispose();
+            ReturnEffectToPool(effect.Source);
+            _activeEffects.Remove(effect);
+            _activeEffectDict.Remove(id);
+        }
 
-            if (token.IsCancellationRequested)
+        /// <summary>
+        /// 通过 ID 暂停指定的音效
+        /// <para>Pause the specified sound effect by ID</para>
+        /// </summary>
+        public void PauseEffect(uint id)
+        {
+            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
+            if (effect.IsReleased || effect.IsPaused) return;
+            effect.IsPaused = true;
+            effect.Source.Pause();
+        }
+
+        /// <summary>
+        /// 通过 ID 恢复指定的音效
+        /// <para>Restore the specified sound effect through the ID</para>
+        /// </summary>
+        public async UniTask UnPauseEffect(uint id)
+        {
+            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
+            if (effect.IsReleased || !effect.IsPaused) return;
+            effect.Source.UnPause();
+            await UniTask.Yield(PlayerLoopTiming.Update);
+            if (!effect.IsReleased)
+                effect.IsPaused = false;
+        }
+
+        /// <summary>
+        /// 暂停所有当前正在播放的音效
+        /// <para>Pause all the currently playing sound effects</para>
+        /// </summary>
+        public void PauseAllEffect()
+        {
+            foreach (var effect in _activeEffects)
             {
-                ReturnSfxToPool(source);
-                return null;
+                if (effect.IsReleased || effect.IsPaused) continue;
+                effect.IsPaused = true;
+                effect.Source.Pause();
+            }
+        }
+
+        /// <summary>
+        /// 恢复所有音效（仅恢复被暂停的，不会重新开始已停止的音效）
+        /// <para>Restore all sound effects (only restore those that were paused; existing stopped effects will not be restarted)</para>
+        /// </summary>
+        public async UniTask UnPauseAllEffect()
+        {
+            var toUnpause = new List<ActiveEffect>();
+            foreach (var effect in _activeEffects)
+            {
+                if (!effect.IsReleased && effect.IsPaused)
+                    toUnpause.Add(effect);
             }
 
-            source.clip = clip;
-            source.loop = loop;
+            foreach (var effect in toUnpause)
+                effect.Source.UnPause();
 
-            if (is3D)
+            await UniTask.Yield(PlayerLoopTiming.Update);
+
+            foreach (var effect in toUnpause)
             {
-                source.spatialBlend = 1f;
-                source.transform.position = pos;
+                if (!effect.IsReleased)
+                    effect.IsPaused = false;
             }
-            else
-            {
-                source.spatialBlend = 0f;
-                source.transform.localPosition = Vector3.zero;
-            }
-
-            source.volume = GetSfxVolume();
-            source.mute = _isMuted;
-            source.time = Mathf.Clamp(startTime, 0f, clip.length);
-            source.Play();
-
-            var effect = new ActiveEffect { Source = source, CompletionSource = null };
-            if (!loop)
-            {
-                effect.CompletionSource = new UniTaskCompletionSource();
-                if (token.CanBeCanceled)
-                {
-                    effect.Cancellation = token.RegisterWithoutCaptureExecutionContext(() =>
-                    {
-                        UniTask.Post(() =>
-                        {
-                            effect.CompletionSource?.TrySetCanceled();
-                            if (effect.Source)
-                            {
-                                effect.Source.Stop();
-                                ReturnSfxToPool(effect.Source);
-                            }
-
-                            _activeEffects.Remove(effect);
-                        });
-                    });
-                }
-                else
-                    effect.Cancellation = default;
-            }
-            else
-            {
-                effect.Cancellation = token.CanBeCanceled
-                    ? token.RegisterWithoutCaptureExecutionContext(() =>
-                    {
-                        UniTask.Post(() =>
-                        {
-                            if (effect.Source)
-                            {
-                                effect.Source.Stop();
-                                ReturnSfxToPool(effect.Source);
-                            }
-
-                            _activeEffects.Remove(effect);
-                        });
-                    })
-                    : default;
-            }
-
-            _activeEffects.Add(effect);
-            return effect;
         }
 
         #endregion
 
-        #region 全局控制
+        #region Global Control - 全局控制
 
         /// <summary>
         /// 暂停所有音频（BGM + 音效）
-        /// <para>Pause all audio (BGM and SFX).</para>
+        /// <para>Pause all audio (BGM and Effect).</para>
         /// </summary>
         public void PauseAll()
         {
-            _isPaused = true;
+            IsPaused = true;
             _bgmSource.Pause();
-            foreach (var effect in _activeEffects)
-                effect.Source.Pause();
+            PauseAllEffect();
         }
 
         /// <summary>
         /// 恢复所有音频
         /// <para>Unpause all audio.</para>
         /// </summary>
-        public void UnPauseAll()
+        public async UniTask UnPauseAll()
         {
-            _isPaused = false;
+            IsPaused = false;
             _bgmSource.UnPause();
-            foreach (var effect in _activeEffects)
-                effect.Source.UnPause();
+            await UnPauseAllEffect();
         }
 
         /// <summary>
@@ -550,32 +663,29 @@ namespace EasyFramework.Managers.Audio
         /// </summary>
         public void SetMute(bool mute)
         {
-            _isMuted = mute;
+            IsMuted = mute;
             SetMixerVolume(_masterGroup, mute ? -80f : ToDecibel(GetMasterVolume()));
             PlayerPrefs.SetInt(_muteKey, mute ? 1 : 0);
         }
 
         /// <summary>
-        /// 是否全局静音
-        /// <para>Is global muted.</para>
-        /// </summary>
-        public bool IsMuted => _isMuted;
-
-        /// <summary>
-        /// 停止所有音效（不影响 BGM）
-        /// <para>Stop all SFX (BGM untouched).</para>
+        /// 停止所有音效， BGM不受影响
+        /// <para>Stop all Effect, BGM untouched.</para>
         /// </summary>
         public void StopAllEffects()
         {
             for (int i = _activeEffects.Count - 1; i >= 0; i--)
             {
                 var effect = _activeEffects[i];
+                if (effect.IsReleased) continue;
+                effect.IsReleased = true;
                 effect.Source.Stop();
                 effect.CompletionSource?.TrySetResult();
                 effect.CompletionSource = null;
                 effect.Cancellation.Dispose();
-                ReturnSfxToPool(effect.Source);
+                ReturnEffectToPool(effect.Source);
                 _activeEffects.RemoveAt(i);
+                _activeEffectDict.Remove(effect.ID);
             }
         }
 
@@ -586,14 +696,11 @@ namespace EasyFramework.Managers.Audio
         /// <param name="source">音频源</param>
         public void StopLoopEffect(AudioSource source)
         {
-            for (int i = _activeEffects.Count - 1; i >= 0; i--)
+            if (source == null) return;
+            for (int i = 0; i < _activeEffects.Count; i++)
             {
-                var effect = _activeEffects[i];
-                if (effect.Source != source) continue;
-                effect.Source.Stop();
-                effect.Cancellation.Dispose();
-                ReturnSfxToPool(effect.Source);
-                _activeEffects.RemoveAt(i);
+                if (_activeEffects[i].Source != source) continue;
+                StopEffect(_activeEffects[i].ID);
                 break;
             }
         }
@@ -636,13 +743,13 @@ namespace EasyFramework.Managers.Audio
 
         /// <summary>
         /// 设置音效音量（0~1）
-        /// <para>Set SFX volume (0~1).</para>
+        /// <para>Set Effect volume (0~1).</para>
         /// </summary>
-        public void SetSfxVolume(float volume)
+        public void SetEffectVolume(float volume)
         {
             volume = Mathf.Clamp01(volume);
-            SetMixerVolume(_sfxGroup, ToDecibel(volume));
-            PlayerPrefs.SetFloat(_sfxVolumeKey, volume);
+            SetMixerVolume(_effectGroup, ToDecibel(volume));
+            PlayerPrefs.SetFloat(_effectVolumeKey, volume);
         }
 
         /// <summary>
@@ -653,9 +760,9 @@ namespace EasyFramework.Managers.Audio
 
         /// <summary>
         /// 获取当前音效音量（0~1）
-        /// <para>Get current SFX volume.</para>
+        /// <para>Get current Effect volume.</para>
         /// </summary>
-        public float GetSfxVolume() => PlayerPrefs.GetFloat(_sfxVolumeKey, defaultSfxVolume);
+        public float GetEffectVolume() => PlayerPrefs.GetFloat(_effectVolumeKey, defaultEffectVolume);
 
         /// <summary>
         /// 获取当前主音量（0~1）
@@ -688,10 +795,17 @@ namespace EasyFramework.Managers.Audio
         /// 线性淡入淡出指定 AudioSource 的音量（静态工具方法）
         /// <para>Linearly fade an AudioSource volume.</para>
         /// </summary>
-        public static async UniTask FadeVolume(AudioSource source, float from, float to, float duration,
+        public async UniTask FadeVolume(AudioSource source, float from, float to, float duration,
             CancellationToken token = default)
         {
             if (!source) return;
+
+            if (duration <= 0f)
+            {
+                source.volume = to;
+                return;
+            }
+
             float elapsed = 0f;
             while (elapsed < duration)
             {
@@ -718,7 +832,7 @@ namespace EasyFramework.Managers.Audio
 
         /// <summary>
         /// 指定名字的音效是否正在播放
-        /// <para>Check if any SFX with given name is playing.</para>
+        /// <para>Check if any Effect with given name is playing.</para>
         /// </summary>
         public bool IsPlayingEffect(string clipName)
         {
@@ -729,65 +843,6 @@ namespace EasyFramework.Managers.Audio
             }
 
             return false;
-        }
-
-        #endregion
-
-        #region 内部辅助
-
-        // 设置混音器组音量（分贝）
-        private void SetMixerVolume(AudioMixerGroup group, float db)
-        {
-            if (audioMixer && group)
-                audioMixer.SetFloat(group.name + "Volume", db);
-        }
-
-        // 线性值转分贝
-        private static float ToDecibel(float linear)
-        {
-            return linear <= 0.0001f ? -80f : 20f * Mathf.Log10(linear);
-        }
-
-        // 加载音频资源
-        private AudioClip LoadClip(string clipName)
-        {
-            string path = EF.Assets.CurrentSystemType == AssetsSystemType.Default
-                ? $"{EF.Projects.AppConst.AudioPath}{clipName}"
-                : clipName;
-            return EF.Assets.Load<AudioClip>(path);
-        }
-
-        // 从 PlayerPrefs 恢复设置
-        private void LoadSettings()
-        {
-            float master = PlayerPrefs.GetFloat(_masterVolumeKey, 1f);
-            float bgm = PlayerPrefs.GetFloat(_bgmVolumeKey, defaultBgmVolume);
-            float sfx = PlayerPrefs.GetFloat(_sfxVolumeKey, defaultSfxVolume);
-            bool muted = PlayerPrefs.GetInt(_muteKey, 0) == 1;
-
-            SetMasterVolume(master);
-            SetBgmVolume(bgm);
-            SetSfxVolume(sfx);
-            if (muted) SetMute(true);
-        }
-
-        // 保存设置到 PlayerPrefs
-        private void SaveSettings()
-        {
-            PlayerPrefs.SetFloat(_masterVolumeKey, GetMasterVolume());
-            PlayerPrefs.SetFloat(_bgmVolumeKey, GetBgmVolume());
-            PlayerPrefs.SetFloat(_sfxVolumeKey, GetSfxVolume());
-            PlayerPrefs.SetInt(_muteKey, _isMuted ? 1 : 0);
-        }
-
-        // 安全获取混音器组
-        private AudioMixerGroup GetMixerGroupSafe(string groupName)
-        {
-            if (audioMixer == null) return null;
-            var groups = audioMixer.FindMatchingGroups(groupName);
-            if (groups.Length > 0) return groups[0];
-            Debug.LogWarning($"[AudioSystem] Mixer group '{groupName}' not found");
-            return null;
         }
 
         #endregion

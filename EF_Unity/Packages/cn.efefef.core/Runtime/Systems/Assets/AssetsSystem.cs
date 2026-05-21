@@ -90,7 +90,7 @@ namespace EasyFramework.Systems.Assets
             CurrentSystemType = systemType;
             _isInitialized = true;
 
-            Log($"[ AssetsRootManager ] initialized by type[ {systemType} ].");
+            Log($"initialized by type[ {systemType} ].");
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace EasyFramework.Systems.Assets
             await UniTask.CompletedTask;
             if (!CheckInitialization()) 
                 return 0;
-            Log($"[ AssetsRootManager ] Get refCount by path: {path}");
+            Log($"Get refCount by path: {path}");
             return _refCounts.GetValueOrDefault(path, 0);
         }
 
@@ -150,13 +150,13 @@ namespace EasyFramework.Systems.Assets
             
             if (!_refCounts.TryGetValue(path, out var count))
             {
-                Warning($"[ AssetsRootManager ] Attempt to release unloaded assets: {path}");
+                Warning($"Attempt to release unloaded assets: {path}");
                 return;
             }
 
             if (--count < 0)
             {
-                Warning($"[ AssetsRootManager ] Resource reference count exception: {path}, Current count: {count}");
+                Warning($"Resource reference count exception: {path}, Current count: {count}");
                 count = 0;
             }
 
@@ -164,7 +164,7 @@ namespace EasyFramework.Systems.Assets
             {
                 await _assetsManager.Release(path);
                 _refCounts.Remove(path);
-                Log($"[ AssetsRootManager ] Release succeed by path: {path}");
+                Log($"Release succeed by path: {path}");
             }
             else
                 _refCounts[path] = count;
@@ -181,7 +181,7 @@ namespace EasyFramework.Systems.Assets
             
             await _assetsManager.ReleaseAll();
             _refCounts.Clear();   // 清空所有引用计数
-            Log("[ AssetsRootManager ] Release all succeed.");
+            Log("Release all succeed.");
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace EasyFramework.Systems.Assets
                 return;
 
             await _assetsManager.CleanupUnusedAssets();
-            Log("[ AssetsRootManager ] Cleanup the unused assets succeed.");
+            Log("Cleanup the unused assets succeed.");
         }
 
         #region 私有函数
@@ -208,15 +208,16 @@ namespace EasyFramework.Systems.Assets
             return false;
         }
 
+        // 检查对象并且设置相关引用数量
         private void CheckObject<T>(T obj, string path) where T : Object
         {
             if (null == obj)
             {
-                Error($"[ AssetsRootManager ] Loading assets fail: {path}");
+                Error($"Loading assets fail: {path}");
                 return;
             }
 
-            Log($"[ AssetsRootManager ] Loading assets succeed: {path}");
+            Log($"Loading assets succeed: {path}");
             int refCount = 1;
             if (_refCounts.TryGetValue(path, out int existing))
                 refCount += existing;
@@ -225,17 +226,14 @@ namespace EasyFramework.Systems.Assets
 
         private void Log(string msg)
         {
-            if (_openDebug) D.Log(msg);
+            if (_openDebug) D.Log($"[ AssetsRootManager ] {msg}");
         }
         private void Warning(string msg)
         {
-            if (_openDebug) D.Warning(msg);
+            if (_openDebug) D.Warning($"[ AssetsRootManager ] {msg}");
         }
-        private void Error(string msg)
-        {
-            D.Error(msg);
-        }
-        
+        private void Error(string msg) => D.Error($"[ AssetsRootManager ] {msg}");
+
         #endregion
     }
 }

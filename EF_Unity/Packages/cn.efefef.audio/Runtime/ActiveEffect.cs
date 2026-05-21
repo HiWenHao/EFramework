@@ -23,6 +23,24 @@ namespace EasyFramework.Managers.Audio
     internal sealed class ActiveEffect
     {
         /// <summary>
+        /// 正在播放的音频ID号
+        /// <para>The currently playing audio ID</para>
+        /// </summary>
+        public uint ID;
+
+        /// <summary>
+        /// 当前音频暂停
+        /// <para>Current audio is paused.</para>
+        /// </summary>
+        public bool IsPaused;
+
+        /// <summary>
+        /// 当前音效已经被释放
+        /// <para>The current sound effect has been released.</para>
+        /// </summary>
+        public bool IsReleased;
+
+        /// <summary>
         /// 正在播放的音效组件
         /// <para>The currently playing sound effect component</para>
         /// </summary>

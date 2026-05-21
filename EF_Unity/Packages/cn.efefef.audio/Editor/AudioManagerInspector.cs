@@ -22,8 +22,8 @@ namespace EasyFramework.Managers.Audio.Editor
     {
         private SerializedProperty audioMixerProp;
         private SerializedProperty defaultBgmVolumeProp;
-        private SerializedProperty defaultSfxVolumeProp;
-        private SerializedProperty maxSfxPoolSizeProp;
+        private SerializedProperty defaultEffectVolumeProp;
+        private SerializedProperty maxEffectPoolSizeProp;
         private SerializedProperty prewarmCountProp;
 
         private AudioClip testClip;
@@ -33,8 +33,8 @@ namespace EasyFramework.Managers.Audio.Editor
         {
             audioMixerProp = serializedObject.FindProperty("audioMixer");
             defaultBgmVolumeProp = serializedObject.FindProperty("defaultBgmVolume");
-            defaultSfxVolumeProp = serializedObject.FindProperty("defaultSfxVolume");
-            maxSfxPoolSizeProp = serializedObject.FindProperty("maxSfxPoolSize");
+            defaultEffectVolumeProp = serializedObject.FindProperty("defaultEffectVolume");
+            maxEffectPoolSizeProp = serializedObject.FindProperty("maxEffectPoolSize");
             prewarmCountProp = serializedObject.FindProperty("prewarmCount");
         }
 
@@ -60,13 +60,13 @@ namespace EasyFramework.Managers.Audio.Editor
             // 默认音量
             EditorGUILayout.LabelField("默认音量 / Default Volume", EditorStyles.boldLabel);
             EditorGUILayout.Slider(defaultBgmVolumeProp, 0f, 1f, "BGM 音量");
-            EditorGUILayout.Slider(defaultSfxVolumeProp, 0f, 1f, "SFX 音量");
+            EditorGUILayout.Slider(defaultEffectVolumeProp, 0f, 1f, "Effect 音量");
 
             EditorGUILayout.Space();
 
             // 对象池
             EditorGUILayout.LabelField("音频池 / Audio Source Pool", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(maxSfxPoolSizeProp, new GUIContent("最大空闲数", "对象池最多保留的空闲 AudioSource 数量"));
+            EditorGUILayout.PropertyField(maxEffectPoolSizeProp, new GUIContent("最大空闲数", "对象池最多保留的空闲 AudioSource 数量"));
             EditorGUILayout.PropertyField(prewarmCountProp, new GUIContent("预热数量", "游戏启动时预先创建的音效播放器数量"));
 
             serializedObject.ApplyModifiedProperties();
@@ -82,7 +82,7 @@ namespace EasyFramework.Managers.Audio.Editor
                     GUI.enabled = false;
                     EditorGUILayout.Toggle("全局静音", sys.IsMuted);
                     EditorGUILayout.FloatField("BGM 音量", sys.GetBgmVolume());
-                    EditorGUILayout.FloatField("SFX 音量", sys.GetSfxVolume());
+                    EditorGUILayout.FloatField("Effect 音量", sys.GetEffectVolume());
                     EditorGUILayout.FloatField("Master 音量", sys.GetMasterVolume());
                     EditorGUILayout.IntField("活跃音效数", GetActiveEffectCount(sys));
                     GUI.enabled = true;

@@ -164,6 +164,7 @@ namespace EasyFramework.Edit.Windows
             }
             catch (Exception e)
             {
+                D.Error(e);
                 DrawErrorOverlay(e);
             }
         }
