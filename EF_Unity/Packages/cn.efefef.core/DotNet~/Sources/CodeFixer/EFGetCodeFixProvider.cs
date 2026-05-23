@@ -12,8 +12,8 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace EasyFramework
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(EfGetCodeFixProvider)), Shared]
-    public class EfGetCodeFixProvider : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(EFGetCodeFixProvider)), Shared]
+    public class EFGetCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(DiagnosticIds.UseGetTypeInsteadId);

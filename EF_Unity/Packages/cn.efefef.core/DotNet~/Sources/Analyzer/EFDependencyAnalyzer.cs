@@ -7,16 +7,13 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace EasyFramework
 {
-    /// <summary>
-    /// 依赖循环检测
-    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class EFDependencyAnalyzer : DiagnosticAnalyzer
     {
         private const string DependencyAttributeFullName = "EasyFramework.DependencyAttribute";
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-            ImmutableArray.Create(DependencyRules.CyclicDependency);
+            ImmutableArray.Create(DependencyRules.SelfDependency, DependencyRules.CyclicDependency);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -25,12 +22,9 @@ namespace EasyFramework
 
             context.RegisterCompilationStartAction(compilationStartContext =>
             {
-                var compilation = compilationStartContext.Compilation;
-                // 存储: 类型全名 -> (类型符号, 依赖全名列表, 每个依赖对应的特性位置)
-                var typeDeps =
-                    new Dictionary<string, (INamedTypeSymbol symbol, List<(string dep, Location location)> deps)>();
+                var typeDeps = new Dictionary<string, (INamedTypeSymbol symbol, List<(string dep, Location location)> deps)>();
 
-                // 收集所有 Dependency 特性及其位置
+                // 收集并立即检查自依赖
                 compilationStartContext.RegisterSymbolAction(symbolContext =>
                 {
                     var namedType = (INamedTypeSymbol)symbolContext.Symbol;
@@ -42,20 +36,29 @@ namespace EasyFramework
                         if (attr.AttributeClass?.ToString() != DependencyAttributeFullName) continue;
                         // 获取特性在源代码中的位置
                         Location attrLocation = GetAttributeLocation(attr, symbolContext.CancellationToken);
-                        if (attr.ConstructorArguments.Length != 1 ||
-                            attr.ConstructorArguments[0].Kind != TypedConstantKind.Type) continue;
+                        if (attr.ConstructorArguments.Length != 1 || attr.ConstructorArguments[0].Kind != TypedConstantKind.Type) continue;
                         var typeArg = (INamedTypeSymbol)attr.ConstructorArguments[0].Value!;
-                        depsWithLocation.Add((typeArg.ToString(), attrLocation));
+                        string depFullName = typeArg.ToString();
+                        string currentFullName = namedType.ToString();
+
+                        // 自依赖检查
+                        if (currentFullName == depFullName)
+                        {
+                            var diag = Diagnostic.Create(DependencyRules.SelfDependency, attrLocation, currentFullName);
+                            symbolContext.ReportDiagnostic(diag);
+                        }
+                        else
+                            depsWithLocation.Add((depFullName, attrLocation));
                     }
 
                     if (!depsWithLocation.Any()) return;
                     typeDeps[namedType.ToString()] = (namedType, depsWithLocation);
                 }, SymbolKind.NamedType);
 
-                // 编译结束时检测循环
+                // 编译结束时检测间接循环
                 compilationStartContext.RegisterCompilationEndAction(endContext =>
                 {
-                    // 构建图（仅用于循环检测）
+                    // 构建图（仅包含非自依赖的边）
                     var graph = new DependencyGraph();
                     foreach (var kvp in typeDeps)
                     {

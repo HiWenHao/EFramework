@@ -28,12 +28,7 @@ namespace EasyFramework
             if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
                 return;
 
-            // 方法名必须为 "Get"
-            if (memberAccess.Name.Identifier.Text != "Get")
-                return;
-
-            // 参数列表必须为空
-            if (invocation.ArgumentList.Arguments.Count != 0)
+            if (memberAccess.Name.Identifier.Text != "Get" || invocation.ArgumentList.Arguments.Count != 0)
                 return;
 
             // 使用语义模型获取左侧表达式的类型信息
@@ -42,8 +37,7 @@ namespace EasyFramework
             var typeSymbol = typeInfo.Type;
 
             // 如果类型为 null 或错误，跳过
-            if (typeSymbol == null || typeSymbol.TypeKind == TypeKind.Error)
-                return;
+            if (typeSymbol == null || typeSymbol.TypeKind == TypeKind.Error) return;
 
             // 检查类型名称是否为 "EF"（忽略命名空间）
             if (typeSymbol.Name != "EF") return;

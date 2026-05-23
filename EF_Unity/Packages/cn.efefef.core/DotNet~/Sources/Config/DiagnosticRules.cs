@@ -7,14 +7,16 @@ namespace EasyFramework
     /// </summary>
     internal static class DependencyRules
     {
-        public static readonly DiagnosticDescriptor MissingDependencyType = new DiagnosticDescriptor(
-            id: DiagnosticIds.DependencyTypeMissingId,
-            title: "依赖类型不存在",
-            messageFormat: "类型 '{0}' 依赖的类型 '{1}' 在当前编译中不存在",
+        // 自依赖错误
+        public static readonly DiagnosticDescriptor SelfDependency = new DiagnosticDescriptor(
+            id: DiagnosticIds.SelfDependencyId,
+            title: "不能依赖自身",
+            messageFormat: "类型 '{0}' 不能依赖自身",
             category: "Dependency",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
+        // 依赖循环
         public static readonly DiagnosticDescriptor CyclicDependency = new DiagnosticDescriptor(
             id: DiagnosticIds.CyclicDependencyId,
             title: "检测到循环依赖",
@@ -22,7 +24,8 @@ namespace EasyFramework
             category: "Dependency",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
-        
+
+        // 使用Get() 函数
         public static readonly DiagnosticDescriptor UseGetTypeInstead = new DiagnosticDescriptor(
             id: DiagnosticIds.UseGetTypeInsteadId,
             title: "不推荐使用 EF.Get()",
