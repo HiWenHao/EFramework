@@ -143,10 +143,10 @@ namespace EasyFramework.Managers.Ui
             _autoDestroyDic.Clear();
             _autoDestroyDic = null;
 
-            Destroy(UICamera.gameObject);
+            DestroyObj(UICamera.gameObject);
             UICamera = null;
 
-            Destroy(_target.gameObject);
+            DestroyObj(_target.gameObject);
             _target = null;
         }
 
@@ -157,9 +157,9 @@ namespace EasyFramework.Managers.Ui
             : viewName;
         }
         
-        private static void Destroy(Object obj)
+        private static void DestroyObj(Object obj)
         {
-            Object.Destroy(obj);
+            Destroy(obj);
         }
 
         private IUiView ViewCreate<T>() where T : IUiView, new()
@@ -200,7 +200,7 @@ namespace EasyFramework.Managers.Ui
 
                 uiView.Quit();
                 uiView.Dispose();
-                Destroy(uiView.View.gameObject);
+                DestroyObj(uiView.View.gameObject);
                 
                 EF.Assets.Release(GetAssetPath(uiView.View.name)).Forget();
             }
