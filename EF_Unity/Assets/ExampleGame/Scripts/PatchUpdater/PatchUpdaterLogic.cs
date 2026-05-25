@@ -27,6 +27,10 @@ namespace EFExample
         private ResourceDownloaderOperation _downloaderOperation; 
         void IUiView.Awake()
         {
+        }
+
+        void IUiView.Enable(params object[] args)
+        {
             //资源热更     仅支持Unity2019.4+      加载资源逻辑需要自己实现、根据项目的不同，逻辑也不同   已加入Load类计划
             // Yoo现在需要有首包资源，并且会产生[ BuildinCatalog ]文件
             // 在[ HostPlayMode ]模式下加载某个资源时，
@@ -35,7 +39,7 @@ namespace EFExample
             // 1. 先打一个空包或者必要资源包体[ Copy Buildin File Option ]选为[ ClearAndCopyAll ]
             // 2. 之后进行增量打包[ Copy Buildin File Option ]选为[ None ]，把出来的资源放置到远端或本地服务器
             // 3. 走下方更新函数，回调中可以加载增量的资源文件，这样测试完成
-            CheckUpdate().Forget();
+            CheckUpdate((EPlayMode)args[0]).Forget();
         }
 
         void IUiView.Quit()
@@ -43,9 +47,9 @@ namespace EFExample
             _downloaderOperation = null;
         }
 
-        private async UniTask CheckUpdate()
+        private async UniTask CheckUpdate(EPlayMode playMode)
         {
-            if (await EF.Patch.CheckForUpdatePatches(EPlayMode.EditorSimulateMode))
+            if (await EF.Patch.CheckForUpdatePatches(playMode))
             {
                 _downloaderOperation = await EF.Patch.CreateDownloader();
 

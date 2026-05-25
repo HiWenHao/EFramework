@@ -9,7 +9,9 @@
  * ===============================================
 */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework;
+using EasyFramework.Managers.Ui;
 using Luban;
 using SimpleJSON;
 using UnityEngine;
@@ -51,7 +53,8 @@ namespace EFExample
             //ExcelDataCacheManager.CacheAllData();
             //for (int i = 0; i < EDC_Example.Ids.Length; i++)
             //    EasyFramework.D.Emphasize(EDC_Example.Get(EDC_Example.Ids[i]).name);
-            
+
+            UiSystem.Instance.OpenPageView<PatchUpdater>(PlayMode).Forget();
             //var tablesCtor = typeof(EasyFramework.LC).GetConstructors()[0];
             //var loaderReturnType = tablesCtor.GetParameters()[0].ParameterType.GetGenericArguments()[1];
             //// 根据cfg.Tables的构造函数的Loader的返回值类型决定使用json还是ByteBuf
