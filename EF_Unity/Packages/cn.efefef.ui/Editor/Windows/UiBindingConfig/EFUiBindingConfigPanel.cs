@@ -22,7 +22,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     {
         Vector2 _scrollPos;
 
-        private SerializedProperty _namespace;
         private SerializedProperty _rulePrefixes;
         private SerializedObject _customSettings;
         
@@ -36,18 +35,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void LoadWindowData()
         {
             _customSettings = new SerializedObject(UiBindingConfig.Instance);
-            _namespace = _customSettings.FindProperty("_namespace");
             _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
         }
 
         public override void OnGUI()
         {
-            _customSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
-
-            _namespace.stringValue =
-                EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Default, Lc.Script, Lc.Namespace }),
-                    _namespace.stringValue);
 
             EditorGUILayout.Space(12f, true);
 
