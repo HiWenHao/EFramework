@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "unity": "2021.3",
   "unityRelease": "10f1",
-  "description": "UI管理器资产包",
+  "description": "UI\u7ba1\u7406\u5668\u8d44\u4ea7\u5305",
   "author": {
     "name": "Alvin",
     "url": null
@@ -13,7 +13,9 @@
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
   "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
-    "cn.efefef.core": "0.0.1"
+    "cn.efefef.core": "0.0.1",
+    "com.unity.ugui": "1.0.0",
+    "com.unity.render-pipelines.universal": "14.0.9"
   },
   "samples": null
 }

@@ -32,15 +32,15 @@ namespace EFExample
 
         public async UniTask CloseAll()
         {
-            await EF.Ui.CloseAllView();
-            EF.Ui.OpenPageView<UiAView>().Forget();
+            await UiSystem.Instance.CloseAllView();
+            UiSystem.Instance.OpenPageView<UiAView>().Forget();
         }
 
         #region Button invoke event. Do not change here.不要更改这行 -- Auto
 
         private void OnClickBtn_OpenOne()
         {
-            EF.Ui.OpenPageView<TestTopView>().Forget();
+            UiSystem.Instance.OpenPageView<TestTopView>().Forget();
         }
 
         private void OnClickBtn_CloseAll()

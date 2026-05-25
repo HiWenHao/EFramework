@@ -409,6 +409,8 @@ namespace EasyFramework.Edit
 		Right,
 		/// <summary> 重置 </summary>
 		Reset,
+		/// <summary> 半径 </summary>
+		Radius,
 		/// <summary> 原因 </summary>
 		Reason,
 		/// <summary> 记录 </summary>

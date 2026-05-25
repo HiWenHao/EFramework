@@ -9,7 +9,6 @@
  * ===============================================
  */
 
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -31,9 +30,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _scriptVersion;
         private SerializedProperty _resourcesArea;
         private SerializedProperty _appConstConfig;
+        private SerializedProperty _scriptNamespace;
 
-        public override string Name => LC.Combine(new Lc[] { Lc.Project, Lc.Settings });
-        
+        public override string Name => LC.Combine(Lc.Project, Lc.Settings);
+
         public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
@@ -46,6 +46,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
             _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
             _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
+            _scriptNamespace = _settingPanel.FindProperty("_scriptNamespace");
 
             var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
             MethodInfo methodInfo = type.GetMethod("GetUserInfo");
@@ -62,8 +63,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void OnGUI()
         {
             SystemInfos();
-            LC.DisplayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), LC.DisplayLanguage);
-            
+            LC.DisplayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(Lc.Framework, Lc.Display, Lc.Language),
+                LC.DisplayLanguage);
+
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
@@ -71,24 +73,26 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
 
             EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
-            _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Author }),
+            _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Author),
                 _scriptAuthor.stringValue);
-            _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Version }),
+            _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Version),
                 _scriptVersion.stringValue);
+            _scriptNamespace.stringValue = EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Namespace),
+                _scriptNamespace.stringValue);
 
             EditorGUILayout.PropertyField(_appConstConfig);
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Project, Lc.Settings })))
             {
-                string _name = Application.dataPath.Split('/')[^2];
-                _appConstConfig.FindPropertyRelative("_appName").stringValue = _name;
-                _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = _name + "_";
+                string appName = Application.productName;
+                _appConstConfig.FindPropertyRelative("_appName").stringValue = appName;
+                _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = appName + "_";
                 _appConstConfig.FindPropertyRelative("_appVersion").stringValue = "1.0";
                 _appConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
                 _appConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
             }
-            
+
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(6);

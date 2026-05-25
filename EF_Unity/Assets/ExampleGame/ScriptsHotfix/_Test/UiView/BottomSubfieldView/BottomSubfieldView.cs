@@ -23,12 +23,12 @@ namespace EFExample
     {
         public static async UniTask<BottomSubfieldView> Open(params object[] args)
         {
-            return await EF.Ui.OpenPageView<BottomSubfieldView>(args);
+            return await UiSystem.Instance.OpenPageView<BottomSubfieldView>(args);
         }
 
         public static async UniTask<bool> Close(params object[] args)
         {
-            return await EF.Ui.CloseView<BottomSubfieldView>(args);
+            return await UiSystem.Instance.CloseView<BottomSubfieldView>(args);
         }
 
         bool IUiView.AutoDestroy => false;

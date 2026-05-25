@@ -1609,6 +1609,14 @@
       ]
     },
     {
+      "name": "Radius",
+      "desc": "半径",
+      "array": [
+        "Radius",
+        "半径"
+      ]
+    },
+    {
       "name": "Reason",
       "desc": "原因",
       "array": [

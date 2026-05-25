@@ -24,7 +24,7 @@ namespace EasyFramework.Managers.Ui
         void ISingleton.Init()
         {
             //_target = new GameObject("UI").transform;
-            //_target.SetParent(EF.Managers);
+            //_target.SetParent(EFRoot.Managers);
             _target = transform;
             UICamera = new GameObject("UICamera").AddComponent<Camera>();
             UICamera.orthographic = true;

@@ -35,7 +35,7 @@ namespace EFExample
 
         private void OnClickBtn_ToChatMessage()
         {
-            EF.Ui.OpenPageView<ChatMessageView>();
+            UiSystem.Instance.OpenPageView<ChatMessageView>();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

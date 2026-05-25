@@ -21,8 +21,8 @@ namespace EFExample
     {
         void IUiView.Awake()
         {
-            EF.Ui.OpenPageView<TestTopView>();
-            EF.Ui.OpenPageView<TestBottomViewOne>();
+            UiSystem.Instance.OpenPageView<TestTopView>();
+            UiSystem.Instance.OpenPageView<TestBottomViewOne>();
         }
 
         void IUiView.Quit()
@@ -35,7 +35,7 @@ namespace EFExample
 
         private void OnClickBtn_ToB()
         {
-            EF.Ui.OpenPageView<UiBView>("向B传递参数");
+            UiSystem.Instance.OpenPageView<UiBView>("向B传递参数");
         }
 
         private void OnClickBtn_Quit()

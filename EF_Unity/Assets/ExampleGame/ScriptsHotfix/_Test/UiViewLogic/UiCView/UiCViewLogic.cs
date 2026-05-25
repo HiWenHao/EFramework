@@ -43,7 +43,7 @@ namespace EFExample
 
         private void OnClickBtn_QuitC()
         {
-            EF.Ui.CloseView<UiCView>("C页面退出，向即将被显示的页面B传递参数");
+            UiSystem.Instance.CloseView<UiCView>("C页面退出，向即将被显示的页面B传递参数");
         }
 
         private void OnClickBtn_AddTimeEvent()

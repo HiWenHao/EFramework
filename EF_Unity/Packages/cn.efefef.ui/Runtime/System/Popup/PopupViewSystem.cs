@@ -37,7 +37,7 @@ namespace EasyFramework.Managers.Ui.Popup
             {
                 //View.gameObject.SetActive(false);
                 
-                EF.Ui.CloseView(this).Forget();
+                UiSystem.Instance.CloseView(this).Forget();
                 
                 return;
             }

@@ -31,7 +31,7 @@ namespace EasyFramework.Edit.Create
                 return;
             
             UiBinding uiBinding = rect.gameObject.AddComponent<UiBinding>();
-            uiBinding.Namespace = ConfigManager.UiBinding.Namespace;
+            uiBinding.Namespace = ConfigManager.Project.ScriptNamespace;
             uiBinding.PrefabPath = ConfigManager.Path.UIPrefabPath;
             UnityEngine.Object.DestroyImmediate(rect.GetComponent<Image>());
 

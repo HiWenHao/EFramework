@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder = (UiBinding)target;
             _setting = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
 
-            _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace) ? _setting.Namespace : _builder.Namespace;
+            _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace) ? ConfigManager.Project.ScriptNamespace : _builder.Namespace;
             if (_builder.CreatePrefab)
                 _builder.PrefabPath = string.IsNullOrEmpty(_builder.PrefabPath)
                     ? ConfigManager.Path.UIPrefabPath
@@ -95,7 +95,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder.Namespace =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _builder.Namespace);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-                _builder.Namespace = _setting.Namespace;
+                _builder.Namespace = EF.Projects.ScriptNamespace;
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
@@ -439,15 +439,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             List<string> usingNamespaces = new List<string>();
 
-            string[] baseNamespaces = new string[]
+            string[] baseNamespaces =
             {
                 "UnityEngine",
                 "UnityEngine.UI",
                 "System.Collections.Generic",
                 "Cysharp.Threading.Tasks",
                 "EasyFramework",
-                "EasyFramework.UI",
-                "EasyFramework.Systems.Ui"
+                "EasyFramework.Managers.Ui"
             };
             foreach (string ns in baseNamespaces)
             {
@@ -486,7 +485,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             commonSb.AppendLine();
             string commonNamespace =
-                !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : _setting.Namespace;
+                !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : EF.Projects.ScriptNamespace;
             commonSb.AppendLine($"namespace {commonNamespace}");
             commonSb.AppendLine("{");
 
@@ -498,12 +497,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine($"    {{");
             sb.AppendLine($"        public static async UniTask<{className}> Open(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return await EF.Ui.OpenPageView<{className}>(args);");
+            sb.AppendLine($"            return await UiSystem.Instance.OpenPageView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        public static async UniTask<bool> Close(params object[] args)");
             sb.AppendLine($"        {{");
-            sb.AppendLine($"            return await EF.Ui.CloseView<{className}>(args);");
+            sb.AppendLine($"            return await UiSystem.Instance.CloseView<{className}>(args);");
             sb.AppendLine($"        }}");
             sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");

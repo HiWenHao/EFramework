@@ -19,14 +19,19 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// </summary>
     public class UiBindingConfig : ScriptableObject
     {
-        /// <summary>
-        /// 默认命名空间
-        /// </summary>
-        [SerializeField, HeaderPro("默认命名空间", "Default namespace")]
-        private string _namespace = "PleaseChangeTheNamespace";
+        private static UiBindingConfig _instance;
 
-        /// <summary> 默认命名空间 </summary>
-        public string Namespace => _namespace;
+        public static UiBindingConfig Instance
+        {
+            get
+            {
+                if (_instance is null && EditorUtils.CheckAssets<UiBindingConfig>(out var pathConfigPath))
+                    _instance = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
+                _instance ??= Create.CreateSettings.Instance<UiBindingConfig>(true, ConfigManager.ConfigEditPath);
+
+                return _instance;
+            }
+        }
 
         /// <summary>
         /// 组件的缩略名字映射

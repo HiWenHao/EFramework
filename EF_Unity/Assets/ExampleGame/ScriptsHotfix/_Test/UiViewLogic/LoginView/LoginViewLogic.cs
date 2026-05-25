@@ -35,8 +35,8 @@ namespace EFExample
 
         private void OnClickBtn_Login()
         {
-            EF.Ui.OpenPageView<CahtView>();
-            EF.Ui.OpenPageView<BottomSubfieldView>();
+            UiSystem.Instance.OpenPageView<CahtView>();
+            UiSystem.Instance.OpenPageView<BottomSubfieldView>();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

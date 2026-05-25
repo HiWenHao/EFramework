@@ -1,21 +1,17 @@
 /*
  * ================================================
- * Describe:      This script is used to Update the StaticViersion file.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2022-10-19 10:31:31
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-07-09 15:38:31
- * ScriptVersion: 0.1
+ * Describe:        This script is used to Update the StaticViersion file.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2022-10-19 10:31:31
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-05-25 17:39:33
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
-using EasyFramework.Managers.Ui;
-using UnityEngine;
-using UnityEngine.UI;
 using YooAsset;
-using Object = UnityEngine.Object;
 
 namespace EasyFramework.Systems.Patch
 {
@@ -23,13 +19,13 @@ namespace EasyFramework.Systems.Patch
     /// 资源更新
     /// </summary>
     [Manager(Order = 99300)]
-    public class PatchSystem : Singleton<PatchSystem>, ISingleton
+    public class PatchSystem : MonoSingleton<PatchSystem>, ISingleton
     {
         /// <summary>
         /// 是否使用Yoo
         /// </summary>
         public bool IsUse { get; private set; }
-        
+
         /// <summary>
         /// 当前被更新的包名
         /// </summary>
@@ -39,16 +35,12 @@ namespace EasyFramework.Systems.Patch
         /// 启用可寻址资源定位
         /// </summary>
         public bool EnableAddressable => _package.GetPackageDetails().EnableAddressable;
-        
+
         /// 当前运行模式
-        private EPlayMode _playMode = EPlayMode.EditorSimulateMode;
+        public EPlayMode CurrentPlayMode { get; set; } = EPlayMode.EditorSimulateMode;
 
         private bool _openDebug;
-        private bool _needDownloading;
-        private bool _waitDownloading;
-        private Text _txtUpdaterTips;
-        private Slider _sldUpdaterSlider;
-
+        private bool _isChecked;
         private string _packageVersion;
         private ResourcePackage _package;
 
@@ -67,16 +59,15 @@ namespace EasyFramework.Systems.Patch
         }
 
         /// <summary>
-        /// Start update patch.
-        /// <para>开始更新补丁</para>
+        /// 检查是否需要更新补丁
+        /// <para>Check if a patch update is required</para>
         /// </summary>
         /// <param name="mode">Refresh scheme.<para>更新模式</para></param>
         /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
-        /// <param name="autoStart">Auto start the downloading.<para>自动开始下载</para></param>
-        public async UniTask StartUpdatePatch(EPlayMode mode, string packageName = "DefaultPackage", bool autoStart = true)
+        public async UniTask<bool> CheckForUpdatePatches(EPlayMode mode, string packageName = "DefaultPackage")
         {
             Log($"资源系统运行模式：{mode}");
-            _playMode = mode;
+            CurrentPlayMode = mode;
             PackageName = packageName;
             _package = YooAssets.TryGetPackage(packageName);
             if (_package == null)
@@ -85,25 +76,46 @@ namespace EasyFramework.Systems.Patch
                 YooAssets.SetDefaultPackage(_package);
             }
 
-            if (_package.InitializeStatus != EOperationStatus.Succeed)
+            _isChecked = true;
+            if (_package.InitializeStatus == EOperationStatus.Succeed) return false;
+            await CreateInitializeParameters();
+            await GetRemotePackageVersionAsync();
+            return await UpdatePackageManifestAsync();
+        }
+
+        /// <summary>
+        /// 开始更新补丁, 开始前请检查 "CurrentPlayMode" 字段是否设置正确, 当然你也可以先调用CheckForUpdatePatches函数
+        /// <para>Start updating the patches. Before starting, please check whether the "CurrentPlayMode" field is set correctly.
+        /// Of course, you can also call the CheckForUpdatePatches function first.</para>
+        /// </summary>
+        /// <param name="onStartDownloadFile">下载开始<para>Start download files.</para></param>
+        /// <param name="onDownloadProgressUpdate">下载进度更新<para>Downloading Progress Update</para></param>
+        /// <param name="onDownloadOver">下载结束<para>Download completed</para></param>
+        /// <param name="onDownloadError">下载错误<para>Download Error</para></param>
+        /// <returns></returns>
+        public async UniTask<bool> StartUpdatePatches(
+            DownloaderOperation.DownloadFileBegin onStartDownloadFile = null,
+            DownloaderOperation.DownloadUpdate onDownloadProgressUpdate = null,
+            DownloaderOperation.DownloaderFinish onDownloadOver = null,
+            DownloaderOperation.DownloadError onDownloadError = null
+        )
+        {
+            if (!_isChecked)
             {
-                await CreateInitializeParameters();
-                await GetRemotePackageVersionAsync();
-                await UpdatePackageManifestAsync();
+                if (!await CheckForUpdatePatches(CurrentPlayMode)) return true;
             }
 
-            if (!autoStart)
-                return;
-            
             var downloader = await CreateDownloader();
-            await BeforeDownloading(downloader);
-            while (_waitDownloading)
-            {
-                await UniTask.Yield();
-            }
-            if (_needDownloading)
-                await StartDownloader(downloader);
-            UpdateDone();
+
+            if (downloader == null || downloader.TotalDownloadCount == 0)
+                return true;
+
+            downloader.DownloadFileBeginCallback = onStartDownloadFile;
+            downloader.DownloadUpdateCallback = onDownloadProgressUpdate;
+            downloader.DownloadFinishCallback = onDownloadOver;
+            downloader.DownloadErrorCallback = onDownloadError;
+
+            return await StartDownloader(downloader);
         }
 
         #region Setting config Initialize.初始化更新设置
@@ -114,7 +126,7 @@ namespace EasyFramework.Systems.Patch
         private async UniTask<bool> CreateInitializeParameters()
         {
             InitializeParameters initParameters = null;
-            switch (_playMode)
+            switch (CurrentPlayMode)
             {
                 // 编辑器下的模拟模式
                 case EPlayMode.EditorSimulateMode:
@@ -173,7 +185,7 @@ namespace EasyFramework.Systems.Patch
 
             if (initializationOperation.Status == EOperationStatus.Succeed)
             {
-                Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {_playMode}");
+                Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {CurrentPlayMode}");
                 return true;
             }
 
@@ -234,7 +246,7 @@ namespace EasyFramework.Systems.Patch
         #endregion
 
         #region Create one downloader.创建一个下载器
-        
+
         /// <summary>
         /// Create a downloader.创建一个下载器
         /// </summary>
@@ -242,21 +254,22 @@ namespace EasyFramework.Systems.Patch
         /// <param name="downloadMaxCount">同时最大下载数</param>
         /// <param name="failedTryAgain">失败后的再次下载尝试次数</param>
         /// <returns>下载器</returns>
-        public async UniTask<ResourceDownloaderOperation> CreateDownloader(string[] tags = null, int downloadMaxCount = 10, int failedTryAgain = 3)
+        public async UniTask<ResourceDownloaderOperation> CreateDownloader(string[] tags = null,
+            int downloadMaxCount = 10, int failedTryAgain = 3)
         {
             await UniTask.CompletedTask;
-            
+
             var downloader = null == tags
                 ? _package.CreateResourceDownloader(downloadMaxCount, failedTryAgain)
                 : _package.CreateResourceDownloader(tags, downloadMaxCount, failedTryAgain);
 
             return downloader;
         }
-        
+
         #endregion
 
         #region Start download.开始下载
-        
+
         /// <summary>
         /// Download service pack.下载补丁包
         /// </summary>
@@ -265,7 +278,7 @@ namespace EasyFramework.Systems.Patch
         public async UniTask<bool> StartDownloader(ResourceDownloaderOperation downloader)
         {
             await UniTask.CompletedTask;
-            
+
             if (downloader.TotalDownloadCount == 0)
                 return false;
 
@@ -276,101 +289,15 @@ namespace EasyFramework.Systems.Patch
             Log($"Downloading is over, this downloader status is {downloader.Status}");
             return downloader.Status == EOperationStatus.Succeed;
         }
-        
+
         #endregion
 
-        #region Private function - 内部调用
-
-        private async UniTask BeforeDownloading(ResourceDownloaderOperation downloader)
-        {
-            await UniTask.CompletedTask;
-            if (downloader == null || downloader.TotalDownloadCount == 0)
-                return;
-            
-            _waitDownloading = true;
-            downloader.DownloadErrorCallback = OnDownloadErrorFunction;
-            downloader.DownloadUpdateCallback = OnDownloadProgressUpdateFunction;
-            downloader.DownloadFinishCallback = OnDownloadOverFunction;
-            downloader.DownloadFileBeginCallback = OnStartDownloadFileFunction;
-            
-            EF.Ui.ShowTipsView(
-                $"一共发现了{downloader.TotalDownloadCount}个资源，总大小为{downloader.TotalDownloadBytes / 1048576f:F1}mb需要更新,是否下载。",
-                new TipsViewExtraData()
-                {
-                    ConfirmName = "下载",
-                    CancelName = "取消",
-                    ConfirmCallBack = OnClickDownloadBegin,
-                    CancelCallBack = UpdateDone
-                }).Forget();
-        }
-
-        /// <summary>
-        /// 当点击开始下载
-        /// </summary>
-        void OnClickDownloadBegin()
-        {
-            Transform patchUpdater = Object
-                .Instantiate(Resources.Load<GameObject>(EF.Projects.AppConst.UIPrefabsPath + "PatchUpdater")).transform;
-            Canvas canvas = patchUpdater.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            canvas.worldCamera = EF.Ui.UICamera;
-            _txtUpdaterTips = EF.Tool.Find<Text>(patchUpdater, "Txt_UpdaterTips");
-            _sldUpdaterSlider = EF.Tool.Find<Slider>(patchUpdater, "Sld_UpdaterSlider");
-            _waitDownloading = false;
-            _needDownloading = true;
-        }
-        
-        /// <summary>
-        /// 更新取消或完成
-        /// </summary>
-        void UpdateDone()
-        {
-            if (null != _sldUpdaterSlider)
-            {
-                Object.Destroy(_sldUpdaterSlider.transform.parent.parent.gameObject);
-                _txtUpdaterTips = null;
-                _sldUpdaterSlider = null;
-            }
-            _needDownloading = false;
-            _waitDownloading = false;
-            
-            _package = null;
-        }
-        
-        private void OnDownloadErrorFunction(DownloadErrorData errorData)
-        {
-            Error(
-                $"Download the file failed. The file name is {errorData.FileName} ,  Error info is {errorData.ErrorInfo}");
-        }
-        private void OnDownloadProgressUpdateFunction(DownloadUpdateData downloadData)
-        {
-            _sldUpdaterSlider.value = (float)downloadData.CurrentDownloadBytes / downloadData.TotalDownloadBytes;
-
-            string currentSizeMb = (downloadData.CurrentDownloadBytes / 1048576f).ToString("f1");
-            string totalSizeMb = (downloadData.TotalDownloadBytes / 1048576f).ToString("f1");
-            _txtUpdaterTips.text =
-                $"{downloadData.CurrentDownloadCount}/{downloadData.TotalDownloadCount} {currentSizeMb}MB/{totalSizeMb}MB";
-        }
-        private void OnStartDownloadFileFunction(DownloadFileData fileData)
-        {
-            Log($"当前下载：{fileData.FileName}, 大小为：{fileData.FileSize}");
-        }
-        private void OnDownloadOverFunction(DownloaderFinishData finishData)
-        {
-            Log($"{finishData.PackageName}下载完成，结果为：{finishData.Succeed}");
-        }
-        
-        #endregion
-        
         private void Log(string msg)
         {
-            if (_openDebug) D.Log(msg);
+            if (_openDebug) D.Log($"[ PatchSystem ] {msg}");
         }
-        private void Error(string msg)
-        {
-            if (_openDebug) D.Error(msg);
-        }
-        
+        private static void Error(string msg) => D.Error($"[ PatchSystem ] {msg}");
+
         /// <summary>
         /// 远端资源地址查询服务类
         /// </summary>

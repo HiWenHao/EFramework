@@ -58,16 +58,16 @@ namespace EFExample
         
         private void OnClickBtn_ToC()
         {
-            EF.Ui.OpenPageView<UiCView>();
+            UiSystem.Instance.OpenPageView<UiCView>();
         }
         private void OnClickBtn_ToCPop()
         {
-            EF.Ui.OpenPageView<UiCView>();
-            EF.Ui.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            UiSystem.Instance.OpenPageView<UiCView>();
+            UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_BackA()
         {
-            EF.Ui.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
         }
         private void OnClickBtn_StopAllEffect()
         {

@@ -100,7 +100,7 @@ namespace PleaseModify
             //}
 
             //UI进入
-            EF.Ui.Push(new UiA());
+            UiSystem.Instance.Push(new UiA());
 
             //音频播放
             //EF.Sources.PlayBGMByName("You bgm`s name", true);

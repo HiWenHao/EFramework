@@ -10,7 +10,6 @@
  */
 
 using System.IO;
-using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.TodoList;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
@@ -18,18 +17,12 @@ using UnityEngine;
 
 namespace EasyFramework.Edit.Create
 {
-    internal static class CreateSettings
+    public static class CreateSettings
     {
         [MenuItem("Assets/Create/EF/ProjectConfig", priority = 200)]
         private static void CreatedProjectConfig()
         {
             Instance<ProjectConfig>(folderPath: "Assets/Resources/Configs/");
-        }
-        
-        [MenuItem("Assets/Create/EF/UiBindingConfig", priority = 210)]
-        private static void CreatedAutoBindSetting()
-        {
-            Instance<UiBindingConfig>();
         }
         
         [MenuItem("Assets/Create/EF/PathConfig", priority = 211)]
@@ -42,12 +35,6 @@ namespace EasyFramework.Edit.Create
         private static void CreatedTaskListConfig()
         {
             Instance<TodoListConfig>(false);
-        }
-        
-        [MenuItem("Assets/Create/EF/SpriteCollection", priority = 320)]
-        private static void CreatedSpriteCollection()
-        {
-            Instance<SpriteCollection>(false);
         }
         
         /// <summary>

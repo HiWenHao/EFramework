@@ -20,7 +20,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     [EFConfigPanel]
     internal class EFUiBindingConfigPanel : EFConfigPanelBase
     {
-        Vector2 _scrllPos;
+        Vector2 _scrollPos;
 
         private SerializedProperty _namespace;
         private SerializedProperty _rulePrefixes;
@@ -35,7 +35,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         public override void LoadWindowData()
         {
-            _customSettings = new SerializedObject(ConfigManager.UiBinding);
+            _customSettings = new SerializedObject(UiBindingConfig.Instance);
             _namespace = _customSettings.FindProperty("_namespace");
             _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
         }
@@ -51,7 +51,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.Space(12f, true);
 
-            _scrllPos = EditorGUILayout.BeginScrollView(_scrllPos);
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
             EditorGUILayout.PropertyField(_rulePrefixes);
             EditorGUILayout.EndScrollView();
 

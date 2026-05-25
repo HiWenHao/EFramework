@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using EasyFramework.Edit;
 using UnityEngine;
 
@@ -28,6 +27,11 @@ namespace EasyFramework
 
         [SerializeField, HeaderPro("脚本版本号", "The script version")]
         private string _scriptVersion = "0.1";
+        
+        public string ScriptNamespace => _scriptNamespace;
+
+        [SerializeField, HeaderPro("脚本命名空间", "The script namespace")]
+        private string _scriptNamespace = "PleaseModifyTheNamespace.";
 
         public string ScriptVersion => _scriptVersion;
 
@@ -77,16 +81,6 @@ namespace EasyFramework
         //[SerializeField]
         //private string m_ConfigFolderName = "LubanConfig";
         //public string ConfigFolderName { get { return m_ConfigFolderName; } }
-    }
-
-    /// <summary>
-    /// 渲染管线类型
-    /// </summary>
-    public enum RenderingTypeEnum
-    {
-        BuiltIn = 0,
-        URP,
-        //HDRP_Pending
     }
 
     /// <summary>

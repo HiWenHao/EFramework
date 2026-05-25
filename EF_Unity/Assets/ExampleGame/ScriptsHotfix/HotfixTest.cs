@@ -11,6 +11,8 @@
 
 using Cysharp.Threading.Tasks;
 using EasyFramework;
+using EasyFramework.Managers.Audio;
+using EasyFramework.Managers.Ui;
 using UnityEngine;
 
 namespace EFExample
@@ -29,9 +31,9 @@ namespace EFExample
             FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
-            EF.Ui.OpenPageView<UiAView>().Forget();
+            UiSystem.Instance.OpenPageView<UiAView>().Forget();
 
-            //EF.Ui.ShowTipsView("这是一个测试提示窗", new TipsViewExtraData()
+            //UiSystem.Instance.ShowTipsView("这是一个测试提示窗", new TipsViewExtraData()
             //{
             //    ConfirmName = "确定",
             //    CancelName = "取消",
@@ -41,7 +43,11 @@ namespace EFExample
             //});
 
             Test().Forget();
-            //EF.Ui.ShowTipsView<TipsView>("提示窗", new TipsViewExtraData());
+            //UiSystem.Instance.ShowTipsView<TipsView>("提示窗", new TipsViewExtraData());
+            
+            AudioManager.Instance.Play2DEffect("Haoheng").Forget();
+            
+            //EF.Get();
         }
 
         static async UniTask Test()
@@ -50,7 +56,7 @@ namespace EFExample
             {
                 await UniTask.WaitForSeconds(0.1f);
                 //D.Warning(i);
-                await EF.Ui.ShowPopupView($"\t{i}\tIndex");
+                await UiSystem.Instance.ShowPopupView($"\t{i}\tIndex");
             }
         }
     }

@@ -12,7 +12,6 @@
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
@@ -99,8 +98,7 @@ namespace EasyFramework.Edit.Create
                 sw.WriteLine(" */");
                 sw.WriteLine();
                 
-                text = text.Replace("PleaseChangeTheNamespace",
-                    EditorUtils.LoadSettingAtPath<UiBindingConfig>().Namespace);
+                text = text.Replace("PleaseChangeTheNamespace", ConfigManager.Project.ScriptNamespace);
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);
@@ -108,7 +106,7 @@ namespace EasyFramework.Edit.Create
             }
             private static string GetAuthorName()
             {
-                string configName = ConfigManager.Project.ScriptAuthor;
+                string configName = ConfigManager.Project.ScriptNamespace;
                 string authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
                 return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
             }

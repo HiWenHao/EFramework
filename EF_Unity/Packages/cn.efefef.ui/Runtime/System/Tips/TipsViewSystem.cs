@@ -45,7 +45,7 @@ namespace EasyFramework.Managers.Ui
         void OnClickClose()
         {
             _tipsExtraData.CloseCallBack?.Invoke();
-            EF.Ui.CloseView(this).Forget();
+            UiSystem.Instance.CloseView(this).Forget();
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace EasyFramework.Managers.Ui
         void OnClickCancel()
         {
             _tipsExtraData.CancelCallBack?.Invoke();
-            EF.Ui.CloseView(this).Forget();
+            UiSystem.Instance.CloseView(this).Forget();
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace EasyFramework.Managers.Ui
         void OnClickConfirm()
         {
             _tipsExtraData.ConfirmCallBack?.Invoke();
-            EF.Ui.CloseView(this).Forget();
+            UiSystem.Instance.CloseView(this).Forget();
         }
     }
 }

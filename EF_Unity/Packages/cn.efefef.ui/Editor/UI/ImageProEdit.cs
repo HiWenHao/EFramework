@@ -10,10 +10,9 @@
  */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using EasyFramework;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.UI;
 
@@ -27,7 +26,7 @@ namespace EFExample
     public class ImageProEdit : ImageEditor
     {
         private SerializedProperty _cornerSize;
-        private SerializedProperty _mateialTypes;
+        private SerializedProperty _materialTypes;
         private ImageProMaterialType _imageProMaterialType;
         private float _roundSize;
         private ImagePro _graphic;
@@ -42,11 +41,11 @@ namespace EFExample
         protected override void OnEnable()
         {
             base.OnEnable();
-            _cornerSize = serializedObject.FindProperty("cornerArc");
-            _mateialTypes = serializedObject.FindProperty("_imageProMaterialType");
-            _imageProMaterialType = (ImageProMaterialType)_mateialTypes.enumValueFlag;
-            _roundSize = _cornerSize.floatValue;
             _graphic = target as ImagePro;
+            _cornerSize = serializedObject.FindProperty("cornerArc");
+            _materialTypes = serializedObject.FindProperty("imageProMaterialType");
+            _imageProMaterialType = (ImageProMaterialType)_materialTypes.enumValueFlag;
+            _roundSize = _cornerSize.floatValue;
 
             _widthAtLastFrame = _graphic.rectTransform.rect.width * _graphic.rectTransform.lossyScale.x;
             _heightAtLastFrame = _graphic.rectTransform.rect.height * _graphic.rectTransform.lossyScale.y;
@@ -61,22 +60,19 @@ namespace EFExample
                 _roundSize = 0;
             }
 
-            _mateialTypes.enumValueIndex = (int)(ImageProMaterialType)EditorGUILayout.EnumPopup("材质球选择", _imageProMaterialType);
+            _materialTypes.enumValueIndex = (int)(ImageProMaterialType)EditorGUILayout.EnumPopup(LC.Combine(Lc.Select, Lc.Materials), _imageProMaterialType);
 
-            switch ((ImageProMaterialType)_mateialTypes.enumValueIndex)
+            switch ((ImageProMaterialType)_materialTypes.enumValueIndex)
             {
                 case ImageProMaterialType.Default:
                     if (_imageProMaterialType != ImageProMaterialType.Default)
-                    {
                         m_Material.objectReferenceValue = null;
-                    }
-
                     break;
                 case ImageProMaterialType.Round:
-                    _cornerSize.floatValue = EditorGUILayout.FloatField("圆角尺寸", _cornerSize.floatValue);
+                    _cornerSize.floatValue = EditorGUILayout.FloatField(LC.Combine(Lc.Radius, Lc.Size), _cornerSize.floatValue);
                     float newWidth = _graphic.rectTransform.rect.width * _graphic.rectTransform.lossyScale.x;
                     float newHeight = _graphic.rectTransform.rect.height * _graphic.rectTransform.lossyScale.y;
-                    if (((ImageProMaterialType)_mateialTypes.enumValueFlag != _imageProMaterialType) ||
+                    if (((ImageProMaterialType)_materialTypes.enumValueFlag != _imageProMaterialType) ||
                         !FloatEqual(_roundSize, _cornerSize.floatValue) || !FloatEqual(newWidth, _widthAtLastFrame) ||
                         !FloatEqual(newHeight, _heightAtLastFrame))
                     {
@@ -88,17 +84,15 @@ namespace EFExample
                     _heightAtLastFrame = _graphic.rectTransform.rect.height * _graphic.rectTransform.lossyScale.y;
                     break;
                 case ImageProMaterialType.Gray:
-                    if ((ImageProMaterialType)_mateialTypes.enumValueFlag != _imageProMaterialType)
-                    {
+                    if ((ImageProMaterialType)_materialTypes.enumValueFlag != _imageProMaterialType)
                         ResetGrayMaterial();
-                    }
-
                     break;
                 default:
                     break;
             }
 
-            _imageProMaterialType = (ImageProMaterialType)_mateialTypes.enumValueIndex;
+            _imageProMaterialType = (ImageProMaterialType)_materialTypes.enumValueIndex;
+            if (!GUI.changed) return;
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -135,16 +129,12 @@ namespace EFExample
         private void ResetGrayMaterial()
         {
             if (_material == null)
-            {
                 _material = new Material(Shader.Find("UI/DefaultGray"));
-            }
 
-            if (m_Material.objectReferenceValue != _material)
-            {
-                m_Material.objectReferenceValue = _material;
-                _graphic.SetGray(true);
-                // material.SetFloat("_GrayEnabled", 1);
-            }
+            if (m_Material.objectReferenceValue == _material) return;
+            m_Material.objectReferenceValue = _material;
+            _graphic.SetGray(true);
+            // material.SetFloat("_GrayEnabled", 1);
         }
     }
 }
