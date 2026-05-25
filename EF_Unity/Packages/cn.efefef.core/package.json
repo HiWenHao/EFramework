@@ -13,11 +13,10 @@
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
   "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
-    "com.unity.scriptablebuildpipeline": "1.21.25",
-    "com.unity.render-pipelines.universal": "14.0.9",
     "com.code-philosophy.hybridclr": "8.11.0",
     "com.code-philosophy.luban": "1.0.0",
     "com.tuyoogame.yooasset": "2.3.18",
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.scriptablebuildpipeline": "1.21.25"
   }
 }

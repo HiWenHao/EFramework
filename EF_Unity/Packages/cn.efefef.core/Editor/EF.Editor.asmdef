@@ -2,9 +2,8 @@
     "name": "EF.Editor",
     "rootNamespace": "",
     "references": [
-        "HybridCLR.Editor",
         "EF.Runtime",
-        "LitJson",
+        "HybridCLR.Editor",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [
