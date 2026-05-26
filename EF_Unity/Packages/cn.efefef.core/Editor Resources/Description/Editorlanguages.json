@@ -2271,6 +2271,206 @@
         "Recurse Dependencies.    (Warning: Very slow with too many resources)",
         "递归查找, 资源过多时非常慢。"
       ]
+    },
+    {
+      "name": "Prefix",
+      "desc": "前缀",
+      "array": [
+        "Prefix",
+        "前缀"
+      ]
+    },
+    {
+      "name": "Suffix",
+      "desc": "后缀",
+      "array": [
+        "Suffix",
+        "后缀"
+      ]
+    },
+    {
+      "name": "Replace",
+      "desc": "替换",
+      "array": [
+        "Replace",
+        "替换"
+      ]
+    },
+    {
+      "name": "Sequence",
+      "desc": "序号",
+      "array": [
+        "Sequence",
+        "序号"
+      ]
+    },
+    {
+      "name": "Preview",
+      "desc": "预览",
+      "array": [
+        "Preview",
+        "预览"
+      ]
+    },
+    {
+      "name": "Apply",
+      "desc": "应用",
+      "array": [
+        "Apply",
+        "应用"
+      ]
+    },
+    {
+      "name": "Step",
+      "desc": "步长",
+      "array": [
+        "Step",
+        "步长"
+      ]
+    },
+    {
+      "name": "Start",
+      "desc": "起始",
+      "array": [
+        "Start",
+        "起始"
+      ]
+    },
+    {
+      "name": "Padding",
+      "desc": "补零",
+      "array": [
+        "Padding",
+        "补零"
+      ]
+    },
+    {
+      "name": "Conflict",
+      "desc": "冲突",
+      "array": [
+        "Conflict",
+        "冲突"
+      ]
+    },
+    {
+      "name": "Skip",
+      "desc": "跳过",
+      "array": [
+        "Skip",
+        "跳过"
+      ]
+    },
+    {
+      "name": "Success",
+      "desc": "成功",
+      "array": [
+        "Success",
+        "成功"
+      ]
+    },
+    {
+      "name": "Failed",
+      "desc": "失败",
+      "array": [
+        "Failed",
+        "失败"
+      ]
+    },
+    {
+      "name": "Shader",
+      "desc": "着色器",
+      "array": [
+        "Shader",
+        "着色器"
+      ]
+    },
+    {
+      "name": "Artw_SelectAssetsHint",
+      "desc": "请在Project窗口选中资源，或点击刷新选中按钮",
+      "array": [
+        "Select assets in Project window, or click Refresh Selection",
+        "请在Project窗口选中资源，或点击刷新选中按钮"
+      ]
+    },
+    {
+      "name": "Artw_RenameConflictSkip",
+      "desc": "重命名冲突，跳过",
+      "array": [
+        "Rename conflict, skipped",
+        "重命名冲突，跳过"
+      ]
+    },
+    {
+      "name": "Artw_RenameFailed",
+      "desc": "重命名失败",
+      "array": [
+        "Rename failed",
+        "重命名失败"
+      ]
+    },
+    {
+      "name": "Artw_NoNeedRename",
+      "desc": "没有需要重命名的资源",
+      "array": [
+        "No assets need renaming",
+        "没有需要重命名的资源"
+      ]
+    },
+    {
+      "name": "Mode",
+      "desc": "模式",
+      "array": [
+        "Mode",
+        "模式"
+      ]
+    },
+    {
+      "name": "Text",
+      "desc": "文本",
+      "array": [
+        "Text",
+        "文本"
+      ]
+    },
+    {
+      "name": "Rename",
+      "desc": "重命名",
+      "array": [
+        "Rename",
+        "重命名"
+      ]
+    },
+    {
+      "name": "Artw_ReplaceTo",
+      "desc": "替换为",
+      "array": [
+        "Replace With",
+        "替换为"
+      ]
+    },
+    {
+      "name": "Asset",
+      "desc": "资源",
+      "array": [
+        "Asset",
+        "资源"
+      ]
+    },
+    {
+      "name": "Complete",
+      "desc": "完成",
+      "array": [
+        "Complete",
+        "完成"
+      ]
+    },
+    {
+      "name": "Option",
+      "desc": "选项",
+      "array": [
+        "Option",
+        "选项"
+      ]
     }
   ]
 }

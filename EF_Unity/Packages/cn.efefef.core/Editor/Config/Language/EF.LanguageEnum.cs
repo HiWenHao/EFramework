@@ -575,5 +575,55 @@ namespace EasyFramework.Edit
 		Ppe_CreateCustomHint,
 		/// <summary> 递归查找, 资源过多时非常慢。 </summary>
 		Stw_RecurseDependencies,
+		/// <summary> 前缀 </summary>
+		Prefix,
+		/// <summary> 后缀 </summary>
+		Suffix,
+		/// <summary> 替换 </summary>
+		Replace,
+		/// <summary> 序号 </summary>
+		Sequence,
+		/// <summary> 预览 </summary>
+		Preview,
+		/// <summary> 应用 </summary>
+		Apply,
+		/// <summary> 步长 </summary>
+		Step,
+		/// <summary> 起始 </summary>
+		Start,
+		/// <summary> 补零 </summary>
+		Padding,
+		/// <summary> 冲突 </summary>
+		Conflict,
+		/// <summary> 跳过 </summary>
+		Skip,
+		/// <summary> 成功 </summary>
+		Success,
+		/// <summary> 失败 </summary>
+		Failed,
+		/// <summary> 着色器 </summary>
+		Shader,
+		/// <summary> 请在Project窗口选中资源，或点击刷新选中按钮 </summary>
+		Artw_SelectAssetsHint,
+		/// <summary> 重命名冲突，跳过 </summary>
+		Artw_RenameConflictSkip,
+		/// <summary> 重命名失败 </summary>
+		Artw_RenameFailed,
+		/// <summary> 没有需要重命名的资源 </summary>
+		Artw_NoNeedRename,
+		/// <summary> 模式 </summary>
+		Mode,
+		/// <summary> 文本 </summary>
+		Text,
+		/// <summary> 重命名 </summary>
+		Rename,
+		/// <summary> 替换为 </summary>
+		Artw_ReplaceTo,
+		/// <summary> 资源 </summary>
+		Asset,
+		/// <summary> 完成 </summary>
+		Complete,
+		/// <summary> 选项 </summary>
+		Option,
 	}
 }
