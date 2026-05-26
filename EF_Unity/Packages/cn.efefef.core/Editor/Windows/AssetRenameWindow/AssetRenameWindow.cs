@@ -41,8 +41,8 @@ namespace EasyFramework.Windows.AssetRename
             Sequence
         }
 
-        private List<AssetInfo> _assetList = new();
         private Vector2 _scrollPos;
+        private readonly List<AssetInfo> _assetList = new();
 
         private RenameMode _mode = RenameMode.Prefix;
         private string _addText = "";
@@ -64,7 +64,6 @@ namespace EasyFramework.Windows.AssetRename
 
         // Cached styles
         private GUIStyle _boldLabelStyle;
-        private GUIStyle _headerStyle;
         private GUIStyle _oldNameStyle;
         private GUIStyle _previewNameStyle;
         private GUIStyle _tagStyle;
@@ -88,19 +87,6 @@ namespace EasyFramework.Windows.AssetRename
         {
             #region Style Initialize
 
-            _boldLabelStyle = new GUIStyle("label")
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 16,
-                alignment = TextAnchor.MiddleCenter,
-                fixedHeight = 30
-            };
-            _headerStyle = new GUIStyle("label")
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 12,
-                alignment = TextAnchor.MiddleCenter,
-            };
             _oldNameStyle = new GUIStyle(EditorStyles.label)
             {
                 normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
