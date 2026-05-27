@@ -139,6 +139,7 @@ namespace EasyFramework
         {
             await UniTask.CompletedTask;
             if (address.Equals(url)) return sprite;
+            address = url;
             if (string.IsNullOrEmpty(url))
             {
                 Unload().Forget();
@@ -154,8 +155,8 @@ namespace EasyFramework
             var index = address.LastIndexOf('?');
             if (index > 0)
             {
-                string atlasName = url[..index];
-                string spriteName = url[(index + 1)..];
+                string atlasName = address[..index];
+                string spriteName = address[(index + 1)..];
                 SpriteAtlas spriteAtlas = await AssetsSystem.Instance.LoadAsync<SpriteAtlas>(atlasName);
                 if (null == spriteAtlas)
                 {
@@ -169,11 +170,11 @@ namespace EasyFramework
                     D.Warning($"{spriteName} not found in {atlasName} atlas.");
             }
             else
-                newSprite = await AssetsSystem.Instance.LoadAsync<Sprite>(url);
+                newSprite = await AssetsSystem.Instance.LoadAsync<Sprite>(address);
 
             if (null == newSprite)
             {
-                if (!hasAtlas) D.Warning($"Not found {url} sprite.");
+                if (!hasAtlas) D.Warning($"Not found {address} sprite.");
                 return null;
             }
 
