@@ -139,7 +139,7 @@ namespace EasyFramework
         {
             await UniTask.CompletedTask;
             if (address.Equals(url)) return sprite;
-            if (string.IsNullOrEmpty(address))
+            if (string.IsNullOrEmpty(url))
             {
                 Unload().Forget();
                 return null;
