@@ -35,8 +35,8 @@ namespace EasyFramework.Edit.MenuToolkit
                 return;
             }
 
-            string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath), assetPath);
-
+            string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? string.Empty, assetPath);
+            if (string.IsNullOrEmpty(absPath)) return;
             string contents = File.ReadAllText(absPath, Encoding.GetEncoding("GB2312"));
             File.WriteAllText(absPath, contents, Encoding.UTF8);
 
@@ -57,7 +57,8 @@ namespace EasyFramework.Edit.MenuToolkit
                     continue;
                 }
 
-                string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath), assetPath);
+                string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? string.Empty, assetPath);
+                if (string.IsNullOrEmpty(absPath)) return;
                 string[] contents = File.ReadAllLines(absPath);
 
                 if (contents.Length < 10)

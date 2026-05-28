@@ -71,7 +71,6 @@ namespace EasyFramework.Edit.Create
             public static Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
             {
                 string fullPath = Path.GetFullPath(newScriptPath);
-                string authorName = GetAuthorName();
                 StreamReader streamReader = new StreamReader(templatePath);
                 string text = streamReader.ReadToEnd();
                 streamReader.Close();
@@ -79,36 +78,17 @@ namespace EasyFramework.Edit.Create
 
                 //替换模板的文件名
                 text = Regex.Replace(text, ScriptName, fileNameWithoutExtension);
-                //把内容重新写入脚本
-                bool encoderShouldEmitUTF8Identifier = false;
-                bool throwOnInvalidBytes = false;
-                UTF8Encoding encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier, throwOnInvalidBytes);
-                bool append = false;
-                StreamWriter sw = new StreamWriter(fullPath, append, encoding);
+                UTF8Encoding encoding = new UTF8Encoding(true, false);
+                StreamWriter sw = new StreamWriter(fullPath, false, encoding);
 
-                sw.WriteLine("/*");
-                sw.WriteLine(" * ================================================");
-                sw.WriteLine(" * Describe:      This script is used to .");
-                sw.WriteLine(" * Author:        " + authorName);
-                sw.WriteLine(" * CreationTime:  " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                sw.WriteLine(" * ModifyAuthor:  " + authorName);
-                sw.WriteLine(" * ModifyTime:    " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                sw.WriteLine(" * ScriptVersion: " + ConfigManager.Project.ScriptVersion);
-                sw.WriteLine(" * ===============================================");
-                sw.WriteLine(" */");
+                sw.WriteLine(EditorToolkit.GetFileHead("This script is used to ."));
                 sw.WriteLine();
-                
+
                 text = text.Replace("PleaseChangeTheNamespace", ConfigManager.Project.ScriptNamespace);
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);
                 return AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
-            }
-            private static string GetAuthorName()
-            {
-                string configName = ConfigManager.Project.ScriptNamespace;
-                string authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
-                return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
             }
         }
     }

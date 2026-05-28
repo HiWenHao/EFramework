@@ -4,8 +4,8 @@
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2023-02-13 16:46:15
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-05-16 20:46:53
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-05-28 16:35:35
+ * ScriptVersion:   0.4
  * ===============================================
  */
 
@@ -95,7 +95,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder.Namespace =
                 EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _builder.Namespace);
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
-                _builder.Namespace = EF.Projects.ScriptNamespace;
+                _builder.Namespace = ConfigManager.Project.ScriptNamespace;
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
@@ -368,9 +368,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             fullPath = fullPath.Replace("Assets/Assets", "Assets");
             fullPath = fullPath.Replace("Assets\\Assets", "Assets");
             string dir = Path.GetDirectoryName(fullPath);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
+            if (!Directory.Exists(dir) && dir != null) Directory.CreateDirectory(dir);
             PrefabUtility.SaveAsPrefabAssetAndConnect(_builder.gameObject, fullPath, InteractionMode.UserAction);
             AssetDatabase.SaveAssets();
         }
@@ -476,7 +474,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 usingNamespaces.Add("TMPro");
 
             StringBuilder commonSb = new StringBuilder();
-            commonSb.AppendLine(GetFileHead());
+            commonSb.AppendLine(EditorToolkit.GetFileHead(_builder.Describe));
             commonSb.AppendLine();
             foreach (string ns in usingNamespaces)
             {
@@ -665,7 +663,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 if (strList[i].Contains(StrChangeAuthor))
                 {
-                    strList[i] = $" {StrChangeAuthor}  {GetAuthorName()}";
+                    strList[i] = $" {StrChangeAuthor}  {EditorToolkit.GetAuthorName()}";
                     continue;
                 }
 
@@ -675,29 +673,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     return;
                 }
             }
-        }
-
-        private string GetFileHead()
-        {
-            string authorName = GetAuthorName();
-            string createTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            return "/*\n"
-                   + " * ================================================\r\n"
-                   + $" * Describe:        {_builder.Describe}.\r\n"
-                   + $" * Author:          {authorName}\r\n"
-                   + $" * CreationTime:    {createTime}\r\n"
-                   + $" * ModifyAuthor:    {authorName}\r\n"
-                   + $" * ModifyTime:      {createTime}\r\n"
-                   + $" * ScriptVersion:   {ConfigManager.Project.ScriptVersion} \r\n"
-                   + " * ================================================\r\n"
-                   + " */";
-        }
-
-        private string GetAuthorName()
-        {
-            string configName = ConfigManager.Project.ScriptAuthor;
-            string authorName = EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
-            return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
         }
 
         #endregion
