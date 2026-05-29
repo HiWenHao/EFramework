@@ -315,6 +315,7 @@ namespace EasyFramework.Edit
             _packages.Clear();
             _packages = new List<EFPackageInfo>(_config.packagesInfo);
             _config.packagesInfo.Clear();
+            _packageFolder.Clear();
 
             foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
             {
@@ -333,6 +334,7 @@ namespace EasyFramework.Edit
                     ServerVersion = "0.1.0",
                     //packageInfo.source == PackageSource.Git ? packageInfo.git.revision : "0.1.0" //.git.revision = "HEAD"
                 });
+                _packageFolder.TryAdd(displayName, _allUnfold);
             }
         }
 
@@ -346,7 +348,6 @@ namespace EasyFramework.Edit
                 _config.packagesInfo =  new List<EFPackageInfo>(_packages);
                 return;
             }
-            _packageFolder.Clear();
             PackageConfig newConfig = PackageConfig.FromJson(assetData);
 
             var infoList = new List<EFPackageInfo>();
@@ -354,7 +355,6 @@ namespace EasyFramework.Edit
             {
                 bool needAdded = true;
                 var newInfo = newConfig.packagesInfo[i];
-                _packageFolder.Add(newInfo.DisplayName, true);
                 for (var j = 0; j < _config.packagesInfo.Count; j++)
                 {
                     var oldInfo = _config.packagesInfo[j];
@@ -366,6 +366,7 @@ namespace EasyFramework.Edit
                     oldInfo.DisplayName = newInfo.DisplayName;
                     oldInfo.Description = newInfo.Description;
                     _config.packagesInfo[j] = oldInfo;
+                    _packageFolder.TryAdd(oldInfo.DisplayName, true);
                     needAdded = false;
                     break;
                 }
@@ -380,6 +381,7 @@ namespace EasyFramework.Edit
             foreach (var info in infoList)
             {
                 _config.packagesInfo.Add(info);
+                _packageFolder.TryAdd(info.DisplayName, _allUnfold);
             }
             infoList.Clear();
             
