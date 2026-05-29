@@ -179,7 +179,7 @@ namespace EasyFramework.Managers.Assets
         // 获取默认资源包
         private ResourcePackage GetDefaultPackage()
         {
-            // 优先使用 PatchManager 中注册的默认包
+            // 1. 优先使用 PatchManager 中注册的默认包
             var registered = PatchManager.Instance.GetRegisteredConfigs();
             if (registered != null && registered.Count > 0)
             {
@@ -193,8 +193,18 @@ namespace EasyFramework.Managers.Assets
                 return PatchManager.Instance.GetPackage(registered[0].PackageName);
             }
 
-            // 回退到单包模式
-            return PatchManager.Instance.GetPackage("DefaultPackage");
+            // 2. 回退到 PatchManager 单包模式
+            var pkg = PatchManager.Instance.GetPackage("DefaultPackage");
+            if (pkg != null) return pkg;
+
+            // 3. 最终兜底：直接用 YooAssets 查或创建
+            pkg = YooAssets.TryGetPackage("DefaultPackage");
+            if (pkg == null)
+            {
+                pkg = YooAssets.CreatePackage("DefaultPackage");
+                YooAssets.SetDefaultPackage(pkg);
+            }
+            return pkg;
         }
 
         // 同步加载（包级）
