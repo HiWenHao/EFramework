@@ -11,6 +11,7 @@
 
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
+using UnityEngine;
 using YooAsset;
 
 namespace EasyFramework.Systems.Patch
@@ -39,8 +40,8 @@ namespace EasyFramework.Systems.Patch
         /// 当前运行模式
         public EPlayMode CurrentPlayMode { get; set; } = EPlayMode.EditorSimulateMode;
 
-        private bool _openDebug;
         private bool _isChecked;
+        private bool _isNeedUpdate;
         private string _packageVersion;
         private ResourcePackage _package;
 
@@ -48,7 +49,6 @@ namespace EasyFramework.Systems.Patch
         {
             YooAssets.Initialize();
             IsUse = true;
-            _openDebug = false;
         }
 
         void ISingleton.Quit()
@@ -66,7 +66,6 @@ namespace EasyFramework.Systems.Patch
         /// <param name="packageName">The name of the package to update<para>要更新的包名</para></param>
         public async UniTask<bool> CheckForUpdatePatches(EPlayMode mode, string packageName = "DefaultPackage")
         {
-            Log($"资源系统运行模式：{mode}");
             CurrentPlayMode = mode;
             PackageName = packageName;
             _package = YooAssets.TryGetPackage(packageName);
@@ -80,7 +79,7 @@ namespace EasyFramework.Systems.Patch
             if (_package.InitializeStatus == EOperationStatus.Succeed) return false;
             await CreateInitializeParameters();
             await GetRemotePackageVersionAsync();
-            return await UpdatePackageManifestAsync();
+            return await UpdatePackageManifestAsync() && _isNeedUpdate;
         }
 
         /// <summary>
@@ -123,7 +122,7 @@ namespace EasyFramework.Systems.Patch
         /// <summary>
         /// 根据 EPlayMode 创建初始化参数
         /// </summary>
-        private async UniTask<bool> CreateInitializeParameters()
+        private async UniTask CreateInitializeParameters()
         {
             InitializeParameters initParameters = null;
             switch (CurrentPlayMode)
@@ -183,14 +182,8 @@ namespace EasyFramework.Systems.Patch
             InitializationOperation initializationOperation = _package.InitializeAsync(initParameters);
             await initializationOperation.ToUniTask();
 
-            if (initializationOperation.Status == EOperationStatus.Succeed)
-            {
-                Log($"[YooAssetsManager] 资源包初始化成功，运行模式: {CurrentPlayMode}");
-                return true;
-            }
-
+            if (initializationOperation.Status == EOperationStatus.Succeed) return;
             Error($"[YooAssetsManager] 资源包初始化失败: {initializationOperation.Error}");
-            return false;
         }
 
         #endregion
@@ -206,16 +199,17 @@ namespace EasyFramework.Systems.Patch
             await operation.ToUniTask();
             if (operation.Status == EOperationStatus.Succeed)
             {
-                //更新成功
+                //获取成功
                 string packageVersion = operation.PackageVersion;
+                string key = $"{Application.productName}_RemotePackageVersion";
+                string currentVersion = PlayerPrefs.GetString(key, string.Empty);
+                _isNeedUpdate = !currentVersion.Equals(packageVersion);
                 _packageVersion = packageVersion;
-                Log($"Updated package Version : {packageVersion}");
-
+                PlayerPrefs.SetString(key, _packageVersion);
                 //拿到版本号接下来去获取Manifest信息     GetManifestInfo
                 return true;
             }
 
-            //更新失败
             Error($"Get the StaticVersion file error: {operation.Error}");
             return false;
         }
@@ -234,7 +228,6 @@ namespace EasyFramework.Systems.Patch
             if (operation.Status == EOperationStatus.Succeed)
             {
                 //拿到配置信息接下来去获取热更资源
-                Log("Get the Manifest file succeed...");
                 return true;
             }
 
@@ -282,20 +275,14 @@ namespace EasyFramework.Systems.Patch
             if (downloader.TotalDownloadCount == 0)
                 return false;
 
-            Log($"Start download, this download is for: {downloader.TotalDownloadCount}");
             downloader.BeginDownload();
             await downloader.ToUniTask();
 
-            Log($"Downloading is over, this downloader status is {downloader.Status}");
             return downloader.Status == EOperationStatus.Succeed;
         }
 
         #endregion
 
-        private void Log(string msg)
-        {
-            if (_openDebug) D.Log($"[ PatchSystem ] {msg}");
-        }
         private static void Error(string msg) => D.Error($"[ PatchSystem ] {msg}");
 
         /// <summary>
