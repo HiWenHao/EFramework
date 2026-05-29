@@ -124,7 +124,7 @@ namespace EasyFramework.Edit
             DrawSummaryItem(LC.Combine(Lc.Git), _config.gitCount, Color.yellow);
             DrawSummaryItem(LC.Combine(Lc.No, Lc.Install), _config.notInstalledCount, GUIUtils.LightRed);
             if (_config.needUpdateCount > 0)
-                DrawSummaryItem(LC.Combine(Lc.Need, Lc.Update), _config.needUpdateCount, Color.red);
+                DrawSummaryItem(LC.Combine(Lc.Need, Lc.Update), _config.needUpdateCount, Color.gray);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(12.0f);
 
@@ -317,22 +317,16 @@ namespace EasyFramework.Edit
 
             switch (packageInfo.SourceType)
             {
-                // ============ 本地包 ============
                 case EFPackageSource.Local:
                     DrawLocalButtons(packageInfo, versionType);
                     break;
-
-                // ============ Git 远端包 ============
                 case EFPackageSource.Git:
                     DrawGitButtons(packageInfo, versionType);
                     break;
-
-                // ============ 未安装 ============
                 case EFPackageSource.NotInstalled:
                     DrawNotInstalledButtons(packageInfo);
                     break;
-
-                // ============ 未知 ============
+                case EFPackageSource.Unknown:
                 default:
                     DrawUnknownButtons(packageInfo);
                     break;
@@ -501,15 +495,7 @@ namespace EasyFramework.Edit
         {
             string packagePath = Path.GetFullPath(
                 Path.Combine(Application.dataPath, "..", "Packages", packageName));
-            
-            if (Directory.Exists(packagePath))
-            {
-                EditorUtility.RevealInFinder(packagePath);
-            }
-            else
-            {
-                D.Warning($"[EF.Packages] 本地目录不存在: {packagePath}");
-            }
+            if (Directory.Exists(packagePath)) EditorUtility.RevealInFinder(packagePath);
         }
 
         #region Client Task - 客户端任务
@@ -620,8 +606,6 @@ namespace EasyFramework.Edit
             _config.lastUpdateTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             _config.RefreshSummary();
             ServerToolkit.SavePackageConfig(_config);
-            
-            D.Emphasize("[EF.Packages] 信息更新完成，已保存到 ProjectSettings/EFPackageCache.json");
         }
 
         /// <summary>
@@ -634,12 +618,6 @@ namespace EasyFramework.Edit
         {
             if (catalog == null || catalog.packages.Count == 0)
                 return;
-
-            // 记录当前本地已安装的包名（用于判断哪些是本地独有）
-            var localInstalledNames = new HashSet<string>();
-            foreach (var p in _config.packagesInfo)
-                localInstalledNames.Add(p.Name);
-
             // 遍历远端目录
             foreach (var remoteEntry in catalog.packages)
             {
@@ -675,20 +653,18 @@ namespace EasyFramework.Edit
                 }
 
                 // 远端有但本地未安装 → 添加为 NotInstalled
-                if (!found)
+                if (found) continue;
+                _config.packagesInfo.Add(new EFPackageInfo
                 {
-                    _config.packagesInfo.Add(new EFPackageInfo
-                    {
-                        Name = remoteEntry.name,
-                        DisplayName = remoteEntry.displayName,
-                        Description = remoteEntry.description,
-                        SourceType = EFPackageSource.NotInstalled,
-                        ServerVersion = remoteEntry.version,
-                        CurrentVersion = "",
-                        NeedUpdate = true,
-                    });
-                    _packageFolder.TryAdd(remoteEntry.displayName, _allUnfold);
-                }
+                    Name = remoteEntry.name,
+                    DisplayName = remoteEntry.displayName,
+                    Description = remoteEntry.description,
+                    SourceType = EFPackageSource.NotInstalled,
+                    ServerVersion = remoteEntry.version,
+                    CurrentVersion = "",
+                    NeedUpdate = true,
+                });
+                _packageFolder.TryAdd(remoteEntry.displayName, _allUnfold);
             }
         }
 
