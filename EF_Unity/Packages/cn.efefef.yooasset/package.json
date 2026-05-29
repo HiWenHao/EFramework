@@ -1,0 +1,20 @@
+{
+  "name": "cn.efefef.yooasset",
+  "displayName": "EF.YooAsset",
+  "version": "0.0.1",
+  "unity": "2022.3",
+  "unityRelease": "10f1",
+  "description": "\u7edf\u4e00\u7ba1\u7406YooAsset\u7248\u672c\u548c\u76f8\u5173\u8d44\u6e90\u52a0\u8f7d\u5904\u7406",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://gitee.com/AlvinCN/EFramework",
+  "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
+  "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1",
+    "com.tuyoogame.yooasset": "2.3.18"
+  },
+  "samples": null
+}

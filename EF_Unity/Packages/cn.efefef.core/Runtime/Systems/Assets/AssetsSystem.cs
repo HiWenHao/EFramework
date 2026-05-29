@@ -4,32 +4,58 @@
  * Author:        Alvin8412
  * CreationTime:  2026-05-01 20:59:20
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-01 20:59:20
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-05-29 16:20:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Systems.Assets
 {
     /// <summary>
     /// 资源管理器
+    /// <para>Assets system facade - routes to registered IAssetsSystem implementations</para>
     /// </summary>
     [Manager(Order = 99600)]
     public class AssetsSystem : MonoSingleton<AssetsSystem>, ISingleton
     {
-        /// <summary> 当前管理器类型 </summary>
+        /// <summary> 当前管理器类型 <para>Current asset system type</para></summary>
         public AssetsSystemType CurrentSystemType { get; private set; }
 
         private bool _openDebug;
         private bool _isInitialized;
 
         private IAssetsSystem _assetsManager;
-        private Dictionary<string, int> _refCounts;
+        private Dictionary<string, int> _refCounts;        // 引用计数器（key = 资源路径）
+
+        // 工厂注册表：各包通过 RegisterAssetSystem(type, factory) 注册实现
+        private static readonly Dictionary<AssetsSystemType, Func<IAssetsSystem>> Factories = new()
+        {
+            [AssetsSystemType.Default] = () => new DefaultAssetsSystem()
+        };
+
+        /// <summary>
+        /// 注册资源管理器工厂（应在 AssetsSystem.Init 之前调用）
+        /// <para>Register an IAssetsSystem factory. Call before AssetsSystem.Init.</para>
+        /// </summary>
+        /// <param name="type">资源管理器类型<para>Asset system type</para></param>
+        /// <param name="factory">工厂委托<para>Factory delegate that returns a new IAssetsSystem instance</para></param>
+        public static void RegisterAssetSystem(AssetsSystemType type, Func<IAssetsSystem> factory)
+        {
+            if (factory == null)
+            {
+                D.Error($"[ AssetsRootManager ] Cannot register null factory for type: {type}");
+                return;
+            }
+
+            Factories[type] = factory;
+            D.Log($"[ AssetsRootManager ] Registered asset system factory for: {type}");
+        }
 
         void ISingleton.Init()
         {
@@ -52,6 +78,7 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 确认/切换资源管理器类型（需在加载任何资源前调用）
+        /// <para>Confirm or switch the asset manager type. Must be called before any asset loading.</para>
         /// </summary>
         public async UniTask ConfirmAssetsManagerType(AssetsSystemType systemType)
         {
@@ -70,16 +97,17 @@ namespace EasyFramework.Systems.Assets
 
             _refCounts?.Clear();
 
-            IAssetsSystem newManager = systemType switch
+            // 从工厂注册表中创建实例
+            if (!Factories.TryGetValue(systemType, out var factory) || factory == null)
             {
-                AssetsSystemType.Default => new DefaultAssetsSystem(),
-                AssetsSystemType.YooAsset => new YooAssetsSystem(),
-                _ => null
-            };
+                Error($"No factory registered for AssetsSystemType: {systemType}. Call RegisterAssetSystem() first.");
+                return;
+            }
 
+            IAssetsSystem newManager = factory();
             if (newManager == null)
             {
-                Error($"Unsupported AssetsSystemType: {systemType}");
+                Error($"Factory for {systemType} returned null.");
                 return;
             }
 
@@ -95,10 +123,11 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 同步加载资源
+        /// <para>Synchronously load an asset by path</para>
         /// </summary>
-        /// <param name="path">资源地址</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <returns>资源</returns>
+        /// <param name="path">资源地址<para>Asset path</para></param>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <returns>资源<para>Loaded asset, or null on failure</para></returns>
         public T Load<T>(string path) where T : Object
         {
             if (!CheckInitialization())
@@ -110,10 +139,11 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 异步加载资源
+        /// <para>Asynchronously load an asset by path</para>
         /// </summary>
-        /// <param name="path">资源地址</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <returns>资源</returns>
+        /// <param name="path">资源地址<para>Asset path</para></param>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <returns>资源<para>Loaded asset, or null on failure</para></returns>
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             await UniTask.CompletedTask;
@@ -126,28 +156,30 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 获取资源引用计数
+        /// <para>Get the reference count for an asset</para>
         /// </summary>
-        /// <param name="path">资源地址</param>
-        /// <returns>引用数量</returns>
+        /// <param name="path">资源地址<para>Asset path</para></param>
+        /// <returns>引用数量<para>Reference count</para></returns>
         public async UniTask<int> GetRefCount(string path)
         {
             await UniTask.CompletedTask;
-            if (!CheckInitialization()) 
+            if (!CheckInitialization())
                 return 0;
             Log($"Get refCount by path: {path}");
             return _refCounts.GetValueOrDefault(path, 0);
         }
 
         /// <summary>
-        /// 释放资源
+        /// 释放资源（引用计数减1，归零时真正释放）
+        /// <para>Release an asset (decrements ref-count; truly releases when count reaches zero)</para>
         /// </summary>
-        /// <param name="path">资源地址</param>
+        /// <param name="path">资源地址<para>Asset path</para></param>
         public async UniTask Release(string path)
         {
             await UniTask.CompletedTask;
             if (!CheckInitialization())
                 return;
-            
+
             if (!_refCounts.TryGetValue(path, out var count))
             {
                 Warning($"Attempt to release unloaded assets: {path}");
@@ -172,13 +204,14 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 释放全部资源
+        /// <para>Release all loaded assets</para>
         /// </summary>
         public async UniTask ReleaseAll()
         {
             await UniTask.CompletedTask;
             if (!CheckInitialization())
                 return;
-            
+
             await _assetsManager.ReleaseAll();
             _refCounts.Clear();   // 清空所有引用计数
             Log("Release all succeed.");
@@ -186,6 +219,7 @@ namespace EasyFramework.Systems.Assets
 
         /// <summary>
         /// 主动清理未使用的资源（包括之前被 Release 的 GameObject预制体 或 Component 资源）
+        /// <para>Unload unused assets proactively</para>
         /// </summary>
         public async UniTask CleanupUnusedAssets()
         {
@@ -199,6 +233,7 @@ namespace EasyFramework.Systems.Assets
 
         #region 私有函数
 
+        // 检查是否已初始化
         private bool CheckInitialization()
         {
             if (_isInitialized && _assetsManager != null)
