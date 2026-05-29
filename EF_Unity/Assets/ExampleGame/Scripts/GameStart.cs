@@ -67,6 +67,7 @@ namespace EFExample
             CheckUpdate(PlayMode).Forget();
         }
 
+        // 检查更新
         private async UniTask CheckUpdate(EPlayMode playMode)
         {
             if (!await EF.Patch.CheckForUpdatePatches(playMode))
@@ -124,27 +125,38 @@ namespace EFExample
         #region HybirdCLR
 
         /// <summary>
-        /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
-        /// 一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
+        /// 为AOT Assembly加载原始metadata， 这个代码放AOT或者热更新都行。
+        /// <br/>一旦加载后，如果AOT泛型函数对应native实现不存在，则自动替换为解释模式执行
+        /// <para>Load the original metadata for the AOT Assembly.<br/>
+        /// This code can be placed in either the AOT or hot update mode.<br/>
+        /// Once loaded, if the native implementation corresponding to the AOT generic function does not exist.<br/>
+        /// It will automatically be replaced with interpreter mode execution.</para>
         /// </summary>
         void LoadMetadataForAOTAssemblies()
         {
+            string assemblyName = "ExampleGameHotfix";
 #if UNITY_EDITOR
             // Editor下无需加载，直接查找获得HotUpdate程序集
-            System.Reflection.Assembly _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies()
-                .First(a => a.GetName().Name == "ExampleGameHotfix");
-            RunHotfixCode(_hotUpdateAss);
+            System.Reflection.Assembly hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies()
+                .First(a => a.GetName().Name == assemblyName);
+            RunHotfixCode(hotUpdateAss);
 #else
-            TextAsset handle = EF.Assets.Load<TextAsset>("Assets/AssetsHotfix/Code/ExampleGameHotfix.dll.bytes");
+            TextAsset handle = EF.Assets.Load<TextAsset>($"Assets/AssetsHotfix/Code/{assemblyName}.dll.bytes");
             RunHotfixCode(System.Reflection.Assembly.Load(handle.bytes));
 #endif
         }
 
+        // 运行热更代码 - Run the thermal correction code
         void RunHotfixCode(System.Reflection.Assembly assembly)
         {
-            System.Type _type = assembly.GetType("EFExample.HotfixTest"); //找不到类型，加命名空间试试
-            System.Reflection.MethodInfo _info = _type.GetMethod("Init");
-            _info.Invoke(null, null);
+            //具体类型名，找不到加命名空间试试
+            //For the specific type name, if you can't find it, try adding the namespace.
+            System.Type type = assembly.GetType("EFExample.HotfixTest");
+            
+            //具体要执行的方法名
+            //Specific method name to execute
+            System.Reflection.MethodInfo info = type.GetMethod("Init");
+            info?.Invoke(null, null);
         }
 
         #endregion

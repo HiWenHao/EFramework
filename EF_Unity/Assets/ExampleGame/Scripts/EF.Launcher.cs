@@ -1,0 +1,155 @@
+﻿/*
+ * ================================================
+ * Describe:        This script is used to ..
+ * Author:          Alvin8412
+ * CreationTime:    2026-05-29 18:40:28
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-29 18:40:28
+ * ScriptVersion:   0.1
+ * ================================================
+ */
+
+
+/*
+ *  EF.Launcher —— 跨包管理器统一访问入口
+ *  Alvin8412.Wang(Wenhao)
+ *
+ *  使用说明:
+ *  本文件是 EF 门面类的模板。下方列出了所有 EF 生态包的管理器访问器。
+ *  核心管理器（Core 内的）始终启用；外部包的管理器默认注释。根据你项目安装的 EF 包，取消对应注释即可。
+ *
+ *  Usage:
+ *  This file is a template for the EF facade class.
+ *  Below are listed all the manager accessors of the EF ecosystem packages.
+ *  The core manager (within the Core section) is always enabled; the managers of external packages are commented out by default.
+ *  Depending on the EF packages installed in your project, simply remove the corresponding comments.
+ *
+ */
+
+using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
+using EasyFramework.Managers.Event;
+using EasyFramework.Managers.Pool;
+using EasyFramework.Managers.Procedure;
+using EasyFramework.Systems.Assets;
+using EasyFramework.Systems.Patch;
+using EasyFramework.Managers.Ui;
+//using EasyFramework.Systems.Http;
+//using EasyFramework.Systems.RedDot;
+using UnityEngine;
+
+/// <summary>
+/// EF 门面类 —— 统一管理器访问入口
+/// <para>EF facade — unified manager access entry point</para>
+/// </summary>
+public static class EF
+{
+    /// <summary>
+    /// 对象池管理器
+    /// <para>Pool manager</para>
+    /// </summary>
+    public static PoolManager Pool => PoolManager.Instance;
+
+    /// <summary>
+    /// 事件管理器（带参数）
+    /// <para>Event manager (with payload)</para>
+    /// </summary>
+    public static EventsManager Event => EventsManager.Instance;
+
+    /// <summary>
+    /// 流程系统
+    /// <para>Procedure system</para>
+    /// </summary>
+    public static ProcedureManager Procedure => ProcedureManager.Instance;
+
+    /// <summary>
+    /// 资源加载管理器
+    /// <para>Asset loading manager</para>
+    /// </summary>
+    public static AssetsSystem Assets => AssetsSystem.Instance;
+
+    /// <summary>
+    /// 通用工具管理器
+    /// <para>Universal tools manager</para>
+    /// </summary>
+    public static ToolManager Tool => ToolManager.Instance;
+
+    /// <summary>
+    /// 时间管理器
+    /// <para>Time manager</para>
+    /// </summary>
+    public static TimeManager Timer => TimeManager.Instance;
+
+    /// <summary>
+    /// 系统级事件管理器
+    /// <para>System-level event manager</para>
+    /// </summary>
+    public static EventManager Events => EventManager.Instance;
+
+    /// <summary>
+    /// 补丁更新管理器（YooAsset）
+    /// <para>Patch update manager (YooAsset)</para>
+    /// </summary>
+    public static PatchSystem Patch => PatchSystem.Instance;
+
+    /// <summary>
+    /// 场景管理器
+    /// <para>Scene manager</para>
+    /// </summary>
+    public static ScenesManager Scenes => ScenesManager.Instance;
+
+    /// <summary>音频管理器<para>Audio manager</para></summary>
+    public static AudioManager Audio => AudioManager.Instance;
+
+    /// <summary>UI 管理器<para>UI system manager</para></summary>
+    public static UiSystem UI => UiSystem.Instance;
+
+    // /// <summary>HTTP 请求管理器<para>HTTP request manager</para></summary>
+    // public static HttpsSystem Http => HttpsSystem.Instance;
+
+    // /// <summary>红点系统<para>Red-dot notification system</para></summary>
+    // public static RedDotSystem RedDot => RedDotSystem.Instance;
+
+    /// <summary>
+    /// 清理内存 —— 触发 GC 并卸载未使用资源
+    /// <para>Clear memory — triggers GC and unloads unused assets</para>
+    /// </summary>
+    public static void ClearMemory()
+    {
+        System.GC.Collect();
+        Assets.CleanupUnusedAssets().Forget();
+    }
+
+    /// <summary>
+    /// 退出游戏
+    /// <para>Quit the game — clears memory, shuts down managers, exits application</para>
+    /// </summary>
+    public static void QuitGame()
+    {
+        ClearMemory();
+        EFC.QuitGames();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        Application.Quit(0);
+    }
+
+#if UNITY_EDITOR
+    private static System.Reflection.MethodInfo _clearMethod;
+
+    /// <summary>
+    /// 清空 Unity 控制台日志（仅编辑器）
+    /// <para>Clear the Unity Console log entries (Editor only)</para>
+    /// </summary>
+    public static void ClearConsole()
+    {
+        if (_clearMethod == null)
+        {
+            System.Type logType = typeof(UnityEditor.EditorWindow).Assembly.GetType("UnityEditor.LogEntries");
+            _clearMethod = logType?.GetMethod("Clear");
+        }
+
+        _clearMethod?.Invoke(null, null);
+    }
+#endif
+}

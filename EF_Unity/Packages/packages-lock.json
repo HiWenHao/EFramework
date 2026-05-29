@@ -28,19 +28,6 @@
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },
-    "cn.efefef.launcher": {
-      "version": "file:cn.efefef.launcher",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "cn.efefef.core": "0.1.0",
-        "cn.efefef.yooasset": "0.0.1",
-        "cn.efefef.audio": "0.0.1",
-        "cn.efefef.ui": "0.0.1",
-        "cn.efefef.http": "0.1.0",
-        "cn.efefef.reddot": "1.0.0"
-      }
-    },
     "cn.efefef.packages": {
       "version": "file:cn.efefef.packages",
       "depth": 0,

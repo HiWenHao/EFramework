@@ -32,6 +32,11 @@ namespace EasyFramework.Edit.Create
 
         [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
         public static void CreateGameLauncherScript() => Create("GameLauncher");
+        
+        [MenuItem("Assets/Create/EF/C# Scripts/EF.Launcher", false, 21)]
+
+        // ReSharper disable once InconsistentNaming
+        public static void CreateEFLauncherScript() => Create("EFLauncher");
 
         private static void Create(string scriptName)
         {

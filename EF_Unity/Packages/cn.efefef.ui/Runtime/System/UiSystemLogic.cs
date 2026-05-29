@@ -178,9 +178,9 @@ namespace EasyFramework.Managers.Ui
             GameObject uiObj = Object.Instantiate(prefab, _viewParentDic[uiView.ViewType], false);
             RectTransform rect = uiObj.GetComponent<RectTransform>();
             uiObj.name = viewName;
-            rect.anchorMax = Vector3.one;
-            rect.anchorMin = Vector3.zero;
-            rect.sizeDelta = Vector3.zero;
+            rect.anchorMax = Vector2.one;
+            rect.anchorMin = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
             rect.localPosition = Vector3.zero;
 
             uiView.Bind(rect);
