@@ -2471,6 +2471,78 @@
         "Option",
         "选项"
       ]
+    },
+    {
+      "name": "Generate",
+      "desc": "生成",
+      "array": [
+        "Generate",
+        "生成"
+      ]
+    },
+    {
+      "name": "Latest",
+      "desc": "最新",
+      "array": [
+        "Latest",
+        "最新"
+      ]
+    },
+    {
+      "name": "Git",
+      "desc": "Git",
+      "array": [
+        "Git",
+        "Git"
+      ]
+    },
+    {
+      "name": "Local",
+      "desc": "本地",
+      "array": [
+        "Local",
+        "本地"
+      ]
+    },
+    {
+      "name": "Remote",
+      "desc": "远端",
+      "array": [
+        "Remote",
+        "远端"
+      ]
+    },
+    {
+      "name": "Need",
+      "desc": "需要",
+      "array": [
+        "Need",
+        "需要"
+      ]
+    },
+    {
+      "name": "Maintain",
+      "desc": "维护",
+      "array": [
+        "Maintain",
+        "维护"
+      ]
+    },
+    {
+      "name": "Develop",
+      "desc": "开发",
+      "array": [
+        "Develop",
+        "开发"
+      ]
+    },
+    {
+      "name": "Unknown",
+      "desc": "未知",
+      "array": [
+        "Unknown",
+        "未知"
+      ]
     }
   ]
 }

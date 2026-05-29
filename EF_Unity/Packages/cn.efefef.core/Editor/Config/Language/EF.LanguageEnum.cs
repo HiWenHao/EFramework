@@ -625,5 +625,23 @@ namespace EasyFramework.Edit
 		Complete,
 		/// <summary> 选项 </summary>
 		Option,
+		/// <summary> 生成 </summary>
+		Generate,
+		/// <summary> 最新 </summary>
+		Latest,
+		/// <summary> Git </summary>
+		Git,
+		/// <summary> 本地 </summary>
+		Local,
+		/// <summary> 远端 </summary>
+		Remote,
+		/// <summary> 需要 </summary>
+		Need,
+		/// <summary> 维护 </summary>
+		Maintain,
+		/// <summary> 开发 </summary>
+		Develop,
+		/// <summary> 未知 </summary>
+		Unknown,
 	}
 }

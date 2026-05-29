@@ -21,7 +21,15 @@ namespace EasyFramework.Edit.Packages
     /// </summary>
     public static class ServerToolkit
     {
+        /// <summary> 本地工作状态路径（ProjectSettings 下，自动管理） </summary>
         private static string ConfigPath => Path.Combine(Application.dataPath, "../ProjectSettings/EFPackageCache.json");
+
+        /// <summary> 官方包目录路径（Editor Resources 下，应提交到 Git） </summary>
+        public static string CatalogPath =>
+            Path.GetFullPath(Path.Combine(Application.dataPath, "../Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json"));
+
+        /// <summary> 远端目录相对路径（在仓库中的位置） </summary>
+        public const string RemoteCatalogRepoPath = "EF_Unity/Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json";
 
         /// <summary>
         /// 获取包配置数据
@@ -41,7 +49,7 @@ namespace EasyFramework.Edit.Packages
         /// </summary>
         public static void SavePackageConfig(PackageConfig packageConfig)
         {
-            string json = JsonUtility.ToJson(packageConfig);
+            string json = packageConfig.ToJson();
             File.WriteAllText(ConfigPath,  json);
         }
         
@@ -49,6 +57,88 @@ namespace EasyFramework.Edit.Packages
         {
             File.WriteAllText(ConfigPath,  packageConfig);
         }
+
+        #region 官方包目录 (Catalog) — 提交到 Git 的文件
+
+        /// <summary>
+        /// 判断当前项目是否为 EFramework 源码项目（而非使用者项目）
+        /// 检测标记：存在 EFramework.sln / EasyFramework-Unity.xmind / .github 目录
+        /// 同时支持标准布局（sln 与 Assets 同级）和 EF 布局（sln 在上级目录）
+        /// </summary>
+        public static bool IsFrameworkProject
+        {
+            get
+            {
+                string dataPathParent = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+                string grandParent = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+                
+                // 检查两个层级
+                string[] candidates = { dataPathParent, grandParent };
+                foreach (string dir in candidates)
+                {
+                    if (File.Exists(Path.Combine(dir, "EFramework.sln"))
+                        || File.Exists(Path.Combine(dir, "EasyFramework-Unity.xmind"))
+                        || Directory.Exists(Path.Combine(dir, ".github")))
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 加载本地官方包目录
+        /// </summary>
+        public static EFPackageCatalog LoadCatalog()
+        {
+            if (!File.Exists(CatalogPath))
+                return null;
+            return EFPackageCatalog.FromJson(File.ReadAllText(CatalogPath));
+        }
+
+        /// <summary>
+        /// 保存官方包目录
+        /// </summary>
+        public static void SaveCatalog(EFPackageCatalog catalog)
+        {
+            string dir = Path.GetDirectoryName(CatalogPath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            File.WriteAllText(CatalogPath, catalog.ToJson());
+            
+            D.Emphasize($"[EF.Packages] 包目录已保存: {CatalogPath}");
+            D.Emphasize($"[EF.Packages] 请将此文件提交到 Git 仓库，开发者即可通过\"更新全部信息\"拉取最新目录。");
+        }
+
+        /// <summary>
+        /// 从本地扫描所有 EF 包，生成官方目录
+        /// </summary>
+        public static EFPackageCatalog GenerateCatalogFromLocalPackages()
+        {
+            var catalog = new EFPackageCatalog
+            {
+                generatedTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+
+            foreach (var packageInfo in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
+            {
+                if (!packageInfo.name.Contains("cn.efefef."))
+                    continue;
+
+                catalog.packages.Add(new EFPackageCatalogEntry
+                {
+                    name = packageInfo.name,
+                    displayName = string.IsNullOrEmpty(packageInfo.displayName)
+                        ? packageInfo.name : packageInfo.displayName,
+                    description = packageInfo.description,
+                    version = packageInfo.version,
+                });
+            }
+            
+            D.Emphasize($"[EF.Packages] 已扫描 {catalog.packages.Count} 个 EF 包");
+            return catalog;
+        }
+
+        #endregion
         
         /// <summary>
         /// 获取请求链接地址

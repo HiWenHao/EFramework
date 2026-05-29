@@ -35,7 +35,6 @@ namespace EasyFramework.Edit
     public class EFPackageConfigPanel : EFConfigPanelBase
     {
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
-        private const string EFPackageCachePath = "Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json";
 
         public override string Name => "EF" + LC.Combine(Lc.S, Lc.Package, Lc.Assets);
 
@@ -49,8 +48,6 @@ namespace EasyFramework.Edit
 
         private Dictionary<string, bool> _packageFolder;
 
-        private List<EFPackageInfo> _packages;
-        
         private PackageConfig _config;
         private EFPackageInfo _newPackageInfo;
 
@@ -86,7 +83,6 @@ namespace EasyFramework.Edit
 
             _allUnfold = true;
 
-            _packages = new List<EFPackageInfo>();
             _config = ServerToolkit.GetPackageConfig() ?? new PackageConfig();
 
             foreach (EFPackageInfo packageInfo in _config.packagesInfo)
@@ -119,20 +115,47 @@ namespace EasyFramework.Edit
 
             #endregion
 
-            #region Top Button
+            #region Summary - 摘要
 
+            _config.RefreshSummary();
+            EditorGUILayout.BeginHorizontal(GUIUtils.BackgroundStyle());
+            DrawSummaryItem(LC.Combine(Lc.Total), _config.totalCount, Color.white);
+            DrawSummaryItem(LC.Combine(Lc.Local), _config.localCount, Color.cyan);
+            DrawSummaryItem(LC.Combine(Lc.Git), _config.gitCount, Color.yellow);
+            DrawSummaryItem(LC.Combine(Lc.No, Lc.Install), _config.notInstalledCount, GUIUtils.LightRed);
+            if (_config.needUpdateCount > 0)
+                DrawSummaryItem(LC.Combine(Lc.Need, Lc.Update), _config.needUpdateCount, Color.red);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space(12.0f);
+
+            #endregion
+
+            #region Top Buttons - 顶部操作按钮
+
+            bool isMaintainer = ServerToolkit.IsFrameworkProject;
+            
+            if (isMaintainer)
+            {
+                EditorGUILayout.LabelField(LC.Combine(Lc.Maintain, Lc.Operating) + "（" + LC.Combine(Lc.To, Lc.Git) + "）", EditorStyles.boldLabel);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button(LC.Combine(Lc.Generate) + " & " + LC.Combine(Lc.Save, Lc.Catalogue), GUIUtils.Button(Color.cyan), GUILayout.Width(220)))
+                {
+                    var catalog = ServerToolkit.GenerateCatalogFromLocalPackages();
+                    ServerToolkit.SaveCatalog(catalog);
+                    GetLocalPackages();
+                    MergeCatalogToConfig(catalog);
+                    ServerToolkit.SavePackageConfig(_config);
+                }
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.Space(8f);
+            }
+
+            EditorGUILayout.LabelField($"{LC.Combine(Lc.Develop, Lc.Operating)}（{LC.Combine(Lc.Remote, Lc.Sync)}）", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine(Lc.Update, Lc.All, Lc.Information), GUIUtils.Button(Color.green)))
             {
-                if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
-                {
-                    GetLocalPackages();
-                    UpdateAllFromGitOrGitee().Forget();
-                }
-                else
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
-                        $"{LC.Combine(Lc.Request, Lc.Too, Lc.Frequently)}, {LC.Combine(Lc.PleaseWaitMoment, Lc.TryAgain)}",
-                        LC.Combine(Lc.Ok));
+                GetLocalPackages();
+                UpdateAllFromGitOrGitee().Forget();
             }
 
             string created = LC.Combine(Lc.Create, Lc.New, Lc.Package);
@@ -171,12 +194,66 @@ namespace EasyFramework.Edit
             }
         }
 
+        /// <summary>
+        /// 绘制摘要统计项
+        /// </summary>
+        private void DrawSummaryItem(string label, int count, Color color)
+        {
+            var style = new GUIStyle(GUI.skin.label)
+            {
+                normal = { textColor = color },
+                fontStyle = FontStyle.Bold,
+                fontSize = 12,
+                stretchWidth = true,
+            };
+            GUILayout.Label($"  {label}: {count}  ", style);
+        }
+
         private void DrawSinglePackage(EFPackageInfo packageInfo)
         {
             EditorGUILayout.BeginVertical(GUIUtils.BackgroundStyle(), GUILayout.ExpandWidth(true));
-            
-            _packageFolder[packageInfo.DisplayName] = EditorGUILayout.BeginFoldoutHeaderGroup(
-                _packageFolder[packageInfo.DisplayName], packageInfo.DisplayName, GUIUtils.Title());
+
+            var titleStyle = GUIUtils.Title();
+            float headerHeight = 22f;
+
+            // 全宽可点击的标题行
+            var headerRect = GUILayoutUtility.GetRect(0, headerHeight, GUILayout.ExpandWidth(true));
+
+            // 折叠箭头 + 包名（这是 foldout 自己的点击区域）
+            float textWidth = titleStyle.CalcSize(new GUIContent(packageInfo.DisplayName)).x;
+            var foldRect = new Rect(headerRect.x + 4, headerRect.y, textWidth + 24, headerRect.height);
+            _packageFolder[packageInfo.DisplayName] = EditorGUI.Foldout(
+                foldRect, _packageFolder[packageInfo.DisplayName], packageInfo.DisplayName, true, titleStyle);
+
+            // 来源标签（右对齐）
+            Color tagColor = packageInfo.SourceType switch
+            {
+                EFPackageSource.Local => Color.cyan,
+                EFPackageSource.Git => Color.yellow,
+                EFPackageSource.NotInstalled => GUIUtils.LightRed,
+                _ => Color.gray,
+            };
+            var tagLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 11,
+                normal = { textColor = tagColor },
+            };
+            string tagContent = $"[{GetSourceLabel(packageInfo.SourceType)}]";
+            float tagWidth = tagLabelStyle.CalcSize(new GUIContent(tagContent)).x + 8;
+            var tagRect = new Rect(headerRect.xMax - tagWidth - 4, headerRect.y, tagWidth, headerRect.height);
+            GUI.Label(tagRect, tagContent, tagLabelStyle);
+
+            // 整行点击：foldout 区域之外的地方也能展开/折叠
+            if (Event.current.type == EventType.MouseDown && headerRect.Contains(Event.current.mousePosition))
+            {
+                if (!foldRect.Contains(Event.current.mousePosition))
+                {
+                    _packageFolder[packageInfo.DisplayName] = !_packageFolder[packageInfo.DisplayName];
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+            }
 
             if (_packageFolder[packageInfo.DisplayName])
             {
@@ -185,26 +262,217 @@ namespace EasyFramework.Edit
                 EditorGUILayout.LabelField(packageInfo.Description, GUILayout.ExpandWidth(true));
                 EditorGUILayout.Space();
 
+                // 版本行
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Current, Lc.Version }) + $":  {packageInfo.CurrentVersion}", GUIUtils.Text(),GUILayout.Width(150));
-                string serverContents = versionType == Lc.Non ? LC.Combine(new[] { Lc.Not, Lc.Exist }) : packageInfo.ServerVersion;
-                EditorGUILayout.LabelField(LC.Combine(new[] { Lc.Server, Lc.Version }) + $":  {serverContents}", GUIUtils.Text(),GUILayout.Width(150));
-                DrawButton(versionType, packageInfo);
+                string currentText = string.IsNullOrEmpty(packageInfo.CurrentVersion)
+                    ? LC.Combine(Lc.Non)
+                    : packageInfo.CurrentVersion;
+                string serverText = string.IsNullOrEmpty(packageInfo.ServerVersion)
+                    ? LC.Combine(Lc.Not, Lc.Exist)
+                    : packageInfo.ServerVersion;
+                
+                Color currentColor = packageInfo.SourceType == EFPackageSource.Local
+                    ? Color.green : Color.white;
+                
+                EditorGUILayout.LabelField(
+                    $"{LC.Combine(Lc.Current, Lc.Version)}:  {currentText}", 
+                    GUILayout.Width(160));
+                EditorGUILayout.LabelField(
+                    $"{LC.Combine(Lc.Server, Lc.Version)}:  {serverText}", 
+                    GUILayout.Width(160));
+                
                 EditorGUILayout.EndHorizontal();
+                EditorGUILayout.Space();
+                
+                // 按钮行
+                DrawButtons(packageInfo, versionType);
+
                 EditorGUILayout.Space();
             }
             
-            EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
         }
 
+        /// <summary>
+        /// 根据来源类型获取标签文字
+        /// </summary>
+        private string GetSourceLabel(EFPackageSource source)
+        {
+            return source switch
+            {
+                EFPackageSource.Local => LC.Combine(Lc.Local),
+                EFPackageSource.Git => LC.Combine(Lc.Git),
+                EFPackageSource.NotInstalled => LC.Combine(Lc.Not, Lc.Install),
+                _ => LC.Combine(Lc.Unknown),
+            };
+        }
+
+        /// <summary>
+        /// 根据包来源和版本差，绘制对应操作按钮
+        /// </summary>
+        private void DrawButtons(EFPackageInfo packageInfo, Lc versionType)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            switch (packageInfo.SourceType)
+            {
+                // ============ 本地包 ============
+                case EFPackageSource.Local:
+                    DrawLocalButtons(packageInfo, versionType);
+                    break;
+
+                // ============ Git 远端包 ============
+                case EFPackageSource.Git:
+                    DrawGitButtons(packageInfo, versionType);
+                    break;
+
+                // ============ 未安装 ============
+                case EFPackageSource.NotInstalled:
+                    DrawNotInstalledButtons(packageInfo);
+                    break;
+
+                // ============ 未知 ============
+                default:
+                    DrawUnknownButtons(packageInfo);
+                    break;
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 本地包按钮：打开目录 + 发布/同步/卸载
+        /// </summary>
+        private void DrawLocalButtons(EFPackageInfo packageInfo, Lc versionType)
+        {
+            // 按钮1：打开本地目录
+            if (GUILayout.Button(LC.Combine(Lc.Open, Lc.Folder), GUILayout.Width(120)))
+                OpenPackageDirectory(packageInfo.Name);
+
+            // 按钮2：根据版本差显示不同动作
+            string actionLabel = versionType switch
+            {
+                Lc.Update => LC.Combine(Lc.Sync, Lc.Update),      // 服务端更新 → 同步更新
+                Lc.Upload => LC.Combine(Lc.Upload, Lc.Version),   // 本地更新 → 发布版本
+                _ => LC.Combine(Lc.Latest),                                     // 一致 → 已最新
+            };
+
+            Color actionColor = versionType switch
+            {
+                Lc.Update => Color.green,
+                Lc.Upload => Color.cyan,
+                _ => Color.gray,
+            };
+
+            bool canAction = versionType != Lc.Unload;
+            EditorGUI.BeginDisabledGroup(!canAction);
+            if (GUILayout.Button(actionLabel, GUIUtils.Button(actionColor), GUILayout.Width(140)))
+            {
+                // 本地包的操作后续可以扩展：更新 package.json 版本 / git push 等
+                D.Warning($"[EF.Packages] 本地包 [{packageInfo.Name}] 操作暂未实现: {actionLabel}");
+            }
+            EditorGUI.EndDisabledGroup();
+
+            // 按钮3：卸载
+            Color unloadColor = GUIUtils.LightRed;
+            if (GUILayout.Button(LC.Combine(Lc.Unload), GUIUtils.Button(unloadColor), GUILayout.Width(100)))
+                TryRemovePackage(packageInfo);
+        }
+
+        /// <summary>
+        /// Git 包按钮：更新 + 卸载
+        /// </summary>
+        private void DrawGitButtons(EFPackageInfo packageInfo, Lc versionType)
+        {
+            bool canUpdate = versionType is Lc.Download or Lc.Update;
+
+            // 按钮1：更新 / 已最新
+            Color updateColor = canUpdate ? Color.green : Color.gray;
+            string updateLabel = canUpdate
+                ? LC.Combine(Lc.Update, Lc.Version)
+                : LC.Combine(Lc.Latest);
+
+            EditorGUI.BeginDisabledGroup(!canUpdate);
+            if (GUILayout.Button(updateLabel, GUIUtils.Button(updateColor), GUILayout.Width(140)))
+                TryAddOrUpdatePackage(packageInfo);
+            EditorGUI.EndDisabledGroup();
+
+            // 按钮2：卸载
+            if (GUILayout.Button(LC.Combine(Lc.Unload), GUIUtils.Button(GUIUtils.LightRed), GUILayout.Width(100)))
+                TryRemovePackage(packageInfo);
+        }
+
+        /// <summary>
+        /// 未安装包按钮：下载
+        /// </summary>
+        private void DrawNotInstalledButtons(EFPackageInfo packageInfo)
+        {
+            if (GUILayout.Button(LC.Combine(Lc.Download, Lc.Install),
+                    GUIUtils.Button(Color.green), GUILayout.Width(140)))
+                TryAddOrUpdatePackage(packageInfo);
+        }
+
+        /// <summary>
+        /// 未知来源：只显示卸载
+        /// </summary>
+        private void DrawUnknownButtons(EFPackageInfo packageInfo)
+        {
+            if (GUILayout.Button(LC.Combine(Lc.Unload), GUIUtils.Button(GUIUtils.LightRed), GUILayout.Width(100)))
+                TryRemovePackage(packageInfo);
+        }
+
+        /// <summary>
+        /// 尝试安装或更新包（调用 Unity PackageManager API）
+        /// </summary>
+        private void TryAddOrUpdatePackage(EFPackageInfo packageInfo)
+        {
+            if (_hasProcess)
+            {
+                D.Warning(LC.Combine(Lc.Current, Lc.Have, Lc.One, Lc.Task, Lc.PleaseWaitMoment, Lc.TryAgain));
+                return;
+            }
+
+            CustomProgressWindow.ShowWindow(
+                LC.Combine(new[] { Lc.Install, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
+
+            string path = ServerToolkit.GetFrameworkPath(_config.serverType) + PackageFolderPath;
+            _addRequest = Client.Add($"{path}{packageInfo.Name}");
+            EditorApplication.update += AddPackageProgress;
+
+            packageInfo.CurrentVersion = packageInfo.ServerVersion;
+            packageInfo.NeedUpdate = false;
+            _hasProcess = true;
+        }
+
+        /// <summary>
+        /// 尝试卸载包（调用 Unity PackageManager API）
+        /// </summary>
+        private void TryRemovePackage(EFPackageInfo packageInfo)
+        {
+            if (_hasProcess)
+            {
+                D.Warning(LC.Combine(Lc.Current, Lc.Have, Lc.One, Lc.Task, Lc.PleaseWaitMoment, Lc.TryAgain));
+                return;
+            }
+
+            _removeRequest = Client.Remove(packageInfo.Name);
+            EditorApplication.update += RemovePackageProgress;
+
+            packageInfo.CurrentVersion = "";
+            packageInfo.NeedUpdate = true;
+            _hasProcess = true;
+        }
+
+        /// <summary>
+        /// 版本比较
+        /// </summary>
         private Lc CompareVersion(string v1, string v2)
         {
             if (string.IsNullOrEmpty(v1))
                 return Lc.Download;
             if (string.IsNullOrEmpty(v2))
-                return Lc.Non;
+                return Lc.Unload;
 
             var parts1 = v1.Split('.');
             var parts2 = v2.Split('.');
@@ -226,53 +494,22 @@ namespace EasyFramework.Edit
             return Lc.Unload;
         }
 
-        private void DrawButton(Lc versionType, EFPackageInfo packageInfo)
+        /// <summary>
+        /// 在文件管理器中打开包的本地目录
+        /// </summary>
+        private void OpenPackageDirectory(string packageName)
         {
-            if (versionType == Lc.Upload && packageInfo.FromGit)
-                return;
-
-            Lc type = versionType == Lc.Non ? Lc.Unload : versionType;
-            Color textColor = type switch
+            string packagePath = Path.GetFullPath(
+                Path.Combine(Application.dataPath, "..", "Packages", packageName));
+            
+            if (Directory.Exists(packagePath))
             {
-                Lc.Download or Lc.Update => Color.green,
-                Lc.Unload => GUIUtils.LightRed,
-                _ => Color.white
-            };
-
-            if (!GUILayout.Button(LC.Combine(type), GUIUtils.Button(textColor), GUILayout.Width(140)))
-                return;
-
-            if (_hasProcess)
-            {
-                D.Warning(LC.Combine(Lc.Current, Lc.Have, Lc.One, Lc.Task, Lc.PleaseWaitMoment, Lc.TryAgain));
-                return;
+                EditorUtility.RevealInFinder(packagePath);
             }
-
-            switch (versionType)
+            else
             {
-                case Lc.Download:
-                case Lc.Update:
-                    CustomProgressWindow.ShowWindow(
-                        LC.Combine(new[] { versionType, Lc.Package, Lc.Assets, Lc.PleaseWaitMoment }), null);
-                    string path = ServerToolkit.GetFrameworkPath(_config.serverType) + PackageFolderPath;
-                    _addRequest = Client.Add($"{path}{packageInfo.Name}");
-                    EditorApplication.update += AddPackageProgress;
-
-                    packageInfo.CurrentVersion = packageInfo.ServerVersion;
-                    packageInfo.NeedUpdate = false;
-                    break;
-                case Lc.Unload:
-                    _removeRequest = Client.Remove(packageInfo.Name);
-                    EditorApplication.update += RemovePackageProgress;
-
-                    packageInfo.CurrentVersion = "";
-                    packageInfo.NeedUpdate = true;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(versionType), versionType, null);
+                D.Warning($"[EF.Packages] 本地目录不存在: {packagePath}");
             }
-
-            _hasProcess = true;
         }
 
         #region Client Task - 客户端任务
@@ -312,8 +549,6 @@ namespace EasyFramework.Edit
 
         private void GetLocalPackages()
         {
-            _packages.Clear();
-            _packages = new List<EFPackageInfo>(_config.packagesInfo);
             _config.packagesInfo.Clear();
             _packageFolder.Clear();
 
@@ -324,68 +559,137 @@ namespace EasyFramework.Edit
                     continue;
 
                 string displayName = string.IsNullOrEmpty(packageInfo.displayName) ? name : packageInfo.displayName;
+                
+                // 检测包的真实来源
+                EFPackageSource source = packageInfo.source switch
+                {
+                    PackageSource.Embedded => EFPackageSource.Local,
+                    PackageSource.Local => EFPackageSource.Local,
+                    PackageSource.Git => EFPackageSource.Git,
+                    _ => EFPackageSource.Unknown
+                };
+                
                 _config.packagesInfo.Add(new EFPackageInfo()
                 {
                     Name = name,
                     DisplayName = displayName,
-                    FromGit = true,
+                    SourceType = source,
                     Description = packageInfo.description,
                     CurrentVersion = packageInfo.version,
-                    ServerVersion = "0.1.0",
-                    //packageInfo.source == PackageSource.Git ? packageInfo.git.revision : "0.1.0" //.git.revision = "HEAD"
+                    ServerVersion = "",
                 });
                 _packageFolder.TryAdd(displayName, _allUnfold);
             }
         }
 
+        /// <summary>
+        /// 从远端拉取官方包目录，与本地包对比，保存差异结果
+        /// </summary>
         private async UniTask UpdateAllFromGitOrGitee()
         {
-            var assetData = await DownloadFileAsync(ServerToolkit.GetRawUrl(_config.serverType,
-                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master", "EF_Unity/" + EFPackageCachePath));
+            // 1. 从远端下载官方目录
+            string remoteUrl = ServerToolkit.GetRawUrl(_config.serverType,
+                ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master",
+                ServerToolkit.RemoteCatalogRepoPath);
+            
+            var catalogJson = await DownloadFileAsync(remoteUrl);
 
-            if (string.IsNullOrEmpty(assetData))
+            EFPackageCatalog remoteCatalog;
+            if (string.IsNullOrEmpty(catalogJson))
             {
-                _config.packagesInfo =  new List<EFPackageInfo>(_packages);
-                return;
+                D.Warning("[EF.Packages] 远端目录下载失败，仅使用本地信息。请先通过 Generate & Save Catalog 生成目录并提交到 Git。");
+                remoteCatalog = null;
             }
-            PackageConfig newConfig = PackageConfig.FromJson(assetData);
-
-            var infoList = new List<EFPackageInfo>();
-            for (var i = 0; i < newConfig.packagesInfo.Count; i++)
+            else
             {
-                bool needAdded = true;
-                var newInfo = newConfig.packagesInfo[i];
-                for (var j = 0; j < _config.packagesInfo.Count; j++)
+                try
                 {
-                    var oldInfo = _config.packagesInfo[j];
-                    if (oldInfo.Name != newInfo.Name) continue;
-                    if (EditorUtils.CompareVersion(oldInfo.CurrentVersion, newInfo.CurrentVersion))
+                    remoteCatalog = EFPackageCatalog.FromJson(catalogJson);
+                }
+                catch
+                {
+                    D.Error("[EF.Packages] 远端目录解析失败，格式异常。");
+                    remoteCatalog = null;
+                }
+            }
+
+            // 2. 将远端目录合并到本地配置
+            MergeCatalogToConfig(remoteCatalog);
+
+            // 3. 更新时间戳并保存
+            _config.lastUpdateTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            _config.RefreshSummary();
+            ServerToolkit.SavePackageConfig(_config);
+            
+            D.Emphasize("[EF.Packages] 信息更新完成，已保存到 ProjectSettings/EFPackageCache.json");
+        }
+
+        /// <summary>
+        /// 将官方目录合并到本地配置
+        /// 远端有的包 → 更新 ServerVersion
+        /// 本地安装但远端没有 → 保留
+        /// 远端有但本地未装 → 标记为 NotInstalled
+        /// </summary>
+        private void MergeCatalogToConfig(EFPackageCatalog catalog)
+        {
+            if (catalog == null || catalog.packages.Count == 0)
+                return;
+
+            // 记录当前本地已安装的包名（用于判断哪些是本地独有）
+            var localInstalledNames = new HashSet<string>();
+            foreach (var p in _config.packagesInfo)
+                localInstalledNames.Add(p.Name);
+
+            // 遍历远端目录
+            foreach (var remoteEntry in catalog.packages)
+            {
+                bool found = false;
+                for (int i = 0; i < _config.packagesInfo.Count; i++)
+                {
+                    var local = _config.packagesInfo[i];
+                    if (local.Name != remoteEntry.name)
                         continue;
-                    oldInfo.ServerVersion = newInfo.CurrentVersion;
-                    oldInfo.NeedUpdate = true;
-                    oldInfo.DisplayName = newInfo.DisplayName;
-                    oldInfo.Description = newInfo.Description;
-                    _config.packagesInfo[j] = oldInfo;
-                    _packageFolder.TryAdd(oldInfo.DisplayName, true);
-                    needAdded = false;
+
+                    // 更新 ServerVersion
+                    local.ServerVersion = remoteEntry.version;
+                    local.DisplayName = remoteEntry.displayName;
+
+                    // 对比版本
+                    if (!string.IsNullOrEmpty(local.CurrentVersion) && local.CurrentVersion != remoteEntry.version)
+                    {
+                        var compare = CompareVersion(local.CurrentVersion, remoteEntry.version);
+                        local.NeedUpdate = compare == Lc.Update;
+                    }
+                    else if (string.IsNullOrEmpty(local.CurrentVersion))
+                    {
+                        local.NeedUpdate = true;
+                    }
+                    else
+                    {
+                        local.NeedUpdate = false;
+                    }
+
+                    _config.packagesInfo[i] = local;
+                    found = true;
                     break;
                 }
 
-                if (!needAdded) continue;
-                newInfo.FromGit = true;
-                newInfo.NeedUpdate = true;
-                newInfo.CurrentVersion = "";
-                infoList.Add(newInfo);
+                // 远端有但本地未安装 → 添加为 NotInstalled
+                if (!found)
+                {
+                    _config.packagesInfo.Add(new EFPackageInfo
+                    {
+                        Name = remoteEntry.name,
+                        DisplayName = remoteEntry.displayName,
+                        Description = remoteEntry.description,
+                        SourceType = EFPackageSource.NotInstalled,
+                        ServerVersion = remoteEntry.version,
+                        CurrentVersion = "",
+                        NeedUpdate = true,
+                    });
+                    _packageFolder.TryAdd(remoteEntry.displayName, _allUnfold);
+                }
             }
-
-            foreach (var info in infoList)
-            {
-                _config.packagesInfo.Add(info);
-                _packageFolder.TryAdd(info.DisplayName, _allUnfold);
-            }
-            infoList.Clear();
-            
-            ServerToolkit.SavePackageConfig(_config.ToJson());
         }
 
         private async UniTask<string> DownloadFileAsync(string url)
@@ -467,7 +771,7 @@ namespace EasyFramework.Edit
             {
                 Name = config.Name,
                 DisplayName = config.DisplayName,
-                FromGit = false,
+                SourceType = EFPackageSource.Local,
                 Description = config.Description,
                 CurrentVersion = config.Version,
                 ServerVersion = "",
