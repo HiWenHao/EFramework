@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -30,13 +31,18 @@ namespace EasyFramework.Systems.Http
         /// 默认超时阈值
         /// </summary>
         public int DefaultTimeout { get; set; } = 30;
-        
+
+        /// <summary>
+        /// 默认User-Agent请求头
+        /// </summary>
+        public string DefaultUserAgent { get; set; } = "EasyFramework/1.0 (Unity)";
+
         /// <summary>
         /// 负责对通过 https 请求接收到的证书进行拒绝或接受处理。
         /// <para>Responsible for rejecting or accepting certificates received on https requests.</para>
         /// </summary>
         public CertificateHandler CertificateHandler { get; set; }
-        
+
         void ISingleton.Init()
         {
         }
@@ -46,7 +52,7 @@ namespace EasyFramework.Systems.Http
         }
 
         #region GET 请求
-        
+
         /// <summary>
         /// 异步Get请求
         /// </summary>
@@ -61,7 +67,7 @@ namespace EasyFramework.Systems.Http
             using var request = UnityWebRequest.Get(url);
             return await SendRequestAsync(request, headers, timeout, cancellationToken);
         }
-        
+
         /// <summary>
         /// 异步Get泛型请求
         /// </summary>
@@ -71,7 +77,8 @@ namespace EasyFramework.Systems.Http
         /// <param name="timeout">超时阈值</param>
         /// <param name="cancellationToken">取消令牌</param>
         public async UniTask<T> GetAsync<T>(string url, Dictionary<string, string> headers = null,
-            JsonSerializerSettings serializerSettings = null, int? timeout = null, CancellationToken cancellationToken = default)
+            JsonSerializerSettings serializerSettings = null, int? timeout = null,
+            CancellationToken cancellationToken = default)
         {
             string json = await GetStringAsync(url, headers, timeout, cancellationToken);
             return JsonConvert.DeserializeObject<T>(json, serializerSettings);
@@ -106,8 +113,9 @@ namespace EasyFramework.Systems.Http
             await SendRawRequestAsync(request, headers, timeout, cancellationToken);
             return DownloadHandlerAssetBundle.GetContent(request);
         }
+
         #endregion
-        
+
         #region POST 请求
 
         /// <summary>
@@ -143,7 +151,8 @@ namespace EasyFramework.Systems.Http
         /// <typeparam name="T2">请求回复类型</typeparam>
         /// <returns>回复<typeparamref name="T2"/>类型数据</returns>
         public async UniTask<T2> PostJsonAsync<T1, T2>(string url, T1 postData,
-            Dictionary<string, string> headers = null, JsonSerializerSettings serializerSettings = null, int? timeout = null,
+            Dictionary<string, string> headers = null, JsonSerializerSettings serializerSettings = null,
+            int? timeout = null,
             CancellationToken cancellationToken = default)
         {
             string jsonData = JsonConvert.SerializeObject(postData, serializerSettings);
@@ -187,24 +196,32 @@ namespace EasyFramework.Systems.Http
                 return string.Empty;
             }
 
-            var formData = new List<IMultipartFormSection>();
-            byte[] fileData = await File.ReadAllBytesAsync(filePath, cancellationToken);
-            string fileName = Path.GetFileName(filePath);
-            formData.Add(new MultipartFormFileSection(fieldName, fileData, fileName, GetMimeType(fileName)));
-
-            if (additionalFields != null)
+            try
             {
-                foreach (var kv in additionalFields)
-                    formData.Add(new MultipartFormDataSection(kv.Key, kv.Value));
-            }
+                var formData = new List<IMultipartFormSection>();
+                byte[] fileData = await File.ReadAllBytesAsync(filePath, cancellationToken);
+                string fileName = Path.GetFileName(filePath);
+                formData.Add(new MultipartFormFileSection(fieldName, fileData, fileName, GetMimeType(fileName)));
 
-            return await PostMultipartAsync(url, formData, headers, timeout, cancellationToken);
+                if (additionalFields != null)
+                {
+                    foreach (var kv in additionalFields)
+                        formData.Add(new MultipartFormDataSection(kv.Key, kv.Value));
+                }
+
+                return await PostMultipartAsync(url, formData, headers, timeout, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                D.Exception($"Upload file failed: {ex.Message} (Path: {filePath})");
+                return string.Empty;
+            }
         }
 
         #endregion
 
         #region PUT | DELETE    请求
-        
+
         /// <summary>
         /// 异步Put请求
         /// </summary>
@@ -224,7 +241,7 @@ namespace EasyFramework.Systems.Http
             request.SetRequestHeader("Content-Type", "application/json");
             return await SendRequestAsync(request, headers, timeout, cancellationToken);
         }
-        
+
         /// <summary>
         /// 异步Delete请求
         /// </summary>
@@ -240,7 +257,7 @@ namespace EasyFramework.Systems.Http
         }
 
         #endregion
-        
+
         #region DOWNLOAD    请求
 
         /// <summary>
@@ -249,18 +266,20 @@ namespace EasyFramework.Systems.Http
         /// <param name="url">链接地址</param>
         /// <param name="savePath">保存地址</param>
         /// <param name="progress">进度回调</param>
+        /// <param name="timeout">超时阈值</param>
         /// <param name="cancellationToken">取消令牌</param>
         public async UniTask<bool> DownloadFileAsync(string url, string savePath,
-            IProgress<float> progress = null, CancellationToken cancellationToken = default)
+            IProgress<float> progress = null, int? timeout = null,
+            CancellationToken cancellationToken = default)
         {
             using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
             request.downloadHandler = new DownloadHandlerFile(savePath);
-            await SendRawRequestAsync(request, null, null, cancellationToken, progress);
-            return true;
+            await SendRawRequestAsync(request, null, timeout, cancellationToken, progress);
+            return request.result == UnityWebRequest.Result.Success;
         }
 
         #endregion
-        
+
         #region 请求核心
 
         /// <summary> 发送请求并返回文本（适用于 DownloadHandlerBuffer）</summary>
@@ -286,7 +305,7 @@ namespace EasyFramework.Systems.Http
             await request.SendWebRequest().ToUniTask(progress: progress, cancellationToken: cts.Token);
             ValidateResponse(request);
         }
-    
+
         /// <summary> 设置默认证书处理 </summary>
         private void SetDefaultCertificateHandler(UnityWebRequest request)
         {
@@ -297,19 +316,27 @@ namespace EasyFramework.Systems.Http
         /// <summary> 设置请求头和超时阈值 </summary>
         private void SetHeadersAndTimeout(UnityWebRequest request, Dictionary<string, string> headers, int? timeout)
         {
+            request.SetRequestHeader("User-Agent", DefaultUserAgent);
+            
             if (headers != null)
                 foreach (var kv in headers)
                 {
                     request.SetRequestHeader(kv.Key, kv.Value);
                 }
+
             request.timeout = timeout ?? DefaultTimeout;
         }
 
         /// <summary> 创建链接取消令牌 </summary>
-        private CancellationTokenSource CreateLinkedCancellationToken(UnityWebRequest request, CancellationToken userToken)
+        private CancellationTokenSource CreateLinkedCancellationToken(UnityWebRequest request,
+            CancellationToken userToken)
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(userToken);
-            cts.Token.Register(() => request?.Abort());
+            cts.Token.Register(() =>
+            {
+                if (request is { isDone: false })
+                    request.Abort();
+            });
             return cts;
         }
 
@@ -317,7 +344,7 @@ namespace EasyFramework.Systems.Http
         private void ValidateResponse(UnityWebRequest request)
         {
             if (request.result != UnityWebRequest.Result.Success)
-                D.Exception($"HTTP Error: {request.error} (URL: {request.url})");
+                throw new HttpRequestException($"HTTP Error: {request.error} (URL: {request.url})");
         }
 
         /// <summary> 获取文件拓展类型 </summary>
@@ -328,10 +355,23 @@ namespace EasyFramework.Systems.Http
             {
                 ".png" => "image/png",
                 ".jpg" or ".jpeg" => "image/jpeg",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
                 ".mp3" => "audio/mpeg",
+                ".wav" => "audio/wav",
+                ".ogg" => "audio/ogg",
                 ".mp4" => "video/mp4",
+                ".avi" => "video/x-msvideo",
+                ".mov" => "video/quicktime",
                 ".json" => "application/json",
+                ".xml" => "application/xml",
                 ".pdf" => "application/pdf",
+                ".zip" => "application/zip",
+                ".txt" => "text/plain",
+                ".html" or ".htm" => "text/html",
+                ".css" => "text/css",
+                ".js" => "application/javascript",
                 _ => "application/octet-stream"
             };
         }

@@ -4,12 +4,13 @@
  * Author:        Alvin8412
  * CreationTime:  2026-05-23 15:19:01
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-23 15:19:01
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-05-30 01:39:00
+ * ScriptVersion: 0.3
  * ===============================================
  */
 
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Systems.Assets;
 using UnityEngine;
@@ -46,13 +47,36 @@ namespace EasyFramework
     public class ImagePro : Image
     {
         [SerializeField] private string address;
-        [SerializeField] public float cornerArc;
+        [SerializeField] [Range(0, 200)] private float cornerArc = 10;
         [SerializeField] private ImageProMaterialType imageProMaterialType;
 
         private static readonly int Width = Shader.PropertyToID("_Width");
         private static readonly int Height = Shader.PropertyToID("_Height");
         private static readonly int CornerSize = Shader.PropertyToID("_CornerSize");
         private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayScaleAmount");
+
+        private Material _dynamicMaterial; // 动态创建的材质，OnDestroy 时释放
+        private CancellationTokenSource _loadCts; // HTTP 下载取消令牌
+
+        /// <summary>
+        /// 默认纹理下载器 —— 所有 ImagePro 实例共享， 用户可替换为自己的实现（例如使用 Http 包）
+        /// <para>Default Texture Downloader - Shared among all ImagePro instances.
+        /// Users can replace it with their own implementation<br/>(for example, using the Http package)</para>
+        /// </summary>
+        public static Func<string, CancellationToken, UniTask<Texture2D>> DefaultTextureDownloader { get; set; } =
+            DefaultLoadTextureAsync;
+
+        /// <summary> 圆角弧度 </summary>
+        public float CornerArc
+        {
+            get => cornerArc;
+            set
+            {
+                cornerArc = Mathf.Clamp(value, 0, 200);
+                if (imageProMaterialType == ImageProMaterialType.Round)
+                    ResetRoundRectangleSize();
+            }
+        }
 
         protected override void Awake()
         {
@@ -62,25 +86,54 @@ namespace EasyFramework
                     material = defaultGraphicMaterial;
                     break;
                 case ImageProMaterialType.Round:
-                    material = new Material(Shader.Find("UI/RoundedRectangle"));
-                    material.SetFloat(Width, Math.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
-                    material.SetFloat(Height, Math.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
-                    material.SetFloat(CornerSize, CheckConnerArc());
+                {
+                    var shader = Shader.Find("UI/RoundedRectangle");
+                    if (shader == null)
+                    {
+                        D.Error($"{gameObject.name} shader UI/RoundedRectangle not found");
+                        break;
+                    }
+
+                    _dynamicMaterial = new Material(shader);
+                    _dynamicMaterial.SetFloat(Width, Mathf.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
+                    _dynamicMaterial.SetFloat(Height,
+                        Mathf.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
+                    _dynamicMaterial.SetFloat(CornerSize, CheckConnerArc());
+                    material = _dynamicMaterial;
                     break;
+                }
                 case ImageProMaterialType.Gray:
-                    Shader shader = Shader.Find("UI/DefaultGray");
-                    if (shader != null)
-                        material = new Material(shader);
-                    else
-                        D.Error($"{gameObject.name} UI/DefaultGray not found");
+                {
+                    var shader = Shader.Find("UI/DefaultGray");
+                    if (shader == null)
+                    {
+                        D.Error($"{gameObject.name} shader UI/DefaultGray not found");
+                        break;
+                    }
+
+                    _dynamicMaterial = new Material(shader);
+                    material = _dynamicMaterial;
                     break;
+                }
             }
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            Unload().Forget();
+
+            // 取消正在进行的 HTTP 下载
+            CancelLoading();
+
+            // 释放动态材质
+            if (_dynamicMaterial != null)
+            {
+                Destroy(_dynamicMaterial);
+                _dynamicMaterial = null;
+            }
+
+            // 释放图片资源
+            UnloadInternal();
         }
 
         protected override void OnRectTransformDimensionsChange()
@@ -90,24 +143,85 @@ namespace EasyFramework
             ResetRoundRectangleSize();
         }
 
+        #region 内部函数 - Private Functions
+
         // 检查圆角弧度
         private float CheckConnerArc()
         {
-            float edgeSize = Math.Min(Math.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x,
-                Math.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
+            float edgeSize = Mathf.Min(Mathf.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x,
+                Mathf.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
             float maxConnerSize = edgeSize * 0.5f - 1f;
             return cornerArc > maxConnerSize ? maxConnerSize : cornerArc;
         }
 
+        // 取消正在进行的 HTTP 下载
+        private void CancelLoading()
+        {
+            _loadCts?.Cancel();
+            _loadCts?.Dispose();
+            _loadCts = null;
+        }
+
         // 卸载图片
-        private async UniTask Unload()
+        private void UnloadInternal()
         {
             if (string.IsNullOrEmpty(address)) return;
 
-            sprite = null;
-            await AssetsSystem.Instance.Release(address);
+            if (address.StartsWith("http"))
+            {
+                DestroyHttpSprite();
+            }
+            else
+            {
+                sprite = null;
+                // OnDestroy 时不能走异步 Release，已由 AssetsSystem 统一管理
+            }
+
             address = null;
         }
+
+        // 卸载图片
+        private async UniTask UnloadAsync()
+        {
+            if (string.IsNullOrEmpty(address)) return;
+
+            if (address.StartsWith("http"))
+            {
+                DestroyHttpSprite();
+            }
+            else
+            {
+                sprite = null;
+                await AssetsSystem.Instance.Release(address);
+            }
+
+            address = null;
+        }
+
+        // 销毁 HTTP 下载生成的 Sprite + Texture
+        private void DestroyHttpSprite()
+        {
+            if (sprite == null) return;
+            if (sprite.texture != null)
+                Destroy(sprite.texture);
+            Destroy(sprite);
+            sprite = null;
+        }
+
+        /// <summary>
+        /// 默认实现：使用 UnityWebRequest 下载纹理
+        /// </summary>
+        private static async UniTask<Texture2D> DefaultLoadTextureAsync(string url, CancellationToken token)
+        {
+            using var request = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(url);
+            await request.SendWebRequest().ToUniTask(cancellationToken: token);
+
+            return request.result != UnityEngine.Networking.UnityWebRequest.Result.Success
+                ? throw new Exception($"Texture load failed: {request.error} (URL: {url})")
+                : UnityEngine.Networking.DownloadHandlerTexture.GetContent(request);
+        }
+
+        #endregion
 
         /// <summary>
         /// 设置灰度
@@ -116,18 +230,20 @@ namespace EasyFramework
         /// <param name="isGray">是否置灰</param>
         public void SetGray(bool isGray)
         {
-            material?.SetFloat(GrayScaleAmount, isGray ? 1 : 0);
+            if (material == null) return;
+            material.SetFloat(GrayScaleAmount, isGray ? 1 : 0);
         }
 
         /// <summary>
         /// 重置矩形圆角尺寸
+        /// <para>Reset the size of the rectangular rounded corners</para>
         /// </summary>
         public void ResetRoundRectangleSize()
         {
-            if (imageProMaterialType != ImageProMaterialType.Round || !material.shader.name.Equals("UI/RoundedRectangle")) return;
-            material.SetFloat(Width, Math.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
-            material.SetFloat(Height, Math.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
-            material.SetFloat(CornerSize, CheckConnerArc());
+            if (_dynamicMaterial == null || !_dynamicMaterial.shader.name.Equals("UI/RoundedRectangle")) return;
+            _dynamicMaterial.SetFloat(Width, Mathf.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
+            _dynamicMaterial.SetFloat(Height, Mathf.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
+            _dynamicMaterial.SetFloat(CornerSize, CheckConnerArc());
         }
 
         /// <summary>
@@ -138,25 +254,62 @@ namespace EasyFramework
         public async UniTask<Sprite> SetSpriteByUrl(string url)
         {
             await UniTask.CompletedTask;
-            if (address.Equals(url)) return sprite;
+            if (address == url && sprite != null)
+                return sprite;
+
+            CancelLoading();
+            var oldAddress = address;
             address = url;
+
             if (string.IsNullOrEmpty(url))
             {
-                Unload().Forget();
+                if (!string.IsNullOrEmpty(oldAddress))
+                    await UnloadAsync();
                 return null;
             }
 
-            if (address.StartsWith("http"))
+            if (!string.IsNullOrEmpty(oldAddress) && oldAddress != url)
             {
+                if (oldAddress.StartsWith("http"))
+                    DestroyHttpSprite();
+                else
+                {
+                    sprite = null;
+                    AssetsSystem.Instance.Release(oldAddress).Forget();
+                }
+            }
+
+            if (url.StartsWith("http"))
+            {
+                _loadCts = new CancellationTokenSource();
+                var token = _loadCts.Token;
+
+                Texture2D tex;
+                try
+                {
+                    tex = await DefaultTextureDownloader(url, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+
+                if (token.IsCancellationRequested || tex == null)
+                    return null;
+
+                sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
+                    new Vector2(0.5f, 0.5f));
+                sprite.name = $"HTTP_{url.GetHashCode():X8}";
+                return sprite;
             }
 
             Sprite newSprite;
             var hasAtlas = false;
-            var index = address.LastIndexOf('?');
+            var index = url.LastIndexOf('?');
             if (index > 0)
             {
-                string atlasName = address[..index];
-                string spriteName = address[(index + 1)..];
+                string atlasName = url[..index];
+                string spriteName = url[(index + 1)..];
                 SpriteAtlas spriteAtlas = await AssetsSystem.Instance.LoadAsync<SpriteAtlas>(atlasName);
                 if (null == spriteAtlas)
                 {
@@ -170,11 +323,11 @@ namespace EasyFramework
                     D.Warning($"{spriteName} not found in {atlasName} atlas.");
             }
             else
-                newSprite = await AssetsSystem.Instance.LoadAsync<Sprite>(address);
+                newSprite = await AssetsSystem.Instance.LoadAsync<Sprite>(url);
 
             if (null == newSprite)
             {
-                if (!hasAtlas) D.Warning($"Not found {address} sprite.");
+                if (!hasAtlas) D.Warning($"Not found {url} sprite.");
                 return null;
             }
 
