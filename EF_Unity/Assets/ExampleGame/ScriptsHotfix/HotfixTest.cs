@@ -13,6 +13,7 @@ using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Audio;
 using EasyFramework.Managers.Ui;
+using EFExample.UI.Tips;
 using UnityEngine;
 
 namespace EFExample
@@ -33,20 +34,20 @@ namespace EFExample
             //UI进入
             UiSystem.Instance.OpenPageView<UiAView>().Forget();
 
-            //UiSystem.Instance.ShowTipsView("这是一个测试提示窗", new TipsViewExtraData()
-            //{
-            //    ConfirmName = "确定",
-            //    CancelName = "取消",
-            //    ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
-            //    CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
-            //    CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
-            //});
+            // 旧 TipsView 调用示例（已废弃，仅供参考）
+            UiSystem.Instance.ShowView<TipsView>("这是一个测试提示窗", new TipsViewExtraData()
+            {
+                ConfirmName = "确定",
+                CancelName = "取消",
+                ConfirmCallBack = delegate { D.Warning("ConfirmCallBack\t1"); },
+                CancelCallBack = delegate { D.Warning("CancelCallBack\t2"); },
+                CloseCallBack = delegate { D.Warning("CloseCallBack\t3"); },
+            }).Forget();
 
             Test().Forget();
-            //UiSystem.Instance.ShowTipsView<TipsView>("提示窗", new TipsViewExtraData());
-            
+
             AudioManager.Instance.Play2DEffect("Haoheng").Forget();
-            
+
             //EF.Get();
         }
 
@@ -55,8 +56,7 @@ namespace EFExample
             for (int i = 0; i < 20; i++)
             {
                 await UniTask.WaitForSeconds(0.1f);
-                //D.Warning(i);
-                await UiSystem.Instance.ShowPopupView($"\t{i}\tIndex");
+                await UiSystem.Instance.ShowView<PopupView>($"\t{i}\tIndex");
             }
         }
     }
