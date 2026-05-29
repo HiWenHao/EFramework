@@ -33,7 +33,7 @@ namespace EasyFramework
             if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
                 return t;
 
-            EF.Register(t);
+            EFC.Register(t);
             return t;
         });
     }

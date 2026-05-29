@@ -39,17 +39,17 @@ namespace EasyFramework.Managers
         void ISingleton.Init()
         {
             _traget = new GameObject("Source").transform;
-            _traget.SetParent(EF.Managers);
+            _traget.SetParent(EFC.Managers);
             _bgm = _traget.gameObject.AddComponent<AudioSource>();
 
             _audioCallback = new List<Action>();
             _audioInUse = new List<AudioSource>();
             _audioCanUse = new Queue<AudioSource>();
 
-            if (PlayerPrefs.HasKey(EF.Projects.AppConst.AppPrefix + "bgmVolum"))
-                _bgmVolumScale = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum");
-            if (PlayerPrefs.HasKey(EF.Projects.AppConst.AppPrefix + "effectVolum"))
-                _effectVolume = PlayerPrefs.GetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum");
+            if (PlayerPrefs.HasKey(EFC.Projects.AppConst.AppPrefix + "bgmVolum"))
+                _bgmVolumScale = PlayerPrefs.GetFloat(EFC.Projects.AppConst.AppPrefix + "bgmVolum");
+            if (PlayerPrefs.HasKey(EFC.Projects.AppConst.AppPrefix + "effectVolum"))
+                _effectVolume = PlayerPrefs.GetFloat(EFC.Projects.AppConst.AppPrefix + "effectVolum");
 
             _bgm.playOnAwake = true;
             _bgm.loop = true;
@@ -323,7 +323,7 @@ namespace EasyFramework.Managers
         {
             _bgmVolumScale = volume;
             _bgm.volume = _bgmVolumScale;
-            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "bgmVolum", _bgmVolumScale);
+            PlayerPrefs.SetFloat(EFC.Projects.AppConst.AppPrefix + "bgmVolum", _bgmVolumScale);
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace EasyFramework.Managers
         public void SetEffectVolum(float volume)
         {
             _effectVolume = volume;
-            PlayerPrefs.SetFloat(EF.Projects.AppConst.AppPrefix + "effectVolum", _effectVolume);
+            PlayerPrefs.SetFloat(EFC.Projects.AppConst.AppPrefix + "effectVolum", _effectVolume);
         }
 
         /// <summary>
@@ -411,10 +411,10 @@ namespace EasyFramework.Managers
 
         private AudioClip GetClipByName(string name)
         {
-            string path = EF.Assets.CurrentSystemType == AssetsSystemType.Default
-                ? $"{EF.Projects.AppConst.AudioPath}{name}"
+            string path = AssetsSystem.Instance.CurrentSystemType == AssetsSystemType.Default
+                ? $"{EFC.Projects.AppConst.AudioPath}{name}"
                 : name;
-            return EF.Assets.Load<AudioClip>(path);
+            return AssetsSystem.Instance.Load<AudioClip>(path);
         }
         #endregion
     }

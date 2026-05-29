@@ -17,8 +17,9 @@ using UnityEngine;
 namespace EasyFramework.Launcher
 {
     /// <summary>
-    /// This is a game launcher.   Don't forget to mount it to the scene
-    /// <para>这是一个游戏启动器，别忘了在场景中挂载它</para>
+    /// 游戏启动器 —— Build-in 壳层唯一入口
+    /// <para>Game launcher — the sole entry point of the build-in shell.</para>
+    /// <br/>EF.Launcher 程序集聚合所有 EF.* 包，热更 DLL 只引此程序集即可访问全部管理器。
     /// </summary>
     public class GameLauncher : MonoBehaviour
     {

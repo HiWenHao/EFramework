@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections;
+using EasyFramework.Systems.Assets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -36,7 +37,7 @@ namespace EasyFramework.Managers
 		Action _callback;
         void ISingleton.Init()
         {
-            _loadCanvas = Object.Instantiate(EF.Assets.Load<Transform>("Prefabs/UI/LoadCanvas"), EF.Singleton, true);
+            _loadCanvas = Object.Instantiate(AssetsSystem.Instance.Load<Transform>("Prefabs/UI/LoadCanvas"), EFC.Singleton, true);
             _bg = _loadCanvas.GetChild(0).GetComponent<Image>();
             _progressBar = _bg.transform.GetChild(0).GetComponent<Slider>();
             _pcTN = _progressBar.transform.Find("Handle Slide Area/Handle/Text").GetComponent<Text>();
@@ -47,7 +48,7 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-            EF.StopAllCoroutine();
+            EFC.StopAllCoroutine();
             _pcTN = null;
             _progressBar = null;
             _bg = null;
@@ -114,7 +115,7 @@ namespace EasyFramework.Managers
 			}
 			_loadCanvas.gameObject.SetActive(false);
 			_isLoading = false;
-			EF.StopCoroutines(LoadScene());
+			EFC.StopCoroutines(LoadScene());
 		}
         #endregion
 
@@ -154,7 +155,7 @@ namespace EasyFramework.Managers
 			_transition = transition;
 			CurrentScene = sceneName;
 			_callback = callback;
-			EF.StartCoroutines(LoadScene());
+			EFC.StartCoroutines(LoadScene());
 		}
 
 

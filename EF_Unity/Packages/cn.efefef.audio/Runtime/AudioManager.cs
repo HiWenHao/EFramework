@@ -122,7 +122,7 @@ namespace EasyFramework.Managers.Audio
             _bgmSource.playOnAwake = false;
 
             _effectPrefab = CreateEffectPrefab();
-            EF.Pool.CreateGameObjectPool(_effectPrefab, _effectRoot, prewarmCount, maxEffectPoolSize, effectIdleTimeout);
+            Pool.PoolManager.Instance.CreateGameObjectPool(_effectPrefab, _effectRoot, prewarmCount, maxEffectPoolSize, effectIdleTimeout);
 
             _activeEffects = new List<ActiveEffect>();
             _activeEffectDict = new Dictionary<uint, ActiveEffect>();
@@ -166,7 +166,7 @@ namespace EasyFramework.Managers.Audio
 
             // 销毁音效对象池
             if (_effectPrefab)
-                EF.Pool.DestroyGameObjectPool(_effectPrefab);
+                Pool.PoolManager.Instance.DestroyGameObjectPool(_effectPrefab);
 
             SaveSettings();
         }
@@ -192,7 +192,7 @@ namespace EasyFramework.Managers.Audio
         // 从池中获取激活的 AudioSource
         private AudioSource GetEffectFromPool()
         {
-            var go = EF.Pool.Spawn(_effectPrefab);
+            var go = Pool.PoolManager.Instance.Spawn(_effectPrefab);
             if (go)
             {
                 var source = go.GetComponent<AudioSource>();
@@ -218,7 +218,7 @@ namespace EasyFramework.Managers.Audio
             source.Stop();
             source.gameObject.SetActive(false);
             source.transform.SetParent(_effectRoot, false);
-            EF.Pool.Despawn(source.gameObject);
+            Pool.PoolManager.Instance.Despawn(source.gameObject);
         }
 
         // 重置从池中取出的 AudioSource 状态
@@ -336,10 +336,10 @@ namespace EasyFramework.Managers.Audio
         // 加载音频资源
         private AudioClip LoadClip(string clipName)
         {
-            string path = EF.Assets.CurrentSystemType == AssetsSystemType.Default
-                ? $"{EF.Projects.AppConst.AudioPath}{clipName}"
+            string path = AssetsSystem.Instance.CurrentSystemType == AssetsSystemType.Default
+                ? $"{EFC.Projects.AppConst.AudioPath}{clipName}"
                 : clipName;
-            return EF.Assets.Load<AudioClip>(path);
+            return AssetsSystem.Instance.Load<AudioClip>(path);
         }
 
         // 从 PlayerPrefs 恢复设置

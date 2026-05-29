@@ -243,10 +243,10 @@ namespace EasyFramework.Managers.Assets
 
             // 解析远程地址：优先子包配置，否则回落 ProjectConfig 全局地址
             string mainUrl = string.IsNullOrEmpty(cfg.RemoteMainUrl)
-                ? EF.Projects.ResourcesArea.InnerUrl
+                ? EFC.Projects.ResourcesArea.InnerUrl
                 : cfg.RemoteMainUrl;
             string fallbackUrl = string.IsNullOrEmpty(cfg.RemoteFallbackUrl)
-                ? EF.Projects.ResourcesArea.StandbyUrl
+                ? EFC.Projects.ResourcesArea.StandbyUrl
                 : cfg.RemoteFallbackUrl;
 
             switch (CurrentPlayMode)
@@ -596,8 +596,8 @@ namespace EasyFramework.Managers.Assets
                         CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters
                         (
                             new RemoteServices(
-                                EF.Projects.ResourcesArea.InnerUrl,
-                                EF.Projects.ResourcesArea.StandbyUrl
+                                EFC.Projects.ResourcesArea.InnerUrl,
+                                EFC.Projects.ResourcesArea.StandbyUrl
                             )
                         )
                     };
@@ -610,8 +610,8 @@ namespace EasyFramework.Managers.Assets
                         WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(
                             $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE", 
                             new RemoteServices(
-                                EF.Projects.ResourcesArea.InnerUrl,
-                                EF.Projects.ResourcesArea.StandbyUrl
+                                EFC.Projects.ResourcesArea.InnerUrl,
+                                EFC.Projects.ResourcesArea.StandbyUrl
                             )
                         );
 #else

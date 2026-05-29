@@ -483,7 +483,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             commonSb.AppendLine();
             string commonNamespace =
-                !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : EF.Projects.ScriptNamespace;
+                !string.IsNullOrEmpty(_builder.Namespace) ? _builder.Namespace : EFC.Projects.ScriptNamespace;
             commonSb.AppendLine($"namespace {commonNamespace}");
             commonSb.AppendLine("{");
 

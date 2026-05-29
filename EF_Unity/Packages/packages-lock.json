@@ -1,14 +1,79 @@
 {
   "dependencies": {
-    "com.alvin.easyframework": {
-      "version": "file:com.alvin.easyframework",
+    "cn.efefef.audio": {
+      "version": "file:cn.efefef.audio",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.unity.scriptablebuildpipeline": "1.21.25",
-        "com.tuyoogame.yooasset": "2.3.18",
+        "cn.efefef.core": "0.0.1"
+      }
+    },
+    "cn.efefef.core": {
+      "version": "file:cn.efefef.core",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
         "com.code-philosophy.hybridclr": "8.11.0",
-        "com.code-philosophy.luban": "1.1.1"
+        "com.code-philosophy.luban": "1.0.0",
+        "com.unity.nuget.newtonsoft-json": "3.2.1",
+        "com.unity.scriptablebuildpipeline": "1.21.25"
+      }
+    },
+    "cn.efefef.http": {
+      "version": "file:cn.efefef.http",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1",
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      }
+    },
+    "cn.efefef.launcher": {
+      "version": "file:cn.efefef.launcher",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.1.0",
+        "cn.efefef.yooasset": "0.0.1",
+        "cn.efefef.audio": "0.0.1",
+        "cn.efefef.ui": "0.0.1",
+        "cn.efefef.http": "0.1.0",
+        "cn.efefef.reddot": "1.0.0"
+      }
+    },
+    "cn.efefef.packages": {
+      "version": "file:cn.efefef.packages",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1"
+      }
+    },
+    "cn.efefef.reddot": {
+      "version": "file:cn.efefef.reddot",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1"
+      }
+    },
+    "cn.efefef.ui": {
+      "version": "file:cn.efefef.ui",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1",
+        "com.unity.ugui": "1.0.0",
+        "com.unity.render-pipelines.universal": "14.0.9"
+      }
+    },
+    "cn.efefef.yooasset": {
+      "version": "file:cn.efefef.yooasset",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1",
+        "com.tuyoogame.yooasset": "2.3.18"
       }
     },
     "com.code-philosophy.hybridclr": {
@@ -43,6 +108,16 @@
       "source": "builtin",
       "dependencies": {}
     },
+    "com.unity.burst": {
+      "version": "1.8.17",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.mathematics": "1.2.1",
+        "com.unity.modules.jsonserialize": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
       "depth": 1,
@@ -75,12 +150,73 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.unity.mathematics": {
+      "version": "1.2.6",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.nuget.newtonsoft-json": {
+      "version": "3.2.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.render-pipelines.core": {
+      "version": "14.0.11",
+      "depth": 2,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.modules.terrain": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0"
+      }
+    },
+    "com.unity.render-pipelines.universal": {
+      "version": "14.0.11",
+      "depth": 1,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.mathematics": "1.2.1",
+        "com.unity.burst": "1.8.9",
+        "com.unity.render-pipelines.core": "14.0.11",
+        "com.unity.shadergraph": "14.0.11",
+        "com.unity.render-pipelines.universal-config": "14.0.9"
+      }
+    },
+    "com.unity.render-pipelines.universal-config": {
+      "version": "14.0.10",
+      "depth": 2,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.render-pipelines.core": "14.0.10"
+      }
+    },
     "com.unity.scriptablebuildpipeline": {
       "version": "1.21.25",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
+    },
+    "com.unity.searcher": {
+      "version": "4.9.2",
+      "depth": 3,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.shadergraph": {
+      "version": "14.0.11",
+      "depth": 2,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.render-pipelines.core": "14.0.11",
+        "com.unity.searcher": "4.9.2"
+      }
     },
     "com.unity.test-framework": {
       "version": "1.1.33",

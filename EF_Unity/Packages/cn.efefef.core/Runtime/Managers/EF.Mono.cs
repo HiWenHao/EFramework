@@ -11,16 +11,15 @@
 
 using EasyFramework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using EasyFramework.Managers;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public sealed partial class EF : MonoBehaviour
+public sealed class EFC : MonoBehaviour
 {
-    private static EF _monoEF;
-
     private static volatile bool _inRunning;
 
     private static List<ISingleton> _managers;
@@ -35,9 +34,20 @@ public sealed partial class EF : MonoBehaviour
     private static Dictionary<Type, Func<object>> _monoSingletonInstanceGetters;
     private static readonly object LockObj = new object();
 
-    private EF()
+    private EFC()
     {
     }
+    
+    private static EFC _monoEFC;    // 协程助手
+
+    /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
+    public static Transform Managers { get; private set; }
+
+    /// <summary> The singleton parent node in the scenario.<para>场景中单例父节点</para></summary>
+    public static Transform Singleton { get; private set; }
+
+    /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
+    public static ProjectConfig Projects { get; private set; }
 
     #region Lifecycle / 生命周期
 
@@ -49,7 +59,7 @@ public sealed partial class EF : MonoBehaviour
     {
         Managers = new GameObject("GM.Managers").transform;
         Singleton = new GameObject("GM.Singleton").transform;
-        _monoEF = Managers.gameObject.AddComponent<EF>();
+        _monoEFC = Managers.gameObject.AddComponent<EFC>();
 
         DontDestroyOnLoad(Managers);
         DontDestroyOnLoad(Singleton);
@@ -112,7 +122,7 @@ public sealed partial class EF : MonoBehaviour
     private void OnDestroy() => QuitGames();
     private void OnApplicationQuit() => QuitGames();
 
-    private static void QuitGames()
+    public static void QuitGames()
     {
         if (!_inRunning) return;
         _inRunning = false;
@@ -232,7 +242,7 @@ public sealed partial class EF : MonoBehaviour
             return;
         }
 
-        var method = typeof(EF).GetMethod(nameof(GetOrCreateSingleton), BindingFlags.NonPublic | BindingFlags.Static)
+        var method = typeof(EFC).GetMethod(nameof(GetOrCreateSingleton), BindingFlags.NonPublic | BindingFlags.Static)
             ?.MakeGenericMethod(type);
         method?.Invoke(null, null);
     }
@@ -368,5 +378,58 @@ public sealed partial class EF : MonoBehaviour
         return false;
     }
 
+    #endregion
+    
+    #region Coroutine  协程
+    /// <summary>
+    /// Start a coroutine.
+    /// <para>开启一个协程</para>
+    /// </summary>
+    public static Coroutine StartCoroutines(IEnumerator coroutine)
+    {
+        return _monoEFC.StartCoroutine(coroutine);
+    }
+    /// <summary>
+    /// Start a coroutine.
+    /// <para>开启一个协程</para>
+    /// </summary>
+    public static Coroutine StartCoroutines(string coroutine, object value)
+    {
+        if (null == value)
+            return _monoEFC.StartCoroutine(coroutine);
+        return _monoEFC.StartCoroutine(coroutine, value);
+    }
+    /// <summary>
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
+    /// </summary>
+    public static void StopCoroutines(Coroutine coroutine)
+    {
+        _monoEFC.StopCoroutine(coroutine);
+    }
+    /// <summary>
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
+    /// </summary>
+    public static void StopCoroutines(IEnumerator coroutine)
+    {
+        _monoEFC.StopCoroutine(coroutine);
+    }
+    /// <summary>
+    /// Stop a coroutines.
+    /// <para>停止一个协程</para>
+    /// </summary>
+    public static void StopCoroutines(string methodName)
+    {
+        _monoEFC.StopCoroutine(methodName);
+    }
+    /// <summary>
+    /// Stop all coroutines and use with caution.
+    /// <para>停止所有协程, 谨慎使用</para>
+    /// </summary>
+    public static void StopAllCoroutine()
+    {
+        _monoEFC.StopAllCoroutines();
+    }
     #endregion
 }

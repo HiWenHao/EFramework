@@ -152,8 +152,8 @@ namespace EasyFramework.Systems.Patch
                         CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters
                         (
                             new RemoteServices(
-                                EF.Projects.ResourcesArea.InnerUrl,
-                                EF.Projects.ResourcesArea.StandbyUrl
+                                EFC.Projects.ResourcesArea.InnerUrl,
+                                EFC.Projects.ResourcesArea.StandbyUrl
                             )
                         )
                     };
@@ -167,8 +167,8 @@ namespace EasyFramework.Systems.Patch
                         WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(
                             $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE", 
                             new RemoteServices(
-                                EF.Projects.ResourcesArea.InnerUrl,
-                                EF.Projects.ResourcesArea.StandbyUrl
+                                EFC.Projects.ResourcesArea.InnerUrl,
+                                EFC.Projects.ResourcesArea.StandbyUrl
                             )
                         );
 #else

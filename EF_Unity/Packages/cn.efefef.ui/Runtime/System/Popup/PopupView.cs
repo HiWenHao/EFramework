@@ -40,8 +40,8 @@ namespace EasyFramework.Managers.Ui.Popup
 
             #region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
 
-            Txt_Contents = EF.Tool.Find<Text>(uiViewRect, "Txt_Contents");
-            Rect_Bg = EF.Tool.Find<RectTransform>(uiViewRect, "Rect_Bg");
+            Txt_Contents = ToolManager.Instance.Find<Text>(uiViewRect, "Txt_Contents");
+            Rect_Bg = ToolManager.Instance.Find<RectTransform>(uiViewRect, "Rect_Bg");
 
             #endregion Find components end. -- Auto
         }

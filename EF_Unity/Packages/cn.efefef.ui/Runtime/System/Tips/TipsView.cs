@@ -43,14 +43,14 @@ namespace EasyFramework.Managers.Ui
 
             #region Find components and register button event. 查找组件并且注册按钮事件 -- Auto
 
-            Txt_Cancel = EF.Tool.Find<Text>(uiViewRect, "Txt_Cancel");
-            Txt_Display = EF.Tool.Find<Text>(uiViewRect, "Txt_Display");
-            Txt_Confirm = EF.Tool.Find<Text>(uiViewRect, "Txt_Confirm");
-            EF.Tool.Find<Button>(uiViewRect, "Btn_Close")
+            Txt_Cancel = ToolManager.Instance.Find<Text>(uiViewRect, "Txt_Cancel");
+            Txt_Display = ToolManager.Instance.Find<Text>(uiViewRect, "Txt_Display");
+            Txt_Confirm = ToolManager.Instance.Find<Text>(uiViewRect, "Txt_Confirm");
+            ToolManager.Instance.Find<Button>(uiViewRect, "Btn_Close")
                 .RegisterInListAndBindEvent(OnClickClose, ref m_AllButtons);
-            EF.Tool.Find<Button>(uiViewRect, "Btn_Cancel")
+            ToolManager.Instance.Find<Button>(uiViewRect, "Btn_Cancel")
                 .RegisterInListAndBindEvent(OnClickCancel, ref m_AllButtons);
-            EF.Tool.Find<Button>(uiViewRect, "Btn_Confirm")
+            ToolManager.Instance.Find<Button>(uiViewRect, "Btn_Confirm")
                 .RegisterInListAndBindEvent(OnClickConfirm, ref m_AllButtons);
 
             #endregion Find components end. -- Auto

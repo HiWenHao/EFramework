@@ -152,8 +152,8 @@ namespace EasyFramework.Managers.Ui
 
         private static string GetAssetPath(string viewName)
         {
-            return EF.Assets.CurrentSystemType == AssetsSystemType.Default
-            ? EF.Projects.AppConst.UIPrefabsPath + viewName
+            return AssetsSystem.Instance.CurrentSystemType == AssetsSystemType.Default
+            ? EFC.Projects.AppConst.UIPrefabsPath + viewName
             : viewName;
         }
         
@@ -168,7 +168,7 @@ namespace EasyFramework.Managers.Ui
 
             string viewName = uiView.GetType().Name;
             
-            GameObject prefab = EF.Assets.Load<GameObject>(GetAssetPath(viewName));
+            GameObject prefab = AssetsSystem.Instance.Load<GameObject>(GetAssetPath(viewName));
             if (!prefab)
             {
                 D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
@@ -202,7 +202,7 @@ namespace EasyFramework.Managers.Ui
                 uiView.Dispose();
                 DestroyObj(uiView.View.gameObject);
                 
-                EF.Assets.Release(GetAssetPath(uiView.View.name)).Forget();
+                AssetsSystem.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
             }
             
             viewList?.Remove(uiView);

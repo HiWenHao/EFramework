@@ -10,9 +10,7 @@
  */
 
 using EasyFramework.Managers;
-using System.Collections;
 using Cysharp.Threading.Tasks;
-using EasyFramework;
 using EasyFramework.Managers.Event;
 using EasyFramework.Managers.Procedure;
 using EasyFramework.Systems.Assets;
@@ -20,17 +18,8 @@ using EasyFramework.Systems.Patch;
 using EasyFramework.Managers.Pool;
 using UnityEngine;
 
-public sealed partial class EF
+public sealed class EF
 {
-    /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
-    public static Transform Managers { get; private set; }
-
-    /// <summary> The singleton parent node in the scenario.<para>场景中单例父节点</para></summary>
-    public static Transform Singleton { get; private set; }
-
-    /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
-    public static ProjectConfig Projects { get; private set; }
-    
     /// <summary> Pool manager.<para>对象池系统</para></summary>
     public static PoolManager Pool => PoolManager.Instance;
 
@@ -62,59 +51,6 @@ public sealed partial class EF
     /// <summary> Scene manager.<para>场景管理器</para></summary>
     public static ScenesManager Scenes => ScenesManager.Instance;
 
-    #region Coroutine  协程
-    /// <summary>
-    /// Start a coroutine.
-    /// <para>开启一个协程</para>
-    /// </summary>
-    public static Coroutine StartCoroutines(IEnumerator coroutine)
-    {
-        return _monoEF.StartCoroutine(coroutine);
-    }
-    /// <summary>
-    /// Start a coroutine.
-    /// <para>开启一个协程</para>
-    /// </summary>
-    public static Coroutine StartCoroutines(string coroutine, object value)
-    {
-        if (null == value)
-            return _monoEF.StartCoroutine(coroutine);
-        return _monoEF.StartCoroutine(coroutine, value);
-    }
-    /// <summary>
-    /// Stop a coroutines.
-    /// <para>停止一个协程</para>
-    /// </summary>
-    public static void StopCoroutines(Coroutine coroutine)
-    {
-        _monoEF.StopCoroutine(coroutine);
-    }
-    /// <summary>
-    /// Stop a coroutines.
-    /// <para>停止一个协程</para>
-    /// </summary>
-    public static void StopCoroutines(IEnumerator coroutine)
-    {
-        _monoEF.StopCoroutine(coroutine);
-    }
-    /// <summary>
-    /// Stop a coroutines.
-    /// <para>停止一个协程</para>
-    /// </summary>
-    public static void StopCoroutines(string methodName)
-    {
-        _monoEF.StopCoroutine(methodName);
-    }
-    /// <summary>
-    /// Stop all coroutines and use with caution.
-    /// <para>停止所有协程, 谨慎使用</para>
-    /// </summary>
-    public static void StopAllCoroutine()
-    {
-        _monoEF.StopAllCoroutines();
-    }
-    #endregion
-
     /// <summary>
     /// Clear memory
     /// <para>清理内存</para>
@@ -132,7 +68,7 @@ public sealed partial class EF
     public static void QuitGame()
     {
         ClearMemory();
-        QuitGames();
+        EFC.QuitGames();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
@@ -156,4 +92,9 @@ public sealed partial class EF
     }
 #endif
     #endregion
+
+    public static void Get()
+    {
+        
+    }
 }

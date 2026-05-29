@@ -47,17 +47,17 @@ namespace EasyFramework
             if (ignore || !Registered.Add(instance)) return;
 
             instance.transform.SetParent(Attribute.IsDefined(typeof(T), typeof(ManagerAttribute))
-                ? EF.Managers
-                : EF.Singleton);
+                ? EFC.Managers
+                : EFC.Singleton);
 
-            EF.Register(instance);
+            EFC.Register(instance);
         }
 
         protected virtual void OnDestroy()
         {
             Registered.Remove((T)this);
             if (!Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
-                EF.Unregister((ISingleton)this, false);
+                EFC.Unregister((ISingleton)this, false);
         }
     }
 }

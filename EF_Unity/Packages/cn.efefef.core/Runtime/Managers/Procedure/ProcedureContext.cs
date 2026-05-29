@@ -75,7 +75,7 @@ namespace EasyFramework.Managers.Procedure
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(ProcedureContext));
 
-            var inst = EF.Procedure.GetInstanceByUidInternal(Uid);
+            var inst = ProcedureManager.Instance.GetInstanceByUidInternal(Uid);
             if (inst == null || inst.RuntimeVersion != RuntimeVersion)
                 throw new ObjectDisposedException(nameof(ProcedureContext));
         }
@@ -91,7 +91,7 @@ namespace EasyFramework.Managers.Procedure
             where T : IProcedure
         {
             CheckDisposed();
-            await EF.Procedure.StartSubProcedureAndWait<T>(this, parameters);
+            await ProcedureManager.Instance.StartSubProcedureAndWait<T>(this, parameters);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace EasyFramework.Managers.Procedure
         public async UniTask<bool> EndProcedure()
         {
             CheckDisposed();
-            return await EF.Procedure.EndProcedureInternal(this);
+            return await ProcedureManager.Instance.EndProcedureInternal(this);
         }
     }
 }
