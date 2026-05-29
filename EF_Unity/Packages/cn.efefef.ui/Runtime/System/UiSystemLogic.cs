@@ -11,7 +11,6 @@
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Ui.Popup;
 using EasyFramework.Systems.Assets;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -398,37 +397,27 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 显示通用弹窗
+        /// 通用视窗显示方法。不关闭同类视窗，支持多实例叠加。
+        /// <para>General window display method. Does not close similar windows, supports multiple instances to be stacked.</para>
         /// </summary>
-        /// <param name="contents">显示内容</param>
-        public async UniTask ShowPopupView(string contents)
+        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
+        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
+        public async UniTask<T> ShowView<T>(params object[] args) where T : IUiView, new()
         {
-            if (InViewList<PopupView>(out var view, UIViewType.Cache))
-                _viewStackDic[UIViewType.Cache].Remove(view);
+            await UniTask.CompletedTask;
 
-            if (_viewStackDic[UIViewType.Popup].Count >= PopupViewMax)
+            if (InViewList<T>(out var uiView, UIViewType.Cache))
+                _viewStackDic[UIViewType.Cache].Remove(uiView);
+
+            uiView ??= ViewCreate<T>();
+            if (uiView == null)
             {
-                var oldestView = _viewStackDic[UIViewType.Popup][_popupIndex];
-                if (view != oldestView)
-                    ViewClose(oldestView, false, false, null);
-                _popupIndex = (_popupIndex + 1) % PopupViewMax;
+                D.Error($"ShowView<{typeof(T).Name}> failed: ViewCreate returned null");
+                return default;
             }
 
-            view ??= ViewCreate<PopupView>();
-            ViewEnable(view, contents);
-            await UniTask.CompletedTask;
-        }
-
-        /// <summary>
-        /// 显示通用提示窗
-        /// </summary>
-        public async UniTask ShowTipsView(string contents, TipsViewExtraData viewExtraData)
-        {
-            if (InViewList<TipsView>(out var view, UIViewType.Cache))
-                _viewStackDic[UIViewType.Cache].Remove(view);
-            view ??= ViewCreate<TipsView>();
-            ViewEnable(view, contents, viewExtraData);
-            await UniTask.CompletedTask;
+            ViewEnable(uiView, args);
+            return (T)uiView;
         }
 
         /// <summary>

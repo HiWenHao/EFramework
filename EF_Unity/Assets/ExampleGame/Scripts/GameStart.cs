@@ -77,8 +77,7 @@ namespace EFExample
                 return;
             }
 
-            Transform uiViewRect = EF.Assets.Load<Transform>(EFC.Projects.AppConst.UIPrefabsPath + "PatchUpdater")
-                .transform;
+            Transform uiViewRect = EF.Assets.Load<Transform>(EFC.Projects.AppConst.UIPrefabsPath + "PatchUpdater").transform;
             _sldUpdaterSlider = EF.Tool.Find<Slider>(uiViewRect.transform, "Sld_UpdaterSlider");
             _txtUpdaterTips = EF.Tool.Find<Text>(uiViewRect.transform, "Txt_UpdaterTips");
             await EF.Patch.StartUpdatePatches(OnStartDownloadFileFunction,
