@@ -35,7 +35,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         [MenuItem("EFTools/Settings &E", priority = 0)]
         private static void OpenWindow()
         {
-            Open(0);
+            Open<EFProjectConfigPanel>();
         }
 
         protected override void LoadWindowData()
@@ -51,12 +51,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 if (oneType.IsAbstract || !typeof(EFConfigPanelBase).IsAssignableFrom(oneType))
                     continue;
-                
+
                 if (oneType.GetConstructor(Type.EmptyTypes) == null)
                 {
                     D.Warning($"{oneType.Name} 缺少无参构造函数，跳过实例化");
                     continue;
                 }
+
                 Insert(_settings, Activator.CreateInstance(oneType) as EFConfigPanelBase);
             }
 
@@ -167,10 +168,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         }
 
         /// <summary>
-        /// 根据索引打开页面
+        /// 打开页面
         /// </summary>
-        /// <param name="pageIndex">页面索引</param>
-        public static void Open(int pageIndex)
+        public static void Open<T>() where T : EFConfigPanelBase
         {
             if (!ConfigManager.Project)
             {
@@ -187,10 +187,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _window.Focus();
             }
 
-            _window._panelIndex = pageIndex;
-            if (null == _window._settings || _window._settings.Count <= pageIndex)
-                return;
-            _window._settings[pageIndex].OnEnable(_window._assetsPath);
+            Type type = typeof(T);
+            foreach (var configPanel in _window._settings)
+            {
+                if (configPanel.GetType() != type) continue;
+                _window._panelIndex = _window._settings.IndexOf(configPanel);
+                configPanel.OnEnable(_window._assetsPath);
+                break;
+            }
         }
     }
 }

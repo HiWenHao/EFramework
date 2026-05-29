@@ -34,5 +34,10 @@ namespace EasyFramework.Edit
         {
             AssetDatabase.SaveAssets();
         }
+
+        public static void CreateAssetsObject(string assetsName)
+        {
+            ProjectWindowUtil.CreateAssetWithContent(assetsName, "Assets/");
+        }
     }
 }
