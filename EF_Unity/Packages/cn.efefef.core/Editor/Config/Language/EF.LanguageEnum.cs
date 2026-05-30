@@ -99,6 +99,8 @@ namespace EasyFramework.Edit
 		Countdown,
 		/// <summary> 目录 </summary>
 		Catalogue,
+		/// <summary> 编译中 </summary>
+		Compiling,
 		/// <summary> 一致的 </summary>
 		Consistency,
 		/// <summary> 组件 </summary>

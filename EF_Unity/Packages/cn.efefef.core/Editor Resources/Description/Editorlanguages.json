@@ -353,6 +353,14 @@
       ]
     },
     {
+      "name": "Compiling",
+      "desc": "编译中",
+      "array": [
+        "Compiling",
+        "编译中"
+      ]
+    },
+    {
       "name": "Countdown",
       "desc": "倒计时",
       "array": [

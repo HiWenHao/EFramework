@@ -165,5 +165,53 @@ namespace EasyFramework.Edit.Windows
         
         
         #endregion
+
+        #region 覆盖层（刷新/编译/错误）
+
+        public static readonly GUIStyle OverlayLabel = new(EditorStyles.largeLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white },
+            fontSize = 14,
+        };
+
+        public static readonly GUIStyle OverlaySmallLabel = new(EditorStyles.largeLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.white },
+            fontSize = 10,
+        };
+
+        public static readonly Color OverlayRefreshBg = new(0.15f, 0.15f, 0.15f, 0.95f);
+        public static readonly Color OverlayErrorBg = new(0.3f, 0.1f, 0.1f, 0.95f);
+
+        #endregion
+
+        #region 进度条
+
+        public static readonly GUIStyle ProgressStatusLabel = new(EditorStyles.centeredGreyMiniLabel)
+        {
+            fontSize = 12,
+            fontStyle = FontStyle.Normal,
+            fixedHeight = 20,
+            normal = { textColor = new Color(0.9f, 0.9f, 0.9f) },
+        };
+
+        public static readonly GUIStyle ProgressPctLabel = new(EditorStyles.boldLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            fontSize = 11,
+            normal = { textColor = Color.white },
+        };
+
+        public static readonly Color ProgressBg = new(0.16f, 0.16f, 0.18f, 0.75f);
+        public static readonly Color ProgressGreen = new(0.22f, 0.72f, 0.30f, 1f);
+        public static readonly Color ProgressGreenGlow = new(0.55f, 0.95f, 0.55f, 0.40f);
+        public static readonly Color ProgressBlue = new(0.30f, 0.58f, 0.92f, 0.80f);
+        public static readonly Color ProgressBlueGlow = new(0.55f, 0.78f, 1f, 0.35f);
+        public static readonly Color ProgressHighlight = new(1f, 1f, 1f, 0.15f);
+        public static readonly Color ProgressBorder = new(0.35f, 0.35f, 0.35f, 0.55f);
+
+        #endregion
     }
 }
