@@ -13,7 +13,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Edit;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using Luban;
 using SimpleJSON;
 using UnityEngine;

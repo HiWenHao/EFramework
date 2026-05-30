@@ -9,7 +9,6 @@
  * ================================================
  */
 
-using EasyFramework.Systems.Assets;
 using UnityEngine;
 
 namespace EasyFramework.Managers.Assets
@@ -27,7 +26,7 @@ namespace EasyFramework.Managers.Assets
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Register()
         {
-            AssetsSystem.RegisterAssetSystem(AssetsSystemType.YooAsset, () => new YooAssetsSystem());
+            AssetsManager.RegisterAssetSystem(AssetsSystemType.YooAsset, () => new YooAssetsSystem());
         }
     }
 }

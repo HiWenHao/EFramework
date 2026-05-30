@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Assets
+namespace EasyFramework.Managers.Assets
 {
     /// <summary>
     ///	默认资产管理器 - 使用Resources

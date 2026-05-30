@@ -12,7 +12,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -192,7 +192,7 @@ namespace EasyFramework
             else
             {
                 sprite = null;
-                await AssetsSystem.Instance.Release(address);
+                await AssetsManager.Instance.Release(address);
             }
 
             address = null;
@@ -275,7 +275,7 @@ namespace EasyFramework
                 else
                 {
                     sprite = null;
-                    AssetsSystem.Instance.Release(oldAddress).Forget();
+                    AssetsManager.Instance.Release(oldAddress).Forget();
                 }
             }
 
@@ -310,7 +310,7 @@ namespace EasyFramework
             {
                 string atlasName = url[..index];
                 string spriteName = url[(index + 1)..];
-                SpriteAtlas spriteAtlas = await AssetsSystem.Instance.LoadAsync<SpriteAtlas>(atlasName);
+                SpriteAtlas spriteAtlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
                 if (null == spriteAtlas)
                 {
                     D.Warning($"Not found {atlasName} atlas..");
@@ -323,7 +323,7 @@ namespace EasyFramework
                     D.Warning($"{spriteName} not found in {atlasName} atlas.");
             }
             else
-                newSprite = await AssetsSystem.Instance.LoadAsync<Sprite>(url);
+                newSprite = await AssetsManager.Instance.LoadAsync<Sprite>(url);
 
             if (null == newSprite)
             {

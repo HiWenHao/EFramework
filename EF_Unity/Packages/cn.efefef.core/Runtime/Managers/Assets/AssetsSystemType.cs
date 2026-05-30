@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Systems.Assets
+namespace EasyFramework.Managers.Assets
 {
     /// <summary>
     /// 资源管理器类型

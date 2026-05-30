@@ -10,7 +10,7 @@
  */
 
 using System.Collections.Generic;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 
 namespace EasyFramework.Managers.Ui
@@ -19,7 +19,7 @@ namespace EasyFramework.Managers.Ui
     /// 用户界面系统
     /// </summary>
     [Manager(Order = 99400)]
-    [Dependency(typeof(AssetsSystem))]
+    [Dependency(typeof(AssetsManager))]
     public partial class UiSystem : MonoSingleton<UiSystem>, ISingleton, IUpdate
     {
         /// <summary>

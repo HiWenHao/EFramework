@@ -11,7 +11,7 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -21,7 +21,7 @@ namespace EasyFramework.Managers
     /// Sources manager.
     /// </summary>
     [Manager(Order = 89700)]
-    [Dependency(typeof(AssetsSystem))]
+    [Dependency(typeof(AssetsManager))]
     public class AudioManager : Singleton<AudioManager>, ISingleton, IUpdate
     {
         private bool _isPausing;
@@ -411,10 +411,10 @@ namespace EasyFramework.Managers
 
         private AudioClip GetClipByName(string name)
         {
-            string path = AssetsSystem.Instance.CurrentSystemType == AssetsSystemType.Default
+            string path = AssetsManager.Instance.CurrentSystemType == AssetsSystemType.Default
                 ? $"{EFC.Projects.AppConst.AudioPath}{name}"
                 : name;
-            return AssetsSystem.Instance.Load<AudioClip>(path);
+            return AssetsManager.Instance.Load<AudioClip>(path);
         }
         #endregion
     }

@@ -11,7 +11,7 @@
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using YooAsset;
 

@@ -1,10 +1,10 @@
 ﻿/*
  * ================================================
- * Describe:        This script is used to ..
+ * Describe:        This script is used to .
  * Author:          Alvin8412
- * CreationTime:    2026-05-30 16:33:57
+ * CreationTime:    2026-05-30 17:24:03
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-05-30 16:33:57
+ * ModifyTime:      2026-05-30 17:24:03
  * ScriptVersion:   0.1 
  * ================================================
  */
@@ -30,8 +30,7 @@ using EasyFramework.Managers;
 using EasyFramework.Managers.Event;
 using EasyFramework.Managers.Pool;
 using EasyFramework.Managers.Procedure;
-using EasyFramework.Systems.Assets;
-using EasyFramework.Systems.Patch;
+using EasyFramework.Managers.Assets;
 using EasyFramework.Managers.Ui;
 //using EasyFramework.Systems.Http;
 //using EasyFramework.Systems.RedDot;
@@ -65,7 +64,7 @@ public static class EF
     /// 资源加载管理器
     /// <para>Asset loading manager</para>
     /// </summary>
-    public static AssetsSystem Assets => AssetsSystem.Instance;
+    public static AssetsManager Assets => AssetsManager.Instance;
 
     /// <summary>
     /// 通用工具管理器
@@ -86,12 +85,6 @@ public static class EF
     public static EventManager Events => EventManager.Instance;
 
     /// <summary>
-    /// 补丁更新管理器（YooAsset）
-    /// <para>Patch update manager (YooAsset)</para>
-    /// </summary>
-    public static PatchSystem Patch => PatchSystem.Instance;
-
-    /// <summary>
     /// 场景管理器
     /// <para>Scene manager</para>
     /// </summary>
@@ -102,6 +95,9 @@ public static class EF
 
     /// <summary>UI 管理器<para>UI system manager</para></summary>
     public static UiSystem UI => UiSystem.Instance;
+
+    /// <summary> 补丁更新管理器（YooAsset）<para>Patch update manager (YooAsset)</para></summary>
+    public static PatchManager Patch => PatchManager.Instance;
 
     // /// <summary>HTTP 请求管理器<para>HTTP request manager</para></summary>
     // public static HttpsSystem Http => HttpsSystem.Instance;

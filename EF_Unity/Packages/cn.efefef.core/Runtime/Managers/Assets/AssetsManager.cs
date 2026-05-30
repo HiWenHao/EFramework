@@ -12,17 +12,16 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers;
 using Object = UnityEngine.Object;
 
-namespace EasyFramework.Systems.Assets
+namespace EasyFramework.Managers.Assets
 {
     /// <summary>
     /// 资源管理器
     /// <para>Assets system facade - routes to registered IAssetsSystem implementations</para>
     /// </summary>
     [Manager(Order = 99600)]
-    public class AssetsSystem : MonoSingleton<AssetsSystem>, ISingleton
+    public class AssetsManager : MonoSingleton<AssetsManager>, ISingleton
     {
         /// <summary> 当前管理器类型 <para>Current asset system type</para></summary>
         public AssetsSystemType CurrentSystemType { get; private set; }

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Pool;
-using EasyFramework.Systems.Assets;
+using EasyFramework.Managers.Assets;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -24,7 +24,7 @@ namespace EasyFramework.Managers.Audio
     /// <para>Audio system, managing BGM and Effect with mixer, pool and async playback.</para>
     /// </summary>
     [Manager(Order = 89700)]
-    [Dependency(typeof(PoolManager)), Dependency(typeof(AssetsSystem))]
+    [Dependency(typeof(PoolManager)), Dependency(typeof(AssetsManager))]
     public sealed class AudioManager : MonoSingleton<AudioManager>, ISingleton, IUpdate
     {
         /// <summary>
@@ -336,10 +336,10 @@ namespace EasyFramework.Managers.Audio
         // 加载音频资源
         private AudioClip LoadClip(string clipName)
         {
-            string path = AssetsSystem.Instance.CurrentSystemType == AssetsSystemType.Default
+            string path = AssetsManager.Instance.CurrentSystemType == AssetsSystemType.Default
                 ? $"{EFC.Projects.AppConst.AudioPath}{clipName}"
                 : clipName;
-            return AssetsSystem.Instance.Load<AudioClip>(path);
+            return AssetsManager.Instance.Load<AudioClip>(path);
         }
 
         // 从 PlayerPrefs 恢复设置

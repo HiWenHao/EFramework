@@ -12,7 +12,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Assets
+namespace EasyFramework.Managers.Assets
 {
     /// <summary>
     /// 资源管理器接口
