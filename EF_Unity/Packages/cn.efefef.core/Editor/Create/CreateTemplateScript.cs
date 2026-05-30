@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Edit.Create
 {
@@ -32,18 +33,18 @@ namespace EasyFramework.Edit.Create
 
         [MenuItem("Assets/Create/EF/C# Scripts/GameLauncherScript", false, 20)]
         public static void CreateGameLauncherScript() => Create("GameLauncher");
-        
-        [MenuItem("Assets/Create/EF/C# Scripts/EF.Launcher", false, 21)]
 
+        [MenuItem("Assets/Create/EF/C# Scripts/EF", false, 21)]
         // ReSharper disable once InconsistentNaming
-        public static void CreateEFLauncherScript() => Create("EFLauncher");
+        public static void CreateEFLauncherScript() => Create("EF", "EF_Icon");
 
-        private static void Create(string scriptName)
+        private static void Create(string scriptName, string scriptIconName = "")
         {
             CreateScriptAsset.ScriptName = scriptName;
+            CreateScriptAsset.ScriptIconName = scriptIconName;
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0,
                 ScriptableObject.CreateInstance<CreateScriptAsset>(),
-                Path.Combine(GetSelectedPathOrFallback(), $"\\{scriptName}.cs"),
+                GetSelectedPathOrFallback() + "/" + scriptName + ".cs",
                 null, Path.Combine(Utility.Path.GetEfAssetsPath(), $"ScriptTemplate/{scriptName}.cs.txt"));
         }
 
@@ -63,9 +64,10 @@ namespace EasyFramework.Edit.Create
             return path;
         }
 
-        class CreateScriptAsset : EndNameEditAction
+        private class CreateScriptAsset : EndNameEditAction
         {
             public static string ScriptName = "";
+            public static string ScriptIconName = "";
 
             public override void Action(int instanceId, string newScriptPath, string templatePath)
             {
@@ -73,7 +75,7 @@ namespace EasyFramework.Edit.Create
                 ProjectWindowUtil.ShowCreatedAsset(obj);
             }
 
-            public static Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
+            private static Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
             {
                 string fullPath = Path.GetFullPath(newScriptPath);
                 StreamReader streamReader = new StreamReader(templatePath);
@@ -93,7 +95,27 @@ namespace EasyFramework.Edit.Create
                 sw.Write(text);
                 sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);
-                return AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+                Object obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+
+                if (string.IsNullOrEmpty(ScriptIconName)) return obj;
+
+                string iconAssetPath = Utility.Path.GetEfAssetsPath() + $"/Gizmos/{ScriptIconName}.png";
+                string iconGuid = AssetDatabase.AssetPathToGUID(iconAssetPath);
+                if (string.IsNullOrEmpty(iconGuid)) return obj;
+
+                string metaFullPath = fullPath + ".meta";
+                string metaContent = File.ReadAllText(metaFullPath);
+                string iconLine = $"  icon: {{fileID: 2800000, guid: {iconGuid}, type: 3}}";
+
+                metaContent = metaContent.Contains("icon:")
+                    ? Regex.Replace(metaContent, @"  icon:.*", iconLine)
+                    : Regex.Replace(metaContent, @"(MonoImporter:\s*\n)", "$1" + iconLine + "\n");
+
+                File.WriteAllText(metaFullPath, metaContent);
+                AssetDatabase.ImportAsset(newScriptPath);
+                obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+
+                return obj;
             }
         }
     }

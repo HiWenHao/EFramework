@@ -2,18 +2,17 @@
  * ================================================
  * Describe:        This script is used to ..
  * Author:          Alvin8412
- * CreationTime:    2026-05-29 18:40:28
+ * CreationTime:    2026-05-30 16:33:57
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-05-29 18:40:28
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-05-30 16:33:57
+ * ScriptVersion:   0.1 
  * ================================================
  */
-
 
 /*
  *  EF.Launcher —— 跨包管理器统一访问入口
  *  Alvin8412.Wang(Wenhao)
- *
+ * 
  *  使用说明:
  *  本文件是 EF 门面类的模板。下方列出了所有 EF 生态包的管理器访问器。
  *  核心管理器（Core 内的）始终启用；外部包的管理器默认注释。根据你项目安装的 EF 包，取消对应注释即可。
@@ -23,7 +22,7 @@
  *  Below are listed all the manager accessors of the EF ecosystem packages.
  *  The core manager (within the Core section) is always enabled; the managers of external packages are commented out by default.
  *  Depending on the EF packages installed in your project, simply remove the corresponding comments.
- *
+ * 
  */
 
 using Cysharp.Threading.Tasks;

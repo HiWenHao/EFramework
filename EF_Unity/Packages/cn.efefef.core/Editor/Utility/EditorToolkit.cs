@@ -31,7 +31,7 @@ namespace EasyFramework.Edit
             string createTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             return "/*\n"
                    + " * ================================================\r\n"
-                   + $" * Describe:        {describe}.\r\n"
+                   + $" * Describe:        {describe}\r\n"
                    + $" * Author:          {authorName}\r\n"
                    + $" * CreationTime:    {createTime}\r\n"
                    + $" * ModifyAuthor:    {authorName}\r\n"
