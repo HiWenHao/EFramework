@@ -61,28 +61,16 @@ namespace EasyFramework.Edit
             {
                 _inputTips[i] = inputTips != null && i < inputTips.Length ? inputTips[i] : string.Empty;
             }
-
-            CustomProgressWindow.ShowWindow("Test", (bol) =>
-            {
-                
-            });
         }
 
         #endregion
 
         #region GUI
 
-        private int totle = 10;
-        private int current = 0;
         // 绘制输入框、确认/取消按钮，处理键盘快捷键
         private void OnGUI()
         {
             EditorGUILayout.Space(10);
-
-            if (GUILayout.Button("Test"))
-            {
-                CustomProgressWindow.UpdateInfo(++this.current, totle);
-            }
 
             for (int i = 0; i < _argCount; i++)
             {
