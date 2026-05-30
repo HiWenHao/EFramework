@@ -3,41 +3,46 @@
  * Describe:      YooAsset 资产管理器 —— 集成 PatchManager 的分包加载实现
  * Author:        Alvin8412
  * CreationTime:  2026-05-29 16:20:00
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-29 16:20:00
- * ScriptVersion: 0.1
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-05-30 17:34:00
+ * ScriptVersion: 0.2
  * ================================================
  */
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Assets;
 using UnityEngine;
 using YooAsset;
 
 namespace EasyFramework.Managers.Assets
 {
     /// <summary>
-    /// YooAsset 资产管理器
-    /// <para>YooAsset asset manager — integrates with PatchManager for sub-package loading</para>
+    /// YooAsset 资产管理器 —— 实现 <see cref="IAssetsSystem"/>，支持分包加载
+    /// <para>YooAsset asset manager — implements <see cref="IAssetsSystem"/> with sub-package loading support</para>
     /// </summary>
     public class YooAssetsSystem : IAssetsSystem
     {
-        public AssetsSystemType SystemType => AssetsSystemType.YooAsset;
         public bool OpenDebug { get; set; }
+        public AssetsSystemType SystemType => AssetsSystemType.YooAsset;
 
-        private Dictionary<string, AssetHandle> _assetHandles;        // 资源句柄缓存（key = "包名|资源路径" 或纯路径）
+        /// <summary>资源句柄缓存（key = 资源路径）<para>Asset handle cache (key = asset path)</para></summary>
+        private Dictionary<string, AssetHandle> _assetHandles;
 
+        /// <summary>
+        /// 初始化管理器 —— PatchManager.Init 已先行初始化 YooAssets，此处仅创建句柄缓存
+        /// <para>Initialize the manager — PatchManager.Init already initialized YooAssets; here we only create the handle cache</para>
+        /// </summary>
         public async UniTask Initialize()
         {
             await UniTask.CompletedTask;
-
-            // 确保 YooAssets 已初始化（PatchManager.Init 会先于此处执行）
             _assetHandles = new Dictionary<string, AssetHandle>();
-
             Log("YooAssetsSystem initialized.");
         }
 
+        /// <summary>
+        /// 销毁管理器 —— 释放所有句柄并清空缓存
+        /// <para>Destroy the manager — release all handles and clear the cache</para>
+        /// </summary>
         public async UniTask Destroy()
         {
             await ReleaseAll();
@@ -45,42 +50,42 @@ namespace EasyFramework.Managers.Assets
             Log("YooAssetsSystem destroyed.");
         }
 
-        #region 核心加载
-
         /// <summary>
-        /// 同步加载资源（使用默认包）
+        /// 从默认包同步加载资源
         /// <para>Synchronously load an asset from the default package</para>
         /// </summary>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public T Load<T>(string path) where T : Object
         {
             var pkg = GetDefaultPackage();
             if (pkg == null) return null;
-
-            return LoadFromPackageInternal<T>(pkg, path);
+            return LoadInternal<T>(pkg, path);
         }
 
         /// <summary>
-        /// 异步加载资源（使用默认包）
+        /// 从默认包异步加载资源
         /// <para>Asynchronously load an asset from the default package</para>
         /// </summary>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             var pkg = GetDefaultPackage();
             if (pkg == null) return null;
-
-            return await LoadFromPackageAsyncInternal<T>(pkg, path);
+            return await LoadAsyncInternal<T>(pkg, path);
         }
 
-        #endregion
-
-        #region 按包名加载（分包场景）
-
         /// <summary>
-        /// 从指定包同步加载资源
-        /// <para>Synchronously load an asset from a specific sub-package</para>
+        /// 从指定资源包同步加载资源
+        /// <para>Synchronously load an asset from a named resource package</para>
         /// </summary>
-        /// <param name="packageName">包名<para>Package name</para></param>
-        /// <param name="path">资源地址<para>Asset path</para></param>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <param name="packageName">包名（需已通过 PatchManager.RegisterSubPackages 注册）<para>Package name (must be registered via PatchManager.RegisterSubPackages)</para></param>
+        /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public T LoadFromPackage<T>(string packageName, string path) where T : Object
         {
             var pkg = PatchManager.Instance.GetPackage(packageName);
@@ -90,15 +95,17 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
-            return LoadFromPackageInternal<T>(pkg, path);
+            return LoadInternal<T>(pkg, path);
         }
 
         /// <summary>
-        /// 从指定包异步加载资源
-        /// <para>Asynchronously load an asset from a specific sub-package</para>
+        /// 从指定资源包异步加载资源
+        /// <para>Asynchronously load an asset from a named resource package</para>
         /// </summary>
-        /// <param name="packageName">包名<para>Package name</para></param>
-        /// <param name="path">资源地址<para>Asset path</para></param>
+        /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
+        /// <param name="packageName">包名（需已通过 PatchManager.RegisterSubPackages 注册）<para>Package name (must be registered via PatchManager.RegisterSubPackages)</para></param>
+        /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public async UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path) where T : Object
         {
             var pkg = PatchManager.Instance.GetPackage(packageName);
@@ -108,13 +115,14 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
-            return await LoadFromPackageAsyncInternal<T>(pkg, path);
+            return await LoadAsyncInternal<T>(pkg, path);
         }
 
-        #endregion
-
-        #region 释放
-
+        /// <summary>
+        /// 释放指定路径的资源句柄
+        /// <para>Release the asset handle at the given path</para>
+        /// </summary>
+        /// <param name="path">资源路径<para>Asset path</para></param>
         public async UniTask Release(string path)
         {
             await UniTask.CompletedTask;
@@ -126,6 +134,10 @@ namespace EasyFramework.Managers.Assets
             }
         }
 
+        /// <summary>
+        /// 释放所有已缓存的资源句柄
+        /// <para>Release all cached asset handles</para>
+        /// </summary>
         public async UniTask ReleaseAll()
         {
             await UniTask.CompletedTask;
@@ -137,27 +149,34 @@ namespace EasyFramework.Managers.Assets
             Log("All handles released.");
         }
 
+        /// <summary>
+        /// 清理默认包的未使用资源
+        /// <para>Unload unused assets from the default package</para>
+        /// </summary>
         public async UniTask CleanupUnusedAssets()
         {
             var pkg = GetDefaultPackage();
             if (pkg != null)
                 await pkg.UnloadUnusedAssetsAsync().ToUniTask();
+            Log("Default package unused assets cleaned up.");
         }
 
         /// <summary>
         /// 清理指定包的未使用资源
-        /// <para>Unload unused assets from a specific package</para>
+        /// <para>Unload unused assets from a specific sub-package</para>
         /// </summary>
+        /// <param name="packageName">包名<para>Package name</para></param>
         public async UniTask CleanupUnusedAssetsFromPackage(string packageName)
         {
             var pkg = PatchManager.Instance.GetPackage(packageName);
             if (pkg != null)
                 await pkg.UnloadUnusedAssetsAsync().ToUniTask();
+            Log($"Unused assets cleaned up from package: {packageName}");
         }
 
         /// <summary>
         /// 清理所有已注册包的未使用资源
-        /// <para>Unload unused assets from all registered packages</para>
+        /// <para>Unload unused assets from all registered sub-packages</para>
         /// </summary>
         public async UniTask CleanupAllPackages()
         {
@@ -167,37 +186,37 @@ namespace EasyFramework.Managers.Assets
             foreach (var cfg in registeredConfigs)
             {
                 var pkg = PatchManager.Instance.GetPackage(cfg.PackageName);
-                if (pkg != null)
-                    await pkg.UnloadUnusedAssetsAsync().ToUniTask();
+                if (pkg == null) continue;
+                await pkg.UnloadUnusedAssetsAsync().ToUniTask();
             }
+
+            Log("All packages unused assets cleaned up.");
         }
 
-        #endregion
+        #region 私有函数
 
-        #region 内部实现
-
-        // 获取默认资源包
+        /// <summary>
+        /// 获取默认资源包 —— 路由优先级：第一个核心包 → 第一个注册包 → DefaultPackage → 兜底创建
+        /// <para>Resolve the default resource package — priority: first essential package → first registered package → DefaultPackage → fallback create</para>
+        /// </summary>
         private ResourcePackage GetDefaultPackage()
         {
-            // 1. 优先使用 PatchManager 中注册的默认包
+            // 1. 从 PatchManager 已注册包中查找第一个核心包
             var registered = PatchManager.Instance.GetRegisteredConfigs();
             if (registered != null && registered.Count > 0)
             {
-                // 找第一个核心包作为默认
                 foreach (var cfg in registered)
                 {
-                    if (cfg.IsEssential)
-                        return PatchManager.Instance.GetPackage(cfg.PackageName);
+                    if (!cfg.IsEssential) continue;
+                    return PatchManager.Instance.GetPackage(cfg.PackageName);
                 }
-                // 没有核心包则取第一个
+
                 return PatchManager.Instance.GetPackage(registered[0].PackageName);
             }
 
-            // 2. 回退到 PatchManager 单包模式
             var pkg = PatchManager.Instance.GetPackage("DefaultPackage");
             if (pkg != null) return pkg;
 
-            // 3. 最终兜底：直接用 YooAssets 查或创建
             pkg = YooAssets.TryGetPackage("DefaultPackage");
             if (pkg == null)
             {
@@ -207,14 +226,15 @@ namespace EasyFramework.Managers.Assets
             return pkg;
         }
 
-        // 同步加载（包级）
-        private T LoadFromPackageInternal<T>(ResourcePackage pkg, string path) where T : Object
+        /// <summary>
+        /// 从指定 ResourcePackage 同步加载资源（命中缓存则直接返回）
+        /// <para>Synchronously load an asset from a specific ResourcePackage (returns cached handle if available)</para>
+        /// </summary>
+        private T LoadInternal<T>(ResourcePackage pkg, string path) where T : Object
         {
-            // 检查缓存
             if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
                 return handle.AssetObject as T;
 
-            // 加载新资源
             var newHandle = pkg.LoadAssetSync<T>(path);
             if (!newHandle.IsValid || newHandle.AssetObject == null)
             {
@@ -227,14 +247,15 @@ namespace EasyFramework.Managers.Assets
             return newHandle.AssetObject as T;
         }
 
-        // 异步加载（包级）
-        private async UniTask<T> LoadFromPackageAsyncInternal<T>(ResourcePackage pkg, string path) where T : Object
+        /// <summary>
+        /// 从指定 ResourcePackage 异步加载资源（命中缓存则直接返回）
+        /// <para>Asynchronously load an asset from a specific ResourcePackage (returns cached handle if available)</para>
+        /// </summary>
+        private async UniTask<T> LoadAsyncInternal<T>(ResourcePackage pkg, string path) where T : Object
         {
-            // 检查缓存
             if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
                 return handle.AssetObject as T;
 
-            // 加载新资源
             var newHandle = pkg.LoadAssetAsync<T>(path);
             await newHandle.ToUniTask();
 
@@ -248,10 +269,6 @@ namespace EasyFramework.Managers.Assets
             Log($"Loaded async: {path} [{pkg.PackageName}]");
             return newHandle.AssetObject as T;
         }
-
-        #endregion
-
-        #region Utils
 
         private void Log(string msg)
         {
