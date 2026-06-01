@@ -37,7 +37,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder = (UiBinding)target;
             _setting = EditorUtils.LoadSettingAtPath<UiBindingConfig>();
 
-            _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace) ? ConfigManager.Project.ScriptNamespace : _builder.Namespace;
+            _builder.Namespace = string.IsNullOrEmpty(_builder.Namespace)
+                ? ConfigManager.Project.ScriptNamespace
+                : _builder.Namespace;
             if (_builder.CreatePrefab)
                 _builder.PrefabPath = string.IsNullOrEmpty(_builder.PrefabPath)
                     ? ConfigManager.Path.UIPrefabPath
@@ -50,8 +52,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _tempComponentTypeNames = new List<string>();
             _componentsName = new Dictionary<string, int>();
 
-            _builder.SortByType = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
-            _builder.SortByNameLength = EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
+            _builder.SortByType =
+                EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortType", 1) == 1;
+            _builder.SortByNameLength =
+                EditorPrefs.GetInt(ConfigManager.Project.AppConst.AppPrefix + "UiBindSortName", 1) == 1;
             _builder.PackUpBindList = true;
 
             serializedObject.ApplyModifiedProperties();
@@ -164,7 +168,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (GUILayout.Button(LC.Combine(Lc.Select, Lc.Path), GUILayout.Width(100)))
             {
-                string folder = Path.Combine(Application.dataPath, isCodePath ? _builder.ScriptPath : _builder.PrefabPath);
+                string folder = Path.Combine(Application.dataPath,
+                    isCodePath ? _builder.ScriptPath : _builder.PrefabPath);
                 if (!Directory.Exists(folder)) folder = Application.dataPath;
                 string path = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Select, Lc.Path), folder, "");
                 if (!string.IsNullOrEmpty(path))
@@ -209,28 +214,30 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             _builder.PackUpBindList = EditorGUILayout.BeginFoldoutHeaderGroup(_builder.PackUpBindList,
                 _builder.PackUpBindList ? LC.Combine(Lc.Close, Lc.List) : LC.Combine(Lc.Open, Lc.List));
-    
+
             if (_builder.PackUpBindList)
             {
                 EditorGUILayout.BeginVertical("box");
                 _bindListScrollPos = EditorGUILayout.BeginScrollView(_bindListScrollPos, GUILayout.MaxHeight(300));
-        
+
                 int needDeleteIndex = -1;
                 for (int i = 0; i < _builder.BindDatas.Count; i++)
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(25));
                     EditorGUILayout.PrefixLabel(_builder.BindDatas[i].ScriptName);
-                    _builder.BindDatas[i].BindCom = (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
+                    _builder.BindDatas[i].BindCom =
+                        (Component)EditorGUILayout.ObjectField(_builder.BindDatas[i].BindCom, typeof(Component), true);
                     if (GUILayout.Button("X")) needDeleteIndex = i;
                     EditorGUILayout.EndHorizontal();
                 }
+
                 if (needDeleteIndex != -1) _builder.BindDatas.RemoveAt(needDeleteIndex);
-        
+
                 EditorGUILayout.EndScrollView();
                 EditorGUILayout.EndVertical();
             }
-    
+
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
@@ -240,7 +247,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _builder.DeleteScript = EditorGUILayout.Toggle(LC.Combine(Lc.Unload, Lc.This, Lc.Script),
                 _builder.DeleteScript);
             EditorGUILayout.Space(12f);
-            
+
             GUI.contentColor = GUIUtils.LightGreen;
             if (GUILayout.Button(LC.Combine(Lc.Bind, Lc.Create), GUILayout.Height(25.0f)))
             {
@@ -249,6 +256,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (_builder.DeleteScript) DestroyImmediate(_builder);
                 AssetDatabase.Refresh();
             }
+
             GUI.contentColor = Color.white;
         }
 
@@ -391,7 +399,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private const string StrChangeAuthor = "* ModifyAuthor:";
         private const string ButtonEventsStart = "#region Button invoke event. Do not change here.不要更改这行 -- Auto";
         private const string ButtonEventsEnd = "#endregion button invoke event. Do not change here.不要更改这行 -- Auto";
-        private const string ScriptExplain = "    //-----The script is auto generated. Please do not make any changes-----";
+
+        private const string ScriptExplain =
+            "    //-----The script is auto generated. Please do not make any changes-----";
 
         /// <summary>
         /// Gen auto bind code on the basis of special scriptName.
@@ -628,11 +638,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 int endIndex = -1;
                 for (int i = logicList.Count - 1; i >= 0; i--)
                 {
-                    if (logicList[i].Contains(ButtonEventsEnd))
-                    {
-                        endIndex = i;
-                        break;
-                    }
+                    if (!logicList[i].Contains(ButtonEventsEnd)) continue;
+                    endIndex = i;
+                    break;
                 }
 
                 if (endIndex != -1)
@@ -673,15 +681,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 if (strList[i].Contains(StrChangeAuthor))
                 {
-                    strList[i] = $" {StrChangeAuthor}  {EditorToolkit.GetAuthorName()}";
+                    strList[i] = $" {StrChangeAuthor}    {EditorToolkit.GetAuthorName()}";
                     continue;
                 }
 
-                if (strList[i].Contains(StrChangeTime))
-                {
-                    strList[i] = $" {StrChangeTime}    {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                    return;
-                }
+                if (!strList[i].Contains(StrChangeTime)) continue;
+                strList[i] = $" {StrChangeTime}      {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                return;
             }
         }
 
