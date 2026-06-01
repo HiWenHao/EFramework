@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:40
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:40
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:40
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -214,6 +214,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             for (int i = 0; i < particleArr.Length; i++)
             {
                 Renderer renderer = particleArr[i].GetComponent<Renderer>();
+                if (renderer == null) continue;
                 Material mat = renderer.sharedMaterial;
                 if (mat != null)
                 {

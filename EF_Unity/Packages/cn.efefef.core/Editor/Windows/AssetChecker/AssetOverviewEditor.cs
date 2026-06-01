@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:03
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:03
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:03
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -58,6 +58,11 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             {
                 _particleEffectOverviewPanel.OnDestroy();
                 _particleEffectOverviewPanel = null;
+            }
+            if (_configSettingPanel != null)
+            {
+                _configSettingPanel.OnDestroy();
+                _configSettingPanel = null;
             }
         }
 

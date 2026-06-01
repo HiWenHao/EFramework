@@ -47,7 +47,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 {
                     File.Delete(_filePath);
                     File.Delete($"{_filePath}.meta");
-                    AssetDatabase.Refresh();
+                    EditorApplication.delayCall += AssetDatabase.Refresh;
                 }
             }
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Load, Lc.Config, Lc.File }), "ButtonRight", GUILayout.Width(120)))
@@ -98,7 +98,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 }
                 if (!string.IsNullOrEmpty(_filePath))
                     SaveSettingRule(_filePath);
-                AssetDatabase.Refresh();
+                EditorApplication.delayCall += AssetDatabase.Refresh;
             }
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Add, Lc.Config })))
             {
@@ -163,7 +163,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                         for (int i = modelSetting.Folder.Count - 1; i >= 0; i--)
                         {
                             GUILayout.BeginHorizontal();
-                            GUILayout.TextField(modelSetting.Folder[i]);
+                            modelSetting.Folder[i] = GUILayout.TextField(modelSetting.Folder[i]);
                             if (GUILayout.Button("...", GUILayout.Width(30f)))
                             {
                                 string path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), Application.dataPath, "");

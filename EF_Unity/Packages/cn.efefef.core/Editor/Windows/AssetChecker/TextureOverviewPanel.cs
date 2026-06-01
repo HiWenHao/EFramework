@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:55
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:55
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:55
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -182,7 +182,8 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             GUILayout.Label(_texture.Width.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
             GUILayout.Label(_texture.Height.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
 
-            GUI.color = (_texture.MipMaps != _settingMap[_texture.AssetDesc].MipMaps) ? Color.red : Color.white;
+            GUI.color = (_settingMap.TryGetValue(_texture.AssetDesc, out var setting)
+                && _texture.MipMaps != setting.MipMaps) ? Color.red : Color.white;
             GUILayout.Label(_texture.MipMaps.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
             GUI.color = Color.white;
 
@@ -218,6 +219,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             {
                 EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), i / (float)_textures.Count);
                 TextureImporter texImp = AssetImporter.GetAtPath(_textures[i].FilePath) as TextureImporter;
+                if (texImp == null) continue;
                 texImp.mipmapEnabled = _settingMap[_textures[i].AssetDesc].MipMaps;
                 _textures[i].MipMaps = _settingMap[_textures[i].AssetDesc].MipMaps;
             }
@@ -225,7 +227,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             _textures.Clear();
             EditorUtility.ClearProgressBar();
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            EditorApplication.delayCall += AssetDatabase.Refresh;
         }
 
         /// <summary>
@@ -235,28 +237,28 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         /// <param name="filePath"></param>
         private TextureInformation GetTextureInformation(string filePath)
         {
-            Texture2D _t2d = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);
-            TextureImporter _texImp = AssetImporter.GetAtPath(filePath) as TextureImporter;
+            Texture2D t2d = AssetDatabase.LoadAssetAtPath<Texture2D>(filePath);
+            TextureImporter texImp = AssetImporter.GetAtPath(filePath) as TextureImporter;
 
-            TextureInformation _textrue = new TextureInformation
+            TextureInformation textrue = new TextureInformation
             {
                 Name = Path.GetFileName(filePath),
                 FilePath = filePath,
 
-                Width = _t2d.width,
-                Height = _t2d.height,
-                Format = _t2d.format.ToString(),
+                Width = t2d != null ? t2d.width : 0,
+                Height = t2d != null ? t2d.height : 0,
+                Format = t2d != null ? t2d.format.ToString() : "Unknown",
 
-                MipMaps = _texImp.mipmapEnabled,
-                MaxSize = _texImp.maxTextureSize,
+                MipMaps = texImp != null && texImp.mipmapEnabled,
+                MaxSize = texImp != null ? texImp.maxTextureSize : 0,
             };
 
-            _textrue.MemorySize = ComputeMemory(_t2d.format, _textrue.Width, _textrue.Height);
-            _textrue.MemoryText = _textrue.MemorySize >= 1024 ?
-                string.Format("{0:F}MB", _textrue.MemorySize / 1024) :
-                string.Format("{0:F}KB", _textrue.MemorySize);
+            textrue.MemorySize = ComputeMemory(t2d != null ? t2d.format : TextureFormat.ARGB32, textrue.Width, textrue.Height);
+            textrue.MemoryText = textrue.MemorySize >= 1024 ?
+                string.Format("{0:F}MB", textrue.MemorySize / 1024) :
+                string.Format("{0:F}KB", textrue.MemorySize);
 
-            return _textrue;
+            return textrue;
         }
 
         /// <summary>

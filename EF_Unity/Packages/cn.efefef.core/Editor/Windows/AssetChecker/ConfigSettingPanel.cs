@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:21
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:21
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:21
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -69,7 +69,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Save, Lc.Config} ), GUILayout.Width(80f)))
             {
                 AssetsCheckerConfig.SaveConfig();
-                AssetDatabase.Refresh();
+                EditorApplication.delayCall += AssetDatabase.Refresh;
             }
         }
 

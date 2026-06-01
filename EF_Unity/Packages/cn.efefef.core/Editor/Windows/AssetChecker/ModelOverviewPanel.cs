@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:34
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:34
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:34
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -207,6 +207,11 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
             Object resObj = AssetDatabase.LoadAssetAtPath<Object>(filePath);
             GameObject go = Object.Instantiate(resObj) as GameObject;
+            if (go == null)
+            {
+                if (resObj != null) Object.DestroyImmediate(resObj);
+                return modelInfo;
+            }
             SkinnedMeshRenderer skin = go.GetComponentInChildren<SkinnedMeshRenderer>();
             if (skin != null)
                 ReadSkinMeshRender(skin, modelInfo);
@@ -250,7 +255,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         private void ReadMeshRender(MeshRenderer modelMesh, ModelInformation model)
         {
             MeshFilter meshFilter = modelMesh.GetComponent<MeshFilter>();
-            if (meshFilter.sharedMesh != null)
+            if (meshFilter != null && meshFilter.sharedMesh != null)
             {
                 model.VertexCount = meshFilter.sharedMesh.vertexCount;
                 model.TriangleCount = meshFilter.sharedMesh.triangles.Length / 3;

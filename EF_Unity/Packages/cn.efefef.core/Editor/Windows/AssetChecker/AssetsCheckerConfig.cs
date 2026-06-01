@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-06-06 15:29:13
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-06-06 15:29:13
- * ScriptVersion: 0.1
+ * Describe:        This script is used to show the resource detection overview. Let's thank LiangZG!!!!!
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-06-06 15:29:13
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 18:07:04
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -39,7 +39,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         internal static string[] ScoreNames { get; private set; } = new[] { "完 美", "优 秀", "合 格", "超 标", "想起飞?" };
 
-        internal readonly static GUIStyle LabelStyle = new GUIStyle()
+        internal static readonly GUIStyle LabelStyle = new GUIStyle(GUI.skin.label)
         {
             normal = new GUIStyleState()
             {
@@ -51,7 +51,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         };
 
-        internal readonly static GUIStyle ButtonStyle = new GUIStyle("Button")
+        internal static readonly GUIStyle ButtonStyle = new GUIStyle("Button")
         {
             alignment = TextAnchor.MiddleLeft
         };
@@ -93,39 +93,42 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             XmlNode model = xml.SelectSingleNode("/CheckerConfigs/Model");
             if (model != null)
             {
-                int maxBones = int.Parse(model.Attributes["MaxBones"].Value);
-                int maxTriangs = int.Parse(model.Attributes["MaxTriangs"].Value);
-                ModelMaxBones = maxBones;
-                ModelMaxTriangs = maxTriangs;
+                if (int.TryParse(model.Attributes["MaxBones"]?.Value, out int maxBones))
+                    ModelMaxBones = maxBones;
+                if (int.TryParse(model.Attributes["MaxTriangs"]?.Value, out int maxTriangs))
+                    ModelMaxTriangs = maxTriangs;
             }
 
             XmlNode effect = xml.SelectSingleNode("/CheckerConfigs/Effect");
             if (effect != null)
             {
-                int maxMaterials = int.Parse(effect.Attributes["MaxMatrials"].Value);
-                int maxParticles = int.Parse(effect.Attributes["MaxParticles"].Value);
-                EffectMaxMatrials = maxMaterials;
-                EffectMaxParticles = maxParticles;
+                if (int.TryParse(effect.Attributes["MaxMatrials"]?.Value, out int maxMaterials))
+                    EffectMaxMatrials = maxMaterials;
+                if (int.TryParse(effect.Attributes["MaxParticles"]?.Value, out int maxParticles))
+                    EffectMaxParticles = maxParticles;
             }
 
             XmlNode common = xml.SelectSingleNode("/CheckerConfigs/Common");
-            if (common != null)
+            if (common == null) return;
+            XmlNodeList names = common.SelectNodes("ScoreNames");
+            ScoreNames = new string[names.Count];
+            for (int i = 0; i < names.Count; i++)
             {
-                XmlNodeList names = common.SelectNodes("ScoreNames");
-                ScoreNames = new string[names.Count];
-                for (int i = 0; i < names.Count; i++)
-                {
-                    string scoreNameAttr = names[i].Attributes["ScoreName_" + i].Value;
-                    ScoreNames[i] = scoreNameAttr;
-                }
+                string scoreNameAttr = names[i].Attributes["ScoreName_" + i].Value;
+                ScoreNames[i] = scoreNameAttr;
+            }
 
-                XmlNodeList colors = common.SelectNodes("ScoreColors");
-                ScoreColors = new Color[colors.Count];
-                for (int i = 0; i < colors.Count; i++)
-                {
-                    string[] scoreColorAttr = colors[i].Attributes["ScoreColor_" + i].Value.Split(',');
-                    ScoreColors[i] = new Color(float.Parse(scoreColorAttr[0]), float.Parse(scoreColorAttr[1]), float.Parse(scoreColorAttr[2]));
-                }
+            XmlNodeList colors = common.SelectNodes("ScoreColors");
+            if (colors == null) return;
+            ScoreColors = new Color[colors.Count];
+            for (int i = 0; i < colors.Count; i++)
+            {
+                string[] rgba = colors[i].Attributes?["ScoreColor_" + i]?.Value.Split(',');
+                if (rgba != null && rgba.Length >= 3
+                                 && float.TryParse(rgba[0], out float r)
+                                 && float.TryParse(rgba[1], out float g)
+                                 && float.TryParse(rgba[2], out float b))
+                    ScoreColors[i] = new Color(r, g, b);
             }
         }
 
