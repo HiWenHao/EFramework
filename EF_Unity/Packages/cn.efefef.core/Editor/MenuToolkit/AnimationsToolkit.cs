@@ -3,9 +3,9 @@
  * Describe:        The class to used clip animations.
  * Author:          Faquan.Xue
  * CreationTime:    2023-04-19-17:34:01
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 15:42:00
- * ScriptVersion: 0.1
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 15:03:52
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
@@ -30,7 +30,7 @@ namespace EasyFramework.Edit.MenuToolkit
                 AnimationClip clip = obj as AnimationClip;
                 if (clip == null)
                 {
-                    D.Error($"The object: <<{obj.name}>> is not a animation clip");
+                    D.Error($"The object: << {obj.name} >> is not a animation clip");
                     continue;
                 }
 
@@ -49,7 +49,7 @@ namespace EasyFramework.Edit.MenuToolkit
 
                 if (!Directory.Exists(path))
                 {
-                    D.Error($"The <<{obj.name}>> is not a folder, please reselection.");
+                    D.Error($"The << {obj.name} >> is not a folder, please reselection.");
                     continue;
                 }
 
@@ -57,9 +57,10 @@ namespace EasyFramework.Edit.MenuToolkit
                 FileInfo[] files = directoryInfo.GetFiles("*.anim");
                 foreach (FileInfo file in files)
                 {
-                    string fbxPath = file.FullName[file.FullName.IndexOf("Assets", StringComparison.Ordinal)..];
-                    AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(fbxPath);
-                    CullCurves(clip);
+                    string relativePath = file.FullName.SafeSubstring("Assets");
+                    if (string.IsNullOrEmpty(relativePath)) continue;
+                    AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(relativePath);
+                    if (clip != null) CullCurves(clip);
                 }
             }
         }
@@ -76,8 +77,8 @@ namespace EasyFramework.Edit.MenuToolkit
                 if (Directory.Exists(path))
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                    string pt = directoryInfo.FullName.Remove(
-                        directoryInfo.FullName.IndexOf("Assets", StringComparison.Ordinal));
+                    string pt = directoryInfo.FullName.RemoveSafeAfter("Assets");
+                    if (string.IsNullOrEmpty(pt)) continue;
                     pt += ConfigManager.Path.ExtractPath + directoryInfo.Name;
 
                     if (Directory.Exists(pt))
@@ -87,23 +88,21 @@ namespace EasyFramework.Edit.MenuToolkit
                     FileInfo[] files = directoryInfo.GetFiles("*.FBX");
                     foreach (FileInfo file in files)
                     {
-                        if (file.Extension == ".fbx" || file.Extension == ".FBX")
-                        {
-                            AnimationClip clip =
-                                AssetDatabase.LoadAssetAtPath<AnimationClip>(
-                                    file.FullName[file.FullName.IndexOf("Assets")..]);
-                            ExtractClips(clip, directoryInfo.Name);
-                        }
+                        if (file.Extension is not (".fbx" or ".FBX")) continue;
+                        string relativePath = file.FullName.SafeSubstring("Assets");
+                        if (string.IsNullOrEmpty(relativePath)) continue;
+                        AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(relativePath);
+                        if (clip != null) ExtractClips(clip, directoryInfo.Name);
                     }
                 }
                 else
                 {
-                    AnimationClip clip =
-                        AssetDatabase.LoadAssetAtPath<AnimationClip>(
-                            path[path.IndexOf("Assets", StringComparison.Ordinal)..]);
+                    string relativePath = path.SafeSubstring("Assets");
+                    if (string.IsNullOrEmpty(relativePath)) continue;
+                    AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(relativePath);
                     if (!clip)
                     {
-                        D.Error($"The <<{obj.name}>> is not a FBX/fbx file or folder, please reselection.");
+                        D.Error($"The << {obj.name} >> is not a FBX/fbx file or folder, please reselection.");
                         continue;
                     }
 
@@ -116,65 +115,75 @@ namespace EasyFramework.Edit.MenuToolkit
 
         private static void ExtractClips(AnimationClip clip, string directoryName)
         {
-            AnimationClip tempAC = new AnimationClip();
-            EditorUtility.CopySerialized(clip, tempAC);
-            CullCurves(tempAC);
+            AnimationClip tempAc = new AnimationClip();
+            EditorUtility.CopySerialized(clip, tempAc);
+            CullCurves(tempAc);
             string path = ConfigManager.Path.ExtractPath + directoryName + "/" +
-                          EditorUtils.RemovePunctuation(tempAC.name);
+                          EditorUtils.RemovePunctuation(tempAc.name);
             int clipIndex = 0;
-            while (File.Exists($"{path}_{clipIndex}.anim"))
+            int maxIndex = 10000; // 防止无限循环
+            while (File.Exists($"{path}_{clipIndex}.anim") && clipIndex < maxIndex)
             {
                 clipIndex++;
             }
 
-            AssetDatabase.CreateAsset(tempAC, $"{path}_{clipIndex}.anim");
-            EditorUtility.SetDirty(tempAC);
+            AssetDatabase.CreateAsset(tempAc, $"{path}_{clipIndex}.anim");
+            EditorUtility.SetDirty(tempAc);
         }
 
         private static void CullCurves(AnimationClip clip)
         {
             if (clip == null) return;
-            // 获取Animation的所有Curve
             EditorCurveBinding[] binds = AnimationUtility.GetCurveBindings(clip);
-            string floatFormat = "f3";
+            const string floatFormat = "f3";
 
             foreach (var bind in binds)
             {
-                // 通常名称都是m_LocalScale.(x/y/z),如果是就置空
                 if (bind.propertyName.Contains("Scale"))
-                    AnimationUtility.SetEditorCurve(clip, bind, null);
-                else
                 {
-                    AnimationCurve curve = AnimationUtility.GetEditorCurve(clip, bind);
-                    if (curve == null)
-                        continue;
-                    var keys = curve.keys;
-                    for (int index = 0; index < keys.Length; index++)
-                    {
-                        Keyframe _keyframe = keys[index];
-                        _keyframe.time = float.Parse(_keyframe.time.ToString(floatFormat));
-                        _keyframe.value = float.Parse(_keyframe.value.ToString(floatFormat));
-                        _keyframe.inTangent = float.Parse(_keyframe.inTangent.ToString(floatFormat));
-                        _keyframe.outTangent = float.Parse(_keyframe.outTangent.ToString(floatFormat));
-                        _keyframe.inWeight = float.Parse(_keyframe.inWeight.ToString(floatFormat));
-                        _keyframe.outWeight = float.Parse(_keyframe.outWeight.ToString(floatFormat));
-                        keys[index] = _keyframe;
-                    }
-
-                    // struct 需要重新指定
-                    curve.keys = keys;
-                    // 重新指定
-                    AnimationUtility.SetEditorCurve(clip, bind, curve);
+                    AnimationUtility.SetEditorCurve(clip, bind, null);
+                    continue;
                 }
+
+                AnimationCurve curve = AnimationUtility.GetEditorCurve(clip, bind);
+                if (curve == null) continue;
+                var keys = curve.keys;
+                for (int index = 0; index < keys.Length; index++)
+                {
+                    Keyframe keyframe = keys[index];
+                    keyframe.time = float.Parse(keyframe.time.ToString(floatFormat));
+                    keyframe.value = float.Parse(keyframe.value.ToString(floatFormat));
+                    keyframe.inTangent = float.Parse(keyframe.inTangent.ToString(floatFormat));
+                    keyframe.outTangent = float.Parse(keyframe.outTangent.ToString(floatFormat));
+                    keyframe.inWeight = float.Parse(keyframe.inWeight.ToString(floatFormat));
+                    keyframe.outWeight = float.Parse(keyframe.outWeight.ToString(floatFormat));
+                    keys[index] = keyframe;
+                }
+
+                curve.keys = keys;
+                AnimationUtility.SetEditorCurve(clip, bind, curve);
             }
 
-            //删除editor配置信息
             SerializedObject so = new SerializedObject(clip);
             so.FindProperty("m_EditorCurves").arraySize = 0;
             so.FindProperty("m_EulerEditorCurves").arraySize = 0;
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(clip);
             AssetDatabase.SaveAssets();
+        }
+
+        // 辅助：从绝对路径中安全截取 "Assets..." 开头的相对路径
+        private static string SafeSubstring(this string fullPath, string marker)
+        {
+            int idx = fullPath.IndexOf(marker, StringComparison.Ordinal);
+            return idx >= 0 ? fullPath[idx..] : null;
+        }
+
+        // 辅助：从绝对路径中安全移除 "Assets" 之前的部分
+        private static string RemoveSafeAfter(this string fullPath, string marker)
+        {
+            int idx = fullPath.IndexOf(marker, StringComparison.Ordinal);
+            return idx >= 0 ? fullPath.Remove(idx) : null;
         }
     }
 }

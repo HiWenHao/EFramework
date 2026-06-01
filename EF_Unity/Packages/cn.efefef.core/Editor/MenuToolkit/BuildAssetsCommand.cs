@@ -1,8 +1,9 @@
-﻿using HybridCLR.Editor.Commands;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HybridCLR.Editor;
+using HybridCLR.Editor.Commands;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,12 +30,13 @@ namespace EasyFramework.Edit.MenuToolkit
 
         public static string ToRelativeAssetPath(string s)
         {
-            return s.Substring(s.IndexOf("Assets/"));
+            int idx = s.IndexOf("Assets/", StringComparison.Ordinal);
+            return idx >= 0 ? s[idx..] : s;
         }
 
         /// <summary>
-        /// 将HotFix.dll和HotUpdatePrefab.prefab打入common包.
-        /// 将HotUpdateScene.unity打入scene包.
+        /// 将HotFix.dll和预制体打入 AssetBundle
+        /// <para>Pack HotFix.dll and prefabs into AssetBundles</para>
         /// </summary>
         /// <param name="tempDir"></param>
         /// <param name="outputDir"></param>
@@ -43,23 +45,35 @@ namespace EasyFramework.Edit.MenuToolkit
         {
             Directory.CreateDirectory(tempDir);
             Directory.CreateDirectory(outputDir);
-            
+
             List<AssetBundleBuild> abs = new List<AssetBundleBuild>();
 
+            // 收集项目中的 Prefab（如需自定义，请修改此处的收集规则）
             {
                 var prefabAssets = new List<string>();
-                string testPrefab = $"{Application.dataPath}/Prefabs/Cube.prefab";
-                prefabAssets.Add(testPrefab);
-                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-                abs.Add(new AssetBundleBuild
+                string prefabsDir = $"{Application.dataPath}/Prefabs";
+                if (Directory.Exists(prefabsDir))
                 {
-                    assetBundleName = "prefabs",
-                    assetNames = prefabAssets.Select(s => ToRelativeAssetPath(s)).ToArray(),
-                });
+                    var prefabFiles = Directory.GetFiles(prefabsDir, "*.prefab", SearchOption.AllDirectories);
+                    prefabAssets.AddRange(prefabFiles);
+                }
+
+                if (prefabAssets.Count > 0)
+                {
+                    AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                    abs.Add(new AssetBundleBuild
+                    {
+                        assetBundleName = "prefabs",
+                        assetNames = prefabAssets.Select(s => ToRelativeAssetPath(s)).ToArray(),
+                    });
+                }
             }
 
-            BuildPipeline.BuildAssetBundles(outputDir, abs.ToArray(), BuildAssetBundleOptions.None, target);
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            if (abs.Count > 0)
+            {
+                BuildPipeline.BuildAssetBundles(outputDir, abs.ToArray(), BuildAssetBundleOptions.None, target);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            }
         }
 
         public static void BuildAssetBundleByTarget(BuildTarget target)
@@ -81,13 +95,6 @@ namespace EasyFramework.Edit.MenuToolkit
             CopyAssetBundlesToStreamingAssets(target);
             CopyAOTAssembliesToStreamingAssets();
             CopyHotUpdateAssembliesToStreamingAssets();
-        }
-
-
-        //[MenuItem("HybridCLR/Build/BuildAssetbundle")]
-        public static void BuildSceneAssetBundleActiveBuildTargetExcludeAOT()
-        {
-            BuildAssetBundleByTarget(EditorUserBuildSettings.activeBuildTarget);
         }
 
         public static void CopyAOTAssembliesToStreamingAssets()
@@ -136,7 +143,7 @@ namespace EasyFramework.Edit.MenuToolkit
                 string srcAb = ToRelativeAssetPath($"{outputDir}/{ab}");
                 string dstAb = ToRelativeAssetPath($"{streamingAssetPathDst}/{ab}");
                 Debug.Log($"[CopyAssetBundlesToStreamingAssets] copy assetbundle {srcAb} -> {dstAb}");
-                AssetDatabase.CopyAsset( srcAb, dstAb);
+                AssetDatabase.CopyAsset(srcAb, dstAb);
             }
         }
     }

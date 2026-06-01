@@ -1,11 +1,11 @@
-﻿/*
+/*
  * ================================================
  * Describe:      This script is used to copy the file info.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-04-24 20:55:56
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 15:42:00
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-01 14:50:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -122,81 +122,78 @@ namespace EasyFramework.Edit.MenuToolkit
         /// </summary>
         internal static class ShowFileSize
         {
-            private const string REMOVE_STR = "Assets";
-            private const string FILESIZE = "FileSize";
+            private const string RemoveStr = "Assets";
+            private const string Filesize = "FileSize";
 
-            private static readonly int _removeCount = REMOVE_STR.Length;
-            private static readonly Color _professionalColor = new Color(56f / 255, 56f / 255, 56f / 255, 1);
-            private static readonly Color _personaloColor = new Color(194f / 255, 194f / 255, 194f / 255, 1);
-            private static Dictionary<string, long> _dirSizeDictionary = new Dictionary<string, long>();
-            private static List<string> _dirList = new List<string>();
+            private static readonly int RemoveCount = RemoveStr.Length;
+            private static readonly Color ProfessionalColor = new Color(56f / 255, 56f / 255, 56f / 255, 1);
+            private static readonly Color PersonalColor = new Color(194f / 255, 194f / 255, 194f / 255, 1);
+            private static readonly Dictionary<string, long> DirSizeDictionary = new Dictionary<string, long>();
+            private static readonly List<string> DirList = new List<string>();
             private static bool _isShowSize = true;
+
+            /// <summary>
+            /// 获取皮肤 —— 首次通过反射读取并缓存，后续直接在 OnGUI 返回
+            /// <para>Detect dark skin — caches the reflection result after first call to avoid per-frame overhead</para>
+            /// </summary>
+            private static bool? _cachedUseDark;
 
             [MenuItem("EFTools/Tools/Project File Size", priority = 300)]
             private static void OpenPlaySize()
             {
                 _isShowSize = !_isShowSize;
-                EditorPrefs.SetBool(FILESIZE, _isShowSize);
-                GetPropjectDirs();
+                EditorPrefs.SetBool(Filesize, _isShowSize);
+                GetProjectDirs();
                 AssetDatabase.Refresh();
             }
 
             [InitializeOnLoadMethod]
             private static void InitializeOnLoadMethod()
             {
-                EditorApplication.projectChanged += GetPropjectDirs;
-                //在ProjectWindow中，为每个可见列表项委派OnGUI事件。
+                EditorApplication.projectChanged += GetProjectDirs;
                 EditorApplication.projectWindowItemOnGUI += OnGUI;
             }
 
             [UnityEditor.Callbacks.DidReloadScripts]
             private static void OnScriptsReloaded()
             {
-                GetPropjectDirs();
+                GetProjectDirs();
             }
 
-            private static void GetPropjectDirs()
+            private static void GetProjectDirs()
             {
                 Init();
-                if (_isShowSize == false) return;
-                GetAllDirecotries(Application.dataPath);
-                foreach (string path in _dirList)
+                if (!_isShowSize) return;
+                GetAllDirectories(Application.dataPath);
+                foreach (string path in DirList)
                 {
                     string newPath = path.Replace("\\", "/");
-                    _dirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
+                    DirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
                 }
             }
 
             private static void Init()
             {
-                _isShowSize = EditorPrefs.GetBool(FILESIZE);
-                _dirSizeDictionary.Clear();
-                _dirList.Clear();
+                _isShowSize = EditorPrefs.GetBool(Filesize);
+                DirSizeDictionary.Clear();
+                DirList.Clear();
             }
 
-            //刷新编辑器ui
             private static void OnGUI(string guid, Rect selectionRect)
             {
-                if (_isShowSize == false || selectionRect.height > 16) return; //>16为防止文件图标缩放时引起排版错乱
+                if (!_isShowSize || selectionRect.height > 16) return;
                 var dataPath = Application.dataPath;
-                var startIndex = dataPath.LastIndexOf(REMOVE_STR);
-                var dir = dataPath.Remove(startIndex, _removeCount);
+                var startIndex = dataPath.LastIndexOf(RemoveStr, StringComparison.Ordinal);
+                var dir = dataPath.Remove(startIndex, RemoveCount);
                 var path = dir + AssetDatabase.GUIDToAssetPath(guid);
                 string text;
 
                 long fileSize;
-                if (_dirSizeDictionary.ContainsKey(path))
-                {
-                    fileSize = _dirSizeDictionary[path];
-                }
+                if (DirSizeDictionary.TryGetValue(path, out var value))
+                    fileSize = value;
                 else if (File.Exists(path))
-                {
                     fileSize = new FileInfo(path).Length;
-                }
-                else
-                {
-                    return;
-                }
+                else return;
 
                 text = GetFormatSizeString((int)fileSize);
 
@@ -208,71 +205,58 @@ namespace EasyFramework.Edit.MenuToolkit
                 pos.x = pos.xMax - width;
                 pos.width = width;
 
-                EditorGUI.DrawRect(pos, UseDark() ? _professionalColor : _personaloColor);
+                EditorGUI.DrawRect(pos, UseDark() ? ProfessionalColor : PersonalColor);
                 Color defaultC = GUI.color;
 
-                if (fileSize > 1024 * 1024 * 10)
+                GUI.color = fileSize switch
                 {
-                    GUI.color = Color.red;
-                }
-                else if (fileSize > 1024 * 1024)
-                {
-                    GUI.color = Color.yellow;
-                }
+                    > 1024 * 1024 * 10 => Color.red,
+                    > 1024 * 1024 => Color.yellow,
+                    _ => GUI.color
+                };
 
                 GUI.Label(pos, text);
                 GUI.color = defaultC;
             }
 
-            /// <summary>
-            /// 获取皮肤
-            /// </summary>
             private static bool UseDark()
             {
-                PropertyInfo propertyInfo =
-                    typeof(EditorGUIUtility).GetProperty("skinIndex", BindingFlags.Static | BindingFlags.NonPublic);
-                bool useDark = (int)propertyInfo.GetValue(null) == 1;
-                return useDark;
+                if (_cachedUseDark.HasValue)
+                    return _cachedUseDark.Value;
+
+                PropertyInfo propertyInfo = typeof(EditorGUIUtility).GetProperty("skinIndex",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                _cachedUseDark = propertyInfo != null && (int)propertyInfo.GetValue(null) == 1;
+                return _cachedUseDark.Value;
             }
 
-            //计算文件大小
             private static string GetFormatSizeString(int size)
             {
-                string[] ns = new string[] { "Byte", "KB", "MB", "GB", "TB", "PB" };
-                double baseNum = 1024;
+                string[] ns = new[] { "Byte", "KB", "MB", "GB", "TB", "PB" };
                 if (size <= 0)
-                {
                     return $"{0:F2} {ns[0]}";
-                }
 
+                const double baseNum = 1024;
                 int pow = Math.Min((int)Math.Floor(Math.Log(size, baseNum)), ns.Length - 1);
 
                 return $"{size / Math.Pow(baseNum, pow):F2} {ns[pow]}";
             }
 
-            //获取Asset目录下所有的文件路径
-            private static void GetAllDirecotries(string dirPath)
+            private static void GetAllDirectories(string dirPath)
             {
-                if (Directory.Exists(dirPath) == false)
-                {
-                    return;
-                }
+                if (!Directory.Exists(dirPath)) return;
 
-                _dirList.Add(dirPath);
+                DirList.Add(dirPath);
                 DirectoryInfo[] dirArray = new DirectoryInfo(dirPath).GetDirectories();
                 foreach (DirectoryInfo item in dirArray)
                 {
-                    GetAllDirecotries(item.FullName);
+                    GetAllDirectories(item.FullName);
                 }
             }
 
-            //获取具体路径文件的大小
             private static long GetDirectoriesSize(string dirPath)
             {
-                if (Directory.Exists(dirPath) == false)
-                {
-                    return 0;
-                }
+                if (!Directory.Exists(dirPath)) return 0;
 
                 long size = 0;
                 DirectoryInfo dir = new DirectoryInfo(dirPath);

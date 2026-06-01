@@ -7,13 +7,19 @@ using UnityEngine;
 
 namespace EasyFramework.Edit.MenuToolkit
 {
-    public class BuildPlayerCommand
+    public static class BuildPlayerCommand
     {
         public static void CopyAssets(string outputDir)
         {
             Directory.CreateDirectory(outputDir);
 
-            foreach(var srcFile in Directory.GetFiles(Application.streamingAssetsPath))
+            if (!Directory.Exists(Application.streamingAssetsPath))
+            {
+                Debug.LogWarning("StreamingAssets 目录不存在，跳过拷贝");
+                return;
+            }
+
+            foreach (var srcFile in Directory.GetFiles(Application.streamingAssetsPath))
             {
                 string dstFile = $"{outputDir}/{Path.GetFileName(srcFile)}";
                 File.Copy(srcFile, dstFile, true);
