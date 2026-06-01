@@ -32,7 +32,8 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem("EFTools/Utility/Start Luban", false, 10001)]
         private static void StartLuban()
         {
-            string[] collection = {
+            string[] collection =
+            {
                 $"{Application.dataPath[..^6]}{ConfigManager.Path.LubanDataPath}",
                 $"{Application.dataPath[..^6]}{ConfigManager.Path.LubanCodePath}"
             };
@@ -58,7 +59,8 @@ namespace EasyFramework.Edit.MenuToolkit
                         WorkingDirectory = programPath,
                         CreateNoWindow = true,
                         UseShellExecute = false,
-                        RedirectStandardOutput = true
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
                     };
 
                 if (arguments != null)
@@ -68,6 +70,9 @@ namespace EasyFramework.Edit.MenuToolkit
                     }
 
                 myprocess.Start();
+                myprocess.BeginOutputReadLine();
+                myprocess.BeginErrorReadLine();
+                myprocess.WaitForExit();
             }
             catch (Exception ex)
             {

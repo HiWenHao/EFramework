@@ -37,7 +37,9 @@ namespace EasyFramework.Edit.MenuToolkit
 
             string absPath = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? string.Empty, assetPath);
             if (string.IsNullOrEmpty(absPath)) return;
-            string contents = File.ReadAllText(absPath, Encoding.GetEncoding("GB2312"));
+
+            Encoding detectedEncoding = DetectFileEncoding(absPath);
+            string contents = File.ReadAllText(absPath, detectedEncoding);
             File.WriteAllText(absPath, contents, Encoding.UTF8);
 
             AssetDatabase.Refresh();
@@ -80,6 +82,33 @@ namespace EasyFramework.Edit.MenuToolkit
             }
 
             AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// 检测文件编码（优先 BOM，否则默认 UTF-8）
+        /// <para>Detect file encoding — BOM first, fallback to UTF-8</para>
+        /// </summary>
+        private static Encoding DetectFileEncoding(string filePath)
+        {
+            byte[] bom = new byte[4];
+            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                int read = fs.Read(bom, 0, 4);
+                switch (read)
+                {
+                    case >= 3 when bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF:
+                        return Encoding.UTF8; // UTF-8 BOM
+                    case >= 2 when bom[0] == 0xFF && bom[1] == 0xFE:
+                        return Encoding.Unicode; // UTF-16 LE
+                    case >= 2 when bom[0] == 0xFE && bom[1] == 0xFF:
+                        return Encoding.BigEndianUnicode; // UTF-16 BE
+                    case >= 4 when bom[0] == 0x00 && bom[1] == 0x00 && bom[2] == 0xFE && bom[3] == 0xFF:
+                        return new UTF32Encoding(true, true); // UTF-32 BE
+                    case >= 4 when bom[0] == 0xFF && bom[1] == 0xFE && bom[2] == 0x00 && bom[3] == 0x00:
+                        return new UTF32Encoding(false, true); // UTF-32 LE
+                }
+            }
+            return Encoding.UTF8;
         }
     }
 }

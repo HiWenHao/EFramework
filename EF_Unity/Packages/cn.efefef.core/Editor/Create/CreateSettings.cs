@@ -64,8 +64,6 @@ namespace EasyFramework.Edit.Create
                 Directory.CreateDirectory(folder);
             AssetDatabase.CreateAsset(asset, configPath);
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            
             Selection.activeObject = asset;
             return asset;
         }

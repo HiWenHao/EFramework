@@ -82,26 +82,25 @@ namespace EasyFramework.Edit.Windows
         }
         
         
-        private static GUIStyle _text;
-        /// <summary> 通用文本 </summary>
+        /// <summary> 通用文本（每次返回新实例，避免多调用方共享状态被覆盖） </summary>
         public static GUIStyle Text(int fontSize = 12, FontStyle fontStyle = FontStyle.Normal)
         {
-            _text ??= new GUIStyle(GUI.skin.label);
-            _text.fontSize = fontSize;
-            _text.fontStyle = fontStyle;
-            return _text;
+            return new GUIStyle(GUI.skin.label)
+            {
+                fontSize = fontSize,
+                fontStyle = fontStyle
+            };
         }
-        
-        
-        private static GUIStyle _colorText;
-        /// <summary> 彩色文本 </summary>
+
+        /// <summary> 彩色文本（每次返回新实例，避免多调用方共享状态被覆盖） </summary>
         public static GUIStyle ColorText(int fontSize = 12, FontStyle fontStyle = FontStyle.Normal, Color textColor = default)
         {
-            _colorText ??= new GUIStyle(GUI.skin.label);
-            _colorText.fontSize = fontSize;
-            _colorText.fontStyle = fontStyle;
-            _colorText.normal.textColor = textColor;
-            return _colorText;
+            return new GUIStyle(GUI.skin.label)
+            {
+                fontSize = fontSize,
+                fontStyle = fontStyle,
+                normal = { textColor = textColor }
+            };
         }
 
 
@@ -122,16 +121,17 @@ namespace EasyFramework.Edit.Windows
 
         #region Button
 
-        private static GUIStyle _button;
-        /// <summary> 通用按钮 </summary>
+        /// <summary> 通用按钮（每次返回新实例，避免多调用方共享状态被覆盖） </summary>
         public static GUIStyle Button(Color color = default, int fontSize = 12)
         {
-            _button ??= new GUIStyle(GUI.skin.button);
-            _button.normal.textColor = color == default ? Color.white : color;
-            _button.hover.textColor = color == default ? Color.white : color;
-            _button.active.textColor = color == default ? Color.white : color;
-            _button.fontSize = fontSize;
-            return _button;
+            Color c = color == default ? Color.white : color;
+            return new GUIStyle(GUI.skin.button)
+            {
+                fontSize = fontSize,
+                normal = { textColor = c },
+                hover = { textColor = c },
+                active = { textColor = c }
+            };
         }
 
         #endregion

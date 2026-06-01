@@ -4,9 +4,9 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-06-07 18:18:36
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 15:01:35
- * ScriptVersion: 0.1
- * ===============================================
+ * ModifyTime:    2026-06-01 14:30:00
+ * ScriptVersion: 0.2
+ * ================================================
  */
 
 using System.IO;
@@ -38,12 +38,17 @@ namespace EasyFramework.Edit.Create
         // ReSharper disable once InconsistentNaming
         public static void CreateEFLauncherScript() => Create("EF", "EF_Icon");
 
+        /// <summary>
+        /// 创建模板脚本 — 使用实例字段传递上下文，避免静态字段重入竞态
+        /// <para>Create template script — uses instance fields for context, avoiding static-field re-entrancy race</para>
+        /// </summary>
         private static void Create(string scriptName, string scriptIconName = "")
         {
-            CreateScriptAsset.ScriptName = scriptName;
-            CreateScriptAsset.ScriptIconName = scriptIconName;
+            var instance = ScriptableObject.CreateInstance<CreateScriptAsset>();
+            instance.ScriptName = scriptName;
+            instance.ScriptIconName = scriptIconName;
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0,
-                ScriptableObject.CreateInstance<CreateScriptAsset>(),
+                instance,
                 GetSelectedPathOrFallback() + "/" + scriptName + ".cs",
                 null, Path.Combine(Utility.Path.GetEfAssetsPath(), $"ScriptTemplate/{scriptName}.cs.txt"));
         }
@@ -64,10 +69,14 @@ namespace EasyFramework.Edit.Create
             return path;
         }
 
+        /// <summary>
+        /// 脚本创建回调（实例级字段，避免多次创建时的静态状态污染）
+        /// <para>Script creation callback — instance-level fields to avoid static state pollution between concurrent creations</para>
+        /// </summary>
         private class CreateScriptAsset : EndNameEditAction
         {
-            public static string ScriptName = "";
-            public static string ScriptIconName = "";
+            public string ScriptName = "";
+            public string ScriptIconName = "";
 
             public override void Action(int instanceId, string newScriptPath, string templatePath)
             {
@@ -75,25 +84,30 @@ namespace EasyFramework.Edit.Create
                 ProjectWindowUtil.ShowCreatedAsset(obj);
             }
 
-            private static Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
+            private Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
             {
                 string fullPath = Path.GetFullPath(newScriptPath);
-                StreamReader streamReader = new StreamReader(templatePath);
-                string text = streamReader.ReadToEnd();
-                streamReader.Close();
+
+                // 读取模板内容
+                string text;
+                using (var reader = new StreamReader(templatePath))
+                {
+                    text = reader.ReadToEnd();
+                }
+
                 string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(newScriptPath);
 
-                //替换模板的文件名
-                text = Regex.Replace(text, ScriptName, fileNameWithoutExtension);
-                UTF8Encoding encoding = new UTF8Encoding(true, false);
-                StreamWriter sw = new StreamWriter(fullPath, false, encoding);
+                text = Regex.Replace(text, Regex.Escape(ScriptName), fileNameWithoutExtension);
 
-                sw.WriteLine(EditorToolkit.GetFileHead("This script is used to ."));
-                sw.WriteLine();
+                var encoding = new UTF8Encoding(true, false);
+                using (var writer = new StreamWriter(fullPath, false, encoding))
+                {
+                    writer.WriteLine(EditorToolkit.GetFileHead("This script is used to ."));
+                    writer.WriteLine();
+                    text = text.Replace("PleaseChangeTheNamespace", ConfigManager.Project.ScriptNamespace);
+                    writer.Write(text);
+                }
 
-                text = text.Replace("PleaseChangeTheNamespace", ConfigManager.Project.ScriptNamespace);
-                sw.Write(text);
-                sw.Close();
                 AssetDatabase.ImportAsset(newScriptPath);
                 Object obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
 

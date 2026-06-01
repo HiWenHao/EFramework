@@ -22,21 +22,35 @@ namespace EasyFramework.Edit
         public const string ConfigEditPath = "Assets/Editor Resources/Configs";
         private const string ConfigRuntimePath = "Assets/Resources/Configs";
 
+        private static System.Type _creating;
         private static PathConfig _pathConfig;
         private static ProjectConfig _projectConfig;
 
 
-        public static PathConfig Path => _pathConfig.GetConfig<PathConfig>(ConfigEditPath);
-        public static ProjectConfig Project => _projectConfig.GetConfig<ProjectConfig>(ConfigRuntimePath);
-        
-        
-        private static T GetConfig<T>(this ScriptableObject target, string path) where T : ScriptableObject, new()
+        public static PathConfig Path => GetOrCreate(ref _pathConfig, ConfigEditPath);
+        public static ProjectConfig Project => GetOrCreate(ref _projectConfig, ConfigRuntimePath);
+
+        /// <summary>
+        /// 获取或创建配置 —— 先查缓存，再查 AssetDatabase，最后创建
+        /// <para>Get or create a config asset — cache first, then AssetDatabase lookup, then create</para>
+        /// </summary>
+        private static T GetOrCreate<T>(ref T cache, string path) where T : ScriptableObject, new()
         {
-            T config = target as T;
-            if (config is null && EditorUtils.CheckAssets<T>(out var pathConfigPath))
-                config = EditorUtils.LoadSettingAtPath<T>();
-            config ??= Create.CreateSettings.Instance<T>(true, path);
-            return config;
+            if (cache != null) return cache;
+            if (_creating != null && _creating == typeof(T)) return null;
+
+            if (EditorUtils.CheckAssets<T>(out _))
+            {
+                cache = EditorUtils.LoadSettingAtPath<T>();
+                if (cache != null)
+                    return cache;
+            }
+
+            _creating = typeof(T);
+            cache = Create.CreateSettings.Instance<T>(true, path);
+            _creating = null;
+
+            return cache;
         }
     }
 }
