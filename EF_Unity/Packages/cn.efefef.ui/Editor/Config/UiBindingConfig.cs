@@ -48,6 +48,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             new RulePrefixes("GGroup", "GridLayoutGroup"),
             new RulePrefixes("HGroup", "HorizontalLayoutGroup"),
             new RulePrefixes("Img", "Image"),
+            new RulePrefixes("ImgP", "ImagePro"),
             new RulePrefixes("Ipt", "InputField"),
             new RulePrefixes("IptTmp", "TMP_InputField"),
             new RulePrefixes("Mask", "Mask"),

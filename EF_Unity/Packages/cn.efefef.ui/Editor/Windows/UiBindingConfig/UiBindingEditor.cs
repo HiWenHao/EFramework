@@ -9,11 +9,11 @@
  * ===============================================
  */
 
-using EasyFramework.Managers.Ui;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using EasyFramework.Managers.Ui;
 using UnityEditor;
 using UnityEngine;
 
@@ -93,25 +93,25 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             EditorGUILayout.BeginHorizontal();
             _builder.Namespace =
-                EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Namespace }), _builder.Namespace);
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings })))
+                EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Namespace), _builder.Namespace);
+            if (GUILayout.Button(LC.Combine(Lc.Default, Lc.Settings)))
                 _builder.Namespace = ConfigManager.Project.ScriptNamespace;
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Class, Lc.Name }), _builder.gameObject.name);
+            EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Class, Lc.Name), _builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
 
             _builder.Describe =
-                EditorGUILayout.TextField(LC.Combine(new Lc[] { Lc.Script, Lc.Description }), _builder.Describe);
+                EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Description), _builder.Describe);
             EditorGUILayout.Space(6f, true);
 
             _builder.AutoDestroy =
-                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Destroy }), _builder.AutoDestroy);
+                EditorGUILayout.Toggle(LC.Combine(Lc.Auto, Lc.Destroy), _builder.AutoDestroy);
             if (_builder.AutoDestroy)
             {
                 _builder.AutoDestroyCountdown =
-                    EditorGUILayout.FloatField(LC.Combine(new Lc[] { Lc.Destroy, Lc.Countdown }),
+                    EditorGUILayout.FloatField(LC.Combine(Lc.Destroy, Lc.Countdown),
                         _builder.AutoDestroyCountdown);
                 EditorGUILayout.Space(6f, true);
             }
@@ -125,8 +125,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUI.BeginChangeCheck();
             _builder.CreatePrefab = EditorGUILayout.Toggle(
                 _builder.CreatePrefab
-                    ? LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path })
-                    : LC.Combine(new Lc[] { Lc.Create, Lc.Prefab }),
+                    ? LC.Combine(Lc.Prefab, Lc.Save, Lc.Path)
+                    : LC.Combine(Lc.Create, Lc.Prefab),
                 _builder.CreatePrefab);
             if (EditorGUI.EndChangeCheck())
             {
@@ -143,28 +143,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
 
                 EditorGUILayout.LabelField(_builder.PrefabPath, GUILayout.ExpandWidth(true));
-
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), GUILayout.Width(60)))
-                {
-                    string folder = Path.Combine(Application.dataPath, _builder.PrefabPath);
-                    if (!Directory.Exists(folder)) folder = Application.dataPath;
-                    string path =
-                        EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), folder, "");
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-                        EditorUtility.SetDirty(_builder);
-                    }
-
-                    Repaint();
-                }
-
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Settings }), GUILayout.Width(60)))
-                {
-                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
-                    EditorUtility.SetDirty(_builder);
-                    Repaint();
-                }
+                DrawSettingSelectPath(false);
             }
             else
             {
@@ -174,8 +153,39 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(12f, true);
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }));
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(LC.Combine(Lc.Code, Lc.Save, Lc.Path));
+            DrawSettingSelectPath(true);
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(_builder.ScriptPath);
+        }
+
+        private void DrawSettingSelectPath(bool isCodePath)
+        {
+            if (GUILayout.Button(LC.Combine(Lc.Select, Lc.Path), GUILayout.Width(100)))
+            {
+                string folder = Path.Combine(Application.dataPath, isCodePath ? _builder.ScriptPath : _builder.PrefabPath);
+                if (!Directory.Exists(folder)) folder = Application.dataPath;
+                string path = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Select, Lc.Path), folder, "");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    if (isCodePath)
+                        _builder.ScriptPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                    else
+                        _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                    EditorUtility.SetDirty(_builder);
+                }
+
+                Repaint();
+            }
+
+            if (!GUILayout.Button(LC.Combine(Lc.Default, Lc.Settings), GUILayout.Width(100))) return;
+            if (isCodePath)
+                _builder.ScriptPath = ConfigManager.Path.UICodePath;
+            else
+                _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+            EditorUtility.SetDirty(_builder);
+            Repaint();
         }
 
         private void DrawAutoBind()
@@ -183,13 +193,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             _builder.SortByType =
-                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.By, Lc.Type, Lc.Sort }), _builder.SortByType);
+                EditorGUILayout.Toggle(LC.Combine(Lc.By, Lc.Type, Lc.Sort), _builder.SortByType);
             _builder.SortByNameLength =
-                EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.By, Lc.Name, Lc.Length, Lc.Sort }),
+                EditorGUILayout.Toggle(LC.Combine(Lc.By, Lc.Name, Lc.Length, Lc.Sort),
                     _builder.SortByNameLength);
             EditorGUILayout.EndHorizontal();
 
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Auto, Lc.Bind, Lc.Component })))
+            if (GUILayout.Button(LC.Combine(Lc.Auto, Lc.Bind, Lc.Component)))
             {
                 AutoBindComponent();
             }
@@ -198,7 +208,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawKvData()
         {
             _builder.PackUpBindList = EditorGUILayout.BeginFoldoutHeaderGroup(_builder.PackUpBindList,
-                _builder.PackUpBindList ? LC.Combine(new Lc[] { Lc.Close, Lc.List }) : LC.Combine(new Lc[] { Lc.Open, Lc.List }));
+                _builder.PackUpBindList ? LC.Combine(Lc.Close, Lc.List) : LC.Combine(Lc.Open, Lc.List));
     
             if (_builder.PackUpBindList)
             {
@@ -227,12 +237,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawStartBind()
         {
             EditorGUILayout.Space(24f);
-            _builder.DeleteScript = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Unload, Lc.This, Lc.Script }),
+            _builder.DeleteScript = EditorGUILayout.Toggle(LC.Combine(Lc.Unload, Lc.This, Lc.Script),
                 _builder.DeleteScript);
             EditorGUILayout.Space(12f);
             
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Bind, Lc.Create }), GUILayout.Height(25.0f)))
+            if (GUILayout.Button(LC.Combine(Lc.Bind, Lc.Create), GUILayout.Height(25.0f)))
             {
                 GenAutoBindCode();
                 if (_builder.CreatePrefab) CreateOrModifyPrefab();
@@ -323,7 +333,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             else
                 bindingCount = nameList.Count;
 
-            _builder.BindDatas.Insert(bindingCount, new UiBinding.BindData()
+            _builder.BindDatas.Insert(bindingCount, new UiBinding.BindData
             {
                 BindCom = needBindingComponent,
                 RealName = rectName,
@@ -492,35 +502,35 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             string autoDestroy = _builder.AutoDestroy ? "true" : "false";
             sb.AppendLine(ScriptExplain);
             sb.AppendLine($"    public partial class {className} : IUiView");
-            sb.AppendLine($"    {{");
+            sb.AppendLine("    {");
             sb.AppendLine($"        public static async UniTask<{className}> Open(params object[] args)");
-            sb.AppendLine($"        {{");
+            sb.AppendLine("        {");
             sb.AppendLine($"            return await UiSystem.Instance.OpenPageView<{className}>(args);");
-            sb.AppendLine($"        }}");
+            sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine($"        public static async UniTask<bool> Close(params object[] args)");
-            sb.AppendLine($"        {{");
+            sb.AppendLine("        public static async UniTask<bool> Close(params object[] args)");
+            sb.AppendLine("        {");
             sb.AppendLine($"            return await UiSystem.Instance.CloseView<{className}>(args);");
-            sb.AppendLine($"        }}");
+            sb.AppendLine("        }");
             sb.AppendLine();
             sb.AppendLine($"        bool IUiView.AutoDestroy => {autoDestroy};");
             sb.AppendLine($"        float IUiView.AutoDestroyCountdown => {_builder.AutoDestroyCountdown}f;");
-            sb.AppendLine($"        uint IUiView.SerialId {{ get; set; }}");
+            sb.AppendLine("        uint IUiView.SerialId { get; set; }");
             sb.AppendLine($"        public UIViewType ViewType => UIViewType.{_builder.ViewType};");
-            sb.AppendLine($"        public RectTransform View {{ get; private set; }}");
+            sb.AppendLine("        public RectTransform View { get; private set; }");
             sb.AppendLine();
             for (int i = 0; i < otherScriptNames.Count; i++)
                 sb.AppendLine($"        private {otherTypeNames[i]} {otherScriptNames[i]};");
             sb.AppendLine();
             foreach (var scriptName in buttonScriptNames)
-                sb.AppendLine($"        private Button btn_{scriptName};");
+                sb.AppendLine($"        private Button {scriptName};");
             sb.AppendLine();
             foreach (var scriptName in buttonProScriptNames)
-                sb.AppendLine($"        private ButtonPro btnPro_{scriptName};");
+                sb.AppendLine($"        private ButtonPro {scriptName};");
             sb.AppendLine();
-            sb.AppendLine($"        void IUiView.Bind(RectTransform uiViewRect)");
-            sb.AppendLine($"        {{");
-            sb.AppendLine($"            View = uiViewRect;");
+            sb.AppendLine("        void IUiView.Bind(RectTransform uiViewRect)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            View = uiViewRect;");
 
             for (int i = 0; i < otherScriptNames.Count; i++)
                 sb.AppendLine(
@@ -529,33 +539,33 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             for (int i = 0; i < buttonScriptNames.Count; i++)
             {
                 sb.AppendLine(
-                    $"            btn_{buttonScriptNames[i]} = EF.Tool.Find<Button>(uiViewRect.transform, \"{buttonNames[i]}\");");
+                    $"            {buttonScriptNames[i]} = EF.Tool.Find<Button>(uiViewRect.transform, \"{buttonNames[i]}\");");
                 sb.AppendLine(
-                    $"            btn_{buttonScriptNames[i]}.onClick.AddListener(OnClick{buttonScriptNames[i]});");
+                    $"            {buttonScriptNames[i]}.onClick.AddListener(OnClick{buttonScriptNames[i]});");
             }
 
             for (int i = 0; i < buttonProScriptNames.Count; i++)
             {
                 sb.AppendLine(
-                    $"            btnPro_{buttonProScriptNames[i]} = EF.Tool.Find<ButtonPro>(uiViewRect.transform, \"{buttonProNames[i]}\");");
+                    $"            {buttonProScriptNames[i]} = EF.Tool.Find<ButtonPro>(uiViewRect.transform, \"{buttonProNames[i]}\");");
                 sb.AppendLine(
-                    $"            btnPro_{buttonProScriptNames[i]}.AddClickListener(OnClick{buttonProScriptNames[i]});");
+                    $"            {buttonProScriptNames[i]}.AddClickListener(OnClick{buttonProScriptNames[i]});");
             }
 
-            sb.AppendLine($"        }}");
+            sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine($"        void IUiView.Dispose()");
-            sb.AppendLine($"        {{");
+            sb.AppendLine("        void IUiView.Dispose()");
+            sb.AppendLine("        {");
             foreach (var scriptName in buttonScriptNames)
             {
-                sb.AppendLine($"            btn_{scriptName}?.onClick.RemoveListener(OnClick{scriptName});");
-                sb.AppendLine($"            btn_{scriptName} = null;");
+                sb.AppendLine($"            {scriptName}?.onClick.RemoveListener(OnClick{scriptName});");
+                sb.AppendLine($"            {scriptName} = null;");
             }
 
             foreach (var scriptName in buttonProScriptNames)
             {
-                sb.AppendLine($"            btnPro_{scriptName}?.RemoveClickListener(OnClick{scriptName});");
-                sb.AppendLine($"            btnPro_{scriptName} = null;");
+                sb.AppendLine($"            {scriptName}?.RemoveClickListener(OnClick{scriptName});");
+                sb.AppendLine($"            {scriptName} = null;");
             }
 
             foreach (var scriptName in otherScriptNames)
@@ -563,10 +573,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 sb.AppendLine($"            {scriptName} = null;");
             }
 
-            sb.AppendLine($"        }}");
-            sb.AppendLine($"    }}");
+            sb.AppendLine("        }");
+            sb.AppendLine("    }");
             sb.AppendLine(ScriptExplain);
-            sb.AppendLine($"}}");
+            sb.AppendLine("}");
             File.WriteAllText(viewPath, commonSb + sb.ToString(), Encoding.UTF8);
 
             // ========== 生成/更新 Logic 文件 ==========
@@ -574,42 +584,42 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (!File.Exists(logicPath))
             {
                 // 首次创建 Logic 文件
-                sb.AppendLine($"    /// <summary>");
+                sb.AppendLine("    /// <summary>");
                 sb.AppendLine($"    /// {_builder.Describe}");
-                sb.AppendLine($"    /// </summary>");
+                sb.AppendLine("    /// </summary>");
                 sb.AppendLine($"    public partial class {className}");
-                sb.AppendLine($"    {{");
-                sb.AppendLine($"        void IUiView.Awake()");
-                sb.AppendLine($"        {{");
-                sb.AppendLine($"        }}");
+                sb.AppendLine("    {");
+                sb.AppendLine("        void IUiView.Awake()");
+                sb.AppendLine("        {");
+                sb.AppendLine("        }");
                 sb.AppendLine();
-                sb.AppendLine($"        void IUiView.Quit()");
-                sb.AppendLine($"        {{");
-                sb.AppendLine($"        }}");
+                sb.AppendLine("        void IUiView.Quit()");
+                sb.AppendLine("        {");
+                sb.AppendLine("        }");
                 sb.AppendLine();
-                sb.AppendLine($"        " + ButtonEventsStart);
+                sb.AppendLine("        " + ButtonEventsStart);
                 foreach (var scriptName in buttonProScriptNames)
                 {
                     sb.AppendLine();
                     sb.AppendLine($"        private void OnClick{scriptName}()");
-                    sb.AppendLine($"        {{");
+                    sb.AppendLine("        {");
                     sb.AppendLine($"            D.Log(\"OnClick:  {scriptName}\");");
-                    sb.AppendLine($"        }}");
+                    sb.AppendLine("        }");
                 }
 
                 foreach (var scriptName in buttonScriptNames)
                 {
                     sb.AppendLine();
                     sb.AppendLine($"        private void OnClick{scriptName}()");
-                    sb.AppendLine($"        {{");
+                    sb.AppendLine("        {");
                     sb.AppendLine($"            D.Log(\"OnClick:  {scriptName}\");");
-                    sb.AppendLine($"        }}");
+                    sb.AppendLine("        }");
                 }
 
                 sb.AppendLine();
                 sb.AppendLine("        " + ButtonEventsEnd);
-                sb.AppendLine($"    }}");
-                sb.AppendLine($"}}");
+                sb.AppendLine("    }");
+                sb.AppendLine("}");
                 File.WriteAllText(logicPath, commonSb + sb.ToString(), Encoding.UTF8);
             }
             else
