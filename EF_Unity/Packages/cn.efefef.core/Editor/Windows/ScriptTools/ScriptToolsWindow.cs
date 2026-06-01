@@ -1,18 +1,22 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to help user handle scripts .   Possible reference: --> plyoung and other author <-- Thanks in advance. ^_^
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-05-12 14:41:18
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-05-12 14:41:18
- * ScriptVersion: 0.1
+ * Describe:        This script is used to help user handle scripts .   Possible reference: --> plyoung and other author <-- Thanks in advance. ^_^
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-05-12 14:41:18
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 17:51:29
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
-using EasyFramework.Edit;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Windows.ScriptTools
 {
@@ -29,24 +33,22 @@ namespace EasyFramework.Windows.ScriptTools
             public string DetailsPath;
         }
 
-        int _typeIndex;
-        int _missingOpt;
-        int _missingTempOpt;
-        int _minssingMaxCount;
-        int _missingTempCount;
-        int _dependenciesMaxCount;
+        private int _typeIndex;
+        private int _missingOpt;
+        private int _missingTempOpt;
+        private int _missingMaxCount;
+        private int _missingTempCount;
+        private int _dependenciesMaxCount;
 
-        bool _shouldRecurse = false;
+        private bool _shouldRecurse;
 
-        Vector2 _missingScroll;
-        Vector2 _dependenciesScroll;
+        private Vector2 _missingScroll;
+        private Vector2 _dependenciesScroll;
 
-        MonoScript _targetComponent;
+        private MonoScript _targetComponent;
 
-        List<Info> _entries = new List<Info>();
-        List<string> _results = new List<string>();
-
-        GUIStyle _buttonStyle;
+        private readonly List<Info> _entries = new List<Info>();
+        private readonly List<string> _results = new List<string>();
 
         [MenuItem("EFTools/Tools/Script Tools", priority = 200)]
         private static void OpenWindow()
@@ -56,39 +58,16 @@ namespace EasyFramework.Windows.ScriptTools
             window.Show();
         }
 
-        private void OnEnable()
-        {
-            if (_typeIndex == 1)
-            {
-                MissingFind();
-            }
-        }
-
         private void OnGUI()
         {
-            #region Style Initialize
-
-            _buttonStyle = new GUIStyle("button")
-            {
-                alignment = TextAnchor.MiddleLeft
-            };
-
-            #endregion
-
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Script, Lc.Tool }), new GUIStyle("label")
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 16,
-                alignment = TextAnchor.MiddleCenter,
-                fixedHeight = 30
-            });
+            EditorGUILayout.LabelField(LC.Combine(Lc.Script, Lc.Tool), GUIUtils.BoldCenterTitle());
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            _typeIndex = EditorGUILayout.Popup(LC.Combine(new Lc[] { Lc.Select, Lc.Find, Lc.Type }),
+            _typeIndex = EditorGUILayout.Popup(LC.Combine(Lc.Select, Lc.Find, Lc.Type),
                 _typeIndex,
                 new[]
                 {
-                    LC.Combine(new Lc[] { Lc.Rely, Lc.This, Lc.Script, Lc.Of, Lc.Prefab }),
-                    LC.Combine(new Lc[] { Lc.Lost, Lc.Script, Lc.Of, Lc.Object }),
+                    LC.Combine(Lc.Rely, Lc.This, Lc.Script, Lc.Of, Lc.Prefab),
+                    LC.Combine(Lc.Lost, Lc.Script, Lc.Of, Lc.Object),
                 });
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
@@ -96,19 +75,19 @@ namespace EasyFramework.Windows.ScriptTools
             if (_typeIndex == 0)
             {
                 _targetComponent = (MonoScript)EditorGUILayout.ObjectField(
-                    LC.Combine(new Lc[] { Lc.Select, Lc.Target, Lc.Script }), _targetComponent, typeof(MonoScript),
+                    LC.Combine(Lc.Select, Lc.Target, Lc.Script), _targetComponent, typeof(MonoScript),
                     false);
 
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
                 _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), _shouldRecurse);
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Find, Lc.Script, Lc.Rely })))
+                if (GUILayout.Button(LC.Combine(Lc.Find, Lc.Script, Lc.Rely)))
                 {
                     ActionSearchForComponent();
                 }
 
                 if (_dependenciesMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine(new Lc[] { Lc.Rely, Lc.Count })}:  [ {_dependenciesMaxCount} ] ");
+                        $"{LC.Combine(Lc.Rely, Lc.Count)}:  [ {_dependenciesMaxCount} ] ");
 
                 DependenciesListInfoShow();
             }
@@ -121,10 +100,10 @@ namespace EasyFramework.Windows.ScriptTools
                     MissingFind();
                 }
 
-                _missingOpt = EditorGUILayout.Popup(_missingOpt, new string[]
+                _missingOpt = EditorGUILayout.Popup(_missingOpt, new[]
                 {
-                    LC.Combine(new Lc[] { Lc.In, Lc.All, Lc.Activity, Lc.Scene }),
-                    LC.Combine(new Lc[] { Lc.In, Lc.All, Lc.Prefab })
+                    LC.Combine(Lc.In, Lc.All, Lc.Activity, Lc.Scene),
+                    LC.Combine(Lc.In, Lc.All, Lc.Prefab)
                 });
                 if (_missingOpt != _missingTempOpt)
                 {
@@ -133,9 +112,9 @@ namespace EasyFramework.Windows.ScriptTools
                 }
 
                 EditorGUILayout.EndHorizontal();
-                if (_minssingMaxCount != 0)
+                if (_missingMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine(new Lc[] { Lc.Lost, Lc.Count })}:  [ {_minssingMaxCount} ] ");
+                        $"{LC.Combine(Lc.Lost, Lc.Count)}:  [ {_missingMaxCount} ] ");
                 EditorGUILayout.Space();
 
                 MissingListInfoShow();
@@ -151,7 +130,7 @@ namespace EasyFramework.Windows.ScriptTools
 
             if (_dependenciesMaxCount == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Not, Lc.Found, Lc.Match }));
+                EditorGUILayout.LabelField(LC.Combine(Lc.Not, Lc.Found, Lc.Match));
             }
             else
             {
@@ -161,7 +140,7 @@ namespace EasyFramework.Windows.ScriptTools
                 {
                     string res = _results[i];
                     EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
-                    if (GUILayout.Button(res, _buttonStyle, GUILayout.Height(25f)))
+                    if (GUILayout.Button(res, GUIUtils.LeftButtonStyle(), GUILayout.Height(25f)))
                     {
                         Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(res);
                         EditorGUIUtility.PingObject(Selection.activeObject);
@@ -171,8 +150,7 @@ namespace EasyFramework.Windows.ScriptTools
                 }
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----",
-                    new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+                EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", GUIUtils.CenteredEndLabel());
                 EditorGUILayout.Space(18f);
 
                 EditorGUILayout.EndScrollView();
@@ -189,7 +167,7 @@ namespace EasyFramework.Windows.ScriptTools
             for (int i = 0; i < _dependenciesMaxCount; i++)
             {
                 string prefab = allPrefabs[i];
-                string[] single = new string[] { prefab };
+                string[] single = { prefab };
                 string[] dependencies = AssetDatabase.GetDependencies(single, _shouldRecurse);
                 foreach (string dependentAsset in dependencies)
                 {
@@ -209,7 +187,7 @@ namespace EasyFramework.Windows.ScriptTools
             List<string> result = new List<string>();
             foreach (string s in temp)
             {
-                if (s.Contains(".prefab"))
+                if (Path.GetExtension(s).Equals(".prefab", StringComparison.OrdinalIgnoreCase))
                 {
                     result.Add(s);
                 }
@@ -224,61 +202,62 @@ namespace EasyFramework.Windows.ScriptTools
 
         void MissingListInfoShow()
         {
-            if (_entries == null || _entries.Count != _minssingMaxCount)
+            if (_entries == null || _entries.Count != _missingMaxCount)
                 return;
 
             _missingScroll = EditorGUILayout.BeginScrollView(_missingScroll);
-            for (int i = 0; i < _minssingMaxCount; i++)
+            for (int i = 0; i < _missingMaxCount; i++)
             {
-                Info _info = _entries[i];
-                if (!_info.Target)
+                Info info = _entries[i];
+                if (!info.Target)
                 {
                     _missingTempCount--;
                     continue;
                 }
 
+                bool isRoot = info.LayersCount == 0;
+                string prefix = isRoot
+                    ? $" [ {LC.Combine(Lc.Root)} ]  >>> "
+                    : $" {LC.Combine(Lc.Root, Lc.Target)} [ {info.ParentName} ]   {info.LayersCount} {LC.Combine(Lc.Layer)}  >>> ";
+
                 EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
-                if (GUILayout.Button((_info.LayersCount == 0
-                                         ? $" [ {LC.Combine(Lc.Root)} ]  >>> "
-                                         : $" {LC.Combine(new Lc[] { Lc.Root, Lc.Target })} [ {_info.ParentName} ]   {_info.LayersCount} {LC.Combine(Lc.Layer)}  >>> ")
-                                     + _info.DetailsPath, ChangedColor(_info.LayersCount == 0), GUILayout.Height(25f)))
+                if (GUILayout.Button(prefix + info.DetailsPath,
+                        ChangedColor(isRoot), GUILayout.Height(25f)))
                 {
-                    EditorGUIUtility.PingObject(_info.Target);
-                    Selection.activeObject = _info.Target;
+                    EditorGUIUtility.PingObject(info.Target);
+                    Selection.activeObject = info.Target;
                 }
 
                 EditorGUILayout.EndHorizontal();
             }
 
-            if (_missingTempCount != _minssingMaxCount)
+            if (_missingTempCount != _missingMaxCount)
             {
                 MissingFind();
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----",
-                new GUIStyle(EditorStyles.whiteLabel) { alignment = TextAnchor.MiddleCenter });
+            EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", GUIUtils.CenteredEndLabel());
             EditorGUILayout.Space(18f);
             EditorGUILayout.EndScrollView();
         }
 
         void MissingFind()
         {
-            _minssingMaxCount = 0;
+            _missingMaxCount = 0;
             _entries.Clear();
             GameObject[] gos = Resources.FindObjectsOfTypeAll<GameObject>();
-            _minssingMaxCount = gos.Length;
+            _missingMaxCount = gos.Length;
 
-            for (int i = 0; i < _minssingMaxCount; i++)
+            for (int i = 0; i < _missingMaxCount; i++)
             {
-                GameObject _go = gos[i];
+                GameObject go = gos[i];
 
-
-                if ((_missingOpt == 0 && !_go.scene.IsValid()) ||
-                    (_missingOpt == 1 && _go.scene.IsValid())) continue;
+                if ((_missingOpt == 0 && !go.scene.IsValid()) ||
+                    (_missingOpt == 1 && go.scene.IsValid())) continue;
 
                 bool hasLost = false;
-                Component[] cos = _go.GetComponents<Component>();
+                Component[] cos = go.GetComponents<Component>();
                 foreach (var co in cos)
                 {
                     if (co == null)
@@ -290,11 +269,11 @@ namespace EasyFramework.Windows.ScriptTools
 
                 if (!hasLost) continue;
 
-                Transform tr = _go.transform.parent;
-                Info nfo = new Info()
+                Transform tr = go.transform.parent;
+                Info nfo = new Info
                 {
-                    DetailsPath = _go.name,
-                    Target = _go
+                    DetailsPath = go.name,
+                    Target = go
                 };
                 int layoutCount = 0;
                 while (tr != null)
@@ -310,19 +289,22 @@ namespace EasyFramework.Windows.ScriptTools
             }
 
             _entries.Sort((a, b) => a.DetailsPath.CompareTo(b.DetailsPath));
-            _minssingMaxCount = _entries.Count;
-            _missingTempCount = _minssingMaxCount;
+            _missingMaxCount = _entries.Count;
+            _missingTempCount = _missingMaxCount;
         }
 
         #endregion
 
-        GUIStyle ChangedColor(bool changed)
+        /// <summary>
+        /// 根据是否变化返回不同颜色的按钮样式（每次创建新实例，不污染共享状态）
+        /// </summary>
+        private GUIStyle ChangedColor(bool isRoot)
         {
-            if (changed)
-                _buttonStyle.normal.textColor = Color.green;
-            else
-                _buttonStyle.normal.textColor = new Color(0.898f, 0.898f, 0.898f);
-            return _buttonStyle;
+            var style = GUIUtils.LeftButtonStyle();
+            style.normal.textColor = isRoot
+                ? Color.green
+                : new Color(0.898f, 0.898f, 0.898f);
+            return style;
         }
     }
 }

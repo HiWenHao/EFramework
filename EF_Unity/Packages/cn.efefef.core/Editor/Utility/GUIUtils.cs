@@ -234,6 +234,40 @@ namespace EasyFramework.Edit.Windows
 
         #endregion
 
+        #region 脚本工具
+
+        /// <summary> 左对齐按钮 </summary>
+        public static GUIStyle LeftButtonStyle()
+        {
+            return new GUIStyle(GUI.skin.button)
+            {
+                alignment = TextAnchor.MiddleLeft
+            };
+        }
+
+        /// <summary> 居中加粗标题 </summary>
+        public static GUIStyle BoldCenterTitle()
+        {
+            return new GUIStyle(EditorStyles.label)
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 16,
+                alignment = TextAnchor.MiddleCenter,
+                fixedHeight = 30
+            };
+        }
+
+        /// <summary> 居中结束标记 </summary>
+        public static GUIStyle CenteredEndLabel()
+        {
+            return new GUIStyle(EditorStyles.whiteLabel)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+        }
+
+        #endregion
+
         #region 进度条
 
         public static readonly GUIStyle ProgressStatusLabel = new(EditorStyles.centeredGreyMiniLabel)
