@@ -1,11 +1,11 @@
-﻿/*
+/*
  * ================================================
  * Describe:        The class to used clip animations.
  * Author:          Faquan.Xue
  * CreationTime:    2023-04-19-17:34:01
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-06-01 15:03:52
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-06-01 15:48:00
+ * ScriptVersion:   0.2
  * ===============================================
  */
 
@@ -22,8 +22,7 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem("Assets/EF/Animation/Compress One Clip", false, 50)]
         private static void CompressAnimation()
         {
-            Object[] selection = Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets);
-            foreach (Object obj in selection)
+            foreach (Object obj in Selection.GetFiltered(typeof(Object), SelectionMode.Assets))
             {
                 if (obj is DefaultAsset)
                     continue;
@@ -68,12 +67,12 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem("Assets/EF/Animation/Extract Clips Compress", false, 52)]
         private static void GetAnimationClipAndCompress()
         {
-            Object[] objects = Selection.GetFiltered<Object>(SelectionMode.Assets);
-            foreach (var obj in objects)
+            foreach (Object obj in Selection.GetFiltered<Object>(SelectionMode.Assets))
             {
                 var path = AssetDatabase.GetAssetPath(obj);
                 if (string.IsNullOrEmpty(path))
                     continue;
+
                 if (Directory.Exists(path))
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(path);
@@ -88,7 +87,8 @@ namespace EasyFramework.Edit.MenuToolkit
                     FileInfo[] files = directoryInfo.GetFiles("*.FBX");
                     foreach (FileInfo file in files)
                     {
-                        if (file.Extension is not (".fbx" or ".FBX")) continue;
+                        if (!file.Extension.Equals(".fbx", StringComparison.OrdinalIgnoreCase))
+                            continue;
                         string relativePath = file.FullName.SafeSubstring("Assets");
                         if (string.IsNullOrEmpty(relativePath)) continue;
                         AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(relativePath);
@@ -113,24 +113,37 @@ namespace EasyFramework.Edit.MenuToolkit
             }
         }
 
+        /// <summary>
+        /// 提取动画剪辑并压缩
+        /// <para>Extract and compress animation clips from a FBX source</para>
+        /// </summary>
         private static void ExtractClips(AnimationClip clip, string directoryName)
         {
-            AnimationClip tempAc = new AnimationClip();
-            EditorUtility.CopySerialized(clip, tempAc);
-            CullCurves(tempAc);
-            string path = ConfigManager.Path.ExtractPath + directoryName + "/" +
-                          EditorUtils.RemovePunctuation(tempAc.name);
+            if (clip == null) return;
+
+            AnimationClip tempClip = new AnimationClip();
+            EditorUtility.CopySerialized(clip, tempClip);
+            CullCurves(tempClip);
+
+            string path = Path.Combine(
+                ConfigManager.Path.ExtractPath + directoryName,
+                EditorUtils.RemovePunctuation(tempClip.name));
+
             int clipIndex = 0;
-            int maxIndex = 10000; // 防止无限循环
+            const int maxIndex = 10000;
             while (File.Exists($"{path}_{clipIndex}.anim") && clipIndex < maxIndex)
             {
                 clipIndex++;
             }
 
-            AssetDatabase.CreateAsset(tempAc, $"{path}_{clipIndex}.anim");
-            EditorUtility.SetDirty(tempAc);
+            AssetDatabase.CreateAsset(tempClip, $"{path}_{clipIndex}.anim");
+            EditorUtility.SetDirty(tempClip);
         }
 
+        /// <summary>
+        /// 压缩动画曲线：移除 Scale 曲线 + 浮点精度截断到 f3
+        /// <para>Compress animation curves: remove Scale curves + truncate float precision to f3</para>
+        /// </summary>
         private static void CullCurves(AnimationClip clip)
         {
             if (clip == null) return;
@@ -148,16 +161,16 @@ namespace EasyFramework.Edit.MenuToolkit
                 AnimationCurve curve = AnimationUtility.GetEditorCurve(clip, bind);
                 if (curve == null) continue;
                 var keys = curve.keys;
-                for (int index = 0; index < keys.Length; index++)
+                for (int i = 0; i < keys.Length; i++)
                 {
-                    Keyframe keyframe = keys[index];
+                    Keyframe keyframe = keys[i];
                     keyframe.time = float.Parse(keyframe.time.ToString(floatFormat));
                     keyframe.value = float.Parse(keyframe.value.ToString(floatFormat));
                     keyframe.inTangent = float.Parse(keyframe.inTangent.ToString(floatFormat));
                     keyframe.outTangent = float.Parse(keyframe.outTangent.ToString(floatFormat));
                     keyframe.inWeight = float.Parse(keyframe.inWeight.ToString(floatFormat));
                     keyframe.outWeight = float.Parse(keyframe.outWeight.ToString(floatFormat));
-                    keys[index] = keyframe;
+                    keys[i] = keyframe;
                 }
 
                 curve.keys = keys;
@@ -172,18 +185,20 @@ namespace EasyFramework.Edit.MenuToolkit
             AssetDatabase.SaveAssets();
         }
 
-        // 辅助：从绝对路径中安全截取 "Assets..." 开头的相对路径
+        #region Helpers
+
         private static string SafeSubstring(this string fullPath, string marker)
         {
             int idx = fullPath.IndexOf(marker, StringComparison.Ordinal);
             return idx >= 0 ? fullPath[idx..] : null;
         }
 
-        // 辅助：从绝对路径中安全移除 "Assets" 之前的部分
         private static string RemoveSafeAfter(this string fullPath, string marker)
         {
             int idx = fullPath.IndexOf(marker, StringComparison.Ordinal);
             return idx >= 0 ? fullPath.Remove(idx) : null;
         }
+
+        #endregion
     }
 }

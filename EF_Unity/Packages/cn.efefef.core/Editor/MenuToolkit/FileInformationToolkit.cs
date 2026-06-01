@@ -152,11 +152,6 @@ namespace EasyFramework.Edit.MenuToolkit
             {
                 EditorApplication.projectChanged += GetProjectDirs;
                 EditorApplication.projectWindowItemOnGUI += OnGUI;
-            }
-
-            [UnityEditor.Callbacks.DidReloadScripts]
-            private static void OnScriptsReloaded()
-            {
                 GetProjectDirs();
             }
 
@@ -168,7 +163,7 @@ namespace EasyFramework.Edit.MenuToolkit
                 foreach (string path in DirList)
                 {
                     string newPath = path.Replace("\\", "/");
-                    DirSizeDictionary.Add(newPath, GetDirectoriesSize(path));
+                    DirSizeDictionary[newPath] = GetDirectoriesSize(path);
                 }
             }
 
