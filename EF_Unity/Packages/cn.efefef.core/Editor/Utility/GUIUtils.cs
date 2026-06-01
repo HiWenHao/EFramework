@@ -187,6 +187,53 @@ namespace EasyFramework.Edit.Windows
 
         #endregion
 
+        #region 重命名工具
+
+        /// <summary> 旧名称（灰色小字） </summary>
+        public static GUIStyle OldNameStyle()
+        {
+            return new GUIStyle(EditorStyles.label)
+            {
+                normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
+                fontSize = 10
+            };
+        }
+
+        /// <summary> 预览名称（绿色加粗） </summary>
+        public static GUIStyle PreviewNameStyle()
+        {
+            return new GUIStyle(EditorStyles.label)
+            {
+                normal = { textColor = new Color(0.2f, 0.8f, 0.4f) },
+                fontStyle = FontStyle.Bold
+            };
+        }
+
+        /// <summary> 资产类型标签（居中白字小标签） </summary>
+        public static GUIStyle TagStyle()
+        {
+            return new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 9,
+                normal = { textColor = Color.white }
+            };
+        }
+
+        /// <summary> 删除按钮（红色文字） </summary>
+        public static GUIStyle RemoveBtnStyle()
+        {
+            return new GUIStyle(EditorStyles.miniButton)
+            {
+                fontSize = 12,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.85f, 0.3f, 0.3f) },
+                hover = { textColor = Color.red }
+            };
+        }
+
+        #endregion
+
         #region 进度条
 
         public static readonly GUIStyle ProgressStatusLabel = new(EditorStyles.centeredGreyMiniLabel)

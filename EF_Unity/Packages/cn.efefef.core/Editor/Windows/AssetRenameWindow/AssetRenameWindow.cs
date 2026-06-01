@@ -1,17 +1,20 @@
-/*
+﻿/*
  * ================================================
  * Describe:        用来做资源重命名工具
  * Author:          Shaofei.Cui
  * CreationTime:    2026-05-26-11:30:59
- * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-05-26-13:24:07
- * ScriptVersion:   1.0
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 17:31:26
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
-using EasyFramework.Edit;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,7 +31,7 @@ namespace EasyFramework.Windows.AssetRename
             public string Path; //路径
             public string Name; //名字
             public string Extension; //扩展名
-            public System.Type AssetType; //资产类型
+            public Type AssetType; //资产类型
             public string PreviewName; //预览名称
             public Texture2D Icon; //图标
         }
@@ -62,13 +65,6 @@ namespace EasyFramework.Windows.AssetRename
         private static readonly Color TagAnimColor = new Color(0.9f, 0.85f, 0.2f);
         private static readonly Color TagDefaultColor = new Color(0.55f, 0.55f, 0.55f);
 
-        // Cached styles
-        private GUIStyle _boldLabelStyle;
-        private GUIStyle _oldNameStyle;
-        private GUIStyle _previewNameStyle;
-        private GUIStyle _tagStyle;
-        private GUIStyle _removeBtnStyle;
-
         [MenuItem("EFTools/Tools/Assets Rename", priority = 201)]
         private static void OpenWindow()
         {
@@ -85,34 +81,6 @@ namespace EasyFramework.Windows.AssetRename
 
         private void OnGUI()
         {
-            #region Style Initialize
-
-            _oldNameStyle = new GUIStyle(EditorStyles.label)
-            {
-                normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
-                fontSize = 10
-            };
-            _previewNameStyle = new GUIStyle(EditorStyles.label)
-            {
-                normal = { textColor = new Color(0.2f, 0.8f, 0.4f) },
-                fontStyle = FontStyle.Bold
-            };
-            _tagStyle = new GUIStyle(EditorStyles.miniLabel)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 9,
-                normal = { textColor = Color.white }
-            };
-            _removeBtnStyle = new GUIStyle(EditorStyles.miniButton)
-            {
-                fontSize = 12,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.85f, 0.3f, 0.3f) },
-                hover = { textColor = Color.red }
-            };
-
-            #endregion
-
             DrawToolbar();
             EditorGUILayout.Space(4);
             DrawRenameOptions();
@@ -239,14 +207,14 @@ namespace EasyFramework.Windows.AssetRename
                     GUILayout.Label("", GUILayout.Width(20));
 
                 // Original name
-                GUILayout.Label(item.Name, item.Name != item.PreviewName ? _oldNameStyle : EditorStyles.label,
+                GUILayout.Label(item.Name, item.Name != item.PreviewName ? GUIUtils.OldNameStyle() : EditorStyles.label,
                     GUILayout.Width(140));
 
                 // Arrow & preview name
                 if (item.Name != item.PreviewName)
                 {
                     GUILayout.Label("→", EditorStyles.miniLabel, GUILayout.Width(16));
-                    GUILayout.Label(item.PreviewName, _previewNameStyle, GUILayout.Width(240));
+                    GUILayout.Label(item.PreviewName, GUIUtils.PreviewNameStyle(), GUILayout.Width(240));
                 }
 
                 GUILayout.FlexibleSpace();
@@ -255,7 +223,7 @@ namespace EasyFramework.Windows.AssetRename
                 DrawTypeTag(item.AssetType);
 
                 // Remove button
-                if (GUILayout.Button("X", _removeBtnStyle, GUILayout.Width(20), GUILayout.Height(18)))
+                if (GUILayout.Button("X", GUIUtils.RemoveBtnStyle(), GUILayout.Width(20), GUILayout.Height(18)))
                 {
                     _assetList.RemoveAt(i);
                     UpdatePreviewNames();
@@ -269,7 +237,7 @@ namespace EasyFramework.Windows.AssetRename
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawTypeTag(System.Type type)
+        private void DrawTypeTag(Type type)
         {
             var tagName = GetTypeName(type);
             var tagColor = GetTypeColor(type);
@@ -277,12 +245,12 @@ namespace EasyFramework.Windows.AssetRename
             var prevBg = GUI.backgroundColor;
             GUI.backgroundColor = tagColor;
 
-            GUILayout.Label(tagName, _tagStyle, GUILayout.Width(70), GUILayout.Height(18));
+            GUILayout.Label(tagName, GUIUtils.TagStyle(), GUILayout.Width(70), GUILayout.Height(18));
 
             GUI.backgroundColor = prevBg;
         }
 
-        private string GetTypeName(System.Type type)
+        private string GetTypeName(Type type)
         {
             if (type == typeof(Texture2D) || type == typeof(Texture) || type.IsSubclassOf(typeof(Texture)))
                 return "Texture";
@@ -303,7 +271,7 @@ namespace EasyFramework.Windows.AssetRename
             return type.Name.Length > 10 ? type.Name[..7] + ".." : type.Name;
         }
 
-        private Color GetTypeColor(System.Type type)
+        private Color GetTypeColor(Type type)
         {
             if (type == typeof(Texture2D) || type == typeof(Texture) || type.IsSubclassOf(typeof(Texture)))
                 return TagTextureColor;
@@ -355,22 +323,28 @@ namespace EasyFramework.Windows.AssetRename
             int success = 0;
             int failed = 0;
 
+            // 预建字典统计 (dir, previewName) 出现次数，O(n) 替代 O(n²)
+            var nameCounts = new Dictionary<(string dir, string name), int>();
+            foreach (var item in _assetList)
+            {
+                if (item.Name == item.PreviewName) continue;
+                var key = (Path.GetDirectoryName(item.Path), item.PreviewName);
+                nameCounts.TryGetValue(key, out int count);
+                nameCounts[key] = count + 1;
+            }
+
             for (int i = 0; i < _assetList.Count; i++)
             {
                 var item = _assetList[i];
                 if (item.Name == item.PreviewName) continue;
 
-                string dir = System.IO.Path.GetDirectoryName(item.Path);
-                string newPath = System.IO.Path.Combine(dir, item.PreviewName + item.Extension);
+                string dir = Path.GetDirectoryName(item.Path);
+                string newPath = Path.Combine(dir, item.PreviewName + item.Extension);
                 newPath = newPath.Replace("\\", "/");
 
                 // Check for duplicate names
-                bool duplicate = _assetList.Any(other =>
-                    other != item &&
-                    other.PreviewName == item.PreviewName &&
-                    System.IO.Path.GetDirectoryName(other.Path) == dir);
-
-                if (duplicate)
+                var key = (dir, item.PreviewName);
+                if (nameCounts.TryGetValue(key, out int count) && count > 1)
                 {
                     Debug.LogWarning($"{LC.Combine(Lc.Artw_RenameConflictSkip)}: {item.Name} → {item.PreviewName}");
                     failed++;
@@ -432,13 +406,13 @@ namespace EasyFramework.Windows.AssetRename
                 var info = new AssetInfo
                 {
                     Path = assetPath,
-                    Name = System.IO.Path.GetFileNameWithoutExtension(assetPath),
-                    Extension = System.IO.Path.GetExtension(assetPath),
-                    AssetType = obj.GetType(),
+                    Name = Path.GetFileNameWithoutExtension(assetPath),
+                    Extension = Path.GetExtension(assetPath),
+                    AssetType = obj != null ? obj.GetType() : typeof(UnityEngine.Object),
                     Icon = AssetPreview.GetMiniThumbnail(obj)
                 };
-                if (info.Icon == null)
-                    info.Icon = EditorGUIUtility.ObjectContent(obj, obj.GetType()).image as Texture2D;
+                if (info.Icon == null && obj != null)
+                    info.Icon = EditorGUIUtility.ObjectContent(obj, info.AssetType).image as Texture2D;
 
                 info.PreviewName = info.Name;
                 _assetList.Add(info);

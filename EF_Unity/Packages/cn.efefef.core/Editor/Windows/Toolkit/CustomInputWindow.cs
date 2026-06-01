@@ -32,9 +32,15 @@ namespace EasyFramework.Edit
 
         #region 初始化
 
-        // 创建并显示窗口，设置尺寸和位置
+        // 创建并显示窗口，设置尺寸和位置。已有窗口时聚焦返回
         private static void ShowSelf(string title, int count)
         {
+            if (_window != null)
+            {
+                _window.Focus();
+                return;
+            }
+
             _window = GetWindow<CustomInputWindow>(true, title);
             _window.titleContent = new GUIContent(title);
             _window.ShowUtility();
@@ -62,6 +68,19 @@ namespace EasyFramework.Edit
                 _inputTips[i] = inputTips != null && i < inputTips.Length ? inputTips[i] : string.Empty;
             }
         }
+
+        #region 清理
+
+        // 窗口销毁时释放所有引用，避免内存泄漏
+        private void OnDestroy()
+        {
+            _onConfirm = null;
+            _inputTips = null;
+            _inputTextArray = null;
+            _window = null;
+        }
+
+        #endregion
 
         #endregion
 
@@ -170,18 +189,6 @@ namespace EasyFramework.Edit
             ShowSelf(title, 4);
             _window.Init(4, tips);
             _window._onConfirm = args => onConfirm?.Invoke(args[0], args[1], args[2], args[3]);
-        }
-
-        #endregion
-
-        #region 清理
-
-        // 窗口销毁时释放所有引用，避免内存泄漏
-        private void OnDestroy()
-        {
-            _onConfirm = null;
-            _inputTips = null;
-            _inputTextArray = null;
         }
 
         #endregion
