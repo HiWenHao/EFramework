@@ -96,8 +96,8 @@ namespace EasyFramework.Edit.MenuToolkit
             Application.OpenURL("https://github.com/HiWenHao/EFramework");
         }
 
-        [MenuItem("EFTools/About Us/Report an iuess", false, 100002)]
-        private static void ReportAnIuess()
+        [MenuItem("EFTools/About Us/Report an issue", false, 100002)]
+        private static void ReportAnIssue()
         {
             Application.OpenURL("https://github.com/HiWenHao/EFramework/issues");
         }

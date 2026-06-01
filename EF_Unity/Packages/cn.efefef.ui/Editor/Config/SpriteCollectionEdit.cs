@@ -95,7 +95,7 @@ namespace EasyFramework.Edit.SpriteTools
                             _atlasFolder.stringValue = _frameworkAtlasFolder;
                     }
                     else
-                        _atlasFolder.stringValue = Utility.AssetPath.GetPathInAssetsFolder(_path) + "/";
+                        _atlasFolder.stringValue = Utility.Path.GetPathInAssetsFolder(_path) + "/";
                 }
                 if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Path })))
                 {

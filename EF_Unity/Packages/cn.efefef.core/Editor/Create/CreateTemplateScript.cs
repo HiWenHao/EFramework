@@ -1,11 +1,11 @@
 ﻿/*
  * ================================================
- * Describe:      This script is used to create template script.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2022-06-07 18:18:36
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-01 14:30:00
- * ScriptVersion: 0.2
+ * Describe:        This script is used to create template script.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2022-06-07 18:18:36
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 15:33:16
+ * ScriptVersion:   0.1
  * ================================================
  */
 
@@ -86,50 +86,59 @@ namespace EasyFramework.Edit.Create
 
             private Object CreateTemplateScriptAsset(string newScriptPath, string templatePath)
             {
-                string fullPath = Path.GetFullPath(newScriptPath);
-
-                // 读取模板内容
-                string text;
-                using (var reader = new StreamReader(templatePath))
+                try
                 {
-                    text = reader.ReadToEnd();
+                    string fullPath = Path.GetFullPath(newScriptPath);
+
+                    // 读取模板内容
+                    string text;
+                    using (var reader = new StreamReader(templatePath))
+                    {
+                        text = reader.ReadToEnd();
+                    }
+
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(newScriptPath);
+
+                    text = Regex.Replace(text, Regex.Escape(ScriptName), fileNameWithoutExtension);
+
+                    var encoding = new UTF8Encoding(true, false);
+                    using (var writer = new StreamWriter(fullPath, false, encoding))
+                    {
+                        writer.WriteLine(EditorToolkit.GetFileHead("This script is used to ."));
+                        writer.WriteLine();
+                        text = text.Replace("PleaseChangeTheNamespace",
+                            ConfigManager.Project?.ScriptNamespace ?? "PleaseChangeTheNamespace");
+                        writer.Write(text);
+                    }
+
+                    AssetDatabase.ImportAsset(newScriptPath);
+                    Object obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+
+                    if (string.IsNullOrEmpty(ScriptIconName)) return obj;
+
+                    string iconAssetPath = Utility.Path.GetEfAssetsPath() + $"/Gizmos/{ScriptIconName}.png";
+                    string iconGuid = AssetDatabase.AssetPathToGUID(iconAssetPath);
+                    if (string.IsNullOrEmpty(iconGuid)) return obj;
+
+                    string metaFullPath = fullPath + ".meta";
+                    string metaContent = File.ReadAllText(metaFullPath);
+                    string iconLine = $"  icon: {{fileID: 2800000, guid: {iconGuid}, type: 3}}";
+
+                    metaContent = metaContent.Contains("icon:")
+                        ? Regex.Replace(metaContent, @"  icon:.*", iconLine)
+                        : Regex.Replace(metaContent, @"(MonoImporter:\s*\n)", "$1" + iconLine + "\n");
+
+                    File.WriteAllText(metaFullPath, metaContent);
+                    AssetDatabase.ImportAsset(newScriptPath);
+                    obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
+
+                    return obj;
                 }
-
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(newScriptPath);
-
-                text = Regex.Replace(text, Regex.Escape(ScriptName), fileNameWithoutExtension);
-
-                var encoding = new UTF8Encoding(true, false);
-                using (var writer = new StreamWriter(fullPath, false, encoding))
+                catch (System.Exception ex)
                 {
-                    writer.WriteLine(EditorToolkit.GetFileHead("This script is used to ."));
-                    writer.WriteLine();
-                    text = text.Replace("PleaseChangeTheNamespace", ConfigManager.Project.ScriptNamespace);
-                    writer.Write(text);
+                    D.Error($"[ CreateTemplateScript ] Failed to create script from template '{templatePath}': {ex.Message}");
+                    return null;
                 }
-
-                AssetDatabase.ImportAsset(newScriptPath);
-                Object obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
-
-                if (string.IsNullOrEmpty(ScriptIconName)) return obj;
-
-                string iconAssetPath = Utility.Path.GetEfAssetsPath() + $"/Gizmos/{ScriptIconName}.png";
-                string iconGuid = AssetDatabase.AssetPathToGUID(iconAssetPath);
-                if (string.IsNullOrEmpty(iconGuid)) return obj;
-
-                string metaFullPath = fullPath + ".meta";
-                string metaContent = File.ReadAllText(metaFullPath);
-                string iconLine = $"  icon: {{fileID: 2800000, guid: {iconGuid}, type: 3}}";
-
-                metaContent = metaContent.Contains("icon:")
-                    ? Regex.Replace(metaContent, @"  icon:.*", iconLine)
-                    : Regex.Replace(metaContent, @"(MonoImporter:\s*\n)", "$1" + iconLine + "\n");
-
-                File.WriteAllText(metaFullPath, metaContent);
-                AssetDatabase.ImportAsset(newScriptPath);
-                obj = AssetDatabase.LoadAssetAtPath(newScriptPath, typeof(Object));
-
-                return obj;
             }
         }
     }

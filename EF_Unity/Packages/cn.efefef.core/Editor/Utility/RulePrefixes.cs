@@ -22,7 +22,7 @@ namespace EasyFramework.Edit
         /// <summary>
         /// 前缀
         /// </summary>
-        public string Prefixe;
+        public string Prefix;
 
         /// <summary>
         /// 全名称
@@ -32,11 +32,11 @@ namespace EasyFramework.Edit
         /// <summary>
         /// 规则前缀
         /// </summary>
-        /// <param name="prefixes">前缀</param>
+        /// <param name="prefix">前缀</param>
         /// <param name="fullName">全内容</param>
-        public RulePrefixes(string prefixes, string fullName)
+        public RulePrefixes(string prefix, string fullName)
         {
-            Prefixe = prefixes;
+            Prefix = prefix;
             FullName = fullName;
         }
     }

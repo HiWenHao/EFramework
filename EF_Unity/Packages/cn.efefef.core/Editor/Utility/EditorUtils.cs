@@ -1,11 +1,11 @@
 ﻿/* 
  * ================================================
- * Describe:      This script is used to .
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-04-20 19:57:04
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 14:59:28
- * ScriptVersion: 0.1
+ * Describe:        This script is used to .
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-04-20 19:57:04
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-04-01 14:59:28
+ * ScriptVersion:   0.1
  * ===============================================
 */
 
@@ -108,12 +108,16 @@ namespace EasyFramework.Edit
         #endregion
         
         #region String
+
+        private static readonly Regex PunctuationRegex = new(@"[\p{P}\p{S}×――—￥…•`· ]+", RegexOptions.Compiled);
+
         /// <summary>
         /// 删除标点符号
+        /// <para>Remove punctuation</para>
         /// </summary>
         public static string RemovePunctuation(string str)
         {
-            return Regex.Replace(str, "[ \\[ \\] \\^ \\-*×――(^)（）{}/【】$%~!@#$…&%￥—+=<>《》!！??？:：•`·、。，；,.;'\"‘’“”-]", "");
+            return PunctuationRegex.Replace(str, "");
         }
 
         /// <summary>

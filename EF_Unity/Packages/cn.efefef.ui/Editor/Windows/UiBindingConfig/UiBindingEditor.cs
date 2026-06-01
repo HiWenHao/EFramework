@@ -363,7 +363,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 string prefixes = strArray[i];
                 foreach (RulePrefixes autoBindRulePrefix in _setting.RulePrefixes)
                 {
-                    if (!autoBindRulePrefix.Prefixe.Equals(prefixes)) continue;
+                    if (!autoBindRulePrefix.Prefix.Equals(prefixes)) continue;
                     filedNames.Add($"{prefixes}_{filedName}");
                     componentTypeNames.Add(autoBindRulePrefix.FullName);
                     isFind = true;

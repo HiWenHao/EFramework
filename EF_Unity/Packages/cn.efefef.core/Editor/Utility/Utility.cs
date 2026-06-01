@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-03-31 15:56:54
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 14:59:28
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-01 15:10:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -17,41 +17,33 @@ namespace EasyFramework.Edit
 {
     /// <summary>
     /// 工具类
+    /// <para>Utility helpers</para>
     /// </summary>
     public class Utility
     {
         /// <summary>
         /// 路径相关的实用函数。
+        /// <para>Path-related utility functions</para>
         /// </summary>
         public static class Path
         {
             /// <summary>
             /// 获取规范的路径。
+            /// <para>Get a normalized path with forward slashes</para>
             /// </summary>
-            /// <param name="path">要规范的路径。</param>
-            /// <returns>规范的路径。</returns>
             public static string GetRegularPath(string path)
             {
-                if (path == null)
-                {
-                    return null;
-                }
-
-                return path.Replace('\\', '/');
+                return path?.Replace('\\', '/');
             }
 
             /// <summary>
-            /// 获取远程格式的路径（带有file:// 或 http:// 前缀）。
+            /// 获取远程格式的路径（带有 file:// 或 http:// 前缀）。
+            /// <para>Get the path in remote format (with file:// or http:// prefix)</para>
             /// </summary>
-            /// <param name="path">原始路径。</param>
-            /// <returns>远程格式路径。</returns>
             public static string GetRemotePath(string path)
             {
                 string regularPath = GetRegularPath(path);
-                if (regularPath == null)
-                {
-                    return null;
-                }
+                if (string.IsNullOrEmpty(regularPath)) return null;
 
                 return regularPath.Contains("://")
                     ? regularPath
@@ -60,9 +52,8 @@ namespace EasyFramework.Edit
 
             /// <summary>
             /// 移除空文件夹。
+            /// <para>Remove empty directories recursively</para>
             /// </summary>
-            /// <param name="directoryName">要处理的文件夹名称。</param>
-            /// <returns>是否移除空文件夹成功。</returns>
             public static bool RemoveEmptyDirectory(string directoryName)
             {
                 if (string.IsNullOrEmpty(directoryName))
@@ -101,8 +92,9 @@ namespace EasyFramework.Edit
                     Directory.Delete(directoryName);
                     return true;
                 }
-                catch
+                catch (System.Exception ex)
                 {
+                    D.Warning($"[Utility] RemoveEmptyDirectory failed for '{directoryName}': {ex.Message}");
                     return false;
                 }
             }
@@ -113,7 +105,7 @@ namespace EasyFramework.Edit
             /// </summary>
             public static string GetEfPath()
             {
-                return @"Packages\cn.efefef.core";
+                return "Packages/cn.efefef.core";
             }
 
             /// <summary>
@@ -122,53 +114,39 @@ namespace EasyFramework.Edit
             /// </summary>
             public static string GetEfAssetsPath()
             {
-                return @"Packages\cn.efefef.core\Editor Resources";
+                return "Packages/cn.efefef.core/Editor Resources";
             }
 
             public static string GetCurrentFolderPath()
             {
                 string[] guids = Selection.assetGUIDs;
 
-                // 如果没有选中任何东西，则提示并返回
-                if (guids == null || guids.Length == 0)
-                {
-                    //Debug.LogWarning("No files or folders have been selected.");
-                    return null;
-                }
+                if (guids == null || guids.Length == 0) return null;
 
                 string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-
                 string folderPath = Directory.Exists(assetPath)
                     ? assetPath
                     : System.IO.Path.GetDirectoryName(assetPath);
 
                 return folderPath;
             }
-        }
 
-        /// <summary>
-        /// 资产文件下下的路径相关实用函数
-        /// </summary>
-        public static class AssetPath
-        {
             /// <summary>
             /// 获取在资源文件夹下的路径
+            /// <para>Get the path under the Assets folder</para>
             /// </summary>
             public static string GetPathInAssetsFolder(string path)
             {
                 string endPath = Application.dataPath;
-                if (!string.IsNullOrEmpty(path))
+                if (string.IsNullOrEmpty(path)) return endPath;
+                int index = path.IndexOf("/Assets", System.StringComparison.Ordinal);
+                if (index == -1)
                 {
-                    int index = path.IndexOf("/Assets", System.StringComparison.Ordinal);
-                    if (index == -1)
-                    {
-                        EditorUtility.DisplayDialog("提示", $"必须在Assets目录下", "确定");
-                        return endPath;
-                    }
-
-                    endPath = path[(index + 1)..];
+                    EditorUtility.DisplayDialog("提示", $"必须在Assets目录下", "确定");
+                    return endPath;
                 }
 
+                endPath = path[(index + 1)..];
                 return endPath;
             }
         }

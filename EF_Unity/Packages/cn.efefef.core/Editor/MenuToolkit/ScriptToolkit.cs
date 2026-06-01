@@ -1,11 +1,11 @@
 ﻿/*
  * ================================================
- * Describe:      This script is used to change the script encoding format. Adapted from, thanks to the original author.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-05-22 14:47:02
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 15:42:00
- * ScriptVersion: 0.1
+ * Describe:        This script is used to change the script encoding format. Adapted from, thanks to the original author.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-05-22 14:47:02
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-01 15:30:32
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
@@ -66,17 +66,42 @@ namespace EasyFramework.Edit.MenuToolkit
                 if (contents.Length < 10)
                     continue;
 
-                string configName = ConfigManager.Project.ScriptAuthor;
+                string configName = ConfigManager.Project?.ScriptAuthor;
                 string authorName =
-                    EditorPrefs.GetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser");
+                    EditorPrefs.GetString($"{ConfigManager.Project?.AppConst?.AppPrefix}EditorUser");
                 authorName = string.IsNullOrEmpty(configName) || configName.Equals("Default")
                     ? authorName
                     : configName;
-                if (!contents[5].Contains("ModifyAuthor:"))
-                    continue;
-                contents[5] = $" * ModifyAuthor:    {authorName}";
-                contents[6] = $" * ModifyTime:      {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                contents[7] = $" * ScriptVersion:   {ConfigManager.Project.ScriptVersion}";
+
+                string modifyTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                string scriptVersion = ConfigManager.Project?.ScriptVersion ?? "0.1";
+
+                int replaceLength = 0;
+                int threshold = 15;
+                for (int i = 0; i < contents.Length; i++)
+                {
+                    string line = contents[i];
+                    if (line.Contains("* ModifyAuthor:"))
+                    {
+                        contents[i] = $" * ModifyAuthor:    {authorName}";
+                        replaceLength++;
+                    }
+                    else if (line.Contains("* ModifyTime:"))
+                    {
+                        contents[i] = $" * ModifyTime:      {modifyTime}";
+                        replaceLength++;
+                    }
+                    else if (line.Contains("* ScriptVersion:"))
+                    {
+                        contents[i] = $" * ScriptVersion:   {scriptVersion}";
+                        replaceLength++;
+                    }
+
+                    if (replaceLength == 3 || i >= threshold)
+                        break;
+                }
+
+                if (replaceLength == 0) continue;
 
                 File.WriteAllLines(absPath, contents, Encoding.UTF8);
             }
