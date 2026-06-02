@@ -80,7 +80,7 @@ namespace EasyFramework.Managers.Ui
                     rect.gameObject.AddComponent<GraphicRaycaster>();
             }
 
-            GameObject eventSystem = GameObject.Find("EventSystem");
+            GameObject eventSystem = UnityEngine.EventSystems.EventSystem.current?.gameObject;
             if (!eventSystem)
             {
                 eventSystem = new GameObject("EventSystem");

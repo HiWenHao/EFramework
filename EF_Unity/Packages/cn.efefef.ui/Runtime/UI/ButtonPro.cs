@@ -83,7 +83,6 @@ namespace EasyFramework
         {
             onDoubleClick.RemoveAllListeners();
             _onDoubleClickListenerCount = 0;
-            _onDoubleClickListenerCount = onDoubleClick.GetPersistentEventCount();
         }
         public void RemoveAllLongPressListeners() => onLongPress.RemoveAllListeners();
         public void RemoveAllKeepPressListeners() => onKeepPress.RemoveAllListeners();
@@ -226,6 +225,12 @@ namespace EasyFramework
             return true;
         }
         
+        //  检查是否有双击监听者（运行时 + Inspector 持久化）
+        private bool HasDoubleClickListener()
+        {
+            return _onDoubleClickListenerCount > 0 || onDoubleClick.GetPersistentEventCount() > 0;
+        }
+
         //  处理单击或双击操作
         private void HandleClickOrDoubleClick()
         {
@@ -237,7 +242,7 @@ namespace EasyFramework
 
             _lastClickTime = currentTime;
 
-            if (_onDoubleClickListenerCount == 0)
+            if (!HasDoubleClickListener())
             {
                 OnAnyEventTriggered();
                 onClick.Invoke();

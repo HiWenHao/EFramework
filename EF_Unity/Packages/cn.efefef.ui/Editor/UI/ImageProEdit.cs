@@ -16,7 +16,7 @@ using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.UI;
 
-namespace EFExample
+namespace EasyFramework.Edit
 {
     /// <summary>
     /// 图片升级版编辑器

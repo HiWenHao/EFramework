@@ -34,6 +34,9 @@ namespace EasyFramework.Edit.UI
         SerializedProperty _autoDocking;
         SerializedProperty _hasScrollbar;
         SerializedProperty _decelerationRate;
+        SerializedProperty _content;
+        SerializedProperty _movementType;
+        SerializedProperty _elemental;
 
         private void OnEnable()
         {
@@ -49,20 +52,23 @@ namespace EasyFramework.Edit.UI
             _autoDocking = serializedObject.FindProperty("_autoDocking");
             _hasScrollbar = serializedObject.FindProperty("_hasScrollbar");
             _decelerationRate = serializedObject.FindProperty("_decelerationRate");
+            _content = serializedObject.FindProperty("Content");
+            _movementType = serializedObject.FindProperty("movementType");
+            _elemental = serializedObject.FindProperty("Elemental");
         }
 
         public override void OnInspectorGUI()
         {
-            _pro = target as ScrollRectPro;
+            serializedObject.Update();
 
             EditorGUILayout.Separator();
-            _pro.Content = (RectTransform)EditorGUILayout.ObjectField(LC.Combine(new Lc[] { Lc.Scroll, Lc.Content }), _pro.Content, typeof(RectTransform), true);
-            _pro.Direction = (AxisType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Scroll, Lc.Direction }), _pro.Direction);
-            _lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { _pro.Direction == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), _lines.intValue);
+            EditorGUILayout.PropertyField(_content, new GUIContent(LC.Combine(new Lc[] { Lc.Scroll, Lc.Content })));
+            EditorGUILayout.PropertyField(_direction, new GUIContent(LC.Combine(new Lc[] { Lc.Scroll, Lc.Direction })));
+            _lines.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { (AxisType)_direction.enumValueIndex == AxisType.Vertical ? Lc.Column : Lc.Row, Lc.Count }), _lines.intValue);
             _maxCount.intValue = EditorGUILayout.IntField(LC.Combine(new Lc[] { Lc.Max, Lc.Element, Lc.Count }), _maxCount.intValue);
             EditorGUILayout.Separator();
              
-            _pro.movementType = (ScrollRectPro.MovementType)EditorGUILayout.EnumPopup(LC.Combine(new Lc[] { Lc.Move, Lc.Type }), _pro.movementType);
+            EditorGUILayout.PropertyField(_movementType, new GUIContent(LC.Combine(new Lc[] { Lc.Move, Lc.Type })));
             _elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine(Lc.Elasticity), _elasticity.floatValue);
             EditorGUILayout.Separator();
 
@@ -74,7 +80,7 @@ namespace EasyFramework.Edit.UI
             EditorGUILayout.Separator();
 
             _spacing.vector2IntValue = EditorGUILayout.Vector2IntField(LC.Combine(Lc.Spacing), _spacing.vector2IntValue);
-            _pro.Elemental = (GameObject)EditorGUILayout.ObjectField(LC.Combine(Lc.Element), _pro.Elemental, typeof(GameObject), true);
+            EditorGUILayout.PropertyField(_elemental, new GUIContent(LC.Combine(Lc.Element)));
             EditorGUILayout.Separator();
 
             _autoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Dock} ), _autoDocking.boolValue);
@@ -90,11 +96,9 @@ namespace EasyFramework.Edit.UI
                 _scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine(Lc.Scrollbar), _scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);
             }
 
-            if (GUI.changed)
+            if (serializedObject.hasModifiedProperties)
             {
-                _direction.enumValueFlag = (int)_pro.Direction;
                 serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(_pro);
             }
         }
     }

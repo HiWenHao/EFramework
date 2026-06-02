@@ -36,7 +36,6 @@ namespace EasyFramework.Edit.UI
             _maxDistance = serializedObject.FindProperty("_maxDistance");
             _eachPercent = serializedObject.FindProperty("_eachPercent");
             _initialRadian = serializedObject.FindProperty("_initialRadian");
-            serializedObject.ApplyModifiedProperties();
         }
 
         public override void OnInspectorGUI()
@@ -67,7 +66,6 @@ namespace EasyFramework.Edit.UI
                     _eachPercent.arraySize = _vertexCount.intValue;
 
                 serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty((RadarMap)target);
             }
         }
     }

@@ -58,13 +58,14 @@ namespace EasyFramework
         private Material _dynamicMaterial; // 动态创建的材质，OnDestroy 时释放
         private CancellationTokenSource _loadCts; // HTTP 下载取消令牌
 
+        private static Func<string, CancellationToken, UniTask<Texture2D>> _defaultTextureDownloader = DefaultLoadTextureAsync;
+
         /// <summary>
-        /// 默认纹理下载器 —— 所有 ImagePro 实例共享， 用户可替换为自己的实现（例如使用 Http 包）
+        /// 默认纹理下载器 —— 所有 ImagePro 实例共享。通过 SetTextureDownloader() 替换为自己的实现
         /// <para>Default Texture Downloader - Shared among all ImagePro instances.
-        /// Users can replace it with their own implementation<br/>(for example, using the Http package)</para>
+        /// Replace via SetTextureDownloader() with your own implementation</para>
         /// </summary>
-        public static Func<string, CancellationToken, UniTask<Texture2D>> DefaultTextureDownloader { get; set; } =
-            DefaultLoadTextureAsync;
+        public static Func<string, CancellationToken, UniTask<Texture2D>> DefaultTextureDownloader => _defaultTextureDownloader;
 
         /// <summary> 圆角弧度 </summary>
         public float CornerArc
@@ -244,6 +245,16 @@ namespace EasyFramework
             _dynamicMaterial.SetFloat(Width, Mathf.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
             _dynamicMaterial.SetFloat(Height, Mathf.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
             _dynamicMaterial.SetFloat(CornerSize, CheckConnerArc());
+        }
+
+        /// <summary>
+        /// 替换默认纹理下载器
+        /// <para>Replace the default texture downloader</para>
+        /// </summary>
+        /// <param name="downloader">自定义下载器<para>Custom downloader</para></param>
+        public static void SetTextureDownloader(Func<string, CancellationToken, UniTask<Texture2D>> downloader)
+        {
+            _defaultTextureDownloader = downloader ?? DefaultLoadTextureAsync;
         }
 
         /// <summary>

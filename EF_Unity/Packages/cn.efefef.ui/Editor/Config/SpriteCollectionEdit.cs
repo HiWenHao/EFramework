@@ -212,14 +212,14 @@ namespace EasyFramework.Edit.SpriteTools
             }
 
             //创建图集
-            SpriteAtlasTextureSettings _textureSet = new SpriteAtlasTextureSettings()
+            SpriteAtlasTextureSettings textureSet = new SpriteAtlasTextureSettings()
             {
                 readable = false,
                 generateMipMaps = false,
                 sRGB = true,
                 filterMode = FilterMode.Bilinear,
             };
-            SpriteAtlasPackingSettings _packSet = new SpriteAtlasPackingSettings()
+            SpriteAtlasPackingSettings packSet = new SpriteAtlasPackingSettings()
             {
                 blockOffset = 1,
                 enableRotation = false,
@@ -228,57 +228,51 @@ namespace EasyFramework.Edit.SpriteTools
             };
             for (int i = 0; i < _target.TargetObjects.Count; i++)
             {
-                string _atlas = Utility.Path.GetRegularPath(Path.Combine(_atlasFolder.stringValue, _target.TargetObjects[i].name + ".spriteatlas"));
-                bool _result = false;
-                if (!_allOverwrite && File.Exists(_atlas))
+                string assetPath = Utility.Path.GetRegularPath(Path.Combine(_atlasFolder.stringValue, _target.TargetObjects[i].name + ".spriteatlas"));
+                bool result = false;
+                if (!_allOverwrite && File.Exists(assetPath))
                 {
-                    _result = EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), _target.TargetObjects[i].name + LC.Combine(Lc.SC_AtlasExistAlsoOverwrite), LC.Combine(Lc.Ok), LC.Combine(Lc.Cancel));
-                    if (!_result)
+                    result = EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), _target.TargetObjects[i].name + LC.Combine(Lc.SC_AtlasExistAlsoOverwrite), LC.Combine(Lc.Ok), LC.Combine(Lc.Cancel));
+                    if (!result)
                     {
-                        bool _hasSA = false;
+                        bool hasSa = false;
 
                         for (int j = 0; j < _target.Atlas.Count; j++)
                         {
                             if (_target.Atlas[j].name == _target.TargetObjects[i].name)
                             {
-                                _hasSA = true;
+                                hasSa = true;
                                 continue;
                             }
                         }
-                        if (!_hasSA)
+                        if (!hasSa)
                         {
-                            SpriteAtlas _sat = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(_atlas);
+                            SpriteAtlas sat = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(assetPath);
                             if (i < _target.Atlas.Count)
-                            {
-                                SpriteAtlas _tempSA = _target.Atlas[i];
-                                _target.Atlas.Add(_tempSA);
-                                _target.Atlas[i] = _sat;
-                                _tempSA = null;
-                            }
+                                _target.Atlas.Insert(i, sat);
                             else
-                                _target.Atlas.Add(_sat);
-                            _sat = null;
+                                _target.Atlas.Add(sat);
                         }
                         continue;
                     }
                 }
 
-                SpriteAtlas _sa = new SpriteAtlas();
-                _sa.SetPackingSettings(_packSet);
-                _sa.SetTextureSettings(_textureSet);
+                SpriteAtlas sa = new SpriteAtlas();
+                sa.SetPackingSettings(packSet);
+                sa.SetTextureSettings(textureSet);
 
-                AssetDatabase.CreateAsset(_sa, _atlas);
+                AssetDatabase.CreateAsset(sa, assetPath);
 
-                _sa.Add(new Object[] { _target.TargetObjects[i] });
-                if (_result && i < _target.Atlas.Count && _target.Atlas[i].name != _target.TargetObjects[i].name)
+                sa.Add(new Object[] { _target.TargetObjects[i] });
+                if (result && i < _target.Atlas.Count && _target.Atlas[i].name != _target.TargetObjects[i].name)
                 {
-                    _target.Atlas[i] = _sa;
+                    _target.Atlas[i] = sa;
                 }
                 else
                 {
-                    _target.Atlas.Add(_sa);
+                    _target.Atlas.Add(sa);
                 }
-                _sa = null;
+                sa = null;
                 AssetDatabase.SaveAssets();
             }
             AssetDatabase.Refresh();

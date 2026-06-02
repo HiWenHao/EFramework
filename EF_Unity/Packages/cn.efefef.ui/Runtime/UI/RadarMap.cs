@@ -30,17 +30,12 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         public float MinDistance
         {
-            get
-            {
-                return _minDistance;
-            }
+            get => _minDistance;
             set
             {
-                if (_minDistance != value)
-                {
-                    _minDistance = Mathf.Clamp(value, 0.0f, _maxDistance);
-                    ChangedAndUpdate();
-                }
+                if (Mathf.Approximately(_minDistance, value)) return;
+                _minDistance = Mathf.Clamp(value, 0.0f, _maxDistance);
+                ChangedAndUpdate();
             }
         }
 
@@ -56,31 +51,26 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         public int VertexCount 
         { 
-            get
-            {
-                return _vertexCount;
-            }
+            get => _vertexCount;
             set
             {
-                if (_vertexCount != value)
+                if (_vertexCount == value) return;
+                float[] tempArray = new float[value];
+                if (_vertexCount > value)
                 {
-                    float[] tempArray = new float[value];
-                    if (_vertexCount > value)
-                    {
-                        Array.Copy(_eachPercent, tempArray, value);
-                        _eachPercent = tempArray;
-                    }
-                    else
-                    {
-                        Array.Copy(_eachPercent, tempArray, _vertexCount);
-                        for (int i = _vertexCount; i < value; i++)
-                            tempArray[i] = 0;
-
-                        _eachPercent = tempArray;
-                    }
-                    _vertexCount = value;
-                    ChangedAndUpdate();
+                    Array.Copy(_eachPercent, tempArray, value);
+                    _eachPercent = tempArray;
                 }
+                else
+                {
+                    Array.Copy(_eachPercent, tempArray, _vertexCount);
+                    for (int i = _vertexCount; i < value; i++)
+                        tempArray[i] = 0;
+
+                    _eachPercent = tempArray;
+                }
+                _vertexCount = value;
+                ChangedAndUpdate();
             }
         }
 
@@ -122,17 +112,17 @@ namespace EasyFramework.Managers.Ui
                 _maxDistance = (_selfTransform.sizeDelta.x <= _selfTransform.sizeDelta.y ? _selfTransform.sizeDelta.x : _selfTransform.sizeDelta.y) / 2.0f;
             }
 
-            _innerPositions = new Vector3[_vertexCount];
-            _exteriorPositions = new Vector3[_vertexCount];
+            EnsureArraySize(ref _innerPositions);
+            EnsureArraySize(ref _exteriorPositions);
             float tempRadian = _initialRadian;
-            float radiamDelta = 2 * Mathf.PI / _vertexCount;
+            float radiumDelta = 2 * Mathf.PI / _vertexCount;
 
-            vh.AddVert(Vector3.zero, color, Vector2.zero);
+            vh.AddVert(Vector3.zero, color, Vector4.zero);
             for (int i = 0; i < _vertexCount; i++)
             {
                 _innerPositions[i] = new Vector3(_minDistance * Mathf.Cos(tempRadian), _minDistance * Mathf.Sin(tempRadian), 0);
                 _exteriorPositions[i] = new Vector3(_maxDistance * Mathf.Cos(tempRadian), _maxDistance * Mathf.Sin(tempRadian), 0);
-                tempRadian += radiamDelta;
+                tempRadian += radiumDelta;
 
                 //通过在最内点和最外点间差值得到雷达图顶点实际位置，并添加到为vh的顶点。由于并没有图案，最后一项的uv坐标就随便填了。
                 vh.AddVert(Vector3.Lerp(_innerPositions[i], _exteriorPositions[i], _eachPercent[i]), color, Vector2.zero);
@@ -143,6 +133,12 @@ namespace EasyFramework.Managers.Ui
                 vh.AddTriangle(0, i + 1, i + 2);
             }
             vh.AddTriangle(0, _vertexCount, 1);
+        }
+
+        private void EnsureArraySize(ref Vector3[] array)
+        {
+            if (array == null || array.Length != _vertexCount)
+                array = new Vector3[_vertexCount];
         }
 
         /// <summary>

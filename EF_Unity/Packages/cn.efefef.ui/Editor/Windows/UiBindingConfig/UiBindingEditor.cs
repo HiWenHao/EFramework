@@ -248,16 +248,18 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _builder.DeleteScript);
             EditorGUILayout.Space(12f);
 
+            var originalColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button(LC.Combine(Lc.Bind, Lc.Create), GUILayout.Height(25.0f)))
+            bool createClicked = GUILayout.Button(LC.Combine(Lc.Bind, Lc.Create), GUILayout.Height(25.0f));
+            GUI.contentColor = originalColor;
+
+            if (createClicked)
             {
                 GenAutoBindCode();
                 if (_builder.CreatePrefab) CreateOrModifyPrefab();
                 if (_builder.DeleteScript) DestroyImmediate(_builder);
-                AssetDatabase.Refresh();
+                EditorApplication.delayCall += AssetDatabase.Refresh;
             }
-
-            GUI.contentColor = Color.white;
         }
 
         #endregion
