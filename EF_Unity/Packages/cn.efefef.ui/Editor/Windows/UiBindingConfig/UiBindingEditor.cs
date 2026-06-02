@@ -174,11 +174,19 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 string path = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Select, Lc.Path), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
-                    if (isCodePath)
-                        _builder.ScriptPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
+                    string assetPath = AbsoluteToAssetPath(path);
+                    if (!string.IsNullOrEmpty(assetPath))
+                    {
+                        if (isCodePath)
+                            _builder.ScriptPath = assetPath + "/";
+                        else
+                            _builder.PrefabPath = assetPath + "/";
+                        EditorUtility.SetDirty(_builder);
+                    }
                     else
-                        _builder.PrefabPath = path.Replace(Application.dataPath + "/", "Assets/") + "/";
-                    EditorUtility.SetDirty(_builder);
+                    {
+                        D.Warning($"Selected path '{path}' is not inside the Assets folder.");
+                    }
                 }
 
                 Repaint();
@@ -263,6 +271,24 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         }
 
         #endregion
+
+        /// <summary>
+        /// 将绝对路径安全转换为 Unity Assets 路径（以 "Assets/" 开头）
+        /// </summary>
+        private static string AbsoluteToAssetPath(string absolutePath)
+        {
+            if (string.IsNullOrEmpty(absolutePath)) return null;
+
+            string normalizedInput = Path.GetFullPath(absolutePath).Replace('\\', '/');
+            string normalizedDataPath = Path.GetFullPath(Application.dataPath).Replace('\\', '/');
+
+            if (normalizedInput.StartsWith(normalizedDataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return "Assets" + normalizedInput[normalizedDataPath.Length..];
+            }
+
+            return null;
+        }
 
         #region Bind. 绑定数据内容
 

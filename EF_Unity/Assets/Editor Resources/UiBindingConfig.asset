@@ -10,63 +10,64 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
-  m_Name: AutoBindSetting
+  m_Name: UiBindingConfig
   m_EditorClassIdentifier: 
-  _namespace: EFExample
   _rulePrefixes:
-  - Prefixe: Btn
+  - Prefix: Btn
     FullName: Button
-  - Prefixe: BtnP
+  - Prefix: BtnP
     FullName: ButtonPro
-  - Prefixe: Canvas
+  - Prefix: Canvas
     FullName: Canvas
-  - Prefixe: Drop
+  - Prefix: Drop
     FullName: Dropdown
-  - Prefixe: DropTmp
+  - Prefix: DropTmp
     FullName: TMP_Dropdown
-  - Prefixe: Group
+  - Prefix: Group
     FullName: CanvasGroup
-  - Prefixe: GGroup
+  - Prefix: GGroup
     FullName: GridLayoutGroup
-  - Prefixe: HGroup
+  - Prefix: HGroup
     FullName: HorizontalLayoutGroup
-  - Prefixe: Img
+  - Prefix: Img
     FullName: Image
-  - Prefixe: Ipt
+  - Prefix: ImgP
+    FullName: ImagePro
+  - Prefix: Ipt
     FullName: InputField
-  - Prefixe: IptTmp
+  - Prefix: IptTmp
     FullName: TMP_InputField
-  - Prefixe: Mask
+  - Prefix: Mask
     FullName: Mask
-  - Prefixe: Map
+  - Prefix: Map
     FullName: RadarMap
-  - Prefixe: Mask2D
+  - Prefix: Mask2D
     FullName: RectMask2D
-  - Prefixe: NAnim
+  - Prefix: NAnim
     FullName: Animator
-  - Prefixe: OAnim
+  - Prefix: OAnim
     FullName: Animation
-  - Prefixe: RImg
+  - Prefix: RImg
     FullName: RawImage
-  - Prefixe: Rect
+  - Prefix: Rect
     FullName: RectTransform
-  - Prefixe: Sld
+  - Prefix: Sld
     FullName: Slider
-  - Prefixe: Sbar
+  - Prefix: Sbar
     FullName: Scrollbar
-  - Prefixe: SRct
+  - Prefix: SRct
     FullName: ScrollRect
-  - Prefixe: SRctP
+  - Prefix: SRctP
     FullName: ScrollRectPro
-  - Prefixe: Tran
+  - Prefix: Tran
     FullName: Transform
-  - Prefixe: Txt
+  - Prefix: Txt
     FullName: Text
-  - Prefixe: TxtTmp
+  - Prefix: TxtTmp
     FullName: TextMeshProUGUI
-  - Prefixe: Tog
+  - Prefix: Tog
     FullName: Toggle
-  - Prefixe: TGroup
+  - Prefix: TGroup
     FullName: ToggleGroup
-  - Prefixe: VGroup
+  - Prefix: VGroup
     FullName: VerticalLayoutGroup

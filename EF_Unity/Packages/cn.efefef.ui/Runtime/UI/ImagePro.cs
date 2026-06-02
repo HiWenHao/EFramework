@@ -55,6 +55,9 @@ namespace EasyFramework
         private static readonly int CornerSize = Shader.PropertyToID("_CornerSize");
         private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayScaleAmount");
 
+        private static Shader _roundedRectangleShader;
+        private static Shader _defaultGrayShader;
+
         private Material _dynamicMaterial; // 动态创建的材质，OnDestroy 时释放
         private CancellationTokenSource _loadCts; // HTTP 下载取消令牌
 
@@ -88,7 +91,9 @@ namespace EasyFramework
                     break;
                 case ImageProMaterialType.Round:
                 {
-                    var shader = Shader.Find("UI/RoundedRectangle");
+                    if (_roundedRectangleShader == null)
+                        _roundedRectangleShader = Shader.Find("UI/RoundedRectangle");
+                    var shader = _roundedRectangleShader;
                     if (shader == null)
                     {
                         D.Error($"{gameObject.name} shader UI/RoundedRectangle not found");
@@ -105,7 +110,9 @@ namespace EasyFramework
                 }
                 case ImageProMaterialType.Gray:
                 {
-                    var shader = Shader.Find("UI/DefaultGray");
+                    if (_defaultGrayShader == null)
+                        _defaultGrayShader = Shader.Find("UI/DefaultGray");
+                    var shader = _defaultGrayShader;
                     if (shader == null)
                     {
                         D.Error($"{gameObject.name} shader UI/DefaultGray not found");

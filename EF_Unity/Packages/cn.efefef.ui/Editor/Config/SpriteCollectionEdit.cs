@@ -128,7 +128,7 @@ namespace EasyFramework.Edit.SpriteTools
                                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
                                 ClearSpriteInfoWithIndex(i);
                                 ClearAtlasWithIndex(i);
-                                AssetDatabase.Refresh();
+                                EditorApplication.delayCall += AssetDatabase.Refresh;
                             }
                         }
                     }
@@ -141,7 +141,7 @@ namespace EasyFramework.Edit.SpriteTools
             {
                 ClearAllAtlas();
                 ClearSpriteInfos();
-                AssetDatabase.Refresh();
+                EditorApplication.delayCall += AssetDatabase.Refresh;
             }
 
             if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.All })))
@@ -150,7 +150,7 @@ namespace EasyFramework.Edit.SpriteTools
                     AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
                 ClearAllAtlas();
                 ClearSpriteInfos();
-                AssetDatabase.Refresh();
+                EditorApplication.delayCall += AssetDatabase.Refresh;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -275,7 +275,7 @@ namespace EasyFramework.Edit.SpriteTools
                 sa = null;
                 AssetDatabase.SaveAssets();
             }
-            AssetDatabase.Refresh();
+            EditorApplication.delayCall += AssetDatabase.Refresh;
         }
         #endregion
 
@@ -304,7 +304,7 @@ namespace EasyFramework.Edit.SpriteTools
             SpriteAtlasUtility.PackAtlases(_target.Atlas.ToArray(), BuildTarget.NoTarget);
             EditorUtility.SetDirty(this);
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            EditorApplication.delayCall += AssetDatabase.Refresh;
         }
 
         void HandlePackable(int index, Object obj)

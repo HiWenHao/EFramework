@@ -276,6 +276,7 @@ namespace EasyFramework.Managers.Ui
         };
         private ElementInfo[] _elementInfosArray;
         private Stack<GameObject> _elementsPool;
+        [SerializeField] private int _maxPoolSize = 100; // 对象池最大容量，防止内存泄漏
 
         private Action<GameObject, int> _callbackFunc;
         #endregion
@@ -682,8 +683,15 @@ namespace EasyFramework.Managers.Ui
         {
             if (element != null)
             {
-                _elementsPool.Push(element);
-                SetActive(element, false);
+                if (_elementsPool.Count < _maxPoolSize)
+                {
+                    _elementsPool.Push(element);
+                    SetActive(element, false);
+                }
+                else
+                {
+                    Destroy(element);
+                }
             }
         }
 
@@ -1046,11 +1054,6 @@ namespace EasyFramework.Managers.Ui
             RectTransform elementRectTrans = Elemental.GetComponent<RectTransform>();
             elementRectTrans.pivot = new Vector2(0f, 1f);
             elementRectTrans.anchorMax = new Vector2(0f, 1f);
-            Vector2 _v2 = elementRectTrans.sizeDelta;
-            if (_v2.x == 0)
-                elementRectTrans.sizeDelta = new Vector2(Screen.width, _v2.y);
-            if (_v2.y == 0)
-                elementRectTrans.sizeDelta = new Vector2(_v2.x, Screen.height);
             CheckAnchor(elementRectTrans);
             elementRectTrans.anchoredPosition = Vector2.zero;
 
