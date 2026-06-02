@@ -273,7 +273,7 @@ namespace EasyFramework.Managers.Ui
         {
             public Vector3 Postation;
             public GameObject Element;
-        };
+        }
         private ElementInfo[] _elementInfosArray;
         private Stack<GameObject> _elementsPool;
         [SerializeField] private int _maxPoolSize = 100; // 对象池最大容量，防止内存泄漏

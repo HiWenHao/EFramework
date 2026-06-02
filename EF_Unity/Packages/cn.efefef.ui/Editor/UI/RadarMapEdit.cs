@@ -16,7 +16,8 @@ using UnityEngine;
 namespace EasyFramework.Edit.UI
 {
     /// <summary>
-    /// Please modify the description。
+    /// Custom inspector for RadarMap component. Provides vertex count, radian, and per-vertex distance editing.
+    /// RadarMap 组件自定义 Inspector，支持顶点数、弧度、逐顶点距离编辑。
     /// </summary>
     [CustomEditor(typeof(RadarMap), true)]
     [CanEditMultipleObjects]

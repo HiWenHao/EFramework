@@ -16,7 +16,8 @@ using UnityEngine;
 namespace EasyFramework.Edit.UI
 {
     /// <summary>
-    /// Please modify the description。
+    /// Custom inspector for Slideshow component. Provides element size, spacing, auto-loop and drag settings.
+    /// Slideshow 组件自定义 Inspector，支持元素尺寸、间距、自动轮播和拖拽设置。
     /// </summary>
     [CustomEditor(typeof(Slideshow))]
     [CanEditMultipleObjects]

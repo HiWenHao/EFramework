@@ -56,7 +56,7 @@ namespace EasyFramework.Managers.Ui
             int tempLength = buttons.Count;
 
             while (--tempLength >= 0)
-                buttons[tempLength].RemoveAllClickListeners();;
+                buttons[tempLength].RemoveAllClickListeners();
 
             buttons.Clear();
             return buttons;
