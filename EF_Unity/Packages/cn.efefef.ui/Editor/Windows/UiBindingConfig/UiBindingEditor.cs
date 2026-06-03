@@ -121,7 +121,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
 
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine(Lc.Type), _builder.ViewType);
-            if (_builder.ViewType is UIViewType.Cache or UIViewType.Popup or UIViewType.Tips)
+            if (_builder.ViewType is UIViewType.Cache)
                 _builder.ViewType = UIViewType.Page;
 
             EditorGUILayout.Space(12f, true);
