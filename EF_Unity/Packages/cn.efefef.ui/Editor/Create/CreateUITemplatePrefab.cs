@@ -41,6 +41,14 @@ namespace EasyFramework.Edit.Create
             rect.anchoredPosition = Vector2.zero;
         }
 
+        [MenuItem("GameObject/UI/EF/Image Pro", false, 39)]
+        static void CreateUIImagePro(MenuCommand menuCommand)
+        {
+            Transform tran = CreateUIObject(menuCommand, "ImagePro", new[] { typeof(ImagePro) }).transform;
+
+            SetUIObjectSize(tran, new Vector2(100f, 100f));
+        }
+
         [MenuItem("GameObject/UI/EF/Button Pro", false, 40)]
         static void CreateUIButtonPro(MenuCommand menuCommand)
         {
