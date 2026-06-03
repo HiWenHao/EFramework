@@ -33,6 +33,10 @@ namespace EFExample
         [SerializeField][Min(1)] private int   _poolPreAlloc = 3;
         [SerializeField][Min(0)] private int   _bufferCount  = 2;
 
+        [Header("预创建")]
+        [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")]
+        [SerializeField][Min(0)] private int   _preCreateBuffer = 3;
+
         [Header("自适应测量")]
         [Tooltip("开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField] private bool _autoRebuildLayout = false;
@@ -77,6 +81,7 @@ namespace EFExample
         // ================================================================
 
         private readonly List<float>              _itemSizes       = new List<float>();
+        private readonly List<float>              _cumulativePositions = new List<float>(); // 预计算累积位置，[i] = item[i] 的顶部位置
         private readonly List<ActiveItem>         _activeItems     = new List<ActiveItem>();
         private readonly Dictionary<int, GameObject> _activeIndexMap  = new Dictionary<int, GameObject>(); // dataIndex → GameObject（O(1) 查重/查找）
         private readonly Stack<GameObject>        _pool            = new Stack<GameObject>();
@@ -114,10 +119,11 @@ namespace EFExample
 
         private struct ActiveItem
         {
-            public GameObject gameObject;
-            public int        index;
-            public float      size;
-            public bool       justCreated; // true = 需要填充内容+测量布局
+            public GameObject  gameObject;
+            public IScrollItem scrollItem; // 缓存接口避免重复 GetComponent
+            public int         index;
+            public float       size;
+            public bool        justCreated; // true = 需要填充内容+测量布局
         }
 
         // ================================================================
@@ -184,6 +190,7 @@ namespace EFExample
             for (int i = 0; i < totalCount; i++)
                 _itemSizes.Add(GetItemSize(i));
 
+            RebuildCumulativePositions();
             ApplyContentLayout(false);
             PreAllocPool();
             IsInitialized = true;
@@ -342,12 +349,49 @@ namespace EFExample
         /// <summary>计算从索引 0 到 index（含）的累积偏移（含间距）</summary>
         private float GetCumulativePosition(int index)
         {
-            float pos = 0f;
-            for (int i = 0; i < index && i < _itemSizes.Count; i++)
+            if (index < _cumulativePositions.Count)
+                return _cumulativePositions[index];
+            return 0f;
+        }
+
+        /// <summary>重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。</summary>
+        private void RebuildCumulativePositions(int fromIndex = 0)
+        {
+            if (_cumulativePositions.Count != _itemSizes.Count)
             {
-                pos += _itemSizes[i] + _itemSpacing;
+                _cumulativePositions.Clear();
+                for (int i = 0; i < _itemSizes.Count; i++)
+                    _cumulativePositions.Add(0f);
             }
-            return pos;
+            if (_cumulativePositions.Count == 0) return;
+
+            if (fromIndex <= 0)
+            {
+                _cumulativePositions[0] = 0f;
+                fromIndex = 1;
+            }
+            for (int i = fromIndex; i < _cumulativePositions.Count; i++)
+            {
+                float prevSize = _itemSizes[i - 1];
+                if (prevSize <= 0.5f) prevSize = GetItemSize(i - 1);
+                _cumulativePositions[i] = _cumulativePositions[i - 1] + prevSize + _itemSpacing;
+            }
+        }
+
+        /// <summary>二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。</summary>
+        private int BinarySearchVisibleIndex(float scrollOffset)
+        {
+            int lo = 0, hi = _cumulativePositions.Count - 1;
+            while (lo <= hi)
+            {
+                int mid = (lo + hi) / 2;
+                float itemEnd = _cumulativePositions[mid] + _itemSizes[mid] + _itemSpacing;
+                if (itemEnd <= scrollOffset)
+                    lo = mid + 1;
+                else
+                    hi = mid - 1;
+            }
+            return Mathf.Min(lo, _cumulativePositions.Count - 1);
         }
 
         // ================================================================
@@ -376,45 +420,28 @@ namespace EFExample
 
             _viewportSize = GetViewportSize();
 
-            // 钳位到有效范围，避免回弹/overscroll 期间 scrollOffset 越界导致范围计算错误
             float rawOffset  = GetContentScrollOffset();
             float maxScroll  = Mathf.Max(0, CalculateTotalSize() - _viewportSize);
             float scrollOffset = Mathf.Clamp(rawOffset, 0, maxScroll);
 
-            // ---- 线性查找第一个可见 item ----
-            // 数据量 < 5000 时线性扫描足够快；超大数据集可改为二分搜索
-            int first = 0;
-            float accum = 0f;
-            for (int i = 0; i < count; i++)
-            {
-                float itemEnd = accum + _itemSizes[i] + _itemSpacing;
-                if (itemEnd > scrollOffset)
-                {
-                    first = i;
-                    break;
-                }
-                accum = itemEnd;
-                if (i == count - 1) first = i;
-            }
+            // ---- 二分查找第一个可见 item（OSA 风格） ----
+            int first = BinarySearchVisibleIndex(scrollOffset);
 
             // 加缓冲
-            first = Mathf.Max(0, first - _bufferCount);
+            int totalBuffer = _bufferCount + _preCreateBuffer;
+            first = Mathf.Max(0, first - totalBuffer);
 
             // ---- 查找最后一个可见 item ----
             float visibleEnd = scrollOffset + _viewportSize;
             int last = first;
-            float running = GetCumulativePosition(first);
-
             for (int i = first; i < count; i++)
             {
-                running += _itemSizes[i] + _itemSpacing;
+                float itemEnd = _cumulativePositions[i] + _itemSizes[i] + _itemSpacing;
                 last = i;
-                if (running >= visibleEnd) break;
+                if (itemEnd >= visibleEnd) break;
             }
 
-            // 加缓冲
-            last = Mathf.Min(count - 1, last + _bufferCount);
-
+            last = Mathf.Min(count - 1, last + totalBuffer);
             return (first, last);
         }
 
@@ -472,12 +499,6 @@ namespace EFExample
             if (!force && newFirst == FirstVisibleIndex && newLast == LastVisibleIndex)
                 return;
 
-            // 保存上一帧活跃索引快照（用于种子锚点策略：只有这些 item 的 anchoredPosition 是可信的）
-            var prevActiveSet = new HashSet<int>();
-            for (int i = 0; i < _activeItems.Count; i++)
-                if (_activeItems[i].gameObject != null)
-                    prevActiveSet.Add(_activeItems[i].index);
-
             // 回收不再可见的 item
             for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
@@ -486,6 +507,7 @@ namespace EFExample
                 {
                     _activeIndexMap.Remove(item.index);
                     OnItemVisibilityChanged?.Invoke(item.index, false);
+                    item.scrollItem?.OnHide();
                     Recycle(item.gameObject);
                     _activeItems.RemoveAt(i);
                 }
@@ -498,13 +520,25 @@ namespace EFExample
                 {
                     var go = Rent();
                     go.SetActive(false); // 先隐藏，填充完再显示
-                    _activeItems.Add(new ActiveItem { gameObject = go, index = i, size = _itemSizes[i], justCreated = true });
+                    var si = go.GetComponent<IScrollItem>();
+                    _activeItems.Add(new ActiveItem { gameObject = go, scrollItem = si, index = i, size = _itemSizes[i], justCreated = true });
                     _activeIndexMap[i] = go;
                     OnItemVisibilityChanged?.Invoke(i, true);
                 }
             }
 
-            // ---- 填充新 item（仅对新创建的 item 填充内容 + 测量布局） ----
+            // ---- 在填充之前禁用 content 布局（防冒泡篡改 item 位置） ----
+            if (_autoRebuildLayout)
+            {
+                var contentLayout = _contentRect.GetComponent<LayoutGroup>();
+                if (contentLayout != null) contentLayout.enabled = false;
+                var contentCsf = _contentRect.GetComponent<ContentSizeFitter>();
+                if (contentCsf != null) contentCsf.enabled = false;
+                var contentArf = _contentRect.GetComponent<AspectRatioFitter>();
+                if (contentArf != null) contentArf.enabled = false;
+            }
+
+            // ---- 填充新 item（FillAndMeasureNew 内完成测量、锁定） ----
             bool anyFilled = false;
             for (int i = 0; i < _activeItems.Count; i++)
             {
@@ -516,38 +550,16 @@ namespace EFExample
                 }
             }
 
-            // FillAndMeasureNew 可能更新了 _itemSizes（实测值 ≠ 估算值），
-            // 必须在锚点链定位【之前】同步 Content 总高度与滚动位置，
-            // 否则锚点链基于旧 content 位置计算→item 相对视窗整体偏移。
-            if (anyFilled && _autoRebuildLayout)
-            {
-                float savedOffset = GetContentScrollOffset();
-                float total = CalculateTotalSize();
-                if (_direction == Direction.Vertical)
-                    _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
-                else
-                    _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
-
-                float maxOff = Mathf.Max(0, total - _viewportSize);
-                if (_direction == Direction.Vertical)
-                    _contentRect.anchoredPosition = new Vector2(
-                        _contentRect.anchoredPosition.x,
-                        Mathf.Clamp(savedOffset, 0, maxOff));
-                else
-                    _contentRect.anchoredPosition = new Vector2(
-                        -Mathf.Clamp(savedOffset, 0, maxOff),
-                        _contentRect.anchoredPosition.y);
-            }
-
-            // ---- 关键：在定位之前先刷新所有 pending 布局 ----
-            // FillAndMeasureNew 中的 ForceRebuildLayoutImmediate 会向 content 冒泡标记 dirty。
-            // 如果不在定位前处理掉这些 pending，后续的 Canvas 更新或 Unity 帧更新
-            // 会重新执行布局处理，导致 item 的 anchoredPosition 被布局系统篡改。
+            // ---- Batch flush + 重建累积位置（尺寸变更后必须重建才能定位） ----
             if (anyFilled)
             {
                 Canvas.ForceUpdateCanvases();
+                RebuildCumulativePositions();
+            }
 
-                // 验证 content sizeDelta 未被布局 flush 改变
+            // ---- 验证 content sizeDelta ----
+            if (anyFilled && _autoRebuildLayout)
+            {
                 float expectedTotal = CalculateTotalSize();
                 if (_direction == Direction.Vertical)
                 {
@@ -561,103 +573,36 @@ namespace EFExample
                 }
             }
 
-            // ---- 锚点链重定位（auto 模式：增量扩展，不重建整链） ----
-            // auto 模式：以已活跃且已测量的 item 为种子，向两端扩展定位
-            //           已活跃 item 的 anchoredPosition 保持不变，只算新进入视口的 item
-            // 手动模式：GetCumulativePosition + cumulativeDelta
-            if (_autoRebuildLayout)
+            // ---- OSA 风格定位：直接从预计算累积位置数组 O(1) 查表 ----
+            // 不再需要种子锚点链，所有 item 的 anchoredPosition 由 _cumulativePositions 统一决定。
+            for (int i = newFirst; i <= newLast; i++)
             {
-                // 找种子：当前 [newFirst, newLast] 范围内，
-                // 已活跃 + 已测量（size > 0.5f）+ 本帧之前已存在（prevActiveSet，anchoredPosition 可信）
-                int seedIdx = -1;
-                GameObject seedGo = null;
-                for (int i = newFirst; i <= newLast; i++)
-                {
-                    if (IsActiveAt(i) && _itemSizes[i] > 0.5f && prevActiveSet.Contains(i))
-                    {
-                        seedIdx = i;
-                        seedGo  = FindActiveByIndex(i);
-                        break;
-                    }
-                }
-
-                if (seedIdx >= 0 && seedGo != null)
-                {
-                    // 以种子 item 的当前位置为基准，向【下】和【上】扩展
-                    var seedRt = seedGo.transform as RectTransform;
-                    float seedPos = (_direction == Direction.Vertical)
-                        ? -seedRt.anchoredPosition.y
-                        :  seedRt.anchoredPosition.x;
-
-                    // 向下扩展：[seedIdx+1, newLast]
-                    float downPos = seedPos + _itemSizes[seedIdx] + _itemSpacing;
-                    for (int i = seedIdx + 1; i <= newLast; i++)
-                    {
-                        var go = FindActiveByIndex(i);
-                        if (go == null) continue;
-                        var rt = go.transform as RectTransform;
-                        if (rt == null) continue;
-                        rt.anchoredPosition = (_direction == Direction.Vertical)
-                            ? new Vector2(0, -downPos)
-                            : new Vector2(downPos, 0);
-                        downPos += _itemSizes[i] + _itemSpacing;
-                    }
-
-                    // 向上扩展：[newFirst, seedIdx-1]
-                    float upNextPos = seedPos; // seedIdx 的 pos（即 seedIdx-1 的"next"）
-                    for (int i = seedIdx - 1; i >= newFirst; i--)
-                    {
-                        float pos = upNextPos - _itemSizes[i] - _itemSpacing;
-                        var go = FindActiveByIndex(i);
-                        if (go == null) continue;
-                        var rt = go.transform as RectTransform;
-                        if (rt == null) continue;
-                        rt.anchoredPosition = (_direction == Direction.Vertical)
-                            ? new Vector2(0, -pos)
-                            : new Vector2(pos, 0);
-                        upNextPos = pos;
-                    }
-                }
-                else
-                {
-                    // 无种子（首次加载）：退化为从 newFirst 递推（此时上方 item 均为 0 尺寸，不影响）
-                    float nextAnchorPos = GetCumulativePosition(newFirst);
-                    for (int i = newFirst; i <= newLast; i++)
-                    {
-                        var go = FindActiveByIndex(i);
-                        if (go == null) continue;
-                        var rt = go.transform as RectTransform;
-                        if (rt == null) continue;
-                        rt.anchoredPosition = (_direction == Direction.Vertical)
-                            ? new Vector2(0, -nextAnchorPos)
-                            : new Vector2(nextAnchorPos, 0);
-                        nextAnchorPos += _itemSizes[i] + _itemSpacing;
-                    }
-                }
-            }
-            else
-            {
-                // 手动模式：GetCumulativePosition + cumulativeDelta
-                float cumulativeDelta = 0f;
-                for (int i = newFirst; i <= newLast; i++)
-                {
-                    var go = FindActiveByIndex(i);
-                    if (go == null) continue;
-                    var rt = go.transform as RectTransform;
-                    if (rt == null) continue;
-                    float pos = GetCumulativePosition(i) + cumulativeDelta;
-                    rt.anchoredPosition = (_direction == Direction.Vertical)
-                        ? new Vector2(0, -pos)
-                        : new Vector2(pos, 0);
-                }
+                var go = FindActiveByIndex(i);
+                if (go == null) continue;
+                var rt = go.transform as RectTransform;
+                if (rt == null) continue;
+                float pos = _cumulativePositions[i];
+                rt.anchoredPosition = (_direction == Direction.Vertical)
+                    ? new Vector2(0, -pos)
+                    : new Vector2(pos, 0);
             }
 
             FirstVisibleIndex = newFirst;
             LastVisibleIndex  = newLast;
 
-            // ---- 最终保护：flush 定位后可能触发的 pending layout + 强制修正漂移 ----
-            // ForceRebuildLayoutImmediate 冒泡 dirty 可能在同一帧 flush 时产生新的延迟注册，
-            // 双 flush 确保全部结算，不残留到下一帧。
+            // ---- 在定位后同步 content 尺寸 ----
+            // 只更新 sizeDelta，不动 anchoredPosition——ScrollRect 自己维护。
+            if (anyFilled && _autoRebuildLayout)
+            {
+                float total = CalculateTotalSize();
+                if (_direction == Direction.Vertical)
+                    _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
+                else
+                    _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
+            }
+
+            // ---- 最终保护：flush + 强制修正漂移 ----
+            // 双 flush 确保 ForceRebuildLayoutImmediate 冒泡 dirty 在同一帧全部结算。
             if (anyFilled)
             {
                 Canvas.ForceUpdateCanvases();
@@ -731,62 +676,57 @@ namespace EFExample
                 rt.pivot     = new Vector2(0, 0.5f);
             }
 
-            // 重置位置为 (0,0) — 消除池回收残留的垃圾值，
-            // 防止种子锚点策略读到错误 seedPos 导致整链错位 / 不可见
-            rt.anchoredPosition = Vector2.zero;
+            // 把新 item 放在内容底部（远低于视口），锚点链定位前绝对不可见。
+            // (0,0) 在顶部时恰好落在视口内 → 用户看到闪烁 → 感觉卡顿。
+            float offScreenY = -CalculateTotalSize() - _viewportSize;
+            rt.anchoredPosition = (_direction == Direction.Vertical)
+                ? new Vector2(0, offScreenY)
+                : new Vector2(offScreenY, 0);
 
             go.name = $"Item[{index}]";
 
-            // ---- 填充内容 ----
-            OnUpdateItem?.Invoke(go, index);
-
-            // ---- 自适应测量 ----
-            if (_autoRebuildLayout)
+            // ---- 首选 IScrollItem：item 自己负责内容填充 + 测量 + 锁定 ----
+            if (ai.scrollItem != null && _autoRebuildLayout)
             {
-                // auto 模式：sizeDelta 归零让 CSF 自由计算
-                if (_direction == Direction.Vertical)
-                    rt.sizeDelta = new Vector2(rt.sizeDelta.x, 0);
-                else
-                    rt.sizeDelta = new Vector2(0, rt.sizeDelta.y);
-
                 go.SetActive(true);
-                Canvas.ForceUpdateCanvases();
+                float measured = ai.scrollItem.OnShow(index);
+                measured = Mathf.Max(1f, measured);
+                _itemSizes[index] = measured;
+                ai.size = measured;
+            }
+            else if (_autoRebuildLayout)
+            {
+                OnUpdateItem?.Invoke(go, index);
+                if (_direction == Direction.Vertical)
+                    rt.sizeDelta = new Vector2(rt.sizeDelta.x, Mathf.Max(1f, _itemSizes[index]));
+                else
+                    rt.sizeDelta = new Vector2(Mathf.Max(1f, _itemSizes[index]), rt.sizeDelta.y);
 
-                // ---- 防御：禁用 content 上的 ILayoutController 防止冒泡干扰 ----
-                var contentLayout = _contentRect.GetComponent<LayoutGroup>();
-                var contentCsf    = _contentRect.GetComponent<ContentSizeFitter>();
-                var contentArf    = _contentRect.GetComponent<AspectRatioFitter>();
-                if (contentLayout != null) contentLayout.enabled = false;
-                if (contentCsf != null)    contentCsf.enabled = false;
-                if (contentArf != null)    contentArf.enabled = false;
-
-                // 精确测量：ForceRebuildLayoutImmediate 确保 VLGroup + CSF 完全结算，
-                // 给出准确的 rect.height。它会向上冒泡 dirty 到 content，
-                // 但 RefreshVisibleItemsInternal 末尾的防御修正 pass 会拦截漂移。
+                var rootCsf = rt.GetComponent<ContentSizeFitter>();
+                if (rootCsf != null) rootCsf.enabled = true;
+                go.SetActive(true);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
 
                 float actualSize = (_direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
-
                 _itemSizes[index] = actualSize;
                 ai.size = actualSize;
 
-                // 不覆盖 sizeDelta —— 让 item 自身的 CSF 继续管理高度。
-                // 如果强行设 sizeDelta = actualSize，下一帧 CSF 会再次覆盖，
-                // 造成一帧的 sizeDelta 抖动。
-                // 测量值已存入 _itemSizes，用于定位计算。
+                rt.sizeDelta = (_direction == Direction.Vertical)
+                    ? new Vector2(rt.sizeDelta.x, actualSize)
+                    : new Vector2(actualSize, rt.sizeDelta.y);
+                if (rootCsf != null) rootCsf.enabled = false;
             }
             else
             {
-                // 手动模式：直接用估算尺寸
+                OnUpdateItem?.Invoke(go, index);
                 if (_direction == Direction.Vertical)
                     rt.sizeDelta = new Vector2(rt.sizeDelta.x, ai.size);
                 else
                     rt.sizeDelta = new Vector2(ai.size, rt.sizeDelta.y);
-
-                go.SetActive(true);
-            }
-
             ai.justCreated = false;
+            return ai;
+        }
             return ai;
         }
 
@@ -798,7 +738,7 @@ namespace EFExample
         {
             // 基于视口估算至少需要多少 item（一屏 + 缓冲）
             float avgSize = _prefabDefaultSize > 0 ? _prefabDefaultSize : 100f;
-            _estimatedVisibleCount = Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) + _bufferCount * 2;
+            _estimatedVisibleCount = Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) + (_bufferCount + _preCreateBuffer) * 2;
 
             int need = Mathf.Max(_poolPreAlloc, _estimatedVisibleCount);
             int current = _pool.Count + _activeItems.Count;
@@ -807,6 +747,8 @@ namespace EFExample
             {
                 var go = Instantiate(_itemPrefab, _contentRect);
                 go.SetActive(false);
+                var item = go.GetComponent<IScrollItem>();
+                item?.OnCreate(go.transform as RectTransform);
                 _pool.Push(go);
             }
         }
@@ -816,7 +758,11 @@ namespace EFExample
             if (_pool.Count > 0)
                 return _pool.Pop();
 
-            return Instantiate(_itemPrefab, _contentRect);
+            var go = Instantiate(_itemPrefab, _contentRect);
+            go.SetActive(false);
+            var item = go.GetComponent<IScrollItem>();
+            item?.OnCreate(go.transform as RectTransform);
+            return go;
         }
 
         private void Recycle(GameObject go)
@@ -943,6 +889,75 @@ namespace EFExample
             if (index < 0 || index >= _itemSizes.Count) return;
             _itemSizes[index] = Mathf.Max(1f, newSize);
             ApplyAndRebuildOrMarkDirty();
+        }
+
+        /// <summary>OSA-style：更改单个 item 尺寸，自动重建累积位置并刷新布局</summary>
+        public void ChangeItemSize(int index, float newSize)
+        {
+            UpdateItemSize(index, newSize);
+        }
+
+        /// <summary>刷新指定索引的内容（会重新测量 sizeDelta 并更新累积位置）</summary>
+        public void RefreshItem(int index)
+        {
+            if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
+            var go = FindActiveByIndex(index);
+            if (go == null) return;
+            // 回收后重新创建，触发 OnShow 重新测量
+            var ai = new ActiveItem { gameObject = go, scrollItem = go.GetComponent<IScrollItem>(), index = index, justCreated = true };
+            var rt = go.transform as RectTransform;
+            if (rt != null)
+            {
+                float offScreenY = -CalculateTotalSize() - _viewportSize;
+                rt.anchoredPosition = (_direction == Direction.Vertical)
+                    ? new Vector2(0, offScreenY) : new Vector2(offScreenY, 0);
+            }
+            _activeItems[_activeItems.FindIndex(a => a.index == index)] = FillAndMeasureNew(ai);
+            RebuildCumulativePositions();
+            RefreshVisibleItems(true);
+        }
+
+        /// <summary>OSA-style：刷新指定范围的内容并重建布局</summary>
+        public void RefreshRange(int fromIndex, int toIndex)
+        {
+            if (!IsInitialized) return;
+            toIndex = Mathf.Min(toIndex, _itemSizes.Count - 1);
+            for (int i = fromIndex; i <= toIndex; i++)
+            {
+                var go = FindActiveByIndex(i);
+                if (go == null) continue;
+                Recycle(go);
+            }
+            RefreshVisibleItems(true);
+        }
+
+        /// <summary>OSA-style：在数据更新后调用，重建累积位置并刷新</summary>
+        public void ScheduleComputeVisibilityTwinPass()
+        {
+            RebuildCumulativePositions();
+            RefreshVisibleItems(true);
+        }
+
+        /// <summary>手动通知列表累积位置需要重建（item 内部尺寸变更后调用）</summary>
+        public void RequestChangeItemSizeAndUpdateLayout(int index)
+        {
+            if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
+            var go = FindActiveByIndex(index);
+            if (go == null) return;
+            var rt = go.transform as RectTransform;
+            if (rt == null) return;
+            // 重新测量当前 item 的实际大小
+            var csf = rt.GetComponent<ContentSizeFitter>();
+            if (csf != null) csf.enabled = true;
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, 0f);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            float measured = rt.rect.height;
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, Mathf.Max(1f, measured));
+            if (csf != null) csf.enabled = false;
+            _itemSizes[index] = Mathf.Max(1f, measured);
+            RebuildCumulativePositions();
+            RefreshVisibleItems(true);
         }
 
         /// <summary>在指定位置插入一项</summary>
@@ -1162,7 +1177,10 @@ namespace EFExample
             for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
                 if (_activeItems[i].gameObject != null)
+                {
+                    _activeItems[i].scrollItem?.OnDestroyed();
                     Destroy(_activeItems[i].gameObject);
+                }
             }
             _activeItems.Clear();
             _activeIndexMap.Clear();
@@ -1171,10 +1189,15 @@ namespace EFExample
             while (_pool.Count > 0)
             {
                 var go = _pool.Pop();
-                if (go != null) Destroy(go);
+                if (go != null)
+                {
+                    go.GetComponent<IScrollItem>()?.OnDestroyed();
+                    Destroy(go);
+                }
             }
 
             _itemSizes.Clear();
+            _cumulativePositions.Clear();
             FirstVisibleIndex = -1;
             LastVisibleIndex  = -1;
         }
