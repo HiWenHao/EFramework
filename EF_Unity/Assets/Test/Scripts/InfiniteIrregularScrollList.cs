@@ -346,12 +346,16 @@ namespace EFExample
             return total;
         }
 
-        /// <summary>计算从索引 0 到 index（含）的累积偏移（含间距）</summary>
+        /// <summary>计算从索引 0 到 index（含）的累积偏移（含间距），O(1) 查表，未初始化时线性 fallback</summary>
         private float GetCumulativePosition(int index)
         {
             if (index < _cumulativePositions.Count)
                 return _cumulativePositions[index];
-            return 0f;
+            // 防御：_itemSizes 新增但 _cumulativePositions 尚未重建时，回退到线性计算
+            float pos = 0f;
+            for (int i = 0; i < index && i < _itemSizes.Count; i++)
+                pos += _itemSizes[i] + _itemSpacing;
+            return pos;
         }
 
         /// <summary>重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。</summary>
@@ -724,9 +728,10 @@ namespace EFExample
                     rt.sizeDelta = new Vector2(rt.sizeDelta.x, ai.size);
                 else
                     rt.sizeDelta = new Vector2(ai.size, rt.sizeDelta.y);
+                go.SetActive(true);
+            }
+
             ai.justCreated = false;
-            return ai;
-        }
             return ai;
         }
 
@@ -1044,21 +1049,45 @@ namespace EFExample
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
-            float targetPos = GetCumulativePosition(index);
-            float itemSize  = _itemSizes[index];
-            float viewSize  = GetViewportSize();
-            float offset    = Mathf.Max(0, viewSize - itemSize) * alignment;
-            float totalSize = CalculateTotalSize();
-            float maxScroll = Mathf.Max(0, totalSize - viewSize);
+            float viewSize = GetViewportSize();
 
-            float clamped = Mathf.Clamp(targetPos - offset, 0, maxScroll);
+            // === Pass 1：用当前 _itemSizes（可能含估算值）近似滚动，触发 item 创建+测量 ===
+            RebuildCumulativePositions();
+            float p1Target  = GetCumulativePosition(index);
+            float p1Item    = _itemSizes[index];
+            float p1Offset  = Mathf.Max(0, viewSize - p1Item) * alignment;
+            float p1Total   = CalculateTotalSize();
+            float p1Max     = Mathf.Max(0, p1Total - viewSize);
+            float p1Clamped = Mathf.Clamp(p1Target - p1Offset, 0, p1Max);
 
+            SetContentScroll(p1Clamped);
+            _scrollRect.StopMovement();
+            RefreshVisibleItems(true); // 触发目标 range 内 item 的 FillAndMeasureNew → 获取实测高度
+
+            // === Pass 2：用实测尺寸精确计算 ===
+            RebuildCumulativePositions();
+            float p2Target  = GetCumulativePosition(index);
+            float p2Item    = _itemSizes[index];
+            float p2Offset  = Mathf.Max(0, viewSize - p2Item) * alignment;
+            float p2Total   = CalculateTotalSize();
+            float p2Max     = Mathf.Max(0, p2Total - viewSize);
+            float p2Clamped = Mathf.Clamp(p2Target - p2Offset, 0, p2Max);
+
+            if (Mathf.Abs(p2Clamped - p1Clamped) > 1f)
+            {
+                SetContentScroll(p2Clamped);
+                Canvas.ForceUpdateCanvases();
+                RefreshVisibleItems(true);
+            }
+        }
+
+        // 直接设 content anchoredPosition，不触发 ScrollRect 额外处理
+        private void SetContentScroll(float clamped)
+        {
             if (_direction == Direction.Vertical)
                 _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, clamped);
             else
                 _contentRect.anchoredPosition = new Vector2(-clamped, _contentRect.anchoredPosition.y);
-
-            RefreshVisibleItems(true);
         }
 
         /// <summary>平滑滚动到指定索引（协程驱动）</summary>
@@ -1070,10 +1099,20 @@ namespace EFExample
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
-            float viewSize  = GetViewportSize();
+            // 先触发测量，确保 _itemSizes 是实测值而非估算
+            float viewSize = GetViewportSize();
+            RebuildCumulativePositions();
+            float p1Clamped = Mathf.Clamp(
+                GetCumulativePosition(index) - Mathf.Max(0, viewSize - _itemSizes[index]) * alignment,
+                0, Mathf.Max(0, CalculateTotalSize() - viewSize));
+            SetContentScroll(p1Clamped);
+            RefreshVisibleItems(true);
+
+            // 用实测尺寸精确计算目标位置
+            RebuildCumulativePositions();
+            float itemSize  = _itemSizes[index];
             float totalSize = CalculateTotalSize();
             float maxScroll = Mathf.Max(0, totalSize - viewSize);
-            float itemSize  = _itemSizes[index];
             float target    = Mathf.Clamp(GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0, maxScroll);
 
             float startPos = GetContentScrollOffset();
@@ -1168,6 +1207,7 @@ namespace EFExample
             FirstVisibleIndex = -1;
             LastVisibleIndex  = -1;
 
+            RebuildCumulativePositions(); // 确保 ScrollToIndex/ScrollToBottom 能读到最新位置
             RefreshVisibleItems(true);
         }
 
