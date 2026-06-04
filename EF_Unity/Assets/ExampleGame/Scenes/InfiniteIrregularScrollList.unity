@@ -1663,7 +1663,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000027559397}
+  m_AnchoredPosition: {x: 0, y: 0.00066132296}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &978039621
@@ -1720,14 +1720,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8af69c7a45d0dc448ff5fafb4997d3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _scrollRect: {fileID: 978039624}
-  _itemPrefab: {fileID: 1775129268}
-  _direction: 0
-  _itemSpacing: 20
-  _poolPreAlloc: 5
-  _bufferCount: 3
-  _preCreateBuffer: 3
-  _autoRebuildLayout: 1
+  scrollRect: {fileID: 978039624}
+  itemPrefab: {fileID: 1775129268}
+  direction: 0
+  itemSpacing: 20
+  poolPreAlloc: 3
+  bufferCount: 2
+  preCreateBuffer: 3
+  autoRebuildLayout: 1
+  layoutAnimationDuration: 0.15
+  snapAlignment: 0
+  snapVelocityThreshold: 5
+  snapDuration: 0.15
+  poolMaxSize: 20
+  poolIdleTimeout: 30
 --- !u!114 &978039624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2648,7 +2654,7 @@ GameObject:
   - component: {fileID: 1775129272}
   - component: {fileID: 1775129274}
   m_Layer: 5
-  m_Name: Prefabs
+  m_Name: Prefabs_V
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
