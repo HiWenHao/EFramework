@@ -34,6 +34,7 @@ namespace EFExample
             "超短",
             "又是一段中等长度的文本，用来演示自适应布局。",
         };
+        public string ExpandText = " [展开] 这里增加了很多内容来撑开高度。用于演示 OSA ChangeItemSize API。";
 
         private List<(string title, string body)> _data;
         private bool _expandedMode = false;
@@ -75,7 +76,7 @@ namespace EFExample
             // ---- 按钮 ----
             if (BtnAppend       != null) BtnAppend.onClick.AddListener(OnClickAppend);
             if (BtnPrepend      != null) BtnPrepend.onClick.AddListener(OnClickPrepend);
-            if (BtnScrollBottom != null) BtnScrollBottom.onClick.AddListener(() => ScrollList.ScrollToBottom());
+            if (BtnScrollBottom != null) BtnScrollBottom.onClick.AddListener(ScrollList.ScrollToBottom);
             if (BtnBatchAdd     != null) BtnBatchAdd.onClick.AddListener(OnClickBatchAdd);
             if (BtnExpandRandom != null) BtnExpandRandom.onClick.AddListener(OnClickExpandRandom);
             if (BtnRefreshItem  != null) BtnRefreshItem.onClick.AddListener(OnClickRefreshFirstVisible);
@@ -126,14 +127,14 @@ namespace EFExample
         private void OnClickExpandRandom()
         {
             if (ScrollList.TotalCount == 0) return;
-            int idx = Random.Range(0, ScrollList.TotalCount);
+            int idx = 3;
             _expandedMode = !_expandedMode;
 
             // 改数据源 → 通知列表重新测量该 item
             if (_expandedMode)
-                _data[idx] = (_data[idx].title, _data[idx].body + "\n[展开] 这里增加了很多内容来撑开高度。用于演示 OSA ChangeItemSize API。");
+                _data[idx] = (_data[idx].title, _data[idx].body + ExpandText);
             else
-                _data[idx] = (_data[idx].title, _data[idx].body.Replace("\n[展开] 这里增加了很多内容来撑开高度。用于演示 OSA ChangeItemSize API。", ""));
+                _data[idx] = (_data[idx].title, _data[idx].body.Replace(ExpandText, ""));
 
             // 通知列表该 item 尺寸已变，自动重建累积位置
             ScrollList.RequestChangeItemSizeAndUpdateLayout(idx);

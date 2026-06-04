@@ -948,19 +948,17 @@ namespace EFExample
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
             var go = FindActiveByIndex(index);
-            if (go == null) return;
-            var rt = go.transform as RectTransform;
-            if (rt == null) return;
-            // 重新测量当前 item 的实际大小
-            var csf = rt.GetComponent<ContentSizeFitter>();
-            if (csf != null) csf.enabled = true;
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, 0f);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-            float measured = rt.rect.height;
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, Mathf.Max(1f, measured));
-            if (csf != null) csf.enabled = false;
-            _itemSizes[index] = Mathf.Max(1f, measured);
+
+            if (go != null)
+            {
+                var si = go.GetComponent<IScrollItem>();
+                if (si != null)
+                {
+                    si.OnShow(index);
+                    _itemSizes[index] = si.MeasuredSize;
+                }
+            }
+
             RebuildCumulativePositions();
             RefreshVisibleItems(true);
         }
