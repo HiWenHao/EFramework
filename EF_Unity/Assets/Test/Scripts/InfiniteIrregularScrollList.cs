@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,6 +37,22 @@ namespace EFExample
             "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField]
         private bool _autoRebuildLayout = false;
+
+        [Header("动画")]
+        [Tooltip("item 尺寸变更时的过渡动画时长（秒）。0 = 无动画，直接瞬变。")]
+        [SerializeField][Range(0f, 1f)]
+        private float _layoutAnimationDuration = 0.15f;
+
+        [Header("吸附")]
+        [Tooltip("滚动停止时自动吸附到最近 item 的顶部/中间/底部。None = 不吸附。")]
+        [SerializeField]
+        private SnapAlignment _snapAlignment = SnapAlignment.None;
+
+        [SerializeField][Range(0.5f, 50f)]
+        private float _snapVelocityThreshold = 5f;
+
+        [SerializeField][Range(0.05f, 0.5f)]
+        private float _snapDuration = 0.15f;
 
         // ================================================================
         // 公开回调
@@ -131,7 +149,8 @@ namespace EFExample
         private bool _wasAtBottom; // 上一帧是否在底部 / Was at bottom in prev frame
 
         // ---- 平滑滚动 / Smooth scroll ----
-        private Coroutine _scrollAnimCoroutine; // 滚动动画协程 / Scroll animation coroutine
+        private CancellationTokenSource _scrollAnimCts; // 滚动动画取消令牌 / Scroll animation CTS
+        private CancellationTokenSource _layoutAnimCts; // 布局动画取消令牌 / Layout animation CTS
 
         // ---- 防重入 / Re-entrancy guard ----
         private bool _refreshing; // 正在刷新中 / Refreshing flag
@@ -143,6 +162,18 @@ namespace EFExample
         {
             Vertical,
             Horizontal
+        }
+
+        /// <summary>
+        /// 吸附对齐方式
+        /// <para>Snap alignment mode.</para>
+        /// </summary>
+        public enum SnapAlignment
+        {
+            None,
+            Start,
+            Center,
+            End
         }
 
         // 活跃 item 结构 / Active item struct
@@ -184,11 +215,7 @@ namespace EFExample
                 _scrollListenerAdded = false;
             }
 
-            if (_scrollAnimCoroutine != null)
-            {
-                StopCoroutine(_scrollAnimCoroutine);
-                _scrollAnimCoroutine = null;
-            }
+            CancelAllAnimations();
         }
 
         private void OnDestroy()
@@ -196,13 +223,28 @@ namespace EFExample
             if (_scrollRect != null && _scrollListenerAdded)
                 _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
 
-            if (_scrollAnimCoroutine != null)
-            {
-                StopCoroutine(_scrollAnimCoroutine);
-                _scrollAnimCoroutine = null;
-            }
-
+            CancelAllAnimations();
             Clear();
+        }
+
+        private void CancelAllAnimations()
+        {
+            _scrollAnimCts?.Cancel();
+            _scrollAnimCts?.Dispose();
+            _scrollAnimCts = null;
+            _layoutAnimCts?.Cancel();
+            _layoutAnimCts?.Dispose();
+            _layoutAnimCts = null;
+            _snapDebounceCts?.Cancel();
+            _snapDebounceCts?.Dispose();
+            _snapDebounceCts = null;
+        }
+
+        private void StopLayoutAnimation()
+        {
+            _layoutAnimCts?.Cancel();
+            _layoutAnimCts?.Dispose();
+            _layoutAnimCts = null;
         }
 
         // ================================================================
@@ -505,8 +547,90 @@ namespace EFExample
 
         private void OnScrollChanged(Vector2 _)
         {
+            // 用户拖动时立即终止动画，避免视觉冲突
+            if (_scrollRect != null && _scrollRect.velocity.sqrMagnitude > 10f)
+                StopLayoutAnimation();
             RefreshVisibleItems(false);
             CheckEdgeReached();
+            CheckSnap();
+        }
+        private CancellationTokenSource _snapDebounceCts; // 吸附防抖令牌 / Snap debounce CTS
+
+        private void CheckSnap()
+        {
+            if (_snapAlignment == SnapAlignment.None || _scrollRect == null) return;
+
+            float vel = _direction == Direction.Vertical
+                ? Mathf.Abs(_scrollRect.velocity.y)
+                : Mathf.Abs(_scrollRect.velocity.x);
+
+            if (vel > _snapVelocityThreshold)
+            {
+                // 仍在滚动 → 取消上次防抖
+                _snapDebounceCts?.Cancel();
+                return;
+            }
+
+            // 速度低于阈值 → 启动防抖，等惯性彻底停下再吸附
+            if (_snapDebounceCts == null && !_refreshing)
+            {
+                var cts = new CancellationTokenSource();
+                _snapDebounceCts = cts;
+                SnapDebounceAsync(cts.Token).Forget();
+            }
+        }
+
+        private async UniTaskVoid SnapDebounceAsync(CancellationToken ct)
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(0.12), cancellationToken: ct);
+            if (!ct.IsCancellationRequested)
+                PerformSnap();
+            _snapDebounceCts?.Dispose();
+            _snapDebounceCts = null;
+        }
+
+        private void PerformSnap()
+        {
+            if (!IsInitialized || _itemSizes.Count == 0) return;
+
+            float alignment = _snapAlignment switch
+            {
+                SnapAlignment.Start  => 0f,
+                SnapAlignment.Center => 0.5f,
+                SnapAlignment.End    => 1f,
+                _ => float.NaN
+            };
+            if (float.IsNaN(alignment)) return;
+
+            // 找到最接近视口对齐点的 item
+            float viewAnchor = GetContentScrollOffset() + GetViewportSize() * alignment;
+            int bestIdx = -1;
+            float bestDist = float.MaxValue;
+
+            for (int i = FirstVisibleIndex; i <= LastVisibleIndex; i++)
+            {
+                if (i < 0 || i >= _cumulativePositions.Count) continue;
+                float itemAnchor = _cumulativePositions[i] + _itemSizes[i] * alignment;
+                float dist = Mathf.Abs(itemAnchor - viewAnchor);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestIdx = i;
+                }
+            }
+
+            if (bestIdx >= 0)
+            {
+                float target = GetCumulativePosition(bestIdx) + _itemSizes[bestIdx] * alignment - GetViewportSize() * alignment;
+                float total = CalculateTotalSize();
+                float maxOff = Mathf.Max(0, total - GetViewportSize());
+                float clamped = Mathf.Clamp(target, 0, maxOff);
+
+                var cts = new CancellationTokenSource();
+                _scrollAnimCts?.Cancel();
+                _scrollAnimCts = cts;
+                AnimateScrollAsync(GetContentScrollOffset(), clamped, _snapDuration, null, cts.Token).Forget();
+            }
         }
 
         private void CheckEdgeReached()
@@ -977,11 +1101,55 @@ namespace EFExample
 
         /// <summary>
         /// OSA-style：更改 item 尺寸
-        /// <para>Change item size, rebuild positions</para>
+        /// <para>Change item size with optional animation. 动画时长由 _layoutAnimationDuration 控制，0=瞬变。</para>
         /// </summary>
         public void ChangeItemSize(int index, float newSize)
         {
             UpdateItemSize(index, newSize);
+        }
+
+        /// <summary>
+        /// 更新 item 尺寸并平滑过渡动画
+        /// <para>Animate item size change. 仅对当前可视 item 生效。</para>
+        /// </summary>
+        public void AnimateItemSize(int index, float newSize)
+        {
+            if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
+            if (_layoutAnimationDuration <= 0f)
+            {
+                ChangeItemSize(index, newSize);
+                return;
+            }
+
+            float oldSize = _itemSizes[index];
+            float target = Mathf.Max(1f, newSize);
+            StopLayoutAnimation();
+            var cts = new CancellationTokenSource();
+            _layoutAnimCts = cts;
+            LayoutAnimationAsync(index, oldSize, target, _layoutAnimationDuration, cts.Token).Forget();
+        }
+
+        private async UniTaskVoid LayoutAnimationAsync(int index, float from, float to, float duration, CancellationToken ct)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration && !ct.IsCancellationRequested)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = Mathf.SmoothStep(0f, 1f, t);
+                _itemSizes[index] = Mathf.Max(1f, Mathf.Lerp(from, to, t));
+                RebuildCumulativePositions();
+                RefreshVisibleItems(true);
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+            }
+            if (!ct.IsCancellationRequested)
+            {
+                _itemSizes[index] = Mathf.Max(1f, to);
+                RebuildCumulativePositions();
+                RefreshVisibleItems(true);
+            }
+            _layoutAnimCts?.Dispose();
+            _layoutAnimCts = null;
         }
 
         /// <summary>
@@ -1039,13 +1207,14 @@ namespace EFExample
 
         /// <summary>
         /// 手动通知累积位置重建
-        /// <para>Request re-measure and rebuild layout</para>
+        /// <para>Re-measure item content, animate to new size if _layoutAnimationDuration > 0.</para>
         /// </summary>
         public void RequestChangeItemSizeAndUpdateLayout(int index)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
             var go = FindActiveByIndex(index);
 
+            float oldSize = _itemSizes[index];
             if (go != null)
             {
                 var si = go.GetComponent<IScrollItem>();
@@ -1056,8 +1225,22 @@ namespace EFExample
                 }
             }
 
-            RebuildCumulativePositions();
-            RefreshVisibleItems(true);
+            float newSize = _itemSizes[index];
+            if (_layoutAnimationDuration > 0f && Mathf.Abs(newSize - oldSize) > 1f)
+            {
+                _itemSizes[index] = oldSize;
+                RebuildCumulativePositions();
+                RefreshVisibleItems(true);
+                StopLayoutAnimation();
+                var cts = new CancellationTokenSource();
+                _layoutAnimCts = cts;
+                LayoutAnimationAsync(index, oldSize, newSize, _layoutAnimationDuration, cts.Token).Forget();
+            }
+            else
+            {
+                RebuildCumulativePositions();
+                RefreshVisibleItems(true);
+            }
         }
 
         /// <summary>
@@ -1255,17 +1438,19 @@ namespace EFExample
 
             float startPos = GetContentScrollOffset();
 
-            if (_scrollAnimCoroutine != null)
-                StopCoroutine(_scrollAnimCoroutine);
-            _scrollAnimCoroutine = StartCoroutine(AnimateScrollCoroutine(startPos, target, duration, easeCurve));
+            _scrollAnimCts?.Cancel();
+            _scrollAnimCts?.Dispose();
+            var cts = new CancellationTokenSource();
+            _scrollAnimCts = cts;
+            AnimateScrollAsync(startPos, target, duration, easeCurve, cts.Token).Forget();
         }
 
-        // 滚动动画协程 / Scroll animation coroutine
-        private System.Collections.IEnumerator AnimateScrollCoroutine(float from, float to, float duration,
-            AnimationCurve curve)
+        // 滚动动画 / Scroll animation async
+        private async UniTaskVoid AnimateScrollAsync(float from, float to, float duration,
+            AnimationCurve curve, CancellationToken ct)
         {
             float elapsed = 0f;
-            while (elapsed < duration)
+            while (elapsed < duration && !ct.IsCancellationRequested)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
@@ -1274,12 +1459,16 @@ namespace EFExample
 
                 float currentPos = Mathf.Lerp(from, to, t);
                 SetContentScrollOffset(currentPos);
-                yield return null;
+                await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
 
-            SetContentScrollOffset(to);
-            _scrollAnimCoroutine = null;
-            RefreshVisibleItems(true);
+            if (!ct.IsCancellationRequested)
+            {
+                SetContentScrollOffset(to);
+                RefreshVisibleItems(true);
+            }
+            _scrollAnimCts?.Dispose();
+            _scrollAnimCts = null;
         }
 
         // 设 content 滚动偏移 / Set content scroll offset
