@@ -34,27 +34,27 @@ namespace EFExample
 
         float IScrollItem.OnShow(int dataIndex)
         {
-            // 1. 确保 CSF 可用
+            PrepareContent(dataIndex);
+            return ForceMeasureAndLock();
+        }
+
+        /// <summary>仅填充内容，不测量（用于滚动中快速路径，测量延后异步）</summary>
+        public void PrepareContent(int dataIndex)
+        {
             if (_csf != null) _csf.enabled = true;
-
-            // 2. 用户填充内容
             OnShowContent(dataIndex);
-
-            // 3. 归零 sizeDelta 让 CSF/VLG 重新结算
             _rt.sizeDelta = Vector2.zero;
+        }
 
-            // 4. 双布局结算嵌套 VLG/CSF（未来可优化为 batch flush + LayoutUtility）
+        /// <summary>执行昂贵的 ForceRebuildLayoutImmediate 并锁定尺寸，返回实测高度</summary>
+        public float ForceMeasureAndLock()
+        {
             LayoutRebuilder.ForceRebuildLayoutImmediate(_rt);
             LayoutRebuilder.ForceRebuildLayoutImmediate(_rt);
-
-            // 5. 读取实测高度
             float measured = _rt.rect.height;
             measured = Mathf.Max(1f, measured);
-
-            // 6. 锁定 sizeDelta + 关 CSF（防帧间抖动）
             _rt.sizeDelta = new Vector2(_rt.sizeDelta.x, measured);
             if (_csf != null) _csf.enabled = false;
-
             ((IScrollItem)this).MeasuredSize = measured;
             return measured;
         }

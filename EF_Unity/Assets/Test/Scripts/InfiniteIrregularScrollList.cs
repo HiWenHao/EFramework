@@ -108,7 +108,6 @@ namespace EFExample
         private bool _refreshing;
 
         // ================================================================
-        // 枚举
         // ================================================================
 
         public enum Direction
@@ -554,11 +553,34 @@ namespace EFExample
                 }
             }
 
-            // ---- Batch flush + 重建累积位置（尺寸变更后必须重建才能定位） ----
+            // ---- 保存锚点位置（用于补偿顶部 item 尺寸变化导致的视觉偏移） ----
+            // 取 newFirst 和 prevFirst 中较大的一个作为锚点——它离顶部最远，其屏幕位置不应变。
+            int anchorIdx = Mathf.Max(newFirst, FirstVisibleIndex);
+            float oldAnchorPos = 0f;
+            if (anchorIdx >= 0 && anchorIdx < _itemSizes.Count)
+                oldAnchorPos = GetCumulativePosition(anchorIdx);
+
+            // ---- Batch flush + 重建累积位置 ----
             if (anyFilled)
             {
                 Canvas.ForceUpdateCanvases();
                 RebuildCumulativePositions();
+            }
+
+            // ---- 补偿顶部 item 尺寸增大导致的视觉下移 ----
+            // 如果锚点 item 的累积位置增大了，说明上方 item 被测量为比估算值高，下方 item 被"顶"下去了。
+            // 反向调整 content 位置，保持锚点 item 的屏幕位置不变。
+            if (anyFilled && anchorIdx >= 0)
+            {
+                float newAnchorPos = GetCumulativePosition(anchorIdx);
+                float delta = newAnchorPos - oldAnchorPos;
+                if (Mathf.Abs(delta) > 0.5f)
+                {
+                    if (_direction == Direction.Vertical)
+                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, _contentRect.anchoredPosition.y + delta);
+                    else
+                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x - delta, _contentRect.anchoredPosition.y);
+                }
             }
 
             // ---- 验证 content sizeDelta ----
@@ -689,13 +711,12 @@ namespace EFExample
 
             go.name = $"Item[{index}]";
 
-            // ---- 首选 IScrollItem：item 自己负责内容填充 + 测量 + 锁定 ----
+            // ---- 首选 IScrollItem：同步测量 + 锁定 ----
             if (ai.scrollItem != null && _autoRebuildLayout)
             {
                 go.SetActive(true);
                 float measured = ai.scrollItem.OnShow(index);
-                measured = Mathf.Max(1f, measured);
-                _itemSizes[index] = measured;
+                _itemSizes[index] = Mathf.Max(1f, measured);
                 ai.size = measured;
             }
             else if (_autoRebuildLayout)
@@ -1036,7 +1057,6 @@ namespace EFExample
             }
         }
 
-        // ================================================================
         // 公共 API — 滚动控制
         // ================================================================
 
