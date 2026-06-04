@@ -1121,6 +1121,7 @@ namespace EFExample
                 return;
             }
 
+            _scrollRect.StopMovement(); // 立即停止滚动，防止与动画冲突
             float oldSize = _itemSizes[index];
             float target = Mathf.Max(1f, newSize);
             StopLayoutAnimation();
@@ -1139,17 +1140,43 @@ namespace EFExample
                 t = Mathf.SmoothStep(0f, 1f, t);
                 _itemSizes[index] = Mathf.Max(1f, Mathf.Lerp(from, to, t));
                 RebuildCumulativePositions();
-                RefreshVisibleItems(true);
+                RepositionAllActive(); // 轻量重定位，不重建 item
                 await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
             if (!ct.IsCancellationRequested)
             {
                 _itemSizes[index] = Mathf.Max(1f, to);
                 RebuildCumulativePositions();
-                RefreshVisibleItems(true);
+                RefreshVisibleItems(true); // 动画结束，全量同步
             }
             _layoutAnimCts?.Dispose();
             _layoutAnimCts = null;
+        }
+
+        // 仅重新定位所有活跃 item + 同步 sizeDelta（用于动画期间轻量更新）
+        private void RepositionAllActive()
+        {
+            SyncContentSizeDelta();
+            for (int i = 0; i < _activeItems.Count; i++)
+            {
+                var ai = _activeItems[i];
+                if (ai.gameObject == null || ai.index < 0 || ai.index >= _cumulativePositions.Count) continue;
+                var rt = ai.gameObject.transform as RectTransform;
+                if (rt == null) continue;
+
+                // 同步 sizeDelta：动画期间 _itemSizes 在 lerp，GO 的高度必须跟上
+                float cachedSize = _itemSizes[ai.index];
+                ai.size = cachedSize;
+                _activeItems[i] = ai;
+                rt.sizeDelta = (_direction == Direction.Vertical)
+                    ? new Vector2(rt.sizeDelta.x, cachedSize)
+                    : new Vector2(cachedSize, rt.sizeDelta.y);
+
+                float pos = _cumulativePositions[ai.index];
+                rt.anchoredPosition = (_direction == Direction.Vertical)
+                    ? new Vector2(0, -pos)
+                    : new Vector2(pos, 0);
+            }
         }
 
         /// <summary>
@@ -1212,6 +1239,9 @@ namespace EFExample
         public void RequestChangeItemSizeAndUpdateLayout(int index)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
+
+            _scrollRect.StopMovement(); // 立即停止滚动
+
             var go = FindActiveByIndex(index);
 
             float oldSize = _itemSizes[index];
