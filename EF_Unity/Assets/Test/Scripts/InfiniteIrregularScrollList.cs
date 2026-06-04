@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Pool;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,6 +54,12 @@ namespace EFExample
 
         [SerializeField][Range(0.05f, 0.5f)]
         private float _snapDuration = 0.15f;
+
+        [Header("对象池")]
+        [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")]
+        [SerializeField] private int _poolMaxSize = 20;
+        [Tooltip("空闲超时销毁（秒）。≤0 = 永不销毁。PoolManager 每 5 秒自动清理一次。")]
+        [SerializeField] private float _poolIdleTimeout = 30f;
 
         // ================================================================
         // 公开回调
@@ -131,14 +138,14 @@ namespace EFExample
         private readonly Dictionary<int, GameObject>
             _activeIndexMap = new Dictionary<int, GameObject>(); // dataIndex→GameObject O(1)查重 / Index lookup map
 
-        private readonly Stack<GameObject> _pool = new Stack<GameObject>(); // 对象池 / Object pool
-
         private RectTransform _contentRect; // ScrollRect.content 的 RectTransform / Content rect
         private RectTransform _viewportRect; // 视口 RectTransform / Viewport rect
         private float _viewportSize; // 视口高度/宽度 / Viewport size (h or w)
         private float _prefabDefaultSize; // prefab 默认尺寸 / Prefab default size
         private int _estimatedVisibleCount; // 估算的可视 item 数量 / Estimated visible count
         private bool _scrollListenerAdded; // 是否已注册 scroll 监听 / Scroll listener added flag
+        private bool _poolInitialized; // 是否已向 PoolManager 注册池 / Pool registered flag
+        private readonly HashSet<GameObject> _onCreateCalled = new HashSet<GameObject>(); // 跟踪已调用 OnCreate 的 GO / Tracked OnCreate calls
 
         // ---- 批处理 / Batched operations ----
         private int _batchDepth; // 批处理嵌套深度 / Batch nesting depth
@@ -269,7 +276,7 @@ namespace EFExample
 
             RebuildCumulativePositions();
             ApplyContentLayout(false);
-            PreAllocPool();
+            InitPool();
             IsInitialized = true;
             RefreshVisibleItems(true);
 
@@ -554,7 +561,8 @@ namespace EFExample
             CheckEdgeReached();
             CheckSnap();
         }
-        private CancellationTokenSource _snapDebounceCts; // 吸附防抖令牌 / Snap debounce CTS
+        private CancellationTokenSource _snapDebounceCts;
+        private bool _wasMoving;
 
         private void CheckSnap()
         {
@@ -564,20 +572,18 @@ namespace EFExample
                 ? Mathf.Abs(_scrollRect.velocity.y)
                 : Mathf.Abs(_scrollRect.velocity.x);
 
-            if (vel > _snapVelocityThreshold)
-            {
-                // 仍在滚动 → 取消上次防抖
-                _snapDebounceCts?.Cancel();
-                return;
-            }
+            bool moving = vel > _snapVelocityThreshold;
 
-            // 速度低于阈值 → 启动防抖，等惯性彻底停下再吸附
-            if (_snapDebounceCts == null && !_refreshing)
+            // 从滚动 → 停止，触发吸附
+            if (_wasMoving && !moving && !_refreshing)
             {
+                _snapDebounceCts?.Cancel();
                 var cts = new CancellationTokenSource();
                 _snapDebounceCts = cts;
                 SnapDebounceAsync(cts.Token).Forget();
             }
+
+            _wasMoving = moving;
         }
 
         private async UniTaskVoid SnapDebounceAsync(CancellationToken ct)
@@ -899,6 +905,13 @@ namespace EFExample
 
             go.name = $"Item[{index}]";
 
+            // 延迟 OnCreate：对象池只做 Instantiate，不调用 IScrollItem.OnCreate
+            if (ai.scrollItem != null && !_onCreateCalled.Contains(go))
+            {
+                ai.scrollItem.OnCreate(rt);
+                _onCreateCalled.Add(go);
+            }
+
             // ---- 首选 IScrollItem：同步测量 + 锁定 ----
             if (ai.scrollItem != null && _autoRebuildLayout)
             {
@@ -948,45 +961,46 @@ namespace EFExample
         // 对象池
         // ================================================================
 
-        private void PreAllocPool()
+        private void InitPool()
         {
-            // 基于视口估算至少需要多少 item（一屏 + 缓冲）
+            if (_poolInitialized || _itemPrefab == null) return;
+            _poolInitialized = true;
+
             float avgSize = _prefabDefaultSize > 0 ? _prefabDefaultSize : 100f;
             _estimatedVisibleCount =
                 Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) +
                 (_bufferCount + _preCreateBuffer) * 2;
 
-            int need = Mathf.Max(_poolPreAlloc, _estimatedVisibleCount);
-            int current = _pool.Count + _activeItems.Count;
+            int initial = Mathf.Max(_poolPreAlloc, _estimatedVisibleCount);
+            PoolManager.Instance.CreateGameObjectPool(_itemPrefab, _contentRect, initial, _poolMaxSize, _poolIdleTimeout);
 
-            for (int i = current; i < need; i++)
-            {
-                var go = Instantiate(_itemPrefab, _contentRect);
-                go.SetActive(false);
-                var item = go.GetComponent<IScrollItem>();
-                item?.OnCreate(go.transform as RectTransform);
-                _pool.Push(go);
-            }
+            // IScrollItem.OnCreate 在 prefab 首次 Instantiate 时调用（非池回收），
+            // 将 OnCreate 回调注册到 IScrollItem 首次启用时（通过 OnSpawn 不调用 OnCreate）。
+            // 此处不做额外处理——IScrollItem 的初始化应在 Awake/OnEnable 中完成。
         }
 
         private GameObject Rent()
         {
-            if (_pool.Count > 0)
-                return _pool.Pop();
-
-            var go = Instantiate(_itemPrefab, _contentRect);
-            go.SetActive(false);
-            var item = go.GetComponent<IScrollItem>();
-            item?.OnCreate(go.transform as RectTransform);
+            var go = PoolManager.Instance.Spawn(_itemPrefab);
+            if (go != null)
+            {
+                go.transform.SetParent(_contentRect, false);
+                go.SetActive(false); // 等待 FillAndMeasureNew 激活
+            }
             return go;
         }
 
         private void Recycle(GameObject go)
         {
             if (go == null) return;
-            go.SetActive(false);
-            go.name = "[Pooled]";
-            _pool.Push(go);
+            PoolManager.Instance.Despawn(go);
+        }
+
+        private void DestroyPool()
+        {
+            if (!_poolInitialized) return;
+            PoolManager.Instance.DestroyGameObjectPool(_itemPrefab);
+            _poolInitialized = false;
         }
 
         // ================================================================
@@ -1590,30 +1604,22 @@ namespace EFExample
 
         private void ClearAll()
         {
-            // 销毁活跃 item
+            // 销毁活跃 item（Despawn 归还池，池会自动管理生命周期）
             for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
                 if (_activeItems[i].gameObject != null)
                 {
                     _activeItems[i].scrollItem?.OnDestroyed();
-                    Destroy(_activeItems[i].gameObject);
+                    PoolManager.Instance.Despawn(_activeItems[i].gameObject);
                 }
             }
 
             _activeItems.Clear();
             _activeIndexMap.Clear();
 
-            // 销毁池中 item
-            while (_pool.Count > 0)
-            {
-                var go = _pool.Pop();
-                if (go != null)
-                {
-                    go.GetComponent<IScrollItem>()?.OnDestroyed();
-                    Destroy(go);
-                }
-            }
+            DestroyPool();
 
+            _onCreateCalled.Clear();
             _itemSizes.Clear();
             _cumulativePositions.Clear();
             FirstVisibleIndex = -1;
@@ -1640,7 +1646,7 @@ namespace EFExample
             Debug.Log($"[ScrollList Debug] " +
                       $"Total={_itemSizes.Count} " +
                       $"Active={_activeItems.Count} " +
-                      $"Pool={_pool.Count} " +
+                      $"PoolInit={_poolInitialized} " +
                       $"Viewport={GetViewportSize():F1} " +
                       $"ContentH={_contentRect?.sizeDelta.y:F1} " +
                       $"ContentPos={_contentRect?.anchoredPosition.y:F1} " +
