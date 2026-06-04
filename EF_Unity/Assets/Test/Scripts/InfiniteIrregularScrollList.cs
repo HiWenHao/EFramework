@@ -11,7 +11,7 @@ using UnityEngine.UI;
 namespace EFExample
 {
     /// <summary>
-    /// 无限不规则滚动列表。
+    /// /// 无限不规则滚动列表。
     /// 基于 Unity ScrollRect 实现虚拟滚动（只渲染可视区域内的 item），
     /// 每个 item 可拥有独立的高度/宽度，支持运行时动态增删和双向无限加载。
     /// </summary>
@@ -19,93 +19,122 @@ namespace EFExample
     [DisallowMultipleComponent]
     public class InfiniteIrregularScrollList : MonoBehaviour
     {
-        // ================================================================
-        // Inspector 字段
-        // ================================================================
+        [Header("引用")] [SerializeField] private ScrollRect _scrollRect;
+        [SerializeField] private GameObject _itemPrefab;
 
-        [Header("引用")]
-        [SerializeField] private ScrollRect _scrollRect;
-        [SerializeField] private GameObject   _itemPrefab;
+        [Header("布局")] [SerializeField] private Direction _direction = Direction.Vertical;
+        [SerializeField] [Min(0)] private float _itemSpacing = 0f;
+        [SerializeField] [Min(1)] private int _poolPreAlloc = 3;
+        [SerializeField] [Min(0)] private int _bufferCount = 2;
 
-        [Header("布局")]
-        [SerializeField] private Direction _direction = Direction.Vertical;
-        [SerializeField][Min(0)] private float _itemSpacing = 0f;
-        [SerializeField][Min(1)] private int   _poolPreAlloc = 3;
-        [SerializeField][Min(0)] private int   _bufferCount  = 2;
-
-        [Header("预创建")]
-        [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")]
-        [SerializeField][Min(0)] private int   _preCreateBuffer = 3;
+        [Header("预创建")] [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")] [SerializeField] [Min(0)]
+        private int _preCreateBuffer = 3;
 
         [Header("自适应测量")]
-        [Tooltip("开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
-        [SerializeField] private bool _autoRebuildLayout = false;
+        [Tooltip(
+            "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
+        [SerializeField]
+        private bool _autoRebuildLayout = false;
 
         // ================================================================
         // 公开回调
         // ================================================================
 
-        /// <summary>填充 item 内容。参数：GameObject 实例、数据索引</summary>
+        /// <summary>
+        /// 填充 item 内容
+        /// <para>Fill item content. 参数：GameObject 实例、数据索引</para>
+        /// </summary>
         public Action<GameObject, int> OnUpdateItem;
 
-        /// <summary>计算第 index 个 item 的尺寸（高或宽）。不设置则用 prefab 默认尺寸</summary>
+        /// <summary>
+        /// 估算第 index 个 item 的尺寸
+        /// <para>Estimate item size at index. 不设置则用 prefab 默认尺寸</para>
+        /// </summary>
         public Func<int, float> OnGetItemSize;
 
-        /// <summary>item 进入/离开可视区。参数：数据索引、是否进入(true)/离开(false)</summary>
+        /// <summary>
+        /// item 进入/离开可视区
+        /// <para>Visibility changed callback. 参数：数据索引、是否进入(true)/离开(false)</para>
+        /// </summary>
         public Action<int, bool> OnItemVisibilityChanged;
 
-        /// <summary>滚动到顶部边缘（用于"加载更早消息"等场景）</summary>
+        /// <summary>
+        /// 滚动到顶部边缘
+        /// <para>Reached top edge. 用于"加载更早消息"等场景</para>
+        /// </summary>
         public event Action OnReachTop;
 
-        /// <summary>滚动到底部边缘（用于"加载更多"等场景）</summary>
+        /// <summary>
+        /// 滚动到底部边缘
+        /// <para>Reached bottom edge. 用于"加载更多"等场景</para>
+        /// </summary>
         public event Action OnReachBottom;
 
         // ================================================================
         // 公开属性
         // ================================================================
 
-        /// <summary>当前数据总量</summary>
+        /// <summary>
+        /// 当前数据总量
+        /// <para>Total item count</para>
+        /// </summary>
         public int TotalCount => _itemSizes.Count;
 
-        /// <summary>当前可视区第一个 item 的索引（-1 表示无）</summary>
+        /// <summary>
+        /// 当前可视区第一个 item 的索引
+        /// <para>First visible index (-1 = none)</para>
+        /// </summary>
         public int FirstVisibleIndex { get; private set; } = -1;
 
-        /// <summary>当前可视区最后一个 item 的索引（-1 表示无）</summary>
+        /// <summary>
+        /// 当前可视区最后一个 item 的索引
+        /// <para>Last visible index (-1 = none)</para>
+        /// </summary>
         public int LastVisibleIndex { get; private set; } = -1;
 
-        /// <summary>是否已初始化</summary>
+        /// <summary>
+        /// 是否已初始化
+        /// <para>Whether initialized</para>
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
         // ================================================================
-        // 私有状态
+        // 私有状态 / Private state
         // ================================================================
 
-        private readonly List<float>              _itemSizes       = new List<float>();
-        private readonly List<float>              _cumulativePositions = new List<float>(); // 预计算累积位置，[i] = item[i] 的顶部位置
-        private readonly List<ActiveItem>         _activeItems     = new List<ActiveItem>();
-        private readonly Dictionary<int, GameObject> _activeIndexMap  = new Dictionary<int, GameObject>(); // dataIndex → GameObject（O(1) 查重/查找）
-        private readonly Stack<GameObject>        _pool            = new Stack<GameObject>();
+        private readonly List<float> _itemSizes = new List<float>(); // 每个 item 的尺寸缓存 / Per-item size cache
 
-        private RectTransform _contentRect;
-        private RectTransform _viewportRect;
-        private float         _viewportSize;
-        private float         _prefabDefaultSize;
-        private int           _estimatedVisibleCount; // 基于视口尺寸估算的可视 item 数量
-        private bool          _scrollListenerAdded;
+        private readonly List<float>
+            _cumulativePositions =
+                new List<float>(); // 预计算累积位置（OSA），[i]=item[i] 顶部偏移 / Pre-computed cumulative positions
 
-        // ---- 批处理 ----
-        private int  _batchDepth;
-        private bool _batchDirty;
+        private readonly List<ActiveItem> _activeItems = new List<ActiveItem>(); // 当前活跃 item 列表 / Active items
 
-        // ---- 边缘检测 ----
-        private bool _wasAtTop;
-        private bool _wasAtBottom;
+        private readonly Dictionary<int, GameObject>
+            _activeIndexMap = new Dictionary<int, GameObject>(); // dataIndex→GameObject O(1)查重 / Index lookup map
 
-        // ---- 平滑滚动 ----
-        private Coroutine _scrollAnimCoroutine;
+        private readonly Stack<GameObject> _pool = new Stack<GameObject>(); // 对象池 / Object pool
 
-        // ---- 防重入 ----
-        private bool _refreshing;
+        private RectTransform _contentRect; // ScrollRect.content 的 RectTransform / Content rect
+        private RectTransform _viewportRect; // 视口 RectTransform / Viewport rect
+        private float _viewportSize; // 视口高度/宽度 / Viewport size (h or w)
+        private float _prefabDefaultSize; // prefab 默认尺寸 / Prefab default size
+        private int _estimatedVisibleCount; // 估算的可视 item 数量 / Estimated visible count
+        private bool _scrollListenerAdded; // 是否已注册 scroll 监听 / Scroll listener added flag
+
+        // ---- 批处理 / Batched operations ----
+        private int _batchDepth; // 批处理嵌套深度 / Batch nesting depth
+        private bool _batchDirty; // 批处理中是否有脏数据 / Dirty flag in batch
+
+        // ---- 边缘检测 / Edge detection ----
+        private bool _wasAtTop; // 上一帧是否在顶部 / Was at top in prev frame
+        private bool _wasAtBottom; // 上一帧是否在底部 / Was at bottom in prev frame
+
+        // ---- 平滑滚动 / Smooth scroll ----
+        private Coroutine _scrollAnimCoroutine; // 滚动动画协程 / Scroll animation coroutine
+
+        // ---- 防重入 / Re-entrancy guard ----
+        private bool _refreshing; // 正在刷新中 / Refreshing flag
 
         // ================================================================
         // ================================================================
@@ -116,13 +145,14 @@ namespace EFExample
             Horizontal
         }
 
+        // 活跃 item 结构 / Active item struct
         private struct ActiveItem
         {
-            public GameObject  gameObject;
-            public IScrollItem scrollItem; // 缓存接口避免重复 GetComponent
-            public int         index;
-            public float       size;
-            public bool        justCreated; // true = 需要填充内容+测量布局
+            public GameObject gameObject; // item GameObject / The item GO
+            public IScrollItem scrollItem; // 缓存 IScrollItem 避免重复 GetComponent / Cached interface
+            public int index; // 数据索引 / Data index
+            public float size; // 当前尺寸 / Current size
+            public bool justCreated; // 是否本帧新建，需要填充+测量 / Needs fill+measure this frame
         }
 
         // ================================================================
@@ -179,8 +209,14 @@ namespace EFExample
         // 初始化
         // ================================================================
 
-        /// <summary>初始化列表（首次设置数据后调用，或数量变更后调用 RefreshList）</summary>
-        /// <param name="totalCount">数据总量</param>
+        /// <summary>
+        /// /// 初始化列表
+        /// <para>Initialize the list.
+        /// 首次设置数据后调用，或数量变更后调用 RefreshList。
+        /// Call after first setting data, or use RefreshList after count changes.
+        ///</para>
+        /// </summary>
+        /// <param name="totalCount">数据总量 / Total data count</param>
         public void Initialize(int totalCount)
         {
             EnsureReferences();
@@ -196,7 +232,7 @@ namespace EFExample
             RefreshVisibleItems(true);
 
             // 初始化边缘状态
-            _wasAtTop    = IsAtTop();
+            _wasAtTop = IsAtTop();
             _wasAtBottom = IsAtBottom();
         }
 
@@ -233,10 +269,11 @@ namespace EFExample
         }
 
         /// <summary>
-        /// 移除 content 上的 LayoutGroup、ContentSizeFitter 和 AspectRatioFitter。
+        /// /// 移除 content 上的 LayoutGroup、ContentSizeFitter 和 AspectRatioFitter。
         /// 本组件完全手动管理 content 的布局，任何自动布局组件都会产生冲突。
         /// 注意：Unity 的 Destroy() 是延迟执行的（帧末才真正移除），
         ///       因此必须先 enabled=false 立即禁用，防止同帧 Initialize 时组件仍生效。
+        ///
         /// </summary>
         private static void StripConflictingLayoutComponents(RectTransform content)
         {
@@ -246,7 +283,7 @@ namespace EFExample
             if (csf != null)
             {
                 csf.enabled = false; // 立即禁用，确保同帧不生效
-                Destroy(csf);       // 延迟销毁，下帧清理
+                Destroy(csf); // 延迟销毁，下帧清理
                 stripped = true;
             }
 
@@ -268,7 +305,8 @@ namespace EFExample
             }
 
             if (stripped)
-                Debug.LogWarning("[InfiniteIrregularScrollList] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
+                Debug.LogWarning(
+                    "[InfiniteIrregularScrollList] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
                     "本组件手动管理 content 布局，这些组件会导致定位异常。");
         }
 
@@ -294,7 +332,7 @@ namespace EFExample
             {
                 _contentRect.anchorMin = new Vector2(0, 1);
                 _contentRect.anchorMax = new Vector2(1, 1);
-                _contentRect.pivot     = new Vector2(0.5f, 1);
+                _contentRect.pivot = new Vector2(0.5f, 1);
                 _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
 
                 // 恢复滚动位置（钳位到新的有效范围）
@@ -314,7 +352,7 @@ namespace EFExample
             {
                 _contentRect.anchorMin = new Vector2(0, 1);
                 _contentRect.anchorMax = new Vector2(0, 1);
-                _contentRect.pivot     = new Vector2(0, 0.5f);
+                _contentRect.pivot = new Vector2(0, 0.5f);
                 _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
 
                 if (preserveScroll)
@@ -342,10 +380,14 @@ namespace EFExample
                 total += s;
                 if (i < _itemSizes.Count - 1) total += _itemSpacing;
             }
+
             return total;
         }
 
-        /// <summary>计算从索引 0 到 index（含）的累积偏移（含间距），O(1) 查表，未初始化时线性 fallback</summary>
+        /// <summary>
+        /// /// 计算从索引 0 到 index（含）的累积偏移（含间距），O(1) 查表，未初始化时线性 fallback
+        ///
+        /// </summary>
         private float GetCumulativePosition(int index)
         {
             if (index < _cumulativePositions.Count)
@@ -357,7 +399,10 @@ namespace EFExample
             return pos;
         }
 
-        /// <summary>重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。</summary>
+        /// <summary>
+        /// /// 重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。
+        ///
+        /// </summary>
         private void RebuildCumulativePositions(int fromIndex = 0)
         {
             if (_cumulativePositions.Count != _itemSizes.Count)
@@ -366,6 +411,7 @@ namespace EFExample
                 for (int i = 0; i < _itemSizes.Count; i++)
                     _cumulativePositions.Add(0f);
             }
+
             if (_cumulativePositions.Count == 0) return;
 
             if (fromIndex <= 0)
@@ -373,6 +419,7 @@ namespace EFExample
                 _cumulativePositions[0] = 0f;
                 fromIndex = 1;
             }
+
             for (int i = fromIndex; i < _cumulativePositions.Count; i++)
             {
                 float prevSize = _itemSizes[i - 1];
@@ -381,7 +428,10 @@ namespace EFExample
             }
         }
 
-        /// <summary>二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。</summary>
+        /// <summary>
+        /// /// 二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。
+        ///
+        /// </summary>
         private int BinarySearchVisibleIndex(float scrollOffset)
         {
             int lo = 0, hi = _cumulativePositions.Count - 1;
@@ -394,6 +444,7 @@ namespace EFExample
                 else
                     hi = mid - 1;
             }
+
             return Mathf.Min(lo, _cumulativePositions.Count - 1);
         }
 
@@ -423,8 +474,8 @@ namespace EFExample
 
             _viewportSize = GetViewportSize();
 
-            float rawOffset  = GetContentScrollOffset();
-            float maxScroll  = Mathf.Max(0, CalculateTotalSize() - _viewportSize);
+            float rawOffset = GetContentScrollOffset();
+            float maxScroll = Mathf.Max(0, CalculateTotalSize() - _viewportSize);
             float scrollOffset = Mathf.Clamp(rawOffset, 0, maxScroll);
 
             // ---- 二分查找第一个可见 item（OSA 风格） ----
@@ -460,7 +511,7 @@ namespace EFExample
 
         private void CheckEdgeReached()
         {
-            bool atTop    = IsAtTop();
+            bool atTop = IsAtTop();
             bool atBottom = IsAtBottom();
 
             if (!_wasAtTop && atTop)
@@ -469,12 +520,13 @@ namespace EFExample
             if (!_wasAtBottom && atBottom)
                 OnReachBottom?.Invoke();
 
-            _wasAtTop    = atTop;
+            _wasAtTop = atTop;
             _wasAtBottom = atBottom;
         }
 
         /// <summary>
-        /// 刷新可视区 item。
+        /// /// 刷新可视区 item。
+        ///
         /// </summary>
         /// <param name="force">true 时跳过范围比较，强制全部重建</param>
         public void RefreshVisibleItems(bool force = false)
@@ -528,7 +580,8 @@ namespace EFExample
                     var go = Rent();
                     go.SetActive(false); // 先隐藏，填充完再显示
                     var si = go.GetComponent<IScrollItem>();
-                    _activeItems.Add(new ActiveItem { gameObject = go, scrollItem = si, index = i, size = _itemSizes[i], justCreated = true });
+                    _activeItems.Add(new ActiveItem
+                        { gameObject = go, scrollItem = si, index = i, size = _itemSizes[i], justCreated = true });
                     _activeIndexMap[i] = go;
                     OnItemVisibilityChanged?.Invoke(i, true);
                 }
@@ -540,8 +593,12 @@ namespace EFExample
             {
                 var ai = _activeItems[i];
                 if (ai.gameObject != null && !ai.justCreated && ai.index >= newFirst && ai.index <= newLast)
-                { anchorIdx = ai.index; break; }
+                {
+                    anchorIdx = ai.index;
+                    break;
+                }
             }
+
             if (anchorIdx < 0) anchorIdx = newFirst; // 首次加载无已活跃 item
             float oldAnchorPos = anchorIdx < _itemSizes.Count ? GetCumulativePosition(anchorIdx) : 0f;
 
@@ -583,9 +640,11 @@ namespace EFExample
                 if (Mathf.Abs(delta) > 0.5f)
                 {
                     if (_direction == Direction.Vertical)
-                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, _contentRect.anchoredPosition.y + delta);
+                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x,
+                            _contentRect.anchoredPosition.y + delta);
                     else
-                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x - delta, _contentRect.anchoredPosition.y);
+                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x - delta,
+                            _contentRect.anchoredPosition.y);
                 }
             }
 
@@ -620,7 +679,7 @@ namespace EFExample
             }
 
             FirstVisibleIndex = newFirst;
-            LastVisibleIndex  = newLast;
+            LastVisibleIndex = newLast;
 
             // 定位后再次同步 content 尺寸（防 ScrollRect 篡改）
             SyncContentSizeDelta();
@@ -640,7 +699,9 @@ namespace EFExample
                     var rt = go.transform as RectTransform;
                     if (rt == null) continue;
                     float expectedPos = GetCumulativePosition(i);
-                    float actualPos = (_direction == Direction.Vertical) ? -rt.anchoredPosition.y : rt.anchoredPosition.x;
+                    float actualPos = (_direction == Direction.Vertical)
+                        ? -rt.anchoredPosition.y
+                        : rt.anchoredPosition.x;
                     if (Mathf.Abs(actualPos - expectedPos) > 0.5f)
                     {
                         if (_direction == Direction.Vertical)
@@ -677,27 +738,32 @@ namespace EFExample
         }
 
         /// <summary>
-        /// 仅对新创建的 item 填充内容 + 测量布局。不设置位置（由统一的锚点链 pass 处理）。
+        /// /// 仅对新创建的 item 填充内容 + 测量布局。不设置位置（由统一的锚点链 pass 处理）。
+        ///
         /// </summary>
         private ActiveItem FillAndMeasureNew(ActiveItem ai)
         {
             var go = ai.gameObject;
             int index = ai.index;
             var rt = go.transform as RectTransform;
-            if (rt == null) { ai.justCreated = false; return ai; }
+            if (rt == null)
+            {
+                ai.justCreated = false;
+                return ai;
+            }
 
             // 设置锚点（位置稍后在锚点链 pass 统一设）
             if (_direction == Direction.Vertical)
             {
                 rt.anchorMin = new Vector2(0, 1);
                 rt.anchorMax = new Vector2(1, 1);
-                rt.pivot     = new Vector2(0.5f, 1);
+                rt.pivot = new Vector2(0.5f, 1);
             }
             else
             {
                 rt.anchorMin = new Vector2(0, 0);
                 rt.anchorMax = new Vector2(0, 1);
-                rt.pivot     = new Vector2(0, 0.5f);
+                rt.pivot = new Vector2(0, 0.5f);
             }
 
             // 把新 item 放在内容底部（远低于视口），锚点链定位前绝对不可见。
@@ -762,7 +828,9 @@ namespace EFExample
         {
             // 基于视口估算至少需要多少 item（一屏 + 缓冲）
             float avgSize = _prefabDefaultSize > 0 ? _prefabDefaultSize : 100f;
-            _estimatedVisibleCount = Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) + (_bufferCount + _preCreateBuffer) * 2;
+            _estimatedVisibleCount =
+                Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) +
+                (_bufferCount + _preCreateBuffer) * 2;
 
             int need = Mathf.Max(_poolPreAlloc, _estimatedVisibleCount);
             int current = _pool.Count + _activeItems.Count;
@@ -801,7 +869,10 @@ namespace EFExample
         // 公共 API — 数据操作
         // ================================================================
 
-        /// <summary>重新计算所有尺寸并刷新。适用于 item 尺寸批量变更</summary>
+        /// <summary>
+        /// 重新计算所有尺寸并刷新
+        /// <para>Refresh all sizes and rebuild layout</para>
+        /// </summary>
         public void RefreshList()
         {
             if (!IsInitialized) return;
@@ -813,14 +884,19 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>设置总量（会清空旧数据重新初始化）</summary>
+        /// <summary>
+        /// 设置总量（会清空旧数据重新初始化）/ Set total count, clears old data
+        /// </summary>
         public void SetTotalCount(int count)
         {
             ClearAll();
             Initialize(count);
         }
 
-        /// <summary>追加数据到末尾（常用于"加载更多"）。不触发 FullRebuild，只更新累积位置和 content 尺寸。</summary>
+        /// <summary>
+        /// 追加数据到末尾
+        /// <para>Append data at end. 不触发 FullRebuild，只更新累积位置。</para>
+        /// </summary>
         public void AppendData(int count)
         {
             for (int i = 0; i < count; i++)
@@ -830,7 +906,10 @@ namespace EFExample
             RefreshVisibleItems(false);
         }
 
-        /// <summary>在头部插入数据（常用于聊天历史"上拉加载"），自动保持滚动位置</summary>
+        /// <summary>
+        /// 头部插入数据，自动保持滚动位置
+        /// <para>Prepend data at top, maintain scroll position</para>
+        /// </summary>
         public void PrependData(int count)
         {
             if (count <= 0) return;
@@ -840,14 +919,17 @@ namespace EFExample
             for (int i = 0; i < count; i++)
                 _itemSizes.Insert(i, GetItemSize(i));
 
-            if (!IsInitialized) { IsInitialized = true; }
+            if (!IsInitialized)
+            {
+                IsInitialized = true;
+            }
 
             RebuildCumulativePositions();
 
-            // 第一次 FullRebuild：测量新 item 的实际高度
+            // First FullRebuild: measure new items
             FullRebuild();
 
-            // 用实测高度精确补偿 scroll
+            // Compensate scroll with actual sizes
             float actualPrepend = 0f;
             for (int i = 0; i < count; i++)
                 actualPrepend += _itemSizes[i] + _itemSpacing;
@@ -860,7 +942,10 @@ namespace EFExample
             RefreshVisibleItems(true);
         }
 
-        /// <summary>移除末尾 item</summary>
+        /// <summary>
+        /// 移除末尾 item
+        /// <para>Remove last item</para>
+        /// </summary>
         public void RemoveLast()
         {
             if (_itemSizes.Count == 0) return;
@@ -868,7 +953,10 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>按索引移除 item</summary>
+        /// <summary>
+        /// 按索引移除 item
+        /// <para>Remove item at index</para>
+        /// </summary>
         public void RemoveAt(int index)
         {
             if (index < 0 || index >= _itemSizes.Count) return;
@@ -876,7 +964,10 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>更新单个 item 的尺寸（例如内容展开/折叠时）</summary>
+        /// <summary>
+        /// 更新单个 item 的尺寸
+        /// <para>Update item size. 手动覆盖，触发重建</para>
+        /// </summary>
         public void UpdateItemSize(int index, float newSize)
         {
             if (index < 0 || index >= _itemSizes.Count) return;
@@ -884,33 +975,44 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>OSA-style：更改单个 item 尺寸，自动重建累积位置并刷新布局</summary>
+        /// <summary>
+        /// OSA-style：更改 item 尺寸
+        /// <para>Change item size, rebuild positions</para>
+        /// </summary>
         public void ChangeItemSize(int index, float newSize)
         {
             UpdateItemSize(index, newSize);
         }
 
-        /// <summary>刷新指定索引的内容（会重新测量 sizeDelta 并更新累积位置）</summary>
+        /// <summary>
+        /// 刷新指定索引的内容并重新测量
+        /// <para>Refresh single item, re-measure</para>
+        /// </summary>
         public void RefreshItem(int index)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
             var go = FindActiveByIndex(index);
             if (go == null) return;
-            // 回收后重新创建，触发 OnShow 重新测量
-            var ai = new ActiveItem { gameObject = go, scrollItem = go.GetComponent<IScrollItem>(), index = index, justCreated = true };
+            var ai = new ActiveItem
+                { gameObject = go, scrollItem = go.GetComponent<IScrollItem>(), index = index, justCreated = true };
             var rt = go.transform as RectTransform;
             if (rt != null)
             {
                 float offScreenY = -CalculateTotalSize() - _viewportSize;
                 rt.anchoredPosition = (_direction == Direction.Vertical)
-                    ? new Vector2(0, offScreenY) : new Vector2(offScreenY, 0);
+                    ? new Vector2(0, offScreenY)
+                    : new Vector2(offScreenY, 0);
             }
+
             _activeItems[_activeItems.FindIndex(a => a.index == index)] = FillAndMeasureNew(ai);
             RebuildCumulativePositions();
             RefreshVisibleItems(true);
         }
 
-        /// <summary>OSA-style：刷新指定范围的内容并重建布局</summary>
+        /// <summary>
+        /// OSA-style：刷新指定范围
+        /// <para>Refresh range and rebuild</para>
+        /// </summary>
         public void RefreshRange(int fromIndex, int toIndex)
         {
             if (!IsInitialized) return;
@@ -921,17 +1023,24 @@ namespace EFExample
                 if (go == null) continue;
                 Recycle(go);
             }
+
             RefreshVisibleItems(true);
         }
 
-        /// <summary>OSA-style：在数据更新后调用，重建累积位置并刷新</summary>
+        /// <summary>
+        /// OSA-style：双通 rebuild
+        /// <para>Schedule twin-pass visibility rebuild</para>
+        /// </summary>
         public void ScheduleComputeVisibilityTwinPass()
         {
             RebuildCumulativePositions();
             RefreshVisibleItems(true);
         }
 
-        /// <summary>手动通知列表累积位置需要重建（item 内部尺寸变更后调用）</summary>
+        /// <summary>
+        /// 手动通知累积位置重建
+        /// <para>Request re-measure and rebuild layout</para>
+        /// </summary>
         public void RequestChangeItemSizeAndUpdateLayout(int index)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
@@ -951,7 +1060,10 @@ namespace EFExample
             RefreshVisibleItems(true);
         }
 
-        /// <summary>在指定位置插入一项</summary>
+        /// <summary>
+        /// 在指定位置插入一项
+        /// <para>Insert item at index</para>
+        /// </summary>
         public void InsertAt(int index)
         {
             if (index < 0 || index > _itemSizes.Count) return;
@@ -959,7 +1071,10 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>在指定位置批量插入</summary>
+        /// <summary>
+        /// 在指定位置批量插入
+        /// <para>Insert range at index</para>
+        /// </summary>
         public void InsertRange(int index, int count)
         {
             if (index < 0 || index > _itemSizes.Count || count <= 0) return;
@@ -968,7 +1083,10 @@ namespace EFExample
             ApplyAndRebuildOrMarkDirty();
         }
 
-        /// <summary>强制刷新所有活跃 item（内容变化但尺寸未变时用，性能低于 FullRebuild）</summary>
+        /// <summary>
+        /// 强制刷新所有活跃 item 内容
+        /// <para>Refresh all active item content. 尺寸不变时用。</para>
+        /// </summary>
         public void RefreshContent()
         {
             if (!IsInitialized) return;
@@ -980,7 +1098,10 @@ namespace EFExample
             }
         }
 
-        /// <summary>清空所有数据和对象池</summary>
+        /// <summary>
+        /// 清空所有数据和对象池
+        /// <para>Clear all data and pool</para>
+        /// </summary>
         public void Clear()
         {
             ClearAll();
@@ -988,16 +1109,22 @@ namespace EFExample
         }
 
         // ================================================================
-        // 批处理 — 多次数据操作合并为一次 FullRebuild
+        // 批处理 — 多次数据操作合并为一次 FullRebuild / Batch ops
         // ================================================================
 
-        /// <summary>开始批量更新。在 Begin/End 之间的所有数据操作将在 EndUpdate 时一次性重建。</summary>
+        /// <summary>
+        /// 开始批量更新
+        /// <para>Begin batch update. 在 EndUpdate 时一次性重建。</para>
+        /// </summary>
         public void BeginUpdate()
         {
             _batchDepth++;
         }
 
-        /// <summary>结束批量更新，应用所有变更并重建列表。</summary>
+        /// <summary>
+        /// 结束批量更新
+        /// <para>End batch update. 应用所有变更并重建列表。</para>
+        /// </summary>
         public void EndUpdate()
         {
             _batchDepth = Mathf.Max(0, _batchDepth - 1);
@@ -1009,7 +1136,10 @@ namespace EFExample
             }
         }
 
-        /// <summary>如果在批处理中则标记脏位，否则立即应用布局+重建</summary>
+        /// <summary>
+        /// /// 如果在批处理中则标记脏位，否则立即应用布局+重建
+        ///
+        /// </summary>
         private void ApplyAndRebuildOrMarkDirty()
         {
             if (_batchDepth > 0)
@@ -1019,7 +1149,13 @@ namespace EFExample
             else
             {
                 ApplyContentLayout();
-                if (!IsInitialized) { IsInitialized = true; _wasAtTop = true; _wasAtBottom = IsAtBottom(); }
+                if (!IsInitialized)
+                {
+                    IsInitialized = true;
+                    _wasAtTop = true;
+                    _wasAtBottom = IsAtBottom();
+                }
+
                 FullRebuild();
             }
         }
@@ -1033,38 +1169,41 @@ namespace EFExample
                 _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
         }
 
-        // 公共 API — 滚动控制
+        // 公共 API — 滚动控制 / Scroll control
         // ================================================================
 
-        /// <summary>滚动到指定索引</summary>
-        /// <param name="index">目标索引</param>
-        /// <param name="alignment">0=顶部对齐，0.5=居中，1=底部对齐</param>
+        /// <summary>
+        /// 滚动到指定索引
+        /// <para>Scroll to index instantly. 两趟式：估算→实测→精确。</para>
+        /// </summary>
+        /// <param name="index">目标索引 / Target index</param>
+        /// <param name="alignment">0=顶部对齐，0.5=居中，1=底部对齐 / 0=top, 0.5=center, 1=bottom</param>
         public void ScrollToIndex(int index, float alignment = 0f)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
             float viewSize = GetViewportSize();
 
-            // === Pass 1：用当前 _itemSizes（可能含估算值）近似滚动，触发 item 创建+测量 ===
+            // Pass 1: scroll with estimated sizes, trigger item measurement
             RebuildCumulativePositions();
-            float p1Target  = GetCumulativePosition(index);
-            float p1Item    = _itemSizes[index];
-            float p1Offset  = Mathf.Max(0, viewSize - p1Item) * alignment;
-            float p1Total   = CalculateTotalSize();
-            float p1Max     = Mathf.Max(0, p1Total - viewSize);
+            float p1Target = GetCumulativePosition(index);
+            float p1Item = _itemSizes[index];
+            float p1Offset = Mathf.Max(0, viewSize - p1Item) * alignment;
+            float p1Total = CalculateTotalSize();
+            float p1Max = Mathf.Max(0, p1Total - viewSize);
             float p1Clamped = Mathf.Clamp(p1Target - p1Offset, 0, p1Max);
 
             SetContentScroll(p1Clamped);
             _scrollRect.StopMovement();
-            RefreshVisibleItems(true); // 触发目标 range 内 item 的 FillAndMeasureNew → 获取实测高度
+            RefreshVisibleItems(true);
 
-            // === Pass 2：用实测尺寸精确计算 ===
+            // Pass 2: recalculate with actual measured sizes
             RebuildCumulativePositions();
-            float p2Target  = GetCumulativePosition(index);
-            float p2Item    = _itemSizes[index];
-            float p2Offset  = Mathf.Max(0, viewSize - p2Item) * alignment;
-            float p2Total   = CalculateTotalSize();
-            float p2Max     = Mathf.Max(0, p2Total - viewSize);
+            float p2Target = GetCumulativePosition(index);
+            float p2Item = _itemSizes[index];
+            float p2Offset = Mathf.Max(0, viewSize - p2Item) * alignment;
+            float p2Total = CalculateTotalSize();
+            float p2Max = Mathf.Max(0, p2Total - viewSize);
             float p2Clamped = Mathf.Clamp(p2Target - p2Offset, 0, p2Max);
 
             if (Mathf.Abs(p2Clamped - p1Clamped) > 1f)
@@ -1075,7 +1214,7 @@ namespace EFExample
             }
         }
 
-        // 直接设 content anchoredPosition，不触发 ScrollRect 额外处理
+        // 直接设 content anchoredPosition / Set content scroll directly
         private void SetContentScroll(float clamped)
         {
             if (_direction == Direction.Vertical)
@@ -1084,16 +1223,20 @@ namespace EFExample
                 _contentRect.anchoredPosition = new Vector2(-clamped, _contentRect.anchoredPosition.y);
         }
 
-        /// <summary>平滑滚动到指定索引（协程驱动）</summary>
-        /// <param name="index">目标索引</param>
-        /// <param name="alignment">0=顶部对齐，0.5=居中，1=底部对齐</param>
-        /// <param name="duration">动画时长（秒），默认 0.3</param>
-        /// <param name="easeCurve">缓动曲线，null 则用线性</param>
-        public void ScrollToIndexAnimated(int index, float alignment = 0f, float duration = 0.3f, AnimationCurve easeCurve = null)
+        /// <summary>
+        /// 平滑滚动到指定索引
+        /// <para>Smooth animated scroll to index.</para>
+        /// </summary>
+        /// <param name="index">目标索引 / Target index</param>
+        /// <param name="alignment">0=top, 0.5=center, 1=bottom</param>
+        /// <param name="duration">动画时长 / Animation duration (s)</param>
+        /// <param name="easeCurve">缓动曲线 / Ease curve, null=linear</param>
+        public void ScrollToIndexAnimated(int index, float alignment = 0f, float duration = 0.3f,
+            AnimationCurve easeCurve = null)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
-            // 先触发测量，确保 _itemSizes 是实测值而非估算
+            // Measure first
             float viewSize = GetViewportSize();
             RebuildCumulativePositions();
             float p1Clamped = Mathf.Clamp(
@@ -1102,12 +1245,13 @@ namespace EFExample
             SetContentScroll(p1Clamped);
             RefreshVisibleItems(true);
 
-            // 用实测尺寸精确计算目标位置
+            // Exact position with measured sizes
             RebuildCumulativePositions();
-            float itemSize  = _itemSizes[index];
+            float itemSize = _itemSizes[index];
             float totalSize = CalculateTotalSize();
             float maxScroll = Mathf.Max(0, totalSize - viewSize);
-            float target    = Mathf.Clamp(GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0, maxScroll);
+            float target = Mathf.Clamp(GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0,
+                maxScroll);
 
             float startPos = GetContentScrollOffset();
 
@@ -1116,7 +1260,9 @@ namespace EFExample
             _scrollAnimCoroutine = StartCoroutine(AnimateScrollCoroutine(startPos, target, duration, easeCurve));
         }
 
-        private System.Collections.IEnumerator AnimateScrollCoroutine(float from, float to, float duration, AnimationCurve curve)
+        // 滚动动画协程 / Scroll animation coroutine
+        private System.Collections.IEnumerator AnimateScrollCoroutine(float from, float to, float duration,
+            AnimationCurve curve)
         {
             float elapsed = 0f;
             while (elapsed < duration)
@@ -1136,6 +1282,7 @@ namespace EFExample
             RefreshVisibleItems(true);
         }
 
+        // 设 content 滚动偏移 / Set content scroll offset
         private void SetContentScrollOffset(float offset)
         {
             if (_direction == Direction.Vertical)
@@ -1144,62 +1291,79 @@ namespace EFExample
                 _contentRect.anchoredPosition = new Vector2(-offset, _contentRect.anchoredPosition.y);
         }
 
-        /// <summary>滚动到底部</summary>
+        /// <summary>
+        /// 滚动到底部
+        /// <para>Scroll to bottom</para>
+        /// </summary>
         public void ScrollToBottom()
         {
             ScrollToIndex(_itemSizes.Count - 1, 1f);
         }
 
-        /// <summary>滚动到顶部</summary>
+        /// <summary>
+        /// 滚动到顶部
+        /// <para>Scroll to top</para>
+        /// </summary>
         public void ScrollToTop()
         {
             ScrollToIndex(0, 0f);
         }
 
-        /// <summary>获取当前归一化滚动位置 [0, 1]（0=顶部/左侧，1=底部/右侧）</summary>
+        /// <summary>
+        /// 获取归一化滚动位置 [0,1]
+        /// <para>Get normalized scroll position. 0=top, 1=bottom</para>
+        /// </summary>
         public float GetNormalizedPosition()
         {
-            float viewSize  = GetViewportSize();
+            float viewSize = GetViewportSize();
             float totalSize = CalculateTotalSize();
             if (totalSize <= viewSize) return 0f;
-            float offset  = GetContentScrollOffset();
-            float maxOff  = totalSize - viewSize;
+            float offset = GetContentScrollOffset();
+            float maxOff = totalSize - viewSize;
             return Mathf.Clamp01(offset / maxOff);
         }
 
-        /// <summary>是否已滚动到顶部（容差 0.5px）</summary>
+        /// <summary>
+        /// 是否已滚动到顶部
+        /// <para>Whether at top (0.001 tolerance)</para>
+        /// </summary>
         public bool IsAtTop()
         {
             return GetNormalizedPosition() <= 0.001f;
         }
 
-        /// <summary>是否已滚动到底部（容差 0.5px）</summary>
+        /// <summary>
+        /// 是否已滚动到底部
+        /// <para>Whether at bottom (0.001 tolerance)</para>
+        /// </summary>
         public bool IsAtBottom()
         {
             return GetNormalizedPosition() >= 0.999f;
         }
 
         // ================================================================
-        // 内部工具
+        // 内部工具 / Internal helpers
         // ================================================================
 
+        // 计算最大滚动偏移 / Calculate max scroll offset
         private float GetMaxScrollOffset()
         {
             float totalSize = CalculateTotalSize();
             return Mathf.Max(0, totalSize - _viewportSize);
         }
 
+        // 全量重建 / Full rebuild: recycle all, recreate
         private void FullRebuild()
         {
-            // 回收所有活跃 item 到池
             for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
                 Recycle(_activeItems[i].gameObject);
             }
+
             _activeItems.Clear();
             _activeIndexMap.Clear();
             FirstVisibleIndex = -1;
-            LastVisibleIndex  = -1;
+            LastVisibleIndex = -1;
 
             RebuildCumulativePositions(); // 确保 ScrollToIndex/ScrollToBottom 能读到最新位置
             RefreshVisibleItems(true);
@@ -1216,6 +1380,7 @@ namespace EFExample
                     Destroy(_activeItems[i].gameObject);
                 }
             }
+
             _activeItems.Clear();
             _activeIndexMap.Clear();
 
@@ -1233,42 +1398,45 @@ namespace EFExample
             _itemSizes.Clear();
             _cumulativePositions.Clear();
             FirstVisibleIndex = -1;
-            LastVisibleIndex  = -1;
+            LastVisibleIndex = -1;
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         private void OnValidate()
         {
             if (_scrollRect == null)
                 _scrollRect = GetComponent<ScrollRect>();
         }
-        #endif
+#endif
 
         /// <summary>
-        /// 诊断方法：输出当前布局状态到 Console。
-        /// 运行时调用 ScrollList.DebugLogLayoutInfo() 即可查看。
+        /// /// 诊断方法
+        /// <para>Debug method: 输出布局状态到 Console。
+        /// 运行时右键 InfiniteIrregularScrollList 组件 → Debug/Log Layout Info。
+        ///</para>
         /// </summary>
         [ContextMenu("Debug/Log Layout Info")]
         public void DebugLogLayoutInfo()
         {
             Debug.Log($"[ScrollList Debug] " +
-                $"Total={_itemSizes.Count} " +
-                $"Active={_activeItems.Count} " +
-                $"Pool={_pool.Count} " +
-                $"Viewport={GetViewportSize():F1} " +
-                $"ContentH={_contentRect?.sizeDelta.y:F1} " +
-                $"ContentPos={_contentRect?.anchoredPosition.y:F1} " +
-                $"CalcTotal={CalculateTotalSize():F1} " +
-                $"FirstVis={FirstVisibleIndex} " +
-                $"LastVis={LastVisibleIndex} " +
-                $"Offset={GetContentScrollOffset():F1} " +
-                $"MaxScroll={GetMaxScrollOffset():F1} " +
-                $"NormPos={GetNormalizedPosition():F4}");
+                      $"Total={_itemSizes.Count} " +
+                      $"Active={_activeItems.Count} " +
+                      $"Pool={_pool.Count} " +
+                      $"Viewport={GetViewportSize():F1} " +
+                      $"ContentH={_contentRect?.sizeDelta.y:F1} " +
+                      $"ContentPos={_contentRect?.anchoredPosition.y:F1} " +
+                      $"CalcTotal={CalculateTotalSize():F1} " +
+                      $"FirstVis={FirstVisibleIndex} " +
+                      $"LastVis={LastVisibleIndex} " +
+                      $"Offset={GetContentScrollOffset():F1} " +
+                      $"MaxScroll={GetMaxScrollOffset():F1} " +
+                      $"NormPos={GetNormalizedPosition():F4}");
 
             // Content anchors/pivot
             if (_contentRect != null)
             {
-                Debug.Log($"[ScrollList Debug] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
+                Debug.Log(
+                    $"[ScrollList Debug] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
             }
 
             // 逐 item 诊断
@@ -1282,28 +1450,30 @@ namespace EFExample
                     ? -rt.anchoredPosition.y
                     : rt.anchoredPosition.x;
                 float sizeDelta = (_direction == Direction.Vertical) ? rt.sizeDelta.y : rt.sizeDelta.x;
-                float rectSize  = (_direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
+                float rectSize = (_direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
                 float diff = Mathf.Abs(actualPos - expectedPos);
 
                 // 检查 item 上的 VLGroup padding
                 string paddingInfo = "";
                 var lg = rt.GetComponent<LayoutGroup>();
                 if (lg != null)
-                    paddingInfo = $" VLGPad=({lg.padding.left},{lg.padding.right},{lg.padding.top},{lg.padding.bottom})";
+                    paddingInfo =
+                        $" VLGPad=({lg.padding.left},{lg.padding.right},{lg.padding.top},{lg.padding.bottom})";
 
                 Debug.Log($"[ScrollList Item] idx={item.index} " +
-                    $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
-                    $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.index]:F1}" +
-                    $"{paddingInfo}");
+                          $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
+                          $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.index]:F1}" +
+                          $"{paddingInfo}");
             }
 
             // 检查 content 上的冲突组件
             if (_contentRect != null)
             {
                 var csf = _contentRect.GetComponent<ContentSizeFitter>();
-                var lg  = _contentRect.GetComponent<LayoutGroup>();
+                var lg = _contentRect.GetComponent<LayoutGroup>();
                 if (csf != null || lg != null)
-                    Debug.LogError($"[ScrollList Debug] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg != null} — 这会导致定位异常。");
+                    Debug.LogError(
+                        $"[ScrollList Debug] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg != null} — 这会导致定位异常。");
             }
         }
     }
