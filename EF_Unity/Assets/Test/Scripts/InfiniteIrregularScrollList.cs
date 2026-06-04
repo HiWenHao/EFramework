@@ -495,6 +495,10 @@ namespace EFExample
         {
             if (!IsInitialized || _itemSizes.Count == 0) return;
 
+            // ---- 始终同步 content sizeDelta（AppendData 后即使范围不变也要更新） ----
+            if (_autoRebuildLayout)
+                SyncContentSizeDelta();
+
             var (newFirst, newLast) = CalculateVisibleRange();
             if (newFirst < 0) return;
 
@@ -530,6 +534,17 @@ namespace EFExample
                 }
             }
 
+            // ---- 保存锚点（在填充前记录，填充后 justCreated 全被清除无法区分） ----
+            int anchorIdx = -1;
+            for (int i = 0; i < _activeItems.Count; i++)
+            {
+                var ai = _activeItems[i];
+                if (ai.gameObject != null && !ai.justCreated && ai.index >= newFirst && ai.index <= newLast)
+                { anchorIdx = ai.index; break; }
+            }
+            if (anchorIdx < 0) anchorIdx = newFirst; // 首次加载无已活跃 item
+            float oldAnchorPos = anchorIdx < _itemSizes.Count ? GetCumulativePosition(anchorIdx) : 0f;
+
             // ---- 在填充之前禁用 content 布局（防冒泡篡改 item 位置） ----
             if (_autoRebuildLayout)
             {
@@ -553,13 +568,6 @@ namespace EFExample
                 }
             }
 
-            // ---- 保存锚点位置（用于补偿顶部 item 尺寸变化导致的视觉偏移） ----
-            // 取 newFirst 和 prevFirst 中较大的一个作为锚点——它离顶部最远，其屏幕位置不应变。
-            int anchorIdx = Mathf.Max(newFirst, FirstVisibleIndex);
-            float oldAnchorPos = 0f;
-            if (anchorIdx >= 0 && anchorIdx < _itemSizes.Count)
-                oldAnchorPos = GetCumulativePosition(anchorIdx);
-
             // ---- Batch flush + 重建累积位置 ----
             if (anyFilled)
             {
@@ -567,10 +575,8 @@ namespace EFExample
                 RebuildCumulativePositions();
             }
 
-            // ---- 补偿顶部 item 尺寸增大导致的视觉下移 ----
-            // 如果锚点 item 的累积位置增大了，说明上方 item 被测量为比估算值高，下方 item 被"顶"下去了。
-            // 反向调整 content 位置，保持锚点 item 的屏幕位置不变。
-            if (anyFilled && anchorIdx >= 0)
+            // ---- 补偿顶部尺寸变化导致的视觉偏移 ----
+            if (anyFilled && anchorIdx >= 0 && anchorIdx < _itemSizes.Count)
             {
                 float newAnchorPos = GetCumulativePosition(anchorIdx);
                 float delta = newAnchorPos - oldAnchorPos;
@@ -616,16 +622,8 @@ namespace EFExample
             FirstVisibleIndex = newFirst;
             LastVisibleIndex  = newLast;
 
-            // ---- 在定位后同步 content 尺寸 ----
-            // 只更新 sizeDelta，不动 anchoredPosition——ScrollRect 自己维护。
-            if (anyFilled && _autoRebuildLayout)
-            {
-                float total = CalculateTotalSize();
-                if (_direction == Direction.Vertical)
-                    _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
-                else
-                    _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
-            }
+            // 定位后再次同步 content 尺寸（防 ScrollRect 篡改）
+            SyncContentSizeDelta();
 
             // ---- 最终保护：flush + 强制修正漂移 ----
             // 双 flush 确保 ForceRebuildLayoutImmediate 冒泡 dirty 在同一帧全部结算。
@@ -822,75 +820,44 @@ namespace EFExample
             Initialize(count);
         }
 
-        /// <summary>追加数据到末尾（常用于"加载更多"）</summary>
+        /// <summary>追加数据到末尾（常用于"加载更多"）。不触发 FullRebuild，只更新累积位置和 content 尺寸。</summary>
         public void AppendData(int count)
         {
             for (int i = 0; i < count; i++)
                 _itemSizes.Add(GetItemSize(_itemSizes.Count));
 
-            ApplyAndRebuildOrMarkDirty();
+            RebuildCumulativePositions();
+            RefreshVisibleItems(false);
         }
 
         /// <summary>在头部插入数据（常用于聊天历史"上拉加载"），自动保持滚动位置</summary>
         public void PrependData(int count)
         {
+            if (count <= 0) return;
+
             float originalScroll = GetContentScrollOffset();
 
-            // 插入新尺寸（估计值）
             for (int i = 0; i < count; i++)
                 _itemSizes.Insert(i, GetItemSize(i));
 
-            ApplyContentLayout();
-
             if (!IsInitialized) { IsInitialized = true; }
 
-            if (_autoRebuildLayout)
-            {
-                // ---- auto 模式：先滚到顶部让 prepend 项可见，测量真实尺寸 ----
-                if (_direction == Direction.Vertical)
-                    _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, 0);
-                else
-                    _contentRect.anchoredPosition = new Vector2(0, _contentRect.anchoredPosition.y);
+            RebuildCumulativePositions();
 
-                FullRebuild();
-
-                // 计算 prepend 项的实际总占用
-                float prependActualSize = 0f;
-                for (int i = 0; i < count; i++)
-                    prependActualSize += _itemSizes[i] + (i < count - 1 ? _itemSpacing : 0);
-                prependActualSize += _itemSpacing;
-
-                ApplyContentLayout();
-
-                // 恢复滚动位置 + 补偿 prepend 产生的偏移
-                float newScroll = originalScroll + prependActualSize;
-                float maxOff   = GetMaxScrollOffset();
-                newScroll      = Mathf.Clamp(newScroll, 0, maxOff);
-
-                if (_direction == Direction.Vertical)
-                    _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, newScroll);
-                else
-                    _contentRect.anchoredPosition = new Vector2(-newScroll, _contentRect.anchoredPosition.y);
-            }
-            else
-            {
-                // ---- 手动模式：用估算尺寸补偿 ----
-                float prependEstSize = 0f;
-                for (int i = 0; i < count; i++)
-                    prependEstSize += _itemSizes[i] + (i < count - 1 ? _itemSpacing : 0);
-                prependEstSize += _itemSpacing;
-
-                float newScroll = originalScroll + prependEstSize;
-                float maxOff   = GetMaxScrollOffset();
-                newScroll      = Mathf.Clamp(newScroll, 0, maxOff);
-
-                if (_direction == Direction.Vertical)
-                    _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, newScroll);
-                else
-                    _contentRect.anchoredPosition = new Vector2(-newScroll, _contentRect.anchoredPosition.y);
-            }
-
+            // 第一次 FullRebuild：测量新 item 的实际高度
             FullRebuild();
+
+            // 用实测高度精确补偿 scroll
+            float actualPrepend = 0f;
+            for (int i = 0; i < count; i++)
+                actualPrepend += _itemSizes[i] + _itemSpacing;
+
+            float maxOff = GetMaxScrollOffset();
+            float newScroll = Mathf.Clamp(originalScroll + actualPrepend, 0, maxOff);
+            SetContentScroll(newScroll);
+
+            RebuildCumulativePositions();
+            RefreshVisibleItems(true);
         }
 
         /// <summary>移除末尾 item</summary>
@@ -1055,6 +1022,15 @@ namespace EFExample
                 if (!IsInitialized) { IsInitialized = true; _wasAtTop = true; _wasAtBottom = IsAtBottom(); }
                 FullRebuild();
             }
+        }
+
+        private void SyncContentSizeDelta()
+        {
+            float total = CalculateTotalSize();
+            if (_direction == Direction.Vertical)
+                _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
+            else
+                _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
         }
 
         // 公共 API — 滚动控制

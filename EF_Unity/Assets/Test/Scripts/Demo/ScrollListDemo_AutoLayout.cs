@@ -18,6 +18,7 @@ namespace EFExample
         [Header("UI")]
         public Button BtnAppend;
         public Button BtnPrepend;
+        public Button BtnScrollTop;
         public Button BtnScrollBottom;
         public Button BtnBatchAdd;
         public Button BtnExpandRandom; // OSA: 随机展开/折叠
@@ -76,6 +77,7 @@ namespace EFExample
             // ---- 按钮 ----
             if (BtnAppend       != null) BtnAppend.onClick.AddListener(OnClickAppend);
             if (BtnPrepend      != null) BtnPrepend.onClick.AddListener(OnClickPrepend);
+            if (BtnScrollTop    != null) BtnScrollTop.onClick.AddListener(ScrollList.ScrollToTop);
             if (BtnScrollBottom != null) BtnScrollBottom.onClick.AddListener(ScrollList.ScrollToBottom);
             if (BtnBatchAdd     != null) BtnBatchAdd.onClick.AddListener(OnClickBatchAdd);
             if (BtnExpandRandom != null) BtnExpandRandom.onClick.AddListener(OnClickExpandRandom);
