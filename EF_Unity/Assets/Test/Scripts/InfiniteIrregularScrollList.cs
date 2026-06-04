@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework;
+using EasyFramework.Edit;
 using EasyFramework.Managers.Pool;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,56 +16,60 @@ using UnityEngine.UI;
 namespace EFExample
 {
     /// <summary>
-    /// /// 无限不规则滚动列表。
-    /// 基于 Unity ScrollRect 实现虚拟滚动（只渲染可视区域内的 item），
-    /// 每个 item 可拥有独立的高度/宽度，支持运行时动态增删和双向无限加载。
+    /// 无限不规则滚动列表
+    /// <br/> 基于 Unity ScrollRect 实现虚拟滚动（只渲染可视区域内的 item）
+    /// <br/> 每个 item 可拥有独立的高度/宽度，支持运行时动态增删和双向无限加载。
+    /// <para>Infinite irregular scrolling list.
+    /// <br/> Based on Unity ScrollRect, it implements virtual scrolling (only rendering items within the visible area)
+    /// <br/> Each item can have its own height/width. It supports dynamic addition/deletion at runtime and bidirectional infinite loading.</para>
     /// </summary>
     [RequireComponent(typeof(ScrollRect))]
     [DisallowMultipleComponent]
     public class InfiniteIrregularScrollList : MonoBehaviour
     {
-        [Header("引用")] [SerializeField] private ScrollRect _scrollRect;
-        [SerializeField] private GameObject _itemPrefab;
+        [HeaderPro("引用", "quote")]
+        [SerializeField] private ScrollRect scrollRect;
+        [SerializeField] private GameObject itemPrefab;
 
-        [Header("布局")] [SerializeField] private Direction _direction = Direction.Vertical;
-        [SerializeField] [Min(0)] private float _itemSpacing = 0f;
-        [SerializeField] [Min(1)] private int _poolPreAlloc = 3;
-        [SerializeField] [Min(0)] private int _bufferCount = 2;
+        [HeaderPro("布局", "Layout")]
+        [SerializeField] private Direction direction = Direction.Vertical;
+        [SerializeField] [Min(0)] private float itemSpacing = 0f;
+        [SerializeField] [Min(1)] private int poolPreAlloc = 3;
+        [SerializeField] [Min(0)] private int bufferCount = 2;
 
-        [Header("预创建")] [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")] [SerializeField] [Min(0)]
-        private int _preCreateBuffer = 3;
+        [HeaderPro("预创建", "Pre-creation")] [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")] [SerializeField] [Min(0)]
+        private int preCreateBuffer = 3;
 
         [Header("自适应测量")]
         [Tooltip(
             "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField]
-        private bool _autoRebuildLayout = false;
+        private bool autoRebuildLayout = false;
 
-        [Header("动画")]
+        [HeaderPro("动画","Animation")]
         [Tooltip("item 尺寸变更时的过渡动画时长（秒）。0 = 无动画，直接瞬变。")]
         [SerializeField][Range(0f, 1f)]
-        private float _layoutAnimationDuration = 0.15f;
+        private float layoutAnimationDuration = 0.15f;
 
-        [Header("吸附")]
+        [HeaderPro("吸附","Adsorb")]
         [Tooltip("滚动停止时自动吸附到最近 item 的顶部/中间/底部。None = 不吸附。")]
         [SerializeField]
-        private SnapAlignment _snapAlignment = SnapAlignment.None;
+        private SnapAlignment snapAlignment = SnapAlignment.None;
 
         [SerializeField][Range(0.5f, 50f)]
-        private float _snapVelocityThreshold = 5f;
+        private float snapVelocityThreshold = 5f;
 
         [SerializeField][Range(0.05f, 0.5f)]
-        private float _snapDuration = 0.15f;
+        private float snapDuration = 0.15f;
 
         [Header("对象池")]
         [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")]
-        [SerializeField] private int _poolMaxSize = 20;
+        [SerializeField] private int poolMaxSize = 20;
         [Tooltip("空闲超时销毁（秒）。≤0 = 永不销毁。PoolManager 每 5 秒自动清理一次。")]
-        [SerializeField] private float _poolIdleTimeout = 30f;
+        [SerializeField] private float poolIdleTimeout = 30f;
 
-        // ================================================================
-        // 公开回调
-        // ================================================================
+
+        #region 公开回调
 
         /// <summary>
         /// 填充 item 内容
@@ -95,9 +101,9 @@ namespace EFExample
         /// </summary>
         public event Action OnReachBottom;
 
-        // ================================================================
-        // 公开属性
-        // ================================================================
+        #endregion
+
+        #region 公开属性
 
         /// <summary>
         /// 当前数据总量
@@ -122,6 +128,8 @@ namespace EFExample
         /// <para>Whether initialized</para>
         /// </summary>
         public bool IsInitialized { get; private set; }
+
+        #endregion
 
         // ================================================================
         // 私有状态 / Private state
@@ -193,9 +201,7 @@ namespace EFExample
             public bool justCreated; // 是否本帧新建，需要填充+测量 / Needs fill+measure this frame
         }
 
-        // ================================================================
-        // 生命周期
-        // ================================================================
+        #region 生命周期
 
         private void Awake()
         {
@@ -204,9 +210,9 @@ namespace EFExample
 
         private void OnEnable()
         {
-            if (_scrollRect != null && !_scrollListenerAdded)
+            if (scrollRect != null && !_scrollListenerAdded)
             {
-                _scrollRect.onValueChanged.AddListener(OnScrollChanged);
+                scrollRect.onValueChanged.AddListener(OnScrollChanged);
                 _scrollListenerAdded = true;
             }
 
@@ -216,9 +222,9 @@ namespace EFExample
 
         private void OnDisable()
         {
-            if (_scrollRect != null && _scrollListenerAdded)
+            if (scrollRect != null && _scrollListenerAdded)
             {
-                _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
+                scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
                 _scrollListenerAdded = false;
             }
 
@@ -227,8 +233,8 @@ namespace EFExample
 
         private void OnDestroy()
         {
-            if (_scrollRect != null && _scrollListenerAdded)
-                _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
+            if (scrollRect != null && _scrollListenerAdded)
+                scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
 
             CancelAllAnimations();
             Clear();
@@ -254,9 +260,7 @@ namespace EFExample
             _layoutAnimCts = null;
         }
 
-        // ================================================================
-        // 初始化
-        // ================================================================
+        #endregion
 
         /// <summary>
         /// /// 初始化列表
@@ -287,27 +291,27 @@ namespace EFExample
 
         private void EnsureReferences()
         {
-            if (_scrollRect == null)
-                _scrollRect = GetComponent<ScrollRect>();
+            if (scrollRect == null)
+                scrollRect = GetComponent<ScrollRect>();
 
-            _contentRect = _scrollRect.content;
+            _contentRect = scrollRect.content;
             if (_contentRect == null)
             {
                 Debug.LogError("[InfiniteIrregularScrollList] ScrollRect.Content is null.", this);
                 return;
             }
 
-            _viewportRect = _scrollRect.viewport != null
-                ? _scrollRect.viewport
-                : _scrollRect.GetComponent<RectTransform>();
+            _viewportRect = scrollRect.viewport != null
+                ? scrollRect.viewport
+                : scrollRect.GetComponent<RectTransform>();
 
             _viewportSize = GetViewportSize();
 
-            if (_itemPrefab != null)
+            if (itemPrefab != null)
             {
-                var pfRt = _itemPrefab.transform as RectTransform;
+                var pfRt = itemPrefab.transform as RectTransform;
                 if (pfRt != null)
-                    _prefabDefaultSize = (_direction == Direction.Vertical)
+                    _prefabDefaultSize = (direction == Direction.Vertical)
                         ? pfRt.rect.height
                         : pfRt.rect.width;
             }
@@ -331,8 +335,8 @@ namespace EFExample
             var csf = content.GetComponent<ContentSizeFitter>();
             if (csf != null)
             {
-                csf.enabled = false; // 立即禁用，确保同帧不生效
-                Destroy(csf); // 延迟销毁，下帧清理
+                csf.enabled = false;
+                Destroy(csf);
                 stripped = true;
             }
 
@@ -344,7 +348,6 @@ namespace EFExample
                 stripped = true;
             }
 
-            // AspectRatioFitter 也会覆盖 sizeDelta
             var arf = content.GetComponent<AspectRatioFitter>();
             if (arf != null)
             {
@@ -354,7 +357,7 @@ namespace EFExample
             }
 
             if (stripped)
-                Debug.LogWarning(
+                D.Warning(
                     "[InfiniteIrregularScrollList] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
                     "本组件手动管理 content 布局，这些组件会导致定位异常。");
         }
@@ -377,7 +380,7 @@ namespace EFExample
             // 保存当前滚动偏移，避免 sizeDelta 变更时 ScrollRect 自动钳位丢失位置
             float savedOffset = preserveScroll ? GetContentScrollOffset() : 0f;
 
-            if (_direction == Direction.Vertical)
+            if (direction == Direction.Vertical)
             {
                 _contentRect.anchorMin = new Vector2(0, 1);
                 _contentRect.anchorMax = new Vector2(1, 1);
@@ -427,7 +430,7 @@ namespace EFExample
                 // 未测量过的 item 用 OnGetItemSize 估算，避免 total = 0 导致滚动范围错误
                 if (s <= 0.5f) s = GetItemSize(i);
                 total += s;
-                if (i < _itemSizes.Count - 1) total += _itemSpacing;
+                if (i < _itemSizes.Count - 1) total += itemSpacing;
             }
 
             return total;
@@ -435,7 +438,6 @@ namespace EFExample
 
         /// <summary>
         /// /// 计算从索引 0 到 index（含）的累积偏移（含间距），O(1) 查表，未初始化时线性 fallback
-        ///
         /// </summary>
         private float GetCumulativePosition(int index)
         {
@@ -444,13 +446,12 @@ namespace EFExample
             // 防御：_itemSizes 新增但 _cumulativePositions 尚未重建时，回退到线性计算
             float pos = 0f;
             for (int i = 0; i < index && i < _itemSizes.Count; i++)
-                pos += _itemSizes[i] + _itemSpacing;
+                pos += _itemSizes[i] + itemSpacing;
             return pos;
         }
 
         /// <summary>
-        /// /// 重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。
-        ///
+        /// 重建累积位置数组（OSA 风格）。_itemSizes 变更后调用，fromIndex=0 表示全量重建。
         /// </summary>
         private void RebuildCumulativePositions(int fromIndex = 0)
         {
@@ -473,13 +474,12 @@ namespace EFExample
             {
                 float prevSize = _itemSizes[i - 1];
                 if (prevSize <= 0.5f) prevSize = GetItemSize(i - 1);
-                _cumulativePositions[i] = _cumulativePositions[i - 1] + prevSize + _itemSpacing;
+                _cumulativePositions[i] = _cumulativePositions[i - 1] + prevSize + itemSpacing;
             }
         }
 
         /// <summary>
-        /// /// 二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。
-        ///
+        /// 二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。
         /// </summary>
         private int BinarySearchVisibleIndex(float scrollOffset)
         {
@@ -487,7 +487,7 @@ namespace EFExample
             while (lo <= hi)
             {
                 int mid = (lo + hi) / 2;
-                float itemEnd = _cumulativePositions[mid] + _itemSizes[mid] + _itemSpacing;
+                float itemEnd = _cumulativePositions[mid] + _itemSizes[mid] + itemSpacing;
                 if (itemEnd <= scrollOffset)
                     lo = mid + 1;
                 else
@@ -504,14 +504,14 @@ namespace EFExample
         private float GetViewportSize()
         {
             if (_viewportRect == null) return 0f;
-            return _direction == Direction.Vertical
+            return direction == Direction.Vertical
                 ? _viewportRect.rect.height
                 : _viewportRect.rect.width;
         }
 
         private float GetContentScrollOffset()
         {
-            return _direction == Direction.Vertical
+            return direction == Direction.Vertical
                 ? _contentRect.anchoredPosition.y
                 : -_contentRect.anchoredPosition.x;
         }
@@ -531,7 +531,7 @@ namespace EFExample
             int first = BinarySearchVisibleIndex(scrollOffset);
 
             // 加缓冲
-            int totalBuffer = _bufferCount + _preCreateBuffer;
+            int totalBuffer = bufferCount + preCreateBuffer;
             first = Mathf.Max(0, first - totalBuffer);
 
             // ---- 查找最后一个可见 item ----
@@ -539,7 +539,7 @@ namespace EFExample
             int last = first;
             for (int i = first; i < count; i++)
             {
-                float itemEnd = _cumulativePositions[i] + _itemSizes[i] + _itemSpacing;
+                float itemEnd = _cumulativePositions[i] + _itemSizes[i] + itemSpacing;
                 last = i;
                 if (itemEnd >= visibleEnd) break;
             }
@@ -555,7 +555,7 @@ namespace EFExample
         private void OnScrollChanged(Vector2 _)
         {
             // 用户拖动时立即终止动画，避免视觉冲突
-            if (_scrollRect != null && _scrollRect.velocity.sqrMagnitude > 10f)
+            if (scrollRect != null && scrollRect.velocity.sqrMagnitude > 10f)
                 StopLayoutAnimation();
             RefreshVisibleItems(false);
             CheckEdgeReached();
@@ -566,13 +566,13 @@ namespace EFExample
 
         private void CheckSnap()
         {
-            if (_snapAlignment == SnapAlignment.None || _scrollRect == null) return;
+            if (snapAlignment == SnapAlignment.None || scrollRect == null) return;
 
-            float vel = _direction == Direction.Vertical
-                ? Mathf.Abs(_scrollRect.velocity.y)
-                : Mathf.Abs(_scrollRect.velocity.x);
+            float vel = direction == Direction.Vertical
+                ? Mathf.Abs(scrollRect.velocity.y)
+                : Mathf.Abs(scrollRect.velocity.x);
 
-            bool moving = vel > _snapVelocityThreshold;
+            bool moving = vel > snapVelocityThreshold;
 
             // 从滚动 → 停止，触发吸附
             if (_wasMoving && !moving && !_refreshing)
@@ -599,7 +599,7 @@ namespace EFExample
         {
             if (!IsInitialized || _itemSizes.Count == 0) return;
 
-            float alignment = _snapAlignment switch
+            float alignment = snapAlignment switch
             {
                 SnapAlignment.Start  => 0f,
                 SnapAlignment.Center => 0.5f,
@@ -635,7 +635,7 @@ namespace EFExample
                 var cts = new CancellationTokenSource();
                 _scrollAnimCts?.Cancel();
                 _scrollAnimCts = cts;
-                AnimateScrollAsync(GetContentScrollOffset(), clamped, _snapDuration, null, cts.Token).Forget();
+                AnimateScrollAsync(GetContentScrollOffset(), clamped, snapDuration, null, cts.Token).Forget();
             }
         }
 
@@ -655,8 +655,7 @@ namespace EFExample
         }
 
         /// <summary>
-        /// /// 刷新可视区 item。
-        ///
+        /// 刷新可视区 item。
         /// </summary>
         /// <param name="force">true 时跳过范围比较，强制全部重建</param>
         public void RefreshVisibleItems(bool force = false)
@@ -678,7 +677,7 @@ namespace EFExample
             if (!IsInitialized || _itemSizes.Count == 0) return;
 
             // ---- 始终同步 content sizeDelta（AppendData 后即使范围不变也要更新） ----
-            if (_autoRebuildLayout)
+            if (autoRebuildLayout)
                 SyncContentSizeDelta();
 
             var (newFirst, newLast) = CalculateVisibleRange();
@@ -733,7 +732,7 @@ namespace EFExample
             float oldAnchorPos = anchorIdx < _itemSizes.Count ? GetCumulativePosition(anchorIdx) : 0f;
 
             // ---- 在填充之前禁用 content 布局（防冒泡篡改 item 位置） ----
-            if (_autoRebuildLayout)
+            if (autoRebuildLayout)
             {
                 var contentLayout = _contentRect.GetComponent<LayoutGroup>();
                 if (contentLayout != null) contentLayout.enabled = false;
@@ -769,7 +768,7 @@ namespace EFExample
                 float delta = newAnchorPos - oldAnchorPos;
                 if (Mathf.Abs(delta) > 0.5f)
                 {
-                    if (_direction == Direction.Vertical)
+                    if (direction == Direction.Vertical)
                         _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x,
                             _contentRect.anchoredPosition.y + delta);
                     else
@@ -779,10 +778,10 @@ namespace EFExample
             }
 
             // ---- 验证 content sizeDelta ----
-            if (anyFilled && _autoRebuildLayout)
+            if (anyFilled && autoRebuildLayout)
             {
                 float expectedTotal = CalculateTotalSize();
-                if (_direction == Direction.Vertical)
+                if (direction == Direction.Vertical)
                 {
                     if (Mathf.Abs(_contentRect.sizeDelta.y - expectedTotal) > 0.5f)
                         _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, expectedTotal);
@@ -803,7 +802,7 @@ namespace EFExample
                 var rt = go.transform as RectTransform;
                 if (rt == null) continue;
                 float pos = _cumulativePositions[i];
-                rt.anchoredPosition = (_direction == Direction.Vertical)
+                rt.anchoredPosition = (direction == Direction.Vertical)
                     ? new Vector2(0, -pos)
                     : new Vector2(pos, 0);
             }
@@ -829,12 +828,12 @@ namespace EFExample
                     var rt = go.transform as RectTransform;
                     if (rt == null) continue;
                     float expectedPos = GetCumulativePosition(i);
-                    float actualPos = (_direction == Direction.Vertical)
+                    float actualPos = (direction == Direction.Vertical)
                         ? -rt.anchoredPosition.y
                         : rt.anchoredPosition.x;
                     if (Mathf.Abs(actualPos - expectedPos) > 0.5f)
                     {
-                        if (_direction == Direction.Vertical)
+                        if (direction == Direction.Vertical)
                             rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, -expectedPos);
                         else
                             rt.anchoredPosition = new Vector2(expectedPos, rt.anchoredPosition.y);
@@ -843,7 +842,7 @@ namespace EFExample
 
                 // 最终 content sizeDelta 校验
                 float expectedTotal = CalculateTotalSize();
-                if (_direction == Direction.Vertical)
+                if (direction == Direction.Vertical)
                 {
                     if (Mathf.Abs(_contentRect.sizeDelta.y - expectedTotal) > 0.5f)
                         _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, expectedTotal);
@@ -868,8 +867,7 @@ namespace EFExample
         }
 
         /// <summary>
-        /// /// 仅对新创建的 item 填充内容 + 测量布局。不设置位置（由统一的锚点链 pass 处理）。
-        ///
+        /// 仅对新创建的 item 填充内容 + 测量布局。不设置位置（由统一的锚点链 pass 处理）。
         /// </summary>
         private ActiveItem FillAndMeasureNew(ActiveItem ai)
         {
@@ -883,7 +881,7 @@ namespace EFExample
             }
 
             // 设置锚点（位置稍后在锚点链 pass 统一设）
-            if (_direction == Direction.Vertical)
+            if (direction == Direction.Vertical)
             {
                 rt.anchorMin = new Vector2(0, 1);
                 rt.anchorMax = new Vector2(1, 1);
@@ -899,7 +897,7 @@ namespace EFExample
             // 把新 item 放在内容底部（远低于视口），锚点链定位前绝对不可见。
             // (0,0) 在顶部时恰好落在视口内 → 用户看到闪烁 → 感觉卡顿。
             float offScreenY = -CalculateTotalSize() - _viewportSize;
-            rt.anchoredPosition = (_direction == Direction.Vertical)
+            rt.anchoredPosition = (direction == Direction.Vertical)
                 ? new Vector2(0, offScreenY)
                 : new Vector2(offScreenY, 0);
 
@@ -913,17 +911,17 @@ namespace EFExample
             }
 
             // ---- 首选 IScrollItem：同步测量 + 锁定 ----
-            if (ai.scrollItem != null && _autoRebuildLayout)
+            if (ai.scrollItem != null && autoRebuildLayout)
             {
                 go.SetActive(true);
                 float measured = ai.scrollItem.OnShow(index);
                 _itemSizes[index] = Mathf.Max(1f, measured);
                 ai.size = measured;
             }
-            else if (_autoRebuildLayout)
+            else if (autoRebuildLayout)
             {
                 OnUpdateItem?.Invoke(go, index);
-                if (_direction == Direction.Vertical)
+                if (direction == Direction.Vertical)
                     rt.sizeDelta = new Vector2(rt.sizeDelta.x, Mathf.Max(1f, _itemSizes[index]));
                 else
                     rt.sizeDelta = new Vector2(Mathf.Max(1f, _itemSizes[index]), rt.sizeDelta.y);
@@ -934,11 +932,11 @@ namespace EFExample
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
 
-                float actualSize = (_direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
+                float actualSize = (direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
                 _itemSizes[index] = actualSize;
                 ai.size = actualSize;
 
-                rt.sizeDelta = (_direction == Direction.Vertical)
+                rt.sizeDelta = (direction == Direction.Vertical)
                     ? new Vector2(rt.sizeDelta.x, actualSize)
                     : new Vector2(actualSize, rt.sizeDelta.y);
                 if (rootCsf != null) rootCsf.enabled = false;
@@ -946,7 +944,7 @@ namespace EFExample
             else
             {
                 OnUpdateItem?.Invoke(go, index);
-                if (_direction == Direction.Vertical)
+                if (direction == Direction.Vertical)
                     rt.sizeDelta = new Vector2(rt.sizeDelta.x, ai.size);
                 else
                     rt.sizeDelta = new Vector2(ai.size, rt.sizeDelta.y);
@@ -963,16 +961,16 @@ namespace EFExample
 
         private void InitPool()
         {
-            if (_poolInitialized || _itemPrefab == null) return;
+            if (_poolInitialized || itemPrefab == null) return;
             _poolInitialized = true;
 
             float avgSize = _prefabDefaultSize > 0 ? _prefabDefaultSize : 100f;
             _estimatedVisibleCount =
-                Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + _itemSpacing)) +
-                (_bufferCount + _preCreateBuffer) * 2;
+                Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + itemSpacing)) +
+                (bufferCount + preCreateBuffer) * 2;
 
-            int initial = Mathf.Max(_poolPreAlloc, _estimatedVisibleCount);
-            PoolManager.Instance.CreateGameObjectPool(_itemPrefab, _contentRect, initial, _poolMaxSize, _poolIdleTimeout);
+            int initial = Mathf.Max(poolPreAlloc, _estimatedVisibleCount);
+            PoolManager.Instance.CreateGameObjectPool(itemPrefab, _contentRect, initial, poolMaxSize, poolIdleTimeout);
 
             // IScrollItem.OnCreate 在 prefab 首次 Instantiate 时调用（非池回收），
             // 将 OnCreate 回调注册到 IScrollItem 首次启用时（通过 OnSpawn 不调用 OnCreate）。
@@ -981,7 +979,7 @@ namespace EFExample
 
         private GameObject Rent()
         {
-            var go = PoolManager.Instance.Spawn(_itemPrefab);
+            var go = PoolManager.Instance.Spawn(itemPrefab);
             if (go != null)
             {
                 go.transform.SetParent(_contentRect, false);
@@ -999,7 +997,7 @@ namespace EFExample
         private void DestroyPool()
         {
             if (!_poolInitialized) return;
-            PoolManager.Instance.DestroyGameObjectPool(_itemPrefab);
+            PoolManager.Instance.DestroyGameObjectPool(itemPrefab);
             _poolInitialized = false;
         }
 
@@ -1070,7 +1068,7 @@ namespace EFExample
             // Compensate scroll with actual sizes
             float actualPrepend = 0f;
             for (int i = 0; i < count; i++)
-                actualPrepend += _itemSizes[i] + _itemSpacing;
+                actualPrepend += _itemSizes[i] + itemSpacing;
 
             float maxOff = GetMaxScrollOffset();
             float newScroll = Mathf.Clamp(originalScroll + actualPrepend, 0, maxOff);
@@ -1129,19 +1127,19 @@ namespace EFExample
         public void AnimateItemSize(int index, float newSize)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
-            if (_layoutAnimationDuration <= 0f)
+            if (layoutAnimationDuration <= 0f)
             {
                 ChangeItemSize(index, newSize);
                 return;
             }
 
-            _scrollRect.StopMovement(); // 立即停止滚动，防止与动画冲突
+            scrollRect.StopMovement(); // 立即停止滚动，防止与动画冲突
             float oldSize = _itemSizes[index];
             float target = Mathf.Max(1f, newSize);
             StopLayoutAnimation();
             var cts = new CancellationTokenSource();
             _layoutAnimCts = cts;
-            LayoutAnimationAsync(index, oldSize, target, _layoutAnimationDuration, cts.Token).Forget();
+            LayoutAnimationAsync(index, oldSize, target, layoutAnimationDuration, cts.Token).Forget();
         }
 
         private async UniTaskVoid LayoutAnimationAsync(int index, float from, float to, float duration, CancellationToken ct)
@@ -1182,12 +1180,12 @@ namespace EFExample
                 float cachedSize = _itemSizes[ai.index];
                 ai.size = cachedSize;
                 _activeItems[i] = ai;
-                rt.sizeDelta = (_direction == Direction.Vertical)
+                rt.sizeDelta = (direction == Direction.Vertical)
                     ? new Vector2(rt.sizeDelta.x, cachedSize)
                     : new Vector2(cachedSize, rt.sizeDelta.y);
 
                 float pos = _cumulativePositions[ai.index];
-                rt.anchoredPosition = (_direction == Direction.Vertical)
+                rt.anchoredPosition = (direction == Direction.Vertical)
                     ? new Vector2(0, -pos)
                     : new Vector2(pos, 0);
             }
@@ -1208,7 +1206,7 @@ namespace EFExample
             if (rt != null)
             {
                 float offScreenY = -CalculateTotalSize() - _viewportSize;
-                rt.anchoredPosition = (_direction == Direction.Vertical)
+                rt.anchoredPosition = (direction == Direction.Vertical)
                     ? new Vector2(0, offScreenY)
                     : new Vector2(offScreenY, 0);
             }
@@ -1254,7 +1252,7 @@ namespace EFExample
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
-            _scrollRect.StopMovement(); // 立即停止滚动
+            scrollRect.StopMovement(); // 立即停止滚动
 
             var go = FindActiveByIndex(index);
 
@@ -1270,7 +1268,7 @@ namespace EFExample
             }
 
             float newSize = _itemSizes[index];
-            if (_layoutAnimationDuration > 0f && Mathf.Abs(newSize - oldSize) > 1f)
+            if (layoutAnimationDuration > 0f && Mathf.Abs(newSize - oldSize) > 1f)
             {
                 _itemSizes[index] = oldSize;
                 RebuildCumulativePositions();
@@ -1278,7 +1276,7 @@ namespace EFExample
                 StopLayoutAnimation();
                 var cts = new CancellationTokenSource();
                 _layoutAnimCts = cts;
-                LayoutAnimationAsync(index, oldSize, newSize, _layoutAnimationDuration, cts.Token).Forget();
+                LayoutAnimationAsync(index, oldSize, newSize, layoutAnimationDuration, cts.Token).Forget();
             }
             else
             {
@@ -1390,7 +1388,7 @@ namespace EFExample
         private void SyncContentSizeDelta()
         {
             float total = CalculateTotalSize();
-            if (_direction == Direction.Vertical)
+            if (direction == Direction.Vertical)
                 _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
             else
                 _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
@@ -1421,7 +1419,7 @@ namespace EFExample
             float p1Clamped = Mathf.Clamp(p1Target - p1Offset, 0, p1Max);
 
             SetContentScroll(p1Clamped);
-            _scrollRect.StopMovement();
+            scrollRect.StopMovement();
             RefreshVisibleItems(true);
 
             // Pass 2: recalculate with actual measured sizes
@@ -1444,7 +1442,7 @@ namespace EFExample
         // 直接设 content anchoredPosition / Set content scroll directly
         private void SetContentScroll(float clamped)
         {
-            if (_direction == Direction.Vertical)
+            if (direction == Direction.Vertical)
                 _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, clamped);
             else
                 _contentRect.anchoredPosition = new Vector2(-clamped, _contentRect.anchoredPosition.y);
@@ -1518,7 +1516,7 @@ namespace EFExample
         // 设 content 滚动偏移 / Set content scroll offset
         private void SetContentScrollOffset(float offset)
         {
-            if (_direction == Direction.Vertical)
+            if (direction == Direction.Vertical)
                 _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, offset);
             else
                 _contentRect.anchoredPosition = new Vector2(-offset, _contentRect.anchoredPosition.y);
@@ -1629,8 +1627,8 @@ namespace EFExample
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (_scrollRect == null)
-                _scrollRect = GetComponent<ScrollRect>();
+            if (scrollRect == null)
+                scrollRect = GetComponent<ScrollRect>();
         }
 #endif
 
@@ -1671,11 +1669,11 @@ namespace EFExample
                 var rt = item.gameObject?.transform as RectTransform;
                 if (rt == null) continue;
                 float expectedPos = GetCumulativePosition(item.index);
-                float actualPos = (_direction == Direction.Vertical)
+                float actualPos = (direction == Direction.Vertical)
                     ? -rt.anchoredPosition.y
                     : rt.anchoredPosition.x;
-                float sizeDelta = (_direction == Direction.Vertical) ? rt.sizeDelta.y : rt.sizeDelta.x;
-                float rectSize = (_direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
+                float sizeDelta = (direction == Direction.Vertical) ? rt.sizeDelta.y : rt.sizeDelta.x;
+                float rectSize = (direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
                 float diff = Mathf.Abs(actualPos - expectedPos);
 
                 // 检查 item 上的 VLGroup padding

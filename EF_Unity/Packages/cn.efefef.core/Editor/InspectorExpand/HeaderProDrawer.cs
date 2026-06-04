@@ -29,7 +29,7 @@ namespace EasyFramework.Edit
             string headerText =  isEnglish ? headerAttribute.English : headerAttribute.Chinese;
             string toolText =  isEnglish ? headerAttribute.Chinese : headerAttribute.English;
             position.yMin += EditorGUIUtility.singleLineHeight * 0.2f;
-            GUI.Label(position, new GUIContent(headerText, toolText), EditorStyles.label);
+            GUI.Label(position, new GUIContent(headerText, toolText), EditorStyles.boldLabel);
         }
     }
 }
