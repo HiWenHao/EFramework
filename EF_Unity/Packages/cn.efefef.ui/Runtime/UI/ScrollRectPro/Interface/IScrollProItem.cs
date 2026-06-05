@@ -1,17 +1,23 @@
-// ================================================================
-// IScrollItem.cs
-// 无限不规则滚动列表的 item 接口 / Scroll item interface
-// ================================================================
+﻿/*
+ * ================================================
+ * Describe:        无限不规则滚动列表的 item 接口
+ * Author:          Alvin8412
+ * CreationTime:    2026-06-04 14:48:05
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-04 14:48:05
+ * ScriptVersion:   0.1
+ * ================================================
+ */
 
 using UnityEngine;
 
-namespace EFExample
+namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// 无限滚动列表的 item 必须实现此接口。
     /// <para>Must be implemented by scroll items managed by InfiniteIrregularScrollList.</para>
     /// </summary>
-    public interface IScrollItem
+    public interface IScrollProItem
     {
         /// <summary>
         /// 缓存的测量尺寸

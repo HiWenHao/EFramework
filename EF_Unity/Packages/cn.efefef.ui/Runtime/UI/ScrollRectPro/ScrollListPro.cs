@@ -30,7 +30,7 @@ namespace EasyFramework.Managers.Ui
     /// </summary>
     [RequireComponent(typeof(ScrollRect))]
     [DisallowMultipleComponent]
-    public class InfiniteIrregularScrollList : MonoBehaviour
+    public class ScrollListPro : MonoBehaviour
     {
         #region 内部类
 
@@ -874,12 +874,7 @@ namespace EasyFramework.Managers.Ui
 
             go.name = $"Item[{index}]";
 
-            // 延迟 OnCreate：对象池只做 Instantiate，不调用 IScrollProItem.OnCreate
-            if (ai.ScrollItem != null && !_onCreateCalled.Contains(go))
-            {
-                ai.ScrollItem.OnCreate(rt);
-                _onCreateCalled.Add(go);
-            }
+            // OnCreate 已在 Rent() 中调用，此处不重复
 
             // 首选 IScrollProItem：同步测量 + 锁定
             if (ai.ScrollItem != null && autoRebuildLayout)
@@ -949,6 +944,12 @@ namespace EasyFramework.Managers.Ui
             {
                 go.transform.SetParent(_contentRect, false);
                 go.SetActive(false);
+
+                if (!_onCreateCalled.Contains(go))
+                {
+                    var si = go.GetComponent<IScrollProItem>();
+                    if (si != null) { si.OnCreate(go.transform as RectTransform); _onCreateCalled.Add(go); }
+                }
             }
 
             return go;
@@ -1494,6 +1495,7 @@ namespace EasyFramework.Managers.Ui
                 GetCumulativePosition(index) - Mathf.Max(0, viewSize - _itemSizes[index]) * alignment,
                 0, Mathf.Max(0, CalculateTotalSize() - viewSize));
             SetContentScroll(p1Clamped);
+            scrollRect.StopMovement();
             RefreshVisibleItems(true);
 
             RebuildCumulativePositions();
