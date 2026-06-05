@@ -25,50 +25,29 @@ namespace EasyFramework.Managers.Ui
     [DisallowMultipleComponent]
     public class CircularScrollListPro : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
-        /// <summary>
-        /// 滚动方向
-        /// <para>Scroll direction.</para>
-        /// </summary>
-        private enum Direction { Vertical, Horizontal }
-
-        /// <summary>
-        /// 吸附对齐方式
-        /// <para>Snap alignment mode.</para>
-        /// </summary>
-        public enum SnapAlign
-        {
-            /// <summary>吸附到视口顶部 / Snap to top of viewport</summary>
-            Top,
-            /// <summary>吸附到视口中央 / Snap to center of viewport</summary>
-            Center,
-            /// <summary>吸附到视口底部 / Snap to bottom of viewport</summary>
-            Bottom
-        }
-
         #region 序列化字段 / Serialized Fields
 
-        [Header("引用 / References")]
+        [HeaderPro("引用目标", "References Target")]
         [SerializeField] private ScrollRect scrollRect;
         [SerializeField] private RectTransform itemPrefab;
 
-        [Header("布局 / Layout")]
-        [SerializeField] private Direction direction = Direction.Vertical;
-        [Tooltip("项间距 / Item spacing")]
-        [SerializeField] private float itemSpacing;
+        [HeaderPro("滑动方向", "Scroll Direction")] [SerializeField]
+        private Direction direction = Direction.Vertical;
 
-        [Header("缓冲 / Buffer")]
-        [Tooltip("视口外每侧额外预建数量 / Extra items per side outside viewport")]
+        [Tooltip("间距\nSpacing")] [SerializeField]
+        private float spacing;
+
+        [HeaderPro("缓冲数量", "Buffer Count")] [Tooltip("视口外每侧额外预建数量\nExtra items per side outside viewport")]
         [SerializeField] private int bufferCount = 2;
 
-        [Header("吸附 / Snap")]
-        [Tooltip("停止滚动后吸附到最近整项 / Snap to nearest item on stop")]
-        [SerializeField] private bool snapToItem = true;
-        [Tooltip("吸附对齐位置 / Snap alignment")]
-        [SerializeField] private SnapAlign snapAlignment = SnapAlign.Center;
-        [Tooltip("判定停止的速度阈值 / Velocity threshold to trigger snap")]
-        [SerializeField] private float snapVelocityThreshold = 50f;
-        [Tooltip("吸附动画时长(秒) / Snap animation duration in seconds")]
-        [SerializeField] private float snapDuration = 0.15f;
+        [Tooltip("吸附对齐位置\nSnap alignment")] [SerializeField]
+        private SnapAlignment snapAlignment = SnapAlignment.Center;
+
+        [Tooltip("判定停止的速度阈值\nVelocity threshold to trigger snap")] [SerializeField]
+        private float snapVelocityThreshold = 50f;
+
+        [Tooltip("吸附动画时长(秒)\nSnap animation duration in seconds")] [SerializeField]
+        private float snapDuration = 0.15f;
 
         #endregion
 
@@ -97,7 +76,11 @@ namespace EasyFramework.Managers.Ui
         public int ItemCount
         {
             get => _itemCount;
-            set { _itemCount = value; Rebuild(); }
+            set
+            {
+                _itemCount = value;
+                Rebuild();
+            }
         }
 
         /// <summary>
@@ -195,7 +178,7 @@ namespace EasyFramework.Managers.Ui
                 float speed = ScrollSpeed();
                 if (speed < snapVelocityThreshold)
                 {
-                    if (snapToItem) BeginSnap();
+                    if (snapAlignment != SnapAlignment.None) BeginSnap();
                     else SilentNormalize();
                 }
             }
@@ -207,7 +190,11 @@ namespace EasyFramework.Managers.Ui
         {
             if (scrollRect != null)
                 scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
-            foreach (var go in _pool) { if (go != null) Destroy(go); }
+            foreach (var go in _pool)
+            {
+                if (go != null) Destroy(go);
+            }
+
             _pool.Clear();
         }
 
@@ -231,7 +218,8 @@ namespace EasyFramework.Managers.Ui
         #region 公开方法 / Public Methods
 
         /// <summary>
-        /// 初始化列表 / Initialize with item count.
+        /// 初始化列表
+        /// <para>Initialize with item count.</para>
         /// </summary>
         public void Initialize(int itemCount)
         {
@@ -240,7 +228,8 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 刷新可见项 / Refresh visible items.
+        /// 刷新可见项
+        /// <para>Refresh visible items.</para>
         /// </summary>
         public void Refresh()
         {
@@ -257,7 +246,8 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 跳转到指定 dataIndex / Scroll to dataIndex.
+        /// 跳转到指定 dataIndex
+        /// <para>Scroll to dataIndex.</para>
         /// </summary>
         public void ScrollTo(int dataIndex)
         {
@@ -288,7 +278,7 @@ namespace EasyFramework.Managers.Ui
         private float GetItemStepSize()
         {
             float dim = direction == Direction.Vertical ? _cachedItemHeight : _cachedItemWidth;
-            return dim + itemSpacing;
+            return dim + spacing;
         }
 
         private float ReadViewportSize()
@@ -314,9 +304,9 @@ namespace EasyFramework.Managers.Ui
             float vpSize = ReadViewportSize();
             return snapAlignment switch
             {
-                SnapAlign.Center => (itemDim - vpSize) * 0.5f,
-                SnapAlign.Bottom => itemDim - vpSize,
-                _ => 0f // Top
+                SnapAlignment.Center => (itemDim - vpSize) * 0.5f,
+                SnapAlignment.Bottom => itemDim - vpSize,
+                _ => 0f
             };
         }
 
@@ -379,7 +369,11 @@ namespace EasyFramework.Managers.Ui
 
         private void ClearPool()
         {
-            foreach (var go in _pool) { if (go != null) Destroy(go); }
+            foreach (var go in _pool)
+            {
+                if (go != null) Destroy(go);
+            }
+
             _pool.Clear();
         }
 
@@ -489,7 +483,7 @@ namespace EasyFramework.Managers.Ui
             // item 可见条件: _displayedOffset - si*step + itemDim >= 0  AND  _displayedOffset - si*step <= vpSize
             // → si <= (offset + itemDim) / step  AND  si >= (offset - vpSize) / step
             int first = Mathf.FloorToInt((_displayedOffset - vpSize) / _stepSize) - bufferCount;
-            int last  = Mathf.CeilToInt((_displayedOffset + itemDim) / _stepSize) + bufferCount;
+            int last = Mathf.CeilToInt((_displayedOffset + itemDim) / _stepSize) + bufferCount;
 
             if (first == _lastFirst && last == _lastLast) return;
             _lastFirst = first;
@@ -502,6 +496,7 @@ namespace EasyFramework.Managers.Ui
                 if (kv.Key < first || kv.Key > last)
                     _toRemoveList.Add(kv.Key);
             }
+
             foreach (int si in _toRemoveList)
             {
                 Recycle(_activeItems[si]);
@@ -517,7 +512,7 @@ namespace EasyFramework.Managers.Ui
                 var go = Rent();
                 go.SetActive(true);
 
-                var rt = go.transform as RectTransform;
+                var rt = (RectTransform)go.transform;
                 rt.SetParent(_contentRect, false);
                 rt.anchorMin = rt.anchorMax = Vector2.up;
                 rt.pivot = Vector2.up;

@@ -35,28 +35,6 @@ namespace EasyFramework.Managers.Ui
         #region 内部类
 
         /// <summary>
-        /// 滚动方向
-        /// <para>Scroll direction</para>
-        /// </summary>
-        private enum Direction
-        {
-            Vertical,
-            Horizontal
-        }
-
-        /// <summary>
-        /// 吸附对齐
-        /// <para>Snap alignment</para>
-        /// </summary>
-        private enum SnapAlignment
-        {
-            None,
-            Start,
-            Center,
-            End
-        }
-
-        /// <summary>
         /// 活跃的元素结构
         /// <para>Active element structure</para>
         /// </summary>
@@ -613,9 +591,9 @@ namespace EasyFramework.Managers.Ui
 
             float alignment = snapAlignment switch
             {
-                SnapAlignment.Start => 0f,
+                SnapAlignment.Top => 0f,
                 SnapAlignment.Center => 0.5f,
-                SnapAlignment.End => 1f,
+                SnapAlignment.Bottom => 1f,
                 _ => float.NaN
             };
             if (float.IsNaN(alignment)) return;

@@ -1,7 +1,6 @@
 /*
  * ================================================
- * Describe:        CircularScrollListPro 交互演示面板
- *                  三列循环滚轮 + 选中高亮 + 实时反馈。
+ * Describe:        CircularScrollListPro 交互演示面板，三列循环滚轮 + 选中高亮 + 实时反馈。
  * Author:          Alvin8412
  * CreationTime:    2026-06-05 15:56:00
  * ModifyAuthor:    Alvin8412
@@ -36,7 +35,6 @@ namespace EasyFramework.Test
         {
             InitializeColumns();
             UpdateSelectionDisplay();
-            Debug.Log("[Panel] 循环滚轮面板启动完毕，拖拽滚轮试试！");
         }
 
         private void UpdateSelectionDisplay()
@@ -48,20 +46,29 @@ namespace EasyFramework.Test
 
         private void InitializeColumns()
         {
-            InitColumn(monthColumn, (idx) => $"{idx + 1:D2}月");
-            monthColumn.OnSelectedIndexChanged += OnMonthChanged;
-            monthColumn.Initialize(12);
-            monthColumn.ScrollTo(5); // 默认 6月
+            if (monthColumn)
+            {
+                InitColumn(monthColumn, (idx) => $"{idx + 1:D2}月");
+                monthColumn.OnSelectedIndexChanged += OnMonthChanged;
+                monthColumn.Initialize(12);
+                monthColumn.ScrollTo(5); // 默认 6月
+            }
 
-            InitColumn(dayColumn, (idx) => $"{idx + 1:D2}日");
-            dayColumn.OnSelectedIndexChanged += OnDayChanged;
-            dayColumn.Initialize(31);
-            dayColumn.ScrollTo(14); // 默认 15日
+            if (dayColumn)
+            {
+                InitColumn(dayColumn, (idx) => $"{idx + 1:D2}日");
+                dayColumn.OnSelectedIndexChanged += OnDayChanged;
+                dayColumn.Initialize(31);
+                dayColumn.ScrollTo(14); // 默认 15日
+            }
 
-            InitColumn(hourColumn, (idx) => $"{idx:D2}时");
-            hourColumn.OnSelectedIndexChanged += OnHourChanged;
-            hourColumn.Initialize(24);
-            hourColumn.ScrollTo(12); // 默认 12时
+            if (hourColumn)
+            {
+                InitColumn(hourColumn, (idx) => $"{idx:D2}时");
+                hourColumn.OnSelectedIndexChanged += OnHourChanged;
+                hourColumn.Initialize(24);
+                hourColumn.ScrollTo(12); // 默认 12时
+            }
         }
 
         private void InitColumn(CircularScrollListPro list, Func<int, string> formatter)
