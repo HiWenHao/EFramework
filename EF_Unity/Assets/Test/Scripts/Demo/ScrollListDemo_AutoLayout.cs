@@ -214,9 +214,7 @@ namespace EFExample
         private void OnClickRemoveLast()
         {
             if (_data.Count == 0) return;
-            if (!int.TryParse(IptRemoveIndex.text, out int idx) && idx >= 0 && idx < _data.Count)
-                return;
-            _data.RemoveAt(idx);
+            _data.RemoveAt(ScrollList.TotalCount - 1);
             ScrollList.RemoveLast();
             UpdateInfo();
         }
@@ -224,7 +222,8 @@ namespace EFExample
         // RemoveAt
         private void OnClickRemoveAt()
         {
-            int idx = ScrollList.FirstVisibleIndex;
+            if (!int.TryParse(IptRemoveIndex.text, out int idx) && idx >= 0 && idx < _data.Count)
+                return;
             if (idx < 0 || idx >= _data.Count) return;
             _data.RemoveAt(idx);
             ScrollList.RemoveAt(idx);

@@ -190,6 +190,7 @@ namespace EasyFramework.Managers.Ui
         private bool _scrollListenerAdded;  // 是否已注册 scroll 监听
         private bool _poolInitialized;      // 是否已向 PoolManager 注册池
         private bool _wasMoving;            // 滚动中
+        private bool _animating;           // 动画中，抑制 OnScrollChanged 刷新
 
         private RectTransform _contentRect;     // ScrollRect 的 content
         private RectTransform _viewportRect;    // ScrollRect 的 viewport
@@ -561,6 +562,10 @@ namespace EasyFramework.Managers.Ui
         // 当滚动位置改变时
         private void OnScrollChanged(Vector2 _)
         {
+            // 动画期间跳过刷新：AnimateScrollAsync 逐帧设 anchoredPosition 会触发 onValueChanged，
+            // 此时创建新 item 会改变累积位置 → 动画目标偏移 → 可能不吸附。
+            if (_animating) return;
+
             // 用户拖动时立即终止动画，避免视觉冲突
             if (scrollRect != null && scrollRect.velocity.sqrMagnitude > 10f)
                 StopLayoutAnimation();
@@ -1067,6 +1072,7 @@ namespace EasyFramework.Managers.Ui
         private async UniTaskVoid AnimateScrollAsync(float from, float to, float duration,
             AnimationCurve curve, CancellationToken ct)
         {
+            _animating = true;
             float elapsed = 0f;
             while (elapsed < duration && !ct.IsCancellationRequested)
             {
@@ -1080,6 +1086,7 @@ namespace EasyFramework.Managers.Ui
                 await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
 
+            _animating = false;
             if (!ct.IsCancellationRequested)
             {
                 SetContentScrollOffset(to);
@@ -1489,7 +1496,11 @@ namespace EasyFramework.Managers.Ui
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
+            // 保存当前滚动位置，SetContentScroll 会改变它
+            float startPos = GetContentScrollOffset();
             float viewSize = GetViewportSize();
+
+            // 先触发测量，确保 _itemSizes 是实测值
             RebuildCumulativePositions();
             float p1Clamped = Mathf.Clamp(
                 GetCumulativePosition(index) - Mathf.Max(0, viewSize - _itemSizes[index]) * alignment,
@@ -1498,14 +1509,13 @@ namespace EasyFramework.Managers.Ui
             scrollRect.StopMovement();
             RefreshVisibleItems(true);
 
+            // 用实测尺寸计算精确目标
             RebuildCumulativePositions();
             float itemSize = _itemSizes[index];
             float totalSize = CalculateTotalSize();
             float maxScroll = Mathf.Max(0, totalSize - viewSize);
             float target = Mathf.Clamp(GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0,
                 maxScroll);
-
-            float startPos = GetContentScrollOffset();
 
             _scrollAnimCts?.Cancel();
             _scrollAnimCts?.Dispose();
