@@ -17,5 +17,11 @@
     "com.unity.ugui": "1.0.0",
     "com.unity.render-pipelines.universal": "14.0.9"
   },
-  "samples": null
+  "samples": [
+    {
+      "displayName": "ScrollProList Sample",
+      "description": "无限不规则滑动列表案例.",
+      "path": "Samplse~/ScrollProListExample"
+    }
+  ]
 }
