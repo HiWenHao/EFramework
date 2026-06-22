@@ -33,8 +33,6 @@ namespace EasyFramework.Managers.Ui
 
         private Transform _target; // UI根节点
 
-        private IUiView _currentPageView; // 当前页面视窗
-
         /// <summary> 自动销毁计时 </summary>
         private Dictionary<IUiView, float> _autoDestroyDic;
 

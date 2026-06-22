@@ -9,12 +9,14 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Assets;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers.Ui
 {
@@ -132,8 +134,6 @@ namespace EasyFramework.Managers.Ui
         {
             CloseAllView(true).Forget();
 
-            _currentPageView = null;
-
             _viewStackDic.Clear();
             _viewStackDic = null;
             _viewParentDic.Clear();
@@ -170,7 +170,7 @@ namespace EasyFramework.Managers.Ui
             GameObject prefab = AssetsManager.Instance.Load<GameObject>(GetAssetPath(viewName));
             if (!prefab)
             {
-                D.Exception($"UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
+                D.Exception($"[ UiSystem ] UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
                 return null;
             }
 
@@ -194,9 +194,6 @@ namespace EasyFramework.Managers.Ui
 
             if (null != uiView.View && null != uiView.View.gameObject)
             {
-                if (_currentPageView == uiView)
-                    _currentPageView = null;
-
                 uiView.Quit();
                 uiView.Dispose();
                 DestroyObj(uiView.View.gameObject);
@@ -219,8 +216,6 @@ namespace EasyFramework.Managers.Ui
             if (!uiView.View.parent.Equals(_viewParentDic[uiView.ViewType]))
                 uiView.View.transform.SetParent(_viewParentDic[uiView.ViewType], false);
 
-            if (uiView.ViewType == UIViewType.Page)
-                _currentPageView = uiView;
             _autoDestroyDic.Remove(uiView);
 
             uiView.View.gameObject.SetActive(true);
@@ -253,8 +248,6 @@ namespace EasyFramework.Managers.Ui
             _viewStackDic[UIViewType.Cache].Add(uiView);
             _viewStackDic[uiView.ViewType].Remove(uiView);
             uiView.View.transform.SetParent(_viewParentDic[UIViewType.Cache], false);
-            if (uiView.ViewType == UIViewType.Page && _currentPageView == uiView)
-                _currentPageView = null;
 
             return true;
         }
@@ -338,36 +331,68 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 打开页面
+        /// 遍历所有活跃类型，查找指定类型的视窗
         /// </summary>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<T> OpenPageView<T>(params object[] args) where T : IUiView, new()
+        private bool TryFindActive<T>(out IUiView uiView, out UIViewType foundType) where T : IUiView
+        {
+            foreach (var type in _viewStackDic.Keys)
+            {
+                if (type == UIViewType.Cache) continue;
+                if (!InViewList<T>(out uiView, type)) continue;
+
+                foundType = type;
+                return true;
+            }
+            uiView = null;
+            foundType = default;
+            return false;
+        }
+
+        /// <summary>
+        /// 打开视窗<para>Open the view</para><br/>
+        /// - 单例型（Page / BottomPermanent / TopPermanent）：关闭相同类型的视图，然后显示新的视图
+        /// <para>Singleton type (Page / BottomPermanent / TopPermanent):Close the view of the same type, and then display the new view.</para><br/>
+        /// - 多实例型（Tips / Popup）：直接叠加，不关闭已有
+        /// <para>Multi-instance type (Tips / Popup): Directly superimpose without closing the existing one</para>
+        /// </summary>
+        /// <param name="args">该参数将推送给即将打开的视窗</param>
+        public async UniTask<T> OpenView<T>(params object[] args) where T : IUiView, new()
         {
             await UniTask.CompletedTask;
             IUiView openView;
-            bool needCreate = true;
 
-            if (InViewList<T>(out openView, UIViewType.Page))
+            if (TryFindActive<T>(out openView, out var foundType)
+                && foundType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
             {
-                if (_currentPageView == openView)
-                    return (T)openView;
-                needCreate = false;
+                ViewCloseByType(foundType);
+                ViewEnable(openView, args);
+                return (T)openView;
             }
 
-            if (needCreate && !TryRecoverFromCache<T>(out openView))
+            if (openView == null && !TryRecoverFromCache<T>(out openView))
                 openView = ViewCreate<T>();
 
             if (openView == null)
             {
-                D.Error($"OpenPageView<{typeof(T).Name}> failed: ViewCreate returned null");
+                D.Error($"[ UiSystem ] OpenView<{typeof(T).Name}> failed: ViewCreate returned null");
                 return default;
             }
-            
-            ViewCloseByType(openView.ViewType);
-            ViewEnable(openView, args);
 
+            if (openView.ViewType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
+                ViewCloseByType(openView.ViewType);
+
+            ViewEnable(openView, args);
             return (T)openView;
+        }
+
+        /// <summary>
+        /// [已废弃] 请使用 <see cref="OpenView{T}"/> 代替。
+        /// <para>[Obsolete] Use <see cref="OpenView{T}"/> instead.</para>
+        /// </summary>
+        [Obsolete("Use OpenView<T> instead.")]
+        public async UniTask<T> OpenPageView<T>(params object[] args) where T : IUiView, new()
+        {
+            return await OpenView<T>(args);
         }
 
         /// <summary>
@@ -379,13 +404,12 @@ namespace EasyFramework.Managers.Ui
         public async UniTask<bool> OpenView(IUiView uiView, params object[] args)
         {
             await UniTask.CompletedTask;
-            if (null == uiView || uiView == _currentPageView ||
-                uiView.ViewType is not (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent))
+            if (uiView is not { ViewType: (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent) })
                 return false;
 
             if (InViewList(uiView, UIViewType.Cache))
                 _viewStackDic[UIViewType.Cache].Remove(uiView);
-            else if (!InViewList(uiView, UIViewType.Page))
+            else if (!InViewList(uiView, uiView.ViewType))
                 return false;
 
             ViewCloseByType(uiView.ViewType);
@@ -422,7 +446,7 @@ namespace EasyFramework.Managers.Ui
                 uiView = ViewCreate<T>();
             if (uiView == null)
             {
-                D.Error($"OpenViewOverlay<{typeof(T).Name}> failed: ViewCreate returned null");
+                D.Error($"[ UiSystem ] OpenViewOverlay<{typeof(T).Name}> failed: ViewCreate returned null");
                 return default;
             }
 
