@@ -11,6 +11,7 @@
 
 using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.Windows.ConfigPanel;
+using EasyFramework.Managers.Ui;
 using UnityEditor;
 
 namespace EasyFramework.Edit.Create
@@ -20,13 +21,19 @@ namespace EasyFramework.Edit.Create
     /// </summary>
     internal static class CreateConfig
     {
-        [MenuItem("Assets/Create/EF/UiBindingConfig", priority = 210)]
+        [MenuItem("Assets/Create/EF/UI Binding Config", priority = 212)]
         private static void CreatedAutoBindSetting()
         {
             CreateSettings.Instance<UiBindingConfig>();
         }
-        
-        [MenuItem("Assets/Create/EF/SpriteCollection", priority = 320)]
+
+        [MenuItem("Assets/Create/EF/UI Animation Config", priority = 213)]
+        private static void CreatedAnimationConfig()
+        {
+            CreateSettings.Instance<UiAnimationConfig>();
+        }
+
+        [MenuItem("Assets/Create/EF/UI Sprite Collection", priority = 320)]
         private static void CreatedSpriteCollection()
         {
             CreateSettings.Instance<SpriteCollection>();

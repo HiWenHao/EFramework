@@ -160,6 +160,148 @@ namespace EasyFramework.Managers.Ui
             Destroy(obj);
         }
 
+        #region Animation - 动画相关
+
+        /// <summary>
+        /// 依据父节点计算滑入起始偏移量
+        /// </summary>
+        /// <param name="type">动画类那个</param>
+        /// <param name="rect">对应的UI面板实例对象</param>
+        /// <returns>起始偏移量</returns>
+        private static Vector2 GetSlideOffset(UiViewAnimationType type, RectTransform rect)
+        {
+            Vector2 parentSize = ((RectTransform)rect.parent).rect.size;
+            return type switch
+            {
+                UiViewAnimationType.SlideFromLeft   => new Vector2(-parentSize.x, 0),
+                UiViewAnimationType.SlideFromRight  => new Vector2(parentSize.x, 0),
+                UiViewAnimationType.SlideFromTop    => new Vector2(0, parentSize.y),
+                UiViewAnimationType.SlideFromBottom => new Vector2(0, -parentSize.y),
+                _ => Vector2.zero,
+            };
+        }
+
+        /// <summary>
+        /// 播放入场动画（从起始位置/缩放 → 归位）
+        /// </summary>
+        private static async UniTask AnimateOpen(RectTransform rect, UiViewAnimationType type, float duration, AnimationCurve curve)
+        {
+            if (duration <= 0f) return;
+
+            float elapsed = 0f;
+            Vector2 startPos = rect.anchoredPosition;
+            Vector3 startScale = rect.localScale;
+            Vector2 endPos = Vector2.zero;
+            Vector3 endScale = Vector3.one;
+
+            while (elapsed < duration)
+            {
+                if (rect == null) return;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float curveValue = curve?.Evaluate(t) ?? t;
+
+                if (type == UiViewAnimationType.Scale)
+                    rect.localScale = Vector3.Lerp(startScale, endScale, curveValue);
+                else
+                    rect.anchoredPosition = Vector2.Lerp(startPos, endPos, curveValue);
+
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+
+            if (type == UiViewAnimationType.Scale)
+                rect.localScale = Vector3.one;
+            else
+                rect.anchoredPosition = Vector2.zero;
+        }
+
+        /// <summary>
+        /// 播放退场动画（从归位 → 滑出/缩小）
+        /// </summary>
+        private static async UniTask AnimateClose(RectTransform rect, UiViewAnimationType type, float duration, AnimationCurve curve)
+        {
+            if (duration <= 0f) return;
+
+            float elapsed = 0f;
+            Vector2 startPos = Vector2.zero;
+            Vector3 startScale = Vector3.one;
+            Vector2 endPos;
+            Vector3 endScale;
+
+            if (type == UiViewAnimationType.Scale)
+            {
+                endPos = Vector2.zero;
+                endScale = Vector3.zero;
+            }
+            else
+            {
+                endPos = GetSlideOffset(type, rect);
+                endScale = Vector3.one;
+            }
+
+            while (elapsed < duration)
+            {
+                if (rect == null) return;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float curveValue = curve?.Evaluate(t) ?? t;
+
+                if (type == UiViewAnimationType.Scale)
+                    rect.localScale = Vector3.Lerp(startScale, endScale, curveValue);
+                else
+                    rect.anchoredPosition = Vector2.Lerp(startPos, endPos, curveValue);
+
+                await UniTask.Yield(PlayerLoopTiming.Update);
+            }
+        }
+
+        /// <summary>
+        /// 启用视窗并播放入场动画
+        /// </summary>
+        private async UniTask ViewEnableWithAnim(IUiView uiView, params object[] args)
+        {
+            if (animationConfig != null
+                && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration, out var curve, out _)
+                && type != UiViewAnimationType.None
+                && duration > 0f)
+            {
+                if (type == UiViewAnimationType.Scale)
+                    uiView.View.localScale = Vector3.zero;
+                else
+                    uiView.View.anchoredPosition = GetSlideOffset(type, uiView.View);
+
+                ViewEnable(uiView, args);
+                await AnimateOpen(uiView.View, type, duration, curve);
+            }
+            else
+            {
+                ViewEnable(uiView, args);
+            }
+        }
+
+        /// <summary>
+        /// 播放退场动画后关闭视窗（仅在 reverseOnClose 为 true 时播放）
+        /// </summary>
+        private async UniTask ViewCloseWithAnim(IUiView uiView, bool immediateDestroy, bool onlyDisable, params object[] args)
+        {
+            if (uiView.View != null
+                && uiView.View.gameObject.activeSelf
+                && animationConfig != null
+                && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration, out var curve, out var reverseOnClose)
+                && reverseOnClose
+                && type != UiViewAnimationType.None
+                && duration > 0f)
+            {
+                await AnimateClose(uiView.View, type, duration, curve);
+            }
+
+            ViewClose(uiView, immediateDestroy, onlyDisable, args);
+        }
+
+        #endregion
+
+        #region View Life Cycle - 视窗生命周期
+
         private IUiView ViewCreate<T>() where T : IUiView, new()
         {
             IUiView uiView = new T();
@@ -251,22 +393,31 @@ namespace EasyFramework.Managers.Ui
             return true;
         }
 
-        private bool ViewCloseByType(UIViewType uiViewType, params object[] args)
-        {
-            if (_viewStackDic[uiViewType].Count <= 0)
-                return false;
+        #endregion
 
-            IUiView closeView = _viewStackDic[uiViewType][^1];
+        #region Internal helper - 内部助手
+
+        /// <summary>
+        /// 关闭指定类型栈顶的非 <paramref name="exceptView"/> 视窗, 用于新面板入场动画完成后清理紧邻的旧面板，不影响下方页面栈。
+        /// </summary>
+        private void ViewCloseByTypeExcept(UIViewType uiViewType, IUiView exceptView, params object[] args)
+        {
+            List<IUiView> views = _viewStackDic[uiViewType];
+            int index = views.Count - 1;
+            if (index < 0) return;
+            if (views[index] == exceptView) index--;
+            if (index < 0) return;
+            var closeView = views[index];
+            if (closeView == exceptView) return;
+
             bool needCache = closeView is { ViewType: UIViewType.TopPermanent or UIViewType.BottomPermanent };
             ViewClose(closeView, false, !needCache, args);
-            return true;
         }
 
         /// <summary>
         /// 关闭某个类型的全部视窗
         /// </summary>
-        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView,
-            params object[] args)
+        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView, params object[] args)
         {
             var uiViews = _viewStackDic[uiViewType];
             for (int i = uiViews.Count - 1; i >= 0; i--)
@@ -347,6 +498,17 @@ namespace EasyFramework.Managers.Ui
             return false;
         }
 
+        #endregion
+
+        /// <summary>
+        /// 设置UI动画配置
+        /// </summary>
+        /// <param name="config">动画配置</param>
+        public void SetUiAnimationConfig(UiAnimationConfig config)
+        {
+            animationConfig = config;
+        }
+
         /// <summary>
         /// 打开视窗, 通过<see cref="UIViewType"/>区分展示逻辑<para>Open the view, Distinguish the display logic through <see cref="UIViewType"/></para><br/>
         /// - 单例型：关闭相同类型的视图，然后显示新的视图
@@ -363,8 +525,8 @@ namespace EasyFramework.Managers.Ui
             if (TryFindActive<T>(out openView, out var foundType)
                 && foundType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
             {
-                ViewCloseByType(foundType);
-                ViewEnable(openView, args);
+                await ViewEnableWithAnim(openView, args);
+                ViewCloseByTypeExcept(foundType, openView, args);
                 return (T)openView;
             }
 
@@ -377,10 +539,10 @@ namespace EasyFramework.Managers.Ui
                 return default;
             }
 
-            if (openView.ViewType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
-                ViewCloseByType(openView.ViewType);
+            await ViewEnableWithAnim(openView, args);
 
-            ViewEnable(openView, args);
+            if (openView.ViewType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
+                ViewCloseByTypeExcept(openView.ViewType, openView, args);
             return (T)openView;
         }
 
@@ -411,8 +573,8 @@ namespace EasyFramework.Managers.Ui
             else if (!InViewList(uiView, uiView.ViewType))
                 return false;
 
-            ViewCloseByType(uiView.ViewType);
-            ViewEnable(uiView, args);
+            await ViewEnableWithAnim(uiView, args);
+            ViewCloseByTypeExcept(uiView.ViewType, uiView, args);
             return true;
         }
 
@@ -449,7 +611,7 @@ namespace EasyFramework.Managers.Ui
                 return default;
             }
 
-            ViewEnable(uiView, args);
+            await ViewEnableWithAnim(uiView, args);
             return (T)uiView;
         }
 
@@ -472,7 +634,6 @@ namespace EasyFramework.Managers.Ui
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
         public async UniTask<bool> CloseView<T>(params object[] args) where T : IUiView
         {
-            await UniTask.CompletedTask;
             var allViewTypes = System.Enum.GetValues(typeof(UIViewType));
             for (int i = allViewTypes.Length - 1; i >= 0; i--)
             {
@@ -494,14 +655,20 @@ namespace EasyFramework.Managers.Ui
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
         public async UniTask<bool> CloseView(IUiView uiView, params object[] args)
         {
-            await UniTask.CompletedTask;
             if (null == uiView)
                 return false;
             
-            if (uiView.ViewType == UIViewType.Page && _viewStackDic[UIViewType.Page].Count >= 2)
-                ViewEnable(_viewStackDic[UIViewType.Page][^2], args);
+            if (uiView.ViewType == UIViewType.Page)
+            {
+                var pageStack = _viewStackDic[UIViewType.Page];
+                int idx = pageStack.IndexOf(uiView);
+                // 仅当被关闭的是栈顶页面时，才唤起其前驱页面
+                if (idx == pageStack.Count - 1 && idx > 0)
+                    ViewEnable(pageStack[idx - 1], args);
+            }
 
-            return ViewClose(uiView, false, false, args);
+            await ViewCloseWithAnim(uiView, false, false, args);
+            return true;
         }
 
         /// <summary>

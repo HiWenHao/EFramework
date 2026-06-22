@@ -10,6 +10,7 @@
  */
 
 using System.Collections.Generic;
+using EasyFramework.Edit;
 using EasyFramework.Managers.Assets;
 using UnityEngine;
 
@@ -41,5 +42,11 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary> 内存中存在的全部UI视窗 </summary>
         private Dictionary<UIViewType, List<IUiView>> _viewStackDic;
+
+        /// <summary>
+        /// 视窗动画目录
+        /// </summary>
+        [SerializeField, HeaderPro("UI视窗开关动画", "UI view switching animation")]
+        private UiAnimationConfig animationConfig;
     }
 }

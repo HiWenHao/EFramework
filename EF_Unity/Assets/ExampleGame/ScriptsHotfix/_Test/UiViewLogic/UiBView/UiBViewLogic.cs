@@ -9,6 +9,7 @@
  * ================================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Ui;
 using UnityEngine;
@@ -62,9 +63,15 @@ namespace EFExample
         }
         private void OnClickBtn_ToCPop()
         {
-            UiSystem.Instance.OpenPageView<UiCView>();
-            UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            OnClickBtn_ToCPopHelper().Forget();
         }
+
+        private async UniTaskVoid OnClickBtn_ToCPopHelper()
+        {
+            await UiSystem.Instance.OpenView<UiCView>();
+            await UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+        }
+
         private void OnClickBtn_BackA()
         {
             UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
