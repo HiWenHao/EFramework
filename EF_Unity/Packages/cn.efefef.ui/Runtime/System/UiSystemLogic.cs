@@ -324,6 +324,20 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
+        /// 尝试从 Cache 中恢复同类型视窗，恢复成功则从 Cache 列表移除。
+        /// </summary>
+        private bool TryRecoverFromCache<T>(out IUiView uiView) where T : IUiView
+        {
+            if (InViewList<T>(out uiView, UIViewType.Cache))
+            {
+                _viewStackDic[UIViewType.Cache].Remove(uiView);
+                return true;
+            }
+            uiView = null;
+            return false;
+        }
+
+        /// <summary>
         /// 打开页面
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
@@ -341,9 +355,7 @@ namespace EasyFramework.Managers.Ui
                 needCreate = false;
             }
 
-            if (needCreate && InViewList<T>(out openView, UIViewType.Cache))
-                _viewStackDic[UIViewType.Cache].Remove(openView);
-            else
+            if (needCreate && !TryRecoverFromCache<T>(out openView))
                 openView = ViewCreate<T>();
 
             if (openView == null)
@@ -364,7 +376,7 @@ namespace EasyFramework.Managers.Ui
         /// <param name="uiView">要被打开的页面</param>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<bool> OpenPageView(IUiView uiView, params object[] args)
+        public async UniTask<bool> OpenView(IUiView uiView, params object[] args)
         {
             await UniTask.CompletedTask;
             if (null == uiView || uiView == _currentPageView ||
@@ -382,37 +394,35 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 获取视窗
+        /// 获取已打开的视窗
         /// </summary>
         /// <typeparam name="T">View type. <para>视窗类型</para></typeparam>
-        public async UniTask<T> GetPageView<T>() where T : IUiView
+        public T GetView<T>() where T : IUiView
         {
-            await UniTask.CompletedTask;
-            if (InViewList<T>(out IUiView uiView, UIViewType.Page) ||
-                InViewList<T>(out uiView, UIViewType.TopPermanent) ||
-                InViewList<T>(out uiView, UIViewType.BottomPermanent))
-                return (T)uiView;
-
+            foreach (var kvp in _viewStackDic)
+            {
+                if (kvp.Key == UIViewType.Cache) continue;
+                if (InViewList<T>(out var uiView, kvp.Key))
+                    return (T)uiView;
+            }
             return default;
         }
 
         /// <summary>
-        /// 通用视窗显示方法。不关闭同类视窗，支持多实例叠加。
+        /// 视窗叠加显示方法。不关闭同类视窗，支持多实例叠加。
         /// <para>General window display method. Does not close similar windows, supports multiple instances to be stacked.</para>
         /// </summary>
         /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
         /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<T> ShowView<T>(params object[] args) where T : IUiView, new()
+        public async UniTask<T> OpenViewOverlay<T>(params object[] args) where T : IUiView, new()
         {
             await UniTask.CompletedTask;
 
-            if (InViewList<T>(out var uiView, UIViewType.Cache))
-                _viewStackDic[UIViewType.Cache].Remove(uiView);
-
-            uiView ??= ViewCreate<T>();
+            if (!TryRecoverFromCache<T>(out var uiView))
+                uiView = ViewCreate<T>();
             if (uiView == null)
             {
-                D.Error($"ShowView<{typeof(T).Name}> failed: ViewCreate returned null");
+                D.Error($"OpenViewOverlay<{typeof(T).Name}> failed: ViewCreate returned null");
                 return default;
             }
 

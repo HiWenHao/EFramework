@@ -35,7 +35,7 @@ namespace EFExample
             UiSystem.Instance.OpenPageView<UiAView>().Forget();
 
             // 旧 TipsView 调用示例（已废弃，仅供参考）
-            UiSystem.Instance.ShowView<TipsView>("这是一个测试提示窗", new TipsViewExtraData()
+            UiSystem.Instance.OpenViewOverlay<TipsView>("这是一个测试提示窗", new TipsViewExtraData()
             {
                 ConfirmName = "确定",
                 CancelName = "取消",
@@ -56,7 +56,7 @@ namespace EFExample
             for (int i = 0; i < 20; i++)
             {
                 await UniTask.WaitForSeconds(0.1f);
-                await UiSystem.Instance.ShowView<PopupView>($"\t{i}\tIndex");
+                await UiSystem.Instance.OpenViewOverlay<PopupView>($"\t{i}\tIndex");
             }
         }
     }
