@@ -13,6 +13,7 @@ namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// UI视窗类型
+    /// <para>UI view type</para>
     /// </summary>
     public enum UIViewType
     {
@@ -24,7 +25,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 底层常驻 - 同类型视窗只存在一个
-        /// <para>Only one of the same type of ui view.</para>
+        /// <para>Only exist one of the same type of ui view.</para>
         /// </summary>
         BottomPermanent,
 
@@ -36,7 +37,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 顶层常驻 - 同类型视窗只存在一个
-        /// <para>Only one of the same type of ui view.</para>
+        /// <para>Only exist one of the same type of ui view.</para>
         /// </summary>
         TopPermanent,
 

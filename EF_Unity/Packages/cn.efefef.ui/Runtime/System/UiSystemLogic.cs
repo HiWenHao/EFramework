@@ -9,7 +9,6 @@
  * ===============================================
  */
 
-using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Assets;
@@ -349,11 +348,11 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 打开视窗<para>Open the view</para><br/>
-        /// - 单例型（Page / BottomPermanent / TopPermanent）：关闭相同类型的视图，然后显示新的视图
-        /// <para>Singleton type (Page / BottomPermanent / TopPermanent):Close the view of the same type, and then display the new view.</para><br/>
-        /// - 多实例型（Tips / Popup）：直接叠加，不关闭已有
-        /// <para>Multi-instance type (Tips / Popup): Directly superimpose without closing the existing one</para>
+        /// 打开视窗, 通过<see cref="UIViewType"/>区分展示逻辑<para>Open the view, Distinguish the display logic through <see cref="UIViewType"/></para><br/>
+        /// - 单例型：关闭相同类型的视图，然后显示新的视图
+        /// <para>Singleton type:Close the view of the same type, and then display the new view.</para><br/>
+        /// - 多实例型：直接叠加，不关闭已有
+        /// <para>Multi-instance: Directly superimpose without closing the existing one</para>
         /// </summary>
         /// <param name="args">该参数将推送给即将打开的视窗</param>
         public async UniTask<T> OpenView<T>(params object[] args) where T : IUiView, new()
@@ -389,7 +388,7 @@ namespace EasyFramework.Managers.Ui
         /// [已废弃] 请使用 <see cref="OpenView{T}"/> 代替。
         /// <para>[Obsolete] Use <see cref="OpenView{T}"/> instead.</para>
         /// </summary>
-        [Obsolete("Use OpenView<T> instead.")]
+        [System.Obsolete("Use OpenView<T> instead.")]
         public async UniTask<T> OpenPageView<T>(params object[] args) where T : IUiView, new()
         {
             return await OpenView<T>(args);
