@@ -335,17 +335,15 @@ namespace EasyFramework.Managers.Ui
         {
             if (uiView == null) return;
 
-            if (null != uiView.View && null != uiView.View.gameObject)
-            {
-                uiView.Quit();
-                uiView.Dispose();
-                DestroyObj(uiView.View.gameObject);
-
-                AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
-            }
-
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
+
+            if (null == uiView.View || null == uiView.View.gameObject) return;
+            uiView.Quit();
+            uiView.Dispose();
+            DestroyObj(uiView.View.gameObject);
+
+            AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
         }
 
         private bool ViewEnable(IUiView uiView, params object[] args)
@@ -369,7 +367,7 @@ namespace EasyFramework.Managers.Ui
 
         private bool ViewClose(IUiView uiView, bool immediateDestroy, bool onlyDisable, params object[] args)
         {
-            if (null == uiView)
+            if (null == uiView || null == uiView.View.gameObject)
                 return false;
 
             if (uiView.View.gameObject.activeSelf)
