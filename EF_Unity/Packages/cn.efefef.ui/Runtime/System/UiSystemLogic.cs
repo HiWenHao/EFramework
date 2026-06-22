@@ -107,6 +107,7 @@ namespace EasyFramework.Managers.Ui
                         _autoDestroyDic.Remove(uiView);
                         continue;
                     }
+
                     if (uiViews.Key != UIViewType.Cache)
                     {
                         uiView.Update(elapse, realElapse);
@@ -154,7 +155,7 @@ namespace EasyFramework.Managers.Ui
             ? EFC.Projects.AppConst.UIPrefabsPath + viewName
             : viewName;
         }
-        
+
         private static void DestroyObj(Object obj)
         {
             Destroy(obj);
@@ -173,9 +174,9 @@ namespace EasyFramework.Managers.Ui
             Vector2 parentSize = ((RectTransform)rect.parent).rect.size;
             return type switch
             {
-                UiViewAnimationType.SlideFromLeft   => new Vector2(-parentSize.x, 0),
-                UiViewAnimationType.SlideFromRight  => new Vector2(parentSize.x, 0),
-                UiViewAnimationType.SlideFromTop    => new Vector2(0, parentSize.y),
+                UiViewAnimationType.SlideFromLeft => new Vector2(-parentSize.x, 0),
+                UiViewAnimationType.SlideFromRight => new Vector2(parentSize.x, 0),
+                UiViewAnimationType.SlideFromTop => new Vector2(0, parentSize.y),
                 UiViewAnimationType.SlideFromBottom => new Vector2(0, -parentSize.y),
                 _ => Vector2.zero,
             };
@@ -287,7 +288,8 @@ namespace EasyFramework.Managers.Ui
             if (uiView.View != null
                 && uiView.View.gameObject.activeSelf
                 && animationConfig != null
-                && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration, out var curve, out var reverseOnClose)
+                && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration
+                    , out var curve, out var reverseOnClose)
                 && reverseOnClose
                 && type != UiViewAnimationType.None
                 && duration > 0f)
@@ -307,7 +309,7 @@ namespace EasyFramework.Managers.Ui
             IUiView uiView = new T();
 
             string viewName = uiView.GetType().Name;
-            
+
             GameObject prefab = AssetsManager.Instance.Load<GameObject>(GetAssetPath(viewName));
             if (!prefab)
             {
@@ -338,10 +340,10 @@ namespace EasyFramework.Managers.Ui
                 uiView.Quit();
                 uiView.Dispose();
                 DestroyObj(uiView.View.gameObject);
-                
+
                 AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
             }
-            
+
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
         }
@@ -476,6 +478,7 @@ namespace EasyFramework.Managers.Ui
                 _viewStackDic[UIViewType.Cache].Remove(uiView);
                 return true;
             }
+
             uiView = null;
             return false;
         }
@@ -493,6 +496,7 @@ namespace EasyFramework.Managers.Ui
                 foundType = type;
                 return true;
             }
+
             uiView = null;
             foundType = default;
             return false;
@@ -502,6 +506,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 设置UI动画配置
+        /// <para>Set UI animation config</para>
         /// </summary>
         /// <param name="config">动画配置</param>
         public void SetUiAnimationConfig(UiAnimationConfig config)
@@ -590,6 +595,7 @@ namespace EasyFramework.Managers.Ui
                 if (InViewList<T>(out var uiView, kvp.Key))
                     return (T)uiView;
             }
+
             return default;
         }
 
@@ -657,7 +663,7 @@ namespace EasyFramework.Managers.Ui
         {
             if (null == uiView)
                 return false;
-            
+
             if (uiView.ViewType == UIViewType.Page)
             {
                 var pageStack = _viewStackDic[UIViewType.Page];
@@ -683,6 +689,7 @@ namespace EasyFramework.Managers.Ui
             {
                 ViewCloseAllWithType(uiViews.Key, immediateDestroy, false, args);
             }
+
             await UniTask.CompletedTask;
         }
     }
