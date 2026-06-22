@@ -543,7 +543,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine("    {");
             sb.AppendLine($"        public static async UniTask<{className}> Open(params object[] args)");
             sb.AppendLine("        {");
-            sb.AppendLine($"            return await UiSystem.Instance.OpenPageView<{className}>(args);");
+            sb.AppendLine($"            return await UiSystem.Instance.OpenView<{className}>(args);");
             sb.AppendLine("        }");
             sb.AppendLine();
             sb.AppendLine("        public static async UniTask<bool> Close(params object[] args)");
