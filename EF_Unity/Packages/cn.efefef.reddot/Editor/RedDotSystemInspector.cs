@@ -10,7 +10,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
 using UnityEditor;
@@ -22,8 +21,6 @@ namespace EasyFramework.Systems.RedDot.Editor
     public class RedDotSystemInspector : UnityEditor.Editor
     {
         private RedDotSystem _target;
-        private FieldInfo _nodesField;
-        private bool _reflectionReady;
         private double _lastRepaintTime;
         private const double RepaintInterval = 0.3f;
 
@@ -35,9 +32,6 @@ namespace EasyFramework.Systems.RedDot.Editor
         private void OnEnable()
         {
             _target = (RedDotSystem)target;
-            var type = typeof(RedDotSystem);
-            _nodesField = type.GetField("_nodes", BindingFlags.NonPublic | BindingFlags.Instance);
-            _reflectionReady = _nodesField != null;
             EditorApplication.update += OnEditorUpdate;
         }
 
@@ -68,10 +62,9 @@ namespace EasyFramework.Systems.RedDot.Editor
                 return;
             }
 
-            if (!_reflectionReady)
+            if (_target.Nodes == null)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Reflect, Lc.Error, Lc.Please, Lc.Check, Lc.Code),
-                    MessageType.Error);
+                EditorGUILayout.HelpBox(LC.Combine(Lc.Non, Lc.Running, Lc.Not, Lc.Data), MessageType.Info);
                 return;
             }
 
@@ -93,9 +86,10 @@ namespace EasyFramework.Systems.RedDot.Editor
         private void UpdateRootNodes()
         {
             _rootNodes.Clear();
-            if (_nodesField.GetValue(_target) is not Dictionary<string, RedDotNode> dict) return;
+            var nodes = _target.Nodes;
+            if (nodes == null) return;
 
-            foreach (var node in dict.Values)
+            foreach (var node in nodes)
             {
                 if (node is { Parent: null })
                     _rootNodes.Add(node);
@@ -103,7 +97,10 @@ namespace EasyFramework.Systems.RedDot.Editor
 
             _rootNodes.Sort((a, b) => a.Depth.CompareTo(b.Depth));
 
-            var validKeys = new HashSet<string>(dict.Keys);
+            // 清理已不存在的 foldout 条目
+            var validKeys = new HashSet<string>();
+            foreach (var node in nodes)
+                validKeys.Add(node.Key);
             var toRemove = _foldouts.Keys.Where(k => !validKeys.Contains(k)).ToList();
             foreach (var k in toRemove) _foldouts.Remove(k);
         }

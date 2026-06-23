@@ -66,21 +66,7 @@ namespace EasyFramework.Systems.RedDot
         /// 节点深度（根节点深度为0）
         /// <para>Node depth (root depth = 0)</para>
         /// </summary>
-        public int Depth
-        {
-            get
-            {
-                int depth = 0;
-                var current = Parent;
-                while (current != null)
-                {
-                    depth++;
-                    current = current.Parent;
-                }
-
-                return depth;
-            }
-        }
+        public int Depth { get; private set; }
 
         private bool _disposed;             // 是否已释放
         private int _pendingNumber;         // 暂存的待应用数值
@@ -113,7 +99,10 @@ namespace EasyFramework.Systems.RedDot
         {
             if (DisplayType == RedDotDisplayType.Dot)
                 number = number > 0 ? 1 : 0;
-            if (Number == number) return;
+
+            // 优先与 pending 值比较，避免同帧多次调用时丢失更新
+            int compareValue = _hasPendingNumber ? _pendingNumber : Number;
+            if (compareValue == number) return;
 
             _pendingNumber = number;
             _hasPendingNumber = true;
@@ -123,11 +112,14 @@ namespace EasyFramework.Systems.RedDot
         // 刷新节点：应用 pending 数值 或 聚合子节点数值
         internal void Refresh()
         {
+            bool changed = false;
+
             // 先应用暂存的数值（优先于子节点聚合）
             if (_hasPendingNumber)
             {
                 Number = _pendingNumber;
                 _hasPendingNumber = false;
+                changed = true;
                 NotifyValueChanged();
             }
             else if (_children.Count > 0)
@@ -147,11 +139,13 @@ namespace EasyFramework.Systems.RedDot
                 if (Number != newNumber)
                 {
                     Number = newNumber;
+                    changed = true;
                     NotifyValueChanged();
                 }
             }
 
-            if (Parent != null)
+            // 只有值真正变化时才标记父节点为脏，避免不必要的级联刷新
+            if (changed && Parent != null)
                 RedDotSystem.Instance.DirtySystem.MarkDirty(Parent);
         }
 
@@ -171,11 +165,35 @@ namespace EasyFramework.Systems.RedDot
                 return;
             }
 
-            Parent?._children.Remove(this);
+            var oldParent = Parent;
+            oldParent?._children.Remove(this);
             Parent = parent;
             if (parent != null && !parent._children.Contains(this))
             {
                 parent._children.Add(this);
+            }
+
+            // 更新自身及所有子节点的深度缓存
+            int newDepth = parent != null ? parent.Depth + 1 : 0;
+            UpdateDepth(newDepth);
+
+            // 标记旧父和新父为脏，使下次 Flush 时重新聚合子节点数值
+            if (oldParent != null)
+                RedDotSystem.Instance.DirtySystem.MarkDirty(oldParent);
+            if (parent != null)
+                RedDotSystem.Instance.DirtySystem.MarkDirty(parent);
+        }
+
+        // 递归更新自身及所有子节点的深度缓存（仅在 SetParent 时调用）
+        private void UpdateDepth(int newDepth)
+        {
+            int delta = newDepth - Depth;
+            if (delta == 0) return;
+
+            Depth = newDepth;
+            for (int i = 0; i < _children.Count; i++)
+            {
+                _children[i].UpdateDepth(_children[i].Depth + delta);
             }
         }
 
@@ -201,6 +219,7 @@ namespace EasyFramework.Systems.RedDot
         {
             Parent?._children.Remove(this);
             Parent = null;
+            UpdateDepth(0);
         }
 
         // 通知数值变更

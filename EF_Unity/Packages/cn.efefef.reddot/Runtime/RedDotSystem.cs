@@ -52,6 +52,12 @@ namespace EasyFramework.Systems.RedDot
         /// </summary>
         private Dictionary<string, RedDotNode> _nodes;
 
+        /// <summary>
+        /// 获取所有已注册的红点节点（只读）。未初始化时返回 null。
+        /// <para>Gets all registered red dot nodes (read-only). Returns null before initialization.</para>
+        /// </summary>
+        public IReadOnlyCollection<RedDotNode> Nodes => _nodes?.Values;
+
         private bool _subsystemsSet; //  判断是否已经注册子系统
         private readonly Dictionary<string, Sprite> _spriteCache = new(); // 简单缓存
 
@@ -225,14 +231,26 @@ namespace EasyFramework.Systems.RedDot
             if (!_nodes.TryGetValue(key, out var node))
                 return;
 
-            var children = new List<RedDotNode>(node.Children);
-            for (int i = 0; i < children.Count; i++)
+            // 迭代式收集所有子孙节点（含自身），避免递归每层分配 List
+            var stack = new Stack<RedDotNode>();
+            stack.Push(node);
+            var collected = new List<RedDotNode>();
+            while (stack.Count > 0)
             {
-                UnregisterNode(children[i].Key);
+                var current = stack.Pop();
+                collected.Add(current);
+                for (int i = 0; i < current.Children.Count; i++)
+                {
+                    stack.Push(current.Children[i]);
+                }
             }
 
-            node.Dispose();
-            _nodes.Remove(key);
+            // 逆序销毁：子节点先于父节点（DFS 先序收集的逆序即为后序）
+            for (int i = collected.Count - 1; i >= 0; i--)
+            {
+                collected[i].Dispose();
+                _nodes.Remove(collected[i].Key);
+            }
         }
 
         /// <summary>

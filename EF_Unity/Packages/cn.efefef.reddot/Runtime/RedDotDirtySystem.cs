@@ -20,6 +20,7 @@ namespace EasyFramework.Systems.RedDot
     public class RedDotDirtySystem
     {
         private readonly HashSet<RedDotNode> _dirtyNodes = new(); // 脏节点集合
+        private readonly List<RedDotNode> _processingBuffer = new(); // 复用缓冲，避免每帧 GC
 
         /// <summary>
         /// 将节点标记为脏（需要刷新）
@@ -41,15 +42,20 @@ namespace EasyFramework.Systems.RedDot
             if (_dirtyNodes.Count == 0)
                 return;
 
-            var processing = new List<RedDotNode>(_dirtyNodes);
+            // 复用 buffer，避免每帧分配新 List
+            _processingBuffer.Clear();
+            foreach (var node in _dirtyNodes)
+                _processingBuffer.Add(node);
             _dirtyNodes.Clear();
 
-            processing.Sort((a, b) => b.Depth.CompareTo(a.Depth));
+            _processingBuffer.Sort((a, b) => b.Depth.CompareTo(a.Depth));
 
-            for (int i = 0; i < processing.Count; i++)
+            for (int i = 0; i < _processingBuffer.Count; i++)
             {
-                processing[i].Refresh();
+                _processingBuffer[i].Refresh();
             }
+
+            _processingBuffer.Clear();
         }
     }
 }

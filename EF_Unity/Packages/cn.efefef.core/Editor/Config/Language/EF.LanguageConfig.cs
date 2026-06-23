@@ -78,6 +78,10 @@ namespace EasyFramework.Edit
                 _currentIndex = (int)value;
                 EditorPrefs.SetInt(GetPrefsKey(), _currentIndex);
                 _separatorCache = null;
+
+                // 重置加载状态，切换语言后强制重新加载字典
+                _isLoaded = false;
+                _lcDictionary = null;
             }
         }
 

@@ -126,9 +126,38 @@ namespace EasyFramework.Systems.RedDot
         /// <summary>
         /// 设置红点节点的键
         /// <para>Set the key of the red dot node</para>
+        /// <para>若已初始化（渲染器已注册），会自动解绑旧节点并绑定新节点</para>
+        /// <para>If already initialized, automatically unbinds old node and binds new node</para>
         /// </summary>
         /// <param name="newKey">新的节点键 <para>New node key</para></param>
-        public void SetKey(string newKey) => key = newKey;
+        public void SetKey(string newKey)
+        {
+            if (key == newKey) return;
+
+            // 若已绑定节点，先取消旧订阅
+            if (_node != null)
+            {
+                _node.OnValueChanged -= Refresh;
+                _node = null;
+            }
+
+            key = newKey;
+
+            // 若渲染器已注册（初始化完成），立即绑定新节点
+            if (_allRenderers.Count > 0)
+            {
+                _node = RedDotSystem.Instance.GetNode(key);
+                if (_node == null)
+                {
+                    D.Error($"RedDot Node Not Found : {key}");
+                    return;
+                }
+
+                _node.OnValueChanged += Refresh;
+                RefreshAsync(_node).Forget();
+            }
+            // 若尚未初始化，Start() 会使用新的 key 自动绑定
+        }
 
         /// <summary>
         /// 设置点红点渲染器（Dot类型）
