@@ -174,16 +174,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Namespace: EFExample
-  Describe: Please modify the description.
+  Describe: "\u8FD9\u662F\u6D4B\u8BD5UI\u7684AAAAAA\u9875\u9762"
   AutoDestroy: 1
   AutoDestroyCountdown: 10
   ViewType: 2
+  BindDatas:
+  - RealName: Btn_ToB
+    ScriptName: Btn_ToB
+    BindCom: {fileID: 8961536179098024215}
+  - RealName: Btn_Quit
+    ScriptName: Btn_Quit
+    BindCom: {fileID: 6871867135336465635}
   PrefabPath: 
   ScriptPath: Assets/ExampleGame/ScriptsHotfix/_Test/
   CreatePrefab: 0
-  PackUpBindList: 1
-  SortByType: 1
-  SortByNameLength: 1
   DeleteScript: 0
 --- !u!1 &5967752919626689131
 GameObject:

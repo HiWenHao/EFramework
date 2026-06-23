@@ -31,6 +31,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private List<string> _tempFiledNames;
         private List<string> _tempComponentTypeNames;
         private Dictionary<string, int> _componentsName;
+        private bool _programmaticChangePending;
 
         private void OnEnable()
         {
@@ -77,6 +78,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
 
+            _programmaticChangePending = false;
+
             DrawSetting();
 
             DrawAutoBind();
@@ -85,8 +88,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             DrawStartBind();
 
-            if (!EditorGUI.EndChangeCheck() || !target || !serializedObject.targetObject)
+            bool guiChanged = EditorGUI.EndChangeCheck();
+            if (!guiChanged && !_programmaticChangePending)
                 return;
+            if (!target || !serializedObject.targetObject)
+                return;
+
             serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(target);
         }
@@ -240,7 +247,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     EditorGUILayout.EndHorizontal();
                 }
 
-                if (needDeleteIndex != -1) _builder.BindDatas.RemoveAt(needDeleteIndex);
+                if (needDeleteIndex != -1)
+                {
+                    _builder.BindDatas.RemoveAt(needDeleteIndex);
+                    _programmaticChangePending = true;
+                    serializedObject.Update();
+                }
 
                 EditorGUILayout.EndScrollView();
                 EditorGUILayout.EndVertical();
@@ -320,6 +332,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     else AddBindData(child.name, _tempFiledNames[i], com);
                 }
             }
+
+            _programmaticChangePending = true;
+            serializedObject.Update();
         }
 
         private void AddBindData(string rectName, string filedName, Component needBindingComponent)
