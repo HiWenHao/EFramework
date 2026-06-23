@@ -21,8 +21,7 @@ namespace EasyFramework.Systems.RedDot
     /// <para>Red dot renderer for Dot type (show/hide)</para>
     /// </summary>
     [RequireComponent(typeof(Image))]
-    [RequireComponent(typeof(RedDotView))]
-    public class DotRenderer : MonoBehaviour, IRedDotRenderer
+    public class DotRenderer : RedDotRendererBase
     {
         [HeaderPro("显示红点的目标物体", "The target object with a red dot displayed")]
         [SerializeField] private GameObject target;
@@ -38,7 +37,7 @@ namespace EasyFramework.Systems.RedDot
         /// 渲染红点节点
         /// <para>Render red dot node</para>
         /// </summary>
-        public UniTask Render(RedDotNode node)
+        public override UniTask Render(RedDotNode node)
         {
             target.SetActive(node.Number > 0);
             return UniTask.CompletedTask;
@@ -48,7 +47,7 @@ namespace EasyFramework.Systems.RedDot
         /// 隐藏红点
         /// <para>Hide red dot</para>
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
             target.SetActive(false);
         }

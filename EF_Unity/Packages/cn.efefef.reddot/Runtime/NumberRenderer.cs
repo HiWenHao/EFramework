@@ -21,8 +21,7 @@ namespace EasyFramework.Systems.RedDot
     /// <para>Red dot renderer for Number type</para>
     /// </summary>
     [RequireComponent(typeof(Text))]
-    [RequireComponent(typeof(RedDotView))]
-    public class NumberRenderer : MonoBehaviour, IRedDotRenderer
+    public class NumberRenderer : RedDotRendererBase
     {
         [HeaderPro("显示数字的文本组件","Text component displaying numbers")]
         [SerializeField] private Text text;
@@ -38,7 +37,7 @@ namespace EasyFramework.Systems.RedDot
         /// 渲染数字节点
         /// <para>Render number node</para>
         /// </summary>
-        public UniTask Render(RedDotNode node)
+        public override UniTask Render(RedDotNode node)
         {
             bool active = node.Number > 0;
             text.gameObject.SetActive(active);
@@ -54,7 +53,7 @@ namespace EasyFramework.Systems.RedDot
         /// 隐藏数字显示
         /// <para>Hide number display</para>
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
             text.gameObject.SetActive(false);
         }

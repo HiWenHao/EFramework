@@ -4,8 +4,8 @@
  * Author:        Alvin5100
  * CreationTime:  2026-05-13 15:14:18
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 15:14:18
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-23 23:16:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -25,24 +25,17 @@ namespace EasyFramework.Systems.RedDot
         [HeaderPro("红点节点 key", "Red dot node key")]
         [SerializeField] private string key;
 
-        [HeaderPro("点红点渲染器组件", "Dot render component")]
-        [SerializeField] private MonoBehaviour dotRenderer;
-
-        [HeaderPro("数字红点渲染器组件", "Number render component")]
-        [SerializeField] private MonoBehaviour numberRenderer;
-
-        [HeaderPro("图片红点渲染器组件", "Image render component")]
-        [SerializeField] private MonoBehaviour imageRenderer;
+        [HeaderPro("渲染器列表", "Renderer list (all renderers are called on value change)")]
+        [SerializeField] private List<RedDotRendererBase> renderers;
 
         private RedDotNode _node; // 绑定的红点节点
-        private readonly List<IRedDotRenderer> _allRenderers = new(); // 所有渲染器
-        private readonly Dictionary<RedDotDisplayType, List<IRedDotRenderer>> _rendererMap = new(); // 按类型分组
+        private readonly List<RedDotRendererBase> _activeRenderers = new(); // 运行时生效的渲染器列表
 
         private void Start()
         {
             Initialize().Forget();
         }
-        
+
         private void OnDestroy()
         {
             if (_node != null)
@@ -62,40 +55,18 @@ namespace EasyFramework.Systems.RedDot
                 return;
             }
 
-            // 注册单一类型的渲染器
-            RegisterRenderer(RedDotDisplayType.Dot, dotRenderer);
-            RegisterRenderer(RedDotDisplayType.Number, numberRenderer);
-            RegisterRenderer(RedDotDisplayType.Image, imageRenderer);
-
-            // 为 ImageNumber 类型注册组合渲染器（图片 + 数字）
-            RegisterRenderer(RedDotDisplayType.ImageNumber, imageRenderer);
-            RegisterRenderer(RedDotDisplayType.ImageNumber, numberRenderer);
+            // 将序列化列表中的渲染器加入运行时列表（过滤空值和重复）
+            if (renderers != null)
+            {
+                foreach (var r in renderers)
+                {
+                    if (r != null && !_activeRenderers.Contains(r))
+                        _activeRenderers.Add(r);
+                }
+            }
 
             _node.OnValueChanged += Refresh;
             await RefreshAsync(_node);
-        }
-
-        // 注册渲染器到类型映射
-        private void RegisterRenderer(RedDotDisplayType type, MonoBehaviour mono)
-        {
-            if (mono == null) return;
-            if (mono is not IRedDotRenderer render)
-            {
-                D.Error($"{mono.name} does not implement IRedDotRenderer");
-                return;
-            }
-
-            if (!_rendererMap.TryGetValue(type, out var list))
-            {
-                list = new List<IRedDotRenderer>();
-                _rendererMap[type] = list;
-            }
-
-            if (!list.Contains(render))
-                list.Add(render);
-
-            if (!_allRenderers.Contains(render))
-                _allRenderers.Add(render);
         }
 
         // 刷新事件回调
@@ -104,25 +75,16 @@ namespace EasyFramework.Systems.RedDot
             RefreshAsync(node).Forget();
         }
 
-        // 异步刷新所有渲染器
+        // 异步刷新所有渲染器（每个渲染器内部根据 node.Number 自行决定显隐）
         private async UniTask RefreshAsync(RedDotNode node)
         {
-            // 先隐藏所有可能用到的渲染器
-            foreach (var render in _allRenderers)
+            foreach (var render in _activeRenderers)
             {
-                render.Hide();
-            }
-
-            // 找到当前类型对应的所有渲染器，依次渲染
-            if (_rendererMap.TryGetValue(node.DisplayType, out var renderers))
-            {
-                foreach (var render in renderers)
-                {
-                    await render.Render(node);
-                }
+                try { await render.Render(node); }
+                catch (System.Exception e) { D.Error($"[RedDotView] {render} Render failed: {e.Message}"); }
             }
         }
-        
+
         /// <summary>
         /// 设置红点节点的键
         /// <para>Set the key of the red dot node</para>
@@ -143,65 +105,39 @@ namespace EasyFramework.Systems.RedDot
 
             key = newKey;
 
-            // 若渲染器已注册（初始化完成），立即绑定新节点
-            if (_allRenderers.Count > 0)
+            if (_activeRenderers.Count <= 0) return;
+            _node = RedDotSystem.Instance.GetNode(key);
+            if (_node == null)
             {
-                _node = RedDotSystem.Instance.GetNode(key);
-                if (_node == null)
-                {
-                    D.Error($"RedDot Node Not Found : {key}");
-                    return;
-                }
-
-                _node.OnValueChanged += Refresh;
-                RefreshAsync(_node).Forget();
+                D.Error($"RedDot Node Not Found : {key}");
+                return;
             }
-            // 若尚未初始化，Start() 会使用新的 key 自动绑定
+
+            _node.OnValueChanged += Refresh;
+            RefreshAsync(_node).Forget();
         }
 
         /// <summary>
-        /// 设置点红点渲染器（Dot类型）
-        /// <para>Set dot red dot render (Dot type)</para>
+        /// 手动添加渲染器
+        /// <para>Manually add a renderer</para>
         /// </summary>
-        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
-        public void SetDotRenderer(IRedDotRenderer render)
+        /// <param name="render">要添加的渲染器<para>Renderer to add</para>
+        /// </param>
+        public void AddRenderer(RedDotRendererBase render)
         {
-            if (render is not MonoBehaviour mono)
-            {
-                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
-                return;
-            }
-            dotRenderer = mono;
+            if (render == null || _activeRenderers.Contains(render)) return;
+            _activeRenderers.Add(render);
         }
 
         /// <summary>
-        /// 设置数字红点渲染器（Number类型）
-        /// <para>Set number red dot render (Number type)</para>
+        /// 手动移除渲染器
+        /// <para>Manually remove a renderer</para>
         /// </summary>
-        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
-        public void SetNumberRenderer(IRedDotRenderer render)
+        /// <param name="render">要移除的渲染器 <para>Renderer to remove</para></param>
+        public void RemoveRenderer(RedDotRendererBase render)
         {
-            if (render is not MonoBehaviour mono)
-            {
-                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
-                return;
-            }
-            numberRenderer = mono;
-        }
-
-        /// <summary>
-        /// 设置图片红点渲染器（Image类型或ImageNumber类型共用图片部分）
-        /// <para>Set image red dot render (for Image or ImageNumber display type)</para>
-        /// </summary>
-        /// <param name="render">实现了 IRedDotRenderer 的 MonoBehavior <para>MonoBehavior implementing IRedDotRenderer</para></param>
-        public void SetImageRenderer(IRedDotRenderer render)
-        {
-            if (render is not MonoBehaviour mono)
-            {
-                D.Error("The red dot renderer you want to set up is not MonoBehaviour");
-                return;
-            }
-            imageRenderer = mono;
+            if (render == null) return;
+            _activeRenderers.Remove(render);
         }
     }
 }

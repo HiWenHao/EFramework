@@ -21,8 +21,7 @@ namespace EasyFramework.Systems.RedDot
     /// <para>Red dot renderer for Image type</para>
     /// </summary>
     [RequireComponent(typeof(Image))]
-    [RequireComponent(typeof(RedDotView))]
-    public class ImageRenderer : MonoBehaviour, IRedDotRenderer
+    public class ImageRenderer : RedDotRendererBase
     {
         [HeaderPro("显示图片的组件", "Component for displaying images")]
         [SerializeField] private Image image;
@@ -40,7 +39,7 @@ namespace EasyFramework.Systems.RedDot
         /// 渲染图片节点
         /// <para>Render image node</para>
         /// </summary>
-        public async UniTask Render(RedDotNode node)
+        public override async UniTask Render(RedDotNode node)
         {
             int currentVersion = ++_renderVersion;
             bool active = node.Number > 0;
@@ -57,6 +56,6 @@ namespace EasyFramework.Systems.RedDot
         /// 隐藏图片显示
         /// <para>Hide image display</para>
         /// </summary>
-        public void Hide() => image.gameObject.SetActive(false);
+        public override void Hide() => image.gameObject.SetActive(false);
     }
 }

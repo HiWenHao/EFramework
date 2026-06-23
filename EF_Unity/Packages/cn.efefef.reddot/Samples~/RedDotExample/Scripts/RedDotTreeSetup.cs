@@ -66,7 +66,7 @@ namespace EasyFramework.Test.RedDot
             if (view == null) view = taskRedDotImage.AddComponent<RedDotView>();
 
             view.SetKey("TaskRoot");
-            view.SetDotRenderer(dotRenderer);
+            view.AddRenderer(dotRenderer);
         }
     }
 }
