@@ -1,16 +1,14 @@
 /*
  * ================================================
- * Describe:      ArchiveManager 运行时调试面板。继承 EFInspectorBase，支持自动刷新。
- *                Inspector 中查看槽位列表、Key 列表，手动保存/删除操作。
+ * Describe:      ArchiveManager 运行时监测面板。展示槽位列表、Key 列表、存储状态。
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-24 23:19:00
+ * ModifyTime:    2026-06-25 00:56:00
  * ScriptVersion: 0.1
  * ===============================================
  */
 
-using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
@@ -20,67 +18,53 @@ namespace EasyFramework.Systems.Archive.Editor
     [CustomEditor(typeof(ArchiveManager))]
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>
     {
-        protected override string Title => LC.Combine(Lc.Archive, Lc.Data, Lc.Manager);
+        protected override string Title => LC.Combine(Lc.Archive, Lc.Data, Lc.Monitor);
 
-        private bool _showSlots = true;
-        private bool _showKeys;
-        private string[] _cachedKeys;
-
-        protected override void OnEditorEnable()
-        {
-            base.OnEditorEnable();
-        }
+        private bool _showSlots = true; // 是否展开槽位折叠区
+        private bool _showKeys;          // 是否展开 Key 折叠区
 
         protected override void OnEditorGUI()
         {
-            var am = Target;
-
-            if (am.Settings != null)
+            // 基础信息
+            if (Target.Settings != null)
             {
-                EditorGUILayout.LabelField("Provider",
-                    string.IsNullOrEmpty(am.Settings.providerTypeName)
-                        ? "FileArchiveProvider (default)"
-                        : am.Settings.providerTypeName);
-                EditorGUILayout.LabelField("Auto Save", $"{am.Settings.autoSaveIntervalSeconds}s");
-                EditorGUILayout.LabelField("Data Version", am.Settings.dataVersion.ToString());
-                EditorGUILayout.LabelField("Active Slot", am.ActiveSlot.ToString());
+                EditorGUILayout.LabelField(LC.Combine(Lc.Provider),
+                    string.IsNullOrEmpty(Target.Settings.providerTypeName)
+                        ? LC.Combine(Lc.File, Lc.Archive, Lc.Provider, Lc.Default)
+                        : Target.Settings.providerTypeName);
+                EditorGUILayout.LabelField(LC.Combine(Lc.Auto, Lc.Save),
+                    $"{Target.Settings.autoSaveIntervalSeconds}s");
+                EditorGUILayout.LabelField(LC.Combine(Lc.Data, Lc.Version),
+                    Target.Settings.dataVersion.ToString());
+                EditorGUILayout.LabelField(LC.Combine(Lc.Active, Lc.Slot),
+                    Target.ActiveSlot.ToString());
             }
 
-            EditorGUILayout.Space(5);
+            EditorGUILayout.Space();
 
-            _showSlots = EditorGUILayout.Foldout(_showSlots, "Slots", true);
+            // 槽位列表
+            _showSlots = EditorGUILayout.Foldout(_showSlots, LC.Combine(ArmSlotList), true);
             if (_showSlots)
             {
                 EditorGUI.indentLevel++;
 
-                var slots = am.GetAllSlots();
+                var slots = Target.GetAllSlots();
                 if (slots.Length == 0)
                 {
-                    EditorGUILayout.LabelField("(no slots found)");
+                    EditorGUILayout.LabelField(LC.Combine(ArmSlotEmpty));
                 }
                 else
                 {
                     foreach (var slot in slots)
                     {
                         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                        EditorGUILayout.LabelField($"Slot {slot.slotId}: {slot.slotName}",
+                        EditorGUILayout.LabelField(
+                            $"{LC.Combine(Lc.Slot)} {slot.slotId}: {slot.slotName}",
                             EditorStyles.boldLabel);
-                        EditorGUILayout.LabelField("Progress", slot.progressDescription);
-                        EditorGUILayout.LabelField("Play Time", slot.PlayTimeFormatted);
-                        EditorGUILayout.LabelField("Last Modified", slot.LastModifiedFormatted);
-                        EditorGUILayout.LabelField("Size", FormatBytes(slot.totalSizeBytes));
-
-                        EditorGUILayout.BeginHorizontal();
-                        if (GUILayout.Button("Select", GUILayout.Width(60)))
-                            am.ActiveSlot = slot.slotId;
-
-                        if (GUILayout.Button("Delete", GUILayout.Width(60)))
-                        {
-                            am.DeleteSlotAsync(slot.slotId).Forget();
-                            Repaint();
-                        }
-                        EditorGUILayout.EndHorizontal();
-
+                        EditorGUILayout.LabelField(LC.Combine(Lc.Progress), slot.progressDescription);
+                        EditorGUILayout.LabelField(LC.Combine(Lc.Play, Lc.Time), slot.PlayTimeFormatted);
+                        EditorGUILayout.LabelField(LC.Combine(Lc.Last, Lc.Modified), slot.LastModifiedFormatted);
+                        EditorGUILayout.LabelField(LC.Combine(Lc.Size), FormatBytes(slot.totalSizeBytes));
                         EditorGUILayout.EndVertical();
                     }
                 }
@@ -88,67 +72,39 @@ namespace EasyFramework.Systems.Archive.Editor
                 EditorGUI.indentLevel--;
             }
 
-            _showKeys = EditorGUILayout.Foldout(_showKeys, "Keys in Active Slot", true);
-            if (_showKeys)
+            // Key 列表
+            _showKeys = EditorGUILayout.Foldout(_showKeys, LC.Combine(ArmKeyList), true);
+            if (!_showKeys) return;
+            EditorGUI.indentLevel++;
+
+            var keys = Target.ListKeysAsync().GetAwaiter().GetResult();
+            if (keys == null || keys.Length == 0)
             {
-                EditorGUI.indentLevel++;
-
-                if (GUILayout.Button("Refresh Keys"))
-                    ListKeysAsync(am);
-
-                if (_cachedKeys != null && _cachedKeys.Length > 0)
-                {
-                    foreach (var key in _cachedKeys)
-                    {
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(key);
-                        if (GUILayout.Button("Delete", GUILayout.Width(60)))
-                        {
-                            am.DeleteKeyAsync(key).Forget();
-                            ListKeysAsync(am);
-                        }
-                        EditorGUILayout.EndHorizontal();
-                    }
-                }
-                else if (_cachedKeys != null)
-                {
-                    EditorGUILayout.LabelField("(empty)");
-                }
-
-                EditorGUI.indentLevel--;
+                EditorGUILayout.LabelField(LC.Combine(Lc.Empty));
+            }
+            else
+            {
+                foreach (var key in keys)
+                    EditorGUILayout.LabelField(key);
             }
 
-            EditorGUILayout.Space(5);
-            EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
-
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Create Test Slot"))
-            {
-                am.CreateSlotAsync("Test Slot").Forget();
-                Repaint();
-            }
-
-            if (GUILayout.Button("Flush All"))
-                am.FlushAsync().Forget();
-
-            EditorGUILayout.EndHorizontal();
+            EditorGUI.indentLevel--;
         }
 
         protected override void OnEditorUpdate()
         {
         }
 
-        protected override void OnEditorDisable()
-        {
-            base.OnEditorDisable();
-        }
+        #region Fallback Strings
 
-        private async void ListKeysAsync(ArchiveManager am)
-        {
-            _cachedKeys = await am.ListKeysAsync();
-            Repaint();
-        }
+        // LC 组合键（不在 JSON 中单独定义的多词短语）
+        private static readonly Lc[] ArmSlotList = { Lc.Slot, Lc.List };
+        private static readonly Lc[] ArmSlotEmpty = { Lc.No, Lc.Slot, Lc.Found };
+        private static readonly Lc[] ArmKeyList = { Lc.Active, Lc.Slot, Lc.In, Lc.Key, Lc.List };
 
+        #endregion
+
+        // 格式化字节数为可读字符串（B → KB → MB）
         private static string FormatBytes(long bytes)
         {
             if (bytes < 1024)

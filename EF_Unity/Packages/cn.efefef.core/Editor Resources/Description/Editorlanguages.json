@@ -2567,6 +2567,46 @@
         "Unknown",
         "未知"
       ]
+    },
+    {
+      "name": "Slot",
+      "desc": "槽位",
+      "array": [
+        "Slot",
+        "槽位"
+      ]
+    },
+    {
+      "name": "Play",
+      "desc": "游玩",
+      "array": [
+        "Play",
+        "游玩"
+      ]
+    },
+    {
+      "name": "Last",
+      "desc": "上次",
+      "array": [
+        "Last",
+        "上次"
+      ]
+    },
+    {
+      "name": "Modified",
+      "desc": "修改",
+      "array": [
+        "Modified",
+        "修改"
+      ]
+    },
+    {
+      "name": "Provider",
+      "desc": "提供者",
+      "array": [
+        "Provider",
+        "提供者"
+      ]
     }
   ]
 }

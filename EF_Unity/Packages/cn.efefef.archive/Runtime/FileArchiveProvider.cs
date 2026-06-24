@@ -7,7 +7,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-24 23:19:00
+ * ModifyTime:    2026-06-25 01:00:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -23,23 +23,27 @@ using UnityEngine;
 namespace EasyFramework.Systems.Archive
 {
     /// <summary>
-    /// 基于本地文件系统的存档 Provider。
+    /// 基于本地文件系统的存档 Provider。每项数据加密存储为 .arc 文件，采用"临时文件 + 原子重命名"防写入中断。
+    /// <para>Local filesystem archive provider. Each entry stored as an encrypted .arc file with temp-file + atomic rename.</para>
     /// <para>文件结构：{root}/Slot_{id}/{key}.arc</para>
-    /// <para>每个 .arc 文件头：[4B MAGIC][16B IV][4B len][N B ciphertext][32B SHA256]</para>
-    /// <para>每次写入采用"临时文件 → 原子重命名"策略，防止写入中断导致存档损坏。</para>
+    /// <para>File header: [4B MAGIC][16B IV][4B len][N B ciphertext][32B SHA256]</para>
     /// </summary>
     public class FileArchiveProvider : IArchiveProvider
     {
-        private const uint FILE_MAGIC = 0x43524145; // "EARC" in little-endian
-        private const string ARCHIVE_EXTENSION = ".arc";
-        private const string BACKUP_EXTENSION = ".bak";
-        private const string META_FILE = "slot_meta.json";
+        private const uint FILE_MAGIC = 0x43524145; // "EARC" — 文件魔数标识
+        private const string ARCHIVE_EXTENSION = ".arc";    // 存档文件扩展名
+        private const string BACKUP_EXTENSION = ".bak";     // 备份文件扩展名
+        private const string META_FILE = "slot_meta.json";  // 槽位元数据文件名
 
-        private readonly string _rootPath;
-        private readonly ArchiveSettings _settings;
-        private readonly byte[] _salt;
-        private byte[] _cachedKey;
+        private readonly string _rootPath;       // 存档根目录
+        private readonly ArchiveSettings _settings; // 全局配置引用
+        private readonly byte[] _salt;           // 加密盐值
+        private byte[] _cachedKey;               // 缓存的 AES 密钥
 
+        /// <summary>
+        /// 创建本地文件存档 Provider<para>Create a local file-based archive provider</para>
+        /// </summary>
+        /// <param name="settings">存档全局配置<para>Archive settings</para></param>
         public FileArchiveProvider(ArchiveSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -52,6 +56,13 @@ namespace EasyFramework.Systems.Archive
 
         #region IArchiveProvider Implementation
 
+        /// <summary>
+        /// 加密并写入一条存档数据<para>Encrypt and write an archive entry</para>
+        /// </summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="key">数据键名<para>Data key name</para></param>
+        /// <param name="data">已序列化的 JSON 字节<para>Serialized JSON bytes</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
         public async UniTask SaveRawAsync(int slotId, string key, byte[] data,
             CancellationToken cancellationToken = default)
         {
@@ -78,6 +89,13 @@ namespace EasyFramework.Systems.Archive
             CleanupOldBackups(slotId, key);
         }
 
+        /// <summary>
+        /// 读取并校验一条存档数据<para>Load and verify an archive entry</para>
+        /// </summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="key">数据键名<para>Data key name</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
+        /// <returns>解密后的原始字节，不存在则返回 null<para>Decrypted raw bytes, or null if not found</para></returns>
         public async UniTask<byte[]> LoadRawAsync(int slotId, string key,
             CancellationToken cancellationToken = default)
         {
@@ -92,6 +110,13 @@ namespace EasyFramework.Systems.Archive
             return null;
         }
 
+        /// <summary>
+        /// 检查存档文件是否存在<para>Check whether the archive file exists</para>
+        /// </summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="key">数据键名<para>Data key name</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
+        /// <returns>存在返回 true<para>true if found</para></returns>
         public UniTask<bool> ExistsAsync(int slotId, string key,
             CancellationToken cancellationToken = default)
         {
@@ -99,6 +124,10 @@ namespace EasyFramework.Systems.Archive
             return UniTask.FromResult(File.Exists(path));
         }
 
+        /// <summary>删除存档文件<para>Delete the archive file</para></summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="key">数据键名<para>Data key name</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
         public UniTask DeleteAsync(int slotId, string key,
             CancellationToken cancellationToken = default)
         {
@@ -113,6 +142,9 @@ namespace EasyFramework.Systems.Archive
             return UniTask.CompletedTask;
         }
 
+        /// <summary>删除整个槽位目录<para>Delete the entire slot directory</para></summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
         public UniTask DeleteSlotAsync(int slotId, CancellationToken cancellationToken = default)
         {
             string slotDir = GetSlotDirectory(slotId);
@@ -122,6 +154,10 @@ namespace EasyFramework.Systems.Archive
             return UniTask.CompletedTask;
         }
 
+        /// <summary>列出槽位中所有 .arc 文件名<para>List all .arc filenames in the slot</para></summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
+        /// <returns>键名数组<para>Array of key names</para></returns>
         public UniTask<string[]> ListKeysAsync(int slotId, CancellationToken cancellationToken = default)
         {
             string slotDir = GetSlotDirectory(slotId);
@@ -136,6 +172,10 @@ namespace EasyFramework.Systems.Archive
             return UniTask.FromResult(keys);
         }
 
+        /// <summary>计算槽位中所有存档文件的总大小<para>Calculate total size of all archive files in the slot</para></summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
+        /// <returns>总字节数<para>Total size in bytes</para></returns>
         public UniTask<long> GetSlotSizeAsync(int slotId, CancellationToken cancellationToken = default)
         {
             string slotDir = GetSlotDirectory(slotId);
@@ -149,6 +189,8 @@ namespace EasyFramework.Systems.Archive
             return UniTask.FromResult(totalSize);
         }
 
+        /// <summary>文件存储无需额外刷新<para>File storage requires no extra flush</para></summary>
+        /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
         public UniTask FlushAsync(CancellationToken cancellationToken = default)
         {
             return UniTask.CompletedTask;
@@ -158,6 +200,11 @@ namespace EasyFramework.Systems.Archive
 
         #region Slot Meta
 
+        /// <summary>
+        /// 保存槽位元数据（JSON 明文）<para>Save slot metadata (plain JSON)</para>
+        /// </summary>
+        /// <param name="meta">槽位元数据<para>Slot metadata</para></param>
+        /// <param name="ct">取消令牌<para>Cancellation token</para></param>
         public async UniTask SaveMetaAsync(ArchiveSlotMeta meta, CancellationToken ct = default)
         {
             string slotDir = GetSlotDirectory(meta.slotId);
@@ -173,6 +220,12 @@ namespace EasyFramework.Systems.Archive
             AtomicReplace(tempPath, metaPath);
         }
 
+        /// <summary>
+        /// 读取槽位元数据<para>Load slot metadata</para>
+        /// </summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="ct">取消令牌<para>Cancellation token</para></param>
+        /// <returns>元数据，不存在则返回 null<para>Metadata, or null if not found</para></returns>
         public async UniTask<ArchiveSlotMeta?> LoadMetaAsync(int slotId, CancellationToken ct = default)
         {
             string metaPath = Path.Combine(GetSlotDirectory(slotId), META_FILE);
@@ -184,6 +237,9 @@ namespace EasyFramework.Systems.Archive
             return JsonUtility.FromJson<ArchiveSlotMeta>(json);
         }
 
+        /// <summary>
+        /// 列出所有有效的存档槽位<para>List all valid archive slots</para>
+        /// </summary>
         public ArchiveSlotMeta[] ListSlots()
         {
             if (!Directory.Exists(_rootPath))
@@ -217,6 +273,7 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: Encryption
 
+        // 获取或派生出 AES 密钥（使用 PBKDF2 + 设备 ID + 盐值，缓存复用）
         private byte[] GetOrCreateKey()
         {
             if (_cachedKey != null)
@@ -232,6 +289,7 @@ namespace EasyFramework.Systems.Archive
             return _cachedKey;
         }
 
+        // AES-256-CBC 加密，返回 IV + 密文
         private byte[] Encrypt(byte[] plaintext)
         {
             byte[] key = GetOrCreateKey();
@@ -257,6 +315,7 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: Decryption & Verification
 
+        // 解析文件头 → 验证 SHA256 → 解密，失败时抛出 ArchiveCorruptedException
         private byte[] DecryptAndVerify(byte[] fileData, string filePath)
         {
             if (fileData.Length < 56)
@@ -270,22 +329,28 @@ namespace EasyFramework.Systems.Archive
             if (dataLen <= 0 || 20 + 4 + dataLen + 32 > fileData.Length)
                 throw new ArchiveCorruptedException(filePath, $"Invalid data length: {dataLen}");
 
-            byte[] encrypted = new byte[dataLen];
-            Buffer.BlockCopy(fileData, 24, encrypted, 0, dataLen);
+            byte[] iv = new byte[16];
+            Buffer.BlockCopy(fileData, 4, iv, 0, 16);
+
+            byte[] cipherOnly = new byte[dataLen];
+            Buffer.BlockCopy(fileData, 24, cipherOnly, 0, dataLen);
 
             byte[] expectedChecksum = new byte[32];
             Buffer.BlockCopy(fileData, 24 + dataLen, expectedChecksum, 0, 32);
 
-            byte[] actualChecksum = ComputeChecksum(encrypted);
+            // 校验和包含 IV，与写入时一致
+            byte[] ivPlusCipher = new byte[16 + dataLen];
+            Buffer.BlockCopy(iv, 0, ivPlusCipher, 0, 16);
+            Buffer.BlockCopy(cipherOnly, 0, ivPlusCipher, 16, dataLen);
+
+            byte[] actualChecksum = ComputeChecksum(ivPlusCipher);
             if (!ConstantTimeEquals(actualChecksum, expectedChecksum))
                 throw new ArchiveCorruptedException(filePath, "SHA256 checksum mismatch. File may be corrupted or tampered.");
 
-            byte[] iv = new byte[16];
-            Buffer.BlockCopy(fileData, 4, iv, 0, 16);
-
-            return Decrypt(encrypted, iv);
+            return Decrypt(cipherOnly, iv);
         }
 
+        // AES-256-CBC 解密
         private byte[] Decrypt(byte[] ciphertext, byte[] iv)
         {
             byte[] key = GetOrCreateKey();
@@ -305,6 +370,7 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: File Format
 
+        // 封装文件：[MAGIC 4B][IV 16B][cipherLen 4B][密文][SHA256 32B]
         private byte[] PackFile(byte[] encrypted, byte[] checksum)
         {
             byte[] iv = new byte[16];
@@ -328,12 +394,14 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: Checksum
 
+        // SHA256 哈希
         private byte[] ComputeChecksum(byte[] data)
         {
             using var sha = SHA256.Create();
             return sha.ComputeHash(data);
         }
 
+        // 常量时间比较（防时序攻击）
         private static bool ConstantTimeEquals(byte[] a, byte[] b)
         {
             if (a.Length != b.Length)
@@ -350,6 +418,7 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: File I/O
 
+        // 异步写入全部字节到指定路径
         private async UniTask WriteAllBytesAsync(string path, byte[] data, CancellationToken ct)
         {
             await UniTask.RunOnThreadPool(() =>
@@ -361,6 +430,7 @@ namespace EasyFramework.Systems.Archive
             }, cancellationToken: ct);
         }
 
+        // 异步读取指定路径的全部字节
         private async UniTask<byte[]> ReadAllBytesAsync(string path, CancellationToken ct)
         {
             return await UniTask.RunOnThreadPool(() =>
@@ -377,9 +447,11 @@ namespace EasyFramework.Systems.Archive
 
         #region Internal: Path Helpers
 
+        // 获取槽位目录路径
         private string GetSlotDirectory(int slotId)
             => Path.Combine(_rootPath, $"Slot_{slotId}");
 
+        // 确保指定槽位的存储目录存在
         private void EnsureSlotDirectory(int slotId)
         {
             string dir = GetSlotDirectory(slotId);
@@ -387,12 +459,14 @@ namespace EasyFramework.Systems.Archive
                 Directory.CreateDirectory(dir);
         }
 
+        // 获取存档文件的完整路径（自动处理非法字符）
         private string GetArchivePath(int slotId, string key)
         {
             string safeKey = SanitizeKey(key);
             return Path.Combine(GetSlotDirectory(slotId), safeKey + ARCHIVE_EXTENSION);
         }
 
+        // 过滤 key 中的非法文件名字符
         private static string SanitizeKey(string key)
         {
             var sb = new StringBuilder(key.Length);
@@ -407,12 +481,14 @@ namespace EasyFramework.Systems.Archive
             return sb.ToString();
         }
 
+        // 清理过期的备份文件
         private void CleanupOldBackups(int slotId, string key)
         {
             if (_settings.maxBackupCount <= 0)
                 return;
         }
 
+        // 原子替换文件（先删目标 → 再 Move，同分区内等价于原子 rename）
         private static void AtomicReplace(string sourcePath, string destPath)
         {
             if (File.Exists(destPath))

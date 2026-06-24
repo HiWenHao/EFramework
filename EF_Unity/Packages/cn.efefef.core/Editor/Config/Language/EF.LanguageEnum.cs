@@ -649,5 +649,15 @@ namespace EasyFramework.Edit
 		Develop,
 		/// <summary> 未知 </summary>
 		Unknown,
+		/// <summary> 槽位 </summary>
+		Slot,
+		/// <summary> 游玩 </summary>
+		Play,
+		/// <summary> 上次 </summary>
+		Last,
+		/// <summary> 修改 </summary>
+		Modified,
+		/// <summary> 提供者 </summary>
+		Provider,
 	}
 }

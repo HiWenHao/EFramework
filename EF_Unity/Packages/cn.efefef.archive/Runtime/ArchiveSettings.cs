@@ -6,7 +6,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-24 23:19:00
+ * ModifyTime:    2026-06-25 01:00:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -15,13 +15,17 @@ using UnityEngine;
 
 namespace EasyFramework.Systems.Archive
 {
+    /// <summary>
+    /// 存档系统全局可调参数，通过 Editor 面板或 Project Settings 修改。
+    /// <para>Archive system global settings, editable via Editor panel or Project Settings.</para>
+    /// </summary>
     [CreateAssetMenu(fileName = "ArchiveSettings", menuName = "EF/Archive Settings", order = 100)]
     public class ArchiveSettings : ScriptableObject
     {
         [Header("槽位")]
-        [Tooltip("最大存档槽位数量")]
-        [Range(1, 20)]
-        public int maxSlots = 5;
+        [Tooltip("最大存档槽位数量（SQLite 等后端可无视此限制）")]
+        [Range(1, 99)]
+        public int maxSlots = 10;
 
         [Tooltip("自动保存间隔（秒），0 表示禁用自动保存")]
         [Range(0, 600)]
@@ -58,10 +62,10 @@ namespace EasyFramework.Systems.Archive
         public int maxBackupCount = 3;
 
         [Header("存储后端")]
-        [Tooltip("当前使用的存储 Provider 类型名称。空则使用默认 FileArchiveProvider。\n可选值: FileArchiveProvider, SqliteArchiveProvider（未来）, CloudArchiveProvider（未来）")]
+        [Tooltip("当前使用的存储 Provider 类型名称。空则使用默认 FileArchiveProvider。")]
         public string providerTypeName = string.Empty;
 
-        [Tooltip("文件存储的根目录（相对于 persistentDataPath）。默认 'Archives'")]
+        [Tooltip("文件存储的根目录（相对于 persistentDataPath）")]
         public string fileStorageRoot = "Archives";
     }
 }

@@ -1,18 +1,17 @@
 /*
  * ================================================
- * Describe:      存档系统使用示例。演示：创建槽位、读写存档、
- *                自动保存、异常处理、删除操作。键盘1-6触发。
+ * Describe:      存档系统使用示例。Button 驱动，演示创建槽位、读写存档、
+ *                自动保存、异常处理、删除操作。
  * Author:        Alvin8412
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-06-24 23:19:00
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-24 23:57:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
 using System;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Systems.Archive;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,27 +26,33 @@ namespace EasyFramework.Systems.Archive.Example
         [Header("Demo Data")]
         [SerializeField] private int demoGold = 100;
         [SerializeField] private string demoItem = "Sword";
+        
+        [Header("Buttons")]
+        [SerializeField]private Button _btnCreateSlot;
+        [SerializeField]private Button _btnSaveData;
+        [SerializeField]private Button _btnLoadData;
+        [SerializeField]private Button _btnDeleteSlot;
+        [SerializeField]private Button _btnListSlots;
+        [SerializeField]private Button _btnAutoSaveDirty;
 
         private void Start()
         {
-            Log("ArchiveExample ready. Press keys:\n" +
-                "1 = Create Slot\n" +
-                "2 = Save Game Data\n" +
-                "3 = Load Game Data\n" +
-                "4 = Delete Current Slot\n" +
-                "5 = List All Slots\n" +
-                "6 = Auto-Save Dirty Test");
+            _btnCreateSlot.onClick.AddListener(Btn_CreateSlot);
+            _btnSaveData.onClick.AddListener(Btn_SaveData);
+            _btnLoadData.onClick.AddListener(Btn_LoadData);
+            _btnDeleteSlot.onClick.AddListener(Btn_DeleteSlot);
+            _btnListSlots.onClick.AddListener(Btn_ListSlots);
+            _btnAutoSaveDirty.onClick.AddListener(Btn_AutoSaveDirty);
+
+            Log("ArchiveExample ready. Press buttons to test.");
         }
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1)) DemoCreateSlot().Forget();
-            if (Input.GetKeyDown(KeyCode.Alpha2)) DemoSaveData().Forget();
-            if (Input.GetKeyDown(KeyCode.Alpha3)) DemoLoadData().Forget();
-            if (Input.GetKeyDown(KeyCode.Alpha4)) DemoDeleteSlot().Forget();
-            if (Input.GetKeyDown(KeyCode.Alpha5)) DemoListSlots();
-            if (Input.GetKeyDown(KeyCode.Alpha6)) DemoAutoSaveDirty().Forget();
-        }
+        private void Btn_CreateSlot()     => DemoCreateSlot().Forget();
+        private void Btn_SaveData()       => DemoSaveData().Forget();
+        private void Btn_LoadData()       => DemoLoadData().Forget();
+        private void Btn_DeleteSlot()     => DemoDeleteSlot().Forget();
+        private void Btn_ListSlots()      => DemoListSlots();
+        private void Btn_AutoSaveDirty()  => DemoAutoSaveDirty().Forget();
 
         private async UniTask DemoCreateSlot()
         {
@@ -142,9 +147,8 @@ namespace EasyFramework.Systems.Archive.Example
             var slots = ArchiveManager.Instance.GetAllSlots();
             Log($"=== All Slots ({slots.Length}) ===");
             foreach (var slot in slots)
-            {
                 Log($"  Slot {slot.slotId}: {slot.slotName} | {slot.PlayTimeFormatted} | {slot.LastModifiedFormatted}");
-            }
+
             if (slots.Length > 0)
                 ArchiveManager.Instance.ActiveSlot = slots[0].slotId;
         }

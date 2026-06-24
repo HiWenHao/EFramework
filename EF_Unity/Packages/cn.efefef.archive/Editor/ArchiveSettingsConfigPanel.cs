@@ -5,7 +5,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-24 23:19:00
+ * ModifyTime:    2026-06-25 00:56:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -24,8 +24,8 @@ namespace EasyFramework.Systems.Archive.Editor
     {
         public override string Name => LC.Combine(Lc.Archive, Lc.Data, Lc.Config);
 
-        private UnityEditor.Editor _cachedEditor;
-        private ArchiveSettings _settings;
+        private UnityEditor.Editor _cachedEditor; // 缓存的 Settings Editor 实例（避免每帧重建）
+        private ArchiveSettings _settings;         // 当前存档配置资产
 
         public override void OnEnable(string assetsPath)
         {
@@ -129,6 +129,7 @@ namespace EasyFramework.Systems.Archive.Editor
             }
         }
 
+        // 在 Resources/Configs 下创建默认 ArchiveSettings.asset
         private void CreateDefaultSettings()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))
@@ -152,12 +153,14 @@ namespace EasyFramework.Systems.Archive.Editor
 
     internal static class ArchiveMenuItems
     {
+        // 打开 EF Configs 面板中的 Archive Settings 页面
         [MenuItem("EFTools/Archive/Open Config Panel")]
         private static void OpenConfigPanel()
         {
             EFConfigsPanel.Open<ArchiveSettingsConfigPanel>();
         }
 
+        // 在文件资源管理器中打开持久化存档目录
         [MenuItem("EFTools/Archive/Open Persistent Archives Folder")]
         private static void OpenArchivesFolder()
         {
@@ -166,6 +169,7 @@ namespace EasyFramework.Systems.Archive.Editor
             Application.OpenURL("file://" + path);
         }
 
+        // 危险操作：清空磁盘上所有存档数据
         [MenuItem("EFTools/Archive/Clear All Archives (DANGER)")]
         private static void ClearAllArchives()
         {
