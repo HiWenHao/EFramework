@@ -90,7 +90,7 @@ namespace EasyFramework.Systems.Archive.Editor
             if (GUILayout.Button("Open Archives Folder"))
             {
                 string path = Path.Combine(Application.persistentDataPath, _settings.fileStorageRoot);
-                Process.Start("explorer.exe", path);
+                EditorUtility.RevealInFinder(path + "/");
             }
 
             if (GUILayout.Button("Reset to Defaults"))
@@ -164,9 +164,9 @@ namespace EasyFramework.Systems.Archive.Editor
         [MenuItem("EFTools/Archive/Open Persistent Archives Folder")]
         private static void OpenArchivesFolder()
         {
-            string path = Path.Combine(Application.persistentDataPath, "Archives");
+            string path = Path.Combine(Application.persistentDataPath, "Archives/");
             Directory.CreateDirectory(path);
-            Application.OpenURL("file://" + path);
+            EditorUtility.RevealInFinder(path);
         }
 
         // 危险操作：清空磁盘上所有存档数据

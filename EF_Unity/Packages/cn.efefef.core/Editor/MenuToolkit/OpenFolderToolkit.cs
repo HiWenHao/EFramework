@@ -68,9 +68,9 @@ namespace EasyFramework.Edit.MenuToolkit
         private static void OpenFolder(string folderPath)
         {
             if (Directory.Exists(folderPath))
-                Application.OpenURL("file://" + folderPath);
+                EditorUtility.RevealInFinder(folderPath + "/");
             else
-                Debug.LogWarning($"[OpenFolder] Folder not found: {folderPath}");
+                D.Warning($"[OpenFolder] Folder not found: {folderPath}");
         }
     }
 }

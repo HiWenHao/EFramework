@@ -7,7 +7,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 01:00:00
+ * ModifyTime:    2026-06-25 01:14:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -430,7 +430,7 @@ namespace EasyFramework.Systems.Archive
             }, cancellationToken: ct);
         }
 
-        // 异步读取指定路径的全部字节
+        // 异步读取指定路径的全部字节（循环读取，防止部分读取）
         private async UniTask<byte[]> ReadAllBytesAsync(string path, CancellationToken ct)
         {
             return await UniTask.RunOnThreadPool(() =>
@@ -438,7 +438,15 @@ namespace EasyFramework.Systems.Archive
                 using var fs = new FileStream(path, FileMode.Open, FileAccess.Read,
                     FileShare.Read, bufferSize: 4096, useAsync: true);
                 byte[] result = new byte[fs.Length];
-                fs.Read(result, 0, result.Length);
+                int offset = 0;
+                int remaining = result.Length;
+                while (remaining > 0)
+                {
+                    int read = fs.Read(result, offset, remaining);
+                    if (read == 0) throw new EndOfStreamException($"Unexpected end of file: {path}");
+                    offset += read;
+                    remaining -= read;
+                }
                 return result;
             }, cancellationToken: ct);
         }
@@ -481,11 +489,25 @@ namespace EasyFramework.Systems.Archive
             return sb.ToString();
         }
 
-        // 清理过期的备份文件
+        // 清理过期的备份文件（轮转删除最旧的 .bak.N）
         private void CleanupOldBackups(int slotId, string key)
         {
-            if (_settings.maxBackupCount <= 0)
-                return;
+            if (_settings.maxBackupCount <= 0) return;
+
+            string basePath = GetArchivePath(slotId, key);
+
+            // 删除超出上限的旧备份：.bak → .bak.1 → .bak.2 → ...
+            for (int i = _settings.maxBackupCount - 1; i >= 0; i--)
+            {
+                string path = i == 0 ? basePath + BACKUP_EXTENSION : $"{basePath}{BACKUP_EXTENSION}.{i}";
+                if (File.Exists(path))
+                {
+                    if (i >= _settings.maxBackupCount - 1)
+                        File.Delete(path);
+                    else
+                        File.Move(path, $"{basePath}{BACKUP_EXTENSION}.{i + 1}");
+                }
+            }
         }
 
         // 原子替换文件（先删目标 → 再 Move，同分区内等价于原子 rename）
