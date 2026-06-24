@@ -86,7 +86,8 @@ namespace EasyFramework.Systems.Archive
                     {
                         string json = JsonConvert.SerializeObject(cached, _jsonSettings);
                         byte[] raw = Encoding.UTF8.GetBytes(json);
-                        _provider.SaveRawAsync(slotId, key, raw);
+                        // 同步等待：Quit 时必须确保数据落盘
+                        _provider.SaveRawAsync(slotId, key, raw).GetAwaiter().GetResult();
                     }
                     catch (Exception ex)
                     {

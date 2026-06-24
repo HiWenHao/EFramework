@@ -155,12 +155,22 @@ namespace EasyFramework.Systems.Archive.Example
 
         private async UniTask DemoAutoSaveDirty()
         {
-            demoGold += 50;
-            ArchiveManager.Instance.MarkDirty("player_data");
-            Log($"Marked 'player_data' as dirty (gold now {demoGold}). Auto-save will pick it up.");
-            await UniTask.Delay(3000);
-            var data = await ArchiveManager.Instance.LoadOrDefaultAsync<PlayerSaveData>("player_data");
-            Log($"After potential auto-save: gold = {data?.gold ?? -1}");
+            try
+            {
+                // 先加载数据（不存在则创建默认值）
+                var data = await ArchiveManager.Instance.LoadOrCreateAsync<PlayerSaveData>("player_data");
+                data.gold += 50;  // ⚠️ 修改副本（class 是引用类型，实际修改的是缓存中的对象）
+                // 对于 class 类型，Load 返回的引用就是缓存中的引用，无需 MarkDirtyWithData
+                ArchiveManager.Instance.MarkDirty("player_data");
+                Log($"Marked 'player_data' as dirty (gold now {data.gold}). Auto-save will pick it up.");
+                await UniTask.Delay(3000);
+                var reloaded = await ArchiveManager.Instance.LoadOrDefaultAsync<PlayerSaveData>("player_data");
+                Log($"After potential auto-save: gold = {reloaded?.gold ?? -1}");
+            }
+            catch (Exception ex)
+            {
+                LogError($"Auto-save demo failed: {ex.Message}");
+            }
         }
 
         private async UniTask RefreshSlots()
@@ -170,18 +180,36 @@ namespace EasyFramework.Systems.Archive.Example
                 slotInfoText.text = $"Slots: {slots.Length}\nActive: {ArchiveManager.Instance.ActiveSlot}";
         }
 
+        private const int MaxLogLines = 50; // 日志最大行数（防止 statusText 无限增长）
+
         private void Log(string msg)
         {
             Debug.Log($"[ArchiveExample] {msg}");
             if (statusText != null)
+            {
                 statusText.text = $"[{DateTime.Now:HH:mm:ss}] {msg}\n{statusText.text}";
+                TrimStatusText();
+            }
         }
 
         private void LogError(string msg)
         {
             Debug.LogError($"[ArchiveExample] {msg}");
             if (statusText != null)
+            {
                 statusText.text = $"<color=red>[{DateTime.Now:HH:mm:ss}] {msg}</color>\n{statusText.text}";
+                TrimStatusText();
+            }
+        }
+
+        // 截断 statusText 中的日志行数，防止无限增长
+        private void TrimStatusText()
+        {
+            if (statusText == null) return;
+            var lines = statusText.text.Split('\n');
+            if (lines.Length <= MaxLogLines) return;
+            // 保留最新的 MaxLogLines 行
+            statusText.text = string.Join("\n", lines, 0, MaxLogLines);
         }
     }
 
