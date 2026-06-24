@@ -2,7 +2,7 @@
     "name": "EF.Editor",
     "rootNamespace": "",
     "references": [
-        "EF.Runtime",
+        "EF.Core",
         "HybridCLR.Editor",
         "Unity.TextMeshPro"
     ],
