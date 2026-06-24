@@ -10,7 +10,6 @@
  * ===============================================
  */
 
-using System.Diagnostics;
 using System.IO;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows.ConfigPanel;
@@ -164,7 +163,9 @@ namespace EasyFramework.Systems.Archive.Editor
         [MenuItem("EFTools/Archive/Open Persistent Archives Folder")]
         private static void OpenArchivesFolder()
         {
-            string path = Path.Combine(Application.persistentDataPath, "Archives/");
+            var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            string root = settings != null ? settings.fileStorageRoot : "Archives";
+            string path = Path.Combine(Application.persistentDataPath, root);
             Directory.CreateDirectory(path);
             EditorUtility.RevealInFinder(path);
         }
@@ -180,7 +181,9 @@ namespace EasyFramework.Systems.Archive.Editor
                 "Yes, Delete Everything", "Cancel"))
                 return;
 
-            string path = Path.Combine(Application.persistentDataPath, "Archives");
+            var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            string root = settings != null ? settings.fileStorageRoot : "Archives";
+            string path = Path.Combine(Application.persistentDataPath, root);
             if (Directory.Exists(path))
             {
                 Directory.Delete(path, recursive: true);

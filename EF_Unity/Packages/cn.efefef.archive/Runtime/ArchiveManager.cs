@@ -5,7 +5,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 01:14:00
+ * ModifyTime:    2026-06-25 01:34:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -146,17 +146,14 @@ namespace EasyFramework.Systems.Archive
         // 保存后更新槽位元数据（修改时间、数据版本、总大小）并缓存数据供自动保存使用
         private async UniTask UpdateSlotMetaAfterSave(int slotId)
         {
-            if (_provider is FileArchiveProvider fileProvider)
+            var meta = await _provider.LoadMetaAsync(slotId);
+            if (meta != null)
             {
-                var meta = await fileProvider.LoadMetaAsync(slotId);
-                if (meta != null)
-                {
-                    var updated = meta.Value;
-                    updated.lastModifiedAt = DateTime.Now;
-                    updated.dataVersion = _settings.dataVersion;
-                    updated.totalSizeBytes = await _provider.GetSlotSizeAsync(slotId);
-                    await fileProvider.SaveMetaAsync(updated);
-                }
+                var updated = meta.Value;
+                updated.SetModifiedNow();
+                updated.dataVersion = _settings.dataVersion;
+                updated.totalSizeBytes = await _provider.GetSlotSizeAsync(slotId);
+                await _provider.SaveMetaAsync(updated);
             }
         }
 
@@ -185,20 +182,32 @@ namespace EasyFramework.Systems.Archive
                 if (_settings.autoSaveOnlyDirty && _dirtyKeys.Count == 0)
                     continue;
 
-                // 遍历所有槽位的脏 key，从缓存取出数据重放保存
-                foreach (var (slotId, keySet) in _dirtyKeys)
-                {
-                    if (!_dataCache.TryGetValue(slotId, out var slotCache)) continue;
-                    foreach (var key in keySet)
-                    {
-                        if (!slotCache.TryGetValue(key, out var cached)) continue;
-                        string json = JsonConvert.SerializeObject(cached, _jsonSettings);
-                        byte[] raw = Encoding.UTF8.GetBytes(json);
-                        await _provider.SaveRawAsync(slotId, key, raw, ct);
-                    }
-                }
+                // 先快照脏 key 列表，防止枚举过程中外部 MarkDirty 修改字典
+                await FlushDirtyKeysAsync(ct);
+            }
+        }
 
-                _dirtyKeys.Clear();
+        // 遍历所有槽位的脏 key，从缓存取出数据重放保存
+        private async UniTask FlushDirtyKeysAsync(CancellationToken ct)
+        {
+            if (_dirtyKeys.Count == 0) return;
+
+            // 快照：防止枚举过程中被 MarkDirty / MarkClean 修改
+            var snapshot = new Dictionary<int, string[]>();
+            foreach (var (slotId, keySet) in _dirtyKeys)
+                snapshot[slotId] = new List<string>(keySet).ToArray();
+
+            foreach (var (slotId, keys) in snapshot)
+            {
+                if (!_dataCache.TryGetValue(slotId, out var slotCache)) continue;
+                foreach (var key in keys)
+                {
+                    if (!slotCache.TryGetValue(key, out var cached)) continue;
+                    string json = JsonConvert.SerializeObject(cached, _jsonSettings);
+                    byte[] raw = Encoding.UTF8.GetBytes(json);
+                    await _provider.SaveRawAsync(slotId, key, raw, ct);
+                    MarkClean(slotId, key);
+                }
             }
         }
 
@@ -245,14 +254,13 @@ namespace EasyFramework.Systems.Archive
                 slotId = slotId,
                 slotName = slotName,
                 progressDescription = "New Game",
-                createdAt = DateTime.Now,
-                lastModifiedAt = DateTime.Now,
                 dataVersion = _settings.dataVersion,
                 isValid = true
             };
+            meta.SetCreatedNow();
+            meta.SetModifiedNow();
 
-            if (_provider is FileArchiveProvider fileProvider)
-                await fileProvider.SaveMetaAsync(meta, ct);
+            await _provider.SaveMetaAsync(meta, ct);
 
             ActiveSlot = slotId;
             return slotId;
@@ -266,10 +274,7 @@ namespace EasyFramework.Systems.Archive
         /// <para>Array of slot metadata</para></returns>
         public ArchiveSlotMeta[] GetAllSlots()
         {
-            if (_provider is FileArchiveProvider fileProvider)
-                return fileProvider.ListSlots();
-
-            return Array.Empty<ArchiveSlotMeta>();
+            return _provider.ListSlots();
         }
 
         /// <summary>
@@ -327,9 +332,9 @@ namespace EasyFramework.Systems.Archive
             string json = JsonConvert.SerializeObject(data, _jsonSettings);
             byte[] raw = Encoding.UTF8.GetBytes(json);
             await _provider.SaveRawAsync(slotId, key, raw, ct);
+            await UpdateSlotMetaAfterSave(slotId);
             MarkClean(slotId, key);
             CacheData(slotId, key, data);
-            await UpdateSlotMetaAfterSave(slotId);
         }
 
         /// <summary>
@@ -472,8 +477,8 @@ namespace EasyFramework.Systems.Archive
         /// </summary>
         public async UniTask FlushAsync(CancellationToken ct = default)
         {
+            await FlushDirtyKeysAsync(ct);
             await _provider.FlushAsync(ct);
-            _dirtyKeys.Clear();
         }
 
         #endregion

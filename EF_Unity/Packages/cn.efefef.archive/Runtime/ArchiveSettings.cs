@@ -11,6 +11,7 @@
  * ===============================================
  */
 
+using EasyFramework.Edit;
 using UnityEngine;
 
 namespace EasyFramework.Systems.Archive
@@ -22,7 +23,7 @@ namespace EasyFramework.Systems.Archive
     [CreateAssetMenu(fileName = "ArchiveSettings", menuName = "EF/Archive Settings", order = 100)]
     public class ArchiveSettings : ScriptableObject
     {
-        [Header("槽位")]
+        [HeaderPro("槽位设置", "Slot Settings")]
         [Tooltip("最大存档槽位数量（SQLite 等后端可无视此限制）")]
         [Range(1, 99)]
         public int maxSlots = 10;
@@ -34,7 +35,7 @@ namespace EasyFramework.Systems.Archive
         [Tooltip("自动保存时是否只保存变动的数据（脏标记模式）")]
         public bool autoSaveOnlyDirty = true;
 
-        [Header("加密")]
+        [HeaderPro("加密设置", "Encryption Settings")]
         [Tooltip("AES 密钥派生盐值（建议每款游戏使用不同值）。留空则使用设备唯一标识作为盐。")]
         public string encryptionSalt = "EF.Archive.DefaultSalt";
 
@@ -46,14 +47,14 @@ namespace EasyFramework.Systems.Archive
         [Range(1000, 100000)]
         public int pbkdf2Iterations = 10000;
 
-        [Header("兼容性")]
+        [HeaderPro("兼容性设置", "Compatibility Settings")]
         [Tooltip("当前存档数据格式版本号。版本变更时旧存档自动迁移。")]
         public int dataVersion = 1;
 
         [Tooltip("是否在读取时对未知 JSON 字段发出警告（调试用）")]
         public bool warnOnUnknownFields = false;
 
-        [Header("备份")]
+        [HeaderPro("备份设置", "Backup Settings")]
         [Tooltip("是否在每次写入前自动备份上一个版本")]
         public bool enableAutoBackup = true;
 
@@ -61,7 +62,7 @@ namespace EasyFramework.Systems.Archive
         [Range(0, 10)]
         public int maxBackupCount = 3;
 
-        [Header("存储后端")]
+        [HeaderPro("存储后端", "Storage Backend")]
         [Tooltip("当前使用的存储 Provider 类型名称。空则使用默认 FileArchiveProvider。")]
         public string providerTypeName = string.Empty;
 

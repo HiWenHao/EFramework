@@ -5,7 +5,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 01:00:00
+ * ModifyTime:    2026-06-25 01:34:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -33,11 +33,11 @@ namespace EasyFramework.Systems.Archive
         /// <summary>游戏总时长（秒）<para>Total play time in seconds</para></summary>
         public float playTimeSeconds;
 
-        /// <summary>存档创建时间<para>Creation timestamp</para></summary>
-        public DateTime createdAt;
+        /// <summary>存档创建时间（DateTime.UtcNow.Ticks）<para>Creation timestamp as DateTime ticks</para></summary>
+        public long createdAtTicks;
 
-        /// <summary>存档最后修改时间<para>Last modification timestamp</para></summary>
-        public DateTime lastModifiedAt;
+        /// <summary>存档最后修改时间（DateTime.UtcNow.Ticks）<para>Last modification timestamp as DateTime ticks</para></summary>
+        public long lastModifiedAtTicks;
 
         /// <summary>存档数据格式版本号<para>Archive data format version</para></summary>
         public int dataVersion;
@@ -48,7 +48,25 @@ namespace EasyFramework.Systems.Archive
         /// <summary>该槽位是否有效<para>Whether this slot is valid (not deleted)</para></summary>
         public bool isValid;
 
-        /// <summary>格式化后的游戏时长文本（如 "2h 30m"）<para>Formatted play time string (e.g. "2h 30m")</para></summary>
+        /// <summary>存档创建时间（便利访问器）<para>Creation timestamp (convenience accessor)</para></summary>
+        public readonly DateTime CreatedAt => new DateTime(createdAtTicks, DateTimeKind.Utc);
+
+        /// <summary>存档最后修改时间（便利访问器）<para>Last modification timestamp (convenience accessor)</para></summary>
+        public readonly DateTime LastModifiedAt => new DateTime(lastModifiedAtTicks, DateTimeKind.Utc);
+
+        /// <summary>
+        /// 设置创建时间为当前 UTC 时间
+        /// <para>Set creation time to current UTC time</para>
+        /// </summary>
+        public void SetCreatedNow() => createdAtTicks = DateTime.UtcNow.Ticks;
+
+        /// <summary>
+        /// 设置最后修改时间为当前 UTC 时间
+        /// <para>Set last-modified time to current UTC time</para>
+        /// </summary>
+        public void SetModifiedNow() => lastModifiedAtTicks = DateTime.UtcNow.Ticks;
+
+        /// <summary>格式化后的游玩时长（如 "2h 30m"）<para>Formatted play time (e.g. "2h 30m")</para></summary>
         public readonly string PlayTimeFormatted
         {
             get
@@ -62,7 +80,7 @@ namespace EasyFramework.Systems.Archive
 
         /// <summary>格式化后的最后修改时间<para>Formatted last-modified timestamp</para></summary>
         public readonly string LastModifiedFormatted
-            => lastModifiedAt.ToString("yyyy-MM-dd HH:mm");
+            => LastModifiedAt.ToString("yyyy-MM-dd HH:mm");
 
         /// <summary>调试用的槽位概要字符串<para>Debug summary string</para></summary>
         public override readonly string ToString()

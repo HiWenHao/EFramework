@@ -5,7 +5,7 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 01:00:00
+ * ModifyTime:    2026-06-25 01:29:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -93,5 +93,29 @@ namespace EasyFramework.Systems.Archive
         /// </summary>
         /// <param name="cancellationToken">取消令牌<para>Cancellation token</para></param>
         UniTask FlushAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 列出所有有效的存档槽位元数据。
+        /// <para>List all valid archive slot metadata.</para>
+        /// </summary>
+        /// <returns>槽位元数据数组<para>Array of slot metadata</para></returns>
+        ArchiveSlotMeta[] ListSlots();
+
+        /// <summary>
+        /// 保存槽位元数据（JSON 明文，不加密）。
+        /// <para>Save slot metadata (plain JSON, not encrypted).</para>
+        /// </summary>
+        /// <param name="meta">槽位元数据<para>Slot metadata</para></param>
+        /// <param name="ct">取消令牌<para>Cancellation token</para></param>
+        UniTask SaveMetaAsync(ArchiveSlotMeta meta, CancellationToken ct = default);
+
+        /// <summary>
+        /// 读取槽位元数据，不存在则返回 null。
+        /// <para>Load slot metadata, returns null if not found.</para>
+        /// </summary>
+        /// <param name="slotId">槽位编号<para>Slot ID</para></param>
+        /// <param name="ct">取消令牌<para>Cancellation token</para></param>
+        /// <returns>元数据，不存在则返回 null<para>Metadata, or null if not found</para></returns>
+        UniTask<ArchiveSlotMeta?> LoadMetaAsync(int slotId, CancellationToken ct = default);
     }
 }

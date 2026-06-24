@@ -4,11 +4,12 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 00:56:00
+ * ModifyTime:    2026-06-25 01:34:00
  * ScriptVersion: 0.1
  * ===============================================
  */
 
+using System;
 using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace EasyFramework.Systems.Archive.Editor
 
         private bool _showSlots = true; // 是否展开槽位折叠区
         private bool _showKeys;          // 是否展开 Key 折叠区
+        private string[] _cachedKeys = Array.Empty<string>(); // 缓存的 Key 列表（避免 OnGUI 中同步阻塞）
 
         protected override void OnEditorGUI()
         {
@@ -77,7 +79,7 @@ namespace EasyFramework.Systems.Archive.Editor
             if (!_showKeys) return;
             EditorGUI.indentLevel++;
 
-            var keys = Target.ListKeysAsync().GetAwaiter().GetResult();
+            var keys = _cachedKeys;
             if (keys == null || keys.Length == 0)
             {
                 EditorGUILayout.LabelField(LC.Combine(Lc.Empty));
@@ -91,8 +93,18 @@ namespace EasyFramework.Systems.Archive.Editor
             EditorGUI.indentLevel--;
         }
 
+        // 定时刷新 Key 列表（避免 OnGUI 中同步阻塞）
         protected override void OnEditorUpdate()
         {
+            try
+            {
+                if (Application.isPlaying && Target != null && Target.Settings != null)
+                    _cachedKeys = Target.ListKeysAsync().GetAwaiter().GetResult();
+            }
+            catch
+            {
+                _cachedKeys = Array.Empty<string>();
+            }
         }
 
         #region Fallback Strings
