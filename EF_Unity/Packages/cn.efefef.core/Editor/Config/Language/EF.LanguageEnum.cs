@@ -95,12 +95,12 @@ namespace EasyFramework.Edit
 		Compare,
 		/// <summary> 容量 </summary>
 		Capacity,
+		/// <summary> 编译中 </summary>
+		Compiling,
 		/// <summary> 倒计时 </summary>
 		Countdown,
 		/// <summary> 目录 </summary>
 		Catalogue,
-		/// <summary> 编译中 </summary>
-		Compiling,
 		/// <summary> 一致的 </summary>
 		Consistency,
 		/// <summary> 组件 </summary>
@@ -183,6 +183,8 @@ namespace EasyFramework.Edit
 		Enable,
 		/// <summary> 相等 </summary>
 		Equals,
+		/// <summary> 导出 </summary>
+		Export,
 		/// <summary> 元素 </summary>
 		Element,
 		/// <summary> 特效 </summary>

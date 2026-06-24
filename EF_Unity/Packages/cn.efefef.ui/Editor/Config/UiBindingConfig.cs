@@ -1,11 +1,11 @@
 ﻿/*
  * ================================================
- * Describe:      This script is used to setting auto bind.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-02-13 17:36:43
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
- * ScriptVersion: 0.1
+ * Describe:        This script is used to setting auto bind.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-02-13 17:36:43
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-04-01 16:47:08
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
@@ -37,6 +37,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// 组件的缩略名字映射
         /// </summary>
         [SerializeField, HeaderPro("组件的缩略名字映射", "Component rule settings")]
+        [Space]
         private List<RulePrefixes> _rulePrefixes = new List<RulePrefixes>()
         {
             new RulePrefixes("Btn", "Button"),

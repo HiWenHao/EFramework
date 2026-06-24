@@ -705,6 +705,14 @@
       ]
     },
     {
+      "name": "Export",
+      "desc": "导出",
+      "array": [
+        "Export",
+        "导出"
+      ]
+    },
+    {
       "name": "Element",
       "desc": "元素",
       "array": [
