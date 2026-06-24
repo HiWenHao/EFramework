@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      图集收集器。
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-03-31 15:17:32
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-03-31 15:17:32
- * ScriptVersion: 0.1
+ * Describe:        图集收集器。
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-03-31 15:17:32
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-24 17:57:40
+ * ScriptVersion:   0.1
  * ===============================================
  */
 

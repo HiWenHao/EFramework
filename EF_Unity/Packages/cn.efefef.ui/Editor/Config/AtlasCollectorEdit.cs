@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      This script is used to edit the sprite collect.
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-04-01 16:05:44
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2023-04-01 16:05:44
- * ScriptVersion: 0.1
+ * Describe:        This script is used to edit the sprite collect.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-04-01 16:05:44
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-24 17:57:40
+ * ScriptVersion:   0.1
  * ===============================================
  */
 

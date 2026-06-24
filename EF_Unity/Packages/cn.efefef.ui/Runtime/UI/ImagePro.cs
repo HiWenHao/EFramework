@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
- * Describe:      升级版本的Image组件
- * Author:        Alvin8412
- * CreationTime:  2026-05-23 15:19:01
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-30 01:39:00
- * ScriptVersion: 0.3
+ * Describe:        升级版本的Image组件
+ * Author:          Alvin8412
+ * CreationTime:    2026-05-23 15:19:01
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-24 17:58:02
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
@@ -265,11 +265,48 @@ namespace EasyFramework
         }
 
         /// <summary>
-        /// 通过链接地址设置精灵图
-        /// <para>Set the sprite image through the link address</para>
+        /// 通过链接地址设置精灵图 - 支持 HTTP 地址和资源路径
+        /// <para>Set sprite via URL (HTTP) or resource path</para>
         /// </summary>
-        /// <param name="url">图片地址<para>Image URL</para></param>
+        /// <param name="url">图片地址 / 资源路径<para>Image URL or resource path</para></param>
         public async UniTask<Sprite> SetSpriteByUrl(string url)
+        {
+            return await SetSprite(url);
+        }
+
+        /// <summary>
+        /// 通过图集类型和精灵名设置精灵图
+        /// <para>Set sprite via atlas type and sprite name</para>
+        /// </summary>
+        /// <param name="uiAtlasName">图集名<para>Atlas name</para></param>
+        /// <param name="spriteName">精灵名称<para>Sprite name in atlas</para></param>
+        public async UniTask<Sprite> SetSprite(string uiAtlasName, string spriteName)
+        {
+            string atlasName = type.ToString();
+            SpriteAtlas atlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
+            if (atlas == null)
+            {
+                D.Warning($"Atlas '{atlasName}' not found for UIAtlasType.{type}");
+                return null;
+            }
+
+            Sprite sp = atlas.GetSprite(spriteName);
+            if (sp == null)
+            {
+                D.Warning($"Sprite '{spriteName}' not found in atlas '{atlasName}'.");
+                return null;
+            }
+
+            sprite = sp;
+            return sp;
+        }
+
+        /// <summary>
+        /// 通过链接地址设置精灵图（支持 HTTP 地址和资源路径）
+        /// <para>Set sprite via URL (HTTP) or resource path</para>
+        /// </summary>
+        /// <param name="url">图片地址 / 资源路径<para>Image URL or resource path</para></param>
+        public async UniTask<Sprite> SetSprite(string url)
         {
             await UniTask.CompletedTask;
             if (address == url && sprite != null)
