@@ -19,20 +19,20 @@ using Application = UnityEngine.Application;
 namespace EasyFramework.Edit.SpriteTools
 {
     /// <summary>
-    /// The sprite collect editer
+    /// 图集收集器的自定义 Inspcetor 编辑器。
     /// </summary>
-    [CustomEditor(typeof(SpriteCollection))]
-    public class SpriteCollectionEdit : Editor
+    [CustomEditor(typeof(AtlasCollector))]
+    public class AtlasCollectorEdit : Editor
     {
         bool _atlas;
         bool _allOverwrite;
         string _frameworkAtlasFolder;
-        SpriteCollection _target;
+        AtlasCollector _target;
         SerializedProperty _atlasFolder;
         SerializedProperty _targetObjects;
         private void OnEnable()
         {
-            _target = (SpriteCollection)target;
+            _target = (AtlasCollector)target;
             _atlasFolder = serializedObject.FindProperty("_atlasFolder");
             _targetObjects = serializedObject.FindProperty("_objects");
             _frameworkAtlasFolder = ConfigManager.Path.AtlasFolder;

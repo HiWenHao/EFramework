@@ -33,10 +33,10 @@ namespace EasyFramework.Edit.Create
             CreateSettings.Instance<UiAnimationConfig>();
         }
 
-        [MenuItem("Assets/Create/EF/UI Sprite Collection", priority = 320)]
-        private static void CreatedSpriteCollection()
+        [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 320)]
+        private static void CreatedAtlasCollector()
         {
-            CreateSettings.Instance<SpriteCollection>();
+            CreateSettings.Instance<AtlasCollector>();
         }
     }
 }

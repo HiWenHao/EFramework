@@ -1,6 +1,6 @@
 /*
  * ================================================
- * Describe:      This script is used to collect the sprite.
+ * Describe:      图集收集器。
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-03-31 15:17:32
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
@@ -16,9 +16,9 @@ using UnityEngine.U2D;
 namespace EasyFramework.Edit.SpriteTools
 {
     /// <summary>
-    /// Collect the sprite and control it.
+    /// 图集收集器，管理图集的收集、创建与烘焙。
     /// </summary>
-    public class SpriteCollection : ScriptableObject
+    public class AtlasCollector : ScriptableObject
     {
         [SerializeField] [HideInInspector] string _atlasFolder;
         public string AtlasFolder => _atlasFolder;
