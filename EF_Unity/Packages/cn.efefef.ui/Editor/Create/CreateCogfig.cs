@@ -21,19 +21,19 @@ namespace EasyFramework.Edit.Create
     /// </summary>
     internal static class CreateConfig
     {
-        [MenuItem("Assets/Create/EF/UI Binding Config", priority = 212)]
+        [MenuItem("Assets/Create/EF/UI Binding Config", priority = 412)]
         private static void CreatedAutoBindSetting()
         {
             CreateSettings.Instance<UiBindingConfig>();
         }
 
-        [MenuItem("Assets/Create/EF/UI Animation Config", priority = 213)]
+        [MenuItem("Assets/Create/EF/UI Animation Config", priority = 413)]
         private static void CreatedAnimationConfig()
         {
             CreateSettings.Instance<UiAnimationConfig>();
         }
 
-        [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 320)]
+        [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 414)]
         private static void CreatedAtlasCollector()
         {
             CreateSettings.Instance<AtlasCollector>();
