@@ -30,9 +30,9 @@ namespace EasyFramework.Systems.Archive
     public class ArchiveManager : MonoSingleton<ArchiveManager>, ISingleton
     {
         private IArchiveProvider _provider;           // 存档存储后端
-        private ArchiveSettings _settings;              // 存档系统全局配置
         private readonly Dictionary<int, HashSet<string>> _dirtyKeys = new(); // 脏标记（槽位 → 已变动的 key 集合）
         private readonly Dictionary<int, Dictionary<string, object>> _dataCache = new(); // 数据缓存（槽位 → key → 对象引用），用于自动保存重放
+        private const int MaxCachedEntries = 50; // 缓存上限（防止内存无限增长）
         private CancellationTokenSource _autoSaveCts;   // 自动保存取消令牌
         private JsonSerializerSettings _jsonSettings;   // JSON 序列化设置（循环引用处理、字段忽略策略）
 
@@ -46,7 +46,7 @@ namespace EasyFramework.Systems.Archive
         /// 存档系统全局配置引用
         /// <para>Reference to the archive system configuration</para>
         /// </summary>
-        public ArchiveSettings Settings => _settings;
+        public ArchiveSettings Settings { get; private set; }
 
         #region Singleton Lifecycle
 
@@ -57,7 +57,7 @@ namespace EasyFramework.Systems.Archive
             _jsonSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                MissingMemberHandling = _settings.warnOnUnknownFields
+                MissingMemberHandling = Settings.warnOnUnknownFields
                     ? MissingMemberHandling.Error
                     : MissingMemberHandling.Ignore,
                 NullValueHandling = NullValueHandling.Ignore,
@@ -86,7 +86,7 @@ namespace EasyFramework.Systems.Archive
                     {
                         string json = JsonConvert.SerializeObject(cached, _jsonSettings);
                         byte[] raw = Encoding.UTF8.GetBytes(json);
-                        _provider.SaveRawAsync(slotId, key, raw).GetAwaiter().GetResult();
+                        _provider.SaveRawAsync(slotId, key, raw);
                     }
                     catch (Exception ex)
                     {
@@ -105,32 +105,37 @@ namespace EasyFramework.Systems.Archive
         // 加载 ArchiveSettings 配置资产（从 Resources/Configs 读取，不存在则使用默认值）
         private void LoadSettings()
         {
-            _settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
-            if (_settings != null) return;
-            _settings = ScriptableObject.CreateInstance<ArchiveSettings>();
+            Settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            if (Settings != null) return;
+            Settings = ScriptableObject.CreateInstance<ArchiveSettings>();
             D.Warning("[ArchiveManager] ArchiveSettings not found at Resources/Configs/ArchiveSettings. Using defaults.");
         }
 
         // 根据配置创建存储后端（默认 FileArchiveProvider，可通过 providerTypeName 反射创建自定义后端）
         private IArchiveProvider CreateProvider()
         {
-            if (string.IsNullOrEmpty(_settings.providerTypeName)) return new FileArchiveProvider(_settings);
-            var type = Type.GetType(_settings.providerTypeName, throwOnError: false);
-            if (type == null) return new FileArchiveProvider(_settings);
-            if (Activator.CreateInstance(type, _settings) is IArchiveProvider instance)
+            if (string.IsNullOrEmpty(Settings.providerTypeName)) return new FileArchiveProvider(Settings);
+            var type = Type.GetType(Settings.providerTypeName, throwOnError: false);
+            if (type == null) return new FileArchiveProvider(Settings);
+            if (Activator.CreateInstance(type, Settings) is IArchiveProvider instance)
                 return instance;
 
-            return new FileArchiveProvider(_settings);
+            return new FileArchiveProvider(Settings);
         }
 
         // 查找最小的空闲槽位编号（O(n) via HashSet）
-        private int FindFreeSlotId()
+        // 查找最小的空闲槽位编号
+        private async UniTask<int> FindFreeSlotIdAsync()
         {
             var takenIds = new HashSet<int>();
-            foreach (var s in GetAllSlots())
-                takenIds.Add(s.slotId);
+            var slots = await GetAllSlotsAsync();
+            if (slots != null)
+            {
+                foreach (var s in slots)
+                    takenIds.Add(s.slotId);
+            }
 
-            for (int i = 0; i < _settings.maxSlots; i++)
+            for (int i = 0; i < Settings.maxSlots; i++)
                 if (!takenIds.Contains(i)) return i;
 
             return -1;
@@ -151,18 +156,45 @@ namespace EasyFramework.Systems.Archive
             {
                 var updated = meta.Value;
                 updated.SetModifiedNow();
-                updated.dataVersion = _settings.dataVersion;
+                updated.dataVersion = Settings.dataVersion;
                 updated.totalSizeBytes = await _provider.GetSlotSizeAsync(slotId);
                 await _provider.SaveMetaAsync(updated);
             }
         }
 
-        // 缓存最近一次保存的数据（供自动保存重放）
+        // 缓存最近一次保存的数据（供自动保存重放），超出上限时淘汰最早条目
         private void CacheData<T>(int slotId, string key, T data)
         {
             if (!_dataCache.TryGetValue(slotId, out var slotCache))
                 _dataCache[slotId] = slotCache = new Dictionary<string, object>();
             slotCache[key] = data;
+
+            EvictIfNeeded();
+        }
+
+        // 缓存条目数超过上限时，从最先找到的非空槽位中淘汰一条（近似 FIFO）
+        private void EvictIfNeeded()
+        {
+            int totalCount = 0;
+            foreach (var sc in _dataCache.Values)
+                totalCount += sc.Count;
+
+            while (totalCount > MaxCachedEntries)
+            {
+                bool removed = false;
+                foreach (var slotCache in _dataCache.Values)
+                {
+                    if (slotCache.Count == 0) continue;
+                    var e = slotCache.GetEnumerator();
+                    e.MoveNext();
+                    slotCache.Remove(e.Current.Key);
+                    totalCount--;
+                    removed = true;
+                    break;
+                }
+                // 防御：若所有槽位均为空但 totalCount 仍 > 0（极端情况），跳出避免死循环
+                if (!removed) break;
+            }
         }
 
         // 移除指定 key 的缓存数据（删除 key 或槽位时调用，释放内存）
@@ -177,9 +209,9 @@ namespace EasyFramework.Systems.Archive
         {
             while (!ct.IsCancellationRequested)
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(_settings.autoSaveIntervalSeconds), cancellationToken: ct);
+                await UniTask.Delay(TimeSpan.FromSeconds(Settings.autoSaveIntervalSeconds), cancellationToken: ct);
 
-                if (_settings.autoSaveOnlyDirty && _dirtyKeys.Count == 0)
+                if (Settings.autoSaveOnlyDirty && _dirtyKeys.Count == 0)
                     continue;
 
                 // 先快照脏 key 列表，防止枚举过程中外部 MarkDirty 修改字典
@@ -187,7 +219,8 @@ namespace EasyFramework.Systems.Archive
             }
         }
 
-        // 遍历所有槽位的脏 key，从缓存取出数据重放保存
+        // 遍历所有槽位的脏 key，从缓存取出数据重放保存。
+        // 若缓存中没有数据（如仅调用 MarkDirty 而未先 Save/Load），跳过并警告。
         private async UniTask FlushDirtyKeysAsync(CancellationToken ct)
         {
             if (_dirtyKeys.Count == 0) return;
@@ -199,10 +232,26 @@ namespace EasyFramework.Systems.Archive
 
             foreach (var (slotId, keys) in snapshot)
             {
-                if (!_dataCache.TryGetValue(slotId, out var slotCache)) continue;
+                if (!_dataCache.TryGetValue(slotId, out var slotCache))
+                {
+                    // 槽位缓存为空：所有属于该槽位的脏 key 都无法保存，清除标记
+                    foreach (var key in keys)
+                    {
+                        D.Warning($"[ArchiveManager] Slot {slotId} key '{key}' marked dirty but slot cache is empty. Skipping auto-save. Use SaveToSlotAsync or MarkDirtyWithData to provide data.");
+                        MarkClean(slotId, key);
+                    }
+                    continue;
+                }
+
                 foreach (var key in keys)
                 {
-                    if (!slotCache.TryGetValue(key, out var cached)) continue;
+                    if (!slotCache.TryGetValue(key, out var cached))
+                    {
+                        D.Warning($"[ArchiveManager] Key '{key}' in slot {slotId} marked dirty but not in cache. Skipping auto-save. Use MarkDirtyWithData to provide current data.");
+                        MarkClean(slotId, key);
+                        continue;
+                    }
+
                     string json = JsonConvert.SerializeObject(cached, _jsonSettings);
                     byte[] raw = Encoding.UTF8.GetBytes(json);
                     await _provider.SaveRawAsync(slotId, key, raw, ct);
@@ -245,16 +294,16 @@ namespace EasyFramework.Systems.Archive
         /// <para>Thrown when all slots are occupied</para></exception>
         public async UniTask<int> CreateSlotAsync(string slotName, CancellationToken ct = default)
         {
-            int slotId = FindFreeSlotId();
+            int slotId = await FindFreeSlotIdAsync();
             if (slotId < 0)
-                throw new InvalidOperationException($"All {_settings.maxSlots} slots are full. Delete a slot first.");
+                throw new InvalidOperationException($"All {Settings.maxSlots} slots are full. Delete a slot first.");
 
             var meta = new ArchiveSlotMeta
             {
                 slotId = slotId,
                 slotName = slotName,
                 progressDescription = "New Game",
-                dataVersion = _settings.dataVersion,
+                dataVersion = Settings.dataVersion,
                 isValid = true
             };
             meta.SetCreatedNow();
@@ -272,9 +321,9 @@ namespace EasyFramework.Systems.Archive
         /// </summary>
         /// <returns>槽位元数据数组
         /// <para>Array of slot metadata</para></returns>
-        public ArchiveSlotMeta[] GetAllSlots()
+        public UniTask<ArchiveSlotMeta[]> GetAllSlotsAsync(CancellationToken ct = default)
         {
-            return _provider.ListSlots();
+            return _provider.ListSlotsAsync(ct);
         }
 
         /// <summary>
@@ -332,7 +381,17 @@ namespace EasyFramework.Systems.Archive
             string json = JsonConvert.SerializeObject(data, _jsonSettings);
             byte[] raw = Encoding.UTF8.GetBytes(json);
             await _provider.SaveRawAsync(slotId, key, raw, ct);
-            await UpdateSlotMetaAfterSave(slotId);
+
+            // Meta 更新为 best-effort：数据已安全落盘，meta 失败不影响数据正确性
+            try
+            {
+                await UpdateSlotMetaAfterSave(slotId);
+            }
+            catch (Exception ex)
+            {
+                D.Warning($"[ArchiveManager] Meta update for '{key}' in slot {slotId} failed: {ex.Message}. Data is safe, meta will be corrected on next save.");
+            }
+
             MarkClean(slotId, key);
             CacheData(slotId, key, data);
         }
@@ -379,7 +438,9 @@ namespace EasyFramework.Systems.Archive
                 throw new KeyNotFoundException($"Archive key '{key}' not found in slot {slotId}.");
 
             string json = Encoding.UTF8.GetString(raw);
-            return JsonConvert.DeserializeObject<T>(json, _jsonSettings);
+            T data = JsonConvert.DeserializeObject<T>(json, _jsonSettings);
+            CacheData(slotId, key, data); // 缓存数据引用，供 MarkDirty + 自动保存回放
+            return data;
         }
 
         /// <summary>
@@ -444,7 +505,7 @@ namespace EasyFramework.Systems.Archive
         /// <para>Check whether a key exists in the active slot</para>
         /// </summary>
         public UniTask<bool> ExistsAsync(string key, CancellationToken ct = default)
-            => _provider.ExistsAsync(ActiveSlot, key, ct);
+            => _provider?.ExistsAsync(ActiveSlot, key, ct) ?? UniTask.FromResult(false);
 
         /// <summary>
         /// 从当前激活槽位删除指定键的数据
@@ -454,7 +515,7 @@ namespace EasyFramework.Systems.Archive
         {
             MarkClean(ActiveSlot, key);
             RemoveCachedData(ActiveSlot, key);
-            return _provider.DeleteAsync(ActiveSlot, key, ct);
+            return _provider?.DeleteAsync(ActiveSlot, key, ct) ?? UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -492,14 +553,35 @@ namespace EasyFramework.Systems.Archive
         public void MarkDirty(string key) => MarkDirty(ActiveSlot, key);
 
         /// <summary>
-        /// 标记指定槽位的某条数据为脏
-        /// <para>Mark a key in a specific slot as dirty</para>
+        /// 标记指定槽位的某条数据为脏（有未保存的变动）。
+        /// 自动保存需要缓存中有对应数据引用 —— 请确保在 MarkDirty 之前已调用过 SaveAsync 或 LoadAsync，
+        /// 或者使用 MarkDirtyWithData 同时传入当前数据。
+        /// <para>Mark a key as dirty. Auto-save needs cached data — call SaveAsync/LoadAsync first,
+        /// or use MarkDirtyWithData to provide current data directly.</para>
         /// </summary>
         public void MarkDirty(int slotId, string key)
         {
             if (!_dirtyKeys.ContainsKey(slotId))
                 _dirtyKeys[slotId] = new HashSet<string>();
             _dirtyKeys[slotId].Add(key);
+        }
+
+        /// <summary>
+        /// 标记当前激活槽位的某条数据为脏，同时更新缓存中的引用。
+        /// 适用于"创建新数据对象后直接标记脏"的场景，无需先调用 SaveAsync。
+        /// <para>Mark a key as dirty AND update the cached reference.
+        /// Use this when you have a fresh data object that hasn't been saved yet.</para>
+        /// </summary>
+        public void MarkDirtyWithData<T>(string key, T data) => MarkDirtyWithData(ActiveSlot, key, data);
+
+        /// <summary>
+        /// 标记指定槽位的某条数据为脏，同时更新缓存中的引用。
+        /// <para>Mark a key in a specific slot as dirty AND update the cached reference.</para>
+        /// </summary>
+        public void MarkDirtyWithData<T>(int slotId, string key, T data)
+        {
+            CacheData(slotId, key, data);
+            MarkDirty(slotId, key);
         }
 
         #endregion
@@ -513,7 +595,7 @@ namespace EasyFramework.Systems.Archive
         public void StartAutoSave()
         {
             StopAutoSave();
-            if (_settings.autoSaveIntervalSeconds <= 0) return;
+            if (Settings.autoSaveIntervalSeconds <= 0) return;
             _autoSaveCts = new CancellationTokenSource();
             AutoSaveLoopAsync(_autoSaveCts.Token).Forget();
         }

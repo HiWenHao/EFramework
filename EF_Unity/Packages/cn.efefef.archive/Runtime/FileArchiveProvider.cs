@@ -74,19 +74,16 @@ namespace EasyFramework.Systems.Archive
 
             string finalPath = GetArchivePath(slotId, key);
 
+            // 启用备份时：先轮转旧备份链，再将当前 .arc 复制为最新 .bak
             if (_settings.enableAutoBackup && File.Exists(finalPath))
             {
-                string backupPath = finalPath + BACKUP_EXTENSION;
-                if (File.Exists(backupPath))
-                    File.Delete(backupPath);
-                File.Copy(finalPath, backupPath);
+                CleanupOldBackups(slotId, key);            // 先移位旧备份链，防止旧的 .bak 被覆盖丢失
+                File.Copy(finalPath, finalPath + BACKUP_EXTENSION);
             }
 
             string tempPath = finalPath + ".tmp";
             await WriteAllBytesAsync(tempPath, fileData, cancellationToken);
             AtomicReplace(tempPath, finalPath);
-
-            CleanupOldBackups(slotId, key);
         }
 
         /// <summary>
@@ -238,9 +235,19 @@ namespace EasyFramework.Systems.Archive
         }
 
         /// <summary>
-        /// 列出所有有效的存档槽位<para>List all valid archive slots</para>
+        /// 列出所有有效的存档槽位（异步，文件 I/O 放在线程池）。
+        /// <para>List all valid archive slots asynchronously.</para>
         /// </summary>
-        public ArchiveSlotMeta[] ListSlots()
+        public async UniTask<ArchiveSlotMeta[]> ListSlotsAsync(CancellationToken ct = default)
+        {
+            return await UniTask.RunOnThreadPool(ListSlotsSync, cancellationToken: ct);
+        }
+
+        /// <summary>
+        /// 列出所有有效的存档槽位元数据（同步实现，内部使用）。
+        /// <para>List all valid archive slot metadata synchronously (internal).</para>
+        /// </summary>
+        private ArchiveSlotMeta[] ListSlotsSync()
         {
             if (!Directory.Exists(_rootPath))
                 return Array.Empty<ArchiveSlotMeta>();
@@ -261,8 +268,9 @@ namespace EasyFramework.Systems.Archive
                     if (meta.isValid)
                         result.Add(meta);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.LogWarning($"[FileArchiveProvider] Failed to read slot meta '{metaPath}': {ex.Message}");
                 }
             }
 
@@ -489,25 +497,45 @@ namespace EasyFramework.Systems.Archive
             return sb.ToString();
         }
 
-        // 清理过期的备份文件（轮转删除最旧的 .bak.N）
+        // 轮转备份链：.bak → .bak.1 → .bak.2 → ... → 删除最旧的 .bak.N。
+        // 在 SaveRawAsync 创建新的 .bak 之前调用，确保旧 .bak 被正确移位而非丢失。
+        // <para>Rotate backup chain so that at most maxBackupCount backups are kept,
+        // including the latest .bak.</para>
         private void CleanupOldBackups(int slotId, string key)
         {
             if (_settings.maxBackupCount <= 0) return;
 
             string basePath = GetArchivePath(slotId, key);
 
-            // 删除超出上限的旧备份：.bak → .bak.1 → .bak.2 → ...
-            for (int i = _settings.maxBackupCount - 1; i >= 0; i--)
+            // maxBackupCount == 1: 只保留 .bak，删除所有编号备份
+            if (_settings.maxBackupCount == 1)
             {
-                string path = i == 0 ? basePath + BACKUP_EXTENSION : $"{basePath}{BACKUP_EXTENSION}.{i}";
-                if (File.Exists(path))
-                {
-                    if (i >= _settings.maxBackupCount - 1)
-                        File.Delete(path);
-                    else
-                        File.Move(path, $"{basePath}{BACKUP_EXTENSION}.{i + 1}");
-                }
+                string bakPath1 = $"{basePath}{BACKUP_EXTENSION}.1";
+                if (File.Exists(bakPath1))
+                    File.Delete(bakPath1);
+                return; // .bak 将由 SaveRawAsync 的 File.Copy 直接覆盖
             }
+
+            // 通用情况：保留 maxBackupCount 个备份（.bak + .bak.1 ~ .bak.(maxBackupCount-1)）
+            int maxIndex = _settings.maxBackupCount - 1;
+
+            // ① 删除最旧的编号备份（溢出）
+            string overflowPath = $"{basePath}{BACKUP_EXTENSION}.{maxIndex}";
+            if (File.Exists(overflowPath))
+                File.Delete(overflowPath);
+
+            // ② 将每个编号备份向上移位：.bak.(N) → .bak.(N+1)
+            for (int i = maxIndex - 1; i >= 1; i--)
+            {
+                string srcPath = $"{basePath}{BACKUP_EXTENSION}.{i}";
+                if (File.Exists(srcPath))
+                    File.Move(srcPath, $"{basePath}{BACKUP_EXTENSION}.{i + 1}");
+            }
+
+            // ③ .bak → .bak.1（为即将创建的新 .bak 腾出位置）
+            string bakPath = basePath + BACKUP_EXTENSION;
+            if (File.Exists(bakPath))
+                File.Move(bakPath, $"{basePath}{BACKUP_EXTENSION}.1");
         }
 
         // 原子替换文件（先删目标 → 再 Move，同分区内等价于原子 rename）
@@ -519,5 +547,8 @@ namespace EasyFramework.Systems.Archive
         }
 
         #endregion
+
+        /// <summary>文件存储无需额外释放资源<para>File storage requires no resource cleanup</para></summary>
+        public void Dispose() { }
     }
 }

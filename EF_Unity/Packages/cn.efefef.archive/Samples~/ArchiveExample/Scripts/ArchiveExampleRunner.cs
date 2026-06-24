@@ -51,7 +51,7 @@ namespace EasyFramework.Systems.Archive.Example
         private void Btn_SaveData()       => DemoSaveData().Forget();
         private void Btn_LoadData()       => DemoLoadData().Forget();
         private void Btn_DeleteSlot()     => DemoDeleteSlot().Forget();
-        private void Btn_ListSlots()      => DemoListSlots();
+        private void Btn_ListSlots()      => DemoListSlots().Forget();
         private void Btn_AutoSaveDirty()  => DemoAutoSaveDirty().Forget();
 
         private async UniTask DemoCreateSlot()
@@ -60,7 +60,7 @@ namespace EasyFramework.Systems.Archive.Example
             {
                 int slotId = await ArchiveManager.Instance.CreateSlotAsync($"Demo_{DateTime.Now:HHmmss}");
                 Log($"Slot created: {slotId}");
-                RefreshSlots();
+                await RefreshSlots();
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ namespace EasyFramework.Systems.Archive.Example
                 int slotId = ArchiveManager.Instance.ActiveSlot;
                 await ArchiveManager.Instance.DeleteSlotAsync(slotId);
                 Log($"Slot {slotId} deleted.");
-                RefreshSlots();
+                await RefreshSlots();
             }
             catch (Exception ex)
             {
@@ -142,9 +142,9 @@ namespace EasyFramework.Systems.Archive.Example
             }
         }
 
-        private void DemoListSlots()
+        private async UniTask DemoListSlots()
         {
-            var slots = ArchiveManager.Instance.GetAllSlots();
+            var slots = await ArchiveManager.Instance.GetAllSlotsAsync();
             Log($"=== All Slots ({slots.Length}) ===");
             foreach (var slot in slots)
                 Log($"  Slot {slot.slotId}: {slot.slotName} | {slot.PlayTimeFormatted} | {slot.LastModifiedFormatted}");
@@ -163,9 +163,9 @@ namespace EasyFramework.Systems.Archive.Example
             Log($"After potential auto-save: gold = {data?.gold ?? -1}");
         }
 
-        private void RefreshSlots()
+        private async UniTask RefreshSlots()
         {
-            var slots = ArchiveManager.Instance.GetAllSlots();
+            var slots = await ArchiveManager.Instance.GetAllSlotsAsync();
             if (slotInfoText != null)
                 slotInfoText.text = $"Slots: {slots.Length}\nActive: {ArchiveManager.Instance.ActiveSlot}";
         }

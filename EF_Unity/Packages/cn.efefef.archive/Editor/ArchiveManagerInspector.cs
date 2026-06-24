@@ -10,6 +10,7 @@
  */
 
 using System;
+using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
@@ -23,7 +24,9 @@ namespace EasyFramework.Systems.Archive.Editor
 
         private bool _showSlots = true; // 是否展开槽位折叠区
         private bool _showKeys;          // 是否展开 Key 折叠区
-        private string[] _cachedKeys = Array.Empty<string>(); // 缓存的 Key 列表（避免 OnGUI 中同步阻塞）
+        private string[] _cachedKeys = Array.Empty<string>(); // 缓存的 Key 列表
+        private ArchiveSlotMeta[] _cachedSlots = Array.Empty<ArchiveSlotMeta>(); // 缓存的槽位列表
+        private int _refreshTimer;       // 降频计数器（每 N 帧刷新一次 Key 列表）
 
         protected override void OnEditorGUI()
         {
@@ -50,7 +53,7 @@ namespace EasyFramework.Systems.Archive.Editor
             {
                 EditorGUI.indentLevel++;
 
-                var slots = Target.GetAllSlots();
+                var slots = _cachedSlots;
                 if (slots.Length == 0)
                 {
                     EditorGUILayout.LabelField(LC.Combine(ArmSlotEmpty));
@@ -93,17 +96,28 @@ namespace EasyFramework.Systems.Archive.Editor
             EditorGUI.indentLevel--;
         }
 
-        // 定时刷新 Key 列表（避免 OnGUI 中同步阻塞）
+        // 降频刷新 Key 列表（每 60 帧异步拉取一次，避免每帧同步阻塞文件 I/O）
         protected override void OnEditorUpdate()
+        {
+            if (++_refreshTimer < 60) return;
+            _refreshTimer = 0;
+
+            if (!Application.isPlaying || Target == null || Target.Settings == null) return;
+            RefreshKeysAsync().Forget();
+        }
+
+        private async UniTask RefreshKeysAsync()
         {
             try
             {
-                if (Application.isPlaying && Target != null && Target.Settings != null)
-                    _cachedKeys = Target.ListKeysAsync().GetAwaiter().GetResult();
+                _cachedKeys = await Target.ListKeysAsync();
+                _cachedSlots = await Target.GetAllSlotsAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 _cachedKeys = Array.Empty<string>();
+                _cachedSlots = Array.Empty<ArchiveSlotMeta>();
+                Debug.LogWarning($"[ArchiveManagerInspector] Failed to refresh key list: {ex.Message}");
             }
         }
 

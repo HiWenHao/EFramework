@@ -113,7 +113,7 @@ namespace EasyFramework.Systems.Archive.Editor
 
                     EditorUtility.SetDirty(_settings);
                     AssetDatabase.SaveAssets();
-                    UnityEngine.Object.DestroyImmediate(defaults);
+                    EditorApplication.delayCall += () => Object.DestroyImmediate(defaults);
                 }
             }
             EditorGUILayout.EndHorizontal();

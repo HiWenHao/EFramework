@@ -17,6 +17,8 @@ namespace EasyFramework.Systems.Archive
     /// <summary>
     /// 存档槽位元数据，用于存档列表界面展示。不加密，以 JSON 格式存储在每个槽位目录下。
     /// <para>Archive slot metadata for save-selection UI. Stored as plain JSON in each slot directory.</para>
+    /// <para>⚠ 注意：本结构体是可变的。通过属性或方法返回值访问时操作的是副本，
+    /// 修改前需显式拷贝到局部变量（如 var copy = meta.Value; copy.SetModifiedNow();）。</para>
     /// </summary>
     [Serializable]
     public struct ArchiveSlotMeta

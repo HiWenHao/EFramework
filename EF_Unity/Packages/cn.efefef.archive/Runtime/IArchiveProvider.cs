@@ -10,6 +10,7 @@
  * ===============================================
  */
 
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace EasyFramework.Systems.Archive
     /// <para>Abstract storage backend interface. Implement to plug in any storage engine.
     /// Switch via <c>ArchiveManager.Instance.SetProvider(new YourProvider());</c></para>
     /// </summary>
-    public interface IArchiveProvider
+    public interface IArchiveProvider : IDisposable
     {
         /// <summary>
         /// 持久化一条原始字节数据。由 ArchiveManager 完成 JSON 序列化后传入，Provider 自行决定存储方式。
@@ -95,11 +96,11 @@ namespace EasyFramework.Systems.Archive
         UniTask FlushAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 列出所有有效的存档槽位元数据。
-        /// <para>List all valid archive slot metadata.</para>
+        /// 列出所有有效的存档槽位元数据（异步，数据库后端可避免阻塞主线程）。
+        /// <para>List all valid archive slot metadata asynchronously.</para>
         /// </summary>
         /// <returns>槽位元数据数组<para>Array of slot metadata</para></returns>
-        ArchiveSlotMeta[] ListSlots();
+        UniTask<ArchiveSlotMeta[]> ListSlotsAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 保存槽位元数据（JSON 明文，不加密）。
