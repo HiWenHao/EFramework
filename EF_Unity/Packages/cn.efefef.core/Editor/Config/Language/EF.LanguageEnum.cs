@@ -41,6 +41,8 @@ namespace EasyFramework.Edit
 		AlignAt,
 		/// <summary> 已经 </summary>
 		Already,
+		/// <summary> 存档 </summary>
+		Archive,
 		/// <summary> 活动的 </summary>
 		Activity,
 		/// <summary> 放弃 </summary>

@@ -137,6 +137,14 @@
       ]
     },
     {
+      "name": "Archive",
+      "desc": "存档",
+      "array": [
+        "Archive",
+        "存档"
+      ]
+    },
+    {
       "name": "Activity",
       "desc": "活动的",
       "array": [

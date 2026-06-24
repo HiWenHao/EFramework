@@ -1,5 +1,13 @@
 {
   "dependencies": {
+    "cn.efefef.archive": {
+      "version": "file:cn.efefef.archive",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.1.0"
+      }
+    },
     "cn.efefef.audio": {
       "version": "file:cn.efefef.audio",
       "depth": 0,

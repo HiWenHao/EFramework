@@ -1,0 +1,22 @@
+{
+    "name": "EF.Archive.Editor",
+    "rootNamespace": "EasyFramework.Systems.Archive.Editor",
+    "references": [
+        "GUID:a4a7eea321f5a024bb7118f90940975f",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:bce4958177fc4be1bb5c42ed4986b511",
+        "GUID:523a06a4a731d5145bac3af10cfba1f0",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
