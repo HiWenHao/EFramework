@@ -1,4 +1,4 @@
-/* 
+/*
  * ================================================
  * Describe:      This script is used to edit the sprite collect.
  * Author:        Xiaohei.Wang(Wenhao)
@@ -7,10 +7,9 @@
  * ModifyTime:    2023-04-01 16:05:44
  * ScriptVersion: 0.1
  * ===============================================
-*/
-using System.Collections.Generic;
+ */
+
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.U2D;
 using UnityEngine;
@@ -28,8 +27,6 @@ namespace EasyFramework.Edit.SpriteTools
         bool _atlas;
         bool _allOverwrite;
         string _frameworkAtlasFolder;
-        List<bool> _hasPreview;
-
         SpriteCollection _target;
         SerializedProperty _atlasFolder;
         SerializedProperty _targetObjects;
@@ -41,11 +38,6 @@ namespace EasyFramework.Edit.SpriteTools
             _frameworkAtlasFolder = ConfigManager.Path.AtlasFolder;
 
             _allOverwrite = true;
-            _hasPreview = new List<bool>();
-            for (int i = _target.Atlas.Count - 1; i >= 0; i--)
-            {
-                _hasPreview.Add(false);
-            }
         }
 
         public override void OnInspectorGUI()
@@ -56,9 +48,7 @@ namespace EasyFramework.Edit.SpriteTools
 
             ShowObjectsAndAtlas();
 
-            ShowSprites();
-
-            if (GUILayout.Button(LC.Combine(Lc.Overview), GUILayout.Width(100f)))
+            if (GUILayout.Button(LC.Combine(Lc.Create, Lc.Atlas) + " (Repack)", GUILayout.Width(130f)))
             {
                 Pack();
             }
@@ -80,24 +70,24 @@ namespace EasyFramework.Edit.SpriteTools
         void SelectPath()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Atlas, Lc.Path }), GUILayout.Width(130f));
+            EditorGUILayout.LabelField(LC.Combine(Lc.Atlas, Lc.Path), GUILayout.Width(130f));
             EditorGUILayout.LabelField(new GUIContent(_atlasFolder.stringValue));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Select, Lc.Path })))
+                if (GUILayout.Button(LC.Combine(Lc.Select, Lc.Path)))
                 {
-                    string _path = EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Select, Lc.Path }), Application.dataPath, "");
-                    if (string.IsNullOrEmpty(_path))
+                    string path = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Select, Lc.Path), Application.dataPath, "");
+                    if (string.IsNullOrEmpty(path))
                     {
                         if (string.IsNullOrEmpty(_atlasFolder.stringValue))
                             _atlasFolder.stringValue = _frameworkAtlasFolder;
                     }
                     else
-                        _atlasFolder.stringValue = Utility.Path.GetPathInAssetsFolder(_path) + "/";
+                        _atlasFolder.stringValue = Utility.Path.GetPathInAssetsFolder(path) + "/";
                 }
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Default, Lc.Path })))
+                if (GUILayout.Button(LC.Combine(Lc.Default, Lc.Path)))
                 {
                     _atlasFolder.stringValue = _frameworkAtlasFolder;
                 }
@@ -109,7 +99,7 @@ namespace EasyFramework.Edit.SpriteTools
         #region Show Atlas
         void ShowObjectsAndAtlas()
         {
-            _atlas = EditorGUILayout.Foldout(_atlas, LC.Combine(Lc.Atlas) + $"\t({_target.Atlas.Count})");
+            _atlas = EditorGUILayout.Foldout(_atlas, LC.Combine(Lc.Atlas) + $"  ({_target.Atlas.Count})");
             if (_atlas)
             {
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
@@ -123,11 +113,12 @@ namespace EasyFramework.Edit.SpriteTools
 
                         if (GUILayout.Button("X"))
                         {
-                            if (EditorUtility.DisplayDialog(LC.Combine(Lc.Delete), LC.Combine(new Lc[] { Lc.Confirm, Lc.Delete }) + _target.Atlas[i].name + LC.Combine(Lc.Atlas), LC.Combine(Lc.Ok)))
+                            if (EditorUtility.DisplayDialog(LC.Combine(Lc.Delete), LC.Combine(Lc.Confirm, Lc.Delete) + _target.Atlas[i].name + LC.Combine(Lc.Atlas), LC.Combine(Lc.Ok)))
                             {
                                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
-                                ClearSpriteInfoWithIndex(i);
                                 ClearAtlasWithIndex(i);
+                                EditorUtility.SetDirty(_target);
+                                serializedObject.Update();
                                 EditorApplication.delayCall += AssetDatabase.Refresh;
                             }
                         }
@@ -137,51 +128,24 @@ namespace EasyFramework.Edit.SpriteTools
             }
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Clear, Lc.All })))
+            if (GUILayout.Button(LC.Combine(Lc.Clear, Lc.All)))
             {
                 ClearAllAtlas();
-                ClearSpriteInfos();
+                EditorUtility.SetDirty(_target);
+                serializedObject.Update();
                 EditorApplication.delayCall += AssetDatabase.Refresh;
             }
 
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.All })))
+            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All)))
             {
                 for (int i = _target.Atlas.Count - 1; i >= 0; i--)
                     AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
                 ClearAllAtlas();
-                ClearSpriteInfos();
+                EditorUtility.SetDirty(_target);
+                serializedObject.Update();
                 EditorApplication.delayCall += AssetDatabase.Refresh;
             }
             EditorGUILayout.EndHorizontal();
-        }
-        #endregion
-
-        #region Show Sprites
-        void ShowSprites()
-        {
-            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            for (int i = 0; i < _target.SpriteInfos.Count; i++)
-            {
-                if (i == _hasPreview.Count)
-                    _hasPreview.Add(false);
-
-                _hasPreview[i] = EditorGUILayout.Foldout(_hasPreview[i], new GUIContent(_target.SpriteInfos[i].SpriteList.Count + "\t" + LC.Combine(Lc.Atlas) + " - " + _target.SpriteInfos[i].FolderName));
-                if (_hasPreview[i] && i < _target.SpriteInfos.Count)
-                {
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-                    for (int j = 0; j < _target.SpriteInfos[i].PathList.Count; j++)
-                    {
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.TextField(new GUIContent($"{_target.SpriteInfos[i].SpriteList[j].name}", _target.SpriteInfos[i].PathList[j]), _target.SpriteInfos[i].PathList[j]);
-                        EditorGUILayout.ObjectField(_target.SpriteInfos[i].SpriteList[j], typeof(Sprite), false);
-                        EditorGUILayout.EndHorizontal();
-                    }
-
-                    EditorGUILayout.EndVertical();
-                }
-            }
-            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
         }
         #endregion
 
@@ -190,7 +154,7 @@ namespace EasyFramework.Edit.SpriteTools
         {
             EditorGUILayout.BeginHorizontal();
             _allOverwrite = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Overwrite), _allOverwrite, GUILayout.MaxWidth(100f));
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Create, Lc.Atlas })))
+            if (GUILayout.Button(LC.Combine(Lc.Create, Lc.Atlas)))
             {
                 CreateAtlas();
             }
@@ -201,34 +165,43 @@ namespace EasyFramework.Edit.SpriteTools
             ClearAllAtlas();
             if (string.IsNullOrEmpty(_atlasFolder.stringValue))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), LC.Combine(new Lc[] { Lc.Select, Lc.Atlas, Lc.Folder }), LC.Combine(Lc.Ok));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), LC.Combine(Lc.Select, Lc.Atlas, Lc.Folder), LC.Combine(Lc.Ok));
                 return;
             }
 
-            if (_target.TargetObjects.Find(_ => _ is SpriteAtlas) != null)
+            if (_target.TargetObjects.Find(obj => obj is SpriteAtlas) != null)
             {
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), LC.Combine(Lc.SC_AtlasExistInCollection), LC.Combine(Lc.Ok));
                 return;
             }
 
+            // 确保图集输出目录存在
+            string atlasDir = _atlasFolder.stringValue.TrimEnd('/');
+            if (!Directory.Exists(atlasDir))
+            {
+                Directory.CreateDirectory(atlasDir);
+                AssetDatabase.Refresh();
+            }
+
             //创建图集
-            SpriteAtlasTextureSettings textureSet = new SpriteAtlasTextureSettings()
+            SpriteAtlasTextureSettings textureSet = new SpriteAtlasTextureSettings
             {
                 readable = false,
                 generateMipMaps = false,
                 sRGB = true,
                 filterMode = FilterMode.Bilinear,
             };
-            SpriteAtlasPackingSettings packSet = new SpriteAtlasPackingSettings()
+            SpriteAtlasPackingSettings packSet = new SpriteAtlasPackingSettings
             {
                 blockOffset = 1,
                 enableRotation = false,
                 enableTightPacking = false,
+                enableAlphaDilation = true,
                 padding = 8,
             };
             for (int i = 0; i < _target.TargetObjects.Count; i++)
             {
-                string assetPath = Utility.Path.GetRegularPath(Path.Combine(_atlasFolder.stringValue, _target.TargetObjects[i].name + ".spriteatlas"));
+                string assetPath = Utility.Path.GetRegularPath(Path.Combine(_atlasFolder.stringValue, _target.TargetObjects[i].name + "Atlas.spriteatlas"));
                 bool result = false;
                 if (!_allOverwrite && File.Exists(assetPath))
                 {
@@ -242,7 +215,6 @@ namespace EasyFramework.Edit.SpriteTools
                             if (_target.Atlas[j].name == _target.TargetObjects[i].name)
                             {
                                 hasSa = true;
-                                continue;
                             }
                         }
                         if (!hasSa)
@@ -263,7 +235,7 @@ namespace EasyFramework.Edit.SpriteTools
 
                 AssetDatabase.CreateAsset(sa, assetPath);
 
-                sa.Add(new Object[] { _target.TargetObjects[i] });
+                sa.Add(new[] { _target.TargetObjects[i] });
                 if (result && i < _target.Atlas.Count && _target.Atlas[i].name != _target.TargetObjects[i].name)
                 {
                     _target.Atlas[i] = sa;
@@ -275,113 +247,35 @@ namespace EasyFramework.Edit.SpriteTools
                 sa = null;
                 AssetDatabase.SaveAssets();
             }
+
+            // 创建完成后自动烘焙
+            if (_target.Atlas.Count > 0)
+            {
+                SpriteAtlasUtility.PackAtlases(_target.Atlas.ToArray(), BuildTarget.NoTarget);
+            }
+
+            EditorUtility.SetDirty(_target);
+            serializedObject.Update();
+            AssetDatabase.SaveAssets();
             EditorApplication.delayCall += AssetDatabase.Refresh;
         }
         #endregion
 
-        #region Pack Preview
+        #region Pack Atlas
         public void Pack()
         {
-            ClearSpriteInfos();
-            for (int i = 0; i < _target.Atlas.Count; i++)
+            if (_target.Atlas.Count == 0)
             {
-                for (int j = _target.TargetObjects.Count - 1; j >= 0; j--)
-                {
-                    if (_target.Atlas[i].name == _target.TargetObjects[j].name)
-                    {
-                        Object obj = _target.TargetObjects[j];
-                        _target.SpriteInfos.Add(new SpriteCollection.SpriteInfo()
-                        {
-                            FolderName = obj.name,
-                        });
-                        HandlePackable(i, obj);
-                        _hasPreview.Add(false);
-                        continue;
-                    }
-                }
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Hints), "No atlas to pack.", LC.Combine(Lc.Ok));
+                return;
             }
 
             SpriteAtlasUtility.PackAtlases(_target.Atlas.ToArray(), BuildTarget.NoTarget);
-            EditorUtility.SetDirty(this);
+            EditorUtility.SetDirty(_target);
+            serializedObject.Update();
             AssetDatabase.SaveAssets();
             EditorApplication.delayCall += AssetDatabase.Refresh;
         }
-
-        void HandlePackable(int index, Object obj)
-        {
-            string _path = AssetDatabase.GetAssetPath(obj);
-            if (obj is Sprite sp)
-            {
-                Object[] _objects = AssetDatabase.LoadAllAssetsAtPath(_path);
-                if (_objects.Length == 2)
-                {
-                    _target.SpriteInfos[index].PathList.Add(_path);
-                }
-                else
-                {
-                    string _regularPath = Utility.Path.GetRegularPath(Path.Combine(_path, sp.name));
-                    _target.SpriteInfos[index].PathList.Add(_regularPath);
-                }
-                _target.SpriteInfos[index].SpriteList.Add(sp);
-            }
-            else if (obj is Texture2D)
-            {
-                Object[] objects = AssetDatabase.LoadAllAssetsAtPath(_path);
-                if (objects.Length == 2)
-                {
-                    _target.SpriteInfos[index].PathList.Add(_path);
-                    _target.SpriteInfos[index].SpriteList.Add(GetSprites(objects)[0]);
-                }
-                else
-                {
-                    Sprite[] sprites = GetSprites(objects);
-                    for (int j = 0; j < sprites.Length; j++)
-                    {
-                        string regularPath = Utility.Path.GetRegularPath(Path.Combine(_path, sprites[j].name));
-                        _target.SpriteInfos[index].PathList.Add(regularPath);
-                        _target.SpriteInfos[index].SpriteList.Add(sprites[j]);
-                    }
-                }
-            }
-            else if (obj is DefaultAsset && ProjectWindowUtil.IsFolder(obj.GetInstanceID()))
-            {
-                string[] files = Directory.GetFiles(_path, "*.*", SearchOption.AllDirectories)
-                    .Where(_ => !_.EndsWith(".meta")).Select(Utility.Path.GetRegularPath).ToArray();
-                foreach (string file in files)
-                {
-                    Object[] objects = AssetDatabase.LoadAllAssetsAtPath(file);
-                    if (objects.Length == 2)
-                    {
-                        _target.SpriteInfos[index].PathList.Add(file);
-                        _target.SpriteInfos[index].SpriteList.Add(GetSprites(objects)[0]);
-                    }
-                    else
-                    {
-                        Sprite[] sprites = GetSprites(objects);
-                        for (int j = 0; j < sprites.Length; j++)
-                        {
-                            string regularPath = Utility.Path.GetRegularPath(Path.Combine(file, sprites[j].name));
-                            _target.SpriteInfos[index].PathList.Add(regularPath);
-                            _target.SpriteInfos[index].SpriteList.Add(sprites[j]);
-                        }
-                    }
-                }
-            }
-            else if (obj is SpriteAtlas spriteAtlas)
-            {
-                Object[] objs = spriteAtlas.GetPackables();
-                for (int i = 0; i < objs.Length; i++)
-                {
-                    HandlePackable(i, objs[i]);
-                }
-            }
-        }
-
-        private Sprite[] GetSprites(Object[] objects)
-        {
-            return objects.OfType<Sprite>().ToArray();
-        }
-
         #endregion
 
         #region Common Tools
@@ -397,36 +291,6 @@ namespace EasyFramework.Edit.SpriteTools
             {
                 ClearAtlasWithIndex(i);
             }
-        }
-        #endregion
-
-        #region Sprite Info
-        void ClearSpriteInfoWithIndex(int index)
-        {
-            if (index >= _target.SpriteInfos.Count)
-                return;
-
-            for (int i = _target.SpriteInfos[index].PathList.Count - 1; i >= 0; i--)
-            {
-                _target.SpriteInfos[index].PathList.RemoveAt(i);
-                _target.SpriteInfos[index].SpriteList.RemoveAt(i);
-            }
-
-            _target.SpriteInfos[index].PathList.Clear();
-            _target.SpriteInfos[index].SpriteList.Clear();
-            _target.SpriteInfos.RemoveAt(index);
-        }
-
-        void ClearSpriteInfos()
-        {
-            if (_target.SpriteInfos.Count == 0)
-                return;
-
-            for (int i = _target.SpriteInfos.Count - 1; i >= 0; i--)
-            {
-                ClearSpriteInfoWithIndex(i);
-            }
-            _target.SpriteInfos.Clear();
         }
         #endregion
         #endregion
