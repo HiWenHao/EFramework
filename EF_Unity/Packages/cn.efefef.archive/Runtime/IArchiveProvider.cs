@@ -5,8 +5,12 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 01:29:00
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-25 17:30:00
+ * ScriptVersion: 0.2
+ * Changelog:
+ *   0.2  新增同步方法 SaveRawSync / SaveMetaSync / FlushSync。
+ *       退出流程必须使用这些同步方法 —— UniTask 在 PlayerLoop 关闭后无法 await。
+ *   0.1  首版
  * ===============================================
  */
 
@@ -118,5 +122,28 @@ namespace EasyFramework.Systems.Archive
         /// <param name="ct">取消令牌<para>Cancellation token</para></param>
         /// <returns>元数据，不存在则返回 null<para>Metadata, or null if not found</para></returns>
         UniTask<ArchiveSlotMeta?> LoadMetaAsync(int slotId, CancellationToken ct = default);
+
+        #region Synchronous variants / 同步变体(用于退出流程)
+
+        /// <summary>
+        /// 同步写入一条原始字节数据。<b>退出流程专用</b>，不依赖 PlayerLoop，不会死锁。
+        /// <para>Synchronous save. <b>For shutdown paths only</b> — does not depend on PlayerLoop.</para>
+        /// <para>实现要求：必须阻塞直到数据 fsync 到磁盘(或抛异常),不可返回未完成状态。</para>
+        /// </summary>
+        void SaveRawSync(int slotId, string key, byte[] data);
+
+        /// <summary>
+        /// 同步保存槽位元数据。<b>退出流程专用</b>。
+        /// <para>Synchronous save metadata. <b>For shutdown paths only</b>.</para>
+        /// </summary>
+        void SaveMetaSync(ArchiveSlotMeta meta);
+
+        /// <summary>
+        /// 同步强制刷盘(例如 fsync / WAL checkpoint)。<b>退出流程专用</b>。
+        /// <para>Synchronous flush. <b>For shutdown paths only</b>.</para>
+        /// </summary>
+        void FlushSync();
+
+        #endregion
     }
 }

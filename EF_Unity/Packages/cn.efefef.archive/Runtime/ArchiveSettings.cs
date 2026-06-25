@@ -21,6 +21,17 @@ using UnityEngine;
 namespace EasyFramework.Systems.Archive
 {
     /// <summary>
+    /// AES 密钥长度枚举，仅允许 AES 规范内的合法值。
+    /// <para>Valid AES key sizes as defined by the AES standard.</para>
+    /// </summary>
+    public enum AesKeySize
+    {
+        Bits128 = 128,
+        Bits192 = 192,
+        Bits256 = 256
+    }
+
+    /// <summary>
     /// 存档系统全局可调参数，通过 Editor 面板或 Project Settings 修改。
     /// <para>Archive system global settings, editable via Editor panel or Project Settings.</para>
     /// </summary>
@@ -47,13 +58,12 @@ namespace EasyFramework.Systems.Archive
         [Tooltip("AES 密钥派生盐值（建议每款游戏使用不同值）。留空则使用设备唯一标识作为盐。")]
         public string encryptionSalt = "EF.Archive.DefaultSalt";
 
-        [Tooltip("AES 密钥长度（128 / 192 / 256 位）")]
-        [Range(128, 256)]
-        public int aesKeySize = 256;
+        [Tooltip("AES 密钥长度（仅允许 128 / 192 / 256 位，其他值运行时会自动修正为最近合法值）")]
+        public AesKeySize aesKeySize = AesKeySize.Bits256;
 
         [Tooltip("PBKDF2 迭代次数（越高越安全，越慢）")]
         [Range(1000, 100000)]
-        public int pbkdf2Iterations = 10000;
+        public int pbkdf2Iterations = 100000;
 
 #if UNITY_EDITOR
         [HeaderPro("兼容性设置", "Compatibility Settings")]
@@ -61,7 +71,7 @@ namespace EasyFramework.Systems.Archive
         [Tooltip("当前存档数据格式版本号。版本变更时旧存档自动迁移。")]
         public int dataVersion = 1;
 
-        [Tooltip("是否在读取时对未知 JSON 字段发出警告（调试用）")]
+        [Tooltip("是否在反序列化时对未知 JSON 字段抛出异常（errorOnUnknownFields）。注意：开启后任何新增字段都会导致 Load 失败。")]
         public bool warnOnUnknownFields = false;
 
 #if UNITY_EDITOR

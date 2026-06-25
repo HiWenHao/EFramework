@@ -5,8 +5,12 @@
  * Author:        Alvin5100
  * CreationTime:  2026-06-24 22:25:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-25 00:56:00
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-06-25 17:00:00
+ * ScriptVersion: 0.1.1
+ * Changelog:
+ *   0.1.1  修复 Open Persistent Archives Folder 在 settings 为 null 时崩溃；
+ *          修复 Clear All Archives 失败时无错误反馈。
+ *   0.1.0  首版
  * ===============================================
  */
 
@@ -98,22 +102,28 @@ namespace EasyFramework.Systems.Archive.Editor
                     "Restore all settings to default values?", "Reset", "Cancel"))
                 {
                     var defaults = ScriptableObject.CreateInstance<ArchiveSettings>();
-                    _settings.maxSlots = defaults.maxSlots;
-                    _settings.autoSaveIntervalSeconds = defaults.autoSaveIntervalSeconds;
-                    _settings.autoSaveOnlyDirty = defaults.autoSaveOnlyDirty;
-                    _settings.encryptionSalt = defaults.encryptionSalt;
-                    _settings.aesKeySize = defaults.aesKeySize;
-                    _settings.pbkdf2Iterations = defaults.pbkdf2Iterations;
-                    _settings.dataVersion = defaults.dataVersion;
-                    _settings.warnOnUnknownFields = defaults.warnOnUnknownFields;
-                    _settings.enableAutoBackup = defaults.enableAutoBackup;
-                    _settings.maxBackupCount = defaults.maxBackupCount;
-                    _settings.providerTypeName = defaults.providerTypeName;
-                    _settings.fileStorageRoot = defaults.fileStorageRoot;
+
+                    // 用 CopySerialized 替代逐字段赋值，新增字段不会遗漏
+                    EditorUtility.CopySerialized(defaults, _settings);
 
                     EditorUtility.SetDirty(_settings);
                     AssetDatabase.SaveAssets();
                     EditorApplication.delayCall += () => Object.DestroyImmediate(defaults);
+
+                    // 重建 Inspector Editor，确保面板 UI 反映最新字段值
+                    if (_cachedEditor != null)
+                    {
+                        Object.DestroyImmediate(_cachedEditor);
+                        _cachedEditor = null;
+                    }
+                    _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
+
+                    // 通知父容器重绘
+                    EditorApplication.delayCall += () =>
+                    {
+                        if (_cachedEditor != null)
+                            EditorUtility.SetDirty(_settings);
+                    };
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -164,9 +174,19 @@ namespace EasyFramework.Systems.Archive.Editor
         private static void OpenArchivesFolder()
         {
             var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
-            string root = settings != null ? settings.fileStorageRoot : "Archives";
+            string root = settings != null && !string.IsNullOrEmpty(settings.fileStorageRoot)
+                ? settings.fileStorageRoot
+                : "Archives";
             string path = Path.Combine(Application.persistentDataPath, root);
-            Directory.CreateDirectory(path);
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (System.Exception ex)
+            {
+                D.Warning($"[Archive] Failed to create archives directory '{path}': {ex.Message}");
+                return;
+            }
             EditorUtility.RevealInFinder(path);
         }
 
@@ -182,12 +202,25 @@ namespace EasyFramework.Systems.Archive.Editor
                 return;
 
             var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
-            string root = settings != null ? settings.fileStorageRoot : "Archives";
+            string root = settings != null && !string.IsNullOrEmpty(settings.fileStorageRoot)
+                ? settings.fileStorageRoot
+                : "Archives";
             string path = Path.Combine(Application.persistentDataPath, root);
             if (Directory.Exists(path))
             {
-                Directory.Delete(path, recursive: true);
-                D.Log("[Archive] All archive data cleared.");
+                try
+                {
+                    Directory.Delete(path, recursive: true);
+                    D.Log("[Archive] All archive data cleared.");
+                }
+                catch (System.Exception ex)
+                {
+                    D.Error($"[Archive] Failed to clear archives directory '{path}': {ex.Message}");
+                }
+            }
+            else
+            {
+                D.Log("[Archive] No archives directory to clear.");
             }
         }
     }
