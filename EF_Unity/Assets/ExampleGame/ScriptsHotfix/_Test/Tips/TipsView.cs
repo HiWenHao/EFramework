@@ -63,11 +63,12 @@ namespace EFExample.UI.Tips
 
         void IUiView.Awake() { }
 
-        void IUiView.Enable(params object[] args)
+        void IUiView.Enable(UiViewArgs args)
         {
-            _tipsExtraData = (TipsViewExtraData)args[1];
-
-            Txt_Display.text = $"{args[0]}";
+            if (null == args) return;
+            var reallyArgs = (UiViewArgs<string, TipsViewExtraData>)args;
+            _tipsExtraData = reallyArgs.Args2;
+            Txt_Display.text = reallyArgs.Args1;
             Txt_Cancel.transform.parent.gameObject.SetActive(null != _tipsExtraData.CancelCallBack);
             Txt_Confirm.transform.parent.gameObject.SetActive(null != _tipsExtraData.ConfirmCallBack);
             Txt_Cancel.text = string.IsNullOrEmpty(_tipsExtraData.CancelName) ? "取消" : _tipsExtraData.CancelName;
@@ -80,7 +81,7 @@ namespace EFExample.UI.Tips
 
         void IUiView.Quit() { }
 
-        void IUiView.Disable(params object[] args) { }
+        void IUiView.Disable(UiViewArgs args) { }
 
         void OnClickClose()
         {

@@ -13,6 +13,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using EasyFramework.Managers.Ui;
+using EFExample.UI.Tips;
 
 namespace EFExample
 {
@@ -44,9 +45,11 @@ namespace EFExample
 
         void IUiView.Awake() { }
 
-        void IUiView.Enable(params object[] args)
+        void IUiView.Enable(UiViewArgs args)
         {
-            Txt_Contents.text = $"{args[0]}";
+            if (null == args) return;
+            var reallyArgs = (UiViewArgs<string>)args;
+            Txt_Contents.text = reallyArgs.Args1;
             _exitTime = 1.0f;
             Rect_Bg.anchoredPosition = Vector2.up * -40.0f;
         }
@@ -63,6 +66,6 @@ namespace EFExample
 
         void IUiView.Quit() { }
 
-        void IUiView.Disable(params object[] args) { }
+        void IUiView.Disable(UiViewArgs args) { }
     }
 }

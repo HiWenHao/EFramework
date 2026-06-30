@@ -30,7 +30,7 @@ namespace EasyFramework.Edit.Create
         [MenuItem("Assets/Create/EF/UI Animation Config", priority = 413)]
         private static void CreatedAnimationConfig()
         {
-            CreateSettings.Instance<UiAnimationConfig>();
+            CreateSettings.Instance<UiAnimationConfig>(false);
         }
 
         [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 414)]

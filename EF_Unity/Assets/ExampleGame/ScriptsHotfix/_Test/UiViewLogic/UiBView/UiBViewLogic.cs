@@ -12,6 +12,7 @@
 using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Ui;
+using EFExample.UI.Tips;
 using UnityEngine;
 
 namespace EFExample
@@ -27,20 +28,18 @@ namespace EFExample
             Sld_Volum.onValueChanged.AddListener(OnVolumChanged);
         }
 
-        void IUiView.Enable(params object[] args)
+        void IUiView.Enable(UiViewArgs args)
         {
-            foreach (var item in args)
-            {
-                D.Emphasize($"B enter  {item}");
-            }
+            if (args == null) return;
+            var reallyArgs = (UiViewArgs<string>)args;
+            D.Emphasize($"B enter  {reallyArgs.Args1}");
         }
 
-        void IUiView.Disable(params object[] args)
+        void IUiView.Disable(UiViewArgs args)
         {
-            foreach (var item in args)
-            {
-                D.Emphasize($"B exit  {item}");
-            }
+            if (args == null) return;
+            var reallyArgs = (UiViewArgs<string>)args;
+            D.Emphasize($"B exit  {reallyArgs.Args1}");
         }
 
         void IUiView.Quit()

@@ -23,7 +23,7 @@ namespace EFExample
         {
         }
 
-        void IUiView.Enable(params object[] args)
+        void IUiView.Enable(UiViewArgs args = null)
         {
             UiSystem.Instance.CloseView<BottomSubfieldView>().Forget();
         }

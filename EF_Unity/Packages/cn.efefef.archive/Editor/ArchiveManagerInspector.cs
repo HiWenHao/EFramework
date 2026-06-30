@@ -6,11 +6,6 @@
  * ModifyAuthor:  Alvin5100
  * ModifyTime:    2026-06-25 17:00:00
  * ScriptVersion: 0.1.1
- * Changelog:
- *   0.1.1  移除失效的 60 帧累加器（基类已经按 RefreshInterval 节流），
- *          让基类节流机制直接生效；OnEditorGUI 边界检查；
- *          异步刷新加并发保护。
- *   0.1.0  首版
  * ===============================================
  */
 
