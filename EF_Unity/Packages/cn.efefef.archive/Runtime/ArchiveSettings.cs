@@ -35,7 +35,6 @@ namespace EasyFramework.Systems.Archive
     /// 存档系统全局可调参数，通过 Editor 面板或 Project Settings 修改。
     /// <para>Archive system global settings, editable via Editor panel or Project Settings.</para>
     /// </summary>
-    [CreateAssetMenu(fileName = "ArchiveSettings", menuName = "EF/Archive Settings", order = 100)]
     public class ArchiveSettings : ScriptableObject
     {
 #if UNITY_EDITOR

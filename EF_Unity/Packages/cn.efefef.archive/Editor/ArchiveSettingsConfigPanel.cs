@@ -7,15 +7,12 @@
  * ModifyAuthor:  Alvin5100
  * ModifyTime:    2026-06-25 17:00:00
  * ScriptVersion: 0.1.1
- * Changelog:
- *   0.1.1  修复 Open Persistent Archives Folder 在 settings 为 null 时崩溃；
- *          修复 Clear All Archives 失败时无错误反馈。
- *   0.1.0  首版
  * ===============================================
  */
 
 using System.IO;
 using EasyFramework.Edit;
+using EasyFramework.Edit.Create;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
@@ -37,8 +34,8 @@ namespace EasyFramework.Systems.Archive.Editor
 
         public override void LoadWindowData()
         {
-            _settings = AssetDatabase.LoadAssetAtPath<ArchiveSettings>(
-                "Assets/Resources/Configs/ArchiveSettings.asset");
+
+            _settings = CreateSettings.Instance<ArchiveSettings>();
 
             if (_settings != null)
                 _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
@@ -49,9 +46,10 @@ namespace EasyFramework.Systems.Archive.Editor
             if (_settings == null)
             {
                 EditorGUILayout.HelpBox(
-                    "ArchiveSettings.asset not found.\n" +
-                    "Create one: Right-click in Project → Create → EF → Archive Settings\n" +
-                    "Then place it at: Assets/Resources/Configs/ArchiveSettings.asset",
+                    LC.Combine(Lc.Archive, Lc.Config, Lc.No, Lc.Found)
+                    + "\n"
+                    + LC.Combine(Lc.Please, Lc.Create, Lc.One)
+                    + ": Create → EF → Archive Settings",
                     MessageType.Warning);
 
                 if (GUILayout.Button("Create & Place ArchiveSettings"))
@@ -138,23 +136,11 @@ namespace EasyFramework.Systems.Archive.Editor
             }
         }
 
-        // 在 Resources/Configs 下创建默认 ArchiveSettings.asset
         private void CreateDefaultSettings()
         {
-            if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-                AssetDatabase.CreateFolder("Assets", "Resources");
-
-            if (!AssetDatabase.IsValidFolder("Assets/Resources/Configs"))
-                AssetDatabase.CreateFolder("Assets/Resources", "Configs");
-
-            var settings = ScriptableObject.CreateInstance<ArchiveSettings>();
-            AssetDatabase.CreateAsset(settings, "Assets/Resources/Configs/ArchiveSettings.asset");
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            _settings = settings;
+            _settings = CreateSettings.Instance<ArchiveSettings>();
             _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
-            EditorGUIUtility.PingObject(settings);
+            EditorGUIUtility.PingObject(_settings);
 
             D.Log("[Archive] ArchiveSettings.asset created at Assets/Resources/Configs/");
         }

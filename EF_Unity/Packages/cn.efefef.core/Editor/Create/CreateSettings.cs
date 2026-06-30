@@ -31,7 +31,7 @@ namespace EasyFramework.Edit.Create
             Instance<PathConfig>();
         }
         
-        [MenuItem("Assets/Create/EF/TodoListConfig", priority = 310)]
+        [MenuItem("Assets/Create/EF/Todo List Config", priority = 310)]
         private static void CreatedTaskListConfig()
         {
             Instance<TodoListConfig>(false);

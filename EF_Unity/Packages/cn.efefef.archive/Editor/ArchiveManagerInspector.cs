@@ -22,8 +22,8 @@ namespace EasyFramework.Systems.Archive.Editor
     {
         protected override string Title => LC.Combine(Lc.Archive, Lc.Data, Lc.Monitor);
 
-        private bool _showSlots = true; // 是否展开槽位折叠区
-        private bool _showKeys;          // 是否展开 Key 折叠区
+        private bool _showSlots = true;     // 是否展开槽位折叠区
+        private bool _showKeys;             // 是否展开 Key 折叠区
         private string[] _cachedKeys = Array.Empty<string>(); // 缓存的 Key 列表
         private ArchiveSlotMeta[] _cachedSlots = Array.Empty<ArchiveSlotMeta>(); // 缓存的槽位列表
 
@@ -32,30 +32,29 @@ namespace EasyFramework.Systems.Archive.Editor
 
         protected override void OnEditorGUI()
         {
-            // 防御：基类在非 Play 模式下仍会调用 OnInspectorGUI（用于显示元数据），
-            // 但 Target 可能为 null（编辑器跨域重载后尚未绑定）
             if (Target == null) return;
 
-            // 基础信息
-            if (Target.Settings != null)
-            {
-                EditorGUILayout.LabelField(LC.Combine(Lc.Provider),
-                    string.IsNullOrEmpty(Target.Settings.providerTypeName)
-                        ? LC.Combine(Lc.File, Lc.Archive, Lc.Provider, Lc.Default)
-                        : Target.Settings.providerTypeName);
-                EditorGUILayout.LabelField(LC.Combine(Lc.Auto, Lc.Save),
-                    $"{Target.Settings.autoSaveIntervalSeconds}s");
-                EditorGUILayout.LabelField(LC.Combine(Lc.Data, Lc.Version),
-                    Target.Settings.dataVersion.ToString());
-                EditorGUILayout.LabelField(LC.Combine(Lc.Active, Lc.Slot),
-                    Target.ActiveSlot.ToString());
-            }
-            else
+            if (null == Target.Settings)
             {
                 EditorGUILayout.HelpBox(
-                    "ArchiveSettings not loaded. Check Resources/Configs/ArchiveSettings.asset.",
+                    LC.Combine(Lc.Archive, Lc.Config, Lc.No, Lc.Load, Lc.Success)
+                    + "\n"
+                    + LC.Combine(Lc.Please, Lc.Check, Lc.Config, Lc.By, Lc.Path)
+                    + ": Resources/Configs/ArchiveSettings.asset.",
                     MessageType.Warning);
+                return;
             }
+
+            EditorGUILayout.LabelField(LC.Combine(Lc.Provider),
+                string.IsNullOrEmpty(Target.Settings.providerTypeName)
+                    ? LC.Combine(Lc.File, Lc.Archive, Lc.Provider, Lc.Default)
+                    : Target.Settings.providerTypeName);
+            EditorGUILayout.LabelField(LC.Combine(Lc.Auto, Lc.Save),
+                $"{Target.Settings.autoSaveIntervalSeconds}s");
+            EditorGUILayout.LabelField(LC.Combine(Lc.Data, Lc.Version),
+                Target.Settings.dataVersion.ToString());
+            EditorGUILayout.LabelField(LC.Combine(Lc.Active, Lc.Slot),
+                Target.ActiveSlot.ToString());
 
             EditorGUILayout.Space();
 
@@ -74,8 +73,6 @@ namespace EasyFramework.Systems.Archive.Editor
                 {
                     foreach (var slot in slots)
                     {
-                        // 防御：JsonUtility 反序列化可能产生默认结构体（slotId=0 但其他字段都为空），
-                        // 简单过滤掉完全空的 meta
                         if (slot.slotId < 0) continue;
 
                         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -112,13 +109,10 @@ namespace EasyFramework.Systems.Archive.Editor
             EditorGUI.indentLevel--;
         }
 
-        // 基类 EFInspectorBase 已经按 RefreshInterval（默认 0.3s）节流调用 OnEditorUpdate，
-        // 子类不需要再叠加帧计数器（之前的 60 帧累加器永远到不了，是死代码）。
-        // 这里直接发起异步刷新，基类负责节流。
         protected override void OnEditorUpdate()
         {
             if (!Application.isPlaying || Target == null || Target.Settings == null) return;
-            if (_refreshInFlight) return; // 并发保护
+            if (_refreshInFlight) return;
             RefreshKeysAsync().Forget();
         }
 
@@ -131,7 +125,6 @@ namespace EasyFramework.Systems.Archive.Editor
                 var newKeys = await Target.ListKeysAsync();
                 var newSlots = await Target.GetAllSlotsAsync();
 
-                // 防御：异步过程中 Target 可能被销毁（场景切换 / 重载）
                 if (this == null || Target == null) return;
 
                 _cachedKeys = newKeys ?? Array.Empty<string>();
@@ -142,7 +135,7 @@ namespace EasyFramework.Systems.Archive.Editor
             {
                 _cachedKeys = Array.Empty<string>();
                 _cachedSlots = Array.Empty<ArchiveSlotMeta>();
-                Debug.LogWarning($"[ArchiveManagerInspector] Failed to refresh key list: {ex.Message}");
+                Debug.LogWarning($"[ ArchiveManagerInspector ] Failed to refresh key list: {ex.Message}");
             }
             finally
             {
@@ -152,22 +145,21 @@ namespace EasyFramework.Systems.Archive.Editor
 
         #region Fallback Strings
 
-        // LC 组合键（不在 JSON 中单独定义的多词短语）
         private static readonly Lc[] ArmSlotList = { Lc.Slot, Lc.List };
         private static readonly Lc[] ArmSlotEmpty = { Lc.No, Lc.Slot, Lc.Found };
         private static readonly Lc[] ArmKeyList = { Lc.Active, Lc.Slot, Lc.In, Lc.Key, Lc.List };
 
         #endregion
 
-        // 格式化字节数为可读字符串（B → KB → MB）
         private static string FormatBytes(long bytes)
         {
-            if (bytes < 0) return "—";
-            if (bytes < 1024)
-                return $"{bytes} B";
-            if (bytes < 1024 * 1024)
-                return $"{bytes / 1024f:F1} KB";
-            return $"{bytes / (1024f * 1024f):F1} MB";
+            return bytes switch
+            {
+                < 0 => "—",
+                < 1024 => $"{bytes} B",
+                < 1024 * 1024 => $"{bytes / 1024f:F1} KB",
+                _ => $"{bytes / (1024f * 1024f):F1} MB"
+            };
         }
     }
 }
