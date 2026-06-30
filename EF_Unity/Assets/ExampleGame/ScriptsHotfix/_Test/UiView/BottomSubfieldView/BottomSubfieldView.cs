@@ -21,12 +21,12 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class BottomSubfieldView : IUiView
     {
-        public static async UniTask<BottomSubfieldView> Open(params object[] args)
+        public static async UniTask<BottomSubfieldView> Open(UiViewArgs args = null)
         {
             return await UiSystem.Instance.OpenPageView<BottomSubfieldView>(args);
         }
 
-        public static async UniTask<bool> Close(params object[] args)
+        public static async UniTask<bool> Close(UiViewArgs args = null)
         {
             return await UiSystem.Instance.CloseView<BottomSubfieldView>(args);
         }

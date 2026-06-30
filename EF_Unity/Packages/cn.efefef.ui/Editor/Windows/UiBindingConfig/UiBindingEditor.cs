@@ -556,12 +556,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             sb.AppendLine(ScriptExplain);
             sb.AppendLine($"    public partial class {className} : IUiView");
             sb.AppendLine("    {");
-            sb.AppendLine($"        public static async UniTask<{className}> Open(params object[] args)");
+            sb.AppendLine($"        public static async UniTask<{className}> Open(UiViewArgs args = null)");
             sb.AppendLine("        {");
             sb.AppendLine($"            return await UiSystem.Instance.OpenView<{className}>(args);");
             sb.AppendLine("        }");
             sb.AppendLine();
-            sb.AppendLine("        public static async UniTask<bool> Close(params object[] args)");
+            sb.AppendLine("        public static async UniTask<bool> Close(UiViewArgs args = null)");
             sb.AppendLine("        {");
             sb.AppendLine($"            return await UiSystem.Instance.CloseView<{className}>(args);");
             sb.AppendLine("        }");

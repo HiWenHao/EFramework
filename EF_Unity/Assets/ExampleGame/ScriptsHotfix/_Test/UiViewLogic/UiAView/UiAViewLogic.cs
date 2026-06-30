@@ -35,7 +35,10 @@ namespace EFExample
 
         private void OnClickBtn_ToB()
         {
-            UiSystem.Instance.OpenPageView<UiBView>("向B传递参数");
+            UiSystem.Instance.OpenPageView<UiBView>(new UiViewArgs<string>
+            {
+                Args1 = "向B传递参数"
+            });
         }
 
         private void OnClickBtn_Quit()

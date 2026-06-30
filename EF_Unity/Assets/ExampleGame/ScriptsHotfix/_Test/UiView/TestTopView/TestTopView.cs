@@ -21,12 +21,12 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class TestTopView : IUiView
     {
-        public static async UniTask<TestTopView> Open(params object[] args)
+        public static async UniTask<TestTopView> Open(UiViewArgs args = null)
         {
             return await UiSystem.Instance.OpenPageView<TestTopView>(args);
         }
 
-        public static async UniTask<bool> Close(params object[] args)
+        public static async UniTask<bool> Close(UiViewArgs args = null)
         {
             return await UiSystem.Instance.CloseView<TestTopView>(args);
         }

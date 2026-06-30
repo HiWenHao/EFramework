@@ -32,8 +32,6 @@ namespace EasyFramework.Managers.Ui
 
         private uint _serialId; // 页面序列号
 
-        private Transform _target; // UI根节点
-
         /// <summary> 自动销毁计时 </summary>
         private Dictionary<IUiView, float> _autoDestroyDic;
 

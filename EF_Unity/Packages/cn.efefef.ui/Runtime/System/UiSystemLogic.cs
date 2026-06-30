@@ -23,16 +23,13 @@ namespace EasyFramework.Managers.Ui
     {
         void ISingleton.Init()
         {
-            //_target = new GameObject("UI").transform;
-            //_target.SetParent(EFRoot.Managers);
-            _target = transform;
             UICamera = new GameObject("UICamera").AddComponent<Camera>();
             UICamera.orthographic = true;
             UICamera.orthographicSize = Screen.height / 2.0f;
             UICamera.farClipPlane = 200.0f;
             UICamera.cullingMask = 1 << LayerMask.NameToLayer("UI");
             UICamera.clearFlags = CameraClearFlags.Depth;
-            UICamera.transform.SetParent(_target, false);
+            UICamera.transform.SetParent(transform, false);
 
             UniversalAdditionalCameraData ucd = UICamera.GetUniversalAdditionalCameraData();
             ucd.renderType = CameraRenderType.Overlay;
@@ -51,7 +48,7 @@ namespace EasyFramework.Managers.Ui
             cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             cs.referenceResolution = new Vector2(Screen.width, Screen.height);
             cs.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-            root.transform.SetParent(_target, false);
+            root.transform.SetParent(transform, false);
 
             int typeCount = System.Enum.GetValues(typeof(UIViewType)).Length;
             _viewStackDic = new Dictionary<UIViewType, List<IUiView>>();
@@ -89,7 +86,7 @@ namespace EasyFramework.Managers.Ui
                 eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
             }
 
-            eventSystem.transform.parent = _target;
+            eventSystem.transform.parent = transform;
 
             _autoDestroyDic = new Dictionary<IUiView, float>();
         }
@@ -144,9 +141,6 @@ namespace EasyFramework.Managers.Ui
 
             DestroyObj(UICamera.gameObject);
             UICamera = null;
-
-            DestroyObj(_target.gameObject);
-            _target = null;
         }
 
         private static string GetAssetPath(string viewName)
@@ -259,7 +253,7 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 启用视窗并播放入场动画
         /// </summary>
-        private async UniTask ViewEnableWithAnim(IUiView uiView, params object[] args)
+        private async UniTask ViewEnableWithAnim(IUiView uiView, UiViewArgs args = null)
         {
             if (animationConfig != null
                 && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration, out var curve, out _)
@@ -283,7 +277,7 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 播放退场动画后关闭视窗（仅在 reverseOnClose 为 true 时播放）
         /// </summary>
-        private async UniTask ViewCloseWithAnim(IUiView uiView, bool immediateDestroy, bool onlyDisable, params object[] args)
+        private async UniTask ViewCloseWithAnim(IUiView uiView, bool immediateDestroy, bool onlyDisable, UiViewArgs args = null)
         {
             if (uiView.View != null
                 && uiView.View.gameObject.activeSelf
@@ -346,7 +340,7 @@ namespace EasyFramework.Managers.Ui
             AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
         }
 
-        private bool ViewEnable(IUiView uiView, params object[] args)
+        private bool ViewEnable(IUiView uiView, UiViewArgs args = null)
         {
             if (null == uiView)
                 return false;
@@ -365,7 +359,7 @@ namespace EasyFramework.Managers.Ui
             return true;
         }
 
-        private bool ViewClose(IUiView uiView, bool immediateDestroy, bool onlyDisable, params object[] args)
+        private bool ViewClose(IUiView uiView, bool immediateDestroy, bool onlyDisable, UiViewArgs args = null)
         {
             if (null == uiView || null == uiView.View.gameObject)
                 return false;
@@ -400,7 +394,7 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 关闭指定类型栈顶的非 <paramref name="exceptView"/> 视窗, 用于新面板入场动画完成后清理紧邻的旧面板，不影响下方页面栈。
         /// </summary>
-        private void ViewCloseByTypeExcept(UIViewType uiViewType, IUiView exceptView, params object[] args)
+        private void ViewCloseByTypeExcept(UIViewType uiViewType, IUiView exceptView, UiViewArgs args = null)
         {
             List<IUiView> views = _viewStackDic[uiViewType];
             int index = views.Count - 1;
@@ -417,7 +411,7 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 关闭某个类型的全部视窗
         /// </summary>
-        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView, params object[] args)
+        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView, UiViewArgs args = null)
         {
             var uiViews = _viewStackDic[uiViewType];
             for (int i = uiViews.Count - 1; i >= 0; i--)
@@ -500,6 +494,17 @@ namespace EasyFramework.Managers.Ui
             return false;
         }
 
+        /// <summary>
+        /// 按参数方向过滤，返回指定生命周期应收到的参数
+        /// </summary>
+        private static UiViewArgs FilterArgsForDirection(UiViewArgs args, UiArgsDirection targetDirection)
+        {
+            if (args == null) return null;
+            if (args.Direction == UiArgsDirection.Both ||  args.Direction == targetDirection) return args;
+
+            return null;
+        }
+
         #endregion
 
         /// <summary>
@@ -519,8 +524,9 @@ namespace EasyFramework.Managers.Ui
         /// - 多实例型：直接叠加，不关闭已有
         /// <para>Multi-instance: Directly superimpose without closing the existing one</para>
         /// </summary>
-        /// <param name="args">该参数将推送给即将打开的视窗</param>
-        public async UniTask<T> OpenView<T>(params object[] args) where T : IUiView, new()
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask<T> OpenView<T>(UiViewArgs args = null) where T : IUiView, new()
         {
             await UniTask.CompletedTask;
             IUiView openView;
@@ -554,7 +560,7 @@ namespace EasyFramework.Managers.Ui
         /// <para>[Obsolete] Use <see cref="OpenView{T}"/> instead.</para>
         /// </summary>
         [System.Obsolete("Use OpenView<T> instead.")]
-        public async UniTask<T> OpenPageView<T>(params object[] args) where T : IUiView, new()
+        public async UniTask<T> OpenPageView<T>(UiViewArgs args = null) where T : IUiView, new()
         {
             return await OpenView<T>(args);
         }
@@ -563,9 +569,9 @@ namespace EasyFramework.Managers.Ui
         /// 打开页面
         /// </summary>
         /// <param name="uiView">要被打开的页面</param>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<bool> OpenView(IUiView uiView, params object[] args)
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask<bool> OpenView(IUiView uiView, UiViewArgs args = null)
         {
             await UniTask.CompletedTask;
             if (uiView is not { ViewType: (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent) })
@@ -601,9 +607,9 @@ namespace EasyFramework.Managers.Ui
         /// 视窗叠加显示方法。不关闭同类视窗，支持多实例叠加。
         /// <para>General window display method. Does not close similar windows, supports multiple instances to be stacked.</para>
         /// </summary>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<T> OpenViewOverlay<T>(params object[] args) where T : IUiView, new()
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask<T> OpenViewOverlay<T>(UiViewArgs args = null) where T : IUiView, new()
         {
             await UniTask.CompletedTask;
 
@@ -623,9 +629,9 @@ namespace EasyFramework.Managers.Ui
         /// 某一类型视窗返回到首页
         /// </summary>
         /// <param name="uiViewType">视窗类型</param>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask BackToFirstViewWithType(UIViewType uiViewType, params object[] args)
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask BackToFirstViewWithType(UIViewType uiViewType, UiViewArgs args = null)
         {
             ViewCloseAllWithType(uiViewType, false, true, args);
             await UniTask.CompletedTask;
@@ -634,9 +640,9 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 关闭UI视窗
         /// </summary>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<bool> CloseView<T>(params object[] args) where T : IUiView
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask<bool> CloseView<T>(UiViewArgs args = null) where T : IUiView
         {
             var allViewTypes = System.Enum.GetValues(typeof(UIViewType));
             for (int i = allViewTypes.Length - 1; i >= 0; i--)
@@ -655,9 +661,9 @@ namespace EasyFramework.Managers.Ui
         /// 关闭视窗
         /// </summary>
         /// <param name="uiView">要被关闭的视窗</param>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask<bool> CloseView(IUiView uiView, params object[] args)
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask<bool> CloseView(IUiView uiView, UiViewArgs args = null)
         {
             if (null == uiView)
                 return false;
@@ -668,10 +674,10 @@ namespace EasyFramework.Managers.Ui
                 int idx = pageStack.IndexOf(uiView);
                 // 仅当被关闭的是栈顶页面时，才唤起其前驱页面
                 if (idx == pageStack.Count - 1 && idx > 0)
-                    ViewEnable(pageStack[idx - 1], args);
+                    ViewEnable(pageStack[idx - 1], FilterArgsForDirection(args, UiArgsDirection.ToEnable));
             }
 
-            await ViewCloseWithAnim(uiView, false, false, args);
+            await ViewCloseWithAnim(uiView, false, false, FilterArgsForDirection(args, UiArgsDirection.ToDisable));
             return true;
         }
 
@@ -679,9 +685,9 @@ namespace EasyFramework.Managers.Ui
         /// 关闭全部视窗
         /// </summary>
         /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
-        /// <param name="args">This parameter will be sent to both the UI page that is about to be opened and the UI page that has been closed.
-        /// <para>该参数将推送给即将打开的UI页面 和 被关闭的UI页面</para></param>
-        public async UniTask CloseAllView(bool immediateDestroy = false, params object[] args)
+        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
+        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
+        public async UniTask CloseAllView(bool immediateDestroy = false, UiViewArgs args = null)
         {
             foreach (var uiViews in _viewStackDic)
             {

@@ -69,12 +69,12 @@ namespace EFExample
         private async UniTaskVoid OnClickBtn_ToCPopHelper()
         {
             await UiSystem.Instance.OpenView<UiCView>();
-            await UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            await UiSystem.Instance.CloseView<UiBView>(new UiViewArgs<string>("这是 B 页面向 A 页面传递的参数"));
         }
 
         private void OnClickBtn_BackA()
         {
-            UiSystem.Instance.CloseView<UiBView>("这是 B 页面向 A 页面传递的参数");
+            UiSystem.Instance.CloseView<UiBView>(new UiViewArgs<string>("这是 B 页面向 A 页面传递的参数"));
         }
         private void OnClickBtn_StopAllEffect()
         {
