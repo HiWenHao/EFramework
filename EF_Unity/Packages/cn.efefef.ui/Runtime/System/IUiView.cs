@@ -55,7 +55,7 @@ namespace EasyFramework.Managers.Ui
         /// <para>当页面被激活时</para>
         /// </summary>
         /// <param name="args">Send this params to current ui page.<para>给这个页面传递的参数</para></param>
-        protected internal void Enable(params object[] args)
+        protected internal void Enable(UiViewArgs args = null)
         {
         }
 
@@ -77,7 +77,7 @@ namespace EasyFramework.Managers.Ui
         /// <para>当页面被禁用时</para>
         /// </summary>
         /// <param name="args">Send this params to closed ui page.<para>给要被关闭的页面传递的参数</para></param>
-        protected internal void Disable(params object[] args)
+        protected internal void Disable(UiViewArgs args = null)
         {
         }
 
