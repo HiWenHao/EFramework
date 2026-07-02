@@ -68,9 +68,12 @@ namespace EasyFramework.Managers.Ui
                 if (predecessor is TEnableView)
                     inject(predecessor);
                 else
+                {
+                    string viewName = typeof(TEnableView).Name;
                     D.Error(
-                        $"[ UiSystem ] CloseViewAndNotify<{typeof(TCloseView).Name}, {typeof(TEnableView).Name}>: " +
-                        $"前驱页面 {predecessor.GetType().Name} 未实现 {typeof(TEnableView).Name}，无法注入 typed 参数。");
+                        $"[ UiSystem ] CloseViewAndNotify<{typeof(TCloseView).Name}, {viewName}>: " +
+                        $"View [ {viewName} ] is null or empty or has not been implemented the IUiEnable interface.");
+                }
             }
 
             await ViewCloseWithAnim(uiView, false, false);
