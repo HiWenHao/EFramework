@@ -25,7 +25,7 @@ namespace EFExample
 
             EF.Timer.AddOnce(10.0f, delegate
             {
-                UiSystem.Instance.OpenPageView<TestBottomViewTwo>();
+                UiSystem.Instance.OpenView<TestBottomViewTwo>();
             });
         }
 

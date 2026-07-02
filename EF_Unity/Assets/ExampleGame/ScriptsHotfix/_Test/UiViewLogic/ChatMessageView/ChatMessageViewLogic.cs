@@ -23,10 +23,10 @@ namespace EFExample
         {
         }
 
-        void IUiView.Enable(UiViewArgs args = null)
-        {
-            UiSystem.Instance.CloseView<BottomSubfieldView>().Forget();
-        }
+        //void IUiView.Enable()
+        //{
+        //    UiSystem.Instance.CloseView<BottomSubfieldView>().Forget();
+        //}
 
         void IUiView.Quit()
         {
@@ -36,7 +36,7 @@ namespace EFExample
 
         private void OnClickBtn_Back()
         {
-            UiSystem.Instance.OpenPageView<BottomSubfieldView>().Forget();
+            UiSystem.Instance.OpenView<BottomSubfieldView>().Forget();
             UiSystem.Instance.CloseView(this).Forget();
         }
 

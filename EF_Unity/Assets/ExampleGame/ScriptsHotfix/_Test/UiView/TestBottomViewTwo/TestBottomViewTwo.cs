@@ -5,7 +5,7 @@
  * CreationTime:  2026-04-24 21:57:52
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-04-24 21:57:52
- * ScriptVersion: 0.1 
+ * ScriptVersion: 0.1
  * ================================================
  */
 
@@ -21,14 +21,14 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class TestBottomViewTwo : IUiView
     {
-        public static async UniTask<TestBottomViewTwo> Open(UiViewArgs args = null)
+        public static async UniTask<TestBottomViewTwo> Open()
         {
-            return await UiSystem.Instance.OpenPageView<TestBottomViewTwo>(args);
+            return await UiSystem.Instance.OpenView<TestBottomViewTwo>();
         }
 
-        public static async UniTask<bool> Close(UiViewArgs args = null)
+        public static async UniTask<bool> Close()
         {
-            return await UiSystem.Instance.CloseView<TestBottomViewTwo>(args);
+            return await UiSystem.Instance.CloseView<TestBottomViewTwo>();
         }
 
         bool IUiView.AutoDestroy => true;

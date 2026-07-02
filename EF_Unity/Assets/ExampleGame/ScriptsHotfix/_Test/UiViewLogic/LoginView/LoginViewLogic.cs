@@ -12,6 +12,7 @@
 using EasyFramework;
 
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Ui;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,8 +36,8 @@ namespace EFExample
 
         private void OnClickBtn_Login()
         {
-            UiSystem.Instance.OpenPageView<CahtView>();
-            UiSystem.Instance.OpenPageView<BottomSubfieldView>();
+            UiSystem.Instance.OpenView<CahtView>().Forget();
+            UiSystem.Instance.OpenView<BottomSubfieldView>().Forget();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

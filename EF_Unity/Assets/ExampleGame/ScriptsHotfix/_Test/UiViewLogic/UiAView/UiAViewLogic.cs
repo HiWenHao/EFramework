@@ -5,10 +5,11 @@
  * CreationTime:  2026-04-06 23:04:44
  * ModifyAuthor:  Alvin5100
  * ModifyTime:    2026-05-08 17:13:02
- * ScriptVersion: 0.1 
+ * ScriptVersion: 0.1
  * ================================================
  */
 
+using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Ui;
 
@@ -21,13 +22,12 @@ namespace EFExample
     {
         void IUiView.Awake()
         {
-            UiSystem.Instance.OpenPageView<TestTopView>();
-            UiSystem.Instance.OpenPageView<TestBottomViewOne>();
+            UiSystem.Instance.OpenView<TestTopView>().Forget();
+            UiSystem.Instance.OpenView<TestBottomViewOne>().Forget();
         }
 
         void IUiView.Quit()
         {
-            
             D.Warning("A Quit");
         }
 
@@ -35,10 +35,7 @@ namespace EFExample
 
         private void OnClickBtn_ToB()
         {
-            UiSystem.Instance.OpenPageView<UiBView>(new UiViewArgs<string>
-            {
-                Args1 = "向B传递参数"
-            });
+            UiSystem.Instance.OpenView<UiBView, string>("向B传递参数").Forget();
         }
 
         private void OnClickBtn_Quit()

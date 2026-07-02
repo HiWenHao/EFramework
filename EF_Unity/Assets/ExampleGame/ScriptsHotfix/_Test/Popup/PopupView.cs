@@ -13,7 +13,6 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using EasyFramework.Managers.Ui;
-using EFExample.UI.Tips;
 
 namespace EFExample
 {
@@ -21,7 +20,7 @@ namespace EFExample
     /// 简短文字弹窗参考实现
     /// 功能：显示一段文字，1 秒后自动向上消失
     /// </summary>
-    public class PopupView : IUiView
+    public class PopupView : IUiView, IUiEnable<string>
     {
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 10.0f;
@@ -41,15 +40,18 @@ namespace EFExample
             Rect_Bg = EF.Tool.Find<RectTransform>(uiViewRect, "Rect_Bg");
         }
 
-        void IUiView.Dispose() { }
-
-        void IUiView.Awake() { }
-
-        void IUiView.Enable(UiViewArgs args)
+        void IUiView.Dispose()
         {
-            if (null == args) return;
-            var reallyArgs = (UiViewArgs<string>)args;
-            Txt_Contents.text = reallyArgs.Args1;
+        }
+
+        void IUiView.Awake()
+        {
+        }
+
+        public void Enable(string args)
+        {
+            if (string.IsNullOrEmpty(args)) return;
+            Txt_Contents.text = args;
             _exitTime = 1.0f;
             Rect_Bg.anchoredPosition = Vector2.up * -40.0f;
         }
@@ -61,11 +63,12 @@ namespace EFExample
                 UiSystem.Instance.CloseView(this).Forget();
                 return;
             }
+
             Rect_Bg.anchoredPosition += Vector2.up * (elapse * 80.0f);
         }
 
-        void IUiView.Quit() { }
-
-        void IUiView.Disable(UiViewArgs args) { }
+        void IUiView.Quit()
+        {
+        }
     }
 }

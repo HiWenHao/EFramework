@@ -22,7 +22,7 @@ namespace EFExample.UI.Tips
     /// 提示窗参考实现
     /// 功能：显示文字 + 确认/取消/关闭按钮
     /// </summary>
-    public class TipsView : IUiView
+    public class TipsView : IUiView, IUiEnable<string, TipsViewExtraData>
     {
         bool IUiView.AutoDestroy => true;
         float IUiView.AutoDestroyCountdown => 10.0f;
@@ -63,25 +63,21 @@ namespace EFExample.UI.Tips
 
         void IUiView.Awake() { }
 
-        void IUiView.Enable(UiViewArgs args)
+        public void Enable(string args1, TipsViewExtraData args2)
         {
-            if (null == args) return;
-            var reallyArgs = (UiViewArgs<string, TipsViewExtraData>)args;
-            _tipsExtraData = reallyArgs.Args2;
-            Txt_Display.text = reallyArgs.Args1;
+            if (string.IsNullOrEmpty(args1)) return;
+            _tipsExtraData = args2;
+            Txt_Display.text = args1;
             Txt_Cancel.transform.parent.gameObject.SetActive(null != _tipsExtraData.CancelCallBack);
             Txt_Confirm.transform.parent.gameObject.SetActive(null != _tipsExtraData.ConfirmCallBack);
             Txt_Cancel.text = string.IsNullOrEmpty(_tipsExtraData.CancelName) ? "取消" : _tipsExtraData.CancelName;
             Txt_Confirm.text = string.IsNullOrEmpty(_tipsExtraData.ConfirmName) ? "确认" : _tipsExtraData.ConfirmName;
-
             View.gameObject.SetActive(true);
         }
 
         void IUiView.Update(float elapse, float realElapse) { }
 
         void IUiView.Quit() { }
-
-        void IUiView.Disable(UiViewArgs args) { }
 
         void OnClickClose()
         {

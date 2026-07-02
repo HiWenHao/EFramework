@@ -5,7 +5,7 @@
  * CreationTime:  2026-04-06 23:05:30
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-04-09 11:00:27
- * ScriptVersion: 0.1 
+ * ScriptVersion: 0.1
  * ================================================
  */
 
@@ -23,10 +23,10 @@ namespace EFExample
         private int _timeEventId;
 
         private Action<bool> _timeEvent;
+
         void IUiView.Awake()
         {
             _timeEvent = (bol) => { D.Warning("TimerEvent is done.   10f"); };
-
         }
 
         void IUiView.Update(float elapse, float realElapse)
@@ -43,7 +43,7 @@ namespace EFExample
 
         private void OnClickBtn_QuitC()
         {
-            UiSystem.Instance.CloseView<UiCView>(new UiViewArgs<string>("C页面退出，向即将被显示的页面B传递参数"));
+            UiSystem.Instance.CloseViewAndNotify<UiCView, UiBView, string>("C页面退出，向即将被显示的页面B传递参数");
         }
 
         private void OnClickBtn_AddTimeEvent()

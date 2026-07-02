@@ -19,14 +19,14 @@ namespace EFExample
     //-----The script is auto generated. Please do not make any changes-----
     public partial class UiAView : IUiView
     {
-        public static async UniTask<UiAView> Open(UiViewArgs args = null)
+        public static async UniTask<UiAView> Open()
         {
-            return await UiSystem.Instance.OpenPageView<UiAView>(args);
+            return await UiSystem.Instance.OpenView<UiAView>();
         }
 
-        public static async UniTask<bool> Close(UiViewArgs args = null)
+        public static async UniTask<bool> Close()
         {
-            return await UiSystem.Instance.CloseView<UiAView>(args);
+            return await UiSystem.Instance.CloseView<UiAView>();
         }
 
         bool IUiView.AutoDestroy => true;

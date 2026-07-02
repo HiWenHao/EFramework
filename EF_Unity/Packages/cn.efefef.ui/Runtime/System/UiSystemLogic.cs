@@ -1,11 +1,11 @@
-﻿/*
+/*
  * ================================================
- * Describe:      承载UI系统的逻辑编写.
- * Author:        Alvin8412
- * CreationTime:  2026-04-03 22:11:25
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-28 17:00:00
- * ScriptVersion: 0.2
+ * Describe:         承载UI系统的逻辑编写.
+ * Author:           Alvin8412
+ * CreationTime:     2026-04-03 22:11:25
+ * ModifyAuthor:     Alvin8412
+ * ModifyTime:       2026-07-02
+ * ScriptVersion:    0.3
  * ===============================================
  */
 
@@ -146,8 +146,8 @@ namespace EasyFramework.Managers.Ui
         private static string GetAssetPath(string viewName)
         {
             return AssetsManager.Instance.CurrentSystemType == AssetsSystemType.Default
-            ? EFC.Projects.AppConst.UIPrefabsPath + viewName
-            : viewName;
+                ? EFC.Projects.AppConst.UIPrefabsPath + viewName
+                : viewName;
         }
 
         private static void DestroyObj(Object obj)
@@ -179,7 +179,8 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 播放入场动画（从起始位置/缩放 → 归位）
         /// </summary>
-        private static async UniTask AnimateOpen(RectTransform rect, UiViewAnimationType type, float duration, AnimationCurve curve)
+        private static async UniTask AnimateOpen(RectTransform rect, UiViewAnimationType type, float duration,
+            AnimationCurve curve)
         {
             if (duration <= 0f) return;
 
@@ -213,7 +214,8 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 播放退场动画（从归位 → 滑出/缩小）
         /// </summary>
-        private static async UniTask AnimateClose(RectTransform rect, UiViewAnimationType type, float duration, AnimationCurve curve)
+        private static async UniTask AnimateClose(RectTransform rect, UiViewAnimationType type, float duration,
+            AnimationCurve curve)
         {
             if (duration <= 0f) return;
 
@@ -253,7 +255,7 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 启用视窗并播放入场动画
         /// </summary>
-        private async UniTask ViewEnableWithAnim(IUiView uiView, UiViewArgs args = null)
+        private async UniTask ViewEnableWithAnim(IUiView uiView)
         {
             if (animationConfig != null
                 && animationConfig.TryGetPreset(uiView.ViewType, out var type, out var duration, out var curve, out _)
@@ -265,19 +267,19 @@ namespace EasyFramework.Managers.Ui
                 else
                     uiView.View.anchoredPosition = GetSlideOffset(type, uiView.View);
 
-                ViewEnable(uiView, args);
+                ViewEnable(uiView);
                 await AnimateOpen(uiView.View, type, duration, curve);
             }
             else
             {
-                ViewEnable(uiView, args);
+                ViewEnable(uiView);
             }
         }
 
         /// <summary>
         /// 播放退场动画后关闭视窗（仅在 reverseOnClose 为 true 时播放）
         /// </summary>
-        private async UniTask ViewCloseWithAnim(IUiView uiView, bool immediateDestroy, bool onlyDisable, UiViewArgs args = null)
+        private async UniTask ViewCloseWithAnim(IUiView uiView, bool immediateDestroy, bool onlyDisable)
         {
             if (uiView.View != null
                 && uiView.View.gameObject.activeSelf
@@ -291,7 +293,7 @@ namespace EasyFramework.Managers.Ui
                 await AnimateClose(uiView.View, type, duration, curve);
             }
 
-            ViewClose(uiView, immediateDestroy, onlyDisable, args);
+            ViewClose(uiView, immediateDestroy, onlyDisable);
         }
 
         #endregion
@@ -340,9 +342,12 @@ namespace EasyFramework.Managers.Ui
             AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
         }
 
-        private bool ViewEnable(IUiView uiView, UiViewArgs args = null)
+        /// <summary>
+        /// 启用视窗：加入栈、设 parent、SetActive、调用 IUiEnable.Enable()（如实现）
+        /// </summary>
+        private bool ViewEnable(IUiView uiView)
         {
-            if (null == uiView)
+            if (null == uiView || null == uiView.View)
                 return false;
 
             if (!_viewStackDic[uiView.ViewType].Contains(uiView))
@@ -354,19 +359,24 @@ namespace EasyFramework.Managers.Ui
             _autoDestroyDic.Remove(uiView);
 
             uiView.View.gameObject.SetActive(true);
-            uiView.Enable(args);
+            if (uiView is IUiEnable enable)
+                enable.Enable();
 
             return true;
         }
 
-        private bool ViewClose(IUiView uiView, bool immediateDestroy, bool onlyDisable, UiViewArgs args = null)
+        /// <summary>
+        /// 关闭视窗：调用 IUiDisable.Disable()（如实现）、SetActive false、缓存或销毁
+        /// </summary>
+        private bool ViewClose(IUiView uiView, bool immediateDestroy, bool onlyDisable)
         {
-            if (null == uiView || null == uiView.View.gameObject)
+            if (null == uiView || null == uiView.View || null == uiView.View.gameObject)
                 return false;
 
             if (uiView.View.gameObject.activeSelf)
             {
-                uiView.Disable(args);
+                if (uiView is IUiDisable disable)
+                    disable.Disable();
                 uiView.View.gameObject.SetActive(false);
             }
 
@@ -392,9 +402,33 @@ namespace EasyFramework.Managers.Ui
         #region Internal helper - 内部助手
 
         /// <summary>
+        /// 判断是否为"排他型"视窗类型（同类型仅允许一个活跃实例）
+        /// </summary>
+        private static bool IsExclusiveViewType(UIViewType type) =>
+            type is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent;
+
+        /// <summary>
+        /// 获取 Page 栈中 <paramref name="uiView"/> 的前驱页面（仅当 uiView 是栈顶且存在前驱时返回）
+        /// </summary>
+        private bool TryGetPredecessor(IUiView uiView, out IUiView predecessor)
+        {
+            predecessor = null;
+            if (uiView.ViewType != UIViewType.Page)
+                return false;
+
+            var pageStack = _viewStackDic[UIViewType.Page];
+            int idx = pageStack.IndexOf(uiView);
+            if (idx != pageStack.Count - 1 || idx <= 0)
+                return false;
+
+            predecessor = pageStack[idx - 1];
+            return true;
+        }
+
+        /// <summary>
         /// 关闭指定类型栈顶的非 <paramref name="exceptView"/> 视窗, 用于新面板入场动画完成后清理紧邻的旧面板，不影响下方页面栈。
         /// </summary>
-        private void ViewCloseByTypeExcept(UIViewType uiViewType, IUiView exceptView, UiViewArgs args = null)
+        private void ViewCloseByTypeExcept(UIViewType uiViewType, IUiView exceptView)
         {
             List<IUiView> views = _viewStackDic[uiViewType];
             int index = views.Count - 1;
@@ -405,24 +439,24 @@ namespace EasyFramework.Managers.Ui
             if (closeView == exceptView) return;
 
             bool needCache = closeView is { ViewType: UIViewType.TopPermanent or UIViewType.BottomPermanent };
-            ViewClose(closeView, false, !needCache, args);
+            ViewClose(closeView, false, !needCache);
         }
 
         /// <summary>
         /// 关闭某个类型的全部视窗
         /// </summary>
-        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView, UiViewArgs args = null)
+        private void ViewCloseAllWithType(UIViewType uiViewType, bool immediateDestroy, bool keepFirstView)
         {
             var uiViews = _viewStackDic[uiViewType];
             for (int i = uiViews.Count - 1; i >= 0; i--)
             {
                 if (i == 0 && keepFirstView)
                 {
-                    ViewEnable(uiViews[i], args);
+                    ViewEnable(uiViews[i]);
                     continue;
                 }
 
-                ViewClose(uiViews[i], immediateDestroy, false, args);
+                ViewClose(uiViews[i], immediateDestroy, false);
             }
         }
 
@@ -494,17 +528,6 @@ namespace EasyFramework.Managers.Ui
             return false;
         }
 
-        /// <summary>
-        /// 按参数方向过滤，返回指定生命周期应收到的参数
-        /// </summary>
-        private static UiViewArgs FilterArgsForDirection(UiViewArgs args, UiArgsDirection targetDirection)
-        {
-            if (args == null) return null;
-            if (args.Direction == UiArgsDirection.Both ||  args.Direction == targetDirection) return args;
-
-            return null;
-        }
-
         #endregion
 
         /// <summary>
@@ -515,76 +538,6 @@ namespace EasyFramework.Managers.Ui
         public void SetUiAnimationConfig(UiAnimationConfig config)
         {
             animationConfig = config;
-        }
-
-        /// <summary>
-        /// 打开视窗, 通过<see cref="UIViewType"/>区分展示逻辑<para>Open the view, Distinguish the display logic through <see cref="UIViewType"/></para><br/>
-        /// - 单例型：关闭相同类型的视图，然后显示新的视图
-        /// <para>Singleton type:Close the view of the same type, and then display the new view.</para><br/>
-        /// - 多实例型：直接叠加，不关闭已有
-        /// <para>Multi-instance: Directly superimpose without closing the existing one</para>
-        /// </summary>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask<T> OpenView<T>(UiViewArgs args = null) where T : IUiView, new()
-        {
-            await UniTask.CompletedTask;
-            IUiView openView;
-
-            if (TryFindActive<T>(out openView, out var foundType)
-                && foundType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
-            {
-                await ViewEnableWithAnim(openView, args);
-                ViewCloseByTypeExcept(foundType, openView, args);
-                return (T)openView;
-            }
-
-            if (openView == null && !TryRecoverFromCache<T>(out openView))
-                openView = ViewCreate<T>();
-
-            if (openView == null)
-            {
-                D.Error($"[ UiSystem ] OpenView<{typeof(T).Name}> failed: ViewCreate returned null");
-                return default;
-            }
-
-            await ViewEnableWithAnim(openView, args);
-
-            if (openView.ViewType is UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent)
-                ViewCloseByTypeExcept(openView.ViewType, openView, args);
-            return (T)openView;
-        }
-
-        /// <summary>
-        /// [已废弃] 请使用 <see cref="OpenView{T}"/> 代替。
-        /// <para>[Obsolete] Use <see cref="OpenView{T}"/> instead.</para>
-        /// </summary>
-        [System.Obsolete("Use OpenView<T> instead.")]
-        public async UniTask<T> OpenPageView<T>(UiViewArgs args = null) where T : IUiView, new()
-        {
-            return await OpenView<T>(args);
-        }
-
-        /// <summary>
-        /// 打开页面
-        /// </summary>
-        /// <param name="uiView">要被打开的页面</param>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask<bool> OpenView(IUiView uiView, UiViewArgs args = null)
-        {
-            await UniTask.CompletedTask;
-            if (uiView is not { ViewType: (UIViewType.Page or UIViewType.BottomPermanent or UIViewType.TopPermanent) })
-                return false;
-
-            if (InViewList(uiView, UIViewType.Cache))
-                _viewStackDic[UIViewType.Cache].Remove(uiView);
-            else if (!InViewList(uiView, uiView.ViewType))
-                return false;
-
-            await ViewEnableWithAnim(uiView, args);
-            ViewCloseByTypeExcept(uiView.ViewType, uiView, args);
-            return true;
         }
 
         /// <summary>
@@ -601,100 +554,6 @@ namespace EasyFramework.Managers.Ui
             }
 
             return default;
-        }
-
-        /// <summary>
-        /// 视窗叠加显示方法。不关闭同类视窗，支持多实例叠加。
-        /// <para>General window display method. Does not close similar windows, supports multiple instances to be stacked.</para>
-        /// </summary>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask<T> OpenViewOverlay<T>(UiViewArgs args = null) where T : IUiView, new()
-        {
-            await UniTask.CompletedTask;
-
-            if (!TryRecoverFromCache<T>(out var uiView))
-                uiView = ViewCreate<T>();
-            if (uiView == null)
-            {
-                D.Error($"[ UiSystem ] OpenViewOverlay<{typeof(T).Name}> failed: ViewCreate returned null");
-                return default;
-            }
-
-            await ViewEnableWithAnim(uiView, args);
-            return (T)uiView;
-        }
-
-        /// <summary>
-        /// 某一类型视窗返回到首页
-        /// </summary>
-        /// <param name="uiViewType">视窗类型</param>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask BackToFirstViewWithType(UIViewType uiViewType, UiViewArgs args = null)
-        {
-            ViewCloseAllWithType(uiViewType, false, true, args);
-            await UniTask.CompletedTask;
-        }
-
-        /// <summary>
-        /// 关闭UI视窗
-        /// </summary>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask<bool> CloseView<T>(UiViewArgs args = null) where T : IUiView
-        {
-            var allViewTypes = System.Enum.GetValues(typeof(UIViewType));
-            for (int i = allViewTypes.Length - 1; i >= 0; i--)
-            {
-                UIViewType viewType = (UIViewType)allViewTypes.GetValue(i);
-                if (viewType == UIViewType.Cache || !InViewList<T>(out IUiView uiView, viewType))
-                    continue;
-
-                return await CloseView(uiView, args);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 关闭视窗
-        /// </summary>
-        /// <param name="uiView">要被关闭的视窗</param>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask<bool> CloseView(IUiView uiView, UiViewArgs args = null)
-        {
-            if (null == uiView)
-                return false;
-
-            if (uiView.ViewType == UIViewType.Page)
-            {
-                var pageStack = _viewStackDic[UIViewType.Page];
-                int idx = pageStack.IndexOf(uiView);
-                // 仅当被关闭的是栈顶页面时，才唤起其前驱页面
-                if (idx == pageStack.Count - 1 && idx > 0)
-                    ViewEnable(pageStack[idx - 1], FilterArgsForDirection(args, UiArgsDirection.ToEnable));
-            }
-
-            await ViewCloseWithAnim(uiView, false, false, FilterArgsForDirection(args, UiArgsDirection.ToDisable));
-            return true;
-        }
-
-        /// <summary>
-        /// 关闭全部视窗
-        /// </summary>
-        /// <param name="immediateDestroy">立即销毁被关闭的视窗</param>
-        /// <param name="args">具体参数内容，可继承<see cref="UiArgsDirection"/>通过更改Direction控制当前参数流向
-        /// <para>The specific parameter content can inherit <see cref="UiArgsDirection"/>. By changing the "Direction", you can control the current parameter flow.</para></param>
-        public async UniTask CloseAllView(bool immediateDestroy = false, UiViewArgs args = null)
-        {
-            foreach (var uiViews in _viewStackDic)
-            {
-                ViewCloseAllWithType(uiViews.Key, immediateDestroy, false, args);
-            }
-
-            await UniTask.CompletedTask;
         }
     }
 }

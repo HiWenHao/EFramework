@@ -1,11 +1,11 @@
 /*
  * ================================================
- * Describe:      所有UI视窗接口, 给管理器函数增加约束.
- * Author:        Alvin8412
- * CreationTime:  2026-04-03 23:04:18
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-03 23:04:18
- * ScriptVersion: 0.1
+ * Describe:         所有UI视窗接口, 给管理器函数增加约束.
+ * Author:           Alvin8412
+ * CreationTime:     2026-04-03 23:04:18
+ * ModifyAuthor:     Alvin8412
+ * ModifyTime:       2026-07-02
+ * ScriptVersion:    0.3
  * ===============================================
  */
 
@@ -15,6 +15,7 @@ namespace EasyFramework.Managers.Ui
 {
     /// <summary>
     /// 所有UI视窗接口
+    /// <para>All UI view interface</para>
     /// </summary>
     public interface IUiView
     {
@@ -32,12 +33,12 @@ namespace EasyFramework.Managers.Ui
         /// 自动销毁
         /// </summary>
         protected internal bool AutoDestroy { get; }
-        
+
         /// <summary>
         /// 自动销毁倒计时
         /// </summary>
         protected internal float AutoDestroyCountdown { get; }
-        
+
         /// <summary>
         /// view serial number, do not change.
         /// <para>页面序列号,请勿改动</para>
@@ -51,15 +52,6 @@ namespace EasyFramework.Managers.Ui
         protected internal void Awake();
 
         /// <summary>
-        /// When the view is activated.
-        /// <para>当页面被激活时</para>
-        /// </summary>
-        /// <param name="args">Send this params to current ui page.<para>给这个页面传递的参数</para></param>
-        protected internal void Enable(UiViewArgs args = null)
-        {
-        }
-
-        /// <summary>
         /// 轮询更新
         /// </summary>
         /// <param name="elapse">The interval in seconds from the last frame to the current one.
@@ -69,15 +61,6 @@ namespace EasyFramework.Managers.Ui
         /// <para>真实流逝时间，以秒为单位</para>
         /// </param>
         protected internal void Update(float elapse, float realElapse)
-        {
-        }
-
-        /// <summary>
-        /// When the view is disabled.
-        /// <para>当页面被禁用时</para>
-        /// </summary>
-        /// <param name="args">Send this params to closed ui page.<para>给要被关闭的页面传递的参数</para></param>
-        protected internal void Disable(UiViewArgs args = null)
         {
         }
 
