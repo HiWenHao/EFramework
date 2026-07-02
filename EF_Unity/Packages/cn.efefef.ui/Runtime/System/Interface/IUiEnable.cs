@@ -31,7 +31,6 @@ namespace EasyFramework.Managers.Ui
         void Enable(TArgs1 args1);
     }
 
-
     /// <inheritdoc cref="IUiEnable"/>
     public interface IUiEnable<in TArgs1, in TArgs2>
     {
