@@ -18,12 +18,16 @@ namespace EFExample
     /// <summary>
     /// 案例首页
     /// </summary>
-    public partial class UiAView
+    public partial class UiAView: IUiEnable<int>
     {
         void IUiView.Awake()
         {
             UiSystem.Instance.OpenView<TestTopView>().Forget();
             UiSystem.Instance.OpenView<TestBottomViewOne>().Forget();
+        }
+        public void Enable(int args1)
+        {
+            D.Log("A view Enable:  " + args1);
         }
 
         void IUiView.Quit()
