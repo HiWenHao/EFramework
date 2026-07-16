@@ -1,16 +1,21 @@
 # ============================================================
-# Git LFS —— 让仓库中的二进制大文件走 LFS
-# 注意：本文件仅对"未来提交"生效。要把历史里已有的大文件
-# 也迁移进 LFS 以缩小仓库、加快 clone，需执行：
-#   git lfs migrate import --include="..." --everything
-#   git push --force --all   （破坏性，需协作者重新 clone）
+# Git LFS —— 仅对"真二进制大文件"生效。
+# 重要：源码/文本（*.cs *.txt *.md *.json *.meta *.prefab *.unity *.shader 等）
+# 绝不进 LFS，否则无法 diff/merge 且白烧 LFS 配额。
+# 本文件只对"未来提交"生效。
+#
+# 若要把【历史里】已误入 LFS 的文本迁回普通 git，需再跑一次破坏性重写：
+#   git lfs migrate export --include="*.cs,*.txt,*.md,*.json,*.meta,*.prefab,*.unity,*.shader" --everything
+#   git push --force --all   （协作者需重新 clone）
+# ============================================================
 
-# 字体
-*.ttf filter=lfs diff=lfs merge=lfs -text
-*.otf filter=lfs diff=lfs merge=lfs -text
-*.fon filter=lfs diff=lfs merge=lfs -text
-*.ttc filter=lfs diff=lfs merge=lfs -text
-# 贴图 / 图片
+# —— 字体 ——
+*.ttf  filter=lfs diff=lfs merge=lfs -text
+*.otf  filter=lfs diff=lfs merge=lfs -text
+*.fon  filter=lfs diff=lfs merge=lfs -text
+*.ttc  filter=lfs diff=lfs merge=lfs -text
+
+# —— 图片 / 贴图 ——
 *.png  filter=lfs diff=lfs merge=lfs -text
 *.jpg  filter=lfs diff=lfs merge=lfs -text
 *.jpeg filter=lfs diff=lfs merge=lfs -text
@@ -21,207 +26,31 @@
 *.tiff filter=lfs diff=lfs merge=lfs -text
 *.webp filter=lfs diff=lfs merge=lfs -text
 *.bmp  filter=lfs diff=lfs merge=lfs -text
-# 音频
+
+# —— 音频 ——
 *.mp3  filter=lfs diff=lfs merge=lfs -text
 *.ogg  filter=lfs diff=lfs merge=lfs -text
 *.wav  filter=lfs diff=lfs merge=lfs -text
 *.aiff filter=lfs diff=lfs merge=lfs -text
 *.flac filter=lfs diff=lfs merge=lfs -text
-# 库 / 二进制
-*.dll    filter=lfs diff=lfs merge=lfs -text
-*.so     filter=lfs diff=lfs merge=lfs -text
-*.dylib  filter=lfs diff=lfs merge=lfs -text
-*.bytes  filter=lfs diff=lfs merge=lfs -text
-*.bin    filter=lfs diff=lfs merge=lfs -text
-*.dat    filter=lfs diff=lfs merge=lfs -text
-# 压缩包
-*.zip filter=lfs diff=lfs merge=lfs -text
-*.7z  filter=lfs diff=lfs merge=lfs -text
-*.rar filter=lfs diff=lfs merge=lfs -text
-*.tar filter=lfs diff=lfs merge=lfs -text
-# 特定的超大字体图集（17MB 的 SDF .asset；不用 *.asset 一刀切以免误伤海量小 .asset）
-EF_Unity/Assets/ExampleGame/Resources/Font/*.asset filter=lfs diff=lfs merge=lfs -text
-*.dll filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
-*.jpg filter=lfs diff=lfs merge=lfs -text
-*.gif filter=lfs diff=lfs merge=lfs -text
-*.tga filter=lfs diff=lfs merge=lfs -text
-*.psd filter=lfs diff=lfs merge=lfs -text
-*.mp3 filter=lfs diff=lfs merge=lfs -text
-*.ogg filter=lfs diff=lfs merge=lfs -text
-*.wav filter=lfs diff=lfs merge=lfs -text
-*.unitypackage filter=lfs diff=lfs merge=lfs -text
-*.so filter=lfs diff=lfs merge=lfs -text
+
+# —— 模型 / 库 / 二进制运行时 ——
+*.fbx  filter=lfs diff=lfs merge=lfs -text
+*.FBX  filter=lfs diff=lfs merge=lfs -text
+*.dll  filter=lfs diff=lfs merge=lfs -text
+*.so   filter=lfs diff=lfs merge=lfs -text
 *.dylib filter=lfs diff=lfs merge=lfs -text
 *.bytes filter=lfs diff=lfs merge=lfs -text
-*.bin filter=lfs diff=lfs merge=lfs -text
-*.dat filter=lfs diff=lfs merge=lfs -text
-*.exr filter=lfs diff=lfs merge=lfs -text
-*.tif filter=lfs diff=lfs merge=lfs -text
-*.bmp filter=lfs diff=lfs merge=lfs -text
-*.7z filter=lfs diff=lfs merge=lfs -text
-*.md filter=lfs diff=lfs merge=lfs -text
-*.meta filter=lfs diff=lfs merge=lfs -text
-*.unity filter=lfs diff=lfs merge=lfs -text
-*.cs filter=lfs diff=lfs merge=lfs -text
-*.txt filter=lfs diff=lfs merge=lfs -text
-*.prefab filter=lfs diff=lfs merge=lfs -text
-*.xmind filter=lfs diff=lfs merge=lfs -text
-*.pdf filter=lfs diff=lfs merge=lfs -text
-*.lighting filter=lfs diff=lfs merge=lfs -text
-*.jslib filter=lfs diff=lfs merge=lfs -text
-*.pfx filter=lfs diff=lfs merge=lfs -text
-*.xml filter=lfs diff=lfs merge=lfs -text
-*.gitignore filter=lfs diff=lfs merge=lfs -text
-*.asmdef filter=lfs diff=lfs merge=lfs -text
-*.json filter=lfs diff=lfs merge=lfs -text
-*.mat filter=lfs diff=lfs merge=lfs -text
-*.asset filter=lfs diff=lfs merge=lfs -text
-*.shader filter=lfs diff=lfs merge=lfs -text
-*.cginc filter=lfs diff=lfs merge=lfs -text
-*.uxml filter=lfs diff=lfs merge=lfs -text
-*.fbx filter=lfs diff=lfs merge=lfs -text
-*.anim filter=lfs diff=lfs merge=lfs -text
-*.controller filter=lfs diff=lfs merge=lfs -text
-*.ht filter=lfs diff=lfs merge=lfs -text
-*.physicMaterial filter=lfs diff=lfs merge=lfs -text
-*.spriteatlas filter=lfs diff=lfs merge=lfs -text
-*.exe filter=lfs diff=lfs merge=lfs -text
-*.pdb filter=lfs diff=lfs merge=lfs -text
-*.data filter=lfs diff=lfs merge=lfs -text
-*.xlsx filter=lfs diff=lfs merge=lfs -text
-*.settings filter=lfs diff=lfs merge=lfs -text
-*.FBX filter=lfs diff=lfs merge=lfs -text
-*.cubemap filter=lfs diff=lfs merge=lfs -text
-*.shadervariants filter=lfs diff=lfs merge=lfs -text
-*.tt filter=lfs diff=lfs merge=lfs -text
-*.version filter=lfs diff=lfs merge=lfs -text
-*.hash filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/al filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/al2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/aprofutil filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/caspol filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/cccheck filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/ccrewrite filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/cert-sync filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/cert2spc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/certmgr filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/chktrust filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/cli filter=lfs diff=lfs merge=lfs -text
-*.bat filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/cli_x86 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/crlupdate filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/csc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/csharp filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/csi filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/disco filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/dmcs filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/dtd2rng filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/dtd2xsd filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/gacutil filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/gacutil2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/genxs filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/httpcfg filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/ikdasm filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/ilasm filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/illinkanalyzer filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/installvst filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/lc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/macpack filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/makecert filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mconfig filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mcs filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdassembler filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdbrebase filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc-assemble filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc-export-html filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc-export-msxdoc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc-update filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdoc-validate filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mdvalidater filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mkbundle filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mod filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-api-html filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-api-info filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-boehm filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-cil-strip filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-configuration-crypto filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-env filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-find-provides filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-find-requires filter=lfs diff=lfs merge=lfs -text
-*.py filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-hang-watchdog filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-heapviz filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-package-runtime filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-service filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-service2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-sgen filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-shlib-cop filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-symbolicate filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-test-install filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mono-xmltool filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monobin-env filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monodis filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monodocer filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monodocs2html filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monodocs2slashdoc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monolinker filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monop filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/monop2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mozroots filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/mprof-report filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/nunit-console filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/nunit-console2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/pdb2mdb filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/pedump filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/permview filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/peverify filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/resgen filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/resgen2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/secutil filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/setreg filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/sgen filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/sgen-grep-binprot filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/signcode filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/sn filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/soapsuds filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/sqlmetal filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/sqlsharp filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/svcutil filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/vbc filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/wsdl filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/wsdl2 filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/xbuild filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/bin/xsd filter=lfs diff=lfs merge=lfs -text
-*.browser filter=lfs diff=lfs merge=lfs -text
-*.aspx filter=lfs diff=lfs merge=lfs -text
-*.config filter=lfs diff=lfs merge=lfs -text
-*.map filter=lfs diff=lfs merge=lfs -text
-*.ini filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/MonoBleedingEdge/etc/mono/config filter=lfs diff=lfs merge=lfs -text
-*.xsd filter=lfs diff=lfs merge=lfs -text
-*.targets filter=lfs diff=lfs merge=lfs -text
-*.tasks filter=lfs diff=lfs merge=lfs -text
-*.rsp filter=lfs diff=lfs merge=lfs -text
-*.props filter=lfs diff=lfs merge=lfs -text
-*.h filter=lfs diff=lfs merge=lfs -text
-*.c filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/external/bdwgc/libatomic_ops/COPYING filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/external/xamarin-android/README filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/external/zlib/README filter=lfs diff=lfs merge=lfs -text
-/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/il2cpp_root filter=lfs diff=lfs merge=lfs -text
-*.cpp filter=lfs diff=lfs merge=lfs -text
-*.icalls filter=lfs diff=lfs merge=lfs -text
-*.hpp filter=lfs diff=lfs merge=lfs -text
-*.hw filter=lfs diff=lfs merge=lfs -text
-*.sh filter=lfs diff=lfs merge=lfs -text
-*.dwlt filter=lfs diff=lfs merge=lfs -text
-*.conf filter=lfs diff=lfs merge=lfs -text
-*.sbn filter=lfs diff=lfs merge=lfs -text
-*.user filter=lfs diff=lfs merge=lfs -text
-*.p7m filter=lfs diff=lfs merge=lfs -text
-*.mixer filter=lfs diff=lfs merge=lfs -text
-*.asmref filter=lfs diff=lfs merge=lfs -text
-*.spriteatlasv2 filter=lfs diff=lfs merge=lfs -text
+*.bin  filter=lfs diff=lfs merge=lfs -text
+*.dat  filter=lfs diff=lfs merge=lfs -text
+*.unitypackage filter=lfs diff=lfs merge=lfs -text
+*.exe  filter=lfs diff=lfs merge=lfs -text
+
+# —— 压缩包 ——
+*.zip  filter=lfs diff=lfs merge=lfs -text
+*.7z   filter=lfs diff=lfs merge=lfs -text
+*.rar  filter=lfs diff=lfs merge=lfs -text
+*.tar  filter=lfs diff=lfs merge=lfs -text
+
+# —— 特定的超大字体图集（SDF .asset，~16MB；不走 blanket *.asset 以免误伤海量小 SO） ——
+EF_Unity/Assets/ExampleGame/Resources/Font/*.asset filter=lfs diff=lfs merge=lfs -text
