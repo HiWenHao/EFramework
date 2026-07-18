@@ -1,3 +1,71 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7cd62d433f3ca63e74e011a91f838897904ec3c6458cd9a7b7cdaff9a26f2d79
-size 2606
+﻿/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Alvin5100(Wang)
+ * CreationTime:  2026-03-19 15:23:14
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-04-01 15:01:35
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System.IO;
+using EasyFramework.Edit.TodoList;
+using EasyFramework.Edit.Windows.ConfigPanel;
+using UnityEditor;
+using UnityEngine;
+
+namespace EasyFramework.Edit.Create
+{
+    public static class CreateSettings
+    {
+        [MenuItem("Assets/Create/EF/Project Config", priority = 200)]
+        private static void CreatedProjectConfig()
+        {
+            Instance<ProjectConfig>(folderPath: "Assets/Resources/Configs/");
+        }
+        
+        [MenuItem("Assets/Create/EF/Path Config", priority = 211)]
+        private static void CreatedPathConfigSetting()
+        {
+            Instance<PathConfig>();
+        }
+        
+        [MenuItem("Assets/Create/EF/Todo List Config", priority = 310)]
+        private static void CreatedTaskListConfig()
+        {
+            Instance<TodoListConfig>(false);
+        }
+        
+        /// <summary>
+        /// 创建对应设置
+        /// </summary>
+        /// <param name="single">是否全局唯一， 默认为True</param>
+        /// <param name="folderPath">所属文件夹，基于Assets下</param>
+        /// <typeparam name="T">设置类型</typeparam>
+        public static T Instance<T>(bool single = true, string folderPath = "")  where T : ScriptableObject
+        {
+            string typeName = typeof(T).Name;
+            string path = !string.IsNullOrEmpty(folderPath) ? folderPath : Utility.Path.GetCurrentFolderPath();
+            string configPath = string.IsNullOrEmpty(path) ? $"Assets/{typeName}.asset" : Path.Combine(path, $"{typeName}.asset");
+            
+            if (single && EditorUtils.CheckAssets<T>(out var assetPath))
+            {
+                T existingAsset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                Selection.activeObject = existingAsset;
+                EditorGUIUtility.PingObject(existingAsset);
+                return existingAsset;
+            }
+
+            T asset = ScriptableObject.CreateInstance<T>();
+        
+            string folder = Path.GetDirectoryName(configPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            AssetDatabase.CreateAsset(asset, configPath);
+            AssetDatabase.SaveAssets();
+            Selection.activeObject = asset;
+            return asset;
+        }
+    }
+}

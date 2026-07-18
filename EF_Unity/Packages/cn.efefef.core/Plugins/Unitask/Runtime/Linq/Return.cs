@@ -1,3 +1,63 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2dc9b59b5489a39c42e185c2bee9154aa1f14d99210acd1ba70526fa49f38cb8
-size 1633
+﻿using Cysharp.Threading.Tasks.Internal;
+using System.Threading;
+
+namespace Cysharp.Threading.Tasks.Linq
+{
+    public static partial class UniTaskAsyncEnumerable
+    {
+        public static IUniTaskAsyncEnumerable<TValue> Return<TValue>(TValue value)
+        {
+            return new Return<TValue>(value);
+        }
+    }
+
+    internal class Return<TValue> : IUniTaskAsyncEnumerable<TValue>
+    {
+        readonly TValue value;
+
+        public Return(TValue value)
+        {
+            this.value = value;
+        }
+
+        public IUniTaskAsyncEnumerator<TValue> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            return new _Return(value, cancellationToken);
+        }
+
+        class _Return : IUniTaskAsyncEnumerator<TValue>
+        {
+            readonly TValue value;
+            CancellationToken cancellationToken;
+
+            bool called;
+
+            public _Return(TValue value, CancellationToken cancellationToken)
+            {
+                this.value = value;
+                this.cancellationToken = cancellationToken;
+                this.called = false;
+            }
+
+            public TValue Current => value;
+
+            public UniTask<bool> MoveNextAsync()
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!called)
+                {
+                    called = true;
+                    return CompletedTasks.True;
+                }
+
+                return CompletedTasks.False;
+            }
+
+            public UniTask DisposeAsync()
+            {
+                return default;
+            }
+        }
+    }
+}

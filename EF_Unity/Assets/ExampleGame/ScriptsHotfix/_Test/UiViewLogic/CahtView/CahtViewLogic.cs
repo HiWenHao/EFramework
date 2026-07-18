@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:01ea9312254ad1fbe306cd03768ec75c928551da73fd223291169b6d7a20a1bd
-size 995
+/*
+ * ================================================
+ * Describe:      Please modify the description..
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-29 11:00:25
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-07-14 14:03:02
+ * ScriptVersion: 0.1 
+ * ================================================
+ */
+
+using EasyFramework;
+
+using System.Collections.Generic;
+using EasyFramework.Managers.Ui;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace EFExample
+{
+    /// <summary>
+    /// Please modify the description.
+    /// </summary>
+    public partial class CahtView
+    {
+        void IUiView.Awake()
+        {
+        }
+
+        void IUiView.Quit()
+        {
+        }
+
+        #region Button invoke event. Do not change here.不要更改这行 -- Auto
+
+        private void OnClickBtn_ToChatMessage()
+        {
+            UiSystem.Instance.OpenView<ChatMessageView>();
+        }
+
+        #endregion button invoke event. Do not change here.不要更改这行 -- Auto
+    }
+}

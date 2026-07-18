@@ -1,3 +1,1289 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c69243e59ef011c3ec80c71c307c6510773b5b287abe2feff8f8dcb6149ab1e9
-size 56120
+using System;
+using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEditor.IMGUI.Controls;
+using UnityEngine;
+using Sabresaurus.PlayerPrefsUtilities;
+using Random = UnityEngine.Random;
+using EasyFramework.Edit;
+
+namespace Sabresaurus.PlayerPrefsEditor
+{
+    public class PlayerPrefsEditor : EditorWindow
+    {
+        private static bool DisplayMoreOptions
+        {
+            get => EditorPrefs.GetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayMoreOptions));
+            set => EditorPrefs.SetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayMoreOptions), value);
+        }
+
+        private static bool DisplayAddPref
+        {
+            get => EditorPrefs.GetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayAddPref));
+            set => EditorPrefs.SetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayAddPref), value);
+        }
+
+        private static readonly System.Text.Encoding _encoding = new System.Text.UTF8Encoding();
+
+        // Represents a PlayerPref key-value record
+        private struct PlayerPrefPair
+        {
+            public string Key { get; set; }
+
+            public object Value { get; set; }
+        }
+
+        readonly DateTime MISSING_DATETIME = new DateTime(1601, 1, 1);
+
+        // If True display EditorPrefs instead of PlayerPrefs
+        bool _showEditorPrefs = false;
+
+        // Natively PlayerPrefs can be one of these three types
+        enum PlayerPrefType
+        {
+            Float = 0,
+            Int,
+            String
+        };
+
+        // The actual cached store of PlayerPref records fetched from registry or plist
+        List<PlayerPrefPair> _deserializedPlayerPrefs = new List<PlayerPrefPair>();
+
+        // When a search is in effect the search results are cached in this list
+        List<PlayerPrefPair> _filteredPlayerPrefs = new List<PlayerPrefPair>();
+
+        // Track last successful deserialisation to prevent doing this too often. On OSX this uses the PlayerPrefs file
+        // last modified time, on Windows we just poll repeatedly and use this to prevent polling again too soon.
+        DateTime? _lastDeserialization = null;
+
+        // The view position of the PlayerPrefs scroll view
+        Vector2 _scrollPosition;
+
+        // The scroll position from last frame (used with scrollPosition to detect user scrolling)
+        Vector2 _lastScrollPosition;
+
+        // Prevent OnInspector() forcing a repaint every time it's called
+        int _inspectorUpdateFrame = 0;
+
+        // Automatically attempt to decrypt keys and values that are detected as encrypted
+        bool _automaticDecryption = true;
+
+        // Filter the keys by search
+        string _searchFilter = string.Empty;
+
+        // Because of some issues with deleting from OnGUI, we defer it to OnInspectorUpdate() instead
+        string _keyQueuedForDeletion = null;
+
+        #region Adding New PlayerPref
+
+        // This is the current type of PlayerPref that the user is about to create
+        PlayerPrefType _newEntryType = PlayerPrefType.String;
+
+        // Whether the PlayerPref should be encrypted
+        bool _newEntryIsEncrypted = false;
+
+        // The identifier of the new PlayerPref
+        string _newEntryKey = "";
+
+        // Value of the PlayerPref about to be created (must be tracked differently for each type)
+        float _newEntryValueFloat = 0;
+        int _newEntryValueInt = 0;
+        string _newEntryValueString = "";
+
+        #endregion
+
+#if UNITY_5_6_OR_NEWER
+        SearchField searchField;
+#endif
+
+        [MenuItem(MenuItemToolkit.Tools + "🎨 PlayerPrefs Editor", false, MenuItemToolkit.ToolsPriority + 5)]
+        private static void Init()
+        {
+            // Get existing open window or if none, make a new one:
+            PlayerPrefsEditor editor = (PlayerPrefsEditor)GetWindow(typeof(PlayerPrefsEditor), false, "Prefs Editor");
+
+            // Require the editor window to be at least 300 pixels wide
+            Vector2 minSize = editor.minSize;
+            minSize.x = 230;
+            editor.minSize = minSize;
+        }
+
+        private static string GetMacOSEditorPrefsPath()
+        {
+#if UNITY_2017_4_OR_NEWER
+            // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor5.x.plist
+            // https://docs.unity3d.com/2017.4/Documentation/ScriptReference/EditorPrefs.html
+            string fileName = "com.unity3d.UnityEditor5.x.plist";
+#else
+            // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor.plist.
+            // https://docs.unity3d.com/2017.3/Documentation/ScriptReference/EditorPrefs.html
+            string fileName = "com.unity3d.UnityEditor.plist";
+#endif
+            // Construct the fully qualified path
+            string editorPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), fileName);
+            return editorPrefsPath;
+        }
+
+        private void OnEnable()
+        {
+            searchField = new SearchField();
+
+            _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+            UpdateSearch();
+        }
+
+        private void DeleteAll()
+        {
+            if (_showEditorPrefs)
+            {
+                EditorPrefs.DeleteAll();
+            }
+            else
+            {
+                PlayerPrefs.DeleteAll();
+            }
+        }
+
+        private void DeleteKey(string key)
+        {
+            if (_showEditorPrefs)
+            {
+                EditorPrefs.DeleteKey(key);
+            }
+            else
+            {
+                PlayerPrefs.DeleteKey(key);
+            }
+        }
+
+        private int GetInt(string key, int defaultValue = 0)
+        {
+            if (_showEditorPrefs)
+            {
+                return EditorPrefs.GetInt(key, defaultValue);
+            }
+            else
+            {
+                return PlayerPrefs.GetInt(key, defaultValue);
+            }
+        }
+
+        private float GetFloat(string key, float defaultValue = 0.0f)
+        {
+            if (_showEditorPrefs)
+            {
+                return EditorPrefs.GetFloat(key, defaultValue);
+            }
+            else
+            {
+                return PlayerPrefs.GetFloat(key, defaultValue);
+            }
+        }
+
+        private string GetString(string key, string defaultValue = "")
+        {
+            if (_showEditorPrefs)
+            {
+                return EditorPrefs.GetString(key, defaultValue);
+            }
+            else
+            {
+                return PlayerPrefs.GetString(key, defaultValue);
+            }
+        }
+
+        private void SetInt(string key, int value)
+        {
+            if (_showEditorPrefs)
+            {
+                EditorPrefs.SetInt(key, value);
+            }
+            else
+            {
+                PlayerPrefs.SetInt(key, value);
+            }
+        }
+
+        private void SetFloat(string key, float value)
+        {
+            if (_showEditorPrefs)
+            {
+                EditorPrefs.SetFloat(key, value);
+            }
+            else
+            {
+                PlayerPrefs.SetFloat(key, value);
+            }
+        }
+
+        private void SetString(string key, string value)
+        {
+            if (_showEditorPrefs)
+            {
+                EditorPrefs.SetString(key, value);
+            }
+            else
+            {
+                PlayerPrefs.SetString(key, value);
+            }
+        }
+
+        private void Save()
+        {
+            if (_showEditorPrefs)
+            {
+                // No Save() method in EditorPrefs
+            }
+            else
+            {
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>
+        /// This returns an array of the stored PlayerPrefs from the file system (OSX) or registry (Windows), to allow
+        /// us to to look up what's actually in the PlayerPrefs. This is used as a kind of lookup table.
+        /// </summary>
+        private PlayerPrefPair[] RetrieveSavedPrefs(string companyName, string productName)
+        {
+            if (Application.platform == RuntimePlatform.OSXEditor)
+            {
+                string playerPrefsPath;
+
+                if (_showEditorPrefs)
+                {
+                    playerPrefsPath = GetMacOSEditorPrefsPath();
+                }
+                else
+                {
+                    // From Unity Docs: On Mac OS X PlayerPrefs are stored in ~/Library/Preferences folder, in a file named unity.[company name].[product name].plist, where company and product names are the names set up in Project Settings. The same .plist file is used for both Projects run in the Editor and standalone players.
+
+                    // Construct the plist filename from the project's settings
+                    string plistFilename = $"unity.{companyName}.{productName}.plist";
+                    // Now construct the fully qualified path
+                    playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), plistFilename);
+                }
+
+                // Parse the PlayerPrefs file if it exists
+                if (File.Exists(playerPrefsPath))
+                {
+                    // Parse the plist then cast it to a Dictionary
+                    object plist = Plist.readPlist(playerPrefsPath);
+
+                    Dictionary<string, object> parsed = plist as Dictionary<string, object>;
+
+                    // Convert the dictionary data into an array of PlayerPrefPairs
+                    List<PlayerPrefPair> tempPlayerPrefs = new List<PlayerPrefPair>(parsed.Count);
+                    foreach (KeyValuePair<string, object> pair in parsed)
+                    {
+                        if (pair.Value.GetType() == typeof(double))
+                        {
+                            // Some float values may come back as double, so convert them back to floats
+                            tempPlayerPrefs.Add(new PlayerPrefPair() { Key = pair.Key, Value = (float)(double)pair.Value });
+                        }
+                        else if (pair.Value.GetType() == typeof(bool))
+                        {
+                            // Unity PlayerPrefs API doesn't allow bools, so ignore them
+                        }
+                        else
+                        {
+                            tempPlayerPrefs.Add(new PlayerPrefPair() { Key = pair.Key, Value = pair.Value });
+                        }
+                    }
+
+                    // Return the results
+                    return tempPlayerPrefs.ToArray();
+                }
+                else
+                {
+                    // No existing PlayerPrefs saved (which is valid), so just return an empty array
+                    return new PlayerPrefPair[0];
+                }
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                Microsoft.Win32.RegistryKey registryKey;
+
+                if (_showEditorPrefs)
+                {
+                    // Starting Unity 5.5 registry key has " 5.x" suffix: https://docs.unity3d.com/550/Documentation/ScriptReference/EditorPrefs.html
+                    // Even though for some versions of Unity docs state that N.x suffix is used where N.x is the major version number,
+                    // it's still " 5.x" suffix used for that cases which is probably bug in the docs.
+                    // Note that starting 2019.2 docs have " 5.x" suffix: https://docs.unity3d.com/2019.2/Documentation/ScriptReference/EditorPrefs.html
+#if UNITY_5_5_OR_NEWER
+                    string subKeyPath = "Software\\Unity Technologies\\Unity Editor 5.x";
+#else
+                    string subKeyPath = "Software\\Unity Technologies\\Unity Editor";
+#endif
+
+                    registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(subKeyPath);
+                }
+                else
+                {
+                    // From Unity docs: On Windows, PlayerPrefs are stored in the registry under HKCU\Software\[company name]\[product name] key, where company and product names are the names set up in Project Settings.
+#if UNITY_5_5_OR_NEWER
+                    // From Unity 5.5 editor PlayerPrefs moved to a specific location
+                    registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Unity\\UnityEditor\\" + companyName + "\\" + productName);
+#else
+                    registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\" + companyName + "\\" + productName);
+#endif
+                }
+
+                // Parse the registry if the specified registryKey exists
+                if (registryKey != null)
+                {
+                    // Get an array of what keys (registry value names) are stored
+                    string[] valueNames = registryKey.GetValueNames();
+
+                    // Create the array of the right size to take the saved PlayerPrefs
+                    PlayerPrefPair[] tempPlayerPrefs = new PlayerPrefPair[valueNames.Length];
+
+                    // Parse and convert the registry saved PlayerPrefs into our array
+                    int i = 0;
+                    foreach (string valueName in valueNames)
+                    {
+                        string key = valueName;
+
+                        // Remove the _h193410979 style suffix used on PlayerPref keys in Windows registry
+                        int index = key.LastIndexOf("_");
+                        if (index == -1)
+                        {
+                            continue;
+                        }
+                        key = key.Remove(index, key.Length - index);
+
+                        // Get the value from the registry
+                        object ambiguousValue = registryKey.GetValue(valueName);
+
+                        // Unfortunately floats will come back as an int (at least on 64 bit) because the float is stored as
+                        // 64 bit but marked as 32 bit - which confuses the GetValue() method greatly!
+                        if (ambiguousValue.GetType() == typeof(int) || ambiguousValue.GetType() == typeof(long))
+                        {
+                            // If the PlayerPref is not actually an int then it must be a float, this will evaluate to true
+                            // (impossible for it to be 0 and -1 at the same time)
+                            if (GetInt(key, -1) == -1 && GetInt(key, 0) == 0)
+                            {
+                                // Fetch the float value from PlayerPrefs in memory
+                                ambiguousValue = GetFloat(key);
+                            }
+                            else if (_showEditorPrefs && GetInt(key, -1) != -1)
+                            {
+                                ambiguousValue = GetInt(key);
+                            }
+                        }
+                        else if (ambiguousValue.GetType() == typeof(byte[]))
+                        {
+                            // On Unity 5 a string may be stored as binary, so convert it back to a string
+                            ambiguousValue = _encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
+                        }
+
+                        // Assign the key and value into the respective record in our output array
+                        tempPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = ambiguousValue };
+                        i++;
+                    }
+
+                    // Return the results
+                    return tempPlayerPrefs;
+                }
+                else
+                {
+                    // No existing PlayerPrefs saved (which is valid), so just return an empty array
+                    return new PlayerPrefPair[0];
+                }
+            }
+            else
+            {
+                throw new NotSupportedException("PlayerPrefsEditor doesn't support this Unity Editor platform");
+            }
+        }
+
+        private void UpdateSearch()
+        {
+            // Clear any existing cached search results
+            _filteredPlayerPrefs.Clear();
+
+            // Don't attempt to find the search results if a search filter hasn't actually been supplied
+            if (string.IsNullOrEmpty(_searchFilter))
+            {
+                return;
+            }
+
+            int entryCount = _deserializedPlayerPrefs.Count;
+
+            // Iterate through all the cached results and add any matches to filteredPlayerPrefs
+            for (int i = 0; i < entryCount; i++)
+            {
+                string fullKey = _deserializedPlayerPrefs[i].Key;
+                if (string.IsNullOrEmpty(fullKey))
+                {
+                    continue;
+                }
+                string displayKey = fullKey;
+
+                // Special case for encrypted keys in auto decrypt mode, search should use decrypted values
+                bool isEncryptedPair = PlayerPrefsUtility.IsEncryptedKey(_deserializedPlayerPrefs[i].Key);
+                if (_automaticDecryption && isEncryptedPair)
+                {
+                    displayKey = PlayerPrefsUtility.DecryptKey(fullKey);
+                }
+
+                string _searchLower = _searchFilter.ToLower();
+
+                // If the key contains the search filter (ToLower used on both parts to make this case insensitive)
+                if (displayKey.ToLower().Contains(_searchLower))
+                {
+                    _filteredPlayerPrefs.Add(_deserializedPlayerPrefs[i]);
+                }
+                // Else check value
+                else if (_deserializedPlayerPrefs[i].Value.ToString().ToLower().Contains(_searchLower))
+                {
+                    _filteredPlayerPrefs.Add(_deserializedPlayerPrefs[i]);
+                }
+            }
+        }
+
+        private void DrawTopBar()
+        {
+#if UNITY_5_6_OR_NEWER
+            string newSearchFilter = searchField.OnGUI(_searchFilter);
+            GUILayout.Space(4);
+#else
+            EditorGUILayout.BeginHorizontal();
+            // Heading
+            GUILayout.Label("Search", GUILayout.MaxWidth(50));
+            // Actual search box
+            string newSearchFilter = EditorGUILayout.TextField(searchFilter);
+
+            EditorGUILayout.EndHorizontal();
+#endif
+
+            // If the requested search filter has changed
+            if (newSearchFilter != _searchFilter)
+            {
+                _searchFilter = newSearchFilter;
+                // Trigger UpdateSearch to calculate new search results
+                UpdateSearch();
+            }
+
+            // Allow the user to toggle between editor and PlayerPrefs
+            int oldIndex = _showEditorPrefs ? 1 : 0;
+            int newIndex = GUILayout.Toolbar(oldIndex, new[] { LC.Combine(Lc.PlayerPrefs), LC.Combine(Lc.EditorPrefs) });
+
+            // Has the toggle changed?
+            if (newIndex != oldIndex)
+            {
+                // Reset
+                _lastDeserialization = null;
+                _showEditorPrefs = (newIndex == 1);
+                _searchFilter = searchField.OnGUI("");
+                UpdateSearch();
+            }
+        }
+
+        private void DrawMainList()
+        {
+            GUILayout.Space(4);
+
+            Color oldBackgroundColor = GUI.backgroundColor;
+
+            // The bold table headings
+            Rect rowRect = GUILayoutUtility.GetRect(GUIContent.none, GUI.skin.label);
+            rowRect.xMin -= 5;
+            rowRect.xMax += 3;
+            rowRect.xMax -= 3;
+            Rect rightRect = rowRect;
+            rightRect.xMin = rowRect.xMax - 55;
+
+            Rect typeRect = rightRect;
+            typeRect.x -= 40;
+            typeRect.width = 40;
+
+            Rect keyRect = rowRect;
+            keyRect.xMax = typeRect.xMin / 2;
+            Rect valueRect = keyRect;
+            valueRect.x += keyRect.width;
+
+            GUIStyle style = EditorStyles.toolbar;
+            style.fontSize = 12;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.MiddleCenter;
+
+            GUI.backgroundColor = EditorGUIUtility.isProSkin ? new Color(0.61f, 0.61f, 0.61f) : new Color(0.89f, 0.89f, 0.89f);
+            GUI.Label(rowRect, GUIContent.none, style);
+
+            GUI.Label(keyRect, LC.Combine(Lc.Key), style);
+            GUI.Label(valueRect, LC.Combine(Lc.Value), style);
+            GUI.Label(typeRect, LC.Combine(Lc.Type), style);
+            GUI.Label(rightRect, LC.Combine(Lc.Delete), style);
+            GUI.backgroundColor = oldBackgroundColor;
+
+            // Create a GUIStyle that can be manipulated for the various text fields
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+
+            // Could be dealing with either the full list or search results, so get the right list
+            List<PlayerPrefPair> activePlayerPrefs = _deserializedPlayerPrefs;
+
+            if (!string.IsNullOrEmpty(_searchFilter))
+            {
+                activePlayerPrefs = _filteredPlayerPrefs;
+            }
+
+            // Cache the entry count
+            int entryCount = activePlayerPrefs.Count;
+
+            // Record the last scroll position so we can calculate if the user has scrolled this frame
+            _lastScrollPosition = _scrollPosition;
+
+            // Start the scrollable area
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+            // Ensure the scroll doesn't go below zero
+            if (_scrollPosition.y < 0)
+            {
+                _scrollPosition.y = 0;
+            }
+
+            // The following code has been optimised so that rather than attempting to draw UI for every single PlayerPref
+            // it instead only draws the UI for those currently visible in the scroll view and pads above and below those
+            // results to maintain the right size using GUILayout.Space(). This enables us to work with thousands of
+            // PlayerPrefs without slowing the interface to a halt.
+
+            // Fixed height of one of the rows in the table
+            float baseRowHeight = 18;
+            float paddingEachSide = 2;
+            float rowHeight = 18 + paddingEachSide * 2;
+
+            // Determine how many rows are visible on screen. For simplicity, use Screen.height (the overhead is negligible)
+            int visibleCount = Mathf.CeilToInt(Screen.height / rowHeight);
+
+            // Determine the index of the first PlayerPref that should be drawn as visible in the scrollable area
+            int firstShownIndex = Mathf.FloorToInt(_scrollPosition.y / rowHeight);
+
+            // Determine the bottom limit of the visible PlayerPrefs (last shown index + 1)
+            int shownIndexLimit = firstShownIndex + visibleCount;
+
+            // If the actual number of PlayerPrefs is smaller than the calculated limit, reduce the limit to match
+            if (entryCount < shownIndexLimit)
+            {
+                shownIndexLimit = entryCount;
+            }
+
+            // If the number of displayed PlayerPrefs is smaller than the number we can display (like we're at the end
+            // of the list) then move the starting index back to adjust
+            if (shownIndexLimit - firstShownIndex < visibleCount)
+            {
+                firstShownIndex -= visibleCount - (shownIndexLimit - firstShownIndex);
+            }
+
+            // Can't have a negative index of a first shown PlayerPref, so clamp to 0
+            if (firstShownIndex < 0)
+            {
+                firstShownIndex = 0;
+            }
+
+            // Pad above the on screen results so that we're not wasting draw calls on invisible UI and the drawn player
+            // prefs end up in the same place in the list
+            GUILayout.Space(firstShownIndex * rowHeight);
+
+            // For each of the on screen results
+            for (int i = firstShownIndex; i < shownIndexLimit; i++)
+            {
+                rowRect = GUILayoutUtility.GetRect(GUIContent.none, GUI.skin.label, GUILayout.Height(rowHeight));
+                rowRect.xMin -= 5;
+                rowRect.xMax += 3;
+                GUI.Label(rowRect, GUIContent.none, i % 2 == 0 ? "OL EntryBackEven" : "OL EntryBackOdd");
+                rowRect.xMax -= 3;
+                rowRect.height = baseRowHeight;
+                rowRect.y += paddingEachSide;
+                rightRect = rowRect;
+                rightRect.xMin = rowRect.xMax - 25;
+
+                typeRect = rightRect;
+                typeRect.x -= 50f;
+                typeRect.width = 40f;
+
+                keyRect = rowRect;
+                keyRect.xMax = typeRect.xMin / 2 - 20f;
+                valueRect = keyRect;
+                valueRect.xMax += 20f;
+                valueRect.x += keyRect.width;
+
+                keyRect.xMin += 10;
+                valueRect.xMin += 10;
+                valueRect.xMax -= 5;
+
+                // Detect if it's an encrypted PlayerPref (these have key prefixes)
+                bool isEncryptedPair = PlayerPrefsUtility.IsEncryptedKey(activePlayerPrefs[i].Key);
+
+                // Colour code encrypted PlayerPrefs blue
+                if (isEncryptedPair)
+                {
+                    if (EditorGUIUtility.isProSkin)
+                    {
+                        textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
+                        textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
+                    }
+                    else
+                    {
+                        textFieldStyle.normal.textColor = new Color(0, 0, 1);
+                        textFieldStyle.focused.textColor = new Color(0, 0, 1);
+                    }
+                }
+                else
+                {
+                    // Normal PlayerPrefs are just black
+                    textFieldStyle.normal.textColor = GUI.skin.textField.normal.textColor;
+                    textFieldStyle.focused.textColor = GUI.skin.textField.focused.textColor;
+                }
+
+                // The full key is the key that's actually stored in PlayerPrefs
+                string fullKey = activePlayerPrefs[i].Key;
+
+                if (null == fullKey)
+                {
+                    continue;
+                }
+                // Display key is used so in the case of encrypted keys, we display the decrypted version instead (in
+                // auto-decrypt mode).
+                string displayKey = fullKey;
+
+                // Used for accessing the type information stored against the PlayerPref
+                object deserializedValue = activePlayerPrefs[i].Value;
+
+                // Track whether the auto decrypt failed, so we can instead fallback to encrypted values and mark it red
+                bool failedAutoDecrypt = false;
+
+                // If this is an encrypted play pref and we're attempting to decrypt them, try to decrypt it!
+                if (isEncryptedPair && _automaticDecryption)
+                {
+                    // This may throw exceptions (e.g. if private key changes), so wrap in a try-catch
+                    try
+                    {
+                        deserializedValue = PlayerPrefsUtility.GetEncryptedValue(fullKey, (string)deserializedValue);
+                        displayKey = PlayerPrefsUtility.DecryptKey(fullKey);
+                    }
+                    catch
+                    {
+                        // Change the colour to red to highlight the decrypt failed
+                        textFieldStyle.normal.textColor = Color.red;
+                        textFieldStyle.focused.textColor = Color.red;
+
+                        // Track that the auto decrypt failed, so we can prevent any editing
+                        failedAutoDecrypt = true;
+                    }
+                }
+
+                // The type of PlayerPref being stored (in auto decrypt mode this works with the decrypted values too)
+                Type valueType;
+
+                // If it's an encrypted playerpref, we're automatically decrypting and it didn't fail the earlier
+                // auto decrypt test
+                if (isEncryptedPair && _automaticDecryption && !failedAutoDecrypt)
+                {
+                    // Get the encrypted string
+                    string encryptedValue = GetString(fullKey);
+                    // Set valueType appropriately based on which type identifier prefix the encrypted string starts with
+                    if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_FLOAT_PREFIX))
+                    {
+                        valueType = typeof(float);
+                    }
+                    else if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_INT_PREFIX))
+                    {
+                        valueType = typeof(int);
+                    }
+                    else if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_BOOL_PREFIX))
+                    {
+                        valueType = typeof(bool);
+                    }
+                    else if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_STRING_PREFIX) || string.IsNullOrEmpty(encryptedValue))
+                    {
+                        // Special case here, empty encrypted values will also report as strings
+                        valueType = typeof(string);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Could not decrypt item, no match found in known encrypted key prefixes");
+                    }
+                }
+                else
+                {
+                    // Otherwise fallback to the type of the cached value (for non-encrypted values this will be
+                    // correct). For encrypted values when not in auto-decrypt mode, this will return string type
+                    valueType = deserializedValue.GetType();
+                }
+
+                // Display the PlayerPref key
+                EditorGUI.TextField(keyRect, displayKey, textFieldStyle);
+
+                // Value display and user editing
+                // If we're dealing with a float
+                if (valueType == typeof(float))
+                {
+                    float initialValue;
+                    if (isEncryptedPair && _automaticDecryption)
+                    {
+                        // Automatically decrypt the value if encrypted and in auto-decrypt mode
+                        initialValue = PlayerPrefsUtility.GetEncryptedFloat(displayKey);
+                    }
+                    else
+                    {
+                        // Otherwise fetch the latest plain value from PlayerPrefs in memory
+                        initialValue = GetFloat(fullKey);
+                    }
+
+                    // Display the float editor field and get any changes in value
+                    float newValue = EditorGUI.FloatField(valueRect, initialValue, textFieldStyle);
+
+                    // If the value has changed
+                    if (newValue != initialValue)
+                    {
+                        // Store the changed value in PlayerPrefs, encrypting if necessary
+                        if (isEncryptedPair)
+                        {
+                            string encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(newValue);
+                            SetString(fullKey, encryptedValue);
+                        }
+                        else
+                        {
+                            SetFloat(fullKey, newValue);
+                        }
+
+                        // Save PlayerPrefs
+                        Save();
+                    }
+
+                    // Display the PlayerPref type
+                    GUI.Label(typeRect, "float");
+                }
+                else if (valueType == typeof(int)) // if we're dealing with an int
+                {
+                    int initialValue;
+                    if (isEncryptedPair && _automaticDecryption)
+                    {
+                        // Automatically decrypt the value if encrypted and in auto-decrypt mode
+                        initialValue = PlayerPrefsUtility.GetEncryptedInt(displayKey);
+                    }
+                    else
+                    {
+                        // Otherwise fetch the latest plain value from PlayerPrefs in memory
+                        initialValue = GetInt(fullKey);
+                    }
+
+                    // Display the int editor field and get any changes in value
+                    int newValue = EditorGUI.IntField(valueRect, initialValue, textFieldStyle);
+
+                    // If the value has changed
+                    if (newValue != initialValue)
+                    {
+                        // Store the changed value in PlayerPrefs, encrypting if necessary
+                        if (isEncryptedPair)
+                        {
+                            string encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(newValue);
+                            SetString(fullKey, encryptedValue);
+                        }
+                        else
+                        {
+                            SetInt(fullKey, newValue);
+                        }
+
+                        // Save PlayerPrefs
+                        Save();
+                    }
+
+                    // Display the PlayerPref type
+                    GUI.Label(typeRect, "int");
+                }
+                else if (valueType == typeof(string)) // if we're dealing with a string
+                {
+                    string initialValue;
+                    if (isEncryptedPair && _automaticDecryption && !failedAutoDecrypt)
+                    {
+                        // Automatically decrypt the value if encrypted and in auto-decrypt mode
+                        initialValue = PlayerPrefsUtility.GetEncryptedString(displayKey);
+                    }
+                    else
+                    {
+                        // Otherwise fetch the latest plain value from PlayerPrefs in memory
+                        initialValue = GetString(fullKey);
+                    }
+
+                    // Display the text (string) editor field and get any changes in value
+                    string newValue = EditorGUI.TextField(valueRect, initialValue, textFieldStyle);
+
+                    // If the value has changed
+                    if (newValue != initialValue && !failedAutoDecrypt)
+                    {
+                        // Store the changed value in PlayerPrefs, encrypting if necessary
+                        if (isEncryptedPair)
+                        {
+                            string encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(newValue);
+                            SetString(fullKey, encryptedValue);
+                        }
+                        else
+                        {
+                            SetString(fullKey, newValue);
+                        }
+
+                        // Save PlayerPrefs
+                        Save();
+                    }
+
+                    if (isEncryptedPair && !_automaticDecryption && !string.IsNullOrEmpty(initialValue))
+                    {
+                        // Because encrypted values when not in auto-decrypt mode are stored as string, determine their
+                        // encrypted type and display that instead for these encrypted PlayerPrefs
+                        PlayerPrefType playerPrefType = (PlayerPrefType)(int)char.GetNumericValue(initialValue[0]);
+                        GUI.Label(typeRect, playerPrefType.ToString().ToLower());
+                    }
+                    else
+                    {
+                        // Display the PlayerPref type
+                        GUI.Label(typeRect, "string");
+                    }
+                }
+                else
+                {
+                    GUI.Label(valueRect, "Unsupported: " + valueType.ToString());
+                }
+
+                // Delete button
+                if (GUI.Button(rightRect, new GUIContent((Texture2D)EditorGUIUtility.TrIconContent("winbtn_mac_close_h").image, "Delete Pref")))
+                {
+                    // Delete the key from PlayerPrefs
+                    DeleteKey(fullKey);
+                    // Tell Unity to Save PlayerPrefs
+                    Save();
+                    // Delete the cached record so the list updates immediately
+                    DeleteCachedRecord(fullKey);
+                }
+            }
+
+            // Calculate the padding at the bottom of the scroll view (because only visible PlayerPref rows are drawn)
+            float bottomPadding = (entryCount - shownIndexLimit) * rowHeight;
+
+            // If the padding is positive, pad the bottom so that the layout and scroll view size is correct still
+            if (bottomPadding > 0)
+            {
+                GUILayout.Space(bottomPadding);
+            }
+
+            EditorGUILayout.EndScrollView();
+
+            // Display the number of PlayerPrefs
+            GUILayout.Label($"{LC.Combine(Lc.Count)}: " + entryCount);
+
+            Rect rect = GUILayoutUtility.GetLastRect();
+            rect.height = 1;
+            rect.y -= 4;
+            EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 0.5f));
+        }
+
+        private void DrawAddEntry()
+        {
+            // Create a GUIStyle that can be manipulated for the various text fields
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+
+            // Create a space
+            EditorGUILayout.Space();
+
+            // Heading
+            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine(new Lc[] { Lc.Add, _showEditorPrefs ? Lc.EditorPrefs : Lc.PlayerPrefs }));
+            if (DisplayAddPref)
+            {
+                // UI for whether the new PlayerPref is encrypted and what type it is
+                EditorGUILayout.BeginHorizontal();
+                _newEntryIsEncrypted = GUILayout.Toggle(_newEntryIsEncrypted, LC.Combine(Lc.Encrypt));
+
+                _newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)_newEntryType, new string[] { "float", "int", "string" });
+
+                EditorGUILayout.EndHorizontal();
+
+                // Key and Value headings
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label(LC.Combine(Lc.Key), EditorStyles.boldLabel);
+                GUILayout.Label(LC.Combine(Lc.Value), EditorStyles.boldLabel);
+                EditorGUILayout.EndHorizontal();
+
+                // If the new value will be encrypted tint the text boxes blue (in line with the display style for existing
+                // encrypted PlayerPrefs)
+                if (_newEntryIsEncrypted)
+                {
+                    if (EditorGUIUtility.isProSkin)
+                    {
+                        textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
+                        textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
+                    }
+                    else
+                    {
+                        textFieldStyle.normal.textColor = new Color(0, 0, 1);
+                        textFieldStyle.focused.textColor = new Color(0, 0, 1);
+                    }
+                }
+
+                EditorGUILayout.BeginHorizontal();
+
+                // Track the next control so we can detect key events in it
+                GUI.SetNextControlName("newEntryKey");
+                // UI for the new key text box
+                _newEntryKey = EditorGUILayout.TextField(_newEntryKey, textFieldStyle);
+
+                // Track the next control so we can detect key events in it
+                GUI.SetNextControlName("newEntryValue");
+
+                // Display the correct UI field editor based on what type of PlayerPref is being created
+                if (_newEntryType == PlayerPrefType.Float)
+                {
+                    _newEntryValueFloat = EditorGUILayout.FloatField(_newEntryValueFloat, textFieldStyle);
+                }
+                else if (_newEntryType == PlayerPrefType.Int)
+                {
+                    _newEntryValueInt = EditorGUILayout.IntField(_newEntryValueInt, textFieldStyle);
+                }
+                else
+                {
+                    _newEntryValueString = EditorGUILayout.TextField(_newEntryValueString, textFieldStyle);
+                }
+
+                // If the user hit enter while either the key or value fields were being edited
+                bool keyboardAddPressed = Event.current.isKey && Event.current.keyCode == KeyCode.Return && Event.current.type == EventType.KeyUp && (GUI.GetNameOfFocusedControl() == "newEntryKey" || GUI.GetNameOfFocusedControl() == "newEntryValue");
+
+                // If the user clicks the Add button or hits return (and there is a non-empty key), create the PlayerPref
+                if ((GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(_newEntryKey))
+                {
+                    // If the PlayerPref we're creating is encrypted
+                    if (_newEntryIsEncrypted)
+                    {
+                        // Encrypt the key
+                        string encryptedKey = PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(_newEntryKey);
+
+                        // Note: All encrypted values are stored as string
+                        string encryptedValue;
+
+                        // Calculate the encrypted value
+                        if (_newEntryType == PlayerPrefType.Float)
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(_newEntryValueFloat);
+                        }
+                        else if (_newEntryType == PlayerPrefType.Int)
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(_newEntryValueInt);
+                        }
+                        else
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(_newEntryValueString);
+                        }
+
+                        // Record the new PlayerPref in PlayerPrefs
+                        SetString(encryptedKey, encryptedValue);
+
+                        // Cache the addition
+                        CacheRecord(encryptedKey, encryptedValue);
+                    }
+                    else
+                    {
+                        if (_newEntryType == PlayerPrefType.Float)
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetFloat(_newEntryKey, _newEntryValueFloat);
+                            // Cache the addition
+                            CacheRecord(_newEntryKey, _newEntryValueFloat);
+                        }
+                        else if (_newEntryType == PlayerPrefType.Int)
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetInt(_newEntryKey, _newEntryValueInt);
+                            // Cache the addition
+                            CacheRecord(_newEntryKey, _newEntryValueInt);
+                        }
+                        else
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetString(_newEntryKey, _newEntryValueString);
+                            // Cache the addition
+                            CacheRecord(_newEntryKey, _newEntryValueString);
+                        }
+                    }
+
+                    // Tell Unity to save the PlayerPrefs
+                    Save();
+
+                    // Force a repaint since hitting the return key won't invalidate layout on its own
+                    Repaint();
+
+                    // Reset the values
+                    _newEntryKey = "";
+                    _newEntryValueFloat = 0;
+                    _newEntryValueInt = 0;
+                    _newEntryValueString = "";
+
+                    // Deselect
+                    GUI.FocusControl("");
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+
+        private void DrawBottomMenu()
+        {
+            EditorGUILayout.Space();
+            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, LC.Combine(new Lc[] { Lc.More, Lc.Options }));
+
+            if (DisplayMoreOptions)
+            {
+                EditorGUILayout.BeginHorizontal();
+                // UI for toggling automatic decryption on and off
+                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Decryption }), _automaticDecryption);
+
+                if (this.position.width < 390)
+                {
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal();
+                }
+
+                GUILayout.Label(LC.Combine(new Lc[] { Lc.Active, Lc.Key }), EditorStyles.boldLabel);
+                if (!SimpleEncryption.IsCustomKeyApplied)
+                {
+                    if (GUILayout.Button(new GUIContent(LC.Combine(new Lc[] { Lc.Create, Lc.Custom }), LC.Combine(Lc.Ppe_CreateCustomHint))))
+                    {
+                        // Get the contents of the template file
+                        string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
+                        string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                        string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
+
+                        // Replace the key in the template with a unique key
+                        byte[] key = new byte[32];
+                        for (int i = 0; i < 32; i++)
+                        {
+                            key[i] = (byte)Random.Range(0, 256);
+                        }
+
+                        templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
+
+                        // Write the game encryption script to Assets/ and import it
+                        File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);
+                        AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs", ImportAssetOptions.ForceUpdate);
+                    }
+                }
+                else
+                {
+                    GUILayout.Label("Custom");
+                }
+
+                EditorGUILayout.EndHorizontal();
+                if (_showEditorPrefs == false)
+                {
+                    // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
+                    if (GUILayout.Button(LC.Combine(Lc.Import)))
+                    {
+                        ImportPlayerPrefsWizard wizard = ScriptableWizard.DisplayWizard<ImportPlayerPrefsWizard>("Import PlayerPrefs", LC.Combine(Lc.Import));
+                    }
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                float buttonWidth = (EditorGUIUtility.currentViewWidth - 10) / 2f;
+                // Delete all PlayerPrefs
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.All }) + LC.Combine(Lc.Preferences), GUILayout.Width(buttonWidth)))
+                {
+                    if (EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Delete, Lc.All }), LC.Combine(Lc.Ppe_DeleteAllHint), LC.Combine(Lc.Yes), LC.Combine(Lc.Cancel)))
+                    {
+                        DeleteAll();
+                        Save();
+
+                        // Clear the cache too, for an instant visibility update for OSX
+                        _deserializedPlayerPrefs.Clear();
+                    }
+                }
+
+                GUILayout.FlexibleSpace();
+
+                // Mainly needed for OSX, this will encourage PlayerPrefs to save to file (but still may take a few seconds)
+                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Force, Lc.Save }), GUILayout.Width(buttonWidth)))
+                {
+                    Save();
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.Space(12f);
+        }
+
+        private void DeserializePrefsIntoCache()
+        {
+            if (Application.platform == RuntimePlatform.OSXEditor)
+            {
+                string playerPrefsPath;
+
+                if (_showEditorPrefs)
+                {
+                    playerPrefsPath = GetMacOSEditorPrefsPath();
+                }
+                else
+                {
+                    // From Unity Docs: On Mac OS X PlayerPrefs are stored in ~/Library/Preferences folder, in a file named unity.[company name].[product name].plist, where company and product names are the names set up in Project Settings. The same .plist file is used for both Projects run in the Editor and standalone players.
+
+                    // Construct the plist filename from the project's settings
+                    string plistFilename = $"unity.{PlayerSettings.companyName}.{PlayerSettings.productName}.plist";
+                    // Now construct the fully qualified path
+                    playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), plistFilename);
+                }
+
+                // Determine when the plist was last written to
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc(playerPrefsPath);
+
+                // If we haven't deserialized the PlayerPrefs already, or the written file has changed then deserialize
+                // the latest version
+                if (!_lastDeserialization.HasValue || _lastDeserialization.Value != lastWriteTime)
+                {
+                    // Deserialize the actual PlayerPrefs from file into a cache
+                    _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+
+                    // Record the version of the file we just read, so we know if it changes in the future
+                    _lastDeserialization = lastWriteTime;
+                }
+
+                if (lastWriteTime != MISSING_DATETIME)
+                {
+                    GUILayout.Label("Plist Last Written: " + lastWriteTime.ToString());
+                }
+                else
+                {
+                    GUILayout.Label("Plist Does Not Exist");
+                }
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // Windows works a bit differently to OSX, we just regularly query the registry. So don't query too often
+                if (!_lastDeserialization.HasValue || DateTime.UtcNow - _lastDeserialization.Value > TimeSpan.FromMilliseconds(500))
+                {
+                    // Deserialize the actual PlayerPrefs from registry into a cache
+                    _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+
+                    // Record the latest time, so we don't fetch again too quickly
+                    _lastDeserialization = DateTime.UtcNow;
+                }
+            }
+        }
+
+        private void OnGUI()
+        {
+            EditorGUILayout.Space();
+
+            DrawTopBar();
+
+            DeserializePrefsIntoCache();
+
+            DrawMainList();
+
+            DrawAddEntry();
+
+            DrawBottomMenu();
+
+            // If the user has scrolled, deselect - this is because control IDs within carousel will change when scrolled
+            // so we'd end up with the wrong box selected.
+            if (_scrollPosition != _lastScrollPosition)
+            {
+                // Deselect
+                GUI.FocusControl("");
+            }
+        }
+
+        private void CacheRecord(string key, object value)
+        {
+            // First of all check if this key already exists, if so replace it's value with the new value
+            bool replaced = false;
+
+            int entryCount = _deserializedPlayerPrefs.Count;
+            for (int i = 0; i < entryCount; i++)
+            {
+                // Found the key - it exists already
+                if (_deserializedPlayerPrefs[i].Key == key)
+                {
+                    // Update the cached pref with the new value
+                    _deserializedPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = value };
+                    // Mark the replacement so we no longer need to add it
+                    replaced = true;
+                    break;
+                }
+            }
+
+            // PlayerPref doesn't already exist (and wasn't replaced) so add it as new
+            if (!replaced)
+            {
+                // Cache a PlayerPref the user just created so it can be instantly display (mainly for OSX)
+                _deserializedPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = value });
+            }
+
+            // Update the search if it's active
+            UpdateSearch();
+        }
+
+        private void DeleteCachedRecord(string fullKey)
+        {
+            _keyQueuedForDeletion = fullKey;
+        }
+
+        // OnInspectorUpdate() is called by Unity at 10 times a second
+        private void OnInspectorUpdate()
+        {
+            // If a PlayerPref has been specified for deletion
+            if (!string.IsNullOrEmpty(_keyQueuedForDeletion))
+            {
+                // If the user just deleted a PlayerPref, find the ID and defer it for deletion by OnInspectorUpdate()
+                if (_deserializedPlayerPrefs != null)
+                {
+                    int entryCount = _deserializedPlayerPrefs.Count;
+                    for (int i = 0; i < entryCount; i++)
+                    {
+                        if (_deserializedPlayerPrefs[i].Key == _keyQueuedForDeletion)
+                        {
+                            _deserializedPlayerPrefs.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
+
+                // Remove the queued key since we've just deleted it
+                _keyQueuedForDeletion = null;
+
+                // Update the search results and repaint the window
+                UpdateSearch();
+                Repaint();
+            }
+            else if (_inspectorUpdateFrame % 10 == 0) // Once a second (every 10th frame)
+            {
+                // Force the window to repaint
+                Repaint();
+            }
+
+            // Track what frame we're on, so we can call code less often
+            _inspectorUpdateFrame++;
+        }
+
+        public void Import(string companyName, string productName)
+        {
+            // Walk through all the imported PlayerPrefs and apply them to the current PlayerPrefs
+            PlayerPrefPair[] importedPairs = RetrieveSavedPrefs(companyName, productName);
+            for (int i = 0; i < importedPairs.Length; i++)
+            {
+                Type type = importedPairs[i].Value.GetType();
+                if (type == typeof(float))
+                    SetFloat(importedPairs[i].Key, (float)importedPairs[i].Value);
+                else if (type == typeof(int))
+                    SetInt(importedPairs[i].Key, (int)importedPairs[i].Value);
+                else if (type == typeof(string))
+                    SetString(importedPairs[i].Key, (string)importedPairs[i].Value);
+
+                // Cache any new records until they are reimported from disk
+                CacheRecord(importedPairs[i].Key, importedPairs[i].Value);
+            }
+
+            // Force a save
+            Save();
+        }
+    }
+}

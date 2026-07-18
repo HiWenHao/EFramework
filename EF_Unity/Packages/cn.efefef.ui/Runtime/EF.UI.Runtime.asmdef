@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:de1007516d7f111351eb128b0efbdd367264fb71844651f9a383944f0694dc89
-size 546
+{
+    "name": "EF.UI.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

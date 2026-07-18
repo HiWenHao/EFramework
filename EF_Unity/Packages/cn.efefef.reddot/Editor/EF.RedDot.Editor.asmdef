@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d58d18c7cbf7ea18367963113e9b02362f6280b605ca51c6edcfab2c4795a55
-size 500
+{
+    "name": "EF.RedDot.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a4a7eea321f5a024bb7118f90940975f",
+        "GUID:b95e25f724df103448b1a28ae6dc19e7",
+        "GUID:396fd9bc7a7442941a71f32479ef054d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

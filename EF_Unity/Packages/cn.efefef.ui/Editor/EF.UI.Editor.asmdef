@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:0ff430b81605065165ee5b87856b5bd79771fc547e8b779a1f383a07531c6467
-size 545
+{
+    "name": "EF.UI.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a4a7eea321f5a024bb7118f90940975f",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:9e2083eb85898e14fb6b01d689ad482e",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

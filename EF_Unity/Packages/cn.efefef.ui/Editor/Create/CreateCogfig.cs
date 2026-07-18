@@ -1,3 +1,42 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b3a2879bc299b38e4b3cf161d7cdfeac0a469295b52cefae228919ebd94442bd
-size 1204
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Alvin8412
+ * CreationTime:  2026-05-25 14:30:03
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-05-25 14:30:03
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using EasyFramework.Edit.SpriteTools;
+using EasyFramework.Edit.Windows.ConfigPanel;
+using EasyFramework.Managers.Ui;
+using UnityEditor;
+
+namespace EasyFramework.Edit.Create
+{
+    /// <summary>
+    /// 创建配置
+    /// </summary>
+    internal static class CreateConfig
+    {
+        [MenuItem("Assets/Create/EF/UI Binding Config", priority = 412)]
+        private static void CreatedAutoBindSetting()
+        {
+            CreateSettings.Instance<UiBindingConfig>();
+        }
+
+        [MenuItem("Assets/Create/EF/UI Animation Config", priority = 413)]
+        private static void CreatedAnimationConfig()
+        {
+            CreateSettings.Instance<UiAnimationConfig>();
+        }
+
+        [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 414)]
+        private static void CreatedAtlasCollector()
+        {
+            CreateSettings.Instance<AtlasCollector>();
+        }
+    }
+}

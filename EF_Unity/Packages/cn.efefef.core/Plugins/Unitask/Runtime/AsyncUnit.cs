@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:02c02f204aba97bdddf62a4e95d7029676692a7eddb3ece7540c30154bc3330f
-size 545
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or 
+
+using System;
+
+namespace Cysharp.Threading.Tasks
+{
+    public readonly struct AsyncUnit : IEquatable<AsyncUnit>
+    {
+        public static readonly AsyncUnit Default = new AsyncUnit();
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
+        public bool Equals(AsyncUnit other)
+        {
+            return true;
+        }
+
+        public override string ToString()
+        {
+            return "()";
+        }
+    }
+}

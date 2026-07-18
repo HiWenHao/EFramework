@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2194a4ea21acf5d1401c5adc4c6020e8fa7241b4924ede1a50a26919d087a169
-size 648
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Cysharp.Threading.Tasks
+{
+    public class CancellationTokenEqualityComparer : IEqualityComparer<CancellationToken>
+    {
+        public static readonly IEqualityComparer<CancellationToken> Default = new CancellationTokenEqualityComparer();
+
+        public bool Equals(CancellationToken x, CancellationToken y)
+        {
+            return x.Equals(y);
+        }
+
+        public int GetHashCode(CancellationToken obj)
+        {
+            return obj.GetHashCode();
+        }
+    }
+}
+

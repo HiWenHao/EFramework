@@ -1,3 +1,29 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5534254e26edd56bcbe3f92581fff47e1a1f13bc4e3d5229d6a83e6315e7f6f7
-size 671
+/*
+ * ================================================
+ * Describe:      资源管理器类型
+ * Author:        Alvin8412
+ * CreationTime:  2026-05-01 21:11:34
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-05-01 21:11:34
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+namespace EasyFramework.Managers.Assets
+{
+    /// <summary>
+    /// 资源管理器类型
+    /// </summary>
+    public enum AssetsSystemType
+    {
+        /// <summary>
+        /// 默认资源管理器 - Resources
+        /// </summary>
+        Default,
+        
+        /// <summary>
+        /// Yoo资源管理器
+        /// </summary>
+        YooAsset,
+    }
+}

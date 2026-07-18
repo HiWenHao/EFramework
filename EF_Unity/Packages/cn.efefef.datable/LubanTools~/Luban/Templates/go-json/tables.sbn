@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c265fe91dadbd0457c317c71ae27eb0ab6e0685447e679199b57d29bbfb11918
-size 665
+{{~if __namespace != ''~}}
+package {{__namespace}};
+{{~end~}}
+
+type JsonLoader func(string) ([]map[string]interface{}, error)
+
+type {{__name}} struct {
+    {{~for table in __tables ~}}
+    {{table.name}} *{{full_name table}}
+    {{~end~}}
+}
+
+func NewTables(loader JsonLoader) (*{{__name}}, error) {
+    var err error
+    var buf []map[string]interface{}
+
+    tables := &{{__name}}{}
+    {{~for table in __tables ~}}
+    if buf, err = loader("{{table.output_data_file}}") ; err != nil {
+        return nil, err
+    }
+    if tables.{{table.name}}, err = New{{full_name table}}(buf) ; err != nil {
+        return nil, err
+    }
+    {{~end~}}
+    return tables, nil
+}
+

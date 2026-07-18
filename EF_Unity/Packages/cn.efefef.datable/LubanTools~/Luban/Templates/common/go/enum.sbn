@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:21566ab87f7c4fd23f1d94784f0610bc23b321119c481f0553907de6b00a244f
-size 386
+{{~if ___top_module != ''~}}
+package {{__top_module}};
+{{~end~}}
+
+{{~if __this.comment != '' ~}}
+/**
+ * {{escape_comment __this.comment}}
+ */
+{{~end~}}
+const (
+    {{~ for item in __this.items ~}}
+{{~if item.comment_or_alias != '' ~}}
+    /**
+     * {{escape_comment item.comment_or_alias}}
+     */
+{{~end~}}
+    {{full_name __this}}_{{item.name}} = {{item.int_value}};
+    {{~end~}}
+)

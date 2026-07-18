@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:dc4d4a19e27072ad0cd0a3c4fcaea4a334e668d1409eace0d53468629ade677e
-size 499
+{
+    "name": "EF.Audio.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a4a7eea321f5a024bb7118f90940975f",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:9790f86e8b373fd4c80ccc6b291ad2b3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

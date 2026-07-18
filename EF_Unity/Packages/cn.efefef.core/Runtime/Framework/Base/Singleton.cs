@@ -1,3 +1,40 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bbc7965ec4e87eb3dab5b8959081ed29ed0f88aa172e6e5df3f75b1d171c24e5
-size 1003
+﻿/*
+ * ================================================
+ * Describe:        The class singleton base.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2022-05-14:33:01
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-08 22:30:14
+ * ScriptVersion:   1.0
+ * ===============================================
+ */
+
+using System;
+
+namespace EasyFramework
+{
+    public abstract class Singleton<T> where T : class, ISingleton, new()
+    {
+        protected Singleton()
+        {
+        }
+
+        /// <summary>
+        /// Current type name
+        /// <para>当前类型名字</para>
+        /// </summary>
+        public string Name => typeof(T).Name;
+
+        public static T Instance => SelfLazy.Value;
+
+        private static readonly Lazy<T> SelfLazy = new(() =>
+        {
+            T t = new T();
+            if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
+                return t;
+
+            EFC.Register(t);
+            return t;
+        });
+    }
+}

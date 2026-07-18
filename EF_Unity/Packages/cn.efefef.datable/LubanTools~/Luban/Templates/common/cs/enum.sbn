@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a48d43ab8dc410b420349b92786388b81e235dac0fff618f7f915ad7a50b6614
-size 654
+{{~
+    comment = __enum.comment
+    items = __enum.items
+~}}
+
+
+{{namespace_with_grace_begin __namespace_with_top_module}} 
+{{~if comment != '' ~}}
+    /// <summary>
+    /// {{escape_comment comment}}
+    /// </summary>
+{{~end~}}
+    {{~if __enum.is_flags~}}
+    [System.Flags]
+    {{~end~}}
+    public enum {{__name}}
+    {
+        {{~ for item in items ~}}
+{{~if item.comment != '' ~}}
+        /// <summary>
+        /// {{escape_comment item.comment_or_alias}}
+        /// </summary>
+{{~end~}}
+        {{format_enum_item_name __code_style item.name}} = {{item.value}},
+        {{~end~}}
+    }
+
+{{namespace_with_grace_end __namespace_with_top_module}} 

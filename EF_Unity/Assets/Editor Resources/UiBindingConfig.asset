@@ -1,3 +1,73 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d91bf4ae306f9b3c9a273262ecf95c3e682720f8972faf48aaca9495b37bcd38
-size 1652
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 799d0275065e8274fb8dcc0ac1b8972c, type: 3}
+  m_Name: UiBindingConfig
+  m_EditorClassIdentifier: 
+  _rulePrefixes:
+  - Prefix: Btn
+    FullName: Button
+  - Prefix: BtnP
+    FullName: ButtonPro
+  - Prefix: Canvas
+    FullName: Canvas
+  - Prefix: Drop
+    FullName: Dropdown
+  - Prefix: DropTmp
+    FullName: TMP_Dropdown
+  - Prefix: Group
+    FullName: CanvasGroup
+  - Prefix: GGroup
+    FullName: GridLayoutGroup
+  - Prefix: HGroup
+    FullName: HorizontalLayoutGroup
+  - Prefix: Img
+    FullName: Image
+  - Prefix: ImgP
+    FullName: ImagePro
+  - Prefix: Ipt
+    FullName: InputField
+  - Prefix: IptTmp
+    FullName: TMP_InputField
+  - Prefix: Mask
+    FullName: Mask
+  - Prefix: Map
+    FullName: RadarMap
+  - Prefix: Mask2D
+    FullName: RectMask2D
+  - Prefix: NAnim
+    FullName: Animator
+  - Prefix: OAnim
+    FullName: Animation
+  - Prefix: RImg
+    FullName: RawImage
+  - Prefix: Rect
+    FullName: RectTransform
+  - Prefix: Sld
+    FullName: Slider
+  - Prefix: Sbar
+    FullName: Scrollbar
+  - Prefix: SRct
+    FullName: ScrollRect
+  - Prefix: SRctP
+    FullName: ScrollRectPro
+  - Prefix: Tran
+    FullName: Transform
+  - Prefix: Txt
+    FullName: Text
+  - Prefix: TxtTmp
+    FullName: TextMeshProUGUI
+  - Prefix: Tog
+    FullName: Toggle
+  - Prefix: TGroup
+    FullName: ToggleGroup
+  - Prefix: VGroup
+    FullName: VerticalLayoutGroup

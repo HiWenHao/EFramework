@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ddaf0bdec08341ee65d49139400125a21cb18f5397240e6642bddbefa6b85949
-size 405
+#!/bin/bash
+WORKSPACE=../..
+CONF_ROOT=.
+UNITY_ASSETS_PATH=$WORKSPACE/EF_Unity/Assets/Luban
+LUBAN_DLL=$CONF_ROOT/Luban/Luban.dll
+LUBAN_CONFIG=$CONF_ROOT/DataTables/luban.conf
+
+dotnet $LUBAN_DLL \
+    -t all \
+    -c cs-simple-json \
+    -d json \
+    --conf $LUBAN_CONFIG \
+    -x outputCodeDir=$UNITY_ASSETS_PATH/Code \
+    -x outputDataDir=$UNITY_ASSETS_PATH/Json 
+
+read -p "Press any key to continue..."

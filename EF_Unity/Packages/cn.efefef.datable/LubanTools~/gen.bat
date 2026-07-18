@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7042fea1cbf8a850cc55cda8db254f4c86a221eb3f520f3b491cf5164c716e6c
-size 353
+set CONF_ROOT=.
+set UNITY_DATA_PATH=%1
+set UNITY_CODE_PATH=%2
+set LUBAN_DLL=%CONF_ROOT%\Luban\Luban.dll
+set LUBAN_CONFIG=%CONF_ROOT%\DataTables\luban.conf
+
+dotnet %LUBAN_DLL% ^
+    -t all ^
+    -c cs-bin ^
+    -d bin ^
+    --conf %LUBAN_CONFIG% ^
+    -x outputCodeDir=%UNITY_CODE_PATH% ^
+    -x outputDataDir=%UNITY_DATA_PATH%  ^
+    -x lineEnding=CRLF

@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6f83bd1919aa26ae3f96ece80d33ac91dd2d0fd95611a3fff15f16467e18ec0c
-size 678
+{
+    "name": "UniTask.TextMeshPro",
+    "references": [
+        "UniTask",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "",
+            "define": "UNITASK_TEXTMESHPRO_SUPPORT"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "2.0.0",
+            "define": "UNITASK_TEXTMESHPRO_SUPPORT"
+        }
+    ],
+    "noEngineReferences": false
+}

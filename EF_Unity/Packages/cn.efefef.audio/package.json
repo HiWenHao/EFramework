@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:34493769c5133eae5891223775b1da22c8e17f173b4f31499467fa1d96dff9fe
-size 517
+{
+  "name": "cn.efefef.audio",
+  "displayName": "EF.Audio",
+  "version": "0.0.1",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "带有混音器的音频播放系统",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1"
+  },
+  "samples": null
+}

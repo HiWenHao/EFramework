@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fe06c00e79434b28822ee11a9d7c67a96a6a918b5db26687b71f4f71f2b04b48
-size 532
+{
+    "name": "EF.Archive.Runtime",
+    "rootNamespace": "EasyFramework.Systems.Archive",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:e34a5702dd353724aa315fb8011f08c3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

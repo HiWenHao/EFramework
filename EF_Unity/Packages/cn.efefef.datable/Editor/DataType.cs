@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ba1d518cab81536e5e3a12b29bb4fc80ca8d0105237c8f7993824bed15739f32
-size 664
+﻿/*
+ * ================================================
+ * Describe:        This script is used to .
+ * Author:          Alvin8412
+ * CreationTime:    2026-07-15 18:30:46
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-07-15 18:30:46
+ * ScriptVersion:   0.1
+ * ================================================
+ */
+
+namespace EasyFramework.Edit.Windows.Dataable
+{
+    /// <summary>
+    /// 数据类型
+    /// </summary>
+    public enum DataType
+    {
+        Json,
+        Bytes
+    }
+
+    /// <summary>
+    /// 数据为谁生成的目标类型
+    /// </summary>
+    public enum DataTargetType
+    {
+        Client,
+        Server,
+        Both
+    }
+}

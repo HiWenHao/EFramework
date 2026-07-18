@@ -1,3 +1,37 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:47e14b77feddfeb97c21b27f785905ac2689245ef4e8300fc877612f532321e3
-size 1220
+﻿/*
+ * ================================================
+ * Describe:        框架更新接口
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-03-02 16:24:48
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-05-16 20:44:22
+ * ScriptVersion:   0.1
+ * ===============================================
+ */
+
+namespace EasyFramework
+{
+    /// <summary>
+    /// Update interface in project.
+    /// <para>项目中的更新接口</para>
+    /// </summary>
+    public interface IUpdate
+    {
+        /// <summary>
+        /// 暂停, 自身不再轮询迭代
+        /// <para>Is paused, and it is not being updated itself.</para>
+        /// </summary>
+        bool IsPaused { get; }
+
+        /// <summary>
+        /// 轮询更新
+        /// </summary>
+        /// <param name="elapse">The interval in seconds from the last frame to the current one.
+        /// <para>逻辑流逝时间，以秒为单位</para>
+        /// </param>
+        /// <param name="realElapse">The timeScale-independent interval in seconds from the last frame to the current one.
+        /// <para>真实流逝时间，以秒为单位</para>
+        /// </param>
+        void Update(float elapse, float realElapse);
+    }
+}

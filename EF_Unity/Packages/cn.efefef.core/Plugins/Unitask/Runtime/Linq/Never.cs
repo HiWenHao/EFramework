@@ -1,3 +1,56 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5999e9fa9f94bba04a758d5e214061605d4b320a39fe77331df393ccf312135e
-size 1472
+﻿using System.Threading;
+
+namespace Cysharp.Threading.Tasks.Linq
+{
+    public static partial class UniTaskAsyncEnumerable
+    {
+        public static IUniTaskAsyncEnumerable<T> Never<T>()
+        {
+            return Cysharp.Threading.Tasks.Linq.Never<T>.Instance;
+        }
+    }
+
+    internal class Never<T> : IUniTaskAsyncEnumerable<T>
+    {
+        public static readonly IUniTaskAsyncEnumerable<T> Instance = new Never<T>();
+
+        Never()
+        {
+        }
+
+        public IUniTaskAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            return new _Never(cancellationToken);
+        }
+
+        class _Never : IUniTaskAsyncEnumerator<T>
+        {
+            CancellationToken cancellationToken;
+
+            public _Never(CancellationToken cancellationToken)
+            {
+                this.cancellationToken = cancellationToken;
+            }
+
+            public T Current => default;
+
+            public UniTask<bool> MoveNextAsync()
+            {
+                var tcs = new UniTaskCompletionSource<bool>();
+
+                cancellationToken.Register(state =>
+                {
+                    var task = (UniTaskCompletionSource<bool>)state;
+                    task.TrySetCanceled(cancellationToken);
+                }, tcs);
+
+                return tcs.Task;
+            }
+
+            public UniTask DisposeAsync()
+            {
+                return default;
+            }
+        }
+    }
+}

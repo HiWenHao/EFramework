@@ -1,3 +1,41 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:92d6ae0a00fdf8886b8bcb49b007d718117f607cfaedd2377c84e72b6dc118de
-size 1017
+/*
+ * ================================================
+ * Describe:      Please modify the description..
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-24 21:45:15
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-07-14 15:25:07
+ * ScriptVersion: 0.1 
+ * ================================================
+ */
+
+using EasyFramework;
+using EasyFramework.Managers.Ui;
+
+namespace EFExample
+{
+    /// <summary>
+    /// Please modify the description.
+    /// </summary>
+    public partial class TestTopView
+    {
+        void IUiView.Awake()
+        {
+            D.Log("TestTopView Awake");
+
+            EF.Timer.AddOnce(10.0f, delegate
+            {
+                UiSystem.Instance.OpenView<TestTopViewOther>();
+            });
+        }
+
+        void IUiView.Quit()
+        {
+            D.Warning("TestTopView Quit");
+        }
+
+        #region Button invoke event. Do not change here.不要更改这行 -- Auto
+
+        #endregion button invoke event. Do not change here.不要更改这行 -- Auto
+    }
+}

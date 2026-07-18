@@ -1,3 +1,133 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:08ef44fb4489910b7cdaadff629330670249117a0095fea63fa01a3084218760
-size 5076
+/*
+ * ================================================
+ * Describe:      存档系统 Editor 配置面板。继承 EFConfigPanelBase，
+ *                集成到 EF Configs 面板中，统一管理加密参数、自动保存策略。
+ * Author:        Alvin5100
+ * CreationTime:  2026-06-24 22:25:00
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-06-25 17:00:00
+ * ScriptVersion: 0.1.1
+ * ===============================================
+ */
+
+using System.IO;
+using EasyFramework.Edit;
+using EasyFramework.Edit.Create;
+using EasyFramework.Edit.Windows.ConfigPanel;
+using UnityEditor;
+using UnityEngine;
+
+namespace EasyFramework.Systems.Archive.Editor
+{
+    [EFConfigPanel(Priority = 200)]
+    public class ArchiveSettingsConfigPanel : EFConfigPanelBase
+    {
+        public override string Name => LC.Combine(Lc.Archive, Lc.Data, Lc.Config);
+
+        private UnityEditor.Editor _cachedEditor; // 缓存的 Settings Editor 实例（避免每帧重建）
+        private ArchiveSettings _settings;         // 当前存档配置资产
+
+        public override void OnEnable(string assetsPath)
+        {
+            LoadWindowData();
+        }
+
+        public override void LoadWindowData()
+        {
+            if (_settings is not null || !EditorUtils.CheckAssets<ArchiveSettings>(out string path))
+                return;
+            _settings = EditorUtils.LoadSettingAtPath<ArchiveSettings>(path);
+        }
+
+        public override void OnGUI()
+        {
+            if (_settings == null)
+            {
+                EditorGUILayout.Space(12f);
+                EditorGUILayout.HelpBox(LC.Combine(Lc.Archive, Lc.Config, Lc.Not, Lc.Exist), MessageType.Warning);
+                EditorGUILayout.Space(12f);
+                if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config))) return;
+                _settings = CreateSettings.Instance<ArchiveSettings>(true, ConfigManager.ConfigRuntimePath);
+                EditorGUIUtility.PingObject(_settings);
+                return;
+            }
+
+            if (_cachedEditor == null || _cachedEditor.target != _settings)
+                _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Archive System Configuration", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "These settings control encryption strength, auto-save behavior, " +
+                "backup strategy, and the storage backend. " +
+                "Changes take effect on next Play / Build.",
+                MessageType.Info);
+
+            using (var scope = new EditorGUI.ChangeCheckScope())
+            {
+                EditorGUILayout.Space(5);
+                _cachedEditor.OnInspectorGUI();
+
+                if (scope.changed)
+                {
+                    EditorUtility.SetDirty(_settings);
+                    AssetDatabase.SaveAssets();
+                }
+            }
+
+            EditorGUILayout.Space(10);
+
+            EditorGUILayout.LabelField("Quick Actions", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Locate Settings Asset"))
+                EditorGUIUtility.PingObject(_settings);
+
+            if (GUILayout.Button("Open Archives Folder"))
+            {
+                string path = Path.Combine(Application.persistentDataPath, _settings.fileStorageRoot);
+                EditorUtility.RevealInFinder(path + "/");
+            }
+
+            if (GUILayout.Button("Reset to Defaults"))
+            {
+                if (EditorUtility.DisplayDialog("Reset Archive Settings",
+                        "Restore all settings to default values?", "Reset", "Cancel"))
+                {
+                    var defaults = ScriptableObject.CreateInstance<ArchiveSettings>();
+
+                    // 用 CopySerialized 替代逐字段赋值，新增字段不会遗漏
+                    EditorUtility.CopySerialized(defaults, _settings);
+
+                    EditorUtility.SetDirty(_settings);
+                    AssetDatabase.SaveAssets();
+                    EditorApplication.delayCall += () => Object.DestroyImmediate(defaults);
+
+                    // 重建 Inspector Editor，确保面板 UI 反映最新字段值
+                    if (_cachedEditor != null)
+                    {
+                        Object.DestroyImmediate(_cachedEditor);
+                        _cachedEditor = null;
+                    }
+
+                    _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
+
+                    // 通知父容器重绘
+                    EditorApplication.delayCall += () =>
+                    {
+                        if (_cachedEditor != null)
+                            EditorUtility.SetDirty(_settings);
+                    };
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        public override void OnDestroy()
+        {
+            if (_cachedEditor == null) return;
+            Object.DestroyImmediate(_cachedEditor);
+            _cachedEditor = null;
+        }
+    }
+}

@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1cb320864a7275837dbdffa8735ca55f66040129f44488b69dcb76c784084660
-size 443
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using EasyFramework;
+
+namespace PleaseChangeTheNamespace
+{
+    /// <summary>
+    /// Please modify the description。
+    /// </summary>
+    public class TemplateScript : MonoBehaviour
+    {
+        void Start()
+        {
+        
+        }
+    
+        void Update()
+        {
+        
+        }
+    
+        void OnDestroy()
+        {
+        
+        }
+    }
+}

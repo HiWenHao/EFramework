@@ -1,3 +1,55 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bad0c10919e0f52591876a9c1b3005f5aa1c86d62d284b8485ec1e0aa988c719
-size 1510
+/*
+ * ================================================
+ * Describe:      This script is used to renderer for Dot type (show/hide).
+ * Author:        Alvin5100
+ * CreationTime:  2026-05-13 15:12:59
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-05-13 15:12:59
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using Cysharp.Threading.Tasks;
+using EasyFramework.Edit;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace EasyFramework.Systems.RedDot
+{
+    /// <summary>
+    /// 红点渲染器：显示/隐藏红点（Dot类型）
+    /// <para>Red dot renderer for Dot type (show/hide)</para>
+    /// </summary>
+    [RequireComponent(typeof(Image))]
+    public class DotRenderer : RedDotRendererBase
+    {
+        [HeaderPro("显示红点的目标物体", "The target object with a red dot displayed")]
+        [SerializeField] private GameObject target;
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            target = GetComponent<Image>().gameObject;
+        }
+#endif
+
+        /// <summary>
+        /// 渲染红点节点
+        /// <para>Render red dot node</para>
+        /// </summary>
+        public override UniTask Render(RedDotNode node)
+        {
+            target.SetActive(node.Number > 0);
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>
+        /// 隐藏红点
+        /// <para>Hide red dot</para>
+        /// </summary>
+        public override void Hide()
+        {
+            target.SetActive(false);
+        }
+    }
+}

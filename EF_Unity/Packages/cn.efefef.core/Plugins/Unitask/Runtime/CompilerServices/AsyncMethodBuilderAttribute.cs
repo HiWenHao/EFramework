@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:17c8d03fd805de96c2b7775bfe38a9a69244710f77fc6b386ce1d2a1b4878463
-size 413
+﻿
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS0436
+
+namespace System.Runtime.CompilerServices
+{
+    internal sealed class AsyncMethodBuilderAttribute : Attribute
+    {
+        public Type BuilderType { get; }
+
+        public AsyncMethodBuilderAttribute(Type builderType)
+        {
+            BuilderType = builderType;
+        }
+    }
+}
+

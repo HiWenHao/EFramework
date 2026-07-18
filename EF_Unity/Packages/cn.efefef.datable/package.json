@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:02b876b4084e18a4e3a26023b9f1e4e81cb406b3fd4558c860b41574e5027f1f
-size 520
+{
+  "name": "cn.efefef.datable",
+  "displayName": "EF.Datable",
+  "version": "0.0.1",
+  "unity": "2022.3",
+  "unityRelease": "10f1",
+  "description": "Luban相关包，用来统一相关需求",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://gitee.com/AlvinCN/EFramework",
+  "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
+  "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1"
+  },
+  "samples": null
+}

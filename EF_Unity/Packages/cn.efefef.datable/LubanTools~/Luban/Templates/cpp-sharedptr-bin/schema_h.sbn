@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e75dbea74be5a7e9fd16562d4bb76039bf19828fc2c290dfacf45b4629505482
-size 382
+#pragma once
+#include <functional>
+#include <algorithm>
+
+#include "CfgBean.h"
+
+{{namespace_with_grace_begin __top_module}}
+
+{{__enum_codes~}}
+
+{{~for b in __beans~}}
+{{namespace_with_grace_begin b.namespace}} struct {{b.name}}; {{namespace_with_grace_end b.namespace}}
+{{~end~}}
+
+{{~__bean_codes~}}
+
+{{~__table_codes~}}
+
+{{__tables_code}}
+
+{{namespace_with_grace_end __top_module}}
