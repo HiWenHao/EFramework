@@ -1,3 +1,2 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8bf27cc624eb703a930bcb816d1a08d7fac2d2d467bd303ac46d8b923a274c84
-size 758
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ARenderChain_002Ecs_002Fl_003AC_0021_003FUsers_003FGome_005FN54_003FAppData_003FRoaming_003FJetBrains_003FRider2025_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F079de93dfa3342009255df788dba36a617a000_003Ff5_003Fb13e4878_003FRenderChain_002Ecs/@EntryIndexedValue">ForceIncluded</s:String></wpf:ResourceDictionary>

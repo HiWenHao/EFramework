@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3e082c460af85d2bc38b5edcf7b0a484ef00f1c6893ebe1d744f4b9bb358b4d9
-size 682
+{
+  "name": "cn.efefef.core",
+  "displayName": "EF.Core",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "EF\u6846\u67b6\u6838\u5fc3\u5e93",
+  "author": {
+    "name": "Alvin",
+    "url": "https://blog.csdn.net/Wenhao_China"
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "com.code-philosophy.hybridclr": "8.11.0",
+    "com.code-philosophy.luban": "1.0.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.scriptablebuildpipeline": "1.21.25"
+  }
+}

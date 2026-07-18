@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:527939331211d68f95b240e709e2d0c0ebc36e1e54e92843753e5c16da63ecaa
-size 552
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2024-07-04 08:50:26
+ * ModifyAuthor:  Xiaohei.Wang(Wenhao)
+ * ModifyTime:    2024-07-04 08:50:26
+ * ScriptVersion: 0.1
+ * ===============================================
+*/
+
+namespace EasyFramework
+{
+    /// <summary>
+    /// Direction of circulation
+    /// <para>循环方向</para>
+    /// </summary>
+    public enum LoopDirectionType
+    {
+        RightOrUp = -1,
+        LeftOrDown = 1,
+	}
+}

@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:88d5bd1c00fa421d05fcf225c6a7e0a2f7636d3e1d085daf17187fdcb61bd602
-size 503
+{
+    "name": "EF.YooAsset.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:e34a5702dd353724aa315fb8011f08c3",
+        "GUID:396fd9bc7a7442941a71f32479ef054d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

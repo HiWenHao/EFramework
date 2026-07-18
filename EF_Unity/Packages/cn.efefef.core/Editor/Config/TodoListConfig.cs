@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2c754d03f29fdc6819424903193e2b769096d2f3847fc8ae260404111a938b4a
-size 900
+/* 
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2023-05-10 15:32:46
+ * ModifyAuthor:  Xiaohei.Wang(Wenhao)
+ * ModifyTime:    2023-05-10 15:32:46
+ * ScriptVersion: 0.1
+ * ===============================================
+*/
+using UnityEngine;
+
+namespace EasyFramework.Edit.TodoList
+{
+    public class TodoListConfig : ScriptableObject
+    {
+#pragma warning disable 0414
+        [SerializeField]
+        int TaskCount = 0;
+        [SerializeField]
+        bool[] Mark = new bool[] { };
+        [SerializeField]
+        bool[] Enabled = new bool[] { };
+        [SerializeField]
+        int[] Progress = new int[] { };
+        [SerializeField]
+        string[] Title = new string[] { };
+        [SerializeField]
+        string[] Description = new string[] { };
+#pragma warning disable 0414
+    }
+}

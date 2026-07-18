@@ -1,3 +1,42 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:36d58a8614aa958f58c785325d8b6671110441987c22d3da0de603dff045f7c1
-size 1098
+﻿/*
+ * ================================================
+ * Describe:        Please modify the description.
+ * Author:          Alvin8412
+ * CreationTime:    2026-07-14 15:25:29
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-07-14 15:25:29
+ * ScriptVersion:   0.1
+ * ================================================
+ */
+
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using EasyFramework;
+using EasyFramework.Managers.Ui;
+
+namespace EFExample
+{
+    //-----The script is auto generated. Please do not make any changes-----
+    public partial class TestBottomViewTwo : IUiView
+    {
+        uint IUiView.SerialId { get; set; }
+        public UiBinding Binding { get; private set; }
+        public RectTransform View { get; private set; }
+
+
+
+
+        void IUiView.Bind(RectTransform uiViewRect, UiBinding binding)
+        {
+            View = uiViewRect;
+            Binding = binding;
+        }
+
+        void IUiView.Dispose()
+        {
+        }
+    }
+    //-----The script is auto generated. Please do not make any changes-----
+}

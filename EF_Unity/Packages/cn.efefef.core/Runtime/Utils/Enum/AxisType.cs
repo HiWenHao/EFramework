@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:01819565ccc52a3e6a61bc4ea6cade3be108e582a0dde591c70e5e446db6c6dc
-size 552
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Xiaohei.Wang(Wenhao)
+ * CreationTime:  2024-07-04 08:40:26
+ * ModifyAuthor:  Xiaohei.Wang(Wenhao)
+ * ModifyTime:    2024-07-04 08:40:26
+ * ScriptVersion: 0.1
+ * ===============================================
+*/
+namespace EasyFramework
+{
+    /// <summary>
+    /// Horizontal and vertical axis direction.
+    /// <para>横纵轴方向</para>
+    /// </summary>
+    public enum AxisType
+    {
+        Horizontal,
+        Vertical
+    }
+}

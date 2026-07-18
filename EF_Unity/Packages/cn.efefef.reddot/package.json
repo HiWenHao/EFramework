@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:01c6330d49a688231f0ecd8a2dfbf71b35def80a70448313de6af18a09149440
-size 718
+{
+  "name": "cn.efefef.reddot",
+  "displayName": "EF.RedDot",
+  "version": "1.0.0",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "\u4e00\u5957\u5b8c\u6574\u4e14\u6210\u719f\u7684\u7ea2\u70b9\u7cfb\u7edf",
+  "author": {
+    "name": "Alvin",
+    "url": ""
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1"
+  },
+  "samples": [
+    {
+      "displayName": "Example Sample",
+      "description": "\u7ea2\u70b9\u4f7f\u7528\u6d4b\u8bd5\u6848\u4f8b.",
+      "path": "Samples~/RedDotExample"
+    }
+  ]
+}

@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:55c134cde8a0410bfe8382f506b3f4e2dabfba277b3ae18beb2b4e7cfb44bd8d
-size 437
+namespace EasyFramework
+{
+    /// <summary>
+    /// 所有的诊断ID
+    /// </summary>
+    public record DiagnosticIds
+    {
+        // 测试函数使用报错
+        public const string UseGetTypeInsteadId        = "EF0001";
+        // 依赖自身
+        public const string SelfDependencyId           = "EF0002";
+        // 循环依赖
+        public const string CyclicDependencyId         = "EF0003";
+        
+        
+    }
+}

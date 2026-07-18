@@ -1,3 +1,42 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:341f230cd7daf6e8a348b401c77a5fc0ce8ff3554a94d3bd051ba90237ccc894
-size 1313
+﻿using EasyFramework.Edit;
+using UnityEditor;
+using UnityEngine;
+
+namespace Sabresaurus.PlayerPrefsEditor
+{
+    public class ImportPlayerPrefsWizard : ScriptableWizard
+    {
+        // Company and product name for importing PlayerPrefs from other projects
+        [SerializeField] string importCompanyName = "";
+        [SerializeField] string importProductName = "";
+
+        private void OnEnable()
+        {
+            importCompanyName = PlayerSettings.companyName;
+            importProductName = PlayerSettings.productName;
+        }
+
+        private void OnInspectorUpdate()
+        {
+            if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length == 0)
+            {
+                Close();
+            }
+        }
+
+        protected override bool DrawWizardGUI()
+        {
+            GUILayout.Label(LC.Combine(Lc.Ppe_ImportHint), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.Separator();
+            return base.DrawWizardGUI();
+        }
+
+        private void OnWizardCreate()
+        {
+            if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length >= 1)
+            {
+                ((PlayerPrefsEditor)Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor))[0]).Import(importCompanyName, importProductName);
+            }
+        }
+    }
+}

@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f688fcb8699bfaf6dd20e1468e4d7069eefd2e6b5b4abc5bd66d16519f07a822
-size 406
+{
+    "name": "com.cysharp.unitask",
+    "displayName": "UniTask",
+    "author": { "name": "Cysharp, Inc.", "url": "https://cysharp.co.jp/en/" },
+    "version": "2.5.10",
+    "unity": "2018.4",
+    "description": "Provides an efficient async/await integration to Unity.",
+    "keywords": [ "async/await", "async", "Task", "UniTask" ],
+    "license": "MIT",
+    "category": "Task",
+    "dependencies": {}
+}

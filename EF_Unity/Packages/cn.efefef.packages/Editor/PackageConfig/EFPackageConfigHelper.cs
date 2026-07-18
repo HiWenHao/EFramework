@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:446600c4623944c342ba2448938ef4b5e916942803d6def0ef55fb47551ce5c1
-size 589
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-16 00:14:15
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-04-16 00:14:15
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using UnityEngine.Networking;
+
+namespace EasyFramework.Edit.Packages
+{
+	/// <summary>
+	/// Please modify the description。
+	/// </summary>
+	public class EFPackageConfigHelper
+	{
+
+
+	}
+}

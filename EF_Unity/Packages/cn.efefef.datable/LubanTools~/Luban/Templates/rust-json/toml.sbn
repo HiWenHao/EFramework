@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c50969a160aade45011dc8b2a63f871b746d2af4e5a0a470a22ad92ca04aa7db
-size 340
+﻿[package]
+name = "{{__name}}"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.x", features = ["derive"] }
+serde_json = "1.0.x"
+bitflags = { version = "2.5.x" , features = ["serde"]}
+macros = {path = "../macros"}

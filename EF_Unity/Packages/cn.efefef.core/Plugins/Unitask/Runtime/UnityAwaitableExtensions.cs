@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5f2c63fad2fe40a8588d326e607a2a0e1838ebbf1164e86afd241336202bf4bc
-size 423
+#if UNITY_2023_1_OR_NEWER
+namespace Cysharp.Threading.Tasks
+{
+    public static class UnityAwaitableExtensions
+    {
+        public static async UniTask AsUniTask(this UnityEngine.Awaitable awaitable)
+        {
+            await awaitable;
+        }
+        
+        public static async UniTask<T> AsUniTask<T>(this UnityEngine.Awaitable<T> awaitable)
+        {
+            return await awaitable;
+        }
+    }
+}
+#endif

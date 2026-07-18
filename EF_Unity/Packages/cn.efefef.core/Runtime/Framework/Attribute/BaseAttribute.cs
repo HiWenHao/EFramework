@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:012bc86a72b48e8e0d01641f82a76d523f46d1d23febbfcc996f7b393612228f
-size 463
+/*
+ * ================================================
+ * Describe:      统一项目特性
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-13 15:48:43
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-04-13 15:48:43
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System;
+
+namespace EasyFramework
+{
+    /// <summary>
+    /// 项目特性基类
+    /// </summary>
+    public class BaseAttribute : Attribute
+    {
+    }
+}

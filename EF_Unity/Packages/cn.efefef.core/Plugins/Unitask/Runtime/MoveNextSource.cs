@@ -1,3 +1,63 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d36cc84cfb3011ae195156b925c83c6ea351f3f6f59400a4e8889134e0b15a7f
-size 1605
+﻿using System;
+
+namespace Cysharp.Threading.Tasks
+{
+    public abstract class MoveNextSource : IUniTaskSource<bool>
+    {
+        protected UniTaskCompletionSourceCore<bool> completionSource;
+
+        public bool GetResult(short token)
+        {
+            return completionSource.GetResult(token);
+        }
+
+        public UniTaskStatus GetStatus(short token)
+        {
+            return completionSource.GetStatus(token);
+        }
+
+        public void OnCompleted(Action<object> continuation, object state, short token)
+        {
+            completionSource.OnCompleted(continuation, state, token);
+        }
+
+        public UniTaskStatus UnsafeGetStatus()
+        {
+            return completionSource.UnsafeGetStatus();
+        }
+
+        void IUniTaskSource.GetResult(short token)
+        {
+            completionSource.GetResult(token);
+        }
+
+        protected bool TryGetResult<T>(UniTask<T>.Awaiter awaiter, out T result)
+        {
+            try
+            {
+                result = awaiter.GetResult();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                completionSource.TrySetException(ex);
+                result = default;
+                return false;
+            }
+        }
+
+        protected bool TryGetResult(UniTask.Awaiter awaiter)
+        {
+            try
+            {
+                awaiter.GetResult();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                completionSource.TrySetException(ex);
+                return false;
+            }
+        }
+    }
+}

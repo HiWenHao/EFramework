@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d3f14065d9f0f489debc12aa6d8100dabcfc37e4ebb576e568608c87a8099543
-size 450
+﻿using UnityEditor;
+using UnityEngine;
+
+namespace EasyFramework.Edit.Windows.PrefabsCompare
+{
+    public class PrefabsCompareStyle
+    {
+        public static readonly Texture2D failImg = EditorGUIUtility.FindTexture("TestFailed");
+
+        public static readonly Texture2D successImg = EditorGUIUtility.FindTexture("TestPassed");
+
+        public static readonly Texture2D inconclusiveImg = EditorGUIUtility.FindTexture("TestInconclusive");
+    }
+}

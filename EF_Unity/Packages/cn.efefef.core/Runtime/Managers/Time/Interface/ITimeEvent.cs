@@ -1,3 +1,56 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e33892c07b7a8099f1629745efac53a55772f7606f7a5aba5fad598ac4eb4387
-size 1358
+/*
+ * ================================================
+ * Describe:      This script is used to standardized time events.
+ * Author:        Alvin5100(Wang)
+ * CreationTime:  2025-12-02 16:15:50
+ * ModifyAuthor:  Alvin5100(Wang)
+ * ModifyTime:    2025-12-02 16:15:50
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System;
+
+namespace EasyFramework.Managers.Timer
+{
+    /// <summary>
+    /// 时间事件
+    /// </summary>
+    internal interface ITimeEvent
+    {
+        /// <summary>
+        /// 时间事件的ID
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// 已经执行完成
+        /// </summary>
+        public bool IsCompleted { get; set; }
+
+        /// <summary>
+        /// 已经过去的时间
+        /// </summary>
+        public float PassedTime { get; set; }
+
+        /// <summary>
+        /// 第一次延时时间
+        /// </summary>
+        public float DelayTime { get; set; }
+
+        /// <summary>
+        /// 循环时间
+        /// </summary>
+        public float CycleTime { get; set; }
+
+        /// <summary>
+        /// 循环次数
+        /// </summary>
+        public int CycleCount { get; set; }
+
+        /// <summary>
+        /// 事件结束后的回调
+        /// </summary>
+        public Action<bool> EndCallback { get; set; }
+    }
+}

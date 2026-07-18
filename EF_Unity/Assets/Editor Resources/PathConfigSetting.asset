@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6040bf293fc14f7437b69e5826899ef64aae488c831b9c735dc24d78c1496851
-size 786
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09068ab9f626737458e14d9a2ccaf879, type: 3}
+  m_Name: PathConfigSetting
+  m_EditorClassIdentifier: 
+  _atlasFolder: Assets/ExampleGame/Resources/Atlas/
+  _extractPath: Assets/
+  _uiPrefabPath: Assets/ExampleGame/Resources/Prefabs/UI/
+  _uiCodePath: Assets/ExampleGame/ScriptsHotfix/_Test/
+  _lubanCodePath: Assets/ExampleGame/ScriptsHotfix/JsonConfig/
+  _lubanDataPath: Assets/ExampleGame/Resources/JsonData/
+  _sublimePath: D:/Jobs/Sublime Text/sublime_text.exe
+  _notepadPath: 

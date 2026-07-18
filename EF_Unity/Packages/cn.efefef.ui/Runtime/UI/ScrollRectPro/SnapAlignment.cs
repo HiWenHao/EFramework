@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3bec3d0d504818dc19efe2f043444db2e17daac3f6571a4f933f65e3fd64e2bb
-size 1048
+﻿/*
+ * ================================================
+ * Describe:        EF框架的UI通用吸附枚举
+ * Author:          Alvin8412
+ * CreationTime:    2026-06-05 21:31:38
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-06-05 21:31:38
+ * ScriptVersion:   0.1
+ * ================================================
+ */
+
+namespace EasyFramework.Managers.Ui
+{
+    /// <summary>
+    /// 吸附对齐
+    /// <para>Snap alignment</para>
+    /// </summary>
+    public enum SnapAlignment
+    {
+        /// <summary>
+        /// 不吸附
+        ///<para>No adsorption</para>
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 吸附到视口顶部
+        ///<para>Snap to top of viewport</para>
+        /// </summary>
+        Top,
+
+        /// <summary>
+        /// 吸附到视口中央
+        /// <para>Snap to center of viewport</para></summary>
+        Center,
+
+        /// <summary>
+        /// 吸附到视口底部
+        /// <para>Snap to bottom of viewport</para>
+        /// </summary>
+        Bottom
+    }
+}

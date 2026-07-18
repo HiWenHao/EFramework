@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d2a7d6b10fadd713a2b858140f18d999b1d163f51ddf6bb40842a8feb6d9075c
-size 498
+{
+  "name": "cn.efefef.archive",
+  "displayName": "EF.Archive",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "游戏存档系统：多槽位管理、AES加密、SHA256完整性校验",
+  "author": {
+    "name": "Alvin"
+  },
+  "dependencies": {
+    "cn.efefef.core": "0.1.0"
+  },
+  "samples": [
+    {
+      "displayName": "Archive Example",
+      "description": "存档系统使用示例：多槽位创建、读写、自动保存",
+      "path": "Samples~/ArchiveExample"
+    }
+  ]
+}

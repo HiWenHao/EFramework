@@ -1,3 +1,82 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c91afa3f7e2745586f655e7c5a5062ae54ecfa1fe7e57621cfaa141dd0b42c7f
-size 1922
+/*
+ * ================================================
+ * Describe:      通过Unity.API获取到从GitHub拉下来的Package包信息
+ * Author:        Alvin8412
+ * CreationTime:  2026-04-15 22:58:50
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-04-15 22:58:50
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace EasyFramework.Edit.Packages
+{
+    /// <summary>
+    /// 通过Unity.API获取到从GitHub拉下来的Package信息
+    /// </summary>
+    public class GitPackageConfig
+    {
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("displayName")]
+        public string DisplayName;
+
+        [JsonProperty("version")]
+        public string Version;
+
+        [JsonProperty("unity")]
+        public string Unity;
+
+        [JsonProperty("unityRelease")]
+        public string UnityRelease;
+
+        [JsonProperty("description")]
+        public string Description;
+
+        [JsonProperty("author")]
+        public Author Author;
+
+        [JsonProperty("changelogUrl")]
+        public string ChangelogUrl;
+
+        [JsonProperty("documentationUrl")]
+        public string DocumentationUrl;
+
+        [JsonProperty("licensesUrl")]
+        public string LicensesUrl;
+
+        [JsonProperty("dependencies")]
+        public Dictionary<string, string> Dependencies;
+
+        [JsonProperty("samples")]
+        public List<Sample> Samples;
+    }
+
+    [Serializable]
+    public class Author
+    {
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("url")]
+        public string Url;
+    }
+
+    [Serializable]
+    public class Sample
+    {
+        [JsonProperty("displayName")]
+        public string DisplayName;
+
+        [JsonProperty("description")]
+        public string Description;
+
+        [JsonProperty("path")]
+        public string Path;
+    }
+}

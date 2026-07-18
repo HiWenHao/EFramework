@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:37bcadfdc5e77c17c12c979d37c61a058531980da3b570beb0b32fed7f6a7e61
-size 1050
+/*
+ * ================================================
+ * Describe:      This script is used to .
+ * Author:        Alvin8412
+ * CreationTime:  2026-05-20 11:07:40
+ * ModifyAuthor:  Alvin8412
+ * ModifyTime:    2026-05-20 11:07:40
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+using UnityEditor;
+
+namespace EasyFramework.Edit
+{
+    /// <summary>
+    /// 编辑器下通用命令统一
+    /// </summary>
+    public static class EditorCommands
+    {
+        /// <summary>
+        /// 刷新编辑器
+        /// <para>Editor refresh</para>
+        /// </summary>
+        public static void Refresh()
+        {
+            AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// 将未保存的内容写入磁盘
+        /// </summary>
+        public static void SaveAssets()
+        {
+            AssetDatabase.SaveAssets();
+        }
+
+        public static void CreateAssetsObject(string assetsName)
+        {
+            ProjectWindowUtil.CreateAssetWithContent(assetsName, "Assets/");
+        }
+    }
+}

@@ -1,3 +1,182 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d923aa57ca2ca05f54fe496e34580df55fee418ea1e998a272f33ec24636a43
-size 7672
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EasyFrameworkTools</name>
+    </assembly>
+    <members>
+        <member name="T:EasyFramework.ELogStyleType">
+            <summary>
+            The style type of log.
+            <para>日志样式类型</para>
+            </summary>
+        </member>
+        <member name="F:EasyFramework.ELogStyleType.Homochromy">
+            <summary> 单一色彩 </summary>
+        </member>
+        <member name="F:EasyFramework.ELogStyleType.Multicolour">
+            <summary> 多色彩，日志类型与内容前后分离 </summary>
+        </member>
+        <member name="T:EasyFramework.EFLogType">
+            <summary>
+            The log type (supports bit flags for caching filters).
+            <para>记录类型（支持位掩码，用于缓存过滤）</para>
+            </summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.None">
+            <summary> 无类型（内部用）</summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.Log">
+            <summary> Regular log <para>常规记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.Emp">
+            <summary> Emphasize log <para>突出记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.War">
+            <summary> Warning log <para>警告记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.Err">
+            <summary> Error log <para>错误记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.Exc">
+            <summary> Exceptions or Fatal log <para>异常或崩溃记录</para></summary>
+        </member>
+        <member name="F:EasyFramework.EFLogType.All">
+            <summary> All types <para>全部类型</para></summary>
+        </member>
+        <member name="T:EasyFramework.D">
+            <summary>
+            Custom logger.
+            <para>自定义日志</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.Init(System.Boolean,EasyFramework.ELogStyleType,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Initialize the debug system.<para>初始化记录系统</para>
+            </summary>
+            <param name="openLog">Whether to enable logging.<para>是否打开记录</para></param>
+            <param name="logColor">the color with log.<para>普通颜色</para></param>
+            <param name="warningColor">the color with warning log.<para>警告颜色</para></param>
+            <param name="errorColor">the color with error log.<para>错误颜色</para></param>
+            <param name="emphasizeColor">the color with emphasize log.<para>突出标记颜色</para></param>
+            <param name="exceptionsColor">the color with error log.<para>异常或崩溃颜色</para></param>
+        </member>
+        <member name="M:EasyFramework.D.Clear">
+            <summary>
+            Clear all cached logs.
+            <para>清空全部日志</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.GetAllLogs(EasyFramework.EFLogType)">
+            <summary>
+            Obtain all logs by type.
+            <para>按类型获取全部日志</para>
+            </summary>
+            <param name="logType">日志类型</param>
+        </member>
+        <member name="M:EasyFramework.D.Log(System.Object)">
+            <summary>
+            打印记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.Emphasize(System.Object)">
+            <summary>
+            打印突出提示的记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.Warning(System.Object)">
+            <summary>
+            打印警告记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.Error(System.Object)">
+            <summary>
+            打印错误记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.Exception(System.Object)">
+            <summary>
+            打印异常记录
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.SetMaxCachedEntries(System.Int32)">
+            <summary>设置最大缓存条目数，需 Init 之后调用，会清空已有缓存</summary>
+        </member>
+        <member name="M:EasyFramework.D.SetThrowOnException(System.Boolean)">
+            <summary>
+            设置是否在 Exception 方法中抛出异常 (默认 false，推荐 false)
+            <para>Set whether exceptions are thrown within the Exception method (default: false, recommended: false)</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.SetCachedLogTypes(EasyFramework.EFLogType)">
+            <summary>
+            设置需要缓存的日志类型（位掩码组合），只对后续日志生效，已缓存的不受影响。
+            <para>Specify the types of logs that need to be cached (bit mask combination), which will only take effect for subsequent logs. Cached logs will not be affected.</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.D.IsColor(System.String)">
+            <summary>
+            Check the string is color
+            <para>检查当前字符串是否为颜色值</para>
+            </summary>
+        </member>
+        <member name="T:EasyFramework.TStatic">
+            <summary>
+            XH-Tools
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsInt(System.String)">
+            <summary>
+            Check the string is int.
+            检查是否为整数
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsFloat(System.String)">
+            <summary>
+            Check the string is float.
+            检查是否为单精度浮点数
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsColor(System.String)">
+            <summary>
+            Check the string is color
+            检查当前字符串是否为颜色值
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsChinese(System.String)">
+            <summary>
+            Check the string is in pure Chinese.
+            检查是否为纯中文
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsEnglish(System.String)">
+            <summary>
+            Check the string is in pure English.
+            检查是否为纯英文
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsEmail(System.String)">
+            <summary>
+            Check the string is a email.
+            检查是否为邮箱
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsDoubleBytes(System.String)">
+            <summary>
+            Check the string is a double bytes.
+            检查是否为双字节
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsPhoneNumber(System.String)">
+            <summary>
+            Check the string is a phone number.
+            检查是否为手机号
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.BytesToAudioClip(System.Byte[])">
+            <summary>
+             Byte stream data to audio clip float array.字节流数据转音频单精度浮点型数组
+            </summary>
+            <param name="data">The byte stream.字节流数据</param>
+        </member>
+    </members>
+</doc>

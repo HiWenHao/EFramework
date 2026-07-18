@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:95914f1c74a355c6f0a10d241b43d553ed4dad7d56ad117859f277ce3277145a
-size 521
+{
+    "name": "UniTask.DOTween",
+    "references": [
+        "UniTask",
+        "DOTween.Modules"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.demigiant.dotween",
+            "expression": "",
+            "define": "UNITASK_DOTWEEN_SUPPORT"
+        }
+    ],
+    "noEngineReferences": false
+}

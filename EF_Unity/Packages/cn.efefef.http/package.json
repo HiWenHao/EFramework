@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6ceca3dfd4f2e17cc22bf2d32f050a5c9422649b6ffa0ed45c78424539357faf
-size 610
+{
+  "name": "cn.efefef.http",
+  "displayName": "EF.Http",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "\u4e00\u4e2a\u7b80\u5355\u7684HTTP\u8bf7\u6c42\u7ba1\u7406\u5668\u3002",
+  "author": {
+    "name": "Alvin",
+    "url": "https://blog.csdn.net/Wenhao_China"
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}

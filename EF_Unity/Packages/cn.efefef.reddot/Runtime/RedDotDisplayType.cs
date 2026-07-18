@@ -1,3 +1,44 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c8bea0b6d3e34de9aded6dae4f296716c924070b02c07a4e8fc69a8506ae59a0
-size 1147
+/*
+ * ================================================
+ * Describe:      用来定义红点展示类型. Used to define red dot display type
+ * Author:        Alvin5100
+ * CreationTime:  2026-05-12 17:51:21
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-05-13 15:09:01
+ * ScriptVersion: 0.1
+ * ===============================================
+ */
+
+namespace EasyFramework.Systems.RedDot
+{
+    /// <summary>
+    /// 红点展示类型
+    /// <para>Red dot display type</para>
+    /// </summary>
+    public enum RedDotDisplayType
+    {
+        /// <summary>
+        ///	仅显示红点（无数字）
+        /// <para>Show only the red dots (without numbers)</para>
+        /// </summary>
+        Dot,
+
+        /// <summary>
+        /// 显示数字（如“3”）
+        /// <para>Display numbers (such as "8")</para>
+        /// </summary>
+        Number,
+
+        /// <summary>
+        /// 显示自定义图片
+        /// <para>Display custom image</para>
+        /// </summary>
+        Image,
+
+        /// <summary>
+        /// 图片 + 数字
+        /// <para>Picture + Number</para>
+        /// </summary>
+        ImageNumber
+    }
+}

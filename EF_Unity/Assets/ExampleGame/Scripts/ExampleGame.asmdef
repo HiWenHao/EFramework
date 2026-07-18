@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2a58cac8959d24cd16e3ae78013bf02df74422bcaa6f71a7bd738bf187b873e2
-size 642
+{
+    "name": "ExampleGame",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:2a81c6962524d424a8ef5072bd3b0fa0",
+        "GUID:e34a5702dd353724aa315fb8011f08c3",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:9e2083eb85898e14fb6b01d689ad482e",
+        "GUID:41ab4279c1ae09b4ca0241431788d06d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

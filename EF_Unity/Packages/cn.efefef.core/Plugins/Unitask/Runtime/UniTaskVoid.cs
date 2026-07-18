@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:098ea9e8b0ecf01befb1216f86758a2c0e035838ac1733fe2371acd5211d1cc2
-size 397
+﻿#pragma warning disable CS1591
+#pragma warning disable CS0436
+
+using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using Cysharp.Threading.Tasks.CompilerServices;
+
+namespace Cysharp.Threading.Tasks
+{
+    [AsyncMethodBuilder(typeof(AsyncUniTaskVoidMethodBuilder))]
+    public readonly struct UniTaskVoid
+    {
+        public void Forget()
+        {
+        }
+    }
+}
+

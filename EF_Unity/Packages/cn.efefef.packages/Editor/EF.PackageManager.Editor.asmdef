@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:df849f460226b9ec22fe1db1b45caedc0f58c795e73ab7c515eec152c1766c3b
-size 459
+{
+    "name": "EF.PackageManager.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:a4a7eea321f5a024bb7118f90940975f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,3 +1,9 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c0b33a3a2c656e55e24b32abb5bfaa0e80889e927fae0e7695224ab4f9ea7feb
-size 204
+fileFormatVersion: 2
+guid: 0216a0ab78aaa3844be085cc24496539
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

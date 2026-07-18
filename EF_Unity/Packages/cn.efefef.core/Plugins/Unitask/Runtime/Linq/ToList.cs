@@ -1,3 +1,42 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c9ae5c4d4d275033c0c6189e5fb5f57f31b6fb7a5de9c93c812d196e07c93316
-size 1239
+﻿using Cysharp.Threading.Tasks.Internal;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Cysharp.Threading.Tasks.Linq
+{
+    public static partial class UniTaskAsyncEnumerable
+    {
+        public static UniTask<List<TSource>> ToListAsync<TSource>(this IUniTaskAsyncEnumerable<TSource> source, CancellationToken cancellationToken = default)
+        {
+            Error.ThrowArgumentNullException(source, nameof(source));
+
+            return Cysharp.Threading.Tasks.Linq.ToList.ToListAsync(source, cancellationToken);
+        }
+    }
+
+    internal static class ToList
+    {
+        internal static async UniTask<List<TSource>> ToListAsync<TSource>(IUniTaskAsyncEnumerable<TSource> source, CancellationToken cancellationToken)
+        {
+            var list = new List<TSource>();
+
+            var e = source.GetAsyncEnumerator(cancellationToken);
+            try
+            {
+                while (await e.MoveNextAsync())
+                {
+                    list.Add(e.Current);
+                }
+            }
+            finally
+            {
+                if (e != null)
+                {
+                    await e.DisposeAsync();
+                }
+            }
+
+            return list;
+        }
+    }
+}

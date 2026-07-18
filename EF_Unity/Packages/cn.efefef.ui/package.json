@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7bfab150328d5588f493e878fd40c5c2f5432f3d843ddb5de401d8d7db1adf2a
-size 925
+{
+  "name": "cn.efefef.ui",
+  "displayName": "EF.UI",
+  "version": "0.0.1",
+  "unity": "2021.3",
+  "unityRelease": "10f1",
+  "description": "UI\u7ba1\u7406\u5668\u8d44\u4ea7\u5305",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://github.com/HiWenHao/EFramework",
+  "documentationUrl": "https://github.com/HiWenHao/EFramework",
+  "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1",
+    "com.unity.ugui": "1.0.0",
+    "com.unity.render-pipelines.universal": "14.0.9"
+  },
+  "samples": [
+    {
+      "displayName": "ScrollProList Sample",
+      "description": "无限不规则滑动列表案例.",
+      "path": "Samplse~/ScrollProListExample"
+    },
+    {
+      "displayName": "CircularScrollList Sample",
+      "description": "循环滑动列表案例.",
+      "path": "Samplse~/CircularScrollListExample"
+    }
+  ]
+}

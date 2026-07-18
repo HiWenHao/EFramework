@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d6ecb6cdfee950a6214e3399195e5a69ff90287c3080cf9af19881240edcff6d
-size 174
+Library/
+HybridCLRData/
+Bundles/
+UserSettings/
+Logs/
+obj/
+Temp/
+*.csproj
+.vs/
+.vsconfig
+*.sln
+yoo/
+EF_Unity/Assets/StreamingAssets/
+EF_Unity/Assets/StreamingAssets.meta
+.idea
