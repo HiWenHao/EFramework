@@ -147,8 +147,12 @@ namespace EasyFramework.Edit.Windows.Dataable
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
 
+            EditorGUILayout.BeginHorizontal();
             _config.LubanNamespace = EditorGUILayout.TextField(LC.Combine(Lc.Generate, Lc.Of, Lc.Namespace),
                 _config.LubanNamespace);
+            _config.LubanManagerName = EditorGUILayout.TextField(LC.Combine(Lc.Generate, Lc.Of, Lc.Manager, Lc.Script, Lc.Name),
+                _config.LubanManagerName);
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             EditorGUILayout.BeginHorizontal();
@@ -266,7 +270,7 @@ namespace EasyFramework.Edit.Windows.Dataable
             foreach (string path in Directory.GetFiles(root, "*.*", SearchOption.AllDirectories))
             {
                 if (!path.EndsWith(".xls") && !path.EndsWith(".xlsx")) continue;
-                if (Path.GetFileName(path).StartsWith("__")) continue;
+                if (Path.GetFileName(path).StartsWith("~") || Path.GetFileName(path).StartsWith("__")) continue;
                 _excelFiles.Add(path);
             }
         }
@@ -329,11 +333,11 @@ namespace EasyFramework.Edit.Windows.Dataable
             sb.AppendLine("\t\"targets\":");
             sb.AppendLine("\t[");
             sb.AppendLine(
-                $"\t\t{{\"name\":\"server\", \"manager\":\"LC\", \"groups\":[\"s\"], \"topModule\":\"{_config.LubanNamespace}\"}},");
+                $"\t\t{{\"name\":\"server\", \"manager\":\"{_config.LubanManagerName}\", \"groups\":[\"s\"], \"topModule\":\"{_config.LubanNamespace}\"}},");
             sb.AppendLine(
-                $"\t\t{{\"name\":\"client\", \"manager\":\"LC\", \"groups\":[\"c\"], \"topModule\":\"{_config.LubanNamespace}\"}},");
+                $"\t\t{{\"name\":\"client\", \"manager\":\"{_config.LubanManagerName}\", \"groups\":[\"c\"], \"topModule\":\"{_config.LubanNamespace}\"}},");
             sb.AppendLine(
-                $"\t\t{{\"name\":\"all\", \"manager\":\"LC\", \"groups\":[\"c\",\"s\",\"e\"], \"topModule\":\"{_config.LubanNamespace}\"}}");
+                $"\t\t{{\"name\":\"all\", \"manager\":\"{_config.LubanManagerName}\", \"groups\":[\"c\",\"s\",\"e\"], \"topModule\":\"{_config.LubanNamespace}\"}}");
             sb.AppendLine("\t],");
             sb.AppendLine("\t\"xargs\":");
             sb.AppendLine("\t[");
