@@ -1,10 +1,10 @@
 /*
  * ================================================
- * Describe:      This script is used to .
+ * Describe:      Https 请求管理器：封装 UnityWebRequest
  * Author:        Alvin8412
  * CreationTime:  2026-04-02 21:36:59
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-04-02 21:36:59
+ * ModifyAuthor:  Alvin5100
+ * ModifyTime:    2026-07-30 17:35:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -16,6 +16,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -25,6 +26,7 @@ namespace EasyFramework.Systems.Http
     /// <summary>
     /// Https请求管理器
     /// </summary>
+    [Manager]
     public class HttpsSystem : MonoSingleton<HttpsSystem>, ISingleton
     {
         /// <summary>
@@ -42,6 +44,18 @@ namespace EasyFramework.Systems.Http
         /// <para>Responsible for rejecting or accepting certificates received on https requests.</para>
         /// </summary>
         public CertificateHandler CertificateHandler { get; set; }
+
+        /// <summary>
+        /// 默认请求头，会合并进每一次请求（可被单次请求头覆盖）
+        /// <para>Default headers merged into every request (overridable per-request).</para>
+        /// </summary>
+        public Dictionary<string, string> DefaultHeaders { get; set; }
+
+        /// <summary>
+        /// 重试策略
+        /// <para>Retry policy</para>
+        /// </summary>
+        public HttpRetryPolicy RetryPolicy { get; set; }
 
         void ISingleton.Init()
         {
@@ -289,8 +303,7 @@ namespace EasyFramework.Systems.Http
             using var cts = CreateLinkedCancellationToken(request, cancellationToken);
             SetDefaultCertificateHandler(request);
             SetHeadersAndTimeout(request, headers, timeout);
-            await request.SendWebRequest().ToUniTask(cancellationToken: cts.Token);
-            ValidateResponse(request);
+            await SendWebRequestWithRetry(request, cts.Token);
             return request.downloadHandler.text;
         }
 
@@ -302,8 +315,7 @@ namespace EasyFramework.Systems.Http
             using var cts = CreateLinkedCancellationToken(request, cancellationToken);
             SetDefaultCertificateHandler(request);
             SetHeadersAndTimeout(request, headers, timeout);
-            await request.SendWebRequest().ToUniTask(progress: progress, cancellationToken: cts.Token);
-            ValidateResponse(request);
+            await SendWebRequestWithRetry(request, cts.Token, progress);
         }
 
         /// <summary> 设置默认证书处理 </summary>
@@ -317,7 +329,13 @@ namespace EasyFramework.Systems.Http
         private void SetHeadersAndTimeout(UnityWebRequest request, Dictionary<string, string> headers, int? timeout)
         {
             request.SetRequestHeader("User-Agent", DefaultUserAgent);
-            
+
+            if (DefaultHeaders != null)
+                foreach (var kv in DefaultHeaders)
+                {
+                    request.SetRequestHeader(kv.Key, kv.Value);
+                }
+
             if (headers != null)
                 foreach (var kv in headers)
                 {
@@ -325,6 +343,33 @@ namespace EasyFramework.Systems.Http
                 }
 
             request.timeout = timeout ?? DefaultTimeout;
+        }
+
+        /// <summary>
+        /// 带重试地发送请求并校验响应
+        /// <para>Sends the request with retry and validates the response.</para>
+        /// </summary>
+        private async UniTask SendWebRequestWithRetry(UnityWebRequest request, CancellationToken token, IProgress<float> progress = null)
+        {
+            int maxRetries = RetryPolicy?.MaxRetries ?? 0;
+            int attempt = 0;
+            while (true)
+            {
+                attempt++;
+                if (progress != null)
+                    await request.SendWebRequest().ToUniTask(progress: progress, cancellationToken: token);
+                else
+                    await request.SendWebRequest().ToUniTask(cancellationToken: token);
+
+                // 成功则直接返回；未达重试上限则退避后重试
+                if (request.result == UnityWebRequest.Result.Success)
+                    return;
+                if (attempt > maxRetries)
+                    ValidateResponse(request);
+
+                int delay = RetryPolicy?.DelayMs(attempt) ?? 0;
+                await UniTask.Delay(delay, cancellationToken: token);
+            }
         }
 
         /// <summary> 创建链接取消令牌 </summary>

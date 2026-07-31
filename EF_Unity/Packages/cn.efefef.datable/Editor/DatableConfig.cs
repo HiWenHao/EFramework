@@ -25,8 +25,11 @@ namespace EasyFramework.Edit.Windows.Dataable
         [SerializeField, HeaderPro("生成什么端的数据", "Generate data for which type of end?")]
         public DataTargetType LubanDataTargetType = DataTargetType.Both;
 
+        [SerializeField, HeaderPro("生成的管理器脚本名", "The generated manager script name")]
+        public string LubanManagerName = "DatableMgr";
+
         [SerializeField, HeaderPro("生成脚本的命名空间", "The namespace for generating the script")]
-        public string LubanNamespace = "cfg";
+        public string LubanNamespace = "Cfg";
 
         [SerializeField, HeaderPro("电子表格存储文件夹路径", "Excel Save Folder Path")]
         public string LubanSourcePath = "";

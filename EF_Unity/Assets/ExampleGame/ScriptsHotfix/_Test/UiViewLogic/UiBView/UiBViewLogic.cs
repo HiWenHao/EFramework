@@ -49,8 +49,8 @@ namespace EFExample
 
         private void OnVolumChanged(float volum)
         {
-            EF.Audio.SetBgmVolum(volum);
-            EF.Audio.SetEffectVolum(volum);
+            // EF.Audio.SetBgmVolum(volum);
+            // EF.Audio.SetEffectVolum(volum);
         }
 
         private void OnClickBtn_ToC()
@@ -76,48 +76,48 @@ namespace EFExample
 
         private void OnClickBtn_StopAllEffect()
         {
-            EF.Audio.StopAllEffectSources();
+            // EF.Audio.StopAllEffectSources();
         }
 
         private void OnClickBtn_StopEffect()
         {
-            EF.Audio.StopEffectSourceByName("Haoheng");
+            // EF.Audio.StopEffectSourceByName("Haoheng");
         }
 
         private void OnClickBtn_StopBGM()
         {
-            EF.Audio.StopBGM();
+            // EF.Audio.StopBGM();
         }
 
         private void OnClickBtn_MuteAll()
         {
             _muteSource = !_muteSource;
-            EF.Audio.MuteAll(_muteSource);
+            // EF.Audio.MuteAll(_muteSource);
         }
 
         private void OnClickBtn_UnPauseAll()
         {
-            EF.Audio.UnPauseAll();
+            // EF.Audio.UnPauseAll();
         }
 
         private void OnClickBtn_PauseAll()
         {
-            EF.Audio.PauseAll();
+            // EF.Audio.PauseAll();
         }
 
         private void OnClickBtn_2D()
         {
-            EF.Audio.Play2DEffectSouceByName("HaoHeng", delegate { D.Log("2D HaoHeng is play done."); });
+            // EF.Audio.Play2DEffectSouceByName("HaoHeng", delegate { D.Log("2D HaoHeng is play done."); });
         }
 
         private void OnClickBtn_3D()
         {
-            EF.Audio.Play3DEffectSouceByName("HaoHeng", Vector3.one, delegate { D.Log("3D HaoHeng is play done."); });
+            // EF.Audio.Play3DEffectSouceByName("HaoHeng", Vector3.one, delegate { D.Log("3D HaoHeng is play done."); });
         }
 
         private void OnClickBtn_bgm()
         {
-            EF.Audio.PlayBGMByName("BGM", true);
+            // EF.Audio.PlayBGMByName("BGM", true);
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto
