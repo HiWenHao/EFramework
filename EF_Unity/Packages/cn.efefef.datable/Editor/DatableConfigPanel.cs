@@ -97,6 +97,7 @@ namespace EasyFramework.Edit.Windows.Dataable
                 if (!string.IsNullOrEmpty(_config.LubanSourcePath))
                     EditorGUIUtility.systemCopyBuffer = _config.LubanSourcePath;
             }
+
             EditorGuiToolkit.OpenFolderButton(_config.LubanSourcePath, width);
             EditorGUILayout.EndHorizontal();
 
@@ -118,10 +119,18 @@ namespace EasyFramework.Edit.Windows.Dataable
         // 绘制配置选择
         private void DrawConfigSelect()
         {
-            if (GUILayout.Button(LC.Combine(Lc.Reset, Lc.To, Lc.Default, Lc.Config)))
+            EditorGUILayout.BeginHorizontal();
+            _config.LubanNamespace = EditorGUILayout.TextField(LC.Combine(Lc.Generate, Lc.Of, Lc.Namespace),
+                _config.LubanNamespace);
+            _config.LubanManagerName = EditorGUILayout.TextField(
+                LC.Combine(Lc.Generate, Lc.Of, Lc.Manager, Lc.Script, Lc.Name),
+                _config.LubanManagerName);
+            EditorGUILayout.EndHorizontal();
+
+            if (GUILayout.Button(LC.Combine(Lc.Reset, Lc.Config, Lc.File)))
                 ResetUserConfig(true);
 
-            EditorGUILayout.Space();
+            EditorGUILayout.Space(12);
             EditorGUILayout.BeginHorizontal();
 
             EditorGUI.BeginChangeCheck();
@@ -136,7 +145,9 @@ namespace EasyFramework.Edit.Windows.Dataable
             EditorGUILayout.Space();
 
             EditorGUI.BeginChangeCheck();
-            var newTargetType = (DataTargetType)EditorGUILayout.EnumPopup(LC.Combine(Lc.Generate, Lc.Platform), _config.LubanDataTargetType);
+            var newTargetType =
+                (DataTargetType)EditorGUILayout.EnumPopup(LC.Combine(Lc.Generate, Lc.Platform),
+                    _config.LubanDataTargetType);
             if (EditorGUI.EndChangeCheck())
             {
                 _config.LubanDataTargetType = newTargetType;
@@ -144,14 +155,6 @@ namespace EasyFramework.Edit.Windows.Dataable
                 AssetDatabase.SaveAssets();
             }
 
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space();
-
-            EditorGUILayout.BeginHorizontal();
-            _config.LubanNamespace = EditorGUILayout.TextField(LC.Combine(Lc.Generate, Lc.Of, Lc.Namespace),
-                _config.LubanNamespace);
-            _config.LubanManagerName = EditorGUILayout.TextField(LC.Combine(Lc.Generate, Lc.Of, Lc.Manager, Lc.Script, Lc.Name),
-                _config.LubanManagerName);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
@@ -238,6 +241,7 @@ namespace EasyFramework.Edit.Windows.Dataable
                 _config.LubanCodePath = fixedCode;
                 dirty = true;
             }
+
             string fixedData = NormalizeToAssetsRelative(_config.LubanDataPath);
             if (_config.LubanDataPath != fixedData)
             {
@@ -312,7 +316,8 @@ namespace EasyFramework.Edit.Windows.Dataable
             string sourceRoot = "Datas/";
             if (_config != null && !string.IsNullOrEmpty(_config.LubanSourcePath) &&
                 Directory.Exists(_config.LubanSourcePath))
-                sourceRoot = Path.GetRelativePath(dstDir, _config.LubanSourcePath).Replace('\\', '/').TrimEnd('/') + "/";
+                sourceRoot = Path.GetRelativePath(dstDir, _config.LubanSourcePath).Replace('\\', '/').TrimEnd('/') +
+                             "/";
 
             var sb = new StringBuilder();
             sb.AppendLine("{");
@@ -351,9 +356,9 @@ namespace EasyFramework.Edit.Windows.Dataable
         // 重置为默认配置：luban.conf 直接重建，Datas/Defines 两文件夹照旧从包内复制
         private void ResetUserConfig(bool showDialog)
         {
-            if (showDialog && !EditorUtility.DisplayDialog(LC.Combine(Lc.Reset, Lc.Config), 
-                    "将用默认配置覆盖你的本地修改，确定？\n" +
-                    "This will overwrite your local modifications with the default settings. Are you sure?",
+            if (showDialog && !EditorUtility.DisplayDialog(LC.Combine(Lc.Reset, Lc.Config),
+                    "将用新设置属性覆盖你的本地修改，确定？\n" +
+                    "The new settings will override your local modifications. Are you sure?",
                     LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
                 return;
             string dst = ExcelFolderPath;
@@ -395,6 +400,7 @@ namespace EasyFramework.Edit.Windows.Dataable
                 if (file.EndsWith(".meta")) continue;
                 File.Delete(file);
             }
+
             foreach (string meta in Directory.GetFiles(dir, "*.meta", SearchOption.AllDirectories))
             {
                 string sibling = meta.Substring(0, meta.Length - 5);
@@ -427,6 +433,7 @@ namespace EasyFramework.Edit.Windows.Dataable
                 string rel = "Assets" + normalized[dataPath.Length..].TrimStart('/');
                 return rel.EndsWith("/") ? rel : rel + "/";
             }
+
             return normalized.EndsWith("/") ? normalized : normalized + "/";
         }
 
