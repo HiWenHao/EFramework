@@ -1345,6 +1345,14 @@
       ]
     },
     {
+      "name": "Multilingual",
+      "desc": "多语言",
+      "array": [
+        "Multilingual",
+        "多语言"
+      ]
+    },
+    {
       "name": "No",
       "desc": "没有",
       "array": [
@@ -1758,6 +1766,14 @@
       "array": [
         "Record",
         "记录"
+      ]
+    },
+    {
+      "name": "Remark",
+      "desc": "备注",
+      "array": [
+        "Remark",
+        "备注"
       ]
     },
     {
@@ -2361,6 +2377,14 @@
       ]
     },
     {
+      "name": "Warning",
+      "desc": "警告",
+      "array": [
+        "Warning",
+        "警告"
+      ]
+    },
+    {
       "name": "Yes",
       "desc": "是的",
       "array": [
@@ -2638,6 +2662,14 @@
       "array": [
         "Option",
         "选项"
+      ]
+    },
+    {
+      "name": "Group",
+      "desc": "组",
+      "array": [
+        "Group",
+        "组"
       ]
     },
     {

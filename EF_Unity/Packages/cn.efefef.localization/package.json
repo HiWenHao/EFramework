@@ -1,0 +1,19 @@
+{
+  "name": "cn.efefef.localization",
+  "displayName": "EF.Localization",
+  "version": "0.0.1",
+  "unity": "2022.3",
+  "unityRelease": "10f1",
+  "description": "多语言支持包",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://gitee.com/AlvinCN/EFramework",
+  "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
+  "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.0.1"
+  },
+  "samples": null
+}
