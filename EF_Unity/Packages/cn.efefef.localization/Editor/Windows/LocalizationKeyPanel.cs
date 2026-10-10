@@ -244,7 +244,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (_file == null) return false;
 
-            // 保存前同步分组登记表，避免下拉选项与实际用到的分组脱节
             SyncGroupsFromKeys();
 
             if (!_file.Save(JsonPath))
@@ -256,9 +255,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             _dirty = false;
             AssetDatabase.Refresh();
-
-            if (!silent)
-                D.Log($"[Localization] Key 清单已保存，共 {_file.keys.Count} 条");
 
             return true;
         }
@@ -319,7 +315,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.HelpBox(LC.Combine(Lc.Multilingual, Lc.Config, Lc.Not, Lc.Exist), MessageType.Warning);
             EditorGUILayout.Space(12f);
 
-            if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config))) return;
+            if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config), GUILayout.Width(AvailableWidth))) return;
             CreateFile();
         }
 
@@ -333,11 +329,16 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             var prevColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button(LC.Combine(Lc.Save, Lc.Content), GUILayout.Height(20f)))
+            // 宽度按 AvailableWidth 均分，与下方表格列对齐（裸 Button 会按整行宽撑开）
+            float half = Mathf.Floor(AvailableWidth * 0.5f);
+
+            if (GUILayout.Button(LC.Combine(Lc.Save, Lc.Content),
+                    GUILayout.Width(half), GUILayout.Height(20f)))
                 Save();
             GUI.contentColor = prevColor;
 
-            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.Content), GUILayout.Height(20f)))
+            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.All, Lc.Content),
+                    GUILayout.Width(AvailableWidth - half), GUILayout.Height(20f)))
             {
                 if (!_dirty ||
                     EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text), "确定", "取消"))
@@ -369,7 +370,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawSubTabs()
         {
             var contents = new[] { new GUIContent(TabText(SubTab.Keys)), new GUIContent(TabText(SubTab.Groups)) };
-            _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(20f));
+            _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(20f), GUILayout.Width(AvailableWidth));
         }
 
         /// <summary>
@@ -377,11 +378,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private static string TabText(SubTab tab) => tab switch
         {
-            SubTab.Keys => LC.Combine(Lc.Key, Lc.List),
-            SubTab.Groups => LC.Combine(Lc.Class, Lc.Type),
+            SubTab.Keys => LC.Combine(Lc.Key, Lc.Name, Lc.List),
+            SubTab.Groups => LC.Combine(Lc.Multilingual, Lc.Config, Lc.Settings),
             _ => string.Empty,
         };
-
 
         #endregion
 
@@ -652,7 +652,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(18f);
 
-            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All)))
+            // 宽度显式指定：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁
+            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All), GUILayout.Width(AvailableWidth)))
                 DeleteAllKeys();
         }
 
