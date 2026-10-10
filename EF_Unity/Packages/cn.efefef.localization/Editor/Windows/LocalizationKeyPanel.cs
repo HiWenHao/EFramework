@@ -355,7 +355,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             // 子页切换（等宽平分，原生 Tab 组观感）
             DrawSubTabs();
 
-            EditorGUILayout.Space(2f);
+            EditorGUILayout.Space(12f);
         }
 
         /// <summary>
@@ -403,9 +403,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space(2f);
+            EditorGUILayout.Space(6f);
 
             DrawKeysTable();
+            EditorGUILayout.Space(6f);
             DrawKeysFooter();
             
         }
@@ -432,7 +433,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 var g = entry.group ?? string.Empty;
                 if (string.IsNullOrEmpty(g))
                 {
-                    // 无分组条目统一排在最后
                     ungrouped ??= new List<LocalizationKeyEntry>();
                     ungrouped.Add(entry);
                     continue;
@@ -454,6 +454,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (_collapsedGroups.Contains(group)) continue;
 
                 foreach (var entry in buckets[group]) DrawKeyRow(entry);
+                EditorGUILayout.Space(12f);
             }
 
             if (ungrouped != null)
@@ -655,6 +656,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             // 宽度显式指定：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁
             if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All), GUILayout.Width(AvailableWidth)))
                 DeleteAllKeys();
+            
+            EditorGUILayout.Space(18f);
         }
 
         /// <summary>
@@ -735,17 +738,18 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         #region 子页2 · 分组与种类
 
         /// <summary>
-        /// 正在重命名的分组（为空表示非重命名模式）
+        /// 正在编辑的分组名（非空表示该项处于重命名态，此时显示确定 / 取消）
         /// </summary>
         private string _renamingGroup;
 
-        /// <summary>
-        /// 重命名中的临时输入
-        /// </summary>
+        /// <summary> 重命名中的临时输入（仅重命名态使用） </summary>
         private string _renamingInput = string.Empty;
 
+        /// <summary> 正在删除的分组（用于延迟到本次绘制结束后执行，避免遍历中改集合） </summary>
+        private string _pendingDeleteGroup;
+
         /// <summary>
-        /// 子页 2：分组与种类
+        /// 子页 2：分组列表
         /// </summary>
         private void DrawGroupsTab()
         {
@@ -762,16 +766,24 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 // groups 是 GetGroupsOrInfer 返回的新 List（值拷贝），删除操作不影响本次遍历
                 DrawGroupItem(group);
-                EditorGUILayout.Space(18);
             }
 
             EditorGUILayout.EndScrollView();
+
+            // 本帧绘制结束后再执行删除，避免在遍历中改动登记表
+            if (!string.IsNullOrEmpty(_pendingDeleteGroup))
+            {
+                var target = _pendingDeleteGroup;
+                _pendingDeleteGroup = null;
+                DeleteGroup(target);
+            }
 
             DrawGroupsFooter();
         }
 
         /// <summary>
-        /// 分组列表单行：空分组标黄；重命名时就地编辑
+        /// 分组列表单行
+        /// <para>name 列可直接编辑（回车/失焦提交），无需进入重命名态；空分组标黄提示未被使用。</para>
         /// </summary>
         private void DrawGroupItem(string group)
         {
@@ -782,15 +794,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             int keyCount = _file.GetGroupKeyCount(group);
             bool renaming = _renamingGroup == group;
 
+            // ---------- name 列 ----------
             if (renaming)
             {
                 var newName = EditorGUILayout.TextField(_renamingInput, EditorStyles.miniTextField,
                     GUILayout.Width(w[0]));
 
-                // 占位，保持与表头 / 非重命名态的列对齐
-                EditorGUILayout.LabelField("", EditorStyles.miniLabel, GUILayout.Width(w[1]));
-
-                // 回车确认 / ESC 取消
+                // 回车提交 / ESC 取消
                 if (Event.current.type == EventType.KeyDown)
                 {
                     if (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter)
@@ -804,6 +814,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     }
                 }
 
+                // 占位，保持与 count 列对齐
+                EditorGUILayout.LabelField("", EditorStyles.miniLabel, GUILayout.Width(w[1]));
+
                 if (GUILayout.Button(LC.Combine(Lc.Confirm), EditorStyles.miniButton, GUILayout.Width(60f)))
                     CommitRename(group, newName);
 
@@ -814,7 +827,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 }
 
                 EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
-
                 EditorGUILayout.EndHorizontal();
                 return;
             }
@@ -822,13 +834,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             var prevColor = GUI.color;
             if (keyCount == 0) GUI.color = new Color(1f, 0.95f, 0.7f);
 
+            // 非重命名态：只读展示（改名请点重命名按钮）
             EditorGUILayout.LabelField(group, EditorStyles.miniTextField, GUILayout.Width(w[0]));
 
+            // ---------- count 列 ----------
             GUI.color = prevColor;
-
+            if (keyCount == 0) GUI.color = new Color(1f, 0.95f, 0.7f);
             EditorGUILayout.LabelField($"{keyCount} {LC.Combine(Lc.Row)}",
                 EditorStyles.miniLabel, GUILayout.Width(w[1]));
+            GUI.color = prevColor;
 
+            // ---------- 操作列 ----------
             if (GUILayout.Button(LC.Combine(Lc.Rename), EditorStyles.miniButton, GUILayout.Width(60f)))
             {
                 _renamingGroup = group;
@@ -836,7 +852,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
 
             if (GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton, GUILayout.Width(60f)))
-                DeleteGroup(group);
+                _pendingDeleteGroup = group;
 
             EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
 
@@ -850,16 +866,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             newName = (newName ?? string.Empty).Trim();
 
-            if (string.IsNullOrEmpty(newName) || newName == oldName)
-            {
-                _renamingGroup = null;
-                _renamingInput = string.Empty;
-                return;
-            }
+            _renamingGroup = null;
+            _renamingInput = string.Empty;
+
+            if (string.IsNullOrEmpty(newName) || newName == oldName) return;
 
             if (_file.GetGroupsOrInfer().Contains(newName))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{newName} {LC.Combine(Lc.Exist)}", "确定");
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{newName} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -869,25 +883,19 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             var index = _file.meta.groups.IndexOf(oldName);
             if (index >= 0) _file.meta.groups[index] = newName;
 
-            int affected = 0;
             foreach (var entry in _file.keys)
             {
                 if (!string.Equals(entry.group, oldName, StringComparison.Ordinal)) continue;
                 entry.group = newName;
-                affected++;
             }
 
             _collapsedGroups.Remove(oldName);
-            _renamingGroup = null;
-            _renamingInput = string.Empty;
             _dirty = true;
-            D.Log($"[Localization] 分组 {oldName} → {newName}，影响 {affected} 条 key");
         }
 
         /// <summary>
         /// 删除分组
-        /// <para>只从登记表移除；已有 key 仍归属该分组（会在下次保存时被 SyncGroupsFromKeys 补回），
-        /// 若要一并转移归属需先用 Key 页的 group 下拉改。</para>
+        /// <para>分组下的 key 退回「无分组」（而不是删不掉），避免删除按钮形同虚设。</para>
         /// </summary>
         private void DeleteGroup(string group)
         {
@@ -896,23 +904,24 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             int keyCount = _file.GetGroupKeyCount(group);
 
-            // 还有 key 归属该组时，明确告知「删不掉」，避免误解
-            if (keyCount > 0)
-            {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
-                    $"{group} {LC.Combine(Lc.Row)}: {keyCount}\n\n" +
-                    $"{LC.Combine(Lc.Class, Lc.Delete)}: {keyCount}",
-                    "确定");
-                return;
-            }
+            // 有key 归属时先说明后果，避免误删
+            string message = keyCount > 0
+                ? $"{LC.Combine(Lc.Warning)}: {keyCount} {LC.Combine(Lc.Row)} → {LC.Combine(Lc.Class, Lc.Is, Lc.Empty)}"
+                : $"{LC.Combine(Lc.Class)}: {group}";
 
-            if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), group, "确定", "取消"))
+            if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Delete, Lc.Class), message,
+                    LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
                 return;
+
+            foreach (var entry in _file.keys)
+            {
+                if (!string.Equals(entry.group, group, StringComparison.Ordinal)) continue;
+                entry.group = string.Empty;
+            }
 
             _file.meta.groups.Remove(group);
             _collapsedGroups.Remove(group);
             _dirty = true;
-            D.Log($"[Localization] 已删除分组：{group}");
         }
 
         /// <summary>
@@ -923,12 +932,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             var w = GetGroupColWidths();
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Class, Lc.Name), EditorStyles.toolbarButton,
+            EditorGUILayout.LabelField(LC.Combine(Lc.Group, Lc.Name),
                 GUILayout.Width(w[0]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Count), EditorStyles.toolbarButton,
+            EditorGUILayout.LabelField(LC.Combine(Lc.Use, Lc.Count),
                 GUILayout.Width(w[1]));
-            EditorGUILayout.LabelField("", EditorStyles.toolbarButton, GUILayout.Width(COL_GROUP_ACTIONS));
-            EditorGUILayout.LabelField("", EditorStyles.toolbarButton, GUILayout.Width(COL_TAIL_PAD));
+            EditorGUILayout.LabelField("", GUILayout.Width(COL_GROUP_ACTIONS));
+            EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
             EditorGUILayout.EndHorizontal();
         }
 
@@ -945,27 +954,33 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             var prevColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button($"+ {LC.Combine(Lc.Class)}", GUILayout.Width(COL_GROUP_ACTIONS)))
+            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.New, Lc.Group)}"))
                 AddGroup(_newGroupName);
             GUI.contentColor = prevColor;
 
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(8f);
 
             // 种类：枚举代码级，不在此处增删
             EditorGUILayout.LabelField(LC.Combine(Lc.Type), EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"Static / Dynamic",
-                EditorStyles.miniLabel);
+            int dynamicCount = 0;
+            foreach (var entry in _file.keys)
+            {
+                if (entry.kind == LocalizationKeyKind.Dynamic) dynamicCount++;
+            }
 
-            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField(
+                $"Static {_file.keys.Count - dynamicCount} / Dynamic {dynamicCount}  " +
+                $"(total {_file.keys.Count})", EditorStyles.miniLabel);
+
+            EditorGUILayout.Space(6f);
 
             // 其他设置
             EditorGUILayout.LabelField(LC.Combine(Lc.Config), EditorStyles.boldLabel);
             EditorGUILayout.LabelField($"{LC.Combine(Lc.Text, Lc.File)}: {Path.GetFileName(JsonPath)}",
                 EditorStyles.miniLabel);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Class, Lc.Count) + $": {_file.meta?.groups?.Count ?? 0}",
-                EditorStyles.miniLabel);
+            EditorGUILayout.Space(18f);
         }
 
         /// <summary>
@@ -973,6 +988,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private void AddGroup(string name)
         {
+            name = (name ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(name)) return;
 
             _file.meta ??= new LocalizationKeyMeta();
@@ -987,7 +1003,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _file.meta.groups.Add(name);
             _newGroupName = string.Empty;
             _dirty = true;
-            D.Log($"[Localization] 已新增分组：{name}");
         }
 
         #endregion
@@ -1039,13 +1054,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             if (issues.Count == 0)
             {
-                D.Log($"[Localization] Key 清单校验通过，共 {file.keys.Count} 条");
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Success), $"共 {file.keys.Count} 条 key。", "确定");
                 return;
             }
 
             var text = string.Join("\n", issues);
-            D.Warning($"[Localization] Key 清单存在 {issues.Count} 项问题\n{text}");
             EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", "确定");
         }
 
