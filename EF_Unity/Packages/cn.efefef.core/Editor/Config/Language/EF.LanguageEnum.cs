@@ -343,6 +343,8 @@ namespace EasyFramework.Edit
 		Manually,
 		/// <summary> 材质球 </summary>
 		Materials,
+		/// <summary> 多语言 </summary>
+		Multilingual,
 		/// <summary> 没有 </summary>
 		No,
 		/// <summary> 非 </summary>
@@ -447,6 +449,8 @@ namespace EasyFramework.Edit
 		Reason,
 		/// <summary> 记录 </summary>
 		Record,
+		/// <summary> 备注 </summary>
+		Remark,
 		/// <summary> 反射 </summary>
 		Reflect,
 		/// <summary> 反向 </summary>
@@ -597,6 +601,8 @@ namespace EasyFramework.Edit
 		Will,
 		/// <summary> 宽度 </summary>
 		Width,
+		/// <summary> 警告 </summary>
+		Warning,
 		/// <summary> 是的 </summary>
 		Yes,
 		/// <summary> 再试试 </summary>
@@ -667,6 +673,8 @@ namespace EasyFramework.Edit
 		Complete,
 		/// <summary> 选项 </summary>
 		Option,
+		/// <summary> 组 </summary>
+		Group,
 		/// <summary> 生成 </summary>
 		Generate,
 		/// <summary> 最新 </summary>

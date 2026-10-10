@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "note": "本文件只登记多语言 key，不含译文。译文见 value 表。",
+    "groups": [
+      "Common",
+      "MainUI",
+      "Dialog"
+    ]
+  },
+  "keys": [
+    {
+      "name": "Btn_Confirm",
+      "des": "通用确认按钮",
+      "group": "Common",
+      "kind": "Static",
+      "note": ""
+    },
+    {
+      "name": "Btn_Cancel",
+      "des": "通用取消按钮",
+      "group": "Common",
+      "kind": "Static",
+      "note": ""
+    },
+    {
+      "name": "Title_Welcome",
+      "des": "欢迎页标题",
+      "group": "MainUI",
+      "kind": "Static",
+      "note": "标题短句，勿加句号"
+    },
+    {
+      "name": "Dlg_Save_Failed",
+      "des": "保存失败弹窗正文",
+      "group": "Dialog",
+      "kind": "Static",
+      "note": "语气需正式，说明失败原因"
+    },
+    {
+      "name": "Dlg_Save_Failed_Count",
+      "des": "保存失败数量提示",
+      "group": "Dialog",
+      "kind": "Dynamic",
+      "note": "需复数规则：英语 1 item / 2 items，德语另有形式"
+    }
+  ]
+}
