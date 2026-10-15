@@ -4,7 +4,13 @@
     "groups": [
       "Common",
       "MainUI",
-      "Dialog"
+      "Dialog",
+      "Default"
+    ],
+    "languages": [
+      "en",
+      "zn",
+      "jp"
     ]
   },
   "keys": [
@@ -28,13 +34,6 @@
       "group": "MainUI",
       "kind": "Static",
       "note": "标题短句，勿加句号"
-    },
-    {
-      "name": "Dlg_Save_Failed",
-      "des": "保存失败弹窗正文",
-      "group": "Dialog",
-      "kind": "Static",
-      "note": "语气需正式，说明失败原因"
     },
     {
       "name": "Dlg_Save_Failed_Count",

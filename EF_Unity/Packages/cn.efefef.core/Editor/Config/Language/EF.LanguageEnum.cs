@@ -513,6 +513,8 @@ namespace EasyFramework.Edit
 		Switch,
 		/// <summary> 源 </summary>
 		Source,
+		/// <summary> 搜索 </summary>
+		Search,
 		/// <summary> 间距 </summary>
 		Spacing,
 		/// <summary> 单一的 </summary>

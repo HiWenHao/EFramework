@@ -367,7 +367,7 @@ public sealed class EFC : MonoBehaviour
         Type t = typeof(T);
         lock (LockObj)
         {
-            if (_singletonMap.TryGetValue(t, out var inst))
+            if (null != _singletonMap && _singletonMap.TryGetValue(t, out var inst))
             {
                 singleton = (T)inst;
                 return true;

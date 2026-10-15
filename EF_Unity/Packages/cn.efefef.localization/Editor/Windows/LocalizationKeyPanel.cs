@@ -12,35 +12,37 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.ConfigPanel
+namespace EasyFramework.Localization.Edit
 {
     /// <summary>
-    /// 多语言设置面板
-    /// <para>双向同步：外部改 JSON 后点「重新读取」读进来；面板内改动点「保存」覆写。</para>
+    /// 多语言 Key 设置面板
+    /// <para>挂在 EFTools / Settings 总面板下，两个互斥子页：Key 列表、分组与种类。</para>
+    /// <para>双向同步：外部改 JSON 后点「重新读取」读入；面板内改动点「保存」覆写。</para>
+    /// <para>Registered under EFTools/Settings; edits the key manifest JSON.</para>
     /// </summary>
     [EFConfigPanel(Priority = 190)]
     internal class LocalizationKeyPanel : EFConfigPanelBase
     {
-        /// <summary> 清单文件所在目录（相对包根） </summary>
-        private const string DataDir = "Description";
-
-        /// <summary> 清单文件名 </summary>
-        private const string FileName = "LocalizationKeys.json";
-
         /// <summary> 默认分组名 </summary>
         private const string DefaultGroup = "Default";
 
         /// <summary> 子页：Key 列表 </summary>
         private enum SubTab
-{
+        {
             /// <summary> Key 列表 </summary>
             [InspectorName("KeyList")] Keys = 0,
 
             /// <summary> 分组与种类 </summary>
             [InspectorName("GroupType")] Groups = 1,
+
+            /// <summary> value 表导出 </summary>
+            [InspectorName("ValueTable")] Values = 2,
         }
 
         #region 列宽
@@ -156,7 +158,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <summary> 只看 Dynamic 的过滤开关 </summary>
         private bool _onlyDynamic;
 
+        /// <summary> Key 列表滚动位置（子页 1） </summary>
         private Vector2 _scrollPos;
+
+        /// <summary> 分组列表滚动位置（子页 2） </summary>
         private Vector2 _groupScrollPos;
 
         /// <summary> 新增分组输入框 </summary>
@@ -166,13 +171,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// 面板名称
         /// </summary>
         public override string Name => LC.Combine(Lc.Multilingual, Lc.Config);
-
-        /// <summary>
-        /// 清单 JSON 绝对路径
-        /// </summary>
-        private static string JsonPath => Path.Combine(
-            Path.Combine(Application.dataPath, "Packages/cn.efefef.localization"),
-            Path.Combine(DataDir, FileName));
 
         #region EFConfigPanelBase 生命周期
 
@@ -211,8 +209,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private void LoadOrCreate()
         {
-            _file = LocalizationKeyFile.Load(JsonPath);
+            _file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             _dirty = false;
+
+            // 重新读盘后同步失效 Inspector 缓存，保证下拉/搜索窗与清单一致
+            LocalizedTextEditor.InvalidateCache();
         }
 
         /// <summary>
@@ -225,7 +226,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             var template = LocalizationKeyFile.CreateTemplate();
             template.EnsureDefaults();
 
-            if (!template.Save(JsonPath))
+            if (!template.Save(LocalizationData.JsonPath))
             {
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
                     $"LocalizationKeys.json\n{LC.Combine(Lc.Save, Lc.Failed)}", LC.Combine(Lc.Confirm));
@@ -233,7 +234,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             }
 
             AssetDatabase.Refresh();
-            _file = LocalizationKeyFile.Load(JsonPath);
+            _file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             _dirty = false;
         }
 
@@ -246,7 +247,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             SyncGroupsFromKeys();
 
-            if (!_file.Save(JsonPath))
+            if (!_file.Save(LocalizationData.JsonPath))
             {
                 if (!silent)
                     EditorUtility.DisplayDialog("保存失败", "无法写入 Key 清单文件，请查看 Console。", "确定");
@@ -255,6 +256,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             _dirty = false;
             AssetDatabase.Refresh();
+
+            // 让 Inspector 的 key 下拉 / 搜索窗立刻反映最新清单
+            LocalizedTextEditor.InvalidateCache();
 
             return true;
         }
@@ -302,6 +306,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
                 case SubTab.Groups:
                     DrawGroupsTab();
+                    break;
+
+                case SubTab.Values:
+                    DrawValuesTab();
                     break;
             }
         }
@@ -369,7 +377,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private void DrawSubTabs()
         {
-            var contents = new[] { new GUIContent(TabText(SubTab.Keys)), new GUIContent(TabText(SubTab.Groups)) };
+            var contents = new[]
+            {
+                new GUIContent(TabText(SubTab.Keys)),
+                new GUIContent(TabText(SubTab.Groups)),
+                new GUIContent(TabText(SubTab.Values)),
+            };
             _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(20f), GUILayout.Width(AvailableWidth));
         }
 
@@ -380,6 +393,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             SubTab.Keys => LC.Combine(Lc.Key, Lc.Name, Lc.List),
             SubTab.Groups => LC.Combine(Lc.Multilingual, Lc.Config, Lc.Settings),
+            SubTab.Values => LC.Combine(Lc.Value, Lc.Data),
             _ => string.Empty,
         };
 
@@ -467,6 +481,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         /// <summary> 窄列实际宽度（空间不足时收缩），由 GetKeyColWidths 每帧更新 </summary>
         private float _kindWidth = COL_KIND;
+        /// <summary> 删除按钮实际宽度：面板过窄时随窄列一起收缩 </summary>
         private float _btnWidth = COL_BTN;
 
         /// <summary>
@@ -695,6 +710,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                                                  || Contains(entry.group, _filter) || Contains(entry.note, _filter);
         }
 
+        /// <summary>
+        /// 关键词包含判断（忽略大小写）
+        /// </summary>
+        /// <param name="source">被检索文本；为空视为不匹配</param>
+        /// <param name="keyword">关键词</param>
         private static bool Contains(string source, string keyword)
             => !string.IsNullOrEmpty(source) &&
                source.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
@@ -978,7 +998,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             // 其他设置
             EditorGUILayout.LabelField(LC.Combine(Lc.Config), EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Text, Lc.File)}: {Path.GetFileName(JsonPath)}",
+            EditorGUILayout.LabelField($"{LC.Combine(Lc.Text, Lc.File)}: {Path.GetFileName(LocalizationData.JsonPath)}",
                 EditorStyles.miniLabel);
             EditorGUILayout.Space(18f);
         }
@@ -1003,6 +1023,261 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _file.meta.groups.Add(name);
             _newGroupName = string.Empty;
             _dirty = true;
+        }
+
+        #endregion
+
+        #region 子页3 · value 表导出
+
+        /// <summary> 新增语言输入框 </summary>
+        private string _newLanguage = string.Empty;
+
+        /// <summary>
+        /// 子页 3：value 表导出
+        /// <para>value 表是 Key 清单按语言投影出来的翻译源文件，供人手填后交 Luban 导表。
+        /// 面板只负责「按清单重建 CSV」，不提供表格内联编辑——翻译在Excel 里改更顺手。
+        /// 导出格式已对齐 Luban（## 标记行 + ##type 类型行 + 首列占位），填完可直接导表。</para>
+        /// <para>Rebuild the per-language value CSVs from the key manifest.</para>
+        /// </summary>
+        private void DrawValuesTab()
+        {
+            EditorGUILayout.Space(8f);
+            DrawLanguagesSection();
+
+            EditorGUILayout.Space(12f);
+            DrawExportSection();
+        }
+
+        /// <summary>
+        /// 语言登记表编辑
+        /// </summary>
+        private void DrawLanguagesSection()
+        {
+            EditorGUILayout.LabelField(LC.Combine(Lc.Language, Lc.Settings), EditorStyles.boldLabel);
+
+            _file.meta ??= new LocalizationKeyMeta();
+            _file.meta.languages ??= new List<string>();
+
+            // 登记表为空时展示回落值，并提示用户它还没落盘
+            var languages = _file.GetLanguagesOrDefault();
+            bool isDefault = _file.meta.languages.Count == 0;
+
+            foreach (var language in languages)
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.LabelField(language, EditorStyles.miniLabel);
+
+                var path = LocalizationData.GetValuesPath(language);
+                bool exists = File.Exists(path);
+
+                var prevColor = GUI.contentColor;
+                if (!exists) GUI.contentColor = new Color(1f, 0.95f, 0.7f);
+                EditorGUILayout.LabelField(
+                    exists ? Path.GetFileName(path) : $"{LC.Combine(Lc.Not, Lc.Exist)}",
+                    EditorStyles.miniLabel, GUILayout.Width(200f));
+                GUI.contentColor = prevColor;
+
+                GUILayout.FlexibleSpace();
+
+                if (!isDefault && GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton,
+                        GUILayout.Width(60f)))
+                {
+                    _file.meta.languages.Remove(language);
+                    _dirty = true;
+                    break;
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (isDefault)
+                EditorGUILayout.HelpBox(
+                    $"{LC.Combine(Lc.Tips)}: meta.languages {LC.Combine(Lc.Is, Lc.Empty)}，" +
+                    $"{LC.Combine(Lc.Current, Lc.Use)}: {string.Join(", ", languages)}",
+                    MessageType.None);
+
+            EditorGUILayout.Space(6f);
+
+            EditorGUILayout.BeginHorizontal();
+            _newLanguage = EditorGUILayout.TextField(_newLanguage, GUILayout.Width(240f));
+
+            var addColor = GUI.contentColor;
+            GUI.contentColor = GUIUtils.LightGreen;
+            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.Language)}"))
+                AddLanguage(_newLanguage);
+            GUI.contentColor = addColor;
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 导出操作区
+        /// </summary>
+        private void DrawExportSection()
+        {
+            EditorGUILayout.LabelField(LC.Combine(Lc.Export, Lc.Data), EditorStyles.boldLabel);
+
+            EditorGUILayout.LabelField($"{LC.Combine(Lc.Path)}: {LocalizationData.ValuesPath}",
+                EditorStyles.miniLabel);
+            EditorGUILayout.Space(6f);
+
+            EditorGUILayout.BeginHorizontal();
+
+            float third = Mathf.Floor(AvailableWidth / 3f);
+
+            if (GUILayout.Button($"{LC.Combine(Lc.Export, Lc.All, Lc.Data)}",
+                    GUILayout.Width(third), GUILayout.Height(22f)))
+                ExportAllValues();
+
+            if (GUILayout.Button($"{LC.Combine(Lc.Open, Lc.Path)}",
+                    GUILayout.Width(third), GUILayout.Height(22f)))
+                OpenValuesFolder();
+
+            if (GUILayout.Button($"{LC.Combine(Lc.Refresh, Lc.All, Lc.Content)}",
+                    GUILayout.Width(AvailableWidth - third * 2f), GUILayout.Height(22f)))
+                LoadOrCreate();
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(10f);
+            DrawExportPreview();
+        }
+
+        /// <summary>
+        /// 导出前预览：各语言的翻译完成度
+        /// <para>读盘统计，不写文件——让人在动手前就知道哪几份表还缺翻译。</para>
+        /// </summary>
+        private void DrawExportPreview()
+        {
+            var languages = _file.GetLanguagesOrDefault();
+            if (languages.Count == 0) return;
+
+            foreach (var language in languages)
+            {
+                var table = LocalizationValueTable.Load(language);
+                int total = table.rows.Count;
+                int translated = table.TranslatedCount;
+
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.LabelField(language, EditorStyles.miniLabel, GUILayout.Width(80f));
+
+                // 进度条：清单 key 数作为分母，未导出的表也能看出缺口
+                int expected = _file.keys.Count;
+                float ratio = expected <= 0 ? 0f : Mathf.Clamp01((float)translated / expected);
+                var rect = EditorGUILayout.GetControlRect(false, GUILayout.Height(14f));
+                EditorGUI.ProgressBar(rect, ratio, $"{translated} / {expected}");
+
+                EditorGUILayout.LabelField(
+                    total == 0
+                        ? $"{LC.Combine(Lc.Not, Lc.Export)}"
+                        : $"{LC.Combine(Lc.Total)} {total}",
+                    EditorStyles.miniLabel, GUILayout.Width(100f));
+
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// 新增语言
+        /// </summary>
+        private void AddLanguage(string language)
+        {
+            language = (language ?? string.Empty).Trim();
+
+            if (string.IsNullOrEmpty(language))
+                return;
+
+            // 语言代码会直接进文件名，含路径分隔符或非法字符会写到意外位置
+            if (language.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0
+                || language.Contains("/") || language.Contains("\\"))
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
+                    $"{LC.Combine(Lc.Name, Lc.Is, Lc.Illegal, Lc.Character)}: {language}",
+                    LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            _file.meta ??= new LocalizationKeyMeta();
+            _file.meta.languages ??= new List<string>();
+
+            if (_file.meta.languages.Contains(language))
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
+                    $"{language} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            _file.meta.languages.Add(language);
+            _newLanguage = string.Empty;
+            _dirty = true;
+        }
+
+        /// <summary>
+        /// 导出全部语言的 value 表
+        /// <para>先落盘清单再导出：否则面板里的未保存改动不会进CSV。</para>
+        /// </summary>
+        private void ExportAllValues()
+        {
+            if (_dirty && !Save(silent: true))
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
+                    $"{LC.Combine(Lc.Save, Lc.Failed)}，{LC.Combine(Lc.Export, Lc.Cancel)}",
+                    LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            var issues = Validate();
+            if (issues.Count > 0)
+            {
+                bool goOn = EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
+                    $"{issues.Count} {LC.Combine(Lc.Element, Lc.Is, Lc.Illegal)}，仍要继续导出吗？",
+                    LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel));
+
+                if (!goOn) return;
+            }
+
+            var reports = LocalizationValueExporter.ExportAll(_file, _file.GetLanguagesOrDefault());
+            if (reports.Count == 0) return;
+
+            bool allOk = true;
+            var sb = new System.Text.StringBuilder();
+            foreach (var report in reports)
+            {
+                if (!report.success) allOk = false;
+                sb.AppendLine(report.Summary);
+
+                foreach (var removed in report.removedKeys)
+                    sb.AppendLine($"  - {LC.Combine(Lc.Delete)}: {removed}");
+            }
+
+            D.Log($"[Localization] {LC.Combine(Lc.Export, Lc.Data)}\n{sb}");
+
+            EditorUtility.DisplayDialog(
+                allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error), sb.ToString(),
+                LC.Combine(Lc.Confirm));
+        }
+
+        /// <summary>
+        /// 在文件管理器中打开 value 表目录
+        /// </summary>
+        private void OpenValuesFolder()
+        {
+            var path = LocalizationData.ValuesPath;
+
+            if (!Directory.Exists(path))
+            {
+                if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
+                        $"{path}\n{LC.Combine(Lc.Not, Lc.Exist)}，" +
+                        "是否创建该目录？",
+                        LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
+                    return;
+
+                Directory.CreateDirectory(path);
+            }
+
+            EditorUtility.RevealInFinder(path);
         }
 
         #endregion
@@ -1036,13 +1311,15 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         }
 
         /// <summary>
-        /// 供菜单调用：校验并打印报告
+        /// 供菜单调用：校验整份清单并打印报告
+        /// <para>面板未打开时也能跑，用于提交前检查。</para>
+        /// <para>Validate the whole manifest from the menu.</para>
         /// </summary>
         [MenuItem(MenuItemToolkit.Utility + "🔍 Validate Localization Keys", false,
             MenuItemToolkit.UtilityPriority + 30)]
         public static void ValidateFromMenu()
         {
-            var file = LocalizationKeyFile.Load(JsonPath);
+            var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             if (file == null)
             {
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Error), "LocalizationKeys.json not found.", "确定");
@@ -1060,6 +1337,49 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             var text = string.Join("\n", issues);
             EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", "确定");
+        }
+
+        /// <summary>
+        /// 供菜单调用：按 Key 清单导出全部语言的 value 表
+        /// <para>与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。
+        /// 面板有未保存改动时这里读的是磁盘内容，故面板导出前会先落盘。</para>
+        /// <para>Export all value tables from the menu; also usable from CI.</para>
+        [MenuItem(MenuItemToolkit.Utility + "📤 Export Localization Value Tables", false,
+            MenuItemToolkit.UtilityPriority + 31)]
+        public static void ExportValuesFromMenu()
+        {
+            var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
+            if (file == null)
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
+                    $"LocalizationKeys.json not found.\n{LocalizationData.JsonPath}",
+                    LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            file.EnsureDefaults();
+            var reports = LocalizationValueExporter.ExportAll(file, file.GetLanguagesOrDefault());
+
+            if (reports.Count == 0)
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
+                    $"{LC.Combine(Lc.Language, Lc.Settings, Lc.Is, Lc.Empty)}",
+                    LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            bool allOk = true;
+            var sb = new System.Text.StringBuilder();
+            foreach (var report in reports)
+            {
+                if (!report.success) allOk = false;
+                sb.AppendLine(report.Summary);
+            }
+
+            D.Log($"[Localization] {LC.Combine(Lc.Export, Lc.Data)}\n{sb}");
+
+            EditorUtility.DisplayDialog(allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error),
+                sb.ToString(), LC.Combine(Lc.Confirm));
         }
 
         /// <summary>

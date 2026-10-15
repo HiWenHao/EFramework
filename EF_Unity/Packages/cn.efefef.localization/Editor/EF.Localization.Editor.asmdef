@@ -1,0 +1,24 @@
+{
+    "name": "EF.Localization.Editor",
+    "rootNamespace": "",
+    "references": [
+        "EF.Editor",
+        "EF.Core",
+        "Unity.TextMeshPro",
+        "EF.Localization.Runtime",
+        "Unity.TextMeshPro.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -70,8 +70,11 @@ namespace EasyFramework.Edit.Windows.Dataable
                 EditorGUILayout.Space(12f);
                 if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config))) return;
                 _config = Create.CreateSettings.Instance<DatableConfig>(true, ConfigManager.ConfigEditPath);
+
+                // InitConfig() 内部已调用 EnsureUserConfig()：缺失的 luban.conf 与包内默认表会被补齐。
+                // 此处绝不能再调 ResetUserConfig()——那是「重置」语义，会覆盖用户已有配置；
+                // 首次创建时它纯属多余，且会连带波及 Datas 下用户自建的表与多语言 value 表。
                 InitConfig();
-                ResetUserConfig(false);
                 RefreshExcelList();
                 return;
             }
@@ -128,7 +131,7 @@ namespace EasyFramework.Edit.Windows.Dataable
             EditorGUILayout.EndHorizontal();
 
             if (GUILayout.Button(LC.Combine(Lc.Reset, Lc.Config, Lc.File)))
-                ResetUserConfig(true);
+                ResetUserConfig();
 
             EditorGUILayout.Space(12);
             EditorGUILayout.BeginHorizontal();
@@ -279,17 +282,29 @@ namespace EasyFramework.Edit.Windows.Dataable
             }
         }
 
-        // 确保用户可编辑配置副本存在：luban.conf 直接创建；Datas/Defines 两文件夹照旧从包内复制
+        // 确保用户可编辑配置副本存在：luban.conf 直接创建；Datas/Defines 缺失时才从包内补齐
         private static void EnsureUserConfig()
         {
-            CopyDefaultDataFolders();
+            RestoreDefaultDataFolders(false);
             string confPath = Path.Combine(ExcelFolderPath, "luban.conf");
             if (!File.Exists(confPath))
                 CreateConfig();
         }
 
-        // 当本地不存在时从包内默认 DataTables 中复制 Datas 与 Defines 两文件夹。
-        private static void CopyDefaultDataFolders()
+        // 包内默认表所在的子目录名
+        private static readonly string[] DefaultDataFolders = { "Datas", "Defines" };
+
+        // 从包内恢复默认表。
+        // <para><b>绝不整目录删除</b>：Datas 下不只有包内默认表，还有用户自建文件——
+        // 自定义 .xlsx 配表、以及多语言 value 表（L10n_{语言}.csv，已填译文）。
+        // 整目录删掉再复制回来 = 把用户数据清空，那是数据丢失而不是「重置」。</para>
+        // <para>Never wipe the whole folder: only restore the package-owned files into it.</para>
+        // <param name="overwriteExisting">
+        // true：包内默认文件强制覆盖本地同名文件（重置语义）；
+        // false：仅补齐本地缺失的默认文件（首次初始化语义）。
+        // 两种情况都<b>保留</b>本地多出来的用户文件。
+        // </param>
+        private static void RestoreDefaultDataFolders(bool overwriteExisting)
         {
             string src = Path.Combine(ToolSourceDir, "DataTables");
             if (!Directory.Exists(src))
@@ -298,12 +313,33 @@ namespace EasyFramework.Edit.Windows.Dataable
                 return;
             }
 
-            foreach (string name in new[] { "Datas", "Defines" })
+            foreach (string name in DefaultDataFolders)
             {
                 string srcEntry = Path.Combine(src, name);
                 string dstEntry = Path.Combine(ExcelFolderPath, name);
-                if (Directory.Exists(srcEntry) && !Directory.Exists(dstEntry))
+
+                if (!Directory.Exists(srcEntry)) continue;
+
+                // 目标目录不存在：整体复制（首次初始化的常规路径）
+                if (!Directory.Exists(dstEntry))
+                {
                     FileUtil.CopyFileOrDirectory(srcEntry, dstEntry);
+                    continue;
+                }
+
+                // 目标目录已存在：只把包内默认文件覆盖/补齐过去，其余文件一律不动
+                foreach (string srcFile in Directory.GetFiles(srcEntry, "*", SearchOption.AllDirectories))
+                {
+                    string dstFile = Path.Combine(dstEntry, Path.GetRelativePath(srcEntry, srcFile));
+
+                    if (File.Exists(dstFile) && !overwriteExisting) continue;
+
+                    var dir = Path.GetDirectoryName(dstFile);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    FileUtil.CopyFileOrDirectory(srcFile, dstFile);
+                }
             }
         }
 
@@ -353,24 +389,27 @@ namespace EasyFramework.Edit.Windows.Dataable
             EditorCommands.Refresh();
         }
 
-        // 重置为默认配置：luban.conf 直接重建，Datas/Defines 两文件夹照旧从包内复制
-        private void ResetUserConfig(bool showDialog)
+        // 重置为默认配置：重建 luban.conf，并把包内默认表覆盖回本地。
+        // <para><b>注意</b>：这里只覆盖包内自带的默认表文件（__tables__.xlsx 等），
+        // 不会删除 Datas 目录本身，也不会动你的自定义配表与多语言 value 表（L10n_*.csv）。
+        // 若确实要推倒重来，手动删除 EFTools/Datable/Datas 整个目录即可。</para>
+        // <para>Reset restores framework defaults without deleting user tables or value CSVs.</para>
+        private void ResetUserConfig()
         {
-            if (showDialog && !EditorUtility.DisplayDialog(LC.Combine(Lc.Reset, Lc.Config),
-                    "将用新设置属性覆盖你的本地修改，确定？\n" +
-                    "The new settings will override your local modifications. Are you sure?",
+            if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Reset, Lc.Config),
+                    "将重建 luban.conf 并覆盖包内默认表（__tables__ 等）。\n" +
+                    "你的自定义配表与多语言 value 表（L10n_*.csv）会保留。\n\n" +
+                    "luban.conf will be rebuilt and package default tables overwritten.\n" +
+                    "Your custom tables and value CSVs (L10n_*.csv) are kept.",
                     LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
                 return;
-            string dst = ExcelFolderPath;
-            // 清掉 luban.conf 与 Datas/Defines（保留 Datable 目录本身及同级其它内容）
-            foreach (string name in new[] { "luban.conf", "Datas", "Defines" })
-            {
-                string p = Path.Combine(dst, name);
-                if (File.Exists(p) || Directory.Exists(p))
-                    FileUtil.DeleteFileOrDirectory(p);
-            }
 
-            CopyDefaultDataFolders();
+            // 只删 luban.conf（纯生成物，可安全重建），Datas/Defines 保留
+            string conf = Path.Combine(ExcelFolderPath, "luban.conf");
+            if (File.Exists(conf))
+                FileUtil.DeleteFileOrDirectory(conf);
+
+            RestoreDefaultDataFolders(true);
             CreateConfig();
         }
 

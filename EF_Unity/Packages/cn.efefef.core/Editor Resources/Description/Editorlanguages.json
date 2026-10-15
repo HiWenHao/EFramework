@@ -2025,6 +2025,14 @@
       ]
     },
     {
+      "name": "Search",
+      "desc": "搜索",
+      "array": [
+        "Search",
+        "搜索"
+      ]
+    },
+    {
       "name": "Spacing",
       "desc": "间距",
       "array": [

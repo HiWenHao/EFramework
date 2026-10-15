@@ -12,33 +12,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Localization.Edit
 {
-    /// <summary>
-    /// Key 类型
-    /// <para>标记该文案是否需要运行时拼接参数，用于提前筛出需要复数规则处理的条目。</para>
-    /// Key kind: marks whether the text needs runtime parameter formatting.
-    /// </summary>
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum LocalizationKeyKind
-    {
-        /// <summary>
-        /// 静态文案：整条翻译，无参数
-        /// <para>Static text: whole-string translation, no parameters</para>
-        /// </summary>
-        [EnumMember(Value = "Static")] Static = 0,
-
-        /// <summary>
-        /// 动态文案：运行时拼接参数，需考虑复数规则（德语/俄语必查）
-        /// <para>Dynamic text: formatted at runtime, plural rules required</para>
-        /// </summary>
-        [EnumMember(Value = "Dynamic")] Dynamic = 1,
-    }
-
     /// <summary>
     /// 单条多语言 Key
     /// <para>只描述 key 本身的元信息，不含任何语言译文（value 另行管理）。</para>
@@ -48,7 +25,7 @@ namespace EasyFramework.Edit
     {
         /// <summary>
         /// Key 名（唯一标识）
-        /// <para>建议用域_用途，如 Btn_Confirm；改名会让引用处失效。</para>
+        /// <para>建议用「域_用途」格式，如 Btn_Confirm；改名会让引用处失效。</para>
         /// <para>Unique key identifier, recommended as Domain_Usage.</para>
         /// </summary>
         public string name = string.Empty;
@@ -62,13 +39,15 @@ namespace EasyFramework.Edit
 
         /// <summary>
         /// 分组（用于面板折叠，一般按 UI 模块划分）
-        /// <para>Group for folding in the panel, usually by UI module.</para>
+        /// <para>可选，登记在 <see cref="LocalizationKeyMeta.groups"/>；留空则归入「无分组」。</para>
+        /// <para>Group for folding in the panel; empty means ungrouped.</para>
         /// </summary>
         public string group = "Default";
 
         /// <summary>
         /// Key 类型（静态 / 动态）
-        /// <para>Type: static or dynamic text.</para>
+        /// <para>动态文案需考虑复数规则（德语 / 俄语等），翻译前务必确认。</para>
+        /// <para>Type: static or dynamic text; dynamic requires plural rules.</para>
         /// </summary>
         public LocalizationKeyKind kind = LocalizationKeyKind.Static;
 
@@ -106,7 +85,7 @@ namespace EasyFramework.Edit
     public class LocalizationKeyFile
     {
         /// <summary>
-        /// 元信息
+        /// 元信息（文件级说明与分组登记表）
         /// </summary>
         public LocalizationKeyMeta meta = new LocalizationKeyMeta();
 
@@ -115,6 +94,7 @@ namespace EasyFramework.Edit
         /// </summary>
         public List<LocalizationKeyEntry> keys = new List<LocalizationKeyEntry>();
 
+        /// <summary> JSON 序列化配置：缩进 + 忽略 null，避免无意义字段污染文件 </summary>
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -123,12 +103,14 @@ namespace EasyFramework.Edit
 
         /// <summary>
         /// 补齐缺失字段，避免空引用
+        /// <para>手改 JSON 漏字段后仍能正常打开面板。</para>
         /// </summary>
         public void EnsureDefaults()
         {
             meta ??= new LocalizationKeyMeta();
             keys ??= new List<LocalizationKeyEntry>();
             meta.groups ??= new List<string>();
+            meta.languages ??= new List<string>();
 
             foreach (var entry in keys)
             {
@@ -180,8 +162,39 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 生成新清单的模板内容
+        /// 未登记语言时使用的默认语言集合
+        /// <para>与 core 编辑器的 ELanguage（English / 中文）保持一致，
+        /// 让首次导出就有可用产物，不必先手动补 meta.languages。</para>
+        /// <para>Default languages used when meta.languages is empty.</para>
         /// </summary>
+        public static readonly List<string> DefaultLanguages = new List<string> { "en", "zh" };
+
+        /// <summary>
+        /// 取目标语言列表；登记表为空时回落默认值
+        /// <para>返回新List，调用方改动不会污染 <see cref="LocalizationKeyMeta.languages"/>。</para>
+        /// <para>Get target languages, falling back to <see cref="DefaultLanguages"/>.</para>
+        /// </summary>
+        public List<string> GetLanguagesOrDefault()
+        {
+            if (meta?.languages != null && meta.languages.Count > 0)
+            {
+                var list = new List<string>();
+                foreach (var language in meta.languages)
+                {
+                    if (!string.IsNullOrEmpty(language)) list.Add(language);
+                }
+
+                if (list.Count > 0) return list;
+            }
+
+            return new List<string>(DefaultLanguages);
+        }
+
+        /// <summary>
+        /// 生成新清单的模板内容
+        /// <para>仅在面板首次创建文件时使用，之后以磁盘内容为准。</para>
+        /// </summary>
+        /// <returns>含 4 条示例 key 的新清单</returns>
         public static LocalizationKeyFile CreateTemplate()
         {
             return new LocalizationKeyFile
@@ -252,8 +265,10 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 覆写磁盘文件（UTF-8 无 BOM）
+        /// 覆写磁盘文件（UTF-8 无 BOM，缺失目录会自动创建）
         /// </summary>
+        /// <param name="path">目标绝对路径</param>
+        /// <returns>写入成功返回 true；失败（已输出错误日志）返回 false</returns>
         public bool Save(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
@@ -277,8 +292,10 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 取出全部 key 名
+        /// 取出全部非空 key 名
+        /// <para>供外部（如预制体批量校验）比对清单与实际引用。</para>
         /// </summary>
+        /// <returns>key 名列表，保持清单中的原始顺序</returns>
         public List<string> GetKeyNames()
         {
             var names = new List<string>(keys.Count);
@@ -306,10 +323,21 @@ namespace EasyFramework.Edit
 
         /// <summary>
         /// 分组登记表（可选写入，用于面板下拉与分组管理）
-        /// <para>Group registry, optional. Used by the panel dropdown and group management.</para>
-        /// <para>· 登记表为空时，面板会自动从 key 实际用到的 group 反向补全。</para>
-        /// <para>· 因此纯手改 JSON 的人不维护此处也不影响功能。</para>
+        /// <para>登记表为空时，面板会自动从 key 实际用到的 group 反向补全
+        /// （见 <see cref="LocalizationKeyFile.GetGroupsOrInfer"/>），
+        /// 因此纯手改 JSON 的人不维护此处也不影响功能。</para>
+        /// <para>Group registry, optional; inferred from keys when empty.</para>
         /// </summary>
         public List<string> groups = new List<string>();
+
+        /// <summary>
+        /// 目标语言登记表（决定导出几份 value 表）
+        /// <para>每项是一个语言代码，如 zh-CN / en-US，对应 value 表
+        /// <c>L10n_{语言}.csv</c>（见 <see cref="LocalizationData.GetValuesPath"/>）。
+        /// 为空时面板回落到默认语言 <see cref="LocalizationKeyFile.DefaultLanguages"/>，
+        /// 所以手改 JSON 漏写此项也能正常导出。</para>
+        /// <para>Target languages; each one produces an L10n_{lang}.csv value table.</para>
+        /// </summary>
+        public List<string> languages = new List<string>();
     }
 }
