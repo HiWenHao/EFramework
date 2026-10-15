@@ -5,7 +5,7 @@
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
  * ModifyTime:      2026-10-15 18:40:00
- * ScriptVersion:   0.2
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -99,9 +99,10 @@ namespace EasyFramework.Localization.Edit
 
         /// <summary>
         /// 绘制译文预览行
-        /// <para>左侧语言下拉 + 右侧只读译文框。译文经 <see cref="EditorL10nPreview"/>
-        /// 从导表后的 bytes 读取，与运行时同一数据源，因此所见即所得。</para>
-        /// <para>未选 key / 数据源不可用 / 该词未翻译，三种情况给出不同提示——
+        /// <para>左侧语言下拉 + 中间只读译文框 + 右侧「替换文本」按钮。译文经
+        /// <see cref="EditorL10nPreview"/> 从导表产物读取，与运行时同一数据源，
+        /// 因此所见即所得。</para>
+        /// <para>未选 key / 语言表不存在 / 该词未翻译，三种情况给出不同提示——
         /// 它们是三类完全不同的问题，混成一句「无数据」会让人无从下手。</para>
         /// </summary>
         private void DrawPreviewRow()
@@ -110,8 +111,32 @@ namespace EasyFramework.Localization.Edit
 
             DrawLanguageDropdown();
             DrawPreviewValue();
+            DrawBakeTextButton();
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 绘制「替换文本」按钮
+        /// <para>把当前预览语言的译文写入 TMP 文本框，便于烘焙默认文案
+        /// （如未接入运行时的纯静态展示场景）。未选 key 或该词无译文时按钮禁用，
+        /// 悬停提示会说明原因。</para>
+        /// <para>运行时若 key 命中语言表，<see cref="LocalizedText.Refresh"/> 仍会用
+        /// 译文覆盖 text，烘焙内容只影响编辑器显示与序列化默认值。</para>
+        /// </summary>
+        private void DrawBakeTextButton()
+        {
+            var value = _target.HasKey ? EditorL10nPreview.Get(_target.Key) : null;
+
+            using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(value)))
+            {
+                if (!GUILayout.Button(LC.Combine(Lc.Apply),GUILayout.Width(64f)))
+                    return;
+            }
+
+            Undo.RecordObject(_target, "Apply Text With Preview");
+            _target.text = value;
+            EditorUtility.SetDirty(_target);
         }
 
         /// <summary>
