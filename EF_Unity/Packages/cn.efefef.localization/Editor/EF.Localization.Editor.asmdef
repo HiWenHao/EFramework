@@ -4,6 +4,7 @@
     "references": [
         "EF.Editor",
         "EF.Core",
+        "Luban.Editor",
         "Unity.TextMeshPro",
         "EF.Localization.Runtime",
         "Unity.TextMeshPro.Editor"

@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-10 19:22:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-15 18:40:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -116,12 +116,15 @@ namespace EasyFramework.Localization.Edit
 
         /// <summary>
         /// 绘制预览语言下拉
-        /// <para>语言集合来自 <see cref="LanguageCode"/>，与运行时共用一份，
-        /// 避免面板上能选到运行时不支持的语言。</para>
+        /// <para>语言集合来自语言表文件名自动发现（见 <see cref="L10nTableStore"/>），
+        /// 与运行时可选语言天然一致；还没导过表的全新工程回落到默认集合，
+        /// 保证下拉框永远有项可选。</para>
         /// </summary>
         private static void DrawLanguageDropdown()
         {
-            var languages = new[] { LanguageCode.Zn, LanguageCode.En };
+            var source = EditorL10nPreview.AvailableLanguages;
+            var languages = new string[source.Count];
+            for (var i = 0; i < source.Count; i++) languages[i] = source[i];
 
             int index = Array.IndexOf(languages, EditorL10nPreview.PreviewLanguage);
             if (index < 0) index = 0;
@@ -147,10 +150,11 @@ namespace EasyFramework.Localization.Edit
                 return;
             }
 
-            if (!EditorL10nPreview.IsSourceAvailable)
+            if (!EditorL10nPreview.IsDataAvailable)
             {
                 EditorGUI.HelpBox(rect,
-                    "未找到 IL10nSource 实现\n若使用 Luban，请先导表并把 bytes 拷进 Resources/Luban/",
+                    "未找到语言表（l10n_tbtext_*.json）\n" +
+                    "请在 多语言设置 导出 value 表并填好译文，再到 数据表配置 执行 Luban 导表；产物会自动同步进 Resources/L10n",
                     MessageType.Warning);
                 return;
             }
