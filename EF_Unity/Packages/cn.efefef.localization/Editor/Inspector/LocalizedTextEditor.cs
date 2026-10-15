@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:40:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-10-15 18:58:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
@@ -99,9 +99,11 @@ namespace EasyFramework.Localization.Edit
 
         /// <summary>
         /// 绘制译文预览行
-        /// <para>左侧语言下拉 + 中间只读译文框 + 右侧「替换文本」按钮。译文经
-        /// <see cref="EditorL10nPreview"/> 从导表产物读取，与运行时同一数据源，
+        /// <para>左侧语言下拉 + 中间只读译文框 + 右侧「应用」按钮（仅手动模式下显示）。
+        /// 译文经 <see cref="EditorL10nPreview"/> 从导表产物读取，与运行时同一数据源，
         /// 因此所见即所得。</para>
+        /// <para>两种应用模式（开关在 多语言设置 → 自动应用）：
+        /// 手动模式显示「应用」按钮；自动模式选择 key 即写入，按钮隐藏。</para>
         /// <para>未选 key / 语言表不存在 / 该词未翻译，三种情况给出不同提示——
         /// 它们是三类完全不同的问题，混成一句「无数据」会让人无从下手。</para>
         /// </summary>
@@ -111,16 +113,18 @@ namespace EasyFramework.Localization.Edit
 
             DrawLanguageDropdown();
             DrawPreviewValue();
-            DrawBakeTextButton();
+
+            // 自动应用模式下不显示手动按钮（选择 key 时已自动写入，见 CommonRecord）
+            if (!LocalizationData.AutoApplyOnKeySelected)
+                DrawBakeTextButton();
 
             EditorGUILayout.EndHorizontal();
         }
 
         /// <summary>
-        /// 绘制「替换文本」按钮
+        /// 绘制「应用」按钮
         /// <para>把当前预览语言的译文写入 TMP 文本框，便于烘焙默认文案
-        /// （如未接入运行时的纯静态展示场景）。未选 key 或该词无译文时按钮禁用，
-        /// 悬停提示会说明原因。</para>
+        /// （如未接入运行时的纯静态展示场景）。未选 key 或该词无译文时按钮禁用。</para>
         /// <para>运行时若 key 命中语言表，<see cref="LocalizedText.Refresh"/> 仍会用
         /// 译文覆盖 text，烘焙内容只影响编辑器显示与序列化默认值。</para>
         /// </summary>
@@ -130,7 +134,7 @@ namespace EasyFramework.Localization.Edit
 
             using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(value)))
             {
-                if (!GUILayout.Button(LC.Combine(Lc.Apply),GUILayout.Width(64f)))
+                if (!GUILayout.Button(LC.Combine(Lc.Apply), GUILayout.Width(64f)))
                     return;
             }
 
@@ -145,7 +149,7 @@ namespace EasyFramework.Localization.Edit
         /// 与运行时可选语言天然一致；还没导过表的全新工程回落到默认集合，
         /// 保证下拉框永远有项可选。</para>
         /// </summary>
-        private static void DrawLanguageDropdown()
+        private void DrawLanguageDropdown()
         {
             var source = EditorL10nPreview.AvailableLanguages;
             var languages = new string[source.Count];
@@ -160,6 +164,14 @@ namespace EasyFramework.Localization.Edit
             if (!EditorGUI.EndChangeCheck() || newIndex < 0) return;
             EditorL10nPreview.PreviewLanguage = languages[newIndex];
             UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+
+            if (LocalizationData.AutoApplyOnKeySelected)
+            {
+                Undo.RecordObject(_target, "Apply Text With Preview");
+                var value = EditorL10nPreview.Get(_target.Key);
+                _target.text = value;
+                EditorUtility.SetDirty(_target);
+            }
         }
 
         /// <summary>
@@ -284,6 +296,10 @@ namespace EasyFramework.Localization.Edit
 
         /// <summary>
         /// 通用操作记录
+        /// <para>自动应用模式下（见 <see cref="LocalizationData.AutoApplyOnKeySelected"/>），选择 key 后立即把
+        /// 预览译文写入文本框，等效于点了「替换文本」按钮；该词无译文时跳过写入，
+        /// 保持原文本。手动模式下只改 key。</para>
+        /// <para>Undo 记录在改值之前：key 与 text 的变更落在同一步撤销里。</para>
         /// </summary>
         /// <param name="keyName">键名</param>
         private void CommonRecord(string keyName)
@@ -291,6 +307,13 @@ namespace EasyFramework.Localization.Edit
             Undo.RecordObject(_target, "Set Localization Key");
             _target.Key = keyName;
             _target.Refresh();
+
+            if (LocalizationData.AutoApplyOnKeySelected)
+            {
+                var value = EditorL10nPreview.Get(keyName);
+                if (!string.IsNullOrEmpty(value)) _target.text = value;
+            }
+
             EditorUtility.SetDirty(_target);
         }
     }

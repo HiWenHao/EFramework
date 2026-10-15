@@ -1,26 +1,31 @@
 ﻿/*
  * ================================================
- * Describe:        多语言模块的全局常量与路径
+ * Describe:        多语言模块的全局常量、路径与编辑器偏好
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 14:03:21
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-14 14:03:21
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-15 19:02:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace EasyFramework.Localization.Edit
 {
     /// <summary>
-    /// 多语言模块的全局常量与路径
-    /// <para>面板、Inspector、搜索窗共用此处的路径定义，避免各处硬编码字符串。</para>
-    /// <para>Shared constants and paths for the panel, inspector and search window.</para>
+    /// 多语言模块的全局常量、路径与编辑器偏好
+    /// <para>面板、Inspector、搜索窗共用此处的路径定义与行为开关，
+    /// 避免各处硬编码字符串、避免同类状态散落多个类。</para>
+    /// <para>Shared constants, paths and editor-backed options for the panel,
+    /// inspector and search window.</para>
     /// </summary>
     internal static class LocalizationData
     {
+        #region 路径与常量 Paths & Constants
+
         /// <summary>
         /// Key 清单文件名
         /// <para>多语言 Key 清单的唯一文件名。</para>
@@ -64,5 +69,32 @@ namespace EasyFramework.Localization.Edit
         /// <param name="language">语言代码，如 zh-CN</param>
         internal static string GetValuesPath(string language)
             => Path.Combine(ValuesPath, $"{ValuesFilePrefix}{language}.csv");
+
+        #endregion
+
+        #region 编辑器偏好 Editor Preferences
+
+        /// <summary>
+        /// EditorPrefs 键前缀（带包名，避免与工程内其他设置撞名）
+        /// </summary>
+        private const string PrefsKeyPrefix = "EF.Localization.";
+
+        /// <summary>
+        /// 选择 key 后是否自动把预览译文写入文本框
+        /// <para>true：LocalizedText 的 Inspector 隐藏「应用」按钮，选择 key 即自动应用；
+        /// false（默认）：显示按钮，由使用者手动应用。</para>
+        /// <para>设置面板（<see cref="LocalizationKeyPanel"/>）写入、Inspector
+        /// （<see cref="LocalizedTextEditor"/>）读取；写入端只在值变化时赋值，
+        /// 避免每帧重绘都落盘 EditorPrefs。</para>
+        /// <para>Whether picking a key auto-writes the previewed translation
+        /// into the text field. Persisted via EditorPrefs.</para>
+        /// </summary>
+        internal static bool AutoApplyOnKeySelected
+        {
+            get => EditorPrefs.GetBool(PrefsKeyPrefix + "AutoApplyOnKeySelected", false);
+            set => EditorPrefs.SetBool(PrefsKeyPrefix + "AutoApplyOnKeySelected", value);
+        }
+
+        #endregion
     }
 }
