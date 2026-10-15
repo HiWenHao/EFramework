@@ -393,7 +393,7 @@ namespace EasyFramework.Localization.Edit
         {
             SubTab.Keys => LC.Combine(Lc.Key, Lc.Name, Lc.List),
             SubTab.Groups => LC.Combine(Lc.Multilingual, Lc.Config, Lc.Settings),
-            SubTab.Values => LC.Combine(Lc.Value, Lc.Data),
+            SubTab.Values => LC.Combine(Lc.Value, Lc.Data, Lc.Excel),
             _ => string.Empty,
         };
 
@@ -773,6 +773,20 @@ namespace EasyFramework.Localization.Edit
         /// </summary>
         private void DrawGroupsTab()
         {
+            var autoApply = LocalizationData.AutoApplyOnKeySelected;
+            var updated = EditorGUILayout.ToggleLeft(new GUIContent(
+                    LC.Combine(Lc.Auto, Lc.Apply),
+                    "勾选后，LocalizedText 的 Inspector 选择 key 会自动把预览译文写入文本框，并隐藏「应用」按钮\n" +
+                    "不勾选：显示「应用」按钮，手动应用\n\n" +
+                    "When enabled, picking a key auto-writes the previewed translation into the text field."),
+                autoApply);
+
+            // 仅在值变化时写回：避免每帧重绘都落盘 EditorPrefs
+            if (updated != autoApply)
+                LocalizationData.AutoApplyOnKeySelected = updated;
+
+            EditorGUILayout.Space(4f);
+
             DrawGroupsHeader();
 
             _groupScrollPos = EditorGUILayout.BeginScrollView(_groupScrollPos, GUILayout.ExpandWidth(true));
@@ -952,7 +966,7 @@ namespace EasyFramework.Localization.Edit
             var w = GetGroupColWidths();
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Group, Lc.Name),
+            EditorGUILayout.LabelField(LC.Combine(Lc.Key, Lc.Group, Lc.Name),
                 GUILayout.Width(w[0]));
             EditorGUILayout.LabelField(LC.Combine(Lc.Use, Lc.Count),
                 GUILayout.Width(w[1]));
