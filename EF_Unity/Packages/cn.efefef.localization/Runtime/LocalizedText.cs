@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:15:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-14 16:45:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-10-15 18:25:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
@@ -132,14 +132,16 @@ namespace EasyFramework.Localization
 
         /// <summary>
         /// 刷新显示内容
-        /// <para>按 key 从 <see cref="I18NManager"/> 取译文并写入 text。
-        /// 未选 key 时**不改写 text**，以免覆盖美术在 Inspector 中填写的文本；
-        /// 查不到译文时显示 <c>[Missing:key]</c> 而不是空白，便于定位缺词。</para>
+        /// <para>按 key 从 <see cref="I18NManager"/>（内建 <see cref="L10nTableStore"/> 数据通道）
+        /// 取译文并写入 text。未选 key 时<strong>不改写 text</strong>，以免覆盖美术在
+        /// Inspector 中填写的文本；查不到译文时显示 <c>[Missing:key]</c> 便于定位缺词。</para>
         /// <para>Refresh the displayed text from the key. Does nothing when no key is set.</para>
-        /// <para><b>编辑态说明：</b>本方法只在运行时改写 text。编辑器下数据源尚未注册，
-        /// 若在此改写会把译文写进场景文件，造成「谁打开过谁脏」的诡异 diff；
-        /// 且 Inspector 每帧都会调用，告警会刷爆 Console。
+        /// <para><b>编辑态说明：</b>本方法只在运行时改写 text。编辑器下若改写会把译文
+        /// 写进场景文件，造成「谁打开过谁脏」的诡异 diff；且 Inspector 每帧都会调用。
         /// 故编辑态下静默返回，译文改由 Inspector 的预览行展示。</para>
+        /// <para><b>无表闸门：</b>工程未接入多语言（Resources/L10n 下没有语言表）时
+        /// 保持美术填写的原文并告警一次，不产出 [Missing] 占位刷屏。</para>
+        /// </summary>
         public void Refresh()
         {
             if (!HasKey) return;
@@ -151,7 +153,7 @@ namespace EasyFramework.Localization
             if (manager == null || !manager.IsLoaded)
             {
                 // 服务不可用时保持美术填的内容，不要用占位串刷屏
-                Debug.LogWarning($"[LocalizedText] 本地化服务未就绪，暂无法解析 key：{key}");
+                Debug.LogWarning($"[LocalizedText] 本地化语言表未就绪（Resources/L10n/l10n_tbtext_*.json），暂无法解析 key：{key}");
                 return;
             }
 
