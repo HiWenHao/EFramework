@@ -4,12 +4,13 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:15:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:25:00
- * ScriptVersion:   0.4
+ * ModifyTime:      2026-10-16 12:00:00
+ * ScriptVersion:   0.5
  * ================================================
  */
 
 using System;
+using System.Collections.Generic;
 using EasyFramework.Edit;
 using EasyFramework.Managers.Event;
 using TMPro;
@@ -23,6 +24,7 @@ namespace EasyFramework.Localization
     /// 运行时由 <see cref="I18NManager"/> 按 key 提供文案。语言切换时自动刷新，
     /// 无需业务代码遍历界面。</para>
     /// <para>Inherits TextMeshProUGUI; refreshes itself on language change.</para>
+    /// </summary>
     [AddComponentMenu("UI/TextMeshPro - Localization")]
     [DisallowMultipleComponent]
     public class LocalizedText : TextMeshProUGUI
@@ -63,6 +65,44 @@ namespace EasyFramework.Localization
         /// 是否已选择 key
         /// </summary>
         public bool HasKey => !string.IsNullOrEmpty(key);
+
+        /// <summary>
+        /// 格式化参数（Dynamic 文案用，与 key 值中的 {0} {1}… 按序对应）
+        /// <para>序列化保存：静态参数（如版本号展示）可直接在 Inspector 的
+        /// 「格式化参数」里配置；运行时变化的参数（金币数、错误码等）
+        /// 用 <see cref="SetFormatArgs"/> 传入并即时刷新。</para>
+        /// <para>Format args for dynamic texts, matched against {0}/{1}... in order.</para>
+        /// </summary>
+        [SerializeField]
+        [HeaderPro("格式化参数（动态文案用）。key 值含 {0} 占位符时按序替换。",
+            "Format args for dynamic texts. Replaces {0}/{1}... in order.")]
+        private List<string> formatArgs = new List<string>();
+
+        /// <summary>
+        /// 当前格式化参数（只读，供 Inspector 预览格式化结果）
+        /// </summary>
+        public IReadOnlyList<string> FormatArgs => formatArgs;
+
+        /// <summary>
+        /// 设置运行时格式化参数并立即刷新（Dynamic 文案用）
+        /// <para>参数为运行时数据（金币数、错误码等）时由代码调用；
+        /// 静态参数建议直接在 Inspector 配置。传空则清除参数。</para>
+        /// <para>Set runtime format args and refresh immediately.</para>
+        /// </summary>
+        /// <param name="args">参数，按序对应 {0} {1}…；传空则清除参数</param>
+        public void SetFormatArgs(params object[] args)
+        {
+            formatArgs.Clear();
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    formatArgs.Add(arg?.ToString() ?? string.Empty);
+                }
+            }
+
+            Refresh();
+        }
 
         #region 生命周期 Lifecycle
 
@@ -156,6 +196,23 @@ namespace EasyFramework.Localization
             }
 
             text = manager.Get(key);
+
+            // Dynamic 文案：组件配置了格式化参数时，把 {0} {1}… 替换为实际值
+            if (formatArgs.Count <= 0 || text.IndexOf('{') < 0) return;
+            try
+            {
+                var args = new object[formatArgs.Count];
+                for (var i = 0; i < args.Length; i++)
+                {
+                    args[i] = formatArgs[i];
+                }
+
+                text = string.Format(text, args);
+            }
+            catch (FormatException)
+            {
+                // 占位符与参数不匹配：保持原文（v{0} 可见比静默错误更利于排查）
+            }
         }
     }
 }
