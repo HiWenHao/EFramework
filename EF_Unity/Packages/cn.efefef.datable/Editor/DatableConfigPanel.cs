@@ -70,10 +70,6 @@ namespace EasyFramework.Edit.Windows.Dataable
                 EditorGUILayout.Space(12f);
                 if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config))) return;
                 _config = Create.CreateSettings.Instance<DatableConfig>(true, ConfigManager.ConfigEditPath);
-
-                // InitConfig() 内部已调用 EnsureUserConfig()：缺失的 luban.conf 与包内默认表会被补齐。
-                // 此处绝不能再调 ResetUserConfig()——那是「重置」语义，会覆盖用户已有配置；
-                // 首次创建时它纯属多余，且会连带波及 Datas 下用户自建的表与多语言 value 表。
                 InitConfig();
                 RefreshExcelList();
                 return;

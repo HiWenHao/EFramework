@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:58:00
- * ScriptVersion:   0.4
+ * ModifyTime:      2026-10-16 11:50:00
+ * ScriptVersion:   0.6
  * ================================================
  */
 
@@ -146,8 +146,11 @@ namespace EasyFramework.Localization.Edit
         /// <summary>
         /// 绘制预览语言下拉
         /// <para>语言集合来自语言表文件名自动发现（见 <see cref="L10nTableStore"/>），
-        /// 与运行时可选语言天然一致；还没导过表的全新工程回落到默认集合，
-        /// 保证下拉框永远有项可选。</para>
+        /// 与运行时可选语言天然一致；还没导过表的全新工程回落到默认集合。</para>
+        /// <para><b>双模式：</b>编辑态显示/写入预览语言（EditorPrefs 持久化）；
+        /// Play 模式显示运行时当前语言，变更经 <see cref="I18NManager.SwitchLanguage"/>
+        /// 直接切换——全场景 LocalizedText 即时刷新，预览与场景文本永远同源。</para>
+        /// <para>自动应用模式下（编辑态），切换预览语言后立即把新语言的译文写入文本框。</para>
         /// </summary>
         private void DrawLanguageDropdown()
         {
@@ -155,13 +158,25 @@ namespace EasyFramework.Localization.Edit
             var languages = new string[source.Count];
             for (var i = 0; i < source.Count; i++) languages[i] = source[i];
 
-            int index = Array.IndexOf(languages, EditorL10nPreview.PreviewLanguage);
+            var followsRuntime = EditorL10nPreview.FollowsRuntimeLanguage;
+            var current = followsRuntime
+                ? I18NManager.Instance.CurrentLanguage
+                : EditorL10nPreview.PreviewLanguage;
+
+            int index = Array.IndexOf(languages, current);
             if (index < 0) index = 0;
 
             EditorGUI.BeginChangeCheck();
             int newIndex = EditorGUILayout.Popup(index, languages, GUILayout.Width(50f));
 
             if (!EditorGUI.EndChangeCheck() || newIndex < 0) return;
+
+            if (followsRuntime)
+            {
+                I18NManager.Instance.SwitchLanguage(languages[newIndex]);
+                return;
+            }
+
             EditorL10nPreview.PreviewLanguage = languages[newIndex];
             UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
 
@@ -287,7 +302,7 @@ namespace EasyFramework.Localization.Edit
             if (!GUILayout.Button(LC.Combine(Lc.Search), GUILayout.Width(50f)))
                 return;
 
-            KeySearchWindow.Show(keys, picked =>
+            KeySearchWindow.Show(keys, _target.Key, picked =>
             {
                 CommonRecord(picked);
                 Repaint();

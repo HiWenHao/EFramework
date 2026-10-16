@@ -57,7 +57,7 @@ namespace EasyFramework.Localization
         public bool AutoPersist { get; set; } = true;
 
         /// <summary>当前语言代码，未装载时为空串 </summary>
-        private string _currentLanguage = string.Empty;
+        private string _currentLanguage = LanguageCode.En;
 
         /// <summary>
         /// 服务是否可用（磁盘上存在至少一张语言表）
@@ -152,8 +152,6 @@ namespace EasyFramework.Localization
 
             if (!ContainsLanguage(L10nTableStore.Languages, language))
             {
-                // 这里必须拦：一旦放行未发现的语言，Get 会静默回落到兜底语言，
-                // 界面显示英文却让用户以为是所选语言——比直接报错更难排查。
                 Debug.LogWarning($"[I18NManager] 不支持的语言：{language}。" +
                                  $"当前可选：{string.Join(" / ", L10nTableStore.Languages)}");
                 return false;

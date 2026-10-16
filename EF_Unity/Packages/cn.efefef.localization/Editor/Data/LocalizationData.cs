@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 14:03:21
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 19:02:00
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-10-16 11:42:00
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -93,6 +93,26 @@ namespace EasyFramework.Localization.Edit
         {
             get => EditorPrefs.GetBool(PrefsKeyPrefix + "AutoApplyOnKeySelected", false);
             set => EditorPrefs.SetBool(PrefsKeyPrefix + "AutoApplyOnKeySelected", value);
+        }
+
+        /// <summary>
+        /// 编辑器预览语言（Inspector 预览行使用）
+        /// <para>静态字段会在每次代码编译（域重载）后清零，故走 EditorPrefs 持久化，
+        /// 保持使用者上一次的预览语言选择；默认 zn。</para>
+        /// <para>读到已不存在的语言（如语言表被删）时不在此校验——
+        /// 下拉框会自然回落到首项，查询端也有 en 兜底。</para>
+        /// <para>Editor preview language, persisted via EditorPrefs across
+        /// domain reloads; defaults to zn.</para>
+        /// </summary>
+        internal static string PreviewLanguage
+        {
+            get => EditorPrefs.GetString(PrefsKeyPrefix + "PreviewLanguage", LanguageCode.Zn);
+            set
+            {
+                // 空值不落盘：语言代码是查询主键，空串会让预览全走兜底
+                if (string.IsNullOrEmpty(value)) return;
+                EditorPrefs.SetString(PrefsKeyPrefix + "PreviewLanguage", value);
+            }
         }
 
         #endregion

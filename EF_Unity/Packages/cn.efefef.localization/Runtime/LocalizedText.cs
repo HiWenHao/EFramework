@@ -96,9 +96,7 @@ namespace EasyFramework.Localization
         {
             try
             {
-                if (!EFC.TryGetSingleton<EventManager>(out var mgr) || mgr == null) return false;
-
-                _languageChangedToken = mgr.Subscribe<LanguageChangedEvent>(_ => Refresh());
+                _languageChangedToken = EventManager.Instance.Subscribe<LanguageChangedEvent>(_ => Refresh());
                 return _languageChangedToken != null;
             }
             catch (Exception e)
