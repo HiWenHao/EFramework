@@ -1,10 +1,10 @@
 /*
  * ================================================
- * Describe:        多语言设置面板（Key 列表 / 分组与种类 两个互斥子页）
+ * Describe:        多语言设置面板（Key 列表 / 分组与种类 / value 表导出 三个子页）
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 15:26:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-10 16:10:00
+ * ModifyTime:      2026-10-16 18:45:00
  * ScriptVersion:   0.3
  * ================================================
  */
@@ -20,67 +20,122 @@ using UnityEngine;
 
 namespace EasyFramework.Localization.Edit
 {
-    /// <summary>
-    /// 多语言 Key 设置面板
-    /// <para>挂在 EFTools / Settings 总面板下，两个互斥子页：Key 列表、分组与种类。</para>
-    /// <para>双向同步：外部改 JSON 后点「重新读取」读入；面板内改动点「保存」覆写。</para>
-    /// <para>Registered under EFTools/Settings; edits the key manifest JSON.</para>
-    /// </summary>
+    // 多语言 Key 设置面板（挂在 EFTools / Settings 总面板下，三个互斥子页：Key 列表、分组与种类、value 表导出。
+    // 双向同步：外部改 JSON 后点「重新读取」读入；面板内改动点「保存」覆写）
     [EFConfigPanel(Priority = 190)]
     internal class LocalizationKeyPanel : EFConfigPanelBase
     {
-        /// <summary> 默认分组名 </summary>
+        #region Fields
+
+        // 默认分组名
         private const string DefaultGroup = "Default";
 
-        /// <summary> 子页：Key 列表 </summary>
-        private enum SubTab
-        {
-            /// <summary> Key 列表 </summary>
-            [InspectorName("KeyList")] Keys = 0,
-
-            /// <summary> 分组与种类 </summary>
-            [InspectorName("GroupType")] Groups = 1,
-
-            /// <summary> value 表导出 </summary>
-            [InspectorName("ValueTable")] Values = 2,
-        }
-
-        #region 列宽
-        /// <summary> name 列权重 </summary>
+        // name 列权重
         private const float WeightName = 3f;
 
-        /// <summary> des 列权重 </summary>
+        // des 列权重
         private const float WeightDes = 2f;
 
-        /// <summary> group 列权重 </summary>
+        // group 列权重
         private const float WeightGroup = 2f;
 
-        /// <summary> note 列权重 </summary>
+        // note 列权重
         private const float WeightNote = 3f;
 
-        /// <summary> 分组页 name 列权重 </summary>
+        // 分组页 name 列权重
         private const float WeightGroupName = 4f;
 
-        /// <summary> 分组页 count 列权重 </summary>
+        // 分组页 count 列权重
         private const float WeightGroupCount = 1.5f;
 
-        /// <summary> 窄列固定宽度（不参与比例分配） </summary>
+        // 窄列固定宽度（不参与比例分配）
         private const float COL_KIND = 90f;
 
         private const float COL_BTN = 26f;
 
-        /// <summary> 行尾留白列宽：避免删除按钮紧贴右边界 </summary>
+        // 行尾留白列宽：避免删除按钮紧贴右边界
         private const float COL_TAIL_PAD = 12f;
 
         private const float COL_GROUP_ACTIONS = 126f;
 
-        /// <summary>
-        /// 按权重把可用宽度分配给各列
-        /// </summary>
-        /// <param name="available">可用宽度</param>
-        /// <param name="fixedWidth">已扣除的固定宽度合计</param>
-        /// <param name="weights">各列权重</param>
-        /// <returns>各列实际宽度，顺序与 weights 一致</returns>
+        // 总面板左侧菜单 + 分隔条占用的宽度（EFConfigsPanel 左侧列表 140px + hostview 分隔 10px + 边框余量）
+        private const float LEFT_MENU_RESERVED = 165f;
+
+        // 表格最小宽度：低于此值时各列按权重均分，不再无限压缩
+        private const float MIN_TABLE_WIDTH = 320f;
+
+        // 当前数据
+        private LocalizationKeyFile _file;
+
+        // 当前子页
+        private SubTab _tab = SubTab.Keys;
+
+        // 展开的分组集合
+        private readonly HashSet<string> _collapsedGroups = new HashSet<string>();
+
+        // 有未保存改动
+        private bool _dirty;
+
+        // 搜索过滤
+        private string _filter = string.Empty;
+
+        // 只看 Dynamic 的过滤开关
+        private bool _onlyDynamic;
+
+        // Key 列表滚动位置（子页 1）
+        private Vector2 _scrollPos;
+
+        // 分组列表滚动位置（子页 2）
+        private Vector2 _groupScrollPos;
+
+        // 新增分组输入框
+        private string _newGroupName = string.Empty;
+
+        // 窄列实际宽度（空间不足时收缩），由 GetKeyColWidths 每帧更新
+        private float _kindWidth = COL_KIND;
+
+        // 删除按钮实际宽度：面板过窄时随窄列一起收缩
+        private float _btnWidth = COL_BTN;
+
+        // group 下拉选项（每帧构造一次，供所有行共享）
+        private readonly List<string> _groupOptions = new List<string>();
+
+        // 正在编辑的分组名（非空表示该项处于重命名态，此时显示确定 / 取消）
+        private string _renamingGroup;
+
+        // 重命名中的临时输入（仅重命名态使用）
+        private string _renamingInput = string.Empty;
+
+        // 正在删除的分组（用于延迟到本次绘制结束后执行，避免遍历中改集合）
+        private string _pendingDeleteGroup;
+
+        // 新增语言输入框
+        private string _newLanguage = string.Empty;
+
+        #endregion
+
+        #region Properties
+
+        // 当前面板可用于表格的宽度
+        private float AvailableWidth
+        {
+            get
+            {
+                // currentViewWidth 是整个 EditorWindow 宽度，含总面板左侧菜单(140) + 分隔(10) + 边框余量
+                float w = EditorGUIUtility.currentViewWidth - LEFT_MENU_RESERVED;
+                if (w <= MIN_TABLE_WIDTH) w = MIN_TABLE_WIDTH;
+                return w;
+            }
+        }
+
+        // 面板名称
+        public override string Name => LC.Combine(Lc.Multilingual, Lc.Config);
+
+        #endregion
+
+        #region Methods
+
+        // 按权重把可用宽度分配给各列
         private static float[] DistributeWidth(float available, float fixedWidth, params float[] weights)
         {
             var result = new float[weights.Length];
@@ -113,100 +168,7 @@ namespace EasyFramework.Localization.Edit
             return result;
         }
 
-
-        /// <summary>
-        /// 当前面板可用于表格的宽度
-        /// </summary>
-        private float AvailableWidth
-        {
-            get
-            {
-                // currentViewWidth 是整个 EditorWindow 宽度，含总面板左侧菜单(140) + 分隔(10) + 边框余量
-                float w = EditorGUIUtility.currentViewWidth - LEFT_MENU_RESERVED;
-                if (w <= MIN_TABLE_WIDTH) w = MIN_TABLE_WIDTH;
-                return w;
-            }
-        }
-
-        /// <summary>
-        /// 总面板左侧菜单 + 分隔条占用的宽度
-        /// <para>EFConfigsPanel 左侧列表 140px + hostview 分隔 10px + 边框余量。</para>
-        /// </summary>
-        private const float LEFT_MENU_RESERVED = 165f;
-
-        /// <summary> 表格最小宽度：低于此值时各列按权重均分，不再无限压缩 </summary>
-        private const float MIN_TABLE_WIDTH = 320f;
-
-
-        #endregion
-
-        /// <summary> 当前数据 </summary>
-        private LocalizationKeyFile _file;
-
-        /// <summary> 当前子页 </summary>
-        private SubTab _tab = SubTab.Keys;
-
-        /// <summary> 展开的分组集合 </summary>
-        private readonly HashSet<string> _collapsedGroups = new HashSet<string>();
-
-        /// <summary> 有未保存改动 </summary>
-        private bool _dirty;
-
-        /// <summary> 搜索过滤 </summary>
-        private string _filter = string.Empty;
-
-        /// <summary> 只看 Dynamic 的过滤开关 </summary>
-        private bool _onlyDynamic;
-
-        /// <summary> Key 列表滚动位置（子页 1） </summary>
-        private Vector2 _scrollPos;
-
-        /// <summary> 分组列表滚动位置（子页 2） </summary>
-        private Vector2 _groupScrollPos;
-
-        /// <summary> 新增分组输入框 </summary>
-        private string _newGroupName = string.Empty;
-
-        /// <summary>
-        /// 面板名称
-        /// </summary>
-        public override string Name => LC.Combine(Lc.Multilingual, Lc.Config);
-
-        #region EFConfigPanelBase 生命周期
-
-        /// <summary>
-        /// 首次进入面板
-        /// </summary>
-        /// <param name="assetsPath">配置总路径（本面板不使用，文件路径为包内固定路径）</param>
-        public override void OnEnable(string assetsPath)
-        {
-            LoadOrCreate();
-        }
-
-        /// <summary>
-        /// 窗口数据加载
-        /// </summary>
-        public override void LoadWindowData()
-        {
-            if (_file != null) return;
-            LoadOrCreate();
-        }
-
-        /// <summary>
-        /// 离开面板时自动落盘，避免未保存改动丢失
-        /// </summary>
-        public override void OnDestroy()
-        {
-            if (_dirty)
-                Save(silent: true);
-        }
-
-        #endregion
-
-        /// <summary>
-        /// 加载清单；不存在时保持空状态，等待用户点击创建
-        /// <para>Load only. If the file does not exist, stay in the empty state.</para>
-        /// </summary>
+        // 加载清单；不存在时保持空状态，等待用户点击创建
         private void LoadOrCreate()
         {
             _file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
@@ -216,9 +178,7 @@ namespace EasyFramework.Localization.Edit
             LocalizedTextEditor.InvalidateCache();
         }
 
-        /// <summary>
-        /// 创建清单文件并写入模板内容
-        /// </summary>
+        // 创建清单文件并写入模板内容
         private void CreateFile()
         {
             if (_file != null) return;
@@ -238,9 +198,7 @@ namespace EasyFramework.Localization.Edit
             _dirty = false;
         }
 
-        /// <summary>
-        /// 覆写 JSON
-        /// </summary>
+        // 覆写 JSON
         private bool Save(bool silent = false)
         {
             if (_file == null) return false;
@@ -263,10 +221,7 @@ namespace EasyFramework.Localization.Edit
             return true;
         }
 
-        /// <summary>
-        /// 把 key 实际用到的分组并入登记表
-        /// <para>只补不删：登记表里可以有暂时没有 key 的空分组（预设分组）。</para>
-        /// </summary>
+        // 把 key 实际用到的分组并入登记表（只补不删：登记表里可以有暂时没有 key 的空分组（预设分组））
         private void SyncGroupsFromKeys()
         {
             if (_file?.meta == null) return;
@@ -280,11 +235,6 @@ namespace EasyFramework.Localization.Edit
             }
         }
 
-        #region 绘制
-
-        /// <summary>
-        /// 界面绘制
-        /// </summary>
         public override void OnGUI()
         {
             if (_file == null) LoadOrCreate();
@@ -314,9 +264,7 @@ namespace EasyFramework.Localization.Edit
             }
         }
 
-        /// <summary>
-        /// 空状态引导页：尚未创建 Key 清单时显示
-        /// </summary>
+        // 空状态引导页：尚未创建 Key 清单时显示
         private void DrawEmptyState()
         {
             EditorGUILayout.Space(12f);
@@ -327,9 +275,7 @@ namespace EasyFramework.Localization.Edit
             CreateFile();
         }
 
-        /// <summary>
-        /// 顶部工具栏
-        /// </summary>
+        // 顶部工具栏
         private void DrawToolbar()
         {
             // 保存 / 刷新：填满面板宽度，各占一半（与下方子页切换一致）
@@ -366,15 +312,8 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.Space(12f);
         }
 
-        /// <summary>
-        /// 子页切换按钮（等宽，选中态高亮）
-        /// <para>自己画背景 + Box 而非用 GUI.backgroundColor：后者是乘性着色，
-        /// 会与按钮贴图相乘导致发灰偏暗，且随编辑器主题漂移。</para>
-        /// </summary>
-        /// <summary>
-        /// 子页切换
-        /// <para>原生 Tab 组外观，宽度按内容分配（两段文案等长时视觉上等宽）。</para>
-        /// </summary>
+        // 子页切换（原生 Tab 组外观，宽度按内容分配：两段文案等长时视觉上等宽。
+        // 自己画背景 + Box 而非用 GUI.backgroundColor：后者是乘性着色，会与按钮贴图相乘导致发灰偏暗，且随编辑器主题漂移）
         private void DrawSubTabs()
         {
             var contents = new[]
@@ -386,9 +325,7 @@ namespace EasyFramework.Localization.Edit
             _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(20f), GUILayout.Width(AvailableWidth));
         }
 
-        /// <summary>
-        /// 子页标题文案
-        /// </summary>
+        // 子页标题文案
         private static string TabText(SubTab tab) => tab switch
         {
             SubTab.Keys => LC.Combine(Lc.Key, Lc.Name, Lc.List),
@@ -397,13 +334,7 @@ namespace EasyFramework.Localization.Edit
             _ => string.Empty,
         };
 
-        #endregion
-
-        #region 子页1 · Key 列表
-
-        /// <summary>
-        /// 子页 1：Key 列表
-        /// </summary>
+        // 子页 1：Key 列表
         private void DrawKeysTab()
         {
             // 过滤区
@@ -422,13 +353,10 @@ namespace EasyFramework.Localization.Edit
             DrawKeysTable();
             EditorGUILayout.Space(6f);
             DrawKeysFooter();
-            
+
         }
 
-        /// <summary>
-        /// Key 表格
-        /// <para>先按分组聚合再渲染，保证同名分组并到一处；否则末尾新增同组 key 会插出第二个组头。</para>
-        /// </summary>
+        // Key 表格（先按分组聚合再渲染，保证同名分组并到一处；否则末尾新增同组 key 会插出第二个组头）
         private void DrawKeysTable()
         {
             DrawKeysHeader();
@@ -479,15 +407,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndScrollView();
         }
 
-        /// <summary> 窄列实际宽度（空间不足时收缩），由 GetKeyColWidths 每帧更新 </summary>
-        private float _kindWidth = COL_KIND;
-        /// <summary> 删除按钮实际宽度：面板过窄时随窄列一起收缩 </summary>
-        private float _btnWidth = COL_BTN;
-
-        /// <summary>
-        /// 计算 Key 表格各列宽度
-        /// <para>表头与数据行共用，避免列宽不一致导致错位。</para>
-        /// </summary>
+        // 计算 Key 表格各列宽度（表头与数据行共用，避免列宽不一致导致错位）
         private float[] GetKeyColWidths()
         {
             float avail = AvailableWidth;
@@ -511,16 +431,12 @@ namespace EasyFramework.Localization.Edit
                 WeightName, WeightDes, WeightGroup, WeightNote);
         }
 
-        /// <summary>
-        /// 计算分组页各列宽度
-        /// </summary>
+        // 计算分组页各列宽度
         private float[] GetGroupColWidths()
             => DistributeWidth(AvailableWidth, COL_GROUP_ACTIONS + COL_TAIL_PAD,
                 WeightGroupName, WeightGroupCount);
 
-        /// <summary>
-        /// Key 表格表头
-        /// </summary>
+        // Key 表格表头
         private void DrawKeysHeader()
         {
             var w = GetKeyColWidths();
@@ -536,13 +452,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary> group 下拉选项（每帧构造一次，供所有行共享） </summary>
-        private readonly List<string> _groupOptions = new List<string>();
-
-        /// <summary>
-        /// 构造 group 下拉选项：首项为空分组占位，其后为登记分组
-        /// <para>Build group dropdown options once per frame, shared by all rows.</para>
-        /// </summary>
+        // 构造 group 下拉选项：首项为空分组占位，其后为登记分组
         private List<string> GetGroupOptions()
         {
             _groupOptions.Clear();
@@ -554,9 +464,7 @@ namespace EasyFramework.Localization.Edit
             return _groupOptions;
         }
 
-        /// <summary>
-        /// Key 单行
-        /// </summary>
+        // Key 单行
         private void DrawKeyRow(LocalizationKeyEntry entry)
         {
             var w = GetKeyColWidths();
@@ -640,9 +548,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// Key 列表底部：新增按钮 + 问题汇总
-        /// </summary>
+        // Key 列表底部：新增按钮 + 问题汇总
         private void DrawKeysFooter()
         {
             EditorGUILayout.BeginHorizontal();
@@ -671,14 +577,11 @@ namespace EasyFramework.Localization.Edit
             // 宽度显式指定：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁
             if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All), GUILayout.Width(AvailableWidth)))
                 DeleteAllKeys();
-            
+
             EditorGUILayout.Space(18f);
         }
 
-        /// <summary>
-        /// 删除全部 key：二次确认后才执行
-        /// <para>危险操作，必须走确认弹窗，避免误点丢失全部数据。</para>
-        /// </summary>
+        // 删除全部 key：二次确认后才执行（危险操作，必须走确认弹窗，避免误点丢失全部数据）
         private void DeleteAllKeys()
         {
             int count = _file?.keys.Count ?? 0;
@@ -696,9 +599,7 @@ namespace EasyFramework.Localization.Edit
             _dirty = true;
         }
 
-        /// <summary>
-        /// 过滤判定
-        /// </summary>
+        // 过滤判定
         private bool PassFilter(LocalizationKeyEntry entry)
         {
             if (_onlyDynamic && entry.kind != LocalizationKeyKind.Dynamic)
@@ -710,18 +611,12 @@ namespace EasyFramework.Localization.Edit
                                                  || Contains(entry.group, _filter) || Contains(entry.note, _filter);
         }
 
-        /// <summary>
-        /// 关键词包含判断（忽略大小写）
-        /// </summary>
-        /// <param name="source">被检索文本；为空视为不匹配</param>
-        /// <param name="keyword">关键词</param>
+        // 关键词包含判断（忽略大小写）
         private static bool Contains(string source, string keyword)
             => !string.IsNullOrEmpty(source) &&
                source.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
 
-        /// <summary>
-        /// 分组折叠头
-        /// </summary>
+        // 分组折叠头
         private void DrawGroupHeader(string group)
         {
             bool collapsed = _collapsedGroups.Contains(group);
@@ -734,9 +629,7 @@ namespace EasyFramework.Localization.Edit
             if (nowCollapsed) _collapsedGroups.Add(group);
         }
 
-        /// <summary>
-        /// 该条目的 name 是否与其它条目重复
-        /// </summary>
+        // 该条目的 name 是否与其它条目重复
         private bool IsDuplicated(LocalizationKeyEntry entry)
         {
             if (string.IsNullOrEmpty(entry.name)) return false;
@@ -753,24 +646,7 @@ namespace EasyFramework.Localization.Edit
             return false;
         }
 
-        #endregion
-
-        #region 子页2 · 分组与种类
-
-        /// <summary>
-        /// 正在编辑的分组名（非空表示该项处于重命名态，此时显示确定 / 取消）
-        /// </summary>
-        private string _renamingGroup;
-
-        /// <summary> 重命名中的临时输入（仅重命名态使用） </summary>
-        private string _renamingInput = string.Empty;
-
-        /// <summary> 正在删除的分组（用于延迟到本次绘制结束后执行，避免遍历中改集合） </summary>
-        private string _pendingDeleteGroup;
-
-        /// <summary>
-        /// 子页 2：分组列表
-        /// </summary>
+        // 子页 2：分组列表
         private void DrawGroupsTab()
         {
             var autoApply = LocalizationData.AutoApplyOnKeySelected;
@@ -815,10 +691,7 @@ namespace EasyFramework.Localization.Edit
             DrawGroupsFooter();
         }
 
-        /// <summary>
-        /// 分组列表单行
-        /// <para>name 列可直接编辑（回车/失焦提交），无需进入重命名态；空分组标黄提示未被使用。</para>
-        /// </summary>
+        // 分组列表单行（name 列可直接编辑（回车/失焦提交），无需进入重命名态；空分组标黄提示未被使用）
         private void DrawGroupItem(string group)
         {
             var w = GetGroupColWidths();
@@ -893,9 +766,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// 提交重命名，同步修改所有 key 的归属
-        /// </summary>
+        // 提交重命名，同步修改所有 key 的归属
         private void CommitRename(string oldName, string newName)
         {
             newName = (newName ?? string.Empty).Trim();
@@ -927,10 +798,7 @@ namespace EasyFramework.Localization.Edit
             _dirty = true;
         }
 
-        /// <summary>
-        /// 删除分组
-        /// <para>分组下的 key 退回「无分组」（而不是删不掉），避免删除按钮形同虚设。</para>
-        /// </summary>
+        // 删除分组（分组下的 key 退回「无分组」（而不是删不掉），避免删除按钮形同虚设）
         private void DeleteGroup(string group)
         {
             _file.meta ??= new LocalizationKeyMeta();
@@ -958,9 +826,7 @@ namespace EasyFramework.Localization.Edit
             _dirty = true;
         }
 
-        /// <summary>
-        /// 分组列表表头
-        /// </summary>
+        // 分组列表表头
         private void DrawGroupsHeader()
         {
             var w = GetGroupColWidths();
@@ -975,9 +841,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// 分组列表底部：新增分组 + 种类与文件信息
-        /// </summary>
+        // 分组列表底部：新增分组 + 种类与文件信息
         private void DrawGroupsFooter()
         {
             var w = GetGroupColWidths();
@@ -1017,9 +881,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.Space(18f);
         }
 
-        /// <summary>
-        /// 新增分组
-        /// </summary>
+        // 新增分组
         private void AddGroup(string name)
         {
             name = (name ?? string.Empty).Trim();
@@ -1039,20 +901,9 @@ namespace EasyFramework.Localization.Edit
             _dirty = true;
         }
 
-        #endregion
-
-        #region 子页3 · value 表导出
-
-        /// <summary> 新增语言输入框 </summary>
-        private string _newLanguage = string.Empty;
-
-        /// <summary>
-        /// 子页 3：value 表导出
-        /// <para>value 表是 Key 清单按语言投影出来的翻译源文件，供人手填后交 Luban 导表。
-        /// 面板只负责「按清单重建 CSV」，不提供表格内联编辑——翻译在Excel 里改更顺手。
-        /// 导出格式已对齐 Luban（## 标记行 + ##type 类型行 + 首列占位），填完可直接导表。</para>
-        /// <para>Rebuild the per-language value CSVs from the key manifest.</para>
-        /// </summary>
+        // 子页 3：value 表导出（value 表是 Key 清单按语言投影出来的翻译源文件，供人手填后交 Luban 导表。
+        // 面板只负责「按清单重建 CSV」，不提供表格内联编辑——翻译在 Excel 里改更顺手。
+        // 导出格式已对齐 Luban（## 标记行 + ##type 类型行 + 首列占位），填完可直接导表）
         private void DrawValuesTab()
         {
             EditorGUILayout.Space(8f);
@@ -1062,9 +913,7 @@ namespace EasyFramework.Localization.Edit
             DrawExportSection();
         }
 
-        /// <summary>
-        /// 语言登记表编辑
-        /// </summary>
+        // 语言登记表编辑
         private void DrawLanguagesSection()
         {
             EditorGUILayout.LabelField(LC.Combine(Lc.Language, Lc.Settings), EditorStyles.boldLabel);
@@ -1125,9 +974,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// 导出操作区
-        /// </summary>
+        // 导出操作区
         private void DrawExportSection()
         {
             EditorGUILayout.LabelField(LC.Combine(Lc.Export, Lc.Data), EditorStyles.boldLabel);
@@ -1158,10 +1005,7 @@ namespace EasyFramework.Localization.Edit
             DrawExportPreview();
         }
 
-        /// <summary>
-        /// 导出前预览：各语言的翻译完成度
-        /// <para>读盘统计，不写文件——让人在动手前就知道哪几份表还缺翻译。</para>
-        /// </summary>
+        // 导出前预览：各语言的翻译完成度（读盘统计，不写文件——让人在动手前就知道哪几份表还缺翻译）
         private void DrawExportPreview()
         {
             var languages = _file.GetLanguagesOrDefault();
@@ -1193,9 +1037,7 @@ namespace EasyFramework.Localization.Edit
             }
         }
 
-        /// <summary>
-        /// 新增语言
-        /// </summary>
+        // 新增语言
         private void AddLanguage(string language)
         {
             language = (language ?? string.Empty).Trim();
@@ -1228,10 +1070,7 @@ namespace EasyFramework.Localization.Edit
             _dirty = true;
         }
 
-        /// <summary>
-        /// 导出全部语言的 value 表
-        /// <para>先落盘清单再导出：否则面板里的未保存改动不会进CSV。</para>
-        /// </summary>
+        // 导出全部语言的 value 表（先落盘清单再导出：否则面板里的未保存改动不会进 CSV）
         private void ExportAllValues()
         {
             if (_dirty && !Save(silent: true))
@@ -1273,9 +1112,7 @@ namespace EasyFramework.Localization.Edit
                 LC.Combine(Lc.Confirm));
         }
 
-        /// <summary>
-        /// 在文件管理器中打开 value 表目录
-        /// </summary>
+        // 在文件管理器中打开 value 表目录
         private void OpenValuesFolder()
         {
             var path = LocalizationData.ValuesPath;
@@ -1294,13 +1131,45 @@ namespace EasyFramework.Localization.Edit
             EditorUtility.RevealInFinder(path);
         }
 
-        #endregion
+        // 静态校验（面板未打开时用）
+        private static List<string> ValidateStatic(LocalizationKeyFile file)
+        {
+            var issues = new List<string>();
+            var seen = new HashSet<string>();
 
-        #region 校验
+            foreach (var entry in file.keys)
+            {
+                if (string.IsNullOrEmpty(entry.name)) issues.Add("空 name");
+                else if (!seen.Add(entry.name)) issues.Add($"name 重复：{entry.name}");
 
-        /// <summary>
-        /// 校验当前数据
-        /// </summary>
+                if (!entry.IsValidName()) issues.Add($"name 含非法字符：{entry.name}");
+                if (string.IsNullOrEmpty(entry.des)) issues.Add($"des 为空：{entry.name}");
+            }
+
+            return issues;
+        }
+
+        // 首次进入面板
+        public override void OnEnable(string assetsPath)
+        {
+            LoadOrCreate();
+        }
+
+        // 窗口数据加载
+        public override void LoadWindowData()
+        {
+            if (_file != null) return;
+            LoadOrCreate();
+        }
+
+        // 离开面板时自动落盘，避免未保存改动丢失
+        public override void OnDestroy()
+        {
+            if (_dirty)
+                Save(silent: true);
+        }
+
+        // 校验当前数据
         public List<string> Validate()
         {
             var issues = new List<string>();
@@ -1324,11 +1193,7 @@ namespace EasyFramework.Localization.Edit
             return issues;
         }
 
-        /// <summary>
-        /// 供菜单调用：校验整份清单并打印报告
-        /// <para>面板未打开时也能跑，用于提交前检查。</para>
-        /// <para>Validate the whole manifest from the menu.</para>
-        /// </summary>
+        // 供菜单调用：校验整份清单并打印报告（面板未打开时也能跑，用于提交前检查）
         [MenuItem(MenuItemToolkit.Utility + "🔍 Validate Localization Keys", false,
             MenuItemToolkit.UtilityPriority + 30)]
         public static void ValidateFromMenu()
@@ -1353,11 +1218,8 @@ namespace EasyFramework.Localization.Edit
             EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", "确定");
         }
 
-        /// <summary>
-        /// 供菜单调用：按 Key 清单导出全部语言的 value 表
-        /// <para>与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。
-        /// 面板有未保存改动时这里读的是磁盘内容，故面板导出前会先落盘。</para>
-        /// <para>Export all value tables from the menu; also usable from CI.</para>
+        // 供菜单调用：按 Key 清单导出全部语言的 value 表（与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。
+        // 面板有未保存改动时这里读的是磁盘内容，故面板导出前会先落盘）
         [MenuItem(MenuItemToolkit.Utility + "📤 Export Localization Value Tables", false,
             MenuItemToolkit.UtilityPriority + 31)]
         public static void ExportValuesFromMenu()
@@ -1396,26 +1258,16 @@ namespace EasyFramework.Localization.Edit
                 sb.ToString(), LC.Combine(Lc.Confirm));
         }
 
-        /// <summary>
-        /// 静态校验（面板未打开时用）
-        /// </summary>
-        private static List<string> ValidateStatic(LocalizationKeyFile file)
-        {
-            var issues = new List<string>();
-            var seen = new HashSet<string>();
-
-            foreach (var entry in file.keys)
-            {
-                if (string.IsNullOrEmpty(entry.name)) issues.Add("空 name");
-                else if (!seen.Add(entry.name)) issues.Add($"name 重复：{entry.name}");
-
-                if (!entry.IsValidName()) issues.Add($"name 含非法字符：{entry.name}");
-                if (string.IsNullOrEmpty(entry.des)) issues.Add($"des 为空：{entry.name}");
-            }
-
-            return issues;
-        }
-
         #endregion
+
+        // 子页：Key 列表 / 分组与种类 / value 表导出
+        private enum SubTab
+        {
+            [InspectorName("KeyList")] Keys = 0,
+
+            [InspectorName("GroupType")] Groups = 1,
+
+            [InspectorName("ValueTable")] Values = 2,
+        }
     }
 }
