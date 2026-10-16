@@ -4,12 +4,13 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 17:35:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:30:00
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-10-16 11:50:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace EasyFramework.Localization.Edit
 {
@@ -18,10 +19,6 @@ namespace EasyFramework.Localization.Edit
     /// <para>直接复用运行时数据通道 <see cref="L10nTableStore"/>（读 <c>Resources/L10n</c>
     /// 的导表产物），保证「编辑器里看到的」等于「游戏里显示的」——同一份文件、同一个类，
     /// 不存在第二套读取逻辑。</para>
-    ///
-    /// <para><b>预览语言与运行时语言刻意独立：</b>编辑器下 Runtime 服务尚未初始化，
-    /// 且预览语言是「美术要看哪一版」的主观选择，不该被运行时的语言切换影响。</para>
-    ///
     /// <para>Editor-side preview bridge sharing the exact same data channel
     /// (<see cref="L10nTableStore"/>) as the running game, so previews are WYSIWYG.</para>
     /// </summary>
@@ -34,10 +31,37 @@ namespace EasyFramework.Localization.Edit
         private static readonly string[] FallbackLanguages = { LanguageCode.Zn, LanguageCode.En };
 
         /// <summary>
-        /// 编辑器预览当前使用的语言
-        /// <para>默认 zn：主要使用场景为中文工程，美术最先核对中文文案。</para>
+        /// 编辑器预览当前使用的语言（<strong>仅编辑态</strong>）
+        /// <para>经 EditorPrefs 持久化（见 <see cref="LocalizationData.PreviewLanguage"/>）：
+        /// 静态字段会在每次代码编译（域重载）后清零，导致预览语言总被重置回 zn；
+        /// 改为持久化后保持使用者上一次的选择。默认 zn：主要使用场景为中文工程，
+        /// 美术最先核对中文文案。</para>
+        /// <para><b>仅编辑态生效</b>：Play 模式下预览跟随运行时语言
+        /// （见 <see cref="FollowsRuntimeLanguage"/>），本值不参与取词。</para>
         /// </summary>
-        public static string PreviewLanguage = LanguageCode.Zn;
+        public static string PreviewLanguage
+        {
+            get => LocalizationData.PreviewLanguage;
+            set => LocalizationData.PreviewLanguage = value;
+        }
+
+        /// <summary>
+        /// 预览是否正跟随运行时语言
+        /// <para>Play 模式且 <see cref="I18NManager"/> 已确定当前语言时为 true：
+        /// 组件此刻显示的就是运行时译文，预览必须与之同源，否则两处显示对不上。
+        /// 编辑态恒为 false——预览语言是「美术要看哪一版」的主观选择，独立于运行时。
+        /// 短路顺序保证编辑态绝不触碰 <see cref="I18NManager"/>（避免其单例在编辑态被创建）。</para>
+        /// </summary>
+        public static bool FollowsRuntimeLanguage
+            => Application.isPlaying
+               && I18NManager.Instance != null
+               && !string.IsNullOrEmpty(I18NManager.Instance.CurrentLanguage);
+
+        /// <summary>
+        /// 本次取词使用的语言：运行态跟随运行时当前语言，编辑态用预览语言
+        /// </summary>
+        private static string EffectiveLanguage
+            => FollowsRuntimeLanguage ? I18NManager.Instance.CurrentLanguage : PreviewLanguage;
 
         /// <summary>
         /// 预览数据是否可用（Resources/L10n 下存在语言表）
@@ -64,10 +88,11 @@ namespace EasyFramework.Localization.Edit
         {
             if (string.IsNullOrEmpty(key)) return null;
 
-            var value = L10nTableStore.TryGet(key, PreviewLanguage);
+            var language = EffectiveLanguage;
+            var value = L10nTableStore.TryGet(key, language);
 
-            // 预览语言没有该词时回落到兜底语言，与运行时行为保持一致
-            if (string.IsNullOrEmpty(value) && PreviewLanguage != LanguageCode.En)
+            // 当前语言没有该词时回落到兜底语言，与运行时行为保持一致
+            if (string.IsNullOrEmpty(value) && language != LanguageCode.En)
                 value = L10nTableStore.TryGet(key, LanguageCode.En);
 
             return string.IsNullOrEmpty(value) ? null : value;

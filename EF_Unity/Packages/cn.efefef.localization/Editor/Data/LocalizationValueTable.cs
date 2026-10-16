@@ -135,25 +135,25 @@ namespace EasyFramework.Localization.Edit
         internal static string TypeLine
             => TypeMarker + "," + string.Join(",", ColumnTypes);
 
-/// <summary>
+        /// <summary>
         /// 判断一行是否为 Luban 单元薄标记行（首格为 ##）
         /// <para>该行同时兼作表头行：<c>##,key,des,...</c>，其第 0 格是标记，第 1 格起才是列名。</para>
         /// </summary>
         internal static bool IsMarkerRow(List<string> cells)
         {
-       if (cells == null || cells.Count == 0) return false;
- var first = cells[0]?.Trim();
+            if (cells == null || cells.Count == 0) return false;
+            var first = cells[0]?.Trim();
             return !string.IsNullOrEmpty(first)
-     && first.StartsWith(SheetMarker, StringComparison.Ordinal);
-   }
+                   && first.StartsWith(SheetMarker, StringComparison.Ordinal);
+        }
 
         /// <summary>
-   /// 判断一行是否为 Luban 列类型标记行（首格为 ##type）
-      /// </summary>
-      internal static bool IsTypeMarkerRow(List<string> cells)
+        /// 判断一行是否为 Luban 列类型标记行（首格为 ##type）
+        /// </summary>
+        internal static bool IsTypeMarkerRow(List<string> cells)
         {
             if (cells == null || cells.Count == 0) return false;
- return string.Equals(cells[0]?.Trim(), TypeMarker, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(cells[0]?.Trim(), TypeMarker, StringComparison.OrdinalIgnoreCase);
         }
 
         #endregion
@@ -220,60 +220,60 @@ namespace EasyFramework.Localization.Edit
 
             if (!File.Exists(table.path)) return table;
 
-try
-{
-            // 显式按 UTF-8 读：文件可能带 BOM，StreamReader 默认已识别，此处仅保证异常可控
-       var rows = ParseCsv(File.ReadAllText(table.path, Encoding.UTF8));
+            try
+            {
+                // 显式按 UTF-8 读：文件可能带 BOM，StreamReader 默认已识别，此处仅保证异常可控
+                var rows = ParseCsv(File.ReadAllText(table.path, Encoding.UTF8));
 
-     // 本表格式固定为 Luban 兼容格式：
-    // 第 1 行 = `##,key,des,...`（标记行本身兼作表头），第 2 行 = `##type,string,...`，第 3 行起是数据。
+                // 本表格式固定为 Luban 兼容格式：
+                // 第 1 行 = `##,key,des,...`（标记行本身兼作表头），第 2 行 = `##type,string,...`，第 3 行起是数据。
 // 少任何一行都说明文件被手工改坏或不是本工具产物。
-      if (rows.Count < 2
-            || !IsMarkerRow(rows[0])
-   || !IsTypeMarkerRow(rows[1]))
-       {
-        D.Error($"[Localization] value 表格式不正确（缺少 Luban 标记行），已按空表处理：" +
-      $"{table.path}\n请用面板重新导出，不要手工增删标记行。");
-    return table;
+                if (rows.Count < 2
+                    || !IsMarkerRow(rows[0])
+                    || !IsTypeMarkerRow(rows[1]))
+                {
+                    D.Error($"[Localization] value 表格式不正确（缺少 Luban 标记行），已按空表处理：" +
+                            $"{table.path}\n请用面板重新导出，不要手工增删标记行。");
+                    return table;
+                }
+
+                // 表头行与数据行都在第 0 格带了标记/占位（## 与 X），下标天然对齐，无需额外偏移
+                var header = rows[0];
+
+                int iKey = IndexOf(header, ColKey);
+                int iValue = IndexOf(header, ColValue);
+
+                if (iKey < 0 || iValue < 0)
+                {
+                    D.Error($"[Localization] value 表缺少 {ColKey} 或 {ColValue} 列，已按空表处理：" +
+                            $"{table.path}");
+                    return table;
+                }
+
+                int iDes = IndexOf(header, ColDes);
+                int iGroup = IndexOf(header, ColGroup);
+                int iKind = IndexOf(header, ColKind);
+                int iNote = IndexOf(header, ColNote);
+
+                for (int r = 2; r < rows.Count; r++)
+                {
+                    var cells = rows[r];
+                    var key = Cell(cells, iKey);
+
+                    // 整行为空视为空行（Excel 末尾常见），跳过而不是产出一条空 key
+                    if (string.IsNullOrEmpty(key)) continue;
+
+                    table.rows.Add(new LocalizationValueRow
+                    {
+                        key = key,
+                        des = Cell(cells, iDes),
+                        group = Cell(cells, iGroup),
+                        kind = Cell(cells, iKind),
+                        note = Cell(cells, iNote),
+                        value = Cell(cells, iValue),
+                    });
+                }
             }
-
-    // 表头行与数据行都在第 0 格带了标记/占位（## 与 X），下标天然对齐，无需额外偏移
-            var header = rows[0];
-
-            int iKey = IndexOf(header, ColKey);
-            int iValue = IndexOf(header, ColValue);
-
-    if (iKey < 0 || iValue < 0)
-       {
-       D.Error($"[Localization] value 表缺少 {ColKey} 或 {ColValue} 列，已按空表处理：" +
-           $"{table.path}");
-         return table;
-            }
-
-            int iDes = IndexOf(header, ColDes);
-   int iGroup = IndexOf(header, ColGroup);
-      int iKind = IndexOf(header, ColKind);
-            int iNote = IndexOf(header, ColNote);
-
-   for (int r = 2; r < rows.Count; r++)
-{
-     var cells = rows[r];
-                var key = Cell(cells, iKey);
-
-      // 整行为空视为空行（Excel 末尾常见），跳过而不是产出一条空 key
-if (string.IsNullOrEmpty(key)) continue;
-
-       table.rows.Add(new LocalizationValueRow
-         {
-      key = key,
-    des = Cell(cells, iDes),
-              group = Cell(cells, iGroup),
-      kind = Cell(cells, iKind),
-          note = Cell(cells, iNote),
-            value = Cell(cells, iValue),
-     });
-         }
-         }
             catch (Exception e)
             {
                 D.Error($"[Localization] 读取 value 表失败：{table.path}\n{e.Message}");
@@ -447,11 +447,11 @@ if (string.IsNullOrEmpty(key)) continue;
             cells.Clear();
         }
 
-/// <summary>
-    /// 取指定下标的单元格，越界返回空串
-    /// </summary>
-    private static string Cell(List<string> cells, int index)
-      => index >= 0 && index < cells.Count ? cells[index] ?? string.Empty : string.Empty;
+        /// <summary>
+        /// 取指定下标的单元格，越界返回空串
+        /// </summary>
+        private static string Cell(List<string> cells, int index)
+            => index >= 0 && index < cells.Count ? cells[index] ?? string.Empty : string.Empty;
 
         /// <summary>
         /// 在表头中查找列名

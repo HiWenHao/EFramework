@@ -31,6 +31,7 @@ namespace EasyFramework.Localization
     /// <para>由 I18NManager 在语言真正切换成功后发布，界面层据此刷新所有 LocalizedText。
     /// 只在「实际语言发生变化」时发布，避免重复设置同一语言引发无谓刷新。</para>
     /// <para>Published by I18NManager after a successful language switch.</para>
+    /// </summary>
     public readonly struct LanguageChangedEvent
     {
         /// <summary>切换后的语言代码 </summary>
