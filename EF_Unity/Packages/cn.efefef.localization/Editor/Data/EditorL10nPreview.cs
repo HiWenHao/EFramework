@@ -4,23 +4,24 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 17:35:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 11:50:00
- * ScriptVersion:   0.4
+ * ModifyTime:      2026-10-16 16:05:00
+ * ScriptVersion:   0.5
  * ================================================
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace EasyFramework.Localization.Edit
 {
     /// <summary>
-    /// 编辑器下预览译文的数据桥接
-    /// <para>直接复用运行时数据通道 <see cref="L10nTableStore"/>（读 <c>Resources/L10n</c>
-    /// 的导表产物），保证「编辑器里看到的」等于「游戏里显示的」——同一份文件、同一个类，
-    /// 不存在第二套读取逻辑。</para>
-    /// <para>Editor-side preview bridge sharing the exact same data channel
-    /// (<see cref="L10nTableStore"/>) as the running game, so previews are WYSIWYG.</para>
+    /// 编辑器下预览译文的数据桥接（Resources 通道）
+    /// <para>编辑态复用 <see cref="L10nTableStore"/>（读 <c>Resources/L10n</c> 的导表产物）；
+    /// 运行态直接透传 <see cref="I18NManager"/>（其语言表经 AssetsManager 按需加载），
+    /// 保证「编辑器/预览里看到的」等于「游戏里显示的」。</para>
+    /// <para>Editor-side preview bridge: Resources channel in edit mode, runtime
+    /// service pass-through in play mode.</para>
     /// </summary>
     public static class EditorL10nPreview
     {
@@ -58,10 +59,16 @@ namespace EasyFramework.Localization.Edit
                && !string.IsNullOrEmpty(I18NManager.Instance.CurrentLanguage);
 
         /// <summary>
-        /// 本次取词使用的语言：运行态跟随运行时当前语言，编辑态用预览语言
+        /// 切换运行时语言（Play 模式下由预览下拉调用）
+        /// <para>经 <see cref="I18NManager.SwitchLanguage"/> 异步装载新语言表，
+        /// 完成后广播事件，全场景 LocalizedText 即时刷新；非 Play 模式调用无效果。
+        /// 装载为异步过程，此处不等待（完成后自动广播刷新）。</para>
         /// </summary>
-        private static string EffectiveLanguage
-            => FollowsRuntimeLanguage ? I18NManager.Instance.CurrentLanguage : PreviewLanguage;
+        public static void TrySwitchRuntimeLanguage(string language)
+        {
+            if (Application.isPlaying && I18NManager.Instance != null)
+                _ = I18NManager.Instance.SwitchLanguage(language);
+        }
 
         /// <summary>
         /// 预览数据是否可用（Resources/L10n 下存在语言表）
@@ -88,11 +95,20 @@ namespace EasyFramework.Localization.Edit
         {
             if (string.IsNullOrEmpty(key)) return null;
 
-            var language = EffectiveLanguage;
-            var value = L10nTableStore.TryGet(key, language);
+            // 运行态：直接问运行时服务（其语言表经 AssetsManager 按需加载，与场景文本同源）；
+            // [Missing:xxx] 占位在预览中等同于缺词，交由调用方显示缺词提示
+            if (Application.isPlaying && I18NManager.Instance != null)
+            {
+                var runtime = I18NManager.Instance.Get(key);
+                return runtime != null && !runtime.StartsWith(I18NManager.MissingPrefix, StringComparison.Ordinal)
+                    ? runtime
+                    : null;
+            }
 
-            // 当前语言没有该词时回落到兜底语言，与运行时行为保持一致
-            if (string.IsNullOrEmpty(value) && language != LanguageCode.En)
+            // 编辑态：Resources 通道（预览语言），当前语言缺词回落 en
+            var value = L10nTableStore.TryGet(key, PreviewLanguage);
+
+            if (string.IsNullOrEmpty(value) && PreviewLanguage != LanguageCode.En)
                 value = L10nTableStore.TryGet(key, LanguageCode.En);
 
             return string.IsNullOrEmpty(value) ? null : value;
