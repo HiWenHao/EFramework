@@ -106,7 +106,7 @@ namespace EasyFramework.Localization.Edit
         /// </summary>
         internal static string PreviewLanguage
         {
-            get => EditorPrefs.GetString(PrefsKeyPrefix + "PreviewLanguage", LanguageCode.Zn);
+            get => EditorPrefs.GetString(PrefsKeyPrefix + "PreviewLanguage", LanguageCode.Zh);
             set
             {
                 // 空值不落盘：语言代码是查询主键，空串会让预览全走兜底

@@ -18,14 +18,47 @@ using UnityEngine;
 namespace EasyFramework.Localization
 {
     /// <summary>
+    /// 语言代码常量
+    /// <para>语言列表由语言表文件名自动发现（<see cref="L10nTableStore"/>），
+    /// 新增语言无需改这里；本类只登记兜底语言（en）与工程既定的语言代码。</para>
+    /// <para>Language code constants; const string by design (config-driven list).</para>
+    /// </summary>
+    public static class LanguageCode
+    {
+        /// <summary>英语（兜底语言） </summary>
+        public const string En = "en";
+
+        /// <summary>中文（zh：ISO 639-1 语言码；语言表文件名 l10n_tbtext_zh.json 与之一一对应） </summary>
+        public const string Zh = "zh";
+    }
+
+    /// <summary>
+    /// 语言切换事件
+    /// <para>由 <see cref="I18NManager"/> 在语言真正切换成功后发布，
+    /// 界面层据此刷新所有 LocalizedText。只在「实际语言发生变化」时发布，
+    /// 避免重复设置同一语言引发无谓刷新。</para>
+    /// <para>Published by I18NManager after a successful language switch.</para>
+    /// </summary>
+    public readonly struct LanguageChangedEvent
+    {
+        /// <summary>切换后的语言代码 </summary>
+        public string Language { get; }
+
+        /// <summary>
+        /// 构造语言切换事件
+        /// </summary>
+        /// <param name="language">切换后的语言代码</param>
+        public LanguageChangedEvent(string language)
+        {
+            Language = language;
+        }
+    }
+
+    /// <summary>
     /// 多语言服务
     /// <para>持有当前语言，译文统一从 <see cref="L10nTableStore"/>（Resources 下的导表产物）读取；
     /// 语言切换成功后经 EventManager 广播 <see cref="LanguageChangedEvent"/>，
     /// 界面层（<see cref="LocalizedText"/>）自动刷新。</para>
-    /// <para><b>零接入成本：</b>数据通道由包内置（<see cref="L10nTableStore"/>），
-    /// 不需要使用者实现任何接口或调用任何注册方法——只要 <c>Resources/L10n</c> 下
-    /// 存在 <c>l10n_tbtext_*.json</c>，本服务在 Init 时即自动装载；
-    /// 一张表都没有时保持静默（未接入多语言的工程不刷任何日志）。</para>
     /// <para>Runtime i18n service. Reads translations from the built-in
     /// <see cref="L10nTableStore"/>; fully automatic, zero consumer code.</para>
     /// </summary>
@@ -38,7 +71,7 @@ namespace EasyFramework.Localization
         /// <para>显式返回可辨识的串而不是空串——界面上出现 [Missing:xxx] 一眼就知道是查表没命中，
         /// 而空白无法区分「译文本身是空」还是「key 没找到」。</para>
         /// </summary>
-        public const string MissingPrefix = "[Missing:";
+        private const string MissingPrefix = "[Missing:";
 
         /// <summary>兜底语言代码：任何语言缺词都回落这里 </summary>
         private const string FallbackLanguage = LanguageCode.En;
@@ -53,7 +86,7 @@ namespace EasyFramework.Localization
         /// 是否把玩家选择持久化
         /// <para>关掉后每次启动都回到默认语言（适合调试或按场景强制语言）。</para>
         /// </summary>
-        public bool AutoPersist { get; set; } = true;
+        private bool AutoPersist { get; set; } = true;
 
         /// <summary>
         /// 当前语言代码，未装载时为空串
