@@ -28,7 +28,7 @@ namespace EasyFramework.Localization.Edit
         /// 未发现语言表时的兜底语言集合
         /// <para>与清单默认语言一致，保证全新工程（还没导过表）下拉框也有可选项。</para>
         /// </summary>
-        private static readonly string[] FallbackLanguages = { LanguageCode.Zn, LanguageCode.En };
+        private static readonly string[] FallbackLanguages = { LanguageCode.Zh, LanguageCode.En };
 
         /// <summary>
         /// 编辑器预览当前使用的语言（<strong>仅编辑态</strong>）
