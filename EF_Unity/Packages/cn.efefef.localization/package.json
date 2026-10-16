@@ -14,8 +14,7 @@
   "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
     "cn.efefef.core": "0.0.1",
-    "cn.efefef.datable": "0.0.1",
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "cn.efefef.datable": "0.0.1"
   },
   "samples": null
 }

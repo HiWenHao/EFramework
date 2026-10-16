@@ -4,10 +4,10 @@
     "references": [
         "EF.Editor",
         "EF.Core",
-        "Luban.Editor",
         "Unity.TextMeshPro",
         "EF.Localization.Runtime",
-        "Unity.TextMeshPro.Editor"
+        "Unity.TextMeshPro.Editor",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
     ],
     "includePlatforms": [
         "Editor"
