@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:15:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 12:00:00
- * ScriptVersion:   0.5
+ * ModifyTime:      2026-10-16 16:38:00
+ * ScriptVersion:   0.6
  * ================================================
  */
 
@@ -169,6 +169,13 @@ namespace EasyFramework.Localization
         #endregion
 
         /// <summary>
+        /// 「语言表未就绪」告警是否已打出
+        /// <para>按需加载下装载完成前启用的一批组件都会走到未就绪分支，
+        /// 逐条告警会刷屏——同类告警进程内只打一次。</para>
+        /// </summary>
+        private static bool _unreadyWarned;
+
+        /// <summary>
         /// 刷新显示内容
         /// <para>按 key 从 <see cref="I18NManager"/>（内建 <see cref="L10nTableStore"/> 数据通道）
         /// 取译文并写入 text。未选 key 时<strong>不改写 text</strong>，以免覆盖美术在
@@ -177,21 +184,23 @@ namespace EasyFramework.Localization
         /// <para><b>编辑态说明：</b>本方法只在运行时改写 text。编辑器下若改写会把译文
         /// 写进场景文件，造成「谁打开过谁脏」的诡异 diff；且 Inspector 每帧都会调用。
         /// 故编辑态下静默返回，译文改由 Inspector 的预览行展示。</para>
-        /// <para><b>无表闸门：</b>工程未接入多语言（Resources/L10n 下没有语言表）时
-        /// 保持美术填写的原文并告警一次，不产出 [Missing] 占位刷屏。</para>
+        /// <para><b>未就绪说明：</b>语言表经 AssetsManager 异步装载，完成前启用的
+        /// 界面保持美术原文，装载完成后的事件会触发本方法自动刷新。</para>
         /// </summary>
         public void Refresh()
         {
             if (!HasKey) return;
 
-            // 编辑态不改写 text，也不刷警告：预览职责交给 Inspector
             if (!Application.isPlaying) return;
 
             var manager = I18NManager.Instance;
             if (manager == null || !manager.IsLoaded)
             {
-                // 服务不可用时保持美术填的内容，不要用占位串刷屏
-                Debug.LogWarning($"[LocalizedText] 本地化语言表未就绪（Resources/L10n/l10n_tbtext_*.json），暂无法解析 key：{key}");
+                if (!_unreadyWarned)
+                {
+                    _unreadyWarned = true;
+                    D.Warning($"[LocalizedText] 语言表尚未装载完成（经 AssetsManager 异步加载中），暂以原文显示；装载完成后自动刷新。key：{key}");
+                }
                 return;
             }
 

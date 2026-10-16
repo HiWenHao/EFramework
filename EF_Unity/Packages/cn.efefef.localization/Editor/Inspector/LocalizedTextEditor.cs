@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:        LocalizedText 的 Inspector：key 下拉 + 搜索弹窗
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 12:05:00
- * ScriptVersion:   0.7
+ * ModifyTime:      2026-10-16 16:10:00
+ * ScriptVersion:   0.8
  * ================================================
  */
 
@@ -251,7 +251,7 @@ namespace EasyFramework.Localization.Edit
 
             if (followsRuntime)
             {
-                I18NManager.Instance.SwitchLanguage(languages[newIndex]);
+                EditorL10nPreview.TrySwitchRuntimeLanguage(languages[newIndex]);
                 return;
             }
 

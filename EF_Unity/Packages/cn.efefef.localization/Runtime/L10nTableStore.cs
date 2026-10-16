@@ -1,11 +1,11 @@
 ﻿/*
  * ================================================
- * Describe:        本地化数据仓库：包内置的默认数据通道，直接读取 Resources 下的导表产物
+ * Describe:        本地化数据仓库：编辑器预览与 Resources 回退通道（运行时数据经 I18NManager 按需加载）
  * Author:          Alvin5100
  * CreationTime:    2026-10-15 18:10:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:10:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-16 15:55:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -17,22 +17,22 @@ using UnityEngine;
 namespace EasyFramework.Localization
 {
     /// <summary>
-    /// 本地化数据仓库
-    /// <para>包内置的<strong>唯一</strong>取数通道：直接读取 <c>Resources/L10n</c> 下的
-    /// Luban 导表产物 <c>l10n_tbtext_{lang}.json</c>，语言列表按文件名自动发现，
-    /// 各语言表在首次访问时才加载并缓存。使用者无需实现任何接口、无需注册任何代码。</para>
+    /// 本地化数据仓库（编辑器预览与 Resources 回退通道）
+    /// <para>读取 <c>Resources/L10n</c> 下的 Luban 导表产物 <c>l10n_tbtext_{lang}.json</c>，
+    /// 语言列表按文件名自动发现，各语言表在首次访问时才加载并缓存。</para>
     ///
-    /// <para><b>为什么直接读导表产物而不是生成类：</b>生成类要导表后才存在，
-    /// 且绑定 Luban 的代码生成方案；读数据文件则与生成方案解耦——
-    /// 换数据格式只需改导出端，本类与上层服务不受影响。</para>
+    /// <para><b>职责边界（重要）：</b>运行时的语言表由 <see cref="I18NManager"/> 经
+    /// AssetsManager 按需加载（每次切换只保留当前语言，支持 Yoo 热更），
+    /// <strong>不经过本类</strong>。本类服务于：</para>
+    /// <para>· 编辑态 Inspector 预览（Resources.Load 在非运行态可用，与运行时读同一份文件）；</para>
+    /// <para>· 运行期兜底：随包副本在构建期由 L10nTablePublisher 同步，永远可用。</para>
     ///
     /// <para><b>文件从哪来：</b>Luban 导表输出在 <c>Assets/luban/Data</c>（每次导表会被
     /// 整体清空重建，不能作为常驻资源目录），由编辑器侧的 L10nTablePublisher
     /// 自动同步到 <c>Resources/L10n</c>，使用者无感知。</para>
     ///
-    /// <para>Built-in data channel reading Luban-exported <c>l10n_tbtext_{lang}.json</c>
-    /// files from <c>Resources/L10n</c>; languages are discovered from file names and
-    /// each table is lazily loaded and cached. Zero code is required from consumers.</para>
+    /// <para>Editor-preview and Resources fallback channel reading Luban-exported
+    /// <c>l10n_tbtext_{lang}.json</c> files from <c>Resources/L10n</c>.</para>
     /// </summary>
     public static class L10nTableStore
     {
@@ -47,7 +47,7 @@ namespace EasyFramework.Localization
 
         /// <summary>
         /// 语言表文件名前缀，语言代码紧跟其后
-        /// <para>完整文件名形如 <c>l10n_tbtext_en.json</c>（Luban 表名 L10n.TbText_en
+        /// <para>完整文件名形如 <c>l10n_tbtext_zh.json</c>（Luban 表名 L10n.TbText_zh
         /// 导出时统一小写）。新增语言 = 多导一张表，本类零改动。</para>
         /// </summary>
         internal const string TableFilePrefix = "l10n_tbtext_";
@@ -97,9 +97,10 @@ namespace EasyFramework.Localization
         #region 公开属性 Public Properties
 
         /// <summary>
-        /// 磁盘上是否存在至少一张语言表
+        /// 是否存在至少一张可用语言表
         /// <para>这是「本工程是否使用多语言」的判定闸门：一张表都没有时
-        /// 上层服务保持静默，不向未接入多语言的工程刷日志。</para>
+        /// 上层服务保持静默，不向未接入多语言的工程刷日志。
+        /// 同时也是运行时的接入标记——随包副本存在，I18NManager 才会走装载流程。</para>
         /// <para>Whether at least one language table exists; gates all logging so
         /// projects without localization stay silent.</para>
         /// </summary>
@@ -132,12 +133,13 @@ namespace EasyFramework.Localization
 
         /// <summary>
         /// 按语言与 key 取译文
-        /// <para>刻意做成<strong>无状态</strong>查询：语言由参数传入，
-        /// 多语言回落策略集中在 <see cref="I18NManager.Get"/> 一处实现。</para>
+        /// <para>刻意做成<strong>无状态</strong>查询：语言由参数传入。
+        /// 运行时请改走 <see cref="I18NManager.Get"/>（AssetsManager 按需加载通道）；
+        /// 本方法主要服务于编辑器预览。</para>
         /// <para>Stateless lookup: the language comes in as a parameter.</para>
         /// </summary>
         /// <param name="key">本地化 key</param>
-        /// <param name="language">语言代码（如 en / zn）</param>
+        /// <param name="language">语言代码（如 en / zh）</param>
         /// <returns>译文；key 或语言不存在时返回 null（由调用方决定回落策略）</returns>
         public static string TryGet(string key, string language)
         {
@@ -152,7 +154,7 @@ namespace EasyFramework.Localization
 
         /// <summary>
         /// 失效全部缓存，强制下次访问重新发现语言并重新读表
-        /// <para>编辑器完成导表同步后调用，使预览与运行时立刻反映最新译文；
+        /// <para>编辑器完成导表同步后调用，使预览立刻反映最新译文；
         /// 运行期通常不需要调用（语言表视为随包只读数据）。</para>
         /// <para>Drops all caches so the next access re-scans and re-reads tables.</para>
         /// </summary>
@@ -179,8 +181,7 @@ namespace EasyFramework.Localization
             _discovered = true;
 
             _languages = new List<string>();
-            var assets = Resources.LoadAll<TextAsset>(ResourcesFolder);
-            foreach (var asset in assets)
+            foreach (var asset in Resources.LoadAll<TextAsset>(ResourcesFolder))
             {
                 if (asset == null) continue;
 
@@ -221,30 +222,29 @@ namespace EasyFramework.Localization
         {
             if (Tables.TryGetValue(language, out var cached)) return cached;
 
-            var table = LoadTableFromResources(language);
+            var asset = Resources.Load<TextAsset>($"{ResourcesFolder}/{TableFilePrefix}{language}");
+            var table = ParseTable(language, asset != null ? asset.text : null);
             Tables[language] = table;
             return table;
         }
 
         /// <summary>
-        /// 从 Resources 加载并解析一张语言表
-        /// <para>解析失败属于真故障（有表但读不出），会输出错误日志——
+        /// 解析一张语言表 JSON
+        /// <para>解析失败属于真故障（有表但读不出），会输出错误日志并按空表处理——
         /// 与「一张表都没有 = 正常静默」的闸门约定相区分。</para>
         /// </summary>
-        /// <param name="language">语言代码</param>
-        /// <returns>解析结果；文件不存在或解析失败返回空表（不为 null）</returns>
-        private static Dictionary<string, string> LoadTableFromResources(string language)
+        /// <param name="language">语言代码（用于错误日志定位）</param>
+        /// <param name="text">表 JSON 文本</param>
+        /// <returns>解析结果；文本为空或解析失败返回空表（不为 null）</returns>
+        private static Dictionary<string, string> ParseTable(string language, string text)
         {
             var table = new Dictionary<string, string>(StringComparer.Ordinal);
-
-            var asset = Resources.Load<TextAsset>($"{ResourcesFolder}/{TableFilePrefix}{language}");
-            if (asset == null) return table;
+            if (string.IsNullOrEmpty(text)) return table;
 
             try
             {
                 // 导出文件可能带 UTF-8 BOM：BOM 字符混进 JSON 首位会让反序列化直接失败，先剥掉
-                var text = asset.text.TrimStart('\uFEFF');
-                var rows = JsonConvert.DeserializeObject<List<TableRow>>(text);
+                var rows = JsonConvert.DeserializeObject<List<TableRow>>(text.TrimStart('\uFEFF'));
                 if (rows == null) return table;
 
                 foreach (var row in rows)
@@ -255,7 +255,7 @@ namespace EasyFramework.Localization
             }
             catch (Exception e)
             {
-                Debug.LogError($"[L10nTableStore] 解析语言表失败：{ResourcesFolder}/{TableFilePrefix}{language}.json\n{e.Message}");
+                Debug.LogError($"[L10nTableStore] 解析语言表失败：{TableFilePrefix}{language}.json\n{e.Message}");
             }
 
             return table;
