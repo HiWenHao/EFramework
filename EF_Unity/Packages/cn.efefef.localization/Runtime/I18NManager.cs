@@ -4,14 +4,13 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 16:40:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-15 18:20:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-10-16 12:08:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
 using System;
 using System.Collections.Generic;
-using EasyFramework;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Event;
 using UnityEngine;
@@ -56,8 +55,10 @@ namespace EasyFramework.Localization
         /// </summary>
         public bool AutoPersist { get; set; } = true;
 
-        /// <summary>当前语言代码，未装载时为空串 </summary>
-        private string _currentLanguage = LanguageCode.En;
+        /// <summary>
+        /// 当前语言代码，未装载时为空串
+        /// </summary>
+        private string _currentLanguage = string.Empty;
 
         /// <summary>
         /// 服务是否可用（磁盘上存在至少一张语言表）
@@ -66,7 +67,10 @@ namespace EasyFramework.Localization
         /// </summary>
         public bool IsLoaded => L10nTableStore.HasTables;
 
-        /// <summary>当前语言代码，未装载时为空串 </summary>
+        /// <summary>
+        /// 当前语言代码，未装载时为空串
+        /// <para>Current language code, empty string when not loaded</para>
+        /// </summary>
         public string CurrentLanguage => _currentLanguage;
 
         #region 生命周期 Lifecycle
@@ -131,6 +135,37 @@ namespace EasyFramework.Localization
             }
 
             return BuildMissing(key);
+        }
+
+        /// <summary>
+        /// 按 key 取译文并格式化占位符（Dynamic 文案专用入口）
+        /// <para>key 在清单中登记为 Dynamic 时（值含 <c>{0}</c> <c>{1}</c>… 占位符），
+        /// 用本方法传入参数：<c>GetFormat("Txt_Version", "1.2.3")</c> → <c>v1.2.3</c>。
+        /// Static 文案（无占位符）误传参数也安全——多余参数被忽略，原样返回译文。</para>
+        /// <para>占位符与参数不匹配（缺参 / 格式非法）时不抛异常：返回未格式化原文并告警，
+        /// 界面显示 <c>v{0}</c> 比调用链中断更容易定位问题。</para>
+        /// <para>Fetch a translation and format its placeholders. Falls back to the raw
+        /// value with a warning when args mismatch.</para>
+        /// </summary>
+        /// <param name="key">本地化 key</param>
+        /// <param name="args">占位符参数，按序对应 <c>{0}</c> <c>{1}</c>…</param>
+        /// <returns>格式化后的译文；格式化失败时返回未格式化原文</returns>
+        public string GetFormat(string key, params object[] args)
+        {
+            var raw = Get(key);
+
+            // 无参调用（或 Static 误传空参）：直接返回原文，避免 string.Format 空转
+            if (args == null || args.Length == 0) return raw;
+
+            try
+            {
+                return string.Format(raw, args);
+            }
+            catch (FormatException e)
+            {
+                Debug.LogWarning($"[I18NManager] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
+                return raw;
+            }
         }
 
         /// <summary>

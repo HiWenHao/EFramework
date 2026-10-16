@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 19:22:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 11:50:00
- * ScriptVersion:   0.6
+ * ModifyTime:      2026-10-16 12:05:00
+ * ScriptVersion:   0.7
  * ================================================
  */
 
@@ -85,12 +85,17 @@ namespace EasyFramework.Localization.Edit
                 base.OnInspectorGUI();
                 return;
             }
+            EditorGUILayout.Space(4f);
 
             DrawKeyRow(LoadKeys());
 
             EditorGUILayout.Space(4f);
 
             DrawPreviewRow();
+
+            EditorGUILayout.Space(4f);
+
+            DrawDynamicSection();
 
             EditorGUILayout.Space(4f);
 
@@ -132,6 +137,9 @@ namespace EasyFramework.Localization.Edit
         {
             var value = _target.HasKey ? EditorL10nPreview.Get(_target.Key) : null;
 
+            // Dynamic 文案：按组件参数格式化后烘焙，与运行时 Refresh 的结果一致
+            value = ApplyPreviewFormat(value);
+
             using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(value)))
             {
                 if (!GUILayout.Button(LC.Combine(Lc.Apply), GUILayout.Width(64f)))
@@ -141,6 +149,76 @@ namespace EasyFramework.Localization.Edit
             Undo.RecordObject(_target, "Apply Text With Preview");
             _target.text = value;
             EditorUtility.SetDirty(_target);
+        }
+
+        /// <summary>
+        /// Dynamic 文案辅助区
+        /// <para>key 的 kind 为 Dynamic 时显示：清单中的占位符说明（note）+
+        /// 格式化参数编辑（序列化在组件上，支持 Undo 与预制体覆盖）。
+        /// Static key 或 key 未登记时不绘制任何内容。</para>
+        /// </summary>
+        private void DrawDynamicSection()
+        {
+            if (!_target.HasKey) return;
+
+            var entry = FindEntry(_target.Key);
+            if (entry == null || entry.kind != LocalizationKeyKind.Dynamic) return;
+
+            var useEn = LC.DisplayLanguage == ELanguage.English;
+
+            var tip = useEn
+                ? $"Dynamic text: {entry.note}\nDuring runtime, parameters can be passed through \nI18NManager.Instance.GetFormat(key, args) or SetFormatArgs(args), " +
+                  $"\nor parameters can be directly configured below."
+                : $"动态文案：{entry.note}\n运行时通过 I18NManager.Instance.GetFormat(key, args) 或者 SetFormatArgs(args) 传参，或在下方直接配置参数";
+            EditorGUILayout.HelpBox(tip, MessageType.Info);
+
+            serializedObject.Update();
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("formatArgs"),
+                new GUIContent(LC.Combine(Lc.Param)), true);
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// 从 key 清单缓存中查找条目（未登记的 key 返回 null）
+        /// </summary>
+        private static LocalizationKeyEntry FindEntry(string keyName)
+        {
+            foreach (var entry in LoadKeys())
+            {
+                if (string.Equals(entry.name, keyName, StringComparison.Ordinal))
+                    return entry;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 按组件的格式化参数套用占位符（与运行时 LocalizedText.Refresh 行为一致）
+        /// <para>无参数 / 值不含占位符时原样返回；格式化失败返回原文。</para>
+        /// </summary>
+        private string ApplyPreviewFormat(string value)
+        {
+            if (string.IsNullOrEmpty(value)
+                || _target.FormatArgs.Count == 0
+                || value.IndexOf('{') < 0)
+            {
+                return value;
+            }
+
+            try
+            {
+                var args = new object[_target.FormatArgs.Count];
+                for (var i = 0; i < args.Length; i++)
+                {
+                    args[i] = _target.FormatArgs[i];
+                }
+
+                return string.Format(value, args);
+            }
+            catch (FormatException)
+            {
+                return value;
+            }
         }
 
         /// <summary>
@@ -219,6 +297,8 @@ namespace EasyFramework.Localization.Edit
                     MessageType.Info);
                 return;
             }
+
+            value = ApplyPreviewFormat(value);
 
             EditorGUI.BeginDisabledGroup(true);
             EditorGUI.TextField(rect, value);
