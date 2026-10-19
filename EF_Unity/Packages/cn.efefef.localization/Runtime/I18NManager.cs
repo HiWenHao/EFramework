@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        运行时多语言服务：管理当前语言，经 AssetsManager 按需加载语言表
  * Author:          Alvin5100
@@ -136,6 +136,16 @@ namespace EasyFramework.Localization
 
         #region Methods
 
+        // 静默装载（Init 自动路径专用）：失败不打任何日志，未接入多语言的工程零噪音
+        private async UniTaskVoid TryLoadSilently(string language)
+        {
+            // 抢占代数：与手动装载互斥，慢速的旧请求不覆盖新状态
+            _loadGeneration++;
+            var generation = _loadGeneration;
+
+            await TryApplyAsync(generation, language);
+        }
+
         // 应用指定语言的表（装载管线的终点：成功则替换内存表并广播事件，失败不动任何状态）
         private async UniTask<bool> TryApplyAsync(int generation, string language)
         {
@@ -145,7 +155,7 @@ namespace EasyFramework.Localization
 
             _table = table;
             _currentLanguage = language;
-            Debug.Log($"[I18NManager] 语言表装载完成：{language}（{table.Count} 条）");
+            D.Log($"[ I18NManager ] 语言表装载完成：{language}（{table.Count} 条）");
             NotifyLanguageChanged(language);
             return true;
         }
@@ -179,7 +189,7 @@ namespace EasyFramework.Localization
             }
             catch (Exception e)
             {
-                Debug.LogError($"[I18NManager] 解析语言表失败\n{e.Message}");
+                D.Error($"[ I18NManager ] 解析语言表失败\n{e.Message}");
             }
 
             return table;
@@ -217,19 +227,17 @@ namespace EasyFramework.Localization
         /// 由 EFC 驱动调用（排序在 EventManager 之后）：确定初始语言（玩家偏好优先，否则兜底 en）后异步装载
         /// <para>Driven by EFC (ordered after EventManager): resolves the initial language
         /// (player preference, else en) and loads it asynchronously.</para>
-        /// <para>闸门：随包副本不存在（L10nTableStore.HasTables 为 false）= 工程未接入多语言，静默；
-        /// 装载完成前启用的界面保持美术原文，完成后广播事件自动刷新。</para>
+        /// <para><b>静默语义：</b>语言表加载失败（工程未接入多语言 / bundle 中无语言表资源）时
+        /// 不输出任何日志——未接入的工程零噪音；装载完成前启用的界面保持美术原文，
+        /// 完成后广播事件自动刷新。需要感知失败的手动装载请用 <see cref="LoadLanguageAsync"/>。</para>
         /// </summary>
         public void Init()
         {
-            // 闸门：随包副本不存在 = 工程未接入多语言，静默（防分发污染）
-            if (!L10nTableStore.HasTables) return;
-
             // 已初始化过（如使用者提前手动指定过语言）不重复走默认流程
             if (!string.IsNullOrEmpty(_currentLanguage)) return;
 
             _currentLanguage = ResolveInitialLanguage();
-            LoadLanguageAsync(_currentLanguage).Forget();
+            TryLoadSilently(_currentLanguage).Forget();
         }
 
         /// <summary>
@@ -277,7 +285,7 @@ namespace EasyFramework.Localization
             }
             catch (FormatException e)
             {
-                Debug.LogWarning($"[I18NManager] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
+                D.Warning($"[ I18NManager ] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
                 return raw;
             }
         }
@@ -335,11 +343,11 @@ namespace EasyFramework.Localization
             {
                 if (language == FallbackLanguage)
                 {
-                    Debug.LogError($"[I18NManager] 兜底语言 {FallbackLanguage} 的语言表缺失，本地化不可用。");
+                    D.Error($"[ I18NManager ] 兜底语言 {FallbackLanguage} 的语言表缺失，本地化不可用。");
                     return false;
                 }
 
-                Debug.LogWarning($"[I18NManager] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
+                D.Warning($"[ I18NManager ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
                 if (!await TryApplyAsync(generation, FallbackLanguage)) return false;
             }
 
