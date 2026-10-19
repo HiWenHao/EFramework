@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-07-14 17:51:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-07-14 17:51:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-19 14:25:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -475,6 +475,9 @@ namespace EasyFramework.Edit.Windows.Dataable
         [MenuItem(MenuItemToolkit.Utility + "📊 Start Datable (Luban)", false, MenuItemToolkit.UtilityPriority + 2)]
         private static void StartDatable()
         {
+            if (!DotNetToolkit.EnsureDotNetVersion(8, ToolSourceDir))
+                return;
+
             if (_config == null)
             {
                 D.Warning("[ DatableConfigPanel ] 配置未加载，无法生成。");
