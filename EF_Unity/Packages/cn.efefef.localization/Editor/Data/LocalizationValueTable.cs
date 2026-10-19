@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:        多语言 value 表：按语言拆分的 CSV，供翻译填写、再由 Luban 导表进包
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 15:12:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 18:45:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-19 19:10:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -292,8 +292,20 @@ namespace EasyFramework.Localization.Edit
 
             try
             {
-                // 显式按 UTF-8 读：文件可能带 BOM，StreamReader 默认已识别，此处仅保证异常可控
-                var rows = ParseCsv(File.ReadAllText(table.path, Encoding.UTF8));
+                // 编码自愈：严格 UTF-8 优先，非法序列回退 GBK（Excel 在中文系统另存 CSV 的默认编码）；
+                // 检测到非 UTF-8 时就地重写为 UTF-8 BOM，让 Excel / 本面板 / Luban 三方后续读取保持一致
+                var raw = File.ReadAllBytes(table.path);
+                var (text, healed) = DecodeWithHealing(raw, table.path);
+                if (text == null) return table;
+
+                if (healed)
+                {
+                    File.WriteAllText(table.path, text, new UTF8Encoding(UseUtf8Bom));
+                    D.Warning($"[ Localization ] value 表编码已自动修复并回写为 UTF-8 BOM" +
+                              $"（原文件为非 UTF-8，常见于 Excel 另存降级）：{table.path}");
+                }
+
+                var rows = ParseCsv(text);
 
                 // 本表格式固定为 Luban 兼容格式：
                 // 第 1 行 = `##,key,des,...`（标记行本身兼作表头），第 2 行 = `##type,string,...`，第 3 行起是数据。
@@ -302,7 +314,7 @@ namespace EasyFramework.Localization.Edit
                     || !IsMarkerRow(rows[0])
                     || !IsTypeMarkerRow(rows[1]))
                 {
-                    D.Error($"[Localization] value 表格式不正确（缺少 Luban 标记行），已按空表处理：" +
+                    D.Error($"[ Localization ] value 表格式不正确（缺少 Luban 标记行），已按空表处理：" +
                             $"{table.path}\n请用面板重新导出，不要手工增删标记行。");
                     return table;
                 }
@@ -315,7 +327,7 @@ namespace EasyFramework.Localization.Edit
 
                 if (iKey < 0 || iValue < 0)
                 {
-                    D.Error($"[Localization] value 表缺少 {ColKey} 或 {ColValue} 列，已按空表处理：" +
+                    D.Error($"[ Localization ] value 表缺少 {ColKey} 或 {ColValue} 列，已按空表处理：" +
                             $"{table.path}");
                     return table;
                 }
@@ -346,10 +358,62 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[Localization] 读取 value 表失败：{table.path}\n{e.Message}");
+                D.Error($"[ Localization ] 读取 value 表失败：{table.path}\n{e.Message}");
             }
 
             return table;
+        }
+
+        // 编码自愈解码：BOM 嗅探 → 严格 UTF-8 → GBK 回退。
+        // <para>Excel 在中文系统「另存 CSV」会降级为 ANSI/GBK 且不带 BOM，程序按 UTF-8 读它
+        // 会静默产出 U+FFFD 乱码并固化到导出产物——因此解码必须用严格模式
+        // （非法序列抛异常而非静默替换），回退 GBK 成功时由调用方就地重写为 UTF-8 BOM。</para>
+        // <returns>解码文本；两种编码都失败时返回 null（已输出错误日志）。healed = 文件非 UTF-8、已被修复</returns>
+        private static (string text, bool healed) DecodeWithHealing(byte[] raw, string path)
+        {
+            // BOM 嗅探：UTF-8 BOM
+            if (raw.Length >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF)
+            {
+                var utf8Text = new UTF8Encoding(false, true).GetString(raw, 3, raw.Length - 3);
+                WarnIfPolluted(utf8Text, path);
+                return (utf8Text, false);
+            }
+
+            // BOM 嗅探：UTF-16 LE（Excel「Unicode 文本」格式，罕见但可识别）
+            if (raw.Length >= 2 && raw[0] == 0xFF && raw[1] == 0xFE)
+                return (Encoding.Unicode.GetString(raw, 2, raw.Length - 2), true);
+
+            // 无 BOM：严格 UTF-8 优先（throwOnInvalidBytes=true，非法序列抛异常而非静默替换）
+            try
+            {
+                var utf8Text = new UTF8Encoding(false, true).GetString(raw);
+                WarnIfPolluted(utf8Text, path);
+                return (utf8Text, false);
+            }
+            catch (DecoderFallbackException)
+            {
+                // 不是合法 UTF-8：回退 GBK
+            }
+
+            try
+            {
+                // 936 = GBK（GB2312 超集）；仅编辑器运行，Unity 编辑器的 Mono 自带 I18N.CJK 可解析
+                return (Encoding.GetEncoding(936).GetString(raw), true);
+            }
+            catch (Exception e)
+            {
+                D.Error($"[ Localization ] value 表不是 UTF-8，且当前运行时不支持 GBK 解码，无法自愈：{path}\n" +
+                        $"The file is not UTF-8 and GBK decoding is unavailable.\n{e.Message}");
+                return (null, false);
+            }
+        }
+
+        // 污染检测：合法 UTF-8 但含 U+FFFD = 曾被错误解码后固化，中文内容已不可恢复
+        private static void WarnIfPolluted(string text, string path)
+        {
+            if (text.Contains('\uFFFD'))
+                D.Error($"[ Localization ] value 表包含无法恢复的乱码字符（U+FFFD），中文内容已损坏，" +
+                        $"请从 git 历史恢复该文件：{path}");
         }
 
         // 覆写磁盘 CSV（自动创建目录，UTF-8 + 可选 BOM；直接产出 Luban 可吃的格式：
@@ -389,7 +453,7 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[Localization] 写入 value 表失败：{path}\n{e.Message}");
+                D.Error($"[ Localization ] 写入 value 表失败：{path}\n{e.Message}");
                 return false;
             }
         }
@@ -476,7 +540,7 @@ namespace EasyFramework.Localization.Edit
 
             if (keys?.keys == null)
             {
-                D.Error("[Localization] Key 清单为空，无法导出 value 表。");
+                D.Error("[ Localization ] Key 清单为空，无法导出 value 表。");
                 return report;
             }
 
@@ -552,11 +616,11 @@ namespace EasyFramework.Localization.Edit
             report.success = output.Save();
 
             if (report.removedKeys.Count > 0)
-                D.Warning($"[Localization] value 表 [{language}] 剔除了 {report.removedKeys.Count} 个" +
+                D.Warning($"[ Localization ] value 表 [{language}] 剔除了 {report.removedKeys.Count} 个" +
                           $"清单中已不存在的 key：{string.Join(", ", report.removedKeys)}");
 
             foreach (var skip in report.skippedKeys)
-                D.Warning($"[Localization] value 表 [{language}] 跳过 {skip}");
+                D.Warning($"[ Localization ] value 表 [{language}] 跳过 {skip}");
 
             return report;
         }
