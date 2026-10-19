@@ -109,7 +109,7 @@ namespace EasyFramework.Localization
             catch (Exception e)
             {
                 // 订阅失败不该让组件不可用：退化为「等下一次手动 Refresh」即可
-                Debug.LogWarning($"[LocalizedText] 订阅语言切换事件失败：{e.Message}");
+                D.Warning($"[ LocalizedText ] 订阅语言切换事件失败：{e.Message}");
                 return false;
             }
         }
@@ -162,12 +162,9 @@ namespace EasyFramework.Localization
             var manager = I18NManager.Instance;
             if (manager == null || !manager.IsLoaded)
             {
-                if (!_unreadyWarned)
-                {
-                    _unreadyWarned = true;
-                    D.Warning($"[LocalizedText] 语言表尚未装载完成（经 AssetsManager 异步加载中），暂以原文显示；装载完成后自动刷新。key：{key}");
-                }
-
+                if (_unreadyWarned) return;
+                _unreadyWarned = true;
+                D.Warning($"[ LocalizedText ] 语言表未装载（经 AssetsManager 加载失败或尚未导表），暂以原文显示；装载完成后自动刷新。key：{key}");
                 return;
             }
 

@@ -17,9 +17,10 @@ using UnityEngine;
 namespace EasyFramework.Localization
 {
     /// <summary>
-    /// 本地化数据仓库：编辑态预览与 Resources 回退通道（运行时数据经 I18NManager 走 AssetsManager 按需加载，不经过本类）
-    /// <para>Localization data store for editor preview and the Resources fallback channel.
-    /// Runtime tables are loaded on demand by I18NManager via AssetsManager, not through this class.</para>
+    /// 本地化数据仓库：编辑态预览的 Resources 回退通道（主通道为 DatableConfig.LubanDataPath 导表产物，运行时走 AssetsManager 按需加载）
+    /// <para>Localization data store serving as the Resources fallback for editor preview.
+    /// The primary preview channel reads the Luban export folder; runtime tables are loaded
+    /// on demand by I18NManager via AssetsManager.</para>
     /// </summary>
     public static class L10nTableStore
     {
