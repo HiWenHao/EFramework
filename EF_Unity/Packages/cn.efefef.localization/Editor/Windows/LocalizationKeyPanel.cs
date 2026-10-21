@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:        多语言设置面板（Key 列表 / 分组与种类 / value 表导出 三个子页）
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 15:26:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 18:45:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-10-21 16:40:00
+ * ScriptVersion:   0.8
  * ================================================
  */
 
@@ -972,7 +972,102 @@ namespace EasyFramework.Localization.Edit
             GUI.contentColor = addColor;
 
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(8f);
+
+            if (!GUILayout.Button(LC.Combine(Lc.Sync, Lc.Config), GUILayout.Width(AvailableWidth))) return;
+            SyncTablesToLuban();
         }
+
+        // 把清单中的语言登记为 Luban 表定义（L10n.TbText_{lang}）写入 __tables__.xlsx，结果弹窗汇总。
+        private void SyncTablesToLuban()
+        {
+            if (!XlsxRowAppender.Exists())
+            {
+                D.Error(Tr(
+                    "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)",
+                    "[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）"));
+                return;
+            }
+
+            // 第二步：表存在，逐语言登记
+            var lines = new List<string>();
+            var added = 0;
+            var existed = 0;
+            var skipped = 0;
+            var failed = 0;
+
+            foreach (var language in _file.GetLanguagesOrDefault())
+            {
+                var fullName = $"L10n.TbText_{language}";
+                
+                // value 表（CSV）不存在时 Luban 导表会直接报错，这里提前拦截
+                var csvPath = LocalizationData.GetValuesPath(language);
+                if (!File.Exists(csvPath))
+                {
+                    lines.Add($"{fullName}: {Tr($"Skipped (value table not exported: {Path.GetFileName(csvPath)})", $"跳过（value 表未导出：{Path.GetFileName(csvPath)}）")}");
+                    skipped++;
+                    continue;
+                }
+
+                // 先查重：已存在 = 幂等跳过，与写入失败明确区分
+                if (XlsxRowAppender.ContainsColumn(XlsxRowAppender.ColFullName, fullName))
+                {
+                    lines.Add($"{fullName}: {Tr("Already exists, skipped", "已存在，跳过")}");
+                    existed++;
+                    continue;
+                }
+
+                var cells = new Dictionary<int, object>
+                {
+                    [XlsxRowAppender.ColFullName] = fullName,
+                    [XlsxRowAppender.ColBeanType] = "L10n.Text",
+                    [XlsxRowAppender.ColReadSchema] = 0,
+                    [XlsxRowAppender.ColInput] = $"{LocalizationData.ValuesFilePrefix}{language}.csv",
+                    [XlsxRowAppender.ColIndex] = "key",
+                    [XlsxRowAppender.ColMode] = "map",
+                    [XlsxRowAppender.ColGroup] = "c",
+                    [XlsxRowAppender.ColComment] = Tr($"L10n text table {language}", $"多语言文本表 {language}"),
+                };
+
+                if (XlsxRowAppender.AppendLastRow(cells, XlsxRowAppender.ColFullName))
+                {
+                    lines.Add($"{fullName}: {Tr("Registered", "已登记")}");
+                    added++;
+                }
+                else
+                {
+                    lines.Add($"{fullName}: {Tr("Write failed (see Console for the reason)", "写入失败（原因见 Console 报错）")}");
+                    failed++;
+                }
+            }
+
+            // 汇总行：四类状态逐项计数
+            var parts = new List<string>();
+            if (added > 0) parts.Add(Tr($"Registered: {added}", $"新登记 {added} 张"));
+            if (existed > 0) parts.Add(Tr($"Already exists, skipped: {existed}", $"已存在跳过 {existed} 张"));
+            if (skipped > 0) parts.Add(Tr($"Not exported, skipped: {skipped}", $"未导出跳过 {skipped} 张"));
+            if (failed > 0) parts.Add(Tr($"Failed: {failed}", $"失败 {failed} 张"));
+            var summary = parts.Count == 0
+                ? Tr("No language in the manifest", "清单中没有语言")
+                : string.Join(Tr(", ", "，"), parts) + Tr(". Run 'Generate All Excel Data' to take effect", "。新登记后执行「生成全部Excel数据」即可生效");
+
+            // 弹窗策略：有新登记或失败才弹窗（有实质结果需要知晓）；
+            if (added > 0 || failed > 0)
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                    $"{(failed > 0 ? Tr("[Partially done]", "[部分完成]") : Tr("[Done]", "[完成]"))}\n\n{summary}\n\n{string.Join("\n", lines)}",
+                    LC.Combine(Lc.Confirm));
+            }
+            else
+            {
+                D.Log($"[ LocalizationKeyPanel ] {Tr("Sync: ", "同步配置：")}{summary}\n{string.Join("\n", lines)}");
+            }
+        }
+
+        // 显示文案中英切换：跟随 LC 当前显示语言（English 显示 en，其余显示 zh）
+        private static string Tr(string en, string zh)
+            => LC.DisplayLanguage == ELanguage.English ? en : zh;
 
         // 导出操作区
         private void DrawExportSection()

@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-07-14 17:51:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-10-19 14:25:00
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-10-21 14:55:00
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -24,8 +24,7 @@ namespace EasyFramework.Edit.Windows.Dataable
     [EFConfigPanel]
     public class DatableConfigPanel : EFConfigPanelBase
     {
-        // Excel表目录
-        private static string ExcelFolderPath =>
+        internal static string ExcelFolderPath =>
             Path.GetFullPath(Path.Combine(Application.dataPath, "..", "EFTools", "Datable"));
 
         // 包内 Luban 工具根目录
