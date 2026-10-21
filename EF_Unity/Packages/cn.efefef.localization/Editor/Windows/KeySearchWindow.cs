@@ -4,15 +4,18 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 13:45:42
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 18:45:00
- * ScriptVersion:   0.4
+ * ModifyTime:      2026-10-21 16:45:00
+ * ScriptVersion:   0.5
  * ================================================
  */
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
 using UnityEditor;
 
 namespace EasyFramework.Localization.Edit
@@ -208,7 +211,23 @@ namespace EasyFramework.Localization.Edit
                 picked = string.Empty;
 
             if (_visible.Count == 0)
+            {
                 EditorGUILayout.HelpBox(LC.Combine(Lc.No, Lc.Match), MessageType.Info);
+
+                // 新建入口：把当前过滤词登记为新 key 并立即选中——挂组件时发现 key 缺失，无需跳转多语言配置面板
+                var canCreate = !string.IsNullOrWhiteSpace(_filter) && IsLegalNewKey(_filter);
+                using (new EditorGUI.DisabledScope(!canCreate))
+                {
+                    var prevColor = GUI.contentColor;
+                    GUI.contentColor = GUIUtils.LightGreen;
+                    if (GUILayout.Button($"+ {LC.Combine(Lc.New, Lc.Key)}: {EscapeRich(_filter)}"))
+                    {
+                        var created = CreateAndPick(_filter);
+                        if (created != null) picked = created;
+                    }
+                    GUI.contentColor = prevColor;
+                }
+            }
 
             foreach (var entry in _visible)
             {
@@ -227,6 +246,51 @@ namespace EasyFramework.Localization.Edit
                 Pick(picked);
             }
         }
+
+        // 把过滤词登记为新 key 并写入 Key 清单；成功返回 key 名（供选中），失败 LogError 返回 null。
+        // 写盘后置 ExternalManifestChanged，多语言配置面板未保存修改时会在下次刷新自动重载，防止面板保存时覆盖新 key。
+        private static string CreateAndPick(string name)
+        {
+            var path = LocalizationData.JsonPath;
+            var file = File.Exists(path)
+                ? LocalizationKeyFile.Load(path)
+                : new LocalizationKeyFile();
+
+            file.EnsureDefaults();
+
+            if (file.keys.Any(k => k.name == name))
+            {
+                D.Error($"[ KeySearchWindow ] key 已存在：{name}");
+                return null;
+            }
+
+            file.keys.Add(new LocalizationKeyEntry
+            {
+                name = name,
+                group = "Default",
+                kind = LocalizationKeyKind.Static,
+            });
+
+            if (!file.Save(path))
+            {
+                D.Error($"[ KeySearchWindow ] Key 清单保存失败：{path}");
+                return null;
+            }
+
+            LocalizationKeyPanel.ExternalManifestChanged = true;
+            D.Log(Tr(
+                $"[ KeySearchWindow ] Key created: {name} (remember to export value tables, fill translations and regenerate)",
+                $"[ KeySearchWindow ] key 已创建：{name}（记得导出 value 表并填写译文后重新导表）"));
+            return name;
+        }
+
+        // 新 key 名合法性：非空 + 命名规范（首字符字母/下划线，其余字母数字下划线点）
+        private static bool IsLegalNewKey(string name)
+            => !string.IsNullOrEmpty(name) && new LocalizationKeyEntry { name = name }.IsValidName();
+
+        // 显示文案中英切换：跟随 LC 当前显示语言（English 显示 en，其余显示 zh）
+        private static string Tr(string en, string zh)
+            => LC.DisplayLanguage == ELanguage.English ? en : zh;
 
         // 行内容：加粗 key + 灰色说明；当前已选 key 行加 ✓ 标记
         private GUIContent RowContent(LocalizationKeyEntry entry)
