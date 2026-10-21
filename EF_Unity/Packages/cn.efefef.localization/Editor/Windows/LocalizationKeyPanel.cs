@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 15:26:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-21 16:40:00
- * ScriptVersion:   0.8
+ * ModifyTime:      2026-10-21 16:45:00
+ * ScriptVersion:   0.9
  * ================================================
  */
 
@@ -26,6 +26,9 @@ namespace EasyFramework.Localization.Edit
     internal class LocalizationKeyPanel : EFConfigPanelBase
     {
         #region Fields
+
+        // 外部工具写盘标志：KeySearchWindow 新建 key 后置位，OnGUI 在无未保存修改时自动重载清单（防面板保存覆盖新 key）
+        internal static bool ExternalManifestChanged;
 
         // 默认分组名
         private const string DefaultGroup = "Default";
@@ -237,6 +240,13 @@ namespace EasyFramework.Localization.Edit
 
         public override void OnGUI()
         {
+            // 搜索窗等外部工具写盘后，未保存修改时自动重载清单（有未保存修改则保留内存态，标志留待下次）
+            if (ExternalManifestChanged && !_dirty)
+            {
+                ExternalManifestChanged = false;
+                LoadOrCreate();
+            }
+
             if (_file == null) LoadOrCreate();
 
             // 首次进入：只显示引导页，点创建后才出现表格内容

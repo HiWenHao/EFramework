@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-14 14:03:21
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-16 18:45:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-10-21 16:25:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
@@ -26,8 +26,8 @@ namespace EasyFramework.Localization.Edit
         // Key 清单文件名（多语言 Key 清单的唯一文件名）
         internal const string FileName = "LocalizationKeys.json";
 
-        // 存放目录（相对工程 Resources；放 Resources 下运行时可直接加载）
-        internal const string Folder = "Resources/L10n";
+        // 存放目录（相对工程根，Assets 外的编辑器数据目录：清单只是面板数据源，运行时不用，不随包打进构建）
+        internal const string Folder = "EFTools/Localization";
 
         // value 表目录（相对工程根，非 Resources；供翻译填写的源文件，Luban 导表后产出 bytes 进包）
         internal const string ValuesDir = "EFTools/Datable/Datas";
@@ -40,7 +40,7 @@ namespace EasyFramework.Localization.Edit
         #region Properties
 
         // Key 清单 JSON 绝对路径（面板读写的唯一目标文件；不存在时面板会引导创建）
-        internal static string JsonPath => Path.Combine(Application.dataPath, Folder, FileName);
+        internal static string JsonPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", Folder, FileName));
 
         // value 表目录绝对路径（不存在时导出函数会自动创建）
         internal static string ValuesPath
