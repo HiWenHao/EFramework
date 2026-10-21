@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2024-10-10 14:39:19
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-10-21 16:50:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -130,11 +130,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private void DrawButton(int index, EFConfigPanelBase configPanel)
         {
-            if (!GUILayout.Button(configPanel.Name,
-                    new GUIStyle(GUI.skin.button)
-                    {
-                        alignment = TextAnchor.MiddleLeft
-                    }))
+            bool clicked = GUILayout.Button(configPanel.Name,
+                GUIUtils.Button(color: index == _panelIndex ? GUIUtils.LightGreen : Color.white));
+
+            if (!clicked)
                 return;
 
             _panelIndex = index;
