@@ -4,12 +4,13 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-05-12 17:11:40
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-01 15:10:00
- * ScriptVersion: 0.2
+ * ModifyTime:    2026-10-22 16:30:00
+ * ScriptVersion: 0.3
  * ===============================================
  */
 
 using System.IO;
+using EasyFramework.Edit.Windows.Dataable;
 using UnityEditor;
 using UnityEngine;
 
@@ -54,15 +55,8 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 6)]
         public static void OpenExcelFolderPath()
         {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../../ExcelFolder"));
-            OpenFolder(path);
-        }
-
-        [MenuItem(MenuItemToolkit.Folders + "Luban", false, MenuItemToolkit.FoldersPriority + 7)]
-        public static void OpenLubanToolsFolderPath()
-        {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../../Packages/cn.efefef.datable/LubanTools~"));
-            OpenFolder(path);
+            // 打开配表数据目录（__tables__.xlsx 与各 value CSV 所在处）；路径与数据表配置面板共用同一来源
+            OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));
         }
 
         private static void OpenFolder(string folderPath)

@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-10-10 15:26:00
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-10-21 16:45:00
- * ScriptVersion:   0.9
+ * ModifyTime:      2026-10-22 16:40:00
+ * ScriptVersion:   1.0
  * ================================================
  */
 
@@ -997,6 +997,15 @@ namespace EasyFramework.Localization.Edit
                 D.Error(Tr(
                     "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)",
                     "[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）"));
+                return;
+            }
+
+            // 前置：确保 L10n.Text bean 已登记（__beans__.xlsx；幂等，已存在自动跳过）——缺失时 Luban 导表会失败
+            if (!XlsxRowAppender.AppendBean("L10n.Text", 0, ("key", "string"), ("value", "string")))
+            {
+                D.Error(Tr(
+                    "[ LocalizationKeyPanel ] Bean registration failed, see Console",
+                    "[ LocalizationKeyPanel ] bean 登记失败，详见 Console"));
                 return;
             }
 
