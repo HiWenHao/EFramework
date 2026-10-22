@@ -211,7 +211,7 @@ namespace EasyFramework.Localization.Edit
             if (!_file.Save(LocalizationData.JsonPath))
             {
                 if (!silent)
-                    EditorUtility.DisplayDialog("保存失败", "无法写入 Key 清单文件，请查看 Console。", "确定");
+                    EditorUtility.DisplayDialog("保存失败", "无法写入 Key 清单文件，请查看 Console。", LC.Combine(Lc.Confirm));
                 return false;
             }
 
@@ -305,7 +305,7 @@ namespace EasyFramework.Localization.Edit
                     GUILayout.Width(AvailableWidth - half), GUILayout.Height(20f)))
             {
                 if (!_dirty ||
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text), "确定", "取消"))
+                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text), LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
                     LoadOrCreate();
             }
 
@@ -902,7 +902,7 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.meta.groups.Contains(name))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{name} {LC.Combine(Lc.Exist)}", "确定");
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{name} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -1315,7 +1315,7 @@ namespace EasyFramework.Localization.Edit
             var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             if (file == null)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), "LocalizationKeys.json not found.", "确定");
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), "LocalizationKeys.json not found.", LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -1324,12 +1324,12 @@ namespace EasyFramework.Localization.Edit
 
             if (issues.Count == 0)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Success), $"共 {file.keys.Count} 条 key。", "确定");
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Success), $"共 {file.keys.Count} 条 key。", LC.Combine(Lc.Confirm));
                 return;
             }
 
             var text = string.Join("\n", issues);
-            EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", "确定");
+            EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", LC.Combine(Lc.Confirm));
         }
 
         // 供菜单调用：按 Key 清单导出全部语言的 value 表（与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。

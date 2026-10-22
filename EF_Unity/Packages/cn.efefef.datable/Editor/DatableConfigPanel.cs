@@ -477,10 +477,17 @@ namespace EasyFramework.Edit.Windows.Dataable
             if (!DotNetToolkit.EnsureDotNetVersion(8, ToolSourceDir))
                 return;
 
-            if (_config == null)
+            if (_config is null)
             {
-                D.Warning("[ DatableConfigPanel ] 配置未加载，无法生成。");
-                return;
+                if (EditorUtils.CheckAssets<DatableConfig>(out string path))
+                    _config = EditorUtils.LoadSettingAtPath<DatableConfig>(path);
+                else
+                {
+                    D.Warning(LC.Tr(
+                        "[ DatableConfig ] 配置未生成, 请先生成相关配置。",
+                        "[ DatableConfig ] Configuration not generated. Please generate the relevant configuration first."));
+                    return;
+                }
             }
 
             string sourcePath = _config.LubanSourcePath;

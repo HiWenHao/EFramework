@@ -9,8 +9,6 @@
  * ===============================================
  */
 
-using System;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,25 +22,6 @@ namespace EasyFramework.Edit
     /// </summary>
     internal static class StartProgramToolkit
     {
-        #region EXE or Bat or Sh
-
-        [MenuItem(MenuItemToolkit.Utility + "📊 Excel To Byte File", false, MenuItemToolkit.UtilityPriority + 1)]
-        private static void StartETB()
-        {
-            string toolDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../../Tools/ExcelToByteFIle"));
-
-            var result = ProcessToolkit.RunCaptured("ExcelToByteFile.exe", toolDir);
-            if (result.ExitCode != 0)
-            {
-                D.Error($"[ StartProgramToolkit ] ExcelToByteFile 执行失败，退出码 {result.ExitCode}。\n{result.Error}\n{result.Output}");
-                return;
-            }
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-
-        #endregion
-
         #region Open URL
 
         [MenuItem(MenuItemToolkit.About + "🐧 Join QQ group", false, MenuItemToolkit.AboutPriority + 1)]

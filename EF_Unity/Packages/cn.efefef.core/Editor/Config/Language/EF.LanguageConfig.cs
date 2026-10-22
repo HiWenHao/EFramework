@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:      编辑器面板语言支持
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-05-28 16:14:49
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-05-01
- * ScriptVersion: 0.6
+ * ScriptVersion: 0.8
  * ================================================
  */
 
@@ -204,7 +204,7 @@ namespace EasyFramework.Edit
         /// 获取安全的语言索引（防止越界）
         /// </summary>
         /// <param name="maxCount">该语言项支持的语言种类数量</param>
-        /// <returns>有效的索引值，如果 maxCount <= 0 则返回 0</returns>
+        /// <returns>有效的索引值，如果 maxCount 小于等于 0 则返回 0</returns>
         private static int GetSafeLanguageIndex(int maxCount)
         {
             EnsureCurrentIndex();
@@ -241,7 +241,7 @@ namespace EasyFramework.Edit
         /// <param name="keys">要拼接的语言键数组</param>
         /// <returns>拼接后的字符串；如果数组为空则返回空字符串</returns>
         public static string Combine(params Lc[] keys)
-        { 
+        {
             if (keys == null || keys.Length == 0)
                 return string.Empty;
 
@@ -263,6 +263,40 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
+        /// 根据当前设定的语言类型返回设定好的对应语言
+        /// <para>Return the corresponding language based on the currently set language type.</para>
+        /// </summary>
+        /// <summary>
+        /// 按当前显示语言选中文案；args 非空时对选中文案执行 string.Format 填充占位符
+        /// <para>Selects text by the current display language; formats the selected text with args when provided.</para>
+        /// <para>占位符与参数不匹配时降级返回原文并告警，不抛出异常打断调用链。</para>
+        /// </summary>
+        /// <param name="zh">中文文案，含 {0} 等占位符时与 args 按序对应<para>Chinese text; placeholders like {0} map to args in order.</para></param>
+        /// <param name="en">英文文案，占位符规则与 zh 相同<para>English text; same placeholder rules as zh.</para></param>
+        /// <param name="args">占位符参数；不传或传空时原文返回，不做格式化<para>Placeholder args; omitted or empty returns the selected text as-is.</para></param>
+        /// <returns>选中（并按需格式化）的文案<para>The selected and optionally formatted text.</para></returns>
+        public static string Tr(string zh, string en, params object[] args)
+        {
+            bool isEn = DisplayLanguage == ELanguage.English;
+            var text = isEn ? en : zh;
+
+            if (args == null || args.Length == 0)
+                return text;
+
+            try
+            {
+                return string.Format(text, args);
+            }
+            catch (FormatException)
+            {
+                D.Warning(isEn
+                    ? $"[ LC ] TrFormatting failed (placeholders do not match parameters), returning original text:  {text}"
+                    : $"[ LC ] Tr 格式化失败（占位符与参数不匹配），返回原文： {text}");
+                return text;
+            }
+        }
+
+        /// <summary>
         /// 编辑器菜单：从 JSON 文件重新生成 Lc 枚举文件
         /// 通常在添加新语言键后执行
         /// </summary>
@@ -273,7 +307,8 @@ namespace EasyFramework.Edit
 
             if (string.IsNullOrEmpty(_jsonPath) || !File.Exists(_jsonPath))
             {
-                EditorUtility.DisplayDialog("错误", $"未找到语言配置文件:\n{_jsonPath}", "确定");
+                EditorUtility.DisplayDialog(Combine(Lc.Error),
+                    Tr("未找到语言配置文件:\n{0}", "Language config file not found:\n{0}", _jsonPath), Combine(Lc.Confirm));
                 return;
             }
 
@@ -284,7 +319,8 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                EditorUtility.DisplayDialog("错误", $"读取语言文件失败:\n{ex.Message}", "确定");
+                EditorUtility.DisplayDialog(Combine(Lc.Error),
+                    Tr("读取语言文件失败:\n{0}", "Failed to read language file:\n{0}", ex.Message), Combine(Lc.Confirm));
                 return;
             }
 
@@ -296,13 +332,16 @@ namespace EasyFramework.Edit
             catch (Exception ex)
             {
                 D.Error(ex);
-                EditorUtility.DisplayDialog("错误", "解析语言 JSON 失败，请检查文件格式。", "确定");
+                EditorUtility.DisplayDialog(Combine(Lc.Error),
+                    Tr("解析语言 JSON 失败，请检查文件格式。", "Failed to parse language JSON. Please check the file format."),
+                    Combine(Lc.Confirm));
                 return;
             }
 
             if (root?.LcList == null || root.LcList.Count == 0)
             {
-                EditorUtility.DisplayDialog("错误", "语言 JSON 中没有包含任何条目。", "确定");
+                EditorUtility.DisplayDialog(Combine(Lc.Error),
+                    Tr("语言 JSON 中没有包含任何条目。", "The language JSON contains no entries."), Combine(Lc.Confirm));
                 return;
             }
 
@@ -318,7 +357,8 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                EditorUtility.DisplayDialog("错误", $"写入枚举文件失败:\n{ex.Message}", "确定");
+                EditorUtility.DisplayDialog(Combine(Lc.Error),
+                    Tr("写入枚举文件失败:\n{0}", "Failed to write enum file:\n{0}", ex.Message), Combine(Lc.Confirm));
             }
         }
 
