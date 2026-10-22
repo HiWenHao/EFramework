@@ -113,70 +113,108 @@
             <para>Specify the types of logs that need to be cached (bit mask combination), which will only take effect for subsequent logs. Cached logs will not be affected.</para>
             </summary>
         </member>
-        <member name="M:EasyFramework.D.IsColor(System.String)">
-            <summary>
-            Check the string is color
-            <para>检查当前字符串是否为颜色值</para>
-            </summary>
-        </member>
         <member name="T:EasyFramework.TStatic">
             <summary>
             XH-Tools
+            <para>Static tool extensions. 静态工具扩展集</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsInt(System.String)">
             <summary>
             Check the string is int.
-            检查是否为整数
+            <para>检查是否为整数</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsFloat(System.String)">
             <summary>
-            Check the string is float.
-            检查是否为单精度浮点数
+            Check the string is float. Format: -?\d+(\.\d+)?
+            <para>检查是否为单精度浮点数，格式：-?\d+(\.\d+)?</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsColor(System.String)">
             <summary>
-            Check the string is color
-            检查当前字符串是否为颜色值
+            Check the string is a hex color: #RGB / #RRGGBB / #RRGGBBAA.
+            <para>检查当前字符串是否为十六进制颜色值（支持 #RGB、#RRGGBB、#RRGGBBAA）</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsChinese(System.String)">
             <summary>
             Check the string is in pure Chinese.
-            检查是否为纯中文
+            <para>检查是否为纯中文（不允许空串）</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsEnglish(System.String)">
             <summary>
             Check the string is in pure English.
-            检查是否为纯英文
+            <para>检查是否为纯英文</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsEmail(System.String)">
             <summary>
             Check the string is a email.
-            检查是否为邮箱
+            <para>检查是否为邮箱</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsDoubleBytes(System.String)">
             <summary>
-            Check the string is a double bytes.
-            检查是否为双字节
+            Check the string contains double-byte (non-ASCII) characters.
+            <para>检查是否包含双字节（非 ASCII）字符</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.IsPhoneNumber(System.String)">
             <summary>
-            Check the string is a phone number.
-            检查是否为手机号
+            Check the string is a mainland China phone number (loose segment validation: 13x-19x).
+            <para>检查是否为大陆手机号（宽松号段校验：13x-19x，共 11 位）</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.IsNullOrWhiteSpace(System.String)">
+            <summary>
+            Quick null/empty/whitespace check for fluent call chains.
+            <para>链式调用下的空值快速判断</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.ToIntOrDefault(System.String,System.Int32)">
+            <summary>
+            Parse to int, return defaultValue when invalid.
+            <para>转整数，非法时返回默认值</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.ToFloatOrDefault(System.String,System.Single)">
+            <summary>
+            Parse to float with invariant culture, return defaultValue when invalid.
+            <para>转浮点数（不受系统区域设置影响），非法时返回默认值</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.Truncate(System.String,System.Int32,System.String)">
+            <summary>
+            Truncate the string with a suffix when exceeding maxLength.
+            <para>超长时截断字符串并追加后缀</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.ToColor(System.String,UnityEngine.Color)">
+            <summary>
+            Parse hex color string (#RGB/#RRGGBB/#RRGGBBAA) to Color, return defaultValue when invalid.
+            <para>十六进制颜色字符串转 Color，非法时返回默认值</para>
+            </summary>
+        </member>
+        <member name="M:EasyFramework.TStatic.ToHex(UnityEngine.Color,System.Boolean)">
+            <summary>
+            Convert to hex string "#RRGGBB" (append alpha as "#RRGGBBAA" when includeAlpha).
+            <para>转十六进制颜色字符串，includeAlpha 时输出 #RRGGBBAA</para>
             </summary>
         </member>
         <member name="M:EasyFramework.TStatic.BytesToAudioClip(System.Byte[])">
             <summary>
-             Byte stream data to audio clip float array.字节流数据转音频单精度浮点型数组
+            Byte stream data to audio clip float array.
+            <para>字节流数据转音频单精度浮点型数组（16bit PCM）</para>
             </summary>
             <param name="data">The byte stream.字节流数据</param>
+        </member>
+        <member name="M:EasyFramework.TStatic.ToHexString(System.Byte[],System.String)">
+            <summary>
+            Bytes to hex string like "0A1B2C", optional separator. For debug dumps.
+            <para>字节数组转十六进制字符串（调试打印用），可选分隔符</para>
+            </summary>
         </member>
     </members>
 </doc>
