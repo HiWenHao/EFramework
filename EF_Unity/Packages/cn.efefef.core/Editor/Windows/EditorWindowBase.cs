@@ -4,8 +4,8 @@
  * Author:        Alvin.Wang(Wenhao)
  * CreationTime:  2026-03-19 18:19:50
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-30 15:05:00
- * ScriptVersion: 0.2
+ * ModifyTime:    2026-10-23 13:45:00
+ * ScriptVersion: 0.3
  * ===============================================
  */
 
@@ -16,163 +16,144 @@ using System;
 namespace EasyFramework.Edit.Windows
 {
     /// <summary>
-    /// EditorWindow 稳定基类。
-    /// <br/>特性：Domain Reload 安全（_isRefreshing 序列化）<br/>刷新/编译时自动遮盖<br/>稳定帧计数防抖<br/>异常兜底覆盖层.
-    /// <para>子类实现 <see cref="OnSmartGUI"/> 作为主绘制入口，重写 Load/Save 实现数据持久化。</para>
+    /// EditorWindow 稳定基类：Domain Reload 安全防护、刷新/编译遮盖、异常兜底覆盖层（含堆栈查看与复制）。
+    /// <para>Stable EditorWindow base: domain-reload safety, refresh/compile overlay and an error overlay with stack trace view.</para>
     /// </summary>
     public abstract class EditorWindowBase : EditorWindow
     {
-        private const int RequiredStableFrames = 3; //需要累积的稳定帧数才能确认刷新结束;
-        [SerializeField] private bool _isRefreshing; //是否处于刷新/编译状态
-        private int _stableFrameCount; //刷新结束后的稳定帧计数，防止短暂恢复造成误判
+        #region Fields
 
-        #region 生命周期
+        private const int RequiredStableTicks = 3; //确认刷新结束需累积的稳定更新数（EditorApplication.update 计数，非渲染帧）;
 
-        /// <summary>
-        /// 窗口启用：订阅 EditorApplication.update，检测当前刷新状态。
-        /// </summary>
-        protected virtual void OnEnable()
-        {
-            EditorApplication.update += OnEditorUpdate;
-            CheckInitialRefreshState();
-        }
-
-        /// <summary>
-        /// 窗口禁用：退订 update，非刷新状态下保存窗口数据。
-        /// </summary>
-        protected virtual void OnDisable()
-        {
-            EditorApplication.update -= OnEditorUpdate;
-
-            if (!_isRefreshing)
-            {
-                SaveWindowData();
-            }
-        }
+        [SerializeField] private bool isRefreshing; //是否处于刷新/编译状态（序列化以在域重载后恢复）;
+        private int _stableTickCount; //刷新结束后的稳定计数，防止短暂恢复造成误判;
+        private Exception _lastError; //最近捕获的异常，非 null 时显示错误覆盖层（不序列化，域重载后自动清零）;
+        private Vector2 _errorScrollPos; //错误覆盖层堆栈区滚动位置;
 
         #endregion
 
-        #region 刷新状态监控
+        #region Properties
 
         /// <summary>
-        /// EditorApplication.update 回调。检测刷新/编译状态变化，驱动进入/退出刷新流程。
+        /// 当前是否处于刷新/编译中。
+        /// <para>Whether the window is in refresh/compile state.</para>
         /// </summary>
+        protected bool IsRefreshing => isRefreshing;
+
+        /// <summary>
+        /// 是否处于错误状态（OnSmartGUI 或 LoadWindowData 抛出过异常）。
+        /// <para>Whether an error was captured from OnSmartGUI or LoadWindowData.</para>
+        /// </summary>
+        protected bool HasError => _lastError != null;
+
+        #endregion
+
+        #region Methods
+
+        //EditorApplication.update 回调，检测刷新/编译状态变化并驱动进入/退出刷新流程;
         private void OnEditorUpdate()
         {
             bool currentlyRefreshing = EditorApplication.isUpdating || EditorApplication.isCompiling;
 
-            if (!_isRefreshing && currentlyRefreshing)
+            if (!isRefreshing && currentlyRefreshing)
                 EnterRefreshState();
 
-            if (_isRefreshing && !currentlyRefreshing)
+            if (isRefreshing && !currentlyRefreshing)
                 HandleRefreshCompletion();
         }
 
-        /// <summary>
-        /// 首次启用时检测当前是否已在刷新中，决定走"等待刷新完成"还是"直接就绪"路径。
-        /// </summary>
+        //首次启用时检测当前是否已在刷新中，决定走"等待刷新完成"还是"直接就绪"路径;
         private void CheckInitialRefreshState()
         {
-            _isRefreshing = EditorApplication.isUpdating || EditorApplication.isCompiling;
+            isRefreshing = EditorApplication.isUpdating || EditorApplication.isCompiling;
 
-            if (_isRefreshing)
+            if (isRefreshing)
             {
                 OnRefreshStarted();
             }
             else
             {
-                LoadWindowData();
-                OnWindowReady();
+                if (SafeLoadWindowData())
+                {
+                    OnWindowReady();
+                }
             }
         }
 
-        /// <summary>
-        /// 进入刷新状态：保存数据、通知子类、强制重绘。
-        /// </summary>
+        //进入刷新状态：保存数据、通知子类、强制重绘;
         private void EnterRefreshState()
         {
-            _isRefreshing = true;
-            _stableFrameCount = 0;
+            isRefreshing = true;
+            _stableTickCount = 0;
             SaveWindowData();
             OnRefreshStarted();
             Repaint();
         }
 
-        /// <summary>
-        /// 处理刷新完成。累积稳定帧数防抖，达到阈值后才确认刷新结束，
-        /// 加载数据、通知子类、进入就绪状态。
-        /// </summary>
+        //处理刷新完成：累积稳定计数防抖，达到阈值后确认结束并以全新数据重载;
         private void HandleRefreshCompletion()
         {
-            _stableFrameCount++;
+            _stableTickCount++;
 
-            if (_stableFrameCount < RequiredStableFrames)
+            if (_stableTickCount < RequiredStableTicks)
                 return;
 
-            _isRefreshing = false;
-            LoadWindowData();
-            OnRefreshCompleted();
-            OnWindowReady();
+            isRefreshing = false;
+            _lastError = null; //刷新后重置错误状态，基于重载结果重新判定;
+
+            if (SafeLoadWindowData())
+            {
+                OnRefreshCompleted();
+                OnWindowReady();
+            }
+
             Repaint();
         }
 
-        #endregion
-
-        #region 可重写方法
-
-        /// <summary>
-        /// 刷新开始时调用
-        /// </summary>
-        protected virtual void OnRefreshStarted()
+        //安全加载窗口数据：LoadWindowData 的异常在此捕获进错误状态，不逃逸调用点;
+        private bool SafeLoadWindowData()
         {
+            try
+            {
+                LoadWindowData();
+                return true;
+            }
+            catch (Exception e)
+            {
+                CaptureError(e);
+                return false;
+            }
         }
 
-        /// <summary>
-        /// 刷新完成后调用
-        /// </summary>
-        protected virtual void OnRefreshCompleted()
+        //记录异常到错误状态并输出日志，错误状态期内 OnGUI 只走覆盖层不重复捕获;
+        private void CaptureError(Exception e)
         {
+            _lastError = e;
+            D.Error(e);
         }
 
-        /// <summary>
-        /// 窗口就绪时调用（首次打开或刷新完成后）
-        /// </summary>
-        protected virtual void OnWindowReady()
+        //错误覆盖层"刷新"按钮：重载窗口数据，成功则清除错误状态回到正常绘制;
+        private void HandleErrorRetry()
         {
+            if (SafeLoadWindowData())
+            {
+                _lastError = null;
+            }
+
+            Repaint();
         }
 
-        /// <summary>
-        /// 加载窗口数据
-        /// </summary>
-        protected virtual void LoadWindowData()
-        {
-        }
-
-        /// <summary>
-        /// 保存窗口数据
-        /// </summary>
-        protected virtual void SaveWindowData()
-        {
-        }
-
-        /// <summary>
-        /// 子类实现实际的GUI绘制
-        /// </summary>
-        protected abstract void OnSmartGUI();
-
-        #endregion
-
-        #region GUI控制
-
-        /// <summary>
-        /// Unity OnGUI 入口。刷新中显示遮盖层，否则调用子类 <see cref="OnSmartGUI"/>，
-        /// 异常时显示错误覆盖层。
-        /// </summary>
         private void OnGUI()
         {
-            if (_isRefreshing)
+            if (isRefreshing)
             {
                 DrawRefreshOverlay();
+                return;
+            }
+
+            if (_lastError != null)
+            {
+                DrawErrorOverlay(_lastError);
                 return;
             }
 
@@ -182,14 +163,12 @@ namespace EasyFramework.Edit.Windows
             }
             catch (Exception e)
             {
-                D.Error(e);
+                CaptureError(e);
                 DrawErrorOverlay(e);
             }
         }
 
-        /// <summary>
-        /// 绘制刷新/编译遮盖层：深色遮罩 + 状态文字 + 微型进度条，阻塞期间持续 Repaint。
-        /// </summary>
+        //绘制刷新/编译遮盖层：深色遮罩 + 状态文字 + 微型进度条，阻塞期间持续 Repaint;
         private void DrawRefreshOverlay()
         {
             var rect = new Rect(0, 0, position.width, position.height);
@@ -204,38 +183,104 @@ namespace EasyFramework.Edit.Windows
             Repaint();
         }
 
-        /// <summary>
-        /// 绘制 GUI 异常覆盖层：红色遮罩 + 错误信息 + 重试按钮。
-        /// </summary>
+        //绘制错误覆盖层：异常类型 + 消息 + 可滚动堆栈 + 复制/重试按钮;
         private void DrawErrorOverlay(Exception e)
         {
             var rect = new Rect(0, 0, position.width, position.height);
 
             EditorGUI.DrawRect(rect, GUIUtils.OverlayErrorBg);
 
-            GUI.Label(new Rect(0, rect.height / 2 - 30, rect.width, 30),
-                $"{LC.Combine(Lc.Error)}: GUI Error", GUIUtils.OverlayLabel);
+            GUI.Label(new Rect(0, 10f, rect.width, 30f),
+                $"{LC.Combine(Lc.Error)}: {e.GetType().Name}", GUIUtils.OverlayLabel);
 
-            GUI.Label(new Rect(20, rect.height / 2, rect.width - 40, 60),
+            GUI.Label(new Rect(20f, 45f, rect.width - 40f, 25f),
                 e.Message, GUIUtils.OverlaySmallLabel);
 
-            if (!GUI.Button(new Rect(rect.width / 2 - 50, rect.height - 40, 100, 25), LC.Combine(Lc.Refresh))) return;
-            LoadWindowData();
-            Repaint();
+            GUILayout.BeginArea(new Rect(20f, 75f, rect.width - 40f, rect.height - 130f));
+            _errorScrollPos = EditorGUILayout.BeginScrollView(_errorScrollPos);
+            EditorGUILayout.TextArea(e.StackTrace, EditorStyles.wordWrappedMiniLabel, GUILayout.ExpandHeight(true));
+            EditorGUILayout.EndScrollView();
+            GUILayout.EndArea();
+
+            if (GUI.Button(new Rect(rect.width / 2f - 110f, rect.height - 45f, 100f, 25f), "复制错误"))
+            {
+                GUIUtility.systemCopyBuffer = e.ToString();
+            }
+
+            if (GUI.Button(new Rect(rect.width / 2f + 10f, rect.height - 45f, 100f, 25f), LC.Combine(Lc.Refresh)))
+            {
+                HandleErrorRetry();
+            }
         }
 
-        #endregion
+        protected virtual void OnEnable()
+        {
+            EditorApplication.update += OnEditorUpdate;
+            CheckInitialRefreshState();
+        }
 
-        #region 工具方法
+        protected virtual void OnDisable()
+        {
+            EditorApplication.update -= OnEditorUpdate;
+
+            if (!isRefreshing)
+            {
+                SaveWindowData();
+            }
+        }
 
         /// <summary>
-        /// 当前是否在刷新中
+        /// 刷新开始时调用。
+        /// <para>Called when a refresh starts.</para>
         /// </summary>
-        protected bool IsRefreshing => _isRefreshing;
+        protected virtual void OnRefreshStarted()
+        {
+        }
 
         /// <summary>
-        /// 安全地显示窗口（刷新时不打开）
+        /// 刷新完成后调用（数据重载成功后）。
+        /// <para>Called after a refresh completes and data is reloaded.</para>
         /// </summary>
+        protected virtual void OnRefreshCompleted()
+        {
+        }
+
+        /// <summary>
+        /// 窗口就绪时调用（首次打开或刷新完成后）。
+        /// <para>Called when the window is ready (first open or after refresh).</para>
+        /// </summary>
+        protected virtual void OnWindowReady()
+        {
+        }
+
+        /// <summary>
+        /// 加载窗口数据（子类初始化绘制所需状态；异常由基类兜底进错误覆盖层）。
+        /// <para>Loads window data; exceptions are caught by the base and routed to the error overlay.</para>
+        /// </summary>
+        protected virtual void LoadWindowData()
+        {
+        }
+
+        /// <summary>
+        /// 保存窗口数据（窗口禁用且非刷新状态时调用）。
+        /// <para>Saves window data on disable while not refreshing.</para>
+        /// </summary>
+        protected virtual void SaveWindowData()
+        {
+        }
+
+        /// <summary>
+        /// 子类实现实际的 GUI 绘制；抛出的异常由基类捕获并显示错误覆盖层。
+        /// <para>Draws the actual GUI; exceptions thrown here are caught by the base and shown in the error overlay.</para>
+        /// </summary>
+        protected abstract void OnSmartGUI();
+
+        /// <summary>
+        /// 安全地显示窗口（刷新/编译期间不打开并返回 null）。
+        /// <para>Shows the window safely; returns null during refresh/compile.</para>
+        /// </summary>
+        /// <typeparam name="T">窗口类型<para>Window type</para></typeparam>
+        /// <returns>窗口实例，刷新期间为 null<para>Window instance, or null while refreshing</para></returns>
         public new static T GetWindow<T>() where T : EditorWindowBase
         {
             if (EditorApplication.isUpdating || EditorApplication.isCompiling)
@@ -245,8 +290,12 @@ namespace EasyFramework.Edit.Windows
         }
 
         /// <summary>
-        /// 安全地显示窗口（带标题）
+        /// 安全地显示窗口（带标题，刷新/编译期间不打开并返回 null）。
+        /// <para>Shows the window safely with a title; returns null during refresh/compile.</para>
         /// </summary>
+        /// <param name="title">窗口标题<para>Window title</para></param>
+        /// <typeparam name="T">窗口类型<para>Window type</para></typeparam>
+        /// <returns>窗口实例，刷新期间为 null<para>Window instance, or null while refreshing</para></returns>
         public new static T GetWindow<T>(string title) where T : EditorWindowBase
         {
             if (EditorApplication.isUpdating || EditorApplication.isCompiling)

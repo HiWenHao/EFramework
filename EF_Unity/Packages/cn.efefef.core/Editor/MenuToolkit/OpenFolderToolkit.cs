@@ -55,7 +55,6 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 6)]
         public static void OpenExcelFolderPath()
         {
-            // 打开配表数据目录（__tables__.xlsx 与各 value CSV 所在处）；路径与数据表配置面板共用同一来源
             OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));
         }
 
