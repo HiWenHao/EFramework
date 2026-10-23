@@ -4,8 +4,8 @@
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2023-02-13 17:36:43
  * ModifyAuthor:    Alvin5100
- * ModifyTime:      2026-04-01 16:47:08
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-23 17:20:00
+ * ScriptVersion:   0.2
  * ===============================================
  */
 
@@ -32,6 +32,24 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 return _instance;
             }
         }
+
+        /// <summary> 图集在工程下的路径 <para>The path of the atlas under the project</para> </summary>
+        [SerializeField, HeaderPro("图集在工程下的路径", "The path of the atlas under Engineering")]
+        private string _atlasFolder = "Assets/";
+
+        public string AtlasFolder => _atlasFolder;
+
+        /// <summary> UI预制件保存在工程下的路径 <para>The path where the UI prefab is saved under the project</para> </summary>
+        [SerializeField, HeaderPro("UI预制件保存在工程下的路径", "The path where the UI prefab is saved under the project")]
+        private string _uiPrefabPath = "Assets/";
+
+        public string UIPrefabPath => _uiPrefabPath;
+
+        /// <summary> UI脚本保存在工程下的路径 <para>The path where the UI scripts will be saved under the project</para> </summary>
+        [SerializeField, HeaderPro("UI脚本保存在工程下的路径", "The path where the UI scripts will be saved under the project")]
+        private string _uiCodePath = "Assets/";
+
+        public string UICodePath => _uiCodePath;
 
         /// <summary>
         /// 组件的缩略名字映射

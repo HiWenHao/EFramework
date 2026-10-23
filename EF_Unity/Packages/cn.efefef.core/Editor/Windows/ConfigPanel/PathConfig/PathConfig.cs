@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-04-20 19:32:17
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-10-23 17:20:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -18,27 +18,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// </summary>
     public class PathConfig : ScriptableObject
     {
-        [SerializeField, HeaderPro("图集在工程下的路径", "The path of the atlas under Engineering")]
-        private string _atlasFolder = "Assets/";
-
-        public string AtlasFolder => _atlasFolder;
-
+        // 注：图集 / UI预制件 / UI代码 三个路径已迁至 cn.efefef.ui 的 UiBindingConfig
+        // Note: atlas / UI-prefab / UI-code paths were moved to UiBindingConfig in cn.efefef.ui
         [SerializeField, HeaderPro("动画压缩后在工程下的路径", "Animation path under project after compression")]
         private string _extractPath = "Assets/";
 
         public string ExtractPath => _extractPath;
-
-        [SerializeField, HeaderPro("UI预制件保存在工程下的路径", "The path where the UI prefab is saved under the project")]
-        private string _uiPrefabPath = "Assets/";
-
-        public string UIPrefabPath => _uiPrefabPath;
-
-        private static bool sss;
-
-        [SerializeField, HeaderPro("UI脚本保存在工程下的路径", "The path where the UI scripts will be saved under the project")]
-        private string _uiCodePath = "Assets/";
-
-        public string UICodePath => _uiCodePath;
 
         //  ====================================================================
 

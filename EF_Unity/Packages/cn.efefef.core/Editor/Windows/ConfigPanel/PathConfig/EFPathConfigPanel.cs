@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2024-10-16 16:39:56
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
+ * ModifyTime:    2026-10-23 16:30:00
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -25,12 +25,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         GUIStyle _uiStyle;
 
+        // 注：图集 / UI预制件 / UI代码 三个路径已迁至 cn.efefef.ui 的 EFUiBindingConfigPanel
+        // Note: atlas / UI-prefab / UI-code paths were moved to EFUiBindingConfigPanel in cn.efefef.ui
         private SerializedProperty _sublimePath;
         private SerializedProperty _notepadPath;
-        private SerializedProperty _atlasFolder;
         private SerializedProperty _extractPath;
-        private SerializedProperty _uiCodePath;
-        private SerializedProperty _uiPrefabPath;
         private SerializedObject _customSettings;
 
         public override string Name => LC.Combine(new Lc[] { Lc.Path, Lc.Config });
@@ -56,10 +55,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             _sublimePath = _customSettings.FindProperty("_sublimePath");
             _notepadPath = _customSettings.FindProperty("_notepadPath");
-            _atlasFolder = _customSettings.FindProperty("_atlasFolder");
             _extractPath = _customSettings.FindProperty("_extractPath");
-            _uiCodePath = _customSettings.FindProperty("_uiCodePath");
-            _uiPrefabPath = _customSettings.FindProperty("_uiPrefabPath");
         }
 
         public override void OnGUI()
@@ -72,12 +68,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.LabelField(
                 $"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----",
                 SetUIStyle(GUIUtils.LightGreen, 14));
-            SelectionFolderPath(LC.Combine(new Lc[] { Lc.Atlas, Lc.Save, Lc.Path }), _atlasFolder);
-            SelectionFolderPath(
-                LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Prefab, Lc.Save, Lc.Path }),
-                _uiPrefabPath);
-            SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(new Lc[] { Lc.Code, Lc.Save, Lc.Path }),
-                _uiCodePath);
             SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), _extractPath);
 
             EditorGUILayout.LabelField(
