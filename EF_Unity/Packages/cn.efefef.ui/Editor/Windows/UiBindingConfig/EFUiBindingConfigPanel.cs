@@ -39,7 +39,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _uiCodePath;
         private GUIStyle _uiStyle;
 
-        public override string Name => LC.Combine(Lc.Code, Lc.Auto, Lc.Bind);
+        public override string Name => "UI " + LC.Combine(Lc.Data, Lc.Config);
 
         public override void OnEnable(string assetsPath)
         {
