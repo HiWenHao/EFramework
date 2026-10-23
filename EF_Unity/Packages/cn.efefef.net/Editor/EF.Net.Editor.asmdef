@@ -1,0 +1,17 @@
+{
+    "name": "EF.Net.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9a52594da0499734087c301f463a306a",
+        "GUID:a4a7eea321f5a024bb7118f90940975f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

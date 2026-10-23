@@ -53,6 +53,14 @@
         "cn.efefef.datable": "0.0.1"
       }
     },
+    "cn.efefef.net": {
+      "version": "file:cn.efefef.net",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.0.1"
+      }
+    },
     "cn.efefef.packages": {
       "version": "file:cn.efefef.packages",
       "depth": 0,
