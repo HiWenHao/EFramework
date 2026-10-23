@@ -87,6 +87,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             new RulePrefixes("Tmp", "TextMeshProUGUI"),
             new RulePrefixes("Tog", "Toggle"),
             new RulePrefixes("TGroup", "ToggleGroup"),
+            new RulePrefixes("Tr", "LocalizedText"),
         };
 
         /// <summary> 组件的缩略名字映射 </summary>
