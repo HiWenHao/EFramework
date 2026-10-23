@@ -46,10 +46,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 : _builder.Namespace;
             if (_builder.CreatePrefab)
                 _builder.PrefabPath = string.IsNullOrEmpty(_builder.PrefabPath)
-                    ? ConfigManager.Path.UIPrefabPath
+                    ? UiBindingConfig.Instance.UIPrefabPath
                     : _builder.PrefabPath;
             _builder.ScriptPath = string.IsNullOrEmpty(_builder.ScriptPath)
-                ? ConfigManager.Path.UICodePath
+                ? UiBindingConfig.Instance.UICodePath
                 : _builder.ScriptPath;
 
             _tempFiledNames = new List<string>();
@@ -151,7 +151,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (EditorGUI.EndChangeCheck())
             {
                 if (_builder.CreatePrefab && string.IsNullOrEmpty(_builder.PrefabPath))
-                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+                    _builder.PrefabPath = UiBindingConfig.Instance.UIPrefabPath;
                 Repaint();
                 EditorUtility.SetDirty(_builder);
             }
@@ -160,7 +160,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (_builder.CreatePrefab)
             {
                 if (string.IsNullOrEmpty(_builder.PrefabPath))
-                    _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+                    _builder.PrefabPath = UiBindingConfig.Instance.UIPrefabPath;
 
                 EditorGUILayout.LabelField(_builder.PrefabPath, GUILayout.ExpandWidth(true));
                 DrawSettingSelectPath(false);
@@ -210,9 +210,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             if (!GUILayout.Button(LC.Combine(Lc.Default, Lc.Settings), GUILayout.Width(100))) return;
             if (isCodePath)
-                _builder.ScriptPath = ConfigManager.Path.UICodePath;
+                _builder.ScriptPath = UiBindingConfig.Instance.UICodePath;
             else
-                _builder.PrefabPath = ConfigManager.Path.UIPrefabPath;
+                _builder.PrefabPath = UiBindingConfig.Instance.UIPrefabPath;
             EditorUtility.SetDirty(_builder);
             Repaint();
         }
@@ -727,7 +727,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             string codePath = !string.IsNullOrEmpty(_builder.ScriptPath)
                 ? _builder.ScriptPath
-                : ConfigManager.Path.UICodePath;
+                : UiBindingConfig.Instance.UICodePath;
 
             string className = _builder.name;
             string viewPath = Path.Combine(codePath, "UiView", $"{className}");

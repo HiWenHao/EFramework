@@ -10,6 +10,7 @@
  */
 
 using System.IO;
+using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEditor.U2D;
 using UnityEngine;
@@ -35,7 +36,7 @@ namespace EasyFramework.Edit.SpriteTools
             _target = (AtlasCollector)target;
             _atlasFolder = serializedObject.FindProperty("_atlasFolder");
             _targetObjects = serializedObject.FindProperty("_objects");
-            _frameworkAtlasFolder = ConfigManager.Path.AtlasFolder;
+            _frameworkAtlasFolder = UiBindingConfig.Instance.AtlasFolder;
 
             _allOverwrite = true;
         }

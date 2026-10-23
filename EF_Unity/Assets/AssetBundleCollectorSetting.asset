@@ -93,3 +93,16 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
+    - GroupName: L10N
+      GroupDesc: "\u591A\u8BED\u8A00\u914D\u7F6E\u6587\u4EF6"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Test
+        CollectorGUID: 414e6fbe71cba3b499e200219626f0ce
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackRawFile
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
