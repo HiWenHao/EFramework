@@ -21,7 +21,7 @@ namespace EasyFramework.Edit.Windows.Dataable
     /// <summary>
     /// Excel表配置面板，方便用户设置内容
     /// </summary>
-    [EFConfigPanel]
+    [EFConfigPanel(Priority = 195)]
     public class DatableConfigPanel : EFConfigPanelBase
     {
         internal static string ExcelFolderPath =>
