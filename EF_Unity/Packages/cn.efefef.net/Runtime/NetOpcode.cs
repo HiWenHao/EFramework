@@ -22,16 +22,32 @@ namespace EasyFramework.Systems.Net
     /// </remarks>
     public static class NetOpcode
     {
-        /// <summary>  Ping（客户端 → 服务端，携带客户端时间戳）<para>Ping (client to server, carries client timestamp)</para> </summary>
+        #region Fields
+
+        /// <summary>
+        /// Ping（客户端 → 服务端，携带客户端时间戳）
+        /// <para>Ping (client to server, carries client timestamp)</para>
+        /// </summary>
         public const int Ping = 1;
 
-        /// <summary>  Pong（服务端 → 客户端，回显时间戳）<para>Pong (server to client, echoes timestamp)</para> </summary>
+        /// <summary>
+        /// Pong（服务端 → 客户端，回显时间戳）
+        /// <para>Pong (server to client, echoes timestamp)</para>
+        /// </summary>
         public const int Pong = 2;
 
-        /// <summary>  断开连接通知（双向，携带原因码）<para>Disconnect notification (both directions, carries reason code)</para> </summary>
+        /// <summary>
+        /// 断开连接通知（双向，携带原因码）
+        /// <para>Disconnect notification (both directions, carries reason code)</para>
+        /// </summary>
         public const int Disconnect = 3;
 
-        /// <summary> 业务消息起始值，自定义 Opcode 请从该值之后开始 <para>First business opcode; define custom opcodes after this value</para> </summary>
+        /// <summary>
+        /// 业务消息起始值，自定义 Opcode 请从该值之后开始
+        /// <para>First business opcode; define custom opcodes after this value</para>
+        /// </summary>
         public const int BusinessBegin = 1000;
+
+        #endregion
     }
 }

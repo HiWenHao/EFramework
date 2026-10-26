@@ -11,72 +11,73 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Event;
-using UnityEngine;
 
 namespace EasyFramework.Systems.Net
 {
     /// <summary>
-    /// 网络管理器：经 EFC 注册，统一驱动所有会话的收发，断线/错误经 EventManager 广播。
-    /// <para>Network manager: registered with EFC, drives all sessions' send/receive,
-    /// broadcasts disconnects/errors through EventManager.</para>
+    /// 网络管理器: 统一驱动所有会话的收发，断线/错误经 [ EventManager ] 广播。
+    /// <para>Network manager: drives all sessions' send/receive,
+    /// broadcasts disconnects/errors through [ EventManager ].</para>
     /// </summary>
-    /// <remarks>
-    /// Order 约定：10000 以上保留给框架自带管理器（Time 89900 / Event 99800 等），外部包用默认 0。
-    /// <para>Order convention: values above 10000 are reserved for built-in framework managers;
-    /// external packages use the default 0.</para>
-    /// </remarks>
     [Manager]
     [Dependency(typeof(EventManager))]
     public sealed class NetworkManager : MonoSingleton<NetworkManager>, ISingleton, IUpdate
     {
-        private readonly List<NetworkSession> _sessions = new List<NetworkSession>();
-        private readonly Dictionary<int, NetworkSession> _sessionMap = new Dictionary<int, NetworkSession>();
-        private readonly MessageDispatcher _dispatcher = new MessageDispatcher();
-        private int _nextSessionId = 1;
+        #region Fields
+
+        // 下一个 KCP 会话号
         private uint _nextConv = 1;
 
-        /// <summary> 全局消息分发器（业务在此注册 Handler / 设置序列化器） <para>Global dispatcher (register handlers / serializer here)</para> </summary>
+        // 下一个会话 Id
+        private int _nextSessionId = 1;
+
+        // 活跃会话
+        private readonly List<NetworkSession> _sessions = new List<NetworkSession>();
+
+        // sessionId → 会话
+        private readonly Dictionary<int, NetworkSession> _sessionMap = new Dictionary<int, NetworkSession>();
+
+        // 全局消息路由
+        private readonly MessageDispatcher _dispatcher = new MessageDispatcher();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// 全局消息分发器（业务在此注册 Handler / 设置序列化器）
+        /// <para>Global dispatcher (register handlers / serializer here)</para>
+        /// </summary>
         public MessageDispatcher Dispatcher => _dispatcher;
 
-        /// <summary> 序列化器（透传给分发器） <para>Serializer (forwarded to the dispatcher)</para> </summary>
+        /// <summary>
+        /// 序列化器（透传给分发器）
+        /// <para>Serializer (forwarded to the dispatcher)</para>
+        /// </summary>
         public IMessageSerializer Serializer
         {
             get => _dispatcher.Serializer;
             set => _dispatcher.Serializer = value;
         }
 
-        /// <summary> 是否暂停轮询 <para>Whether paused</para> </summary>
-        public bool IsPaused { get; set; }
+        public bool IsPaused { get; private set; }
 
-        /// <summary>
-        /// 初始化（EFC 注册时调用）。
-        /// <para>Initialize (called on EFC registration).</para>
-        /// </summary>
-        public void Init()
+        #endregion
+
+        #region Methods
+
+        // 初始化（EFC 注册时调用）
+        void ISingleton.Init()
         {
             IsPaused = false;
             _dispatcher.RpcTimedOut -= OnRpcTimedOut;
             _dispatcher.RpcTimedOut += OnRpcTimedOut;
         }
 
-        /// <summary>
-        /// 退出（EFC 注销时调用）：关闭所有会话。
-        /// <para>Quit (called on EFC unregister): close all sessions.</para>
-        /// </summary>
-        public void Quit()
-        {
-            _dispatcher.RpcTimedOut -= OnRpcTimedOut;
-            CloseAll("Manager quit");
-        }
-
-        /// <summary>
-        /// 每帧驱动：推进所有会话 + 检查 RPC 超时。
-        /// <para>Per-frame drive: advance all sessions and check RPC timeouts.</para>
-        /// </summary>
-        public void Update(float elapse, float realElapse)
+        // 每帧驱动：推进所有会话 + 检查 RPC 超时
+        void IUpdate.Update(float elapse, float realElapse)
         {
             if (IsPaused) return;
 
@@ -101,14 +102,37 @@ namespace EasyFramework.Systems.Net
             _dispatcher.CheckTimeouts(Environment.TickCount);
         }
 
+        // 退出（EFC 注销时调用）：关闭所有会话
+        void ISingleton.Quit()
+        {
+            _dispatcher.RpcTimedOut -= OnRpcTimedOut;
+            CloseAll("Network Manager quit");
+        }
+
+        // 移除会话
+        private void RemoveSession(NetworkSession session, string reason)
+        {
+            if (!_sessionMap.Remove(session.SessionId)) return;
+            _sessions.Remove(session);
+            session.Close();
+            EventManager.Instance?.Publish(new NetDisconnectedEvent(session.SessionId, reason));
+        }
+
+        // RPC 超时
+        private void OnRpcTimedOut(int rpcId)
+        {
+            EventManager.Instance?.Publish(new NetErrorEvent(0, $"RPC timeout ( rpcId = {rpcId} )."));
+        }
+
         /// <summary>
         /// 创建并连接一个会话（UDP + KCP）。
         /// <para>Create and connect a session (UDP + KCP).</para>
         /// </summary>
-        /// <param name="host">服务端地址 <para>Server host</param>
-        /// <param name="port">服务端端口 <para>Server port</param>
-        /// <param name="settings">调参数（null 用默认） <para>Tuning parameters (null for defaults)</param>
-        /// <param name="socketFactory">自定义传输层工厂（null 用 <see cref="UdpSocket"/>；微信平台在此注入 WX 实现） <para>Custom transport factory (null uses UdpSocket; inject the WX implementation here on WeChat)</param>
+        /// <param name="host">服务端地址<para>Server host.</para></param>
+        /// <param name="port">服务端端口<para>Server port.</para></param>
+        /// <param name="settings">调参数（null 用默认）<para>Tuning parameters (null for defaults).</para></param>
+        /// <param name="socketFactory">自定义传输层工厂（null 用 <see cref="UdpSocket"/>；微信平台在此注入 WX 实现）<para>Custom transport factory (null uses UdpSocket; inject the WX implementation here on WeChat).</para></param>
+        /// <returns>已连接的会话；失败返回 null<para>Connected session; null on failure</para></returns>
         public NetworkSession Connect(string host, int port, NetworkSettings settings = null, Func<ISocket> socketFactory = null)
         {
             ISocket socket = socketFactory != null ? socketFactory() : new UdpSocket();
@@ -129,20 +153,31 @@ namespace EasyFramework.Systems.Net
             return session;
         }
 
-        /// <summary> 按 Id 获取会话 <para>Get a session by id</para> </summary>
-        public NetworkSession GetSession(int sessionId)
-        {
-            return _sessionMap.TryGetValue(sessionId, out var session) ? session : null;
-        }
+        /// <summary>
+        /// 按 ID 获取会话
+        /// <para>Get a session by id</para>
+        /// </summary>
+        /// <param name="sessionId">会话 Id<para>Session id</para></param>
+        /// <returns>会话；不存在返回 null<para>Session; null when absent</para></returns>
+        public NetworkSession GetSession(int sessionId) => _sessionMap.GetValueOrDefault(sessionId);
 
-        /// <summary> 关闭指定会话 <para>Close a session by id</para> </summary>
+        /// <summary>
+        /// 关闭指定会话
+        /// <para>Close a session by id</para>
+        /// </summary>
+        /// <param name="sessionId">会话ID<para>Session id</para></param>
+        /// <param name="reason">原因简述<para>Reason</para></param>
         public void CloseSession(int sessionId, string reason = "Closed by user")
         {
             if (_sessionMap.TryGetValue(sessionId, out var session))
                 RemoveSession(session, reason);
         }
 
-        /// <summary> 关闭所有会话 <para>Close all sessions</para> </summary>
+        /// <summary>
+        /// 关闭所有会话
+        /// <para>Close all sessions</para>
+        /// </summary>
+        /// <param name="reason">原因简述<para>Reason</para></param>
         public void CloseAll(string reason)
         {
             for (int i = _sessions.Count - 1; i >= 0; i--)
@@ -153,6 +188,8 @@ namespace EasyFramework.Systems.Net
         /// 注册原始消息处理器（便捷转发到 <see cref="Dispatcher"/>）。
         /// <para>Register a raw handler (forwards to Dispatcher).</para>
         /// </summary>
+        /// <param name="opcode">消息操作码<para>Message opcode</para></param>
+        /// <param name="handler">处理回调<para>Handle callback</para></param>
         public void RegisterHandler(int opcode, Action<NetPacket> handler)
         {
             _dispatcher.RegisterHandler(opcode, handler);
@@ -162,6 +199,7 @@ namespace EasyFramework.Systems.Net
         /// 注册类型化消息处理器（便捷转发到 <see cref="Dispatcher"/>）。
         /// <para>Register a typed handler (forwards to Dispatcher).</para>
         /// </summary>
+        /// <param name="handler">处理器实例；传 null 时按无参构造创建<para>Handler instance; created via parameterless ctor when null</para></param>
         public void RegisterHandler<TMessage, THandler>(THandler handler = null)
             where TMessage : class
             where THandler : class, IMessageHandler<TMessage>, new()
@@ -169,17 +207,6 @@ namespace EasyFramework.Systems.Net
             _dispatcher.RegisterHandler<TMessage, THandler>(handler);
         }
 
-        private void RemoveSession(NetworkSession session, string reason)
-        {
-            if (!_sessionMap.Remove(session.SessionId)) return;
-            _sessions.Remove(session);
-            session.Close();
-            EventManager.Instance?.Publish(new NetDisconnectedEvent(session.SessionId, reason));
-        }
-
-        private void OnRpcTimedOut(int rpcId)
-        {
-            EventManager.Instance?.Publish(new NetErrorEvent(0, $"RPC timeout (rpcId={rpcId})."));
-        }
+        #endregion
     }
 }

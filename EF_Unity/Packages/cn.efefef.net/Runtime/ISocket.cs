@@ -9,8 +9,6 @@
  * ===============================================
  */
 
-using System;
-
 namespace EasyFramework.Systems.Net
 {
     /// <summary>
@@ -25,34 +23,59 @@ namespace EasyFramework.Systems.Net
     /// </remarks>
     public interface ISocket
     {
-        /// <summary> 是否已连接（已绑定远端） <para>Whether connected (remote bound)</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 是否已连接（已绑定远端）
+        /// <para>Whether connected (remote bound)</para>
+        /// </summary>
         bool IsConnected { get; }
 
-        /// <summary> 远端地址描述（ip:port），未连接时为空 <para>Remote endpoint (ip:port); empty when not connected</para> </summary>
+        /// <summary>
+        /// 远端地址描述（ip:port），未连接时为空
+        /// <para>Remote endpoint (ip:port); empty when not connected</para>
+        /// </summary>
         string RemoteEndPoint { get; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// 绑定远端并建立 UDP 通道。
         /// <para>Bind the remote endpoint and open the UDP channel.</para>
         /// </summary>
-        /// <returns>是否成功 <para>Whether succeeded</para></returns>
+        /// <param name="host">远端地址<para>Remote host</para></param>
+        /// <param name="port">远端端口<para>Remote port</para></param>
+        /// <returns>是否成功<para>Whether succeeded</para></returns>
         bool Connect(string host, int port);
 
         /// <summary>
         /// 发送数据。
         /// <para>Send data.</para>
         /// </summary>
-        /// <returns>实际发送字节数；失败返回 -1 <para>Bytes sent; -1 on failure</para></returns>
+        /// <param name="data">数据缓冲<para>Data buffer</para></param>
+        /// <param name="offset">起始偏移<para>Start offset</para></param>
+        /// <param name="count">发送字节数<para>Byte count to send</para></param>
+        /// <returns>实际发送字节数；失败返回 -1<para>Bytes sent; -1 on failure</para></returns>
         int Send(byte[] data, int offset, int count);
 
         /// <summary>
         /// 尝试接收一包数据（非阻塞）。
         /// <para>Try to receive one packet (non-blocking).</para>
         /// </summary>
-        /// <returns>收到的字节数；无数据返回 0；出错返回 -1 <para>Bytes received; 0 when nothing available; -1 on error</para></returns>
+        /// <param name="buffer">接收缓冲<para>Receive buffer</para></param>
+        /// <param name="offset">写入起始偏移<para>Write start offset</para></param>
+        /// <param name="capacity">接收缓冲剩余容量<para>Remaining buffer capacity</para></param>
+        /// <returns>收到的字节数；无数据返回 0；出错返回 -1<para>Bytes received; 0 when nothing available; -1 on error</para></returns>
         int TryReceive(byte[] buffer, int offset, int capacity);
 
-        /// <summary> 关闭通道 <para>Close the channel</para> </summary>
+        /// <summary>
+        /// 关闭通道
+        /// <para>Close the channel</para>
+        /// </summary>
         void Close();
+
+        #endregion
     }
 }
