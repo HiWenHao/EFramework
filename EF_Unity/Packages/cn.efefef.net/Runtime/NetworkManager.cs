@@ -1,35 +1,44 @@
 ﻿/*
  * ================================================
- * Describe:      Net module manager (EFC-driven, drives sessions and publishes events).
+ * Describe:      Net module manager (EFC-driven, drives connections and publishes events).
  * Author:        Alvin5100
  * CreationTime:  2026-10-23 18:45:00
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-10-23 18:45:00
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-10-26 18:00:00
+ * ScriptVersion: 0.5
  * ===============================================
  */
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Event;
+using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Systems.Net
 {
     /// <summary>
-    /// 网络管理器: 统一驱动所有会话的收发，断线/错误经 [ EventManager ] 广播。
-    /// <para>Network manager: drives all sessions' send/receive,
-    /// broadcasts disconnects/errors through [ EventManager ].</para>
+    /// 网络管理器: 统一驱动所有连接的收发与生命周期，断线/错误经 [ EventManager ] 广播。
+    /// <para>Network manager: drives all connections' send/receive and lifecycle, broadcasts
+    /// disconnects/errors through [ EventManager ].</para>
     /// </summary>
     /// <remarks>
-    /// 一般只有一条会话（连一个游戏服）；多会话场景（如同时连登录服与战斗服）下，
+    /// <para>一般只有一条连接（连一个游戏服）；多连接场景（如同时连登录服与战斗服）下，
     /// 可用 <see cref="RegisterHandler(int, int, Action{NetPacket})"/> 按会话注册处理器，
-    /// 或用 <see cref="GetSession"/> 按 Id 取会话分别收发。
-    /// <para>Usually a single session (one game server). With several sessions (e.g. a login server
+    /// 或用 <see cref="GetSession"/> 按 Id 取会话分别收发。</para>
+    /// <para>Usually a single connection (one game server). With several connections (e.g. a login server
     /// and a battle server at once), register session-scoped handlers via
     /// RegisterHandler(int, int, Action{NetPacket}) or fetch sessions by id via GetSession.</para>
+    /// <para><b>Order 说明</b>：网络收包必须早于业务逻辑处理，否则本帧收到的数据要等下一帧
+    /// 才能被业务消费（真机 60fps 下白白多等 16.7ms）。故取 88000 —— 落在框架预留的外部包区间
+    /// （10000~89000）内，排在所有框架管理器（89100+）之后、所有业务层管理器（0）之前。</para>
+    /// <para><b>Order note</b>: inbound packets must be processed before business logic, otherwise
+    /// data received this frame is only visible to business code one frame later (+16.7ms at 60fps).
+    /// 88000 sits in the reserved external-package band (10000~89000): after all framework managers
+    /// (89100+) and before all business managers (0).</para>
     /// </remarks>
-    [Manager]
+    [Manager(Order = 88000)]
     [Dependency(typeof(EventManager))]
     public sealed class NetworkManager : MonoSingleton<NetworkManager>, ISingleton, IUpdate
     {
@@ -41,11 +50,11 @@ namespace EasyFramework.Systems.Net
         // 下一个会话 Id
         private int _nextSessionId = 1;
 
-        // 活跃会话
-        private readonly List<NetworkSession> _sessions = new List<NetworkSession>();
+        // 全部逻辑连接
+        private readonly List<NetConnection> _connections = new List<NetConnection>();
 
-        // sessionId → 会话
-        private readonly Dictionary<int, NetworkSession> _sessionMap = new Dictionary<int, NetworkSession>();
+        // sessionId → 连接
+        private readonly Dictionary<int, NetConnection> _connectionMap = new Dictionary<int, NetConnection>();
 
         // 全局消息路由
         private readonly MessageDispatcher _dispatcher = new MessageDispatcher();
@@ -71,23 +80,58 @@ namespace EasyFramework.Systems.Net
         }
 
         /// <summary>
-        /// 是否暂停驱动（暂停期间不收发、不检查超时）
-        /// <para>Whether the driving is paused (no send/receive, no timeout check)</para>
+        /// 是否暂停驱动（暂停期间不收发、不检查超时、不心跳）
+        /// <para>Whether the driving is paused (no send/receive, no timeout check, no heartbeat)</para>
         /// </summary>
         public bool IsPaused { get; private set; }
 
         /// <summary>
-        /// 活跃会话数量
-        /// <para>Number of active sessions</para>
+        /// 逻辑连接数量
+        /// <para>Number of logical connections</para>
         /// </summary>
-        public int SessionCount => _sessions.Count;
+        public int ConnectionCount => _connections.Count;
 
         /// <summary>
-        /// 活跃会话列表（只读快照；多会话场景下按 <see cref="NetworkSession.SessionId"/> 区分）
+        /// 逻辑连接列表（只读）
+        /// <para>Logical connection list (read-only)</para>
+        /// </summary>
+        public IReadOnlyList<NetConnection> Connections => _connections;
+
+        /// <summary>
+        /// 当前活跃会话数量（已就绪的连接数）
+        /// <para>Number of active sessions (ready connections)</para>
+        /// </summary>
+        public int SessionCount
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < _connections.Count; i++)
+                {
+                    if (_connections[i].State == NetConnectionState.Connected) count++;
+                }
+                return count;
+            }
+        }
+
+        /// <summary>
+        /// 当前活跃会话列表（只读快照；多会话场景下按 <see cref="NetworkSession.SessionId"/> 区分）
         /// <para>Active session list (read-only snapshot; distinguish by NetworkSession.SessionId
         /// when several sessions exist)</para>
         /// </summary>
-        public IReadOnlyList<NetworkSession> Sessions => _sessions;
+        public IReadOnlyList<NetworkSession> Sessions
+        {
+            get
+            {
+                var list = new List<NetworkSession>(_connections.Count);
+                for (int i = 0; i < _connections.Count; i++)
+                {
+                    var session = _connections[i].Session;
+                    if (session != null) list.Add(session);
+                }
+                return list;
+            }
+        }
 
         #endregion
 
@@ -101,50 +145,39 @@ namespace EasyFramework.Systems.Net
             _dispatcher.RpcTimedOut += OnRpcTimedOut;
         }
 
-        // 每帧驱动：推进所有会话 + 检查 RPC 超时
+        // 每帧驱动：推进所有连接 + 检查 RPC 超时
         void IUpdate.Update(float elapse, float realElapse)
         {
             if (IsPaused) return;
 
-            for (int i = _sessions.Count - 1; i >= 0; i--)
+            for (int i = _connections.Count - 1; i >= 0; i--)
             {
-                var session = _sessions[i];
-                if (!session.IsConnected)
-                {
-                    // 会话已被关闭：移除并广播断线
-                    RemoveSession(session, "Socket closed");
-                    continue;
-                }
+                var connection = _connections[i];
+                connection.Update();
 
-                session.Update();
-
-                if (session.IsDead)
+                // 连接已终态关闭 → 移出管理
+                if (connection.State == NetConnectionState.Closed)
                 {
-                    RemoveSession(session, "Link dead");
+                    RemoveConnection(connection);
                 }
             }
 
             _dispatcher.CheckTimeouts(Environment.TickCount);
         }
 
-        // 退出（EFC 注销时调用）：关闭所有会话
+        // 退出（EFC 注销时调用）：关闭所有连接
         void ISingleton.Quit()
         {
             _dispatcher.RpcTimedOut -= OnRpcTimedOut;
             CloseAll("Network Manager quit");
         }
 
-        // 移除会话
-        private void RemoveSession(NetworkSession session, string reason)
+        // 移除连接（并注销其会话级处理器）
+        private void RemoveConnection(NetConnection connection)
         {
-            if (!_sessionMap.Remove(session.SessionId)) return;
-            _sessions.Remove(session);
-            session.Close();
-
-            // 注销该会话的会话级处理器（否则字典随会话数无限增长）
-            _dispatcher.UnregisterSessionHandlers(session.SessionId);
-
-            EventManager.Instance?.Publish(new NetDisconnectedEvent(session.SessionId, reason));
+            if (!_connectionMap.Remove(connection.SessionId)) return;
+            _connections.Remove(connection);
+            _dispatcher.UnregisterSessionHandlers(connection.SessionId);
         }
 
         // RPC 超时
@@ -164,31 +197,73 @@ namespace EasyFramework.Systems.Net
         /// <returns>已连接的会话；失败返回 null<para>Connected session; null on failure</para></returns>
         public NetworkSession Connect(string host, int port, NetworkSettings settings = null, Func<ISocket> socketFactory = null)
         {
-            ISocket socket = socketFactory != null ? socketFactory() : new UdpSocket();
-            if (!socket.Connect(host, port))
-            {
-                D.Error($"[ NetworkManager ] Connect failed: {host}:{port}");
-                socket.Close();
-                return null;
-            }
-
-            int sessionId = _nextSessionId++;
-            uint conv = _nextConv++;
-            var session = new NetworkSession(sessionId, conv, socket, _dispatcher, settings);
-            _sessions.Add(session);
-            _sessionMap[sessionId] = session;
-
-            EventManager.Instance?.Publish(new NetConnectedEvent(sessionId, session.RemoteEndPoint));
-            return session;
+            return Connect(host, port, settings, socketFactory, null);
         }
 
         /// <summary>
-        /// 按 ID 获取会话
-        /// <para>Get a session by id</para>
+        /// 创建并连接一个会话（UDP + KCP），可带握手 Token。
+        /// <para>Create and connect a session (UDP + KCP) with an optional handshake token.</para>
+        /// </summary>
+        /// <param name="host">服务端地址<para>Server host</para></param>
+        /// <param name="port">服务端端口<para>Server port</para></param>
+        /// <param name="settings">调参数（null 用默认）<para>Tuning parameters (null for defaults).</para></param>
+        /// <param name="socketFactory">自定义传输层工厂（null 用 <see cref="UdpSocket"/>）<para>Custom transport factory (null uses UdpSocket).</para></param>
+        /// <param name="token">握手 Token（null/空 = 跳过握手，直接就绪）<para>Handshake token (null/empty skips the handshake and goes straight to ready)</para></param>
+        /// <returns>已连接的会话；失败返回 null<para>Connected session; null on failure</para></returns>
+        public NetworkSession Connect(string host, int port, NetworkSettings settings, Func<ISocket> socketFactory,
+            byte[] token)
+        {
+            int sessionId = _nextSessionId++;
+
+            var connection = new NetConnection(sessionId, host, port, _dispatcher, AllocateConv,
+                settings, socketFactory, token);
+            _connections.Add(connection);
+            _connectionMap[sessionId] = connection;
+
+            HookConnection(connection);
+            connection.Start();
+
+            return connection.Session;
+        }
+
+        /// <summary>
+        /// 创建并连接一个会话（带字符串 Token 握手，UTF-8 编码）。
+        /// <para>Create and connect a session with a string handshake token (UTF-8 encoded).</para>
+        /// </summary>
+        /// <param name="host">服务端地址<para>Server host</para></param>
+        /// <param name="port">服务端端口<para>Server port</para></param>
+        /// <param name="token">握手 Token（null/空 = 跳过握手）<para>Handshake token (null/empty skips the handshake)</para></param>
+        /// <param name="settings">调参数（null 用默认）<para>Tuning parameters (null for defaults).</para></param>
+        /// <param name="socketFactory">自定义传输层工厂（null 用 <see cref="UdpSocket"/>）<para>Custom transport factory (null uses UdpSocket).</para></param>
+        /// <returns>已连接的会话；失败返回 null<para>Connected session; null on failure</para></returns>
+        public NetworkSession Connect(string host, int port, string token, NetworkSettings settings = null,
+            Func<ISocket> socketFactory = null)
+        {
+            byte[] tokenBytes = string.IsNullOrEmpty(token) ? null : Encoding.UTF8.GetBytes(token);
+            return Connect(host, port, settings, socketFactory, tokenBytes);
+        }
+
+        /// <summary>
+        /// 按 ID 获取会话（重连后会话对象会重建，请按需重新获取）
+        /// <para>Get a session by id (the session object is rebuilt on reconnect; re-fetch as needed)</para>
         /// </summary>
         /// <param name="sessionId">会话 Id<para>Session id</para></param>
         /// <returns>会话；不存在返回 null<para>Session; null when absent</para></returns>
-        public NetworkSession GetSession(int sessionId) => _sessionMap.GetValueOrDefault(sessionId);
+        public NetworkSession GetSession(int sessionId)
+        {
+            return _connectionMap.TryGetValue(sessionId, out var connection) ? connection.Session : null;
+        }
+
+        /// <summary>
+        /// 按 ID 获取连接
+        /// <para>Get a connection by id</para>
+        /// </summary>
+        /// <param name="sessionId">会话 Id<para>Session id</para></param>
+        /// <returns>连接；不存在返回 null<para>Connection; null when absent</para></returns>
+        public NetConnection GetConnection(int sessionId)
+        {
+            return _connectionMap.GetValueOrDefault(sessionId);
+        }
 
         /// <summary>
         /// 尝试按 ID 获取会话
@@ -199,30 +274,88 @@ namespace EasyFramework.Systems.Net
         /// <returns>是否存在<para>Whether it exists</para></returns>
         public bool TryGetSession(int sessionId, out NetworkSession session)
         {
-            return _sessionMap.TryGetValue(sessionId, out session);
+            session = GetSession(sessionId);
+            return session != null;
         }
 
         /// <summary>
-        /// 关闭指定会话
-        /// <para>Close a session by id</para>
+        /// 关闭指定连接（终态，不再重连）
+        /// <para>Close a connection by id (terminal; no more reconnects)</para>
         /// </summary>
         /// <param name="sessionId">会话ID<para>Session id</para></param>
         /// <param name="reason">原因简述<para>Reason</para></param>
         public void CloseSession(int sessionId, string reason = "Closed by user")
         {
-            if (_sessionMap.TryGetValue(sessionId, out var session))
-                RemoveSession(session, reason);
+            if (_connectionMap.TryGetValue(sessionId, out var connection))
+            {
+                connection.Close(reason);
+                RemoveConnection(connection);
+                EventManager.Instance?.Publish(new NetDisconnectedEvent(sessionId, reason));
+            }
         }
 
         /// <summary>
-        /// 关闭所有会话
-        /// <para>Close all sessions</para>
+        /// 关闭所有连接
+        /// <para>Close all connections</para>
         /// </summary>
         /// <param name="reason">原因简述<para>Reason</para></param>
         public void CloseAll(string reason)
         {
-            for (int i = _sessions.Count - 1; i >= 0; i--)
-                RemoveSession(_sessions[i], reason);
+            for (int i = _connections.Count - 1; i >= 0; i--)
+            {
+                var connection = _connections[i];
+                connection.Close(reason);
+                RemoveConnection(connection);
+                EventManager.Instance?.Publish(new NetDisconnectedEvent(connection.SessionId, reason));
+            }
+        }
+
+        /// <summary>
+        /// 更新握手 Token（短时效 Token 过期时调用，下次重连生效）
+        /// <para>Update the handshake token (call when a short-lived token expires; applies to the next reconnect)</para>
+        /// </summary>
+        /// <param name="sessionId">会话 Id<para>Session id</para></param>
+        /// <param name="token">新 Token（null/空 = 之后重连将跳过握手）<para>New token (null/empty makes the next reconnect skip the handshake)</para></param>
+        /// <returns>是否找到对应连接<para>Whether the connection was found</para></returns>
+        public bool SetToken(int sessionId, byte[] token)
+        {
+            if (!_connectionMap.TryGetValue(sessionId, out var connection)) return false;
+            connection.Token = token;
+            return true;
+        }
+
+        /// <summary>
+        /// 发送单向消息到指定会话（自动走当前会话，重连后无需重新获取引用）。
+        /// <para>Send a one-way message to a session (uses the current session; survives reconnects).</para>
+        /// </summary>
+        /// <param name="sessionId">会话 Id<para>Session id</para></param>
+        /// <param name="opcode">消息操作码<para>Message opcode</para></param>
+        /// <param name="payload">载荷字节<para>Payload bytes</para></param>
+        /// <returns>是否发送成功<para>Whether it was sent</para></returns>
+        public bool Send(int sessionId, int opcode, byte[] payload = null)
+        {
+            var session = GetSession(sessionId);
+            if (session == null) return false;
+            session.Send(opcode, payload);
+            return true;
+        }
+
+        /// <summary>
+        /// 发起 RPC 请求并等待响应（自动走当前会话）。
+        /// <para>Send an RPC request and await the response (uses the current session).</para>
+        /// </summary>
+        /// <typeparam name="TResponse">响应消息类型<para>Response message type</para></typeparam>
+        /// <param name="sessionId">会话 Id<para>Session id</para></param>
+        /// <param name="opcode">消息操作码<para>Message opcode</para></param>
+        /// <param name="payload">载荷字节<para>Payload bytes</para></param>
+        /// <param name="timeoutSeconds">超时秒数<para>Timeout in seconds</para></param>
+        /// <returns>响应消息<para>Response message</para></returns>
+        public UniTask<TResponse> Call<TResponse>(int sessionId, int opcode, byte[] payload, float timeoutSeconds = 10f)
+        {
+            var session = GetSession(sessionId);
+            if (session == null)
+                return UniTask.FromException<TResponse>(new NetProtocolException($"Session {sessionId} does not exist."));
+            return session.Call<TResponse>(opcode, payload, timeoutSeconds);
         }
 
         /// <summary>
@@ -319,6 +452,40 @@ namespace EasyFramework.Systems.Net
         public bool UnregisterHandler(int sessionId, int opcode)
         {
             return _dispatcher.UnregisterHandler(sessionId, opcode);
+        }
+
+        // 分配一个全局唯一的 conv
+        private uint AllocateConv() => _nextConv++;
+
+        // 订阅连接事件并转发为框架事件
+        private void HookConnection(NetConnection connection)
+        {
+            int sessionId = connection.SessionId;
+
+            connection.NetConnected += conn =>
+            {
+                EventManager.Instance?.Publish(new NetConnectedEvent(sessionId, conn.RemoteEndPoint));
+            };
+
+            connection.NetDisconnected += (conn, reason) =>
+            {
+                EventManager.Instance?.Publish(new NetDisconnectedEvent(sessionId, reason));
+            };
+
+            connection.NetReconnectScheduled += (conn, attempt, delay, reason) =>
+            {
+                EventManager.Instance?.Publish(new NetReconnectingEvent(sessionId, attempt, delay, reason));
+            };
+
+            connection.NetHandshakeResult += (conn, success, code, message) =>
+            {
+                EventManager.Instance?.Publish(new NetHandshakeResultEvent(sessionId, success, code, message));
+            };
+
+            connection.StateChanged += (conn, oldState, newState) =>
+            {
+                EventManager.Instance?.Publish(new NetStateChangedEvent(sessionId, oldState, newState));
+            };
         }
 
         #endregion

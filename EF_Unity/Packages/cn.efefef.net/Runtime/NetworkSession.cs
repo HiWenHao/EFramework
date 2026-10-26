@@ -10,6 +10,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Systems.Net
@@ -29,7 +30,6 @@ namespace EasyFramework.Systems.Net
 
         // 传输层
         private readonly ISocket _socket;
-
         // 消息路由（与其它会话共用）
         private readonly MessageDispatcher _dispatcher;
 
@@ -42,8 +42,13 @@ namespace EasyFramework.Systems.Net
         // kcp.Recv → 帧解析（大消息时扩容，故非 readonly）
         private byte[] _kcpRecvBuffer;
 
-        #endregion
+        // 最近一次收到消息的时刻（秒，单调时钟）
+        private double _lastReceiveTime;
 
+        // 最近一次 Pong 往返延迟（毫秒）
+        private int _lastRttMs = -1;
+
+        #endregion
         #region Properties
 
         /// <summary>
@@ -88,6 +93,19 @@ namespace EasyFramework.Systems.Net
         /// </summary>
         public bool IsDead => _kcp.IsDead;
 
+        /// <summary>
+        /// 最近一次收到任意消息的时刻（秒，单调时钟）—— 心跳保活据此判断链路是否还有响应
+        /// <para>Timestamp of the last received message (seconds, monotonic) — the heartbeat uses it
+        /// to tell whether the link is still responsive</para>
+        /// </summary>
+        public double LastReceiveTime => _lastReceiveTime;
+
+        /// <summary>
+        /// 最近一次 Pong 的往返延迟（毫秒，-1 表示尚未收到过 Pong）
+        /// <para>Latest Pong round-trip latency in ms (-1 when no Pong received yet)</para>
+        /// </summary>
+        public int LastRttMs => _lastRttMs;
+
         #endregion
 
         #region Methods
@@ -107,6 +125,9 @@ namespace EasyFramework.Systems.Net
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             settings ??= NetworkSettings.Default;
+
+            // 接收时刻初始化为「现在」：0 会让心跳超时判定在第一帧就误判死链
+            _lastReceiveTime = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
 
             int mtu = settings.Mtu;
             _kcp = new Kcp(conv, (data, size) => _socket.Send(data, 0, size));
@@ -247,8 +268,20 @@ namespace EasyFramework.Systems.Net
                     continue;
                 }
                 if (size <= 0) break;
-                if (MessagePipe.TryDecodePacket(SessionId, _kcpRecvBuffer, out var packet))
-                    _dispatcher.Dispatch(packet);
+                if (!MessagePipe.TryDecodePacket(SessionId, _kcpRecvBuffer, out var packet)) continue;
+
+                // 记录接收时刻（心跳保活据此判断链路活性）
+                _lastReceiveTime = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+
+                // Pong 回显了客户端时间戳 → 算出往返延迟
+                if (packet.Opcode == NetOpcode.Pong && packet.PayloadLength >= 8)
+                {
+                    long sentAt = BitConverter.ToInt64(packet.Payload, 0);
+                    long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    _lastRttMs = (int)(nowMs - sentAt);
+                }
+
+                _dispatcher.Dispatch(packet);
             }
         }
 
@@ -260,26 +293,6 @@ namespace EasyFramework.Systems.Net
         {
             _dispatcher.CancelPendingCalls(SessionId);
             _socket.Close();
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// 网络协议异常（会话未连接、载荷非法、会话中途关闭等）。
-    /// <para>Network protocol exception (not connected, malformed payload, session closed midway).</para>
-    /// </summary>
-    public sealed class NetProtocolException : Exception
-    {
-        #region Methods
-
-        /// <summary>
-        /// 构造协议异常。
-        /// <para>Create a protocol exception.</para>
-        /// </summary>
-        /// <param name="message">异常描述<para>Exception message</para></param>
-        public NetProtocolException(string message) : base(message)
-        {
         }
 
         #endregion
