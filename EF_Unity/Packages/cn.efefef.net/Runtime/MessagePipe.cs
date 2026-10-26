@@ -52,9 +52,19 @@ namespace EasyFramework.Systems.Net
     /// 已解码的网络消息包（只读，派发时传递）。
     /// <para>Decoded network packet (readonly, passed at dispatch).</para>
     /// </summary>
+    /// <remarks>
+    /// <see cref="SessionId"/> 为 0 表示消息来源未指定（不限定会话）。
+    /// <para>A SessionId of 0 means the message source is unspecified (session-agnostic).</para>
+    /// </remarks>
     public readonly struct NetPacket
     {
         #region Properties
+
+        /// <summary>
+        /// 消息来源会话 Id（0 表示未指定）
+        /// <para>Source session id (0 means unspecified)</para>
+        /// </summary>
+        public int SessionId { get; }
 
         /// <summary>
         /// 消息操作码
@@ -88,12 +98,14 @@ namespace EasyFramework.Systems.Net
         /// 创建消息包。
         /// <para>Create a packet.</para>
         /// </summary>
+        /// <param name="sessionId">来源会话 Id（0 表示未指定）<para>Source session id (0 means unspecified)</para></param>
         /// <param name="opcode">消息操作码<para>Message opcode</para></param>
         /// <param name="rpcId">RPC 配对 Id<para>RPC pairing id</para></param>
         /// <param name="payload">载荷字节<para>Payload bytes</para></param>
         /// <param name="payloadLength">载荷长度<para>Payload length</para></param>
-        public NetPacket(int opcode, int rpcId, byte[] payload, int payloadLength)
+        public NetPacket(int sessionId, int opcode, int rpcId, byte[] payload, int payloadLength)
         {
+            SessionId = sessionId;
             Opcode = opcode;
             RpcId = rpcId;
             Payload = payload;
@@ -201,6 +213,19 @@ namespace EasyFramework.Systems.Net
         /// <returns>是否解码成功<para>Whether decoding succeeded</para></returns>
         public static bool TryDecodePacket(byte[] frame, out NetPacket packet)
         {
+            return TryDecodePacket(0, frame, out packet);
+        }
+
+        /// <summary>
+        /// 把帧解码为 <see cref="NetPacket"/> 并标记来源会话。
+        /// <para>Decode a frame into NetPacket and tag it with the source session.</para>
+        /// </summary>
+        /// <param name="sessionId">来源会话 Id<para>Source session id</para></param>
+        /// <param name="frame">帧字节<para>Frame bytes</para></param>
+        /// <param name="packet">输出消息包<para>Output packet</para></param>
+        /// <returns>是否解码成功<para>Whether decoding succeeded</para></returns>
+        public static bool TryDecodePacket(int sessionId, byte[] frame, out NetPacket packet)
+        {
             packet = default;
             if (!TryDecode(frame, out int opcode, out int rpcId, out int offset, out int length))
                 return false;
@@ -212,7 +237,7 @@ namespace EasyFramework.Systems.Net
                 Buffer.BlockCopy(frame, offset, payload, 0, length);
             }
 
-            packet = new NetPacket(opcode, rpcId, payload, length);
+            packet = new NetPacket(sessionId, opcode, rpcId, payload, length);
             return true;
         }
 
