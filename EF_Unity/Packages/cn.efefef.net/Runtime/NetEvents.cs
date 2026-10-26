@@ -1,6 +1,6 @@
 ﻿/*
  * ================================================
- * Describe:      Net module lifecycle events (published through EventManager).
+ * Describe:      网络模块生命周期事件（通过 EventManager 发布）
  * Author:        Alvin5100
  * CreationTime:  2026-10-23 18:45:00
  * ModifyAuthor:  Alvin5100
@@ -17,17 +17,35 @@ namespace EasyFramework.Systems.Net
     /// </summary>
     public readonly struct NetConnectedEvent
     {
-        /// <summary> 会话 Id <para>Session id</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 会话 ID
+        /// <para>Session id</para>
+        /// </summary>
         public int SessionId { get; }
 
-        /// <summary> 远端地址（ip:port） <para>Remote endpoint (ip:port)</para> </summary>
+        /// <summary>
+        /// 远端地址（ip:port）
+        /// <para>Remote endpoint (ip:port)</para>
+        /// </summary>
         public string RemoteEndPoint { get; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 构造连接成功事件。
+        /// <para>Create a connected event.</para>
+        /// </summary>
         public NetConnectedEvent(int sessionId, string remoteEndPoint)
         {
             SessionId = sessionId;
             RemoteEndPoint = remoteEndPoint;
         }
+
+        #endregion
     }
 
     /// <summary>
@@ -36,17 +54,35 @@ namespace EasyFramework.Systems.Net
     /// </summary>
     public readonly struct NetDisconnectedEvent
     {
-        /// <summary> 会话 Id <para>Session id</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 会话 ID
+        /// <para>Session id</para>
+        /// </summary>
         public int SessionId { get; }
 
-        /// <summary> 断开原因 <para>Disconnect reason</para> </summary>
+        /// <summary>
+        /// 断开原因
+        /// <para>Disconnect reason</para>
+        /// </summary>
         public string Reason { get; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 构造断开事件。
+        /// <para>Create a disconnected event.</para>
+        /// </summary>
         public NetDisconnectedEvent(int sessionId, string reason)
         {
             SessionId = sessionId;
             Reason = reason;
         }
+
+        #endregion
     }
 
     /// <summary>
@@ -55,16 +91,34 @@ namespace EasyFramework.Systems.Net
     /// </summary>
     public readonly struct NetErrorEvent
     {
-        /// <summary> 会话 Id（0 表示与具体会话无关） <para>Session id (0 means not session-specific)</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 会话 ID（0 表示与具体会话无关）
+        /// <para>Session id (0 means not session-specific)</para>
+        /// </summary>
         public int SessionId { get; }
 
-        /// <summary> 错误描述 <para>Error description</para> </summary>
+        /// <summary>
+        /// 错误描述
+        /// <para>Error description</para>
+        /// </summary>
         public string Message { get; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 构造网络错误事件。
+        /// <para>Create a network error event.</para>
+        /// </summary>
         public NetErrorEvent(int sessionId, string message)
         {
             SessionId = sessionId;
             Message = message;
         }
+
+        #endregion
     }
 }

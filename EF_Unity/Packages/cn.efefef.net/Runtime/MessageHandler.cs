@@ -23,13 +23,29 @@ namespace EasyFramework.Systems.Net
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public sealed class NetOpcodeAttribute : Attribute
     {
-        /// <summary> 消息操作码 <para>Message opcode</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 消息操作码
+        /// <para>Message opcode</para>
+        /// </summary>
         public int Opcode { get; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 构造消息操作码标注。
+        /// <para>Create the opcode marker.</para>
+        /// </summary>
+        /// <param name="opcode">消息操作码<para>Message opcode</para></param>
         public NetOpcodeAttribute(int opcode)
         {
             Opcode = opcode;
         }
+
+        #endregion
     }
 
     /// <summary>
@@ -38,33 +54,66 @@ namespace EasyFramework.Systems.Net
     /// </summary>
     public interface IMessageHandler
     {
-        /// <summary> 处理的消息操作码 <para>Handled opcode</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 处理的消息操作码
+        /// <para>Handled opcode</para>
+        /// </summary>
         int Opcode { get; }
 
-        /// <summary> 处理消息 <para>Handle the message</para> </summary>
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 处理消息
+        /// <para>Handle the message</para>
+        /// </summary>
+        /// <param name="packet">已解码的消息包<para>Decoded packet</para></param>
         void Handle(NetPacket packet);
+
+        #endregion
     }
 
     /// <summary>
     /// 类型化消息处理器（载荷经 <see cref="IMessageSerializer"/> 反序列化后回调）。
     /// <para>Typed message handler (payload deserialized via IMessageSerializer before callback).</para>
     /// </summary>
-    /// <typeparam name="TMessage">消息类型 <para>Message type</para></typeparam>
+    /// <typeparam name="TMessage">消息类型<para>Message type</para></typeparam>
     public interface IMessageHandler<in TMessage>
     {
-        /// <summary> 处理的消息操作码 <para>Handled opcode</para> </summary>
+        #region Properties
+
+        /// <summary>
+        /// 处理的消息操作码
+        /// <para>Handled opcode</para>
+        /// </summary>
         int Opcode { get; }
 
-        /// <summary> 处理已反序列化的消息 <para>Handle the deserialized message</para> </summary>
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 处理已反序列化的消息
+        /// <para>Handle the deserialized message</para>
+        /// </summary>
+        /// <param name="message">已反序列化的消息<para>Deserialized message</para></param>
         void Handle(TMessage message);
+
+        #endregion
     }
 
     /// <summary>
     /// 类型化消息处理器基类：Opcode 默认取自消息类上的 <see cref="NetOpcodeAttribute"/>。
     /// <para>Typed handler base: opcode resolved from NetOpcodeAttribute on the message class by default.</para>
     /// </summary>
+    /// <typeparam name="TMessage">消息类型<para>Message type</para></typeparam>
     public abstract class MessageHandler<TMessage> : IMessageHandler<TMessage> where TMessage : class
     {
+        #region Properties
+
         /// <summary>
         /// 消息操作码（来自 <see cref="NetOpcodeAttribute"/>；缺失返回 0，注册时会报错）。
         /// <para>Opcode from NetOpcodeAttribute; 0 when absent (registration will error).</para>
@@ -74,11 +123,21 @@ namespace EasyFramework.Systems.Net
             get
             {
                 var attrs = typeof(TMessage).GetCustomAttributes(typeof(NetOpcodeAttribute), false);
-                return attrs is NetOpcodeAttribute[] array && array.Length > 0 ? array[0].Opcode : 0;
+                return attrs is NetOpcodeAttribute[] { Length: > 0 } array ? array[0].Opcode : 0;
             }
         }
 
-        /// <summary> 处理已反序列化的消息 <para>Handle the deserialized message</para> </summary>
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 处理已反序列化的消息
+        /// <para>Handle the deserialized message</para>
+        /// </summary>
+        /// <param name="message">已反序列化的消息<para>Deserialized message</para></param>
         public abstract void Handle(TMessage message);
+
+        #endregion
     }
 }
