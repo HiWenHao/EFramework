@@ -100,7 +100,7 @@ namespace EasyFramework.Systems.Net
         /// <param name="conv">KCP 会话号（收发双方必须一致）<para>KCP conversation id (must match on both peers)</para></param>
         /// <param name="socket">传输层实例<para>Transport instance</para></param>
         /// <param name="dispatcher">消息分发器<para>Message dispatcher</para></param>
-        /// <param name="settings">调参数（null 用默认）<para>Tuning parameters (null for defaults)</para></param>
+        /// <param name="settings">调参数（null 用默认）<para>Tuning parameters (null for defaults).</para></param>
         public NetworkSession(int sessionId, uint conv, ISocket socket, MessageDispatcher dispatcher, NetworkSettings settings = null)
         {
             SessionId = sessionId;
@@ -159,8 +159,10 @@ namespace EasyFramework.Systems.Net
         }
 
         /// <summary>
-        /// 发起 RPC 请求并等待响应（超时抛出 <see cref="TimeoutException"/>）。
-        /// <para>Send an RPC request and await the response (throws TimeoutException on timeout).</para>
+        /// 发起 RPC 请求并等待响应（超时抛出 <see cref="TimeoutException"/>；会话关闭时抛出
+        /// <see cref="NetProtocolException"/>）。
+        /// <para>Send an RPC request and await the response (throws TimeoutException on timeout;
+        /// throws NetProtocolException when the session closes).</para>
         /// </summary>
         /// <typeparam name="TResponse">响应消息类型<para>Response message type</para></typeparam>
         /// <param name="opcode">消息操作码<para>Message opcode</para></param>
@@ -170,7 +172,7 @@ namespace EasyFramework.Systems.Net
         public UniTask<TResponse> Call<TResponse>(int opcode, byte[] payload, float timeoutSeconds = 10f)
         {
             if (!_socket.IsConnected)
-                return UniTask.FromException<TResponse>(new Exception("Session is not connected."));
+                return UniTask.FromException<TResponse>(new NetProtocolException("Session is not connected."));
 
             int rpcId = _dispatcher.NextRpcId();
             var tcs = new UniTaskCompletionSource<TResponse>();
@@ -180,12 +182,12 @@ namespace EasyFramework.Systems.Net
                 var serializer = _dispatcher.Serializer;
                 if (serializer == null)
                 {
-                    tcs.TrySetException(new Exception("Serializer is not set; cannot decode RPC response."));
+                    tcs.TrySetException(new NetProtocolException("Serializer is not set; cannot decode RPC response."));
                     return;
                 }
                 if (packet.PayloadLength <= 0)
                 {
-                    tcs.TrySetException(new Exception($"Empty RPC response payload (opcode={packet.Opcode}, rpcId={rpcId})."));
+                    tcs.TrySetException(new NetProtocolException($"Empty RPC response payload (opcode={packet.Opcode}, rpcId={rpcId})."));
                     return;
                 }
                 try
@@ -197,8 +199,18 @@ namespace EasyFramework.Systems.Net
                 {
                     tcs.TrySetException(e);
                 }
-            }, () => tcs.TrySetException(new TimeoutException($"RPC timeout (opcode={opcode}, rpcId={rpcId}, {timeoutSeconds}s).")),
-                (long)(timeoutSeconds * 1000f));
+            }, failure =>
+            {
+                switch (failure)
+                {
+                    case NetRpcFailure.Timeout:
+                        tcs.TrySetException(new TimeoutException($"RPC timeout (opcode={opcode}, rpcId={rpcId}, {timeoutSeconds}s)."));
+                        break;
+                    case NetRpcFailure.SessionClosed:
+                        tcs.TrySetException(new NetProtocolException($"Session closed before RPC response (opcode={opcode}, rpcId={rpcId})."));
+                        break;
+                }
+            }, (long)(timeoutSeconds * 1000f), SessionId);
 
             Send(opcode, rpcId, payload);
 
@@ -235,18 +247,39 @@ namespace EasyFramework.Systems.Net
                     continue;
                 }
                 if (size <= 0) break;
-                if (MessagePipe.TryDecodePacket(_kcpRecvBuffer, out var packet))
+                if (MessagePipe.TryDecodePacket(SessionId, _kcpRecvBuffer, out var packet))
                     _dispatcher.Dispatch(packet);
             }
         }
 
         /// <summary>
-        /// 关闭会话
-        /// <para>Close the session</para>
+        /// 关闭会话（并取消本会话挂起的 RPC，等待方立即收到失败通知）。
+        /// <para>Close the session (and cancel its pending RPCs so waiters fail immediately).</para>
         /// </summary>
         public void Close()
         {
+            _dispatcher.CancelPendingCalls(SessionId);
             _socket.Close();
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 网络协议异常（会话未连接、载荷非法、会话中途关闭等）。
+    /// <para>Network protocol exception (not connected, malformed payload, session closed midway).</para>
+    /// </summary>
+    public sealed class NetProtocolException : Exception
+    {
+        #region Methods
+
+        /// <summary>
+        /// 构造协议异常。
+        /// <para>Create a protocol exception.</para>
+        /// </summary>
+        /// <param name="message">异常描述<para>Exception message</para></param>
+        public NetProtocolException(string message) : base(message)
+        {
         }
 
         #endregion
