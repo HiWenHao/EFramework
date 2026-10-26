@@ -283,6 +283,14 @@ namespace EasyFramework.Systems.Net
         // 回绕安全的差值
         private static int Itimediff(uint later, uint earlier) => (int)(later - earlier);
 
+        // 回绕安全的「是否已到达」判定：current 是否已到达或越过 tsFlush
+        // （差值落在半个 32 位周期内视为「已到达」，避免 Now() 每 49.7 天回绕时卡死）
+        private static bool TimeReached(long current, long tsFlush)
+        {
+            uint diff = (uint)(current - tsFlush);
+            return diff < 0x80000000u;
+        }
+
         // 小端序读取 uint32
         private static uint ReadUInt32(byte[] data, int offset)
         {
@@ -884,7 +892,7 @@ namespace EasyFramework.Systems.Net
             if (!_updated)
             {
                 _updated = true;
-                _tsFlushNext = 0;
+                _tsFlushNext = current;
             }
 
             // 窗口探测：对端窗口为 0 时定期询问
@@ -908,6 +916,7 @@ namespace EasyFramework.Systems.Net
                 _probeWait = 0;
             }
 
+            if (!TimeReached(current, _tsFlushNext)) return;
             Flush(current);
         }
 
@@ -921,11 +930,15 @@ namespace EasyFramework.Systems.Net
             if (!_updated) return 0;
 
             long current = Now();
-            long tsFlush = _tsFlushNext == 0 ? current : _tsFlushNext;
-            long tsProbe = _tsProbe == 0 ? long.MaxValue : _tsProbe;
 
-            long earliest = tsFlush < tsProbe ? tsFlush : tsProbe;
-            return earliest - current;
+            // 下次 flush 的剩余时间（回绕安全：差值取无符号后按有符号解读）
+            long untilFlush = Itimediff((uint)_tsFlushNext, (uint)current);
+
+            // 窗口探测时刻（无探测时为无限远）
+            long untilProbe = _tsProbe == 0 ? long.MaxValue : Itimediff((uint)_tsProbe, (uint)current);
+
+            long earliest = untilFlush < untilProbe ? untilFlush : untilProbe;
+            return earliest < 0 ? 0 : earliest;
         }
 
         #endregion
