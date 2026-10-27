@@ -117,6 +117,14 @@ namespace EasyFramework.Localization.Edit
         /// </summary>
         public static readonly List<string> DefaultLanguages = new List<string> { "en", "zh" };
 
+        /// <summary>
+        /// 兜底语言代码：运行时找不到目标语言表时回落到它，因此该语言必须始终可用。
+        /// 与 core 编辑器的 ELanguage 保持一致。
+        /// <para>Fallback language code: the runtime falls back to it when a target language table
+        /// is missing, so it must always be available.</para>
+        /// </summary>
+        public const string FallbackLanguage = "en";
+
         #endregion
 
         #region Methods
@@ -184,24 +192,73 @@ namespace EasyFramework.Localization.Edit
         }
 
         /// <summary>
-        /// 取目标语言列表；登记表为空时回落默认值（返回新 List，调用方改动不会污染登记表）
-        /// <para>Gets target languages, falling back to DefaultLanguages.</para>
+        /// 取目标语言列表。
+        /// <para>Gets the target language list.</para>
         /// </summary>
-        /// <returns>语言代码列表<para>The language code list.</para></returns>
+        /// <remarks>
+        /// 兜底语言（<see cref="FallbackLanguage"/>）恒定排在最前且不可缺席 —— 运行时找不到
+        /// 目标语言表时会回落到它，缺了它整套装就不可用。
+        /// 登记表为空时回落默认集合（en + zh）；登记表非空时按登记顺序返回，并确保兜底语言在最前。
+        /// <para>The fallback language is always first and never absent: the runtime falls back to it
+        /// when a target table is missing. Falls back to the default set (en + zh) when the registry
+        /// is empty; otherwise keeps the registered order with the fallback language first.</para>
+        /// </remarks>
+        /// <returns>语言代码列表（返回新 List，调用方改动不会污染登记表）<para>The language code list (a new List; caller edits do not affect the registry).</para></returns>
         public List<string> GetLanguagesOrDefault()
         {
+            var list = new List<string>();
+
             if (meta?.languages != null && meta.languages.Count > 0)
             {
-                var list = new List<string>();
                 foreach (var language in meta.languages)
                 {
-                    if (!string.IsNullOrEmpty(language)) list.Add(language);
+                    if (string.IsNullOrEmpty(language)) continue;
+                    if (list.Contains(language)) continue;
+                    list.Add(language);
                 }
-
-                if (list.Count > 0) return list;
             }
 
-            return new List<string>(DefaultLanguages);
+            if (list.Count == 0)
+            {
+                list.AddRange(DefaultLanguages);
+                return list;
+            }
+
+            // 兜底语言必须在最前：登记表里没有就补上，有但不在首位就挪到首位
+            int fallbackIndex = list.IndexOf(FallbackLanguage);
+            if (fallbackIndex > 0)
+            {
+                list.RemoveAt(fallbackIndex);
+                list.Insert(0, FallbackLanguage);
+            }
+            else if (fallbackIndex < 0)
+            {
+                list.Insert(0, FallbackLanguage);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// 确保登记表含兜底语言且位于首位（保存前调用，使落盘的登记表与面板显示一致）。
+        /// <para>Ensures the registry contains the fallback language first (called before saving so
+        /// the persisted registry matches what the panel shows).</para>
+        /// </summary>
+        public void EnsureFallbackLanguage()
+        {
+            meta ??= new LocalizationKeyMeta();
+            meta.languages ??= new List<string>();
+
+            int index = meta.languages.IndexOf(FallbackLanguage);
+            if (index > 0)
+            {
+                meta.languages.RemoveAt(index);
+                meta.languages.Insert(0, FallbackLanguage);
+            }
+            else if (index < 0)
+            {
+                meta.languages.Insert(0, FallbackLanguage);
+            }
         }
 
         /// <summary>
@@ -298,6 +355,10 @@ namespace EasyFramework.Localization.Edit
                     Directory.CreateDirectory(dir);
 
                 EnsureDefaults();
+
+                // 兜底语言恒在登记表首位（数据层兜底：任何调用路径保存都不会漏掉它）
+                EnsureFallbackLanguage();
+
                 var json = JsonConvert.SerializeObject(this, Settings);
                 File.WriteAllText(path, json, new System.Text.UTF8Encoding(false));
                 return true;

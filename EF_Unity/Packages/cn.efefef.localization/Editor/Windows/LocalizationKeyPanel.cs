@@ -208,6 +208,9 @@ namespace EasyFramework.Localization.Edit
 
             SyncGroupsFromKeys();
 
+            // 兜底语言写入登记表：确保落盘的清单与面板显示一致（面板恒显 en，且不可删）
+            _file.EnsureFallbackLanguage();
+
             if (!_file.Save(LocalizationData.JsonPath))
             {
                 if (!silent)
@@ -935,15 +938,25 @@ namespace EasyFramework.Localization.Edit
             _file.meta ??= new LocalizationKeyMeta();
             _file.meta.languages ??= new List<string>();
 
-            // 登记表为空时展示回落值，并提示用户它还没落盘
+            // 兜底语言恒定在列表首位且不可删（运行时找不到目标语言表时会回落到它）
             var languages = _file.GetLanguagesOrDefault();
             bool isDefault = _file.meta.languages.Count == 0;
 
             foreach (var language in languages)
             {
+                bool isFallback = language == LocalizationKeyFile.FallbackLanguage;
+
                 EditorGUILayout.BeginHorizontal();
 
-                EditorGUILayout.LabelField(language, EditorStyles.miniLabel);
+                // 兜底语言用加粗 + 标注区分（用户一眼能看出哪个不能删）
+                if (isFallback)
+                {
+                    EditorGUILayout.LabelField(language, EditorStyles.boldLabel);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField(language, EditorStyles.miniLabel);
+                }
 
                 var path = LocalizationData.GetValuesPath(language);
                 bool exists = File.Exists(path);
@@ -955,9 +968,17 @@ namespace EasyFramework.Localization.Edit
                     EditorStyles.miniLabel, GUILayout.Width(200f));
                 GUI.contentColor = prevColor;
 
+                if (isFallback)
+                {
+                    EditorGUILayout.LabelField(
+                        LC.Tr("（备用，无法移除）", "(fallback, cannot be removed)"),
+                        EditorStyles.miniLabel, GUILayout.Width(220f));
+                }
+
                 GUILayout.FlexibleSpace();
 
-                if (!isDefault && GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton,
+                // 兜底语言不给删除按钮；登记表为空时（回落展示中）同样不给
+                if (!isDefault && !isFallback && GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton,
                         GUILayout.Width(60f)))
                 {
                     _file.meta.languages.Remove(language);
@@ -971,7 +992,8 @@ namespace EasyFramework.Localization.Edit
             if (isDefault)
                 EditorGUILayout.HelpBox(
                     $"{LC.Combine(Lc.Tips)}: meta.languages {LC.Combine(Lc.Is, Lc.Empty)}，" +
-                    $"{LC.Combine(Lc.Current, Lc.Use)}: {string.Join(", ", languages)}",
+                    $"{LC.Combine(Lc.Current, Lc.Use)}: {string.Join(", ", languages)}" +
+                    $"（{LC.Tr("保存后将写入登记表", "will be written to the registry on save")}）",
                     MessageType.None);
 
             EditorGUILayout.Space(6f);
