@@ -38,6 +38,10 @@ namespace EasyFramework.Edit
         private const int ColBeanFieldName = 10;  // J：字段名
         private const int ColBeanFieldType = 12;  // L：字段类型
 
+        // 表头说明行行数（1-based）：第 1 行列名、第 2 行填写说明、第 3 行示例，数据从第 4 行起
+        // 表头行不参与增删查，避免误伤列名与说明文字
+        private const int HeaderRowCount = 3;
+
         // __tables__.xlsx 表定义行列位（1-based；A 列为 ## 标记列，数据行留空不写）。
         // 列位是 Luban 的隐性契约，以既有 L10n.TbText_en/zh 行实测为准，勿凭猜测调整
 
@@ -112,19 +116,23 @@ namespace EasyFramework.Edit
             // 数据检测：字典与列号
             if (cells == null || cells.Count == 0)
             {
-                D.Error("[ XlsxRowAppender ] 追加失败：没有可写入的数据");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：没有可写入的数据",
+                    "[ XlsxRowAppender ] Append failed: no data to write"));
                 return false;
             }
 
             if (cells.Keys.Any(c => c < 1))
             {
-                D.Error("[ XlsxRowAppender ] 追加失败：列号必须从 1 开始（A 列 = 1）");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：列号必须从 1 开始（A 列 = 1）",
+                    "[ XlsxRowAppender ] Append failed: column index must start at 1 (A = 1)"));
                 return false;
             }
 
             if (uniqueColumn < 1 || !cells.ContainsKey(uniqueColumn))
             {
-                D.Error($"[ XlsxRowAppender ] 追加失败：唯一性判定列 {uniqueColumn} 不在待写入数据中");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：唯一性判定列 {0} 不在待写入数据中",
+                    "[ XlsxRowAppender ] Append failed: uniqueness column {0} is not among the cells to write",
+                    uniqueColumn));
                 return false;
             }
 
@@ -133,12 +141,16 @@ namespace EasyFramework.Edit
             {
                 if (pair.Value == null || pair.Value.ToString().Length == 0)
                 {
-                    D.Error($"[ XlsxRowAppender ] 追加失败：第 {pair.Key} 列的值为空");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：第 {0} 列的值为空",
+                    "[ XlsxRowAppender ] Append failed: value of column {0} is empty",
+                    pair.Key));
                     return false;
                 }
 
                 if (pair.Value is int or string) continue;
-                D.Error($"[ XlsxRowAppender ] 追加失败：第 {pair.Key} 列的值类型 {pair.Value.GetType().Name} 不支持（仅 int / string）");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：第 {0} 列的值类型 {1} 不支持（仅 int / string）",
+                    "[ XlsxRowAppender ] Append failed: value type {1} of column {0} is not supported (int / string only)",
+                    pair.Key, pair.Value.GetType().Name));
                 return false;
             }
 
@@ -148,7 +160,9 @@ namespace EasyFramework.Edit
             var keyText = cells[uniqueColumn].ToString();
             if (ColumnContains(context, uniqueColumn, keyText))
             {
-                D.Error($"[ XlsxRowAppender ] 追加失败：第 {uniqueColumn} 列已存在相同数据「{keyText}」（重复追加）");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 追加失败：第 {0} 列已存在相同数据「{1}」（重复追加）",
+                    "[ XlsxRowAppender ] Append failed: column {0} already contains the same value '{1}' (duplicate append)",
+                    uniqueColumn, keyText));
                 return false;
             }
 
@@ -166,13 +180,15 @@ namespace EasyFramework.Edit
         {
             if (columnIndex < 1)
             {
-                D.Error("[ XlsxRowAppender ] 检测失败：列号必须从 1 开始（A 列 = 1）");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 检测失败：列号必须从 1 开始（A 列 = 1）",
+                    "[ XlsxRowAppender ] Check failed: column index must start at 1 (A = 1)"));
                 return false;
             }
 
             if (value == null || value.ToString().Length == 0)
             {
-                D.Error("[ XlsxRowAppender ] 检测失败：检测内容为空");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 检测失败：检测内容为空",
+                    "[ XlsxRowAppender ] Check failed: value to check is empty"));
                 return false;
             }
 
@@ -190,6 +206,104 @@ namespace EasyFramework.Edit
             => File.Exists(ResolveTablesPath());
 
         /// <summary>
+        /// 删除工作簿中「指定列的值等于指定文本」的那一行（整行删除）
+        /// <para>Deletes the row whose value in the given column equals the given text (the whole row is removed).</para>
+        /// </summary>
+        /// <remarks>
+        /// 用于「配置项被删除后同步清理」的场景：如多语言面板里某语言被移除后，
+        /// 同步时把 __tables__.xlsx 中对应的表定义行一并删掉，避免留下指向已不存在 CSV 的僵尸表。
+        /// <para>Used to clean up table definitions whose source data was removed
+        /// (e.g. a language deleted in the localization panel), so no zombie table remains
+        /// pointing at a missing CSV.</para>
+        /// <para>只删数据行：表头说明行（行号 &lt;= 3，含列名与填写说明）永不参与匹配。</para>
+        /// <para>Only data rows are matched: header rows (row number &lt;= 3) are never candidates.</para>
+        /// </remarks>
+        /// <param name="columnIndex">列号（1-based，A 列 = 1）<para>Column index (1-based, A = 1).</para></param>
+        /// <param name="value">要匹配的值（按文本比对，与 <see cref="ContainsColumn"/> 一致）<para>Value to match (compared as text, same as ContainsColumn).</para></param>
+        /// <returns>实际删除的行数（0 = 无匹配行，属正常情况）<para>Number of rows actually removed (0 when nothing matched, which is normal).</para></returns>
+        public static int RemoveRowsByColumnValue(int columnIndex, string value)
+        {
+            if (columnIndex < 1)
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 删除失败：列号必须从 1 开始（A 列 = 1）",
+                    "[ XlsxRowAppender ] Remove failed: column index must start at 1 (A = 1)"));
+                return 0;
+            }
+
+            if (string.IsNullOrEmpty(value))
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 删除失败：匹配内容为空",
+                    "[ XlsxRowAppender ] Remove failed: value to match is empty"));
+                return 0;
+            }
+
+            if (!LoadWorkbook(TablesFileName, out var context)) return 0;
+
+            try
+            {
+                int removed = RemoveRowsFromContext(context, columnIndex, value);
+                if (removed == 0) return 0;
+
+                return WriteWorkbook(context) ? removed : 0;
+            }
+            catch (Exception e)
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 删除失败：{0}",
+                    "[ XlsxRowAppender ] Remove failed: {0}",
+                    e.Message));
+                var tmpPath = context.Path + ".tmp";
+                if (File.Exists(tmpPath)) File.Delete(tmpPath);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 读取指定列中所有非空值（去重，保持出现顺序；跳过表头说明行）
+        /// <para>Reads all non-empty values of a column (deduplicated, in order of appearance; header rows skipped).</para>
+        /// </summary>
+        /// <param name="columnIndex">列号（1-based，A 列 = 1）<para>Column index (1-based, A = 1).</para></param>
+        /// <returns>该列的所有值；失败返回空列表（原因见 Console）<para>All values in the column; empty on failure (reason logged).</para></returns>
+        public static List<string> GetColumnValues(int columnIndex)
+        {
+            var result = new List<string>();
+
+            if (columnIndex < 1)
+            {
+
+                D.Error(LC.Tr("[ XlsxRowAppender ] 读取失败：列号必须从 1 开始（A 列 = 1）",
+                    "[XlsxRowAppender] Read failed: Column numbers must start from 1 (column A = 1)"));
+                return result;
+            }
+
+            if (!LoadWorkbook(TablesFileName, out var context)) return result;
+
+            var sheetData = context?.Sheet?.Root?.Element(context.SheetNs + "sheetData");
+            if (sheetData == null) return result;
+
+            var target = ToColumnName(columnIndex);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var row in sheetData.Elements(context.SheetNs + "row"))
+            {
+                // 跳过表头说明行（列名行 + 填写说明行）
+                if (GetRowNumber(row) <= HeaderRowCount) continue;
+
+                foreach (var cell in row.Elements(context.SheetNs + "c"))
+                {
+                    if (CellColumn((string)cell.Attribute("r")) != target) continue;
+
+                    var text = CellText(cell, context.SharedTexts);
+                    if (string.IsNullOrEmpty(text)) continue;
+                    if (!seen.Add(text)) continue;
+
+                    result.Add(text);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 登记 Luban bean 定义（写入 __beans__.xlsx）
         /// <para>Registers a Luban bean definition into __beans__.xlsx.</para>
         /// <para>幂等（Ensure 语义）：bean 全名已存在时跳过并返回 true。字段按 Luban 约定分行：
@@ -204,13 +318,16 @@ namespace EasyFramework.Edit
             // 数据检测：bean 名与字段
             if (string.IsNullOrWhiteSpace(beanFullName))
             {
-                D.Error("[ XlsxRowAppender ] bean 登记失败：bean 全名为空");
+                D.Error(LC.Tr("[ XlsxRowAppender ] bean 登记失败：bean 全名为空",
+                    "[ XlsxRowAppender ] Bean registration failed: bean full name is empty"));
                 return false;
             }
 
             if (fields == null || fields.Length == 0)
             {
-                D.Error($"[ XlsxRowAppender ] bean 登记失败：{beanFullName} 没有字段");
+                D.Error(LC.Tr("[ XlsxRowAppender ] bean 登记失败：{0} 没有字段",
+                    "[ XlsxRowAppender ] Bean registration failed: {0} has no fields",
+                    beanFullName));
                 return false;
             }
 
@@ -218,7 +335,9 @@ namespace EasyFramework.Edit
             {
                 if (string.IsNullOrWhiteSpace(field.name) || string.IsNullOrWhiteSpace(field.type))
                 {
-                    D.Error($"[ XlsxRowAppender ] bean 登记失败：{beanFullName} 存在空字段名或空类型");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] bean 登记失败：{0} 存在空字段名或空类型",
+                    "[ XlsxRowAppender ] Bean registration failed: {0} has an empty field name or type",
+                    beanFullName));
                     return false;
                 }
             }
@@ -252,7 +371,9 @@ namespace EasyFramework.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ XlsxRowAppender ] bean 登记失败：{e.Message}");
+                D.Error(LC.Tr("[ XlsxRowAppender ] bean 登记失败：{0}",
+                    "[ XlsxRowAppender ] Bean registration failed: {0}",
+                    e.Message));
                 var tmpPath = context.Path + ".tmp";
                 if (File.Exists(tmpPath)) File.Delete(tmpPath);
                 return false;
@@ -287,7 +408,9 @@ namespace EasyFramework.Edit
             var path = Path.Combine(Path.GetDirectoryName(ResolveTablesPath()) ?? ".", fileName);
             if (!File.Exists(path))
             {
-                D.Error($"[ XlsxRowAppender ] 找不到表定义文件：{path}");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 找不到表定义文件：{0}",
+                    "[ XlsxRowAppender ] Table definition file not found: {0}",
+                    path));
                 return false;
             }
 
@@ -308,7 +431,8 @@ namespace EasyFramework.Edit
                 // 经 workbook.xml → r:id → rels 定位第一个工作表条目
                 if (!entries.TryGetValue("xl/workbook.xml", out var workbookBytes))
                 {
-                    D.Error("[ XlsxRowAppender ] 缺少 xl/workbook.xml，不是有效的 xlsx 文件");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] 缺少 xl/workbook.xml，不是有效的 xlsx 文件",
+                    "[ XlsxRowAppender ] Missing xl/workbook.xml, not a valid xlsx file"));
                     return false;
                 }
 
@@ -318,14 +442,16 @@ namespace EasyFramework.Edit
                 var sheet = workbook.Root.Element(mainNs + "sheets")?.Elements(mainNs + "sheet").FirstOrDefault();
                 if (sheet == null)
                 {
-                    D.Error("[ XlsxRowAppender ] workbook.xml 中没有工作表");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] workbook.xml 中没有工作表",
+                    "[ XlsxRowAppender ] No worksheet found in workbook.xml"));
                     return false;
                 }
 
                 var rid = (string)sheet.Attribute(officeRns + "id");
                 if (!entries.TryGetValue("xl/_rels/workbook.xml.rels", out var relsBytes))
                 {
-                    D.Error("[ XlsxRowAppender ] 缺少 xl/_rels/workbook.xml.rels");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] 缺少 xl/_rels/workbook.xml.rels",
+                    "[ XlsxRowAppender ] Missing xl/_rels/workbook.xml.rels"));
                     return false;
                 }
 
@@ -337,7 +463,9 @@ namespace EasyFramework.Edit
                     .FirstOrDefault(r => (string)r.Attribute("Id") == rid);
                 if (relationship == null)
                 {
-                    D.Error($"[ XlsxRowAppender ] workbook.xml.rels 中找不到 rId：{rid}");
+                    D.Error(LC.Tr("[ XlsxRowAppender ] workbook.xml.rels 中找不到 rId：{0}",
+                    "[ XlsxRowAppender ] rId not found in workbook.xml.rels: {0}",
+                    rid));
                     return false;
                 }
 
@@ -373,7 +501,9 @@ namespace EasyFramework.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ XlsxRowAppender ] 解析工作簿失败：{e.Message}");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 解析工作簿失败：{0}",
+                    "[ XlsxRowAppender ] Failed to parse the workbook: {0}",
+                    e.Message));
                 return false;
             }
         }
@@ -402,12 +532,51 @@ namespace EasyFramework.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ XlsxRowAppender ] 写入工作簿失败：{e.Message}");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 写入工作簿失败：{0}",
+                    "[ XlsxRowAppender ] Failed to write the workbook: {0}",
+                    e.Message));
                 var tmpPath = context.Path + ".tmp";
                 if (File.Exists(tmpPath)) File.Delete(tmpPath);
                 return false;
             }
         }
+
+        // 删除匹配指定列值的那一行（整行移除，含该行所有单元格；共享字符串保留不清理，
+        // 避免重排索引导致其它行的引用错位——Excel 允许共享字符串表有未引用项）
+        // 表头说明行不参与匹配（防止误删列名行）
+        private static int RemoveRowsFromContext(WorkbookContext context, int columnIndex, string value)
+        {
+            var sheetData = context?.Sheet?.Root?.Element(context.SheetNs + "sheetData");
+            if (sheetData == null) return 0;
+
+            var target = ToColumnName(columnIndex);
+            int removed = 0;
+
+            // 倒序遍历：删除会改变集合，直接遍历会漏行
+            var rows = sheetData.Elements(context.SheetNs + "row").ToList();
+            for (int i = rows.Count - 1; i >= 0; i--)
+            {
+                var row = rows[i];
+                if (GetRowNumber(row) <= HeaderRowCount) continue;
+
+                bool matched = row.Elements(context.SheetNs + "c").Any(cell =>
+                {
+                    if (CellColumn((string)cell.Attribute("r")) != target) return false;
+                    return CellText(cell, context.SharedTexts) == value;
+                });
+
+                if (!matched) continue;
+
+                row.Remove();
+                removed++;
+            }
+
+            return removed;
+        }
+
+        // 取行元素的行号（r 属性缺失时按 0 处理）
+        private static int GetRowNumber(XElement row)
+            => (int?)row.Attribute("r") ?? 0;
 
         // 组装一行并写入 sheetData（含共享字符串登记）；写回由 WriteWorkbook 统一执行。
         // rowNumber <= 0：自动定位到最后一个有内容的行之后（空行骨架不参与定位，新行紧贴真实数据）；
@@ -433,7 +602,8 @@ namespace EasyFramework.Edit
                 // 指定行号：该行已有内容 = 覆盖风险，直接失败
                 var existing = rows.FirstOrDefault(r => (int?)r.Attribute("r") == rowNumber);
                 if (existing != null && RowHasContent(existing, context.SheetNs))
-                    throw new InvalidOperationException($"指定行 {rowNumber} 已有内容，拒绝覆盖");
+                    throw new InvalidOperationException(LC.Tr($"指定行 {rowNumber} 已有内容，拒绝覆盖",
+                        $"The specified row {rowNumber} already contains content and cannot be overwritten."));
 
                 insertBefore = rows.FirstOrDefault(r => ((int?)r.Attribute("r") ?? int.MaxValue) > rowNumber);
                 existing?.Remove();
@@ -527,7 +697,9 @@ namespace EasyFramework.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ XlsxRowAppender ] 写入工作簿失败：{e.Message}");
+                D.Error(LC.Tr("[ XlsxRowAppender ] 写入工作簿失败：{0}",
+                    "[ XlsxRowAppender ] Failed to write the workbook: {0}",
+                    e.Message));
                 if (File.Exists(tmpPath)) File.Delete(tmpPath);
                 return false;
             }

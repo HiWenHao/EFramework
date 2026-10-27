@@ -211,7 +211,11 @@ namespace EasyFramework.Localization.Edit
             if (!_file.Save(LocalizationData.JsonPath))
             {
                 if (!silent)
-                    EditorUtility.DisplayDialog("保存失败", "无法写入 Key 清单文件，请查看 Console。", LC.Combine(Lc.Confirm));
+                    EditorUtility.DisplayDialog(
+                        LC.Combine(Lc.Save, Lc.Failed),
+                        LC.Tr("无法写入 Key 清单文件，请查看 Console。",
+                            "Failed to write the Key manifest file, see Console for details."),
+                        LC.Combine(Lc.Confirm));
                 return false;
             }
 
@@ -989,42 +993,50 @@ namespace EasyFramework.Localization.Edit
             SyncTablesToLuban();
         }
 
+        // 多语言表名前缀：只有带此前缀的行才归本面板管辖，删除时也只删此前缀的行
+        private const string L10nTablePrefix = "L10n.TbText_";
+
         // 把清单中的语言登记为 Luban 表定义（L10n.TbText_{lang}）写入 __tables__.xlsx，结果弹窗汇总。
+        //
+        // 同步语义是【对账】而非【追加】：
+        //   · 清单里有、xlsx 里没有 → 登记；
+        //   · 清单里有、xlsx 里已有 → 跳过（幂等）；
+        //   · 清单里没有、xlsx 里有 → 删除（语言被移除后同步清理，避免留下指向已删 CSV 的僵尸表）。
+        //
+        // 删除范围严格限定在 L10n.TbText_ 前缀的行：其它模块的表（如 Example.TbItem）不受影响。
         private void SyncTablesToLuban()
         {
             if (!XlsxRowAppender.Exists())
             {
-                D.Error(Tr(
-                    "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)",
-                    "[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）"));
+                D.Error(LC.Tr("[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）", "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)"));
                 return;
             }
 
             // 前置：确保 L10n.Text bean 已登记（__beans__.xlsx；幂等，已存在自动跳过）——缺失时 Luban 导表会失败
             if (!XlsxRowAppender.AppendBean("L10n.Text", 0, ("key", "string"), ("value", "string")))
             {
-                D.Error(Tr(
-                    "[ LocalizationKeyPanel ] Bean registration failed, see Console",
-                    "[ LocalizationKeyPanel ] bean 登记失败，详见 Console"));
+                D.Error(LC.Tr("[ LocalizationKeyPanel ] bean 登记失败，详见 Console", "[ LocalizationKeyPanel ] Bean registration failed, see Console"));
                 return;
             }
 
-            // 第二步：表存在，逐语言登记
+            var languages = _file.GetLanguagesOrDefault();
+
+            // 第二步：逐语言登记（该加的加）
             var lines = new List<string>();
             var added = 0;
             var existed = 0;
             var skipped = 0;
             var failed = 0;
 
-            foreach (var language in _file.GetLanguagesOrDefault())
+            foreach (var language in languages)
             {
-                var fullName = $"L10n.TbText_{language}";
-                
+                var fullName = L10nTablePrefix + language;
+
                 // value 表（CSV）不存在时 Luban 导表会直接报错，这里提前拦截
                 var csvPath = LocalizationData.GetValuesPath(language);
                 if (!File.Exists(csvPath))
                 {
-                    lines.Add($"{fullName}: {Tr($"Skipped (value table not exported: {Path.GetFileName(csvPath)})", $"跳过（value 表未导出：{Path.GetFileName(csvPath)}）")}");
+                    lines.Add($"{fullName}: {LC.Tr("跳过（value 表未导出：{0}）", "Skipped (value table not exported: {0})", Path.GetFileName(csvPath))}");
                     skipped++;
                     continue;
                 }
@@ -1032,7 +1044,7 @@ namespace EasyFramework.Localization.Edit
                 // 先查重：已存在 = 幂等跳过，与写入失败明确区分
                 if (XlsxRowAppender.ContainsColumn(XlsxRowAppender.ColFullName, fullName))
                 {
-                    lines.Add($"{fullName}: {Tr("Already exists, skipped", "已存在，跳过")}");
+                    lines.Add($"{fullName}: {LC.Tr("已存在，跳过", "Already exists, skipped")}");
                     existed++;
                     continue;
                 }
@@ -1046,47 +1058,110 @@ namespace EasyFramework.Localization.Edit
                     [XlsxRowAppender.ColIndex] = "key",
                     [XlsxRowAppender.ColMode] = "map",
                     [XlsxRowAppender.ColGroup] = "c",
-                    [XlsxRowAppender.ColComment] = Tr($"L10n text table {language}", $"多语言文本表 {language}"),
+                    [XlsxRowAppender.ColComment] = LC.Tr("多语言文本表 {0}", "L10n text table {0}", language),
                 };
 
                 if (XlsxRowAppender.AppendLastRow(cells, XlsxRowAppender.ColFullName))
                 {
-                    lines.Add($"{fullName}: {Tr("Registered", "已登记")}");
+                    lines.Add($"{fullName}: {LC.Tr("已登记", "Registered")}");
                     added++;
                 }
                 else
                 {
-                    lines.Add($"{fullName}: {Tr("Write failed (see Console for the reason)", "写入失败（原因见 Console 报错）")}");
+                    lines.Add($"{fullName}: {LC.Tr("写入失败（原因见 Console 报错）", "Write failed (see Console for the reason)")}");
                     failed++;
                 }
             }
 
-            // 汇总行：四类状态逐项计数
-            var parts = new List<string>();
-            if (added > 0) parts.Add(Tr($"Registered: {added}", $"新登记 {added} 张"));
-            if (existed > 0) parts.Add(Tr($"Already exists, skipped: {existed}", $"已存在跳过 {existed} 张"));
-            if (skipped > 0) parts.Add(Tr($"Not exported, skipped: {skipped}", $"未导出跳过 {skipped} 张"));
-            if (failed > 0) parts.Add(Tr($"Failed: {failed}", $"失败 {failed} 张"));
-            var summary = parts.Count == 0
-                ? Tr("No language in the manifest", "清单中没有语言")
-                : string.Join(Tr(", ", "，"), parts) + Tr(". Run 'Generate All Excel Data' to take effect", "。新登记后执行「生成全部Excel数据」即可生效");
+            // 第三步：清理孤儿表（清单里已无该语言，但 xlsx 里还留着表定义）
+            var removed = 0;
+            var removeFailed = 0;
+            var staleTables = FindStaleL10nTables(languages);
 
-            // 弹窗策略：有新登记或失败才弹窗（有实质结果需要知晓）；
-            if (added > 0 || failed > 0)
+            if (staleTables.Count > 0)
             {
+                // 删除是不可逆操作，需二次确认（列清将要删的表，让用户明确知情）
+                var detail = new System.Text.StringBuilder();
+                foreach (var table in staleTables) detail.AppendLine($"  - {table}");
+
+                if (EditorUtility.DisplayDialog(
+                        LC.Combine(Lc.Sync, Lc.Config),
+                        LC.Tr(
+                            "以下表定义在语言清单中已不存在，将被删除：\n\n{0}\n确认删除吗？",
+                            "The following table definitions are no longer in the manifest and will be deleted:\n\n{0}\nDelete them?",
+                            detail),
+                        LC.Combine(Lc.Confirm),
+                        LC.Combine(Lc.Cancel)))
+                {
+                    foreach (var table in staleTables)
+                    {
+                        if (XlsxRowAppender.RemoveRowsByColumnValue(XlsxRowAppender.ColFullName, table) > 0)
+                        {
+                            lines.Add($"{table}: {LC.Tr("已删除（语言已不在清单中）", "Removed (language no longer in the manifest)")}");
+                            removed++;
+                        }
+                        else
+                        {
+                            lines.Add($"{table}: {LC.Tr("删除失败（原因见 Console 报错）", "Removal failed (see Console for the reason)")}");
+                            removeFailed++;
+                        }
+                    }
+                }
+                else
+                {
+                    lines.Add(LC.Tr("已保留过期表定义（已取消）", "Stale table definitions kept (canceled)"));
+                }
+            }
+
+            // 汇总行：五类状态逐项计数
+            var parts = new List<string>();
+            if (added > 0) parts.Add(LC.Tr("新登记 {0} 张", "Registered: {0}", added));
+            if (existed > 0) parts.Add(LC.Tr("已存在跳过 {0} 张", "Already exists, skipped: {0}", existed));
+            if (removed > 0) parts.Add(LC.Tr("已删除 {0} 张", "Removed: {0}", removed));
+            if (skipped > 0) parts.Add(LC.Tr("未导出跳过 {0} 张", "Not exported, skipped: {0}", skipped));
+            if (failed > 0) parts.Add(LC.Tr("失败 {0} 张", "Failed: {0}", failed));
+            if (removeFailed > 0) parts.Add(LC.Tr("删除失败 {0} 张", "Removal failed: {0}", removeFailed));
+            var summary = parts.Count == 0
+                ? LC.Tr("清单中没有语言", "No language in the manifest")
+                : string.Join(LC.Tr("，", ", "), parts) + LC.Tr("。新登记后执行「生成全部Excel数据」即可生效", ". Run 'Generate All Excel Data' to take effect");
+
+            // 弹窗策略：有实质结果（新增 / 删除 / 失败）才弹窗
+            if (added > 0 || removed > 0 || failed > 0 || removeFailed > 0)
+            {
+                bool partial = failed > 0 || removeFailed > 0;
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
-                    $"{(failed > 0 ? Tr("[Partially done]", "[部分完成]") : Tr("[Done]", "[完成]"))}\n\n{summary}\n\n{string.Join("\n", lines)}",
+                    $"{(partial ? LC.Tr("[部分完成]", "[Partially done]") : LC.Tr("[完成]", "[Done]"))}\n\n{summary}\n\n{string.Join("\n", lines)}",
                     LC.Combine(Lc.Confirm));
             }
             else
             {
-                D.Log($"[ LocalizationKeyPanel ] {Tr("Sync: ", "同步配置：")}{summary}\n{string.Join("\n", lines)}");
+                D.Log($"[ LocalizationKeyPanel ] {LC.Tr("同步配置：", "Sync: ")}{summary}\n{string.Join("\n", lines)}");
             }
         }
 
-        // 显示文案中英切换：跟随 LC 当前显示语言（English 显示 en，其余显示 zh）
-        private static string Tr(string en, string zh)
-            => LC.DisplayLanguage == ELanguage.English ? en : zh;
+        // 找出 xlsx 中已登记、但语言清单里已不存在的多语言表（孤儿表）
+        //
+        // 只匹配 L10n.TbText_ 前缀：其它模块的表（如 Example.TbItem）不在本面板管辖范围内，
+        // 绝不会因语言删除而被误删。
+        private List<string> FindStaleL10nTables(List<string> languages)
+        {
+            var stale = new List<string>();
+
+            var existing = XlsxRowAppender.GetColumnValues(XlsxRowAppender.ColFullName);
+            foreach (var table in existing)
+            {
+                if (string.IsNullOrEmpty(table)) continue;
+                if (!table.StartsWith(L10nTablePrefix, StringComparison.Ordinal)) continue;
+
+                var language = table.Substring(L10nTablePrefix.Length);
+                if (string.IsNullOrEmpty(language)) continue;
+                if (languages.Contains(language)) continue;
+
+                stale.Add(table);
+            }
+
+            return stale;
+        }
 
         // 导出操作区
         private void DrawExportSection()
@@ -1199,7 +1274,8 @@ namespace EasyFramework.Localization.Edit
             if (issues.Count > 0)
             {
                 bool goOn = EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
-                    $"{issues.Count} {LC.Combine(Lc.Element, Lc.Is, Lc.Illegal)}，仍要继续导出吗？",
+                    LC.Tr("{0} 个元素非法，仍要继续导出吗？", "{0} invalid element(s), continue exporting anyway?",
+                        issues.Count),
                     LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel));
 
                 if (!goOn) return;
@@ -1219,7 +1295,7 @@ namespace EasyFramework.Localization.Edit
                     sb.AppendLine($"  - {LC.Combine(Lc.Delete)}: {removed}");
             }
 
-            D.Log($"[Localization] {LC.Combine(Lc.Export, Lc.Data)}\n{sb}");
+            D.Log(LC.Tr("[Localization] 导出数据\n{0}", "[Localization] Export data\n{0}", sb.ToString()));
 
             EditorUtility.DisplayDialog(
                 allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error), sb.ToString(),
@@ -1234,8 +1310,9 @@ namespace EasyFramework.Localization.Edit
             if (!Directory.Exists(path))
             {
                 if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
-                        $"{path}\n{LC.Combine(Lc.Not, Lc.Exist)}，" +
-                        "是否创建该目录？",
+                        LC.Tr("{0}\n{1}，是否创建该目录？",
+                            "{0}\n{1}, create the directory?",
+                            path, LC.Combine(Lc.Not, Lc.Exist)),
                         LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
                     return;
 
@@ -1324,7 +1401,9 @@ namespace EasyFramework.Localization.Edit
 
             if (issues.Count == 0)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Success), $"共 {file.keys.Count} 条 key。", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Success),
+                    LC.Tr("共 {0} 条 key。", "{0} key(s) in total.", file.keys.Count),
+                    LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -1366,7 +1445,7 @@ namespace EasyFramework.Localization.Edit
                 sb.AppendLine(report.Summary);
             }
 
-            D.Log($"[Localization] {LC.Combine(Lc.Export, Lc.Data)}\n{sb}");
+            D.Log(LC.Tr("[Localization] 导出数据\n{0}", "[Localization] Export data\n{0}", sb.ToString()));
 
             EditorUtility.DisplayDialog(allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error),
                 sb.ToString(), LC.Combine(Lc.Confirm));

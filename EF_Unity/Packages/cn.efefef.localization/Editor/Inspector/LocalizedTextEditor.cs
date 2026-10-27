@@ -56,7 +56,9 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[Localization] 读取 Key 清单失败: {e.Message}");
+                D.Error(LC.Tr("[Localization] 读取 Key 清单失败：{0}",
+                    "[Localization] Failed to read the Key manifest: {0}",
+                    e.Message));
                 return new List<LocalizationKeyEntry>();
             }
         }

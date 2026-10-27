@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        Key 搜索弹窗：输入过滤 + 列表选择
  * Author:          Alvin5100
@@ -260,7 +260,9 @@ namespace EasyFramework.Localization.Edit
 
             if (file.keys.Any(k => k.name == name))
             {
-                D.Error($"[ KeySearchWindow ] key 已存在：{name}");
+                D.Error(LC.Tr("[ KeySearchWindow ] key 已存在：{0}",
+                    "[ KeySearchWindow ] key already exists: {0}",
+                    name));
                 return null;
             }
 
@@ -273,24 +275,23 @@ namespace EasyFramework.Localization.Edit
 
             if (!file.Save(path))
             {
-                D.Error($"[ KeySearchWindow ] Key 清单保存失败：{path}");
+                D.Error(LC.Tr("[ KeySearchWindow ] Key 清单保存失败：{0}",
+                    "[ KeySearchWindow ] Failed to save the Key manifest: {0}",
+                    path));
                 return null;
             }
 
             LocalizationKeyPanel.ExternalManifestChanged = true;
-            D.Log(Tr(
-                $"[ KeySearchWindow ] Key created: {name} (remember to export value tables, fill translations and regenerate)",
-                $"[ KeySearchWindow ] key 已创建：{name}（记得导出 value 表并填写译文后重新导表）"));
+            D.Log(LC.Tr(
+                "[ KeySearchWindow ] key 已创建：{0}（记得导出 value 表并填写译文后重新导表）",
+                "[ KeySearchWindow ] Key created: {0} (remember to export value tables, fill translations and regenerate)",
+                name));
             return name;
         }
 
         // 新 key 名合法性：非空 + 命名规范（首字符字母/下划线，其余字母数字下划线点）
         private static bool IsLegalNewKey(string name)
             => !string.IsNullOrEmpty(name) && new LocalizationKeyEntry { name = name }.IsValidName();
-
-        // 显示文案中英切换：跟随 LC 当前显示语言（English 显示 en，其余显示 zh）
-        private static string Tr(string en, string zh)
-            => LC.DisplayLanguage == ELanguage.English ? en : zh;
 
         // 行内容：加粗 key + 灰色说明；当前已选 key 行加 ✓ 标记
         private GUIContent RowContent(LocalizationKeyEntry entry)

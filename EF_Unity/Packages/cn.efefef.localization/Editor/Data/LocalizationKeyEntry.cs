@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        多语言 Key 清单的数据模型与读写（只罗列 key，不含 value）
  * Author:          Alvin5100
@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using EasyFramework.Edit;
 using Newtonsoft.Json;
 
 namespace EasyFramework.Localization.Edit
@@ -273,7 +274,9 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[Localization] 读取 Key 清单失败：{path}\n{e.Message}");
+                D.Error(LC.Tr("[Localization] 读取 Key 清单失败：{0}\n{1}",
+                    "[Localization] Failed to read the Key manifest: {0}\n{1}",
+                    path, e.Message));
                 return null;
             }
         }
@@ -301,7 +304,9 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[Localization] 写入 Key 清单失败：{path}\n{e.Message}");
+                D.Error(LC.Tr("[Localization] 写入 Key 清单失败：{0}\n{1}",
+                    "[Localization] Failed to write the Key manifest: {0}\n{1}",
+                    path, e.Message));
                 return false;
             }
         }

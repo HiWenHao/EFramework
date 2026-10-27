@@ -301,8 +301,11 @@ namespace EasyFramework.Localization.Edit
                 if (healed)
                 {
                     File.WriteAllText(table.path, text, new UTF8Encoding(UseUtf8Bom));
-                    D.Warning($"[ Localization ] value 表编码已自动修复并回写为 UTF-8 BOM" +
-                              $"（原文件为非 UTF-8，常见于 Excel 另存降级）：{table.path}");
+                    D.Warning(LC.Tr(
+                        "[ Localization ] value 表编码已自动修复并回写为 UTF-8 BOM（原文件为非 UTF-8，常见于 Excel 另存降级）：{0}",
+                        "[ Localization ] value table encoding was auto-repaired and rewritten as UTF-8 BOM " +
+                        "(the original file was not UTF-8, often caused by saving from Excel): {0}",
+                        table.path));
                 }
 
                 var rows = ParseCsv(text);
@@ -314,8 +317,11 @@ namespace EasyFramework.Localization.Edit
                     || !IsMarkerRow(rows[0])
                     || !IsTypeMarkerRow(rows[1]))
                 {
-                    D.Error($"[ Localization ] value 表格式不正确（缺少 Luban 标记行），已按空表处理：" +
-                            $"{table.path}\n请用面板重新导出，不要手工增删标记行。");
+                    D.Error(LC.Tr(
+                        "[ Localization ] value 表格式不正确（缺少 Luban 标记行），已按空表处理：{0}\n请用面板重新导出，不要手工增删标记行。",
+                        "[ Localization ] value table is malformed (missing Luban marker rows), treated as empty: {0}\n" +
+                        "Re-export it from the panel; do not add or remove marker rows by hand.",
+                        table.path));
                     return table;
                 }
 
@@ -327,8 +333,10 @@ namespace EasyFramework.Localization.Edit
 
                 if (iKey < 0 || iValue < 0)
                 {
-                    D.Error($"[ Localization ] value 表缺少 {ColKey} 或 {ColValue} 列，已按空表处理：" +
-                            $"{table.path}");
+                    D.Error(LC.Tr(
+                        "[ Localization ] value 表缺少 {0} 或 {1} 列，已按空表处理：{2}",
+                        "[ Localization ] value table is missing the {0} or {1} column, treated as empty: {2}",
+                        ColKey, ColValue, table.path));
                     return table;
                 }
 
@@ -358,7 +366,10 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ Localization ] 读取 value 表失败：{table.path}\n{e.Message}");
+                D.Error(LC.Tr(
+                    "[ Localization ] 读取 value 表失败：{0}\n{1}",
+                    "[ Localization ] Failed to read the value table: {0}\n{1}",
+                    table.path, e.Message));
             }
 
             return table;
@@ -402,8 +413,10 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ Localization ] value 表不是 UTF-8，且当前运行时不支持 GBK 解码，无法自愈：{path}\n" +
-                        $"The file is not UTF-8 and GBK decoding is unavailable.\n{e.Message}");
+                D.Error(LC.Tr(
+                    "[ Localization ] value 表不是 UTF-8，且当前运行时不支持 GBK 解码，无法自愈：{0}\n{1}",
+                    "[ Localization ] value table is not UTF-8 and GBK decoding is unavailable, cannot self-heal: {0}\n{1}",
+                    path, e.Message));
                 return (null, false);
             }
         }
@@ -412,8 +425,11 @@ namespace EasyFramework.Localization.Edit
         private static void WarnIfPolluted(string text, string path)
         {
             if (text.Contains('\uFFFD'))
-                D.Error($"[ Localization ] value 表包含无法恢复的乱码字符（U+FFFD），中文内容已损坏，" +
-                        $"请从 git 历史恢复该文件：{path}");
+                D.Error(LC.Tr(
+                    "[ Localization ] value 表包含无法恢复的乱码字符（U+FFFD），中文内容已损坏，请从 git 历史恢复该文件：{0}",
+                    "[ Localization ] value table contains unrecoverable replacement characters (U+FFFD); " +
+                    "the content is corrupted, restore it from git history: {0}",
+                    path));
         }
 
         // 覆写磁盘 CSV（自动创建目录，UTF-8 + 可选 BOM；直接产出 Luban 可吃的格式：
@@ -453,7 +469,10 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[ Localization ] 写入 value 表失败：{path}\n{e.Message}");
+                D.Error(LC.Tr(
+                    "[ Localization ] 写入 value 表失败：{0}\n{1}",
+                    "[ Localization ] Failed to write the value table: {0}\n{1}",
+                    path, e.Message));
                 return false;
             }
         }
@@ -512,11 +531,15 @@ namespace EasyFramework.Localization.Edit
         #region Properties
 
         // 一行摘要，供弹窗与 Console 输出
+        // 双语：跟随 LC 当前显示语言（属性每次求值 → 语言切换后立即生效）
         internal string Summary =>
             $"[{language}] {(success ? "OK" : "FAIL")}  " +
-            $"新增 {addedCount} / 保留 {keptCount} / 剔除 {removedKeys.Count} / 跳过 {skippedKeys.Count}" +
-            $"  共 {totalCount} 条，已翻译 {translatedCount} 条" +
-            (translatedCount < totalCount ? $"，未翻译 {totalCount - translatedCount} 条" : string.Empty);
+            LC.Tr("新增 {0} / 保留 {1} / 剔除 {2} / 跳过 {3}", "Added {0} / Kept {1} / Removed {2} / Skipped {3}",
+                addedCount, keptCount, removedKeys.Count, skippedKeys.Count) +
+            LC.Tr("  共 {0} 条，已翻译 {1} 条", "  {0} total, {1} translated", totalCount, translatedCount) +
+            (translatedCount < totalCount
+                ? LC.Tr("，未翻译 {0} 条", ", {0} untranslated", totalCount - translatedCount)
+                : string.Empty);
 
         #endregion
     }
@@ -540,7 +563,9 @@ namespace EasyFramework.Localization.Edit
 
             if (keys?.keys == null)
             {
-                D.Error("[ Localization ] Key 清单为空，无法导出 value 表。");
+                D.Error(LC.Tr(
+                    "[ Localization ] Key 清单为空，无法导出 value 表。",
+                    "[ Localization ] Key manifest is empty, cannot export value tables."));
                 return report;
             }
 
@@ -616,11 +641,16 @@ namespace EasyFramework.Localization.Edit
             report.success = output.Save();
 
             if (report.removedKeys.Count > 0)
-                D.Warning($"[ Localization ] value 表 [{language}] 剔除了 {report.removedKeys.Count} 个" +
-                          $"清单中已不存在的 key：{string.Join(", ", report.removedKeys)}");
+                D.Warning(LC.Tr(
+                    "[ Localization ] value 表 [{0}] 剔除了 {1} 个清单中已不存在的 key：{2}",
+                    "[ Localization ] value table [{0}] removed {1} key(s) that no longer exist in the manifest: {2}",
+                    language, report.removedKeys.Count, string.Join(", ", report.removedKeys)));
 
             foreach (var skip in report.skippedKeys)
-                D.Warning($"[ Localization ] value 表 [{language}] 跳过 {skip}");
+                D.Warning(LC.Tr(
+                    "[ Localization ] value 表 [{0}] 跳过 {1}",
+                    "[ Localization ] value table [{0}] skipped {1}",
+                    language, skip));
 
             return report;
         }
