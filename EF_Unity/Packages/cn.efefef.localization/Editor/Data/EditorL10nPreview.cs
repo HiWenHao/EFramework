@@ -288,7 +288,9 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"[EditorL10nPreview] 解析语言表失败\n{e.Message}");
+                D.Error(LC.Tr("[EditorL10nPreview] 解析语言表失败\n{0}",
+                    "[EditorL10nPreview] Failed to parse the language table\n{0}",
+                    e.Message));
             }
 
             return table;

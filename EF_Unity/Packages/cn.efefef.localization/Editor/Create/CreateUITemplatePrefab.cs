@@ -11,6 +11,7 @@
 
 using System;
 using System.Reflection;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
@@ -57,7 +58,9 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error($"{types[0].Name}: 挂载组件失败，绝逼是 API 变更!   {e.Message}");
+                D.Error(LC.Tr("{0}: 挂载组件失败，多半是 API 变更！   {1}",
+                    "{0}: failed to attach the component, most likely an API change!   {1}",
+                    types[0].Name, e.Message));
                 throw;
             }
 
