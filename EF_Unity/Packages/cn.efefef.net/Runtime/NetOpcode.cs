@@ -43,6 +43,18 @@ namespace EasyFramework.Systems.Net
         public const int Disconnect = 3;
 
         /// <summary>
+        /// 握手请求（客户端 → 服务端，携带 Token）
+        /// <para>Handshake request (client to server, carries the token)</para>
+        /// </summary>
+        public const int Handshake = 4;
+
+        /// <summary>
+        /// 握手结果（服务端 → 客户端，载荷 = 结果码(1字节) + 失败原因(UTF-8, 可空)）
+        /// <para>Handshake result (server to client; payload = result code (1 byte) + optional UTF-8 reason)</para>
+        /// </summary>
+        public const int HandshakeResult = 5;
+
+        /// <summary>
         /// 业务消息起始值，自定义 Opcode 请从该值之后开始
         /// <para>First business opcode; define custom opcodes after this value</para>
         /// </summary>
