@@ -25,7 +25,7 @@ namespace EasyFramework.Edit
             if (headerAttribute == null)
                 return;
             
-            bool isEnglish = LC.DisplayLanguage == ELanguage.English;
+            bool isEnglish = LC.IsEnglish;
             string headerText =  isEnglish ? headerAttribute.English : headerAttribute.Chinese;
             string toolText =  isEnglish ? headerAttribute.Chinese : headerAttribute.English;
             position.yMin += EditorGUIUtility.singleLineHeight * 0.2f;

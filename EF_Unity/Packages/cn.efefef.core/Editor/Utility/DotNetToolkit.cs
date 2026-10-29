@@ -34,7 +34,7 @@ namespace EasyFramework.Edit
         /// <returns>版本满足返回 true；CLI 缺失 / 版本号无法解析 / 低于 minMajor 时返回 false（已弹窗提示）<para>True when satisfied; false on failure (error dialog shown).</para></returns>
         public static bool EnsureDotNetVersion(int minMajor, string toolSourceDir)
         {
-            bool isEn = LC.DisplayLanguage == ELanguage.English;
+            bool isEn = LC.IsEnglish;
             var result = ProcessToolkit.RunCaptured("dotnet", toolSourceDir, new[] { "--version" });
             if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.Output))
             {

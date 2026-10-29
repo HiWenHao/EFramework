@@ -143,7 +143,7 @@ namespace EasyFramework.Localization.Edit
             var entry = FindEntry(_target.Key);
             if (entry == null || entry.kind != LocalizationKeyKind.Dynamic) return;
 
-            var useEn = LC.DisplayLanguage == ELanguage.English;
+            var useEn = LC.IsEnglish;
 
             var tip = useEn
                 ? $"Dynamic text: {entry.note}\nDuring runtime, parameters can be passed through \nI18NManager.Instance.GetFormat(key, args) or SetFormatArgs(args), " +

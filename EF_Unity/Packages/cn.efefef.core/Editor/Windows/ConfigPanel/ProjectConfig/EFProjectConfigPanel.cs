@@ -36,6 +36,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         public override void OnEnable(string assetsPath)
         {
+            LC.ReloadLanguages();
             LoadWindowData();
         }
 
@@ -63,8 +64,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void OnGUI()
         {
             SystemInfos();
-            LC.DisplayLanguage = (ELanguage)EditorGUILayout.EnumPopup(LC.Combine(Lc.Framework, Lc.Display, Lc.Language),
-                LC.DisplayLanguage);
+            DrawLanguageSelector();
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
@@ -107,6 +107,35 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (!changeCheckScope.changed) return;
             _settingPanel.ApplyModifiedPropertiesWithoutUndo();
             _settingPanel.ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// 绘制编辑器语言选择行：下拉 + 新增语言 + 刷新，附当前语言摘要（复合语句）
+        /// <para>Draw the editor language row: dropdown + add + refresh, with a composite-sentence summary.</para>
+        /// </summary>
+        private void DrawLanguageSelector()
+        {
+            var options = LC.GetLanguageOptions();
+            var displayNames = new string[options.Count];
+            for (int i = 0; i < options.Count; i++)
+                displayNames[i] = options[i].DisplayName;
+
+            EditorGUILayout.BeginHorizontal();
+            int previousIndex = LC.GetSelectedIndex();
+            int selectedIndex = EditorGUILayout.Popup(
+                LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), previousIndex, displayNames);
+            if (GUILayout.Button("+", EditorStyles.miniButton, GUILayout.Width(22f)))
+                EFEditorLanguageCreateWindow.OpenWindow();
+            if (GUILayout.Button("↻", EditorStyles.miniButton, GUILayout.Width(22f)))
+                LC.ReloadLanguages();
+            EditorGUILayout.EndHorizontal();
+
+            if (selectedIndex != previousIndex)
+                LC.EditorLanguageCode = options[selectedIndex].Code;
+
+            EditorGUILayout.HelpBox(
+                $"{LC.Format(Lc.Cs_CurrentLanguage, LC.GetCurrentDisplayName())}\n{LC.Format(Lc.Cs_LanguageCount, options.Count)}",
+                MessageType.Info);
         }
 
         /// <summary>
