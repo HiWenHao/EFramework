@@ -739,11 +739,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 Directory.CreateDirectory(logicPath);
 
             // 修复：使用同步列表存储其他组件信息，避免 Dictionary 遍历顺序不确定导致的字段绑定错位
-            var buttonNames = new List<string>(); // Button 的真实物体名 (RealName)
             var buttonScriptNames = new List<string>(); // Button 的字段名 (ScriptName)
-            var buttonProNames = new List<string>();
             var buttonProScriptNames = new List<string>();
-            var otherRealNames = new List<string>(); // 其他组件的真实物体名
             var otherScriptNames = new List<string>(); // 其他组件的字段名
             var otherTypeNames = new List<string>(); // 其他组件的类型名 (如 "Text", "Image")
 
@@ -753,17 +750,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 Type type = bindingData.BindCom.GetType();
                 if (type == typeof(ButtonPro))
                 {
-                    buttonProNames.Add(bindingData.RealName);
                     buttonProScriptNames.Add(bindingData.ScriptName);
                 }
                 else if (type == typeof(UnityEngine.UI.Button))
                 {
-                    buttonNames.Add(bindingData.RealName);
                     buttonScriptNames.Add(bindingData.ScriptName);
                 }
                 else
                 {
-                    otherRealNames.Add(bindingData.RealName);
                     otherScriptNames.Add(bindingData.ScriptName);
                     otherTypeNames.Add(type.Name);
                 }
@@ -853,20 +847,20 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 sb.AppendLine(
                     $"            {otherScriptNames[i]} = Binding.Resolve<{otherTypeNames[i]}>(nameof({otherScriptNames[i]}));");
 
-            for (int i = 0; i < buttonScriptNames.Count; i++)
+            foreach (var btnName in buttonScriptNames)
             {
                 sb.AppendLine(
-                    $"            {buttonScriptNames[i]} = Binding.Resolve<Button>(nameof({buttonScriptNames[i]}));");
+                    $"            {btnName} = Binding.Resolve<Button>(nameof({btnName}));");
                 sb.AppendLine(
-                    $"            {buttonScriptNames[i]}.onClick.AddListener(OnClick{buttonScriptNames[i]});");
+                    $"            {btnName}.onClick.AddListener(OnClick{btnName});");
             }
 
-            for (int i = 0; i < buttonProScriptNames.Count; i++)
+            foreach (var btnProName in buttonProScriptNames)
             {
                 sb.AppendLine(
-                    $"            {buttonProScriptNames[i]} = Binding.Resolve<ButtonPro>(nameof({buttonProScriptNames[i]}));");
+                    $"            {btnProName} = Binding.Resolve<ButtonPro>(nameof({btnProName}));");
                 sb.AppendLine(
-                    $"            {buttonProScriptNames[i]}.AddClickListener(OnClick{buttonProScriptNames[i]});");
+                    $"            {btnProName}.AddClickListener(OnClick{btnProName});");
             }
 
             sb.AppendLine("        }");

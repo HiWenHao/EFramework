@@ -95,7 +95,38 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         /// <param name="scriptName">绑定的脚本字段名（如 "Img_Head"）</param>
         public T Resolve<T>(string scriptName) where T : Component
-            => BindDatas.Find(d => d.ScriptName == scriptName)?.BindCom as T;
+        {
+            var bindData = BindDatas.Find(d => d.ScriptName == scriptName);
+            if (bindData == null)
+            {
+                D.Error(
+                    $"[UiBinding] On UI panel [{gameObject.name}] no binding entry was found with ScriptName " +
+                    $"[{scriptName}] (expected component type [{typeof(T).Name}]). " +
+                    "Check that the binding was collected/saved in the editor and the name is spelled correctly.");
+                return null;
+            }
+
+            if (bindData.BindCom == null)
+            {
+                D.Error(
+                    $"[UiBinding] On UI panel [{gameObject.name}] the binding entry for ScriptName [{scriptName}] " +
+                    "has a null component reference. The serialized component was lost; please re-collect and save " +
+                    "the binding in the editor.");
+                return null;
+            }
+
+            var component = bindData.BindCom as T;
+            if (component == null)
+            {
+                D.Error(
+                    $"[UiBinding] On UI panel [{gameObject.name}] the binding for ScriptName [{scriptName}] is of " +
+                    $"type [{bindData.BindCom.GetType().Name}], which cannot be cast to the expected type " +
+                    $"[{typeof(T).Name}].");
+                return null;
+            }
+
+            return component;
+        }
 
         #endregion
     }

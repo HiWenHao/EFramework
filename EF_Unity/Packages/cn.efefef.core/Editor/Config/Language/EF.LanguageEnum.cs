@@ -707,5 +707,9 @@ namespace EasyFramework.Edit
 		Modified,
 		/// <summary> 提供者 </summary>
 		Provider,
+		/// <summary> 语言数量复合语句 </summary>
+		Cs_LanguageCount,
+		/// <summary> 当前生效语言复合语句 </summary>
+		Cs_CurrentLanguage,
 	}
 }

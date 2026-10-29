@@ -112,14 +112,14 @@ namespace EasyFramework.Localization.Edit
         public List<LocalizationKeyEntry> keys = new List<LocalizationKeyEntry>();
 
         /// <summary>
-        /// 未登记语言时使用的默认语言集合（与 core 编辑器的 ELanguage 保持一致）
+        /// 未登记语言时使用的默认语言集合（与 core 编辑器 LC 的内置语言保持一致）
         /// <para>Default languages used when meta.languages is empty.</para>
         /// </summary>
         public static readonly List<string> DefaultLanguages = new List<string> { "en", "zh" };
 
         /// <summary>
         /// 兜底语言代码：运行时找不到目标语言表时回落到它，因此该语言必须始终可用。
-        /// 与 core 编辑器的 ELanguage 保持一致。
+        /// 与 core 编辑器 LC 的英文回落语言（LC.EnglishCode）保持一致。
         /// <para>Fallback language code: the runtime falls back to it when a target language table
         /// is missing, so it must always be available.</para>
         /// </summary>
