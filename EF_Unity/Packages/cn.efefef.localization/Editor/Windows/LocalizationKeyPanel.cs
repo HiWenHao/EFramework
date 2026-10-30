@@ -245,7 +245,7 @@ namespace EasyFramework.Localization.Edit
             }
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             // 搜索窗等外部工具写盘后，未保存修改时自动重载清单（有未保存修改则保留内存态，标志留待下次）
             if (ExternalManifestChanged && !_dirty)

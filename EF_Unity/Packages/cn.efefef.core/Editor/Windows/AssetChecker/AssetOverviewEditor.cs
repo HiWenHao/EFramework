@@ -11,13 +11,14 @@
 
 using UnityEditor;
 using UnityEngine;
+using EasyFramework.Edit.Windows;
 
 namespace EasyFramework.Edit.Windows.AssetChecker
 {
     /// <summary>
     /// 资源总览编辑器
     /// </summary>
-    internal class AssetOverviewEditor : EditorWindow
+    internal class AssetOverviewEditor : EditorWindowBase
     {
         private int _tabIndex = 0;
 
@@ -31,6 +32,9 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         public static void ShowEditor()
         {
             AssetOverviewEditor assetOverview = GetWindow<AssetOverviewEditor>("AssetChecker");
+            // 基类的安全 GetWindow 在刷新/编译期间返回 null，需判空避免空引用
+            if (assetOverview == null)
+                return;
             assetOverview.minSize = new Vector2(800f, 130f);
             assetOverview.Initialize();
             assetOverview.Show();
@@ -66,7 +70,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             }
         }
 
-        void OnGUI()
+        protected override void OnSmartGUI()
         {
             int newTab = _tabIndex;
             GUILayout.BeginHorizontal();

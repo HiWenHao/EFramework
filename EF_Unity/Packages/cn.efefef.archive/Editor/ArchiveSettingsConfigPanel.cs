@@ -39,7 +39,7 @@ namespace EasyFramework.Systems.Archive.Editor
             _settings = EditorUtils.LoadSettingAtPath<ArchiveSettings>(path);
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             if (_settings == null)
             {

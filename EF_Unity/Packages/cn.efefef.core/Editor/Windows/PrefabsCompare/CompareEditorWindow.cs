@@ -12,13 +12,14 @@
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using EasyFramework.Edit.Windows;
 
 namespace EasyFramework.Edit.Windows.PrefabsCompare
 {
     /// <summary>
     /// Compare two GameObjects or two Components.
     /// </summary>
-    public class CompareEditorWindow : EditorWindow
+    public class CompareEditorWindow : EditorWindowBase
     {
         int _oldMissIndex;
 
@@ -67,8 +68,9 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
             return window;
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
+            base.OnDisable();
             OnDisableView();
         }
 
@@ -222,7 +224,7 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
             }
         }
 
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             InitIfNeeded();
 

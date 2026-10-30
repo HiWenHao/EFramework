@@ -7,10 +7,11 @@ using UnityEngine;
 using Sabresaurus.PlayerPrefsUtilities;
 using Random = UnityEngine.Random;
 using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
 
 namespace Sabresaurus.PlayerPrefsEditor
 {
-    public class PlayerPrefsEditor : EditorWindow
+    public class PlayerPrefsEditor : EditorWindowBase
     {
         private static bool DisplayMoreOptions
         {
@@ -125,8 +126,10 @@ namespace Sabresaurus.PlayerPrefsEditor
             return editorPrefsPath;
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
+
             searchField = new SearchField();
 
             _deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
@@ -1169,7 +1172,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             }
         }
 
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             EditorGUILayout.Space();
 

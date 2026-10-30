@@ -45,6 +45,7 @@ namespace EasyFramework.Edit
 
         private static List<LanguageRuntime> _languages;       // 语言注册表：内置 zh/en 在前 + 外部按 code 排序
         private static bool _loaded;                            // 注册表是否已加载
+        private static bool _loading;                           // 加载中标志（防 Tr→IsEnglish→EnsureLoaded 同线程重入递归）
 
         /// <summary>语言文件 JSON 模型<para>JSON model of a language file.</para></summary>
         private sealed class LanguageFileModel
@@ -135,7 +136,8 @@ namespace EasyFramework.Edit
                 var project = ConfigManager.Project;
                 if (project == null)
                 {
-                    D.Warning("[ LC ] ProjectConfig is not ready; the language choice is not saved.");
+                    D.Warning(Tr("[ LC ] ProjectConfig 未就绪，语言选择未保存。",
+                        "[ LC ] ProjectConfig is not ready; the language choice is not saved."));
                     return;
                 }
                 string next = string.IsNullOrEmpty(value) ? AutoCode : value;
@@ -153,7 +155,8 @@ namespace EasyFramework.Edit
                 else
                 {
                     // 非枚举名 code（旧手工格式如 "ja"）无法入 SO，回落自动
-                    D.Warning($"[ LC ] Unknown language code '{next}', fallback to Auto.");
+                    D.Warning(Tr($"[ LC ] 未知语言代码 '{next}'，已回落自动。",
+                        $"[ LC ] Unknown language code '{next}', fallback to Auto."));
                     project.AutoLanguage = true;
                 }
                 EditorUtility.SetDirty(project);
@@ -183,17 +186,25 @@ namespace EasyFramework.Edit
         /// </summary>
         private static void EnsureLoaded()
         {
-            if (_loaded)
+            if (_loaded || _loading)
                 return;
             lock (_lock)
             {
-                if (_loaded)
+                if (_loaded || _loading)
                     return;
-                _languages = new List<LanguageRuntime>();
-                LoadBuiltin(nameof(SystemLanguage.Chinese), false);
-                LoadBuiltin(nameof(SystemLanguage.English), true);
-                LoadExternal();
-                _loaded = true;
+                _loading = true;
+                try
+                {
+                    _languages = new List<LanguageRuntime>();
+                    LoadBuiltin(nameof(SystemLanguage.Chinese), false);
+                    LoadBuiltin(nameof(SystemLanguage.English), true);
+                    LoadExternal();
+                    _loaded = true;
+                }
+                finally
+                {
+                    _loading = false;
+                }
             }
         }
 
@@ -209,7 +220,7 @@ namespace EasyFramework.Edit
             if (!File.Exists(path))
             {
                 if (required)
-                    D.Error($"[ LC ] Builtin language file is missing: {path}");
+                    D.Error(Tr($"内置语言文件缺失：\n{path}", $"Builtin language file is missing:\n{path}"));
                 return;
             }
             var runtime = ParseLanguageFile(ReadFileSafe(path), code);
@@ -236,7 +247,8 @@ namespace EasyFramework.Edit
                     continue;
                 if (FindLanguage(runtime.Code) != null)
                 {
-                    D.Warning($"[ LC ] Duplicate language code '{runtime.Code}' skipped (file: {file})");
+                    D.Warning(Tr($"语言 code '{runtime.Code}' 重复，已跳过（文件：{file}）",
+                        $"Duplicate language code '{runtime.Code}' skipped (file: {file})"));
                     continue;
                 }
                 externals.Add(runtime);
@@ -261,7 +273,8 @@ namespace EasyFramework.Edit
                 var model = JsonConvert.DeserializeObject<LanguageFileModel>(json);
                 if (model?.entries == null)
                 {
-                    D.Warning($"[ LC ] Invalid language file (entries missing), skipped: {fallbackCode}");
+                    D.Warning(Tr($"无效的语言文件（缺少 entries），已跳过：{fallbackCode}",
+                        $"Invalid language file (entries missing), skipped: {fallbackCode}"));
                     return null;
                 }
 
@@ -285,12 +298,14 @@ namespace EasyFramework.Edit
                     runtime.Texts[key] = entry.text;
                 }
                 if (skipped > 0)
-                    D.Warning($"[ LC ] {skipped} unknown keys skipped in language '{runtime.Code}'");
+                    D.Warning(Tr($"语言 '{runtime.Code}' 中有 {skipped} 个未知键已跳过",
+                        $"{skipped} unknown keys skipped in language '{runtime.Code}'"));
                 return runtime;
             }
             catch (Exception ex)
             {
-                D.Warning($"[ LC ] Failed to parse language file '{fallbackCode}': {ex.Message}");
+                D.Warning(Tr($"解析语言文件 '{fallbackCode}' 失败：{ex.Message}",
+                    $"Failed to parse language file '{fallbackCode}': {ex.Message}"));
                 return null;
             }
         }
@@ -423,9 +438,8 @@ namespace EasyFramework.Edit
             }
             catch (FormatException)
             {
-                D.Warning(IsEnglish
-                    ? $"[ LC ] Format failed (placeholders do not match args), returning template: {template}"
-                    : $"[ LC ] 格式化失败（占位符与参数不匹配），返回模板原文：{template}");
+                D.Warning(Tr("[ LC ] 格式化失败（占位符与参数不匹配），返回模板原文：",
+                    "[ LC ] Format failed (placeholders do not match args), returning template: ") + template);
                 return template;
             }
         }
@@ -449,6 +463,7 @@ namespace EasyFramework.Edit
             }
             catch (FormatException)
             {
+                // Tr 自身的降级告警不可再调 Tr（自指递归），故用 IsEnglish 三元
                 D.Warning(IsEnglish
                     ? $"[ LC ] Tr format failed (placeholders do not match args), returning raw text: {text}"
                     : $"[ LC ] Tr 格式化失败（占位符与参数不匹配），返回原文：{text}");
@@ -632,7 +647,7 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                D.Warning($"[ LC ] Failed to read '{path}': {ex.Message}");
+                D.Warning(Tr($"读取文件 '{path}' 失败：{ex.Message}", $"Failed to read '{path}': {ex.Message}"));
                 return null;
             }
         }
@@ -657,10 +672,8 @@ namespace EasyFramework.Edit
         [MenuItem(MenuItemToolkit.Utility + "✍️ Update Edit Language", false, MenuItemToolkit.UtilityPriority + 3)]
         private static void UpdateLanguageConfig()
         {
-            if (SyncAndRegenerate(out string report))
-                EditorUtility.DisplayDialog(Combine(Lc.Done), report, Combine(Lc.Confirm));
-            else
-                EditorUtility.DisplayDialog(Combine(Lc.Error), report, Combine(Lc.Confirm));
+            EditorUtility.DisplayDialog(SyncAndRegenerate(out string report) ? Combine(Lc.Done) : Combine(Lc.Error),
+                report, Combine(Lc.Confirm));
         }
 
         /// <summary>
@@ -694,7 +707,7 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                D.Error(ex);
+                D.Error(Tr("解析键清单 JSON 失败：", "Failed to parse the key list JSON: ") + ex.Message);
                 report = Tr("解析键清单 JSON 失败，请检查文件格式。", "Failed to parse the key list JSON. Please check the file format.");
                 return false;
             }

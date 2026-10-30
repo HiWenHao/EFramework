@@ -92,7 +92,7 @@ namespace EasyFramework.Edit
             _token = ServerToolkit.GetToken(_config.serverType);
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             #region GitToggle
 

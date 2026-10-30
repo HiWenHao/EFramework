@@ -23,7 +23,7 @@ namespace EasyFramework.Windows.AssetRename
     /// <summary>
     /// 资产重命名工具面板 - Asset rename tool panel
     /// </summary>
-    internal class AssetRenameWindow : EditorWindow
+    internal class AssetRenameWindow : EditorWindowBase
     {
         /// <summary> 资产信息 </summary>
         private class AssetInfo
@@ -79,7 +79,7 @@ namespace EasyFramework.Windows.AssetRename
             Repaint();
         }
 
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             DrawToolbar();
             EditorGUILayout.Space(4);
