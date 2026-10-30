@@ -15,6 +15,7 @@
 
 using System;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,15 +25,15 @@ namespace EasyFramework.Systems.Archive.Example
     {
         private const int MaxLogLines = 50; // 日志最大行数（防止 statusText 无限增长）
 
-        [Header("UI References")]
+        [HeaderPro("UI 引用", "UI References")]
         public Text statusText;
         public Text slotInfoText;
 
-        [Header("Demo Data")]
+        [HeaderPro("演示数据", "Demo Data")]
         [SerializeField] private int demoGold = 100;
         [SerializeField] private string demoItem = "Sword";
 
-        [Header("Buttons")]
+        [HeaderPro("按钮", "Buttons")]
         [SerializeField] private Button _btnCreateSlot;
         [SerializeField] private Button _btnSaveData;
         [SerializeField] private Button _btnLoadData;

@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using EasyFramework;
+using EasyFramework.Edit;
 using EasyFramework.Managers.Ui;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,10 +14,10 @@ namespace EFExample
 {
     public class ScrollListDemo_AutoLayout : MonoBehaviour
     {
-        [Header("引用")]
+        [HeaderPro("引用", "References")]
         public ScrollListPro ScrollList;
 
-        [Header("UI — 增删")] 
+        [HeaderPro("UI — 增删", "UI — Add/Remove")] 
         public Button BtnAppend;
         public Button BtnPrepend;
         public Button BtnInsert;
@@ -25,10 +26,10 @@ namespace EFExample
         public Button BtnRemoveAt;
         public Button BtnClear;
 
-        [Header("UI — 批处理")]
+        [HeaderPro("UI — 批处理", "UI — Batch")]
         public Button BtnBatch;
 
-        [Header("UI — 刷新")]
+        [HeaderPro("UI — 刷新", "UI — Refresh")]
         public Button BtnRefreshVis;
         public Button BtnRefreshList;
         public Button BtnRefreshItem;
@@ -37,30 +38,30 @@ namespace EFExample
         public Button BtnScheduleTwinPass;
         public Button BtnSetTotalCount;
 
-        [Header("UI — 尺寸")]
+        [HeaderPro("UI — 尺寸", "UI — Sizing")]
         public Button BtnExpand;
         public Button BtnUpdateSize;
         public Button BtnAnimateSize;
 
-        [Header("UI — 滚动")]
+        [HeaderPro("UI — 滚动", "UI — Scrolling")]
         public Button BtnScrollTop;
         public Button BtnScrollBottom;
         public Button BtnScrollToIndex;
         public Button BtnScrollToIndexAnim;
 
-        [Header("UI — 查询")]
+        [HeaderPro("UI — 查询", "UI — Query")]
         public Button BtnSnapshot;
 
-        [Header("UI — 信息")]
+        [HeaderPro("UI — 信息", "UI — Info")]
         public Text TxtInfo;
         public Text TxtEdgeHint;
         
-        [Header("UI — 输入框")]
+        [HeaderPro("UI — 输入框", "UI — Input Fields")]
         public InputField IptRemoveIndex;
         public InputField IptScrollToIndex;
         public InputField IptScrollToIndexAnimated;
 
-        [Header("模拟数据")]
+        [HeaderPro("模拟数据", "Mock Data")]
         public string[] SampleTexts = new string[]
         {
             "短文本",

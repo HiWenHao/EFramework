@@ -223,7 +223,10 @@ namespace EasyFramework.Edit.Create
             }
             catch (Exception e)
             {
-                D.Error($"{types[0].Name}: 挂载组件失败，绝逼是 API 变更!   {e.Message}");
+                D.Error(LC.Tr(
+                    "[ UiSystem ] [ CreateUITemplatePrefab ] {0}: 挂载组件失败，绝逼是 API 变更!   {1}",
+                    "[ UiSystem ] [ CreateUITemplatePrefab ] {0}: failed to attach component, the Unity API must have changed!   {1}",
+                    types[0].Name, e.Message));
                 throw;
             }
 

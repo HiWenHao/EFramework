@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Assets;
@@ -255,12 +256,15 @@ namespace EasyFramework.Managers.Ui
         /// <summary>
         /// 启用视窗并播放入场动画
         /// </summary>
-        private async UniTask ViewEnableWithAnim(IUiView uiView)
+        /// <param name="uiView">目标视窗</param>
+        /// <param name="beforeAnim">在视窗启用后、入场动画开始前执行的回调(用于刷新面板数据), 可为null</param>
+        private async UniTask ViewEnableWithAnim(IUiView uiView, Action beforeAnim = null)
         {
             var type = uiView.Binding.ViewAnimationType;
             if (type == UiViewAnimationType.None || animationConfig is null)
             {
                 ViewEnable(uiView);
+                beforeAnim?.Invoke();
                 return;
             }
 
@@ -273,11 +277,13 @@ namespace EasyFramework.Managers.Ui
                     uiView.View.anchoredPosition = GetSlideOffset(type, uiView.View);
 
                 ViewEnable(uiView);
+                beforeAnim?.Invoke();
                 await AnimateOpen(uiView.View, type, duration, curve);
             }
             else
             {
                 ViewEnable(uiView);
+                beforeAnim?.Invoke();
             }
         }
 

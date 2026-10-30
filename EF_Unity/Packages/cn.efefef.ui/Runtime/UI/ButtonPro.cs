@@ -11,6 +11,7 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -28,14 +29,14 @@ namespace EasyFramework
     {
         protected ButtonPro() { }
         
-        [Header("Events"), Space] 
+        [HeaderPro("事件", "Events"), Space] 
         [SerializeField] private UnityEvent onClick;                        //  "单击"
         [SerializeField] private UnityEvent onDoubleClick;                  //  "双击"
         [SerializeField] private UnityEvent onLongPress;                    //  "长按（按住达到时间后触发一次）"
         [SerializeField] private UnityEvent onKeepPress;                    //  "持续按压（按住期间按间隔触发）"
         [SerializeField] private UnityEvent<MoveDirection> onDragging;      //  "朝某一方向拖拽"
         
-        [Header("Settings"), Space] 
+        [HeaderPro("设置", "Settings"), Space] 
         [Tooltip("双击最大间隔（秒）")] public float doubleClickInterval = 0.17f;
         [Tooltip("长按触发时间（秒）")] public float longPressDuration = 0.5f;
         [Tooltip("持续按压触发间隔（秒），0 表示每帧触发")] public float keepPressInterval = 0.1f;

@@ -69,7 +69,7 @@ namespace EasyFramework.Managers.Ui
         [Min(0)]
         private int preCreateBuffer = 3;
 
-        [Header("自适应测量")]
+        [HeaderPro("自适应测量", "Auto Measure")]
         [Tooltip(
             "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField]
@@ -85,7 +85,7 @@ namespace EasyFramework.Managers.Ui
 
         [SerializeField] [Range(0.05f, 0.5f)] private float snapDuration = 0.15f;
 
-        [Header("对象池")] [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")] [SerializeField]
+        [HeaderPro("对象池", "Object Pool")] [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")] [SerializeField]
         private int poolMaxSize = 20;
 
         [Tooltip("空闲超时销毁（秒）。≤0 = 永不销毁。PoolManager 每 5 秒自动清理一次。")] [SerializeField]
@@ -157,25 +157,25 @@ namespace EasyFramework.Managers.Ui
 
         #region 私有字段
 
-        private float _viewportSize;        // 视口高度 or 宽度
-        private float _prefabDefaultSize;   // prefab 默认尺寸
+        private float _viewportSize; // 视口高度 or 宽度
+        private float _prefabDefaultSize; // prefab 默认尺寸
         private int _estimatedVisibleCount; // 估算的可视 item 数量
-        private int _batchDepth;            // 批处理嵌套深度
-        private bool _batchDirty;           // 批处理中是否有脏数据
-        private bool _wasAtTop;             // 上一帧是否在顶部
-        private bool _wasAtBottom;          // 上一帧是否在底部
-        private bool _refreshing;           // 正在刷新中
-        private bool _scrollListenerAdded;  // 是否已注册 scroll 监听
-        private bool _poolInitialized;      // 是否已向 PoolManager 注册池
-        private bool _wasMoving;            // 滚动中
-        private bool _animating;           // 动画中，抑制 OnScrollChanged 刷新
+        private int _batchDepth; // 批处理嵌套深度
+        private bool _batchDirty; // 批处理中是否有脏数据
+        private bool _wasAtTop; // 上一帧是否在顶部
+        private bool _wasAtBottom; // 上一帧是否在底部
+        private bool _refreshing; // 正在刷新中
+        private bool _scrollListenerAdded; // 是否已注册 scroll 监听
+        private bool _poolInitialized; // 是否已向 PoolManager 注册池
+        private bool _wasMoving; // 滚动中
+        private bool _animating; // 动画中，抑制 OnScrollChanged 刷新
 
-        private RectTransform _contentRect;     // ScrollRect 的 content
-        private RectTransform _viewportRect;    // ScrollRect 的 viewport
+        private RectTransform _contentRect; // ScrollRect 的 content
+        private RectTransform _viewportRect; // ScrollRect 的 viewport
 
-        private CancellationTokenSource _scrollAnimCts;     // 滚动动画取消令牌
-        private CancellationTokenSource _layoutAnimCts;     // 布局动画取消令牌
-        private CancellationTokenSource _snapDebounceCts;   // 吸附动画取消令牌
+        private CancellationTokenSource _scrollAnimCts; // 滚动动画取消令牌
+        private CancellationTokenSource _layoutAnimCts; // 布局动画取消令牌
+        private CancellationTokenSource _snapDebounceCts; // 吸附动画取消令牌
 
         private readonly List<float> _itemSizes = new List<float>(); // 每个 item 的尺寸缓存
         private readonly List<float> _cumulativePositions = new List<float>(); // 预计算累积位置 [i]=item[i] 顶部偏移
@@ -255,7 +255,7 @@ namespace EasyFramework.Managers.Ui
             _contentRect = scrollRect.content;
             if (_contentRect == null)
             {
-                D.Error("[ UI ] [ InfiniteIrregularScrollList ] ScrollRect.Content is null.");
+                D.Error("[ UiSystem ] [ ScrollListPro ] ScrollRect.Content is null.");
                 return;
             }
 
@@ -331,7 +331,7 @@ namespace EasyFramework.Managers.Ui
 
             if (stripped)
                 D.Warning(
-                    "[InfiniteIrregularScrollList] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
+                    "[ UiSystem ] [ ScrollListPro ] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
                     "本组件手动管理 content 布局，这些组件会导致定位异常。");
         }
 
@@ -931,7 +931,11 @@ namespace EasyFramework.Managers.Ui
                 if (!_onCreateCalled.Contains(go))
                 {
                     var si = go.GetComponent<IScrollProItem>();
-                    if (si != null) { si.OnCreate(go.transform as RectTransform); _onCreateCalled.Add(go); }
+                    if (si != null)
+                    {
+                        si.OnCreate(go.transform as RectTransform);
+                        _onCreateCalled.Add(go);
+                    }
                 }
             }
 
@@ -1568,31 +1572,30 @@ namespace EasyFramework.Managers.Ui
         [ContextMenu("Debug/Log Layout Info")]
         public void DebugLogLayoutInfo()
         {
-            Debug.Log($"[ScrollList Debug] " +
-                      $"Total={_itemSizes.Count} " +
-                      $"Active={_activeItems.Count} " +
-                      $"PoolInit={_poolInitialized} " +
-                      $"Viewport={GetViewportSize():F1} " +
-                      $"ContentH={_contentRect?.sizeDelta.y:F1} " +
-                      $"ContentPos={_contentRect?.anchoredPosition.y:F1} " +
-                      $"CalcTotal={CalculateTotalSize():F1} " +
-                      $"FirstVis={FirstVisibleIndex} " +
-                      $"LastVis={LastVisibleIndex} " +
-                      $"Offset={GetContentScrollOffset():F1} " +
-                      $"MaxScroll={GetMaxScrollOffset():F1} " +
-                      $"NormPos={GetNormalizedPosition():F4}");
+            D.Log("[ UiSystem ] [ ScrollListPro ] " +
+                  $"Total={_itemSizes.Count} " +
+                  $"Active={_activeItems.Count} " +
+                  $"PoolInit={_poolInitialized} " +
+                  $"Viewport={GetViewportSize():F1} " +
+                  $"ContentH={_contentRect?.sizeDelta.y:F1} " +
+                  $"ContentPos={_contentRect?.anchoredPosition.y:F1} " +
+                  $"CalcTotal={CalculateTotalSize():F1} " +
+                  $"FirstVis={FirstVisibleIndex} " +
+                  $"LastVis={LastVisibleIndex} " +
+                  $"Offset={GetContentScrollOffset():F1} " +
+                  $"MaxScroll={GetMaxScrollOffset():F1} " +
+                  $"NormPos={GetNormalizedPosition():F4}");
 
             // Content anchors/pivot
             if (_contentRect != null)
             {
-                Debug.Log(
-                    $"[ScrollList Debug] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
+                D.Log(
+                    $"[ UiSystem ] [ ScrollListPro ] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
             }
 
             // 逐 item 诊断
-            for (int i = 0; i < _activeItems.Count; i++)
+            foreach (var item in _activeItems)
             {
-                var item = _activeItems[i];
                 var rt = item.Target?.transform as RectTransform;
                 if (rt == null) continue;
                 float expectedPos = GetCumulativePosition(item.Index);
@@ -1610,21 +1613,19 @@ namespace EasyFramework.Managers.Ui
                     paddingInfo =
                         $" VLGPad=({lg.padding.left},{lg.padding.right},{lg.padding.top},{lg.padding.bottom})";
 
-                Debug.Log($"[ScrollList Item] idx={item.Index} " +
-                          $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
-                          $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.Index]:F1}" +
-                          $"{paddingInfo}");
+                D.Log($"[ UiSystem ] [ ScrollListPro ] idx={item.Index} " +
+                      $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
+                      $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.Index]:F1}" +
+                      $"{paddingInfo}");
             }
 
             // 检查 content 上的冲突组件
-            if (_contentRect != null)
-            {
-                var csf = _contentRect.GetComponent<ContentSizeFitter>();
-                var lg = _contentRect.GetComponent<LayoutGroup>();
-                if (csf != null || lg != null)
-                    Debug.LogError(
-                        $"[ScrollList Debug] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg != null} — 这会导致定位异常。");
-            }
+            if (_contentRect == null) return;
+            var csf = _contentRect.GetComponent<ContentSizeFitter>();
+            var lg2 = _contentRect.GetComponent<LayoutGroup>();
+            if (csf != null || lg2 != null)
+                D.Error(
+                    $"[ UiSystem ] [ ScrollListPro ] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg2 != null} — 这会导致定位异常。");
         }
 #endif
     }
