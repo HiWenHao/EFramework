@@ -25,6 +25,16 @@ namespace EasyFramework.Localization.Edit
     [EFConfigPanel(Priority = 190)]
     internal class LocalizationKeyPanel : EFConfigPanelBase
     {
+        // 子页：Key 列表 / 分组与种类 / value 表导出
+        private enum SubTab
+        {
+            [InspectorName("KeyList")] Keys = 0,
+
+            [InspectorName("GroupType")] Groups = 1,
+
+            [InspectorName("ValueTable")] Values = 2,
+        }
+
         #region Fields
 
         // 外部工具写盘标志：KeySearchWindow 新建 key 后置位，OnGUI 在无未保存修改时自动重载清单（防面板保存覆盖新 key）
@@ -32,6 +42,15 @@ namespace EasyFramework.Localization.Edit
 
         // 默认分组名
         private const string DefaultGroup = "Default";
+
+        // Key 清单文件名（保存失败弹窗与菜单校验文案共用）
+        private const string KeysJsonFileName = "LocalizationKeys.json";
+
+        // 多语言表名前缀：只有带此前缀的行才归本面板管辖，删除时也只删此前缀的行
+        private const string L10NTablePrefix = "L10n.TbText_";
+
+        // Luban bean 全名（__beans__.xlsx 登记与表定义 ColBeanType 共用）
+        private const string L10NBeanName = "L10n.Text";
 
         // name 列权重
         private const float WeightName = 3f;
@@ -61,11 +80,50 @@ namespace EasyFramework.Localization.Edit
 
         private const float COL_GROUP_ACTIONS = 126f;
 
+        // 窄列收缩阈值：固定列合计超过可用宽度的该比例时开始收缩
+        private const float NarrowColRatio = 0.45f;
+
+        // 窄列收缩后的最小宽度（低于此值文字完全不可见）
+        private const float MinNarrowColWidth = 24f;
+
         // 总面板左侧菜单 + 分隔条占用的宽度（EFConfigsPanel 左侧列表 140px + hostview 分隔 10px + 边框余量）
         private const float LEFT_MENU_RESERVED = 165f;
 
         // 表格最小宽度：低于此值时各列按权重均分，不再无限压缩
         private const float MIN_TABLE_WIDTH = 320f;
+
+        // 常规按钮高度（子页 Tab / 折叠 / 添加）
+        private const float BtnHeight = 20f;
+
+        // 底部主操作按钮高度（刷新 / 保存）
+        private const float MainBtnHeight = 25f;
+
+        // 导出页按钮高度
+        private const float ExportBtnHeight = 22f;
+
+        // 行内 miniButton 宽度（确认 / 取消 / 重命名 / 删除）
+        private const float MiniBtnWidth = 60f;
+
+        // 间距：字段行间小间距
+        private const float SpaceRow = 6f;
+
+        // 间距：组块间距
+        private const float SpaceGroup = 8f;
+
+        // 间距：区块间距
+        private const float SpaceSection = 12f;
+
+        // 间距：大块收尾间距
+        private const float SpaceBlock = 18f;
+
+        // 行着色：重名 / 非法字符
+        private static readonly Color ColorInvalid = new(1f, 0.62f, 0.62f);
+
+        // 行着色：必填缺失 / 内容缺失（des 为空、空分组、语言表缺失）
+        private static readonly Color ColorMissing = new(1f, 0.95f, 0.7f);
+
+        // 文字色：警告汇总
+        private static readonly Color ColorWarn = new(1f, 0.78f, 0.4f);
 
         // 当前数据
         private LocalizationKeyFile _file;
@@ -192,7 +250,7 @@ namespace EasyFramework.Localization.Edit
             if (!template.Save(LocalizationData.JsonPath))
             {
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"LocalizationKeys.json\n{LC.Combine(Lc.Save, Lc.Failed)}", LC.Combine(Lc.Confirm));
+                    $"{KeysJsonFileName}\n{LC.Combine(Lc.Save, Lc.Failed)}", LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -263,7 +321,9 @@ namespace EasyFramework.Localization.Edit
                 return;
             }
 
-            DrawToolbar();
+            DrawSubTabs();
+
+            EditorGUILayout.Space(SpaceSection);
 
             switch (_tab)
             {
@@ -279,54 +339,19 @@ namespace EasyFramework.Localization.Edit
                     DrawValuesTab();
                     break;
             }
+
+            DrawCommonFooter();
         }
 
         // 空状态引导页：尚未创建 Key 清单时显示
         private void DrawEmptyState()
         {
-            EditorGUILayout.Space(12f);
+            EditorGUILayout.Space(SpaceSection);
             EditorGUILayout.HelpBox(LC.Combine(Lc.Multilingual, Lc.Config, Lc.Not, Lc.Exist), MessageType.Warning);
-            EditorGUILayout.Space(12f);
+            EditorGUILayout.Space(SpaceSection);
 
             if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config), GUILayout.Width(AvailableWidth))) return;
             CreateFile();
-        }
-
-        // 顶部工具栏
-        private void DrawToolbar()
-        {
-            // 保存 / 刷新：填满面板宽度，各占一半（与下方子页切换一致）
-            EditorGUILayout.BeginHorizontal();
-
-            var prevColor = GUI.contentColor;
-            GUI.contentColor = GUIUtils.LightGreen;
-            // 宽度按 AvailableWidth 均分，与下方表格列对齐（裸 Button 会按整行宽撑开）
-            float half = Mathf.Floor(AvailableWidth * 0.5f);
-
-            if (GUILayout.Button(LC.Combine(Lc.Save, Lc.Content),
-                    GUILayout.Width(half), GUILayout.Height(20f)))
-                Save();
-            GUI.contentColor = prevColor;
-
-            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.All, Lc.Content),
-                    GUILayout.Width(AvailableWidth - half), GUILayout.Height(20f)))
-            {
-                if (!_dirty ||
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text), LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
-                    LoadOrCreate();
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            if (_dirty)
-                GUILayout.Label(LC.Combine(Lc.Need, Lc.Save, Lc.Text), GUIUtils.ColorText(textColor:Color.yellow));
-
-            EditorGUILayout.Space(_dirty ? 18f : 37f);
-
-            // 子页切换（等宽平分，原生 Tab 组观感）
-            DrawSubTabs();
-
-            EditorGUILayout.Space(12f);
         }
 
         // 子页切换（原生 Tab 组外观，宽度按内容分配：两段文案等长时视觉上等宽。
@@ -339,7 +364,8 @@ namespace EasyFramework.Localization.Edit
                 new GUIContent(TabText(SubTab.Groups)),
                 new GUIContent(TabText(SubTab.Values)),
             };
-            _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(20f), GUILayout.Width(AvailableWidth));
+            _tab = (SubTab)GUILayout.Toolbar((int)_tab, contents, GUILayout.Height(BtnHeight),
+                GUILayout.Width(AvailableWidth));
         }
 
         // 子页标题文案
@@ -360,17 +386,17 @@ namespace EasyFramework.Localization.Edit
             GUILayout.Label(LC.Combine(Lc.Find), GUILayout.Width(40f));
             _filter = EditorGUILayout.TextField(_filter, GUILayout.Width(200f));
 
-            _onlyDynamic = GUILayout.Toggle(_onlyDynamic, $"{LC.Combine(Lc.Only, Lc.Display)} Dynamic", GUILayout.Width(180f));
+            _onlyDynamic = GUILayout.Toggle(_onlyDynamic, $"{LC.Combine(Lc.Only, Lc.Display)} Dynamic",
+                GUILayout.Width(180f));
 
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(SpaceRow);
 
             DrawKeysTable();
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(SpaceRow);
             DrawKeysFooter();
-
         }
 
         // Key 表格（先按分组聚合再渲染，保证同名分组并到一处；否则末尾新增同组 key 会插出第二个组头）
@@ -378,7 +404,9 @@ namespace EasyFramework.Localization.Edit
         {
             DrawKeysHeader();
 
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.ExpandWidth(true));
+            // ExpandHeight：滚动区撑满剩余高度（随窗口伸缩），底栏始终贴面板底部
+            _scrollPos =
+                EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 
             // 聚合：order 保持分组首次出现顺序，ungrouped 收纳无分组条目
             var order = new List<string>();
@@ -412,8 +440,23 @@ namespace EasyFramework.Localization.Edit
                 DrawGroupHeader(group);
                 if (_collapsedGroups.Contains(group)) continue;
 
-                foreach (var entry in buckets[group]) DrawKeyRow(entry);
-                EditorGUILayout.Space(12f);
+                foreach (var entry in buckets[group])
+                {
+                    DrawKeyRow(entry);
+                }
+
+                // 快速添加：新元素直接归入本组，按钮靠右与删除列 x 错开一列
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(COL_KIND)))
+                {
+                    _file.keys.Add(new LocalizationKeyEntry { group = group });
+                    _dirty = true;
+                }
+
+                GUILayout.Space(COL_TAIL_PAD);
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.Space(SpaceSection);
             }
 
             if (ungrouped != null)
@@ -429,13 +472,13 @@ namespace EasyFramework.Localization.Edit
         {
             float avail = AvailableWidth;
 
-            // 窄列按可用空间收缩，最小 24px（否则文字完全不可见）
+            // 窄列按可用空间收缩，最小 MinNarrowColWidth（否则文字完全不可见）
             float fixedTotal = COL_KIND + COL_BTN;
-            if (fixedTotal > avail * 0.45f)
+            if (fixedTotal > avail * NarrowColRatio)
             {
-                float shrink = avail * 0.45f / fixedTotal;
-                _kindWidth = Mathf.Max(24f, COL_KIND * shrink);
-                _btnWidth = Mathf.Max(24f, COL_BTN * shrink);
+                float shrink = avail * NarrowColRatio / fixedTotal;
+                _kindWidth = Mathf.Max(MinNarrowColWidth, COL_KIND * shrink);
+                _btnWidth = Mathf.Max(MinNarrowColWidth, COL_BTN * shrink);
             }
             else
             {
@@ -491,7 +534,7 @@ namespace EasyFramework.Localization.Edit
             // name：重名或非法字符标红
             var dup = IsDuplicated(entry);
             var prevColor = GUI.color;
-            if (dup || !entry.IsValidName()) GUI.color = new Color(1f, 0.62f, 0.62f);
+            if (dup || !entry.IsValidName()) GUI.color = ColorInvalid;
 
             var newName = EditorGUILayout.TextField(entry.name, EditorStyles.miniTextField, GUILayout.Width(w[0]));
             if (newName != entry.name)
@@ -503,7 +546,7 @@ namespace EasyFramework.Localization.Edit
             GUI.color = prevColor;
 
             // des：为空标黄（必填项缺失）
-            if (string.IsNullOrEmpty(entry.des)) GUI.color = new Color(1f, 0.95f, 0.7f);
+            if (string.IsNullOrEmpty(entry.des)) GUI.color = ColorMissing;
             var newDes = EditorGUILayout.TextField(entry.des, EditorStyles.miniTextField, GUILayout.Width(w[1]));
             if (newDes != entry.des)
             {
@@ -527,7 +570,7 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUI.BeginChangeCheck();
             var newGroup = EditorGUILayout.Popup(currentGroupIndex, options.ToArray(),
-                EditorStyles.miniTextField, GUILayout.Width(w[2]));
+                EditorStyles.miniPullDown, GUILayout.Width(w[2]));
             if (EditorGUI.EndChangeCheck())
             {
                 entry.group = options[newGroup];
@@ -537,7 +580,7 @@ namespace EasyFramework.Localization.Edit
             // kind：枚举下拉
             EditorGUI.BeginChangeCheck();
             var newKind = (LocalizationKeyKind)EditorGUILayout.EnumPopup(
-                entry.kind, EditorStyles.miniTextField, GUILayout.Width(_kindWidth));
+                entry.kind, EditorStyles.miniPullDown, GUILayout.Width(_kindWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 entry.kind = newKind;
@@ -553,49 +596,106 @@ namespace EasyFramework.Localization.Edit
             }
 
             // 删除
-            if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(_btnWidth)))
+            if (GUILayout.Button("x", GUILayout.Width(_btnWidth)))
             {
                 _file.keys.Remove(entry);
                 _dirty = true;
             }
 
             // 行尾留白，避免删除按钮紧贴右边界
-            EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
+            GUILayout.Space(COL_TAIL_PAD);
 
             EditorGUILayout.EndHorizontal();
         }
 
-        // Key 列表底部：新增按钮 + 问题汇总
+        // Key 列表底部：删除全部 | 空 | 空 | 折叠/展开 | 添加 五等分一行 + 问题汇总
         private void DrawKeysFooter()
         {
             EditorGUILayout.BeginHorizontal();
+            float slot = Mathf.Floor(AvailableWidth / 5f);
 
-            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.Element)}", GUILayout.Width(120f)))
+            var prevColor = GUI.contentColor;
+            GUI.contentColor = GUIUtils.LightRed;
+            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All),
+                    GUILayout.Width(slot)))
+                DeleteAllKeys();
+            GUI.contentColor = prevColor;
+
+            GUILayout.FlexibleSpace();
+
+            // 槽 4：一键折叠/展开所有分组，文案随当前状态切换；折叠目标取 keys 的非空组名，与渲染分组同源
+            GUI.enabled = _file.keys.Exists(k => !string.IsNullOrEmpty(k.group));
+            if (GUILayout.Button(_collapsedGroups.Count > 0
+                    ? LC.Combine(Lc.Unfold, Lc.All)
+                    : LC.Combine(Lc.Fold, Lc.All), GUILayout.Width(slot), GUILayout.Height(BtnHeight)))
+            {
+                if (_collapsedGroups.Count > 0)
+                    _collapsedGroups.Clear();
+                else
+                    foreach (var k in _file.keys)
+                    {
+                        if (string.IsNullOrEmpty(k.group)) continue;
+                        _collapsedGroups.Add(k.group);
+                    }
+            }
+
+            GUI.enabled = true;
+
+            // 槽 5：增加一个新的（末槽吸收取整余数）
+            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.Element)}",
+                    GUILayout.Width(AvailableWidth - slot * 4f), GUILayout.Height(BtnHeight)))
             {
                 _file.keys.Add(new LocalizationKeyEntry { name = "", des = "", group = DefaultGroup });
                 _dirty = true;
             }
 
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(COL_TAIL_PAD + 5);
+            EditorGUILayout.EndHorizontal();
 
+            // 问题汇总：有非法元素时提示
             var issues = Validate();
             if (issues.Count > 0)
             {
                 var warnColor = GUI.contentColor;
-                GUI.contentColor = new Color(1f, 0.78f, 0.4f);
-                GUILayout.Label($"⚠ {issues.Count} {LC.Combine(Lc.Element, Lc.Is, Lc.Illegal)}",
-                    EditorStyles.miniLabel);
+                GUI.contentColor = ColorWarn;
+                GUILayout.Label($"⚠ {LC.Combine(Lc.Illegal, Lc.Element, Lc.Count)}: {issues.Count} ");
                 GUI.contentColor = warnColor;
             }
+            else GUILayout.Label("");
 
+            EditorGUILayout.Space(SpaceBlock);
+        }
+
+        // 通用底栏：刷新 | 保存 并排一行 + 未保存提示（挂在子页 switch 之后，所有子页共用，切换不消失）
+        private void DrawCommonFooter()
+        {
+            EditorGUILayout.BeginHorizontal();
+            float half = Mathf.Floor(AvailableWidth * 0.5f);
+
+            // （显式宽度：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁）
+            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.All, Lc.Content),
+                    GUILayout.Width(half), GUILayout.Height(MainBtnHeight)))
+            {
+                if (!_dirty ||
+                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text),
+                        LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
+                    LoadOrCreate();
+            }
+
+            var prevColor = GUI.contentColor;
+            GUI.contentColor = GUIUtils.LightGreen;
+            if (GUILayout.Button(LC.Combine(Lc.Save, Lc.Content),
+                    GUILayout.Width(AvailableWidth - half), GUILayout.Height(MainBtnHeight)))
+                Save();
+            GUI.contentColor = prevColor;
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space(18f);
 
-            // 宽度显式指定：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁
-            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All), GUILayout.Width(AvailableWidth)))
-                DeleteAllKeys();
-
-            EditorGUILayout.Space(18f);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(_dirty ? LC.Combine(Lc.Need, Lc.Save, Lc.Text) : "",
+                GUIUtils.ColorText(textColor: Color.yellow));
+            GUILayout.Space(COL_BTN);
+            EditorGUILayout.EndHorizontal();
         }
 
         // 删除全部 key：二次确认后才执行（危险操作，必须走确认弹窗，避免误点丢失全部数据）
@@ -669,9 +769,8 @@ namespace EasyFramework.Localization.Edit
             var autoApply = LocalizationData.AutoApplyOnKeySelected;
             var updated = EditorGUILayout.ToggleLeft(new GUIContent(
                     LC.Combine(Lc.Auto, Lc.Apply),
-                    "勾选后，LocalizedText 的 Inspector 选择 key 会自动把预览译文写入文本框，并隐藏「应用」按钮\n" +
-                    "不勾选：显示「应用」按钮，手动应用\n\n" +
-                    "When enabled, picking a key auto-writes the previewed translation into the text field."),
+                    LC.Tr("勾选后，LocalizedText 的 Inspector 选择 key 会自动把预览译文写入文本框，并隐藏「应用」按钮\n不勾选：显示「应用」按钮，手动应用",
+                        "When enabled, picking a key auto-writes the previewed translation into the text field.")),
                 autoApply);
 
             // 仅在值变化时写回：避免每帧重绘都落盘 EditorPrefs
@@ -682,7 +781,8 @@ namespace EasyFramework.Localization.Edit
 
             DrawGroupsHeader();
 
-            _groupScrollPos = EditorGUILayout.BeginScrollView(_groupScrollPos, GUILayout.ExpandWidth(true));
+            _groupScrollPos = EditorGUILayout.BeginScrollView(_groupScrollPos, GUILayout.ExpandWidth(true),
+                GUILayout.ExpandHeight(true));
 
             var groups = _file.GetGroupsOrInfer();
 
@@ -741,10 +841,10 @@ namespace EasyFramework.Localization.Edit
                 // 占位，保持与 count 列对齐
                 EditorGUILayout.LabelField("", EditorStyles.miniLabel, GUILayout.Width(w[1]));
 
-                if (GUILayout.Button(LC.Combine(Lc.Confirm), EditorStyles.miniButton, GUILayout.Width(60f)))
+                if (GUILayout.Button(LC.Combine(Lc.Confirm), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                     CommitRename(group, newName);
 
-                if (GUILayout.Button(LC.Combine(Lc.Cancel), EditorStyles.miniButton, GUILayout.Width(60f)))
+                if (GUILayout.Button(LC.Combine(Lc.Cancel), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                 {
                     _renamingGroup = null;
                     _renamingInput = string.Empty;
@@ -756,26 +856,26 @@ namespace EasyFramework.Localization.Edit
             }
 
             var prevColor = GUI.color;
-            if (keyCount == 0) GUI.color = new Color(1f, 0.95f, 0.7f);
+            if (keyCount == 0) GUI.color = ColorMissing;
 
             // 非重命名态：只读展示（改名请点重命名按钮）
             EditorGUILayout.LabelField(group, EditorStyles.miniTextField, GUILayout.Width(w[0]));
 
             // ---------- count 列 ----------
             GUI.color = prevColor;
-            if (keyCount == 0) GUI.color = new Color(1f, 0.95f, 0.7f);
+            if (keyCount == 0) GUI.color = ColorMissing;
             EditorGUILayout.LabelField($"{keyCount} {LC.Combine(Lc.Row)}",
                 EditorStyles.miniLabel, GUILayout.Width(w[1]));
             GUI.color = prevColor;
 
             // ---------- 操作列 ----------
-            if (GUILayout.Button(LC.Combine(Lc.Rename), EditorStyles.miniButton, GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine(Lc.Rename), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
             {
                 _renamingGroup = group;
                 _renamingInput = group;
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton, GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                 _pendingDeleteGroup = group;
 
             EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
@@ -795,7 +895,8 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.GetGroupsOrInfer().Contains(newName))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{newName} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{newName} {LC.Combine(Lc.Exist)}",
+                    LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -853,8 +954,7 @@ namespace EasyFramework.Localization.Edit
                 GUILayout.Width(w[0]));
             EditorGUILayout.LabelField(LC.Combine(Lc.Use, Lc.Count),
                 GUILayout.Width(w[1]));
-            EditorGUILayout.LabelField("", GUILayout.Width(COL_GROUP_ACTIONS));
-            EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
+            EditorGUILayout.LabelField("", GUILayout.Width(COL_GROUP_ACTIONS + COL_TAIL_PAD));
             EditorGUILayout.EndHorizontal();
         }
 
@@ -875,7 +975,7 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(8f);
+            EditorGUILayout.Space(SpaceGroup);
 
             // 种类：枚举代码级，不在此处增删
             EditorGUILayout.LabelField(LC.Combine(Lc.Type), EditorStyles.boldLabel);
@@ -889,13 +989,13 @@ namespace EasyFramework.Localization.Edit
                 $"Static {_file.keys.Count - dynamicCount} / Dynamic {dynamicCount}  " +
                 $"(total {_file.keys.Count})", EditorStyles.miniLabel);
 
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(SpaceRow);
 
             // 其他设置
             EditorGUILayout.LabelField(LC.Combine(Lc.Config), EditorStyles.boldLabel);
             EditorGUILayout.LabelField($"{LC.Combine(Lc.Text, Lc.File)}: {Path.GetFileName(LocalizationData.JsonPath)}",
                 EditorStyles.miniLabel);
-            EditorGUILayout.Space(18f);
+            EditorGUILayout.Space(SpaceBlock);
         }
 
         // 新增分组
@@ -909,7 +1009,8 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.meta.groups.Contains(name))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{name} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{name} {LC.Combine(Lc.Exist)}",
+                    LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -923,11 +1024,12 @@ namespace EasyFramework.Localization.Edit
         // 导出格式已对齐 Luban（## 标记行 + ##type 类型行 + 首列占位），填完可直接导表）
         private void DrawValuesTab()
         {
-            EditorGUILayout.Space(8f);
+            EditorGUILayout.Space(SpaceGroup);
             DrawLanguagesSection();
 
-            EditorGUILayout.Space(12f);
+            EditorGUILayout.Space(SpaceSection);
             DrawExportSection();
+            GUILayout.FlexibleSpace();
         }
 
         // 语言登记表编辑
@@ -962,7 +1064,7 @@ namespace EasyFramework.Localization.Edit
                 bool exists = File.Exists(path);
 
                 var prevColor = GUI.contentColor;
-                if (!exists) GUI.contentColor = new Color(1f, 0.95f, 0.7f);
+                if (!exists) GUI.contentColor = ColorMissing;
                 EditorGUILayout.LabelField(
                     exists ? Path.GetFileName(path) : $"{LC.Combine(Lc.Not, Lc.Exist)}",
                     EditorStyles.miniLabel, GUILayout.Width(200f));
@@ -979,7 +1081,7 @@ namespace EasyFramework.Localization.Edit
 
                 // 兜底语言不给删除按钮；登记表为空时（回落展示中）同样不给
                 if (!isDefault && !isFallback && GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton,
-                        GUILayout.Width(60f)))
+                        GUILayout.Width(MiniBtnWidth)))
                 {
                     _file.meta.languages.Remove(language);
                     _dirty = true;
@@ -996,7 +1098,7 @@ namespace EasyFramework.Localization.Edit
                     $"（{LC.Tr("保存后将写入登记表", "will be written to the registry on save")}）",
                     MessageType.None);
 
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(SpaceRow);
 
             EditorGUILayout.BeginHorizontal();
             _newLanguage = EditorGUILayout.TextField(_newLanguage, GUILayout.Width(240f));
@@ -1009,14 +1111,11 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.Space(8f);
+            EditorGUILayout.Space(SpaceGroup);
 
             if (!GUILayout.Button(LC.Combine(Lc.Sync, Lc.Config), GUILayout.Width(AvailableWidth))) return;
             SyncTablesToLuban();
         }
-
-        // 多语言表名前缀：只有带此前缀的行才归本面板管辖，删除时也只删此前缀的行
-        private const string L10nTablePrefix = "L10n.TbText_";
 
         // 把清单中的语言登记为 Luban 表定义（L10n.TbText_{lang}）写入 __tables__.xlsx，结果弹窗汇总。
         //
@@ -1030,14 +1129,17 @@ namespace EasyFramework.Localization.Edit
         {
             if (!XlsxRowAppender.Exists())
             {
-                D.Error(LC.Tr("[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）", "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)"));
+                D.Error(LC.Tr(
+                    "[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）",
+                    "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)"));
                 return;
             }
 
             // 前置：确保 L10n.Text bean 已登记（__beans__.xlsx；幂等，已存在自动跳过）——缺失时 Luban 导表会失败
-            if (!XlsxRowAppender.AppendBean("L10n.Text", 0, ("key", "string"), ("value", "string")))
+            if (!XlsxRowAppender.AppendBean(L10NBeanName, 0, ("key", "string"), ("value", "string")))
             {
-                D.Error(LC.Tr("[ LocalizationKeyPanel ] bean 登记失败，详见 Console", "[ LocalizationKeyPanel ] Bean registration failed, see Console"));
+                D.Error(LC.Tr("[ LocalizationKeyPanel ] bean 登记失败，详见 Console",
+                    "[ LocalizationKeyPanel ] Bean registration failed, see Console"));
                 return;
             }
 
@@ -1052,13 +1154,14 @@ namespace EasyFramework.Localization.Edit
 
             foreach (var language in languages)
             {
-                var fullName = L10nTablePrefix + language;
+                var fullName = L10NTablePrefix + language;
 
                 // value 表（CSV）不存在时 Luban 导表会直接报错，这里提前拦截
                 var csvPath = LocalizationData.GetValuesPath(language);
                 if (!File.Exists(csvPath))
                 {
-                    lines.Add($"{fullName}: {LC.Tr("跳过（value 表未导出：{0}）", "Skipped (value table not exported: {0})", Path.GetFileName(csvPath))}");
+                    lines.Add(
+                        $"{fullName}: {LC.Tr("跳过（value 表未导出：{0}）", "Skipped (value table not exported: {0})", Path.GetFileName(csvPath))}");
                     skipped++;
                     continue;
                 }
@@ -1074,7 +1177,7 @@ namespace EasyFramework.Localization.Edit
                 var cells = new Dictionary<int, object>
                 {
                     [XlsxRowAppender.ColFullName] = fullName,
-                    [XlsxRowAppender.ColBeanType] = "L10n.Text",
+                    [XlsxRowAppender.ColBeanType] = L10NBeanName,
                     [XlsxRowAppender.ColReadSchema] = 0,
                     [XlsxRowAppender.ColInput] = $"{LocalizationData.ValuesFilePrefix}{language}.csv",
                     [XlsxRowAppender.ColIndex] = "key",
@@ -1090,7 +1193,8 @@ namespace EasyFramework.Localization.Edit
                 }
                 else
                 {
-                    lines.Add($"{fullName}: {LC.Tr("写入失败（原因见 Console 报错）", "Write failed (see Console for the reason)")}");
+                    lines.Add(
+                        $"{fullName}: {LC.Tr("写入失败（原因见 Console 报错）", "Write failed (see Console for the reason)")}");
                     failed++;
                 }
             }
@@ -1119,12 +1223,14 @@ namespace EasyFramework.Localization.Edit
                     {
                         if (XlsxRowAppender.RemoveRowsByColumnValue(XlsxRowAppender.ColFullName, table) > 0)
                         {
-                            lines.Add($"{table}: {LC.Tr("已删除（语言已不在清单中）", "Removed (language no longer in the manifest)")}");
+                            lines.Add(
+                                $"{table}: {LC.Tr("已删除（语言已不在清单中）", "Removed (language no longer in the manifest)")}");
                             removed++;
                         }
                         else
                         {
-                            lines.Add($"{table}: {LC.Tr("删除失败（原因见 Console 报错）", "Removal failed (see Console for the reason)")}");
+                            lines.Add(
+                                $"{table}: {LC.Tr("删除失败（原因见 Console 报错）", "Removal failed (see Console for the reason)")}");
                             removeFailed++;
                         }
                     }
@@ -1145,7 +1251,8 @@ namespace EasyFramework.Localization.Edit
             if (removeFailed > 0) parts.Add(LC.Tr("删除失败 {0} 张", "Removal failed: {0}", removeFailed));
             var summary = parts.Count == 0
                 ? LC.Tr("清单中没有语言", "No language in the manifest")
-                : string.Join(LC.Tr("，", ", "), parts) + LC.Tr("。新登记后执行「生成全部Excel数据」即可生效", ". Run 'Generate All Excel Data' to take effect");
+                : string.Join(LC.Tr("，", ", "), parts) + LC.Tr("。新登记后执行「生成全部Excel数据」即可生效",
+                    ". Run 'Generate All Excel Data' to take effect");
 
             // 弹窗策略：有实质结果（新增 / 删除 / 失败）才弹窗
             if (added > 0 || removed > 0 || failed > 0 || removeFailed > 0)
@@ -1173,9 +1280,9 @@ namespace EasyFramework.Localization.Edit
             foreach (var table in existing)
             {
                 if (string.IsNullOrEmpty(table)) continue;
-                if (!table.StartsWith(L10nTablePrefix, StringComparison.Ordinal)) continue;
+                if (!table.StartsWith(L10NTablePrefix, StringComparison.Ordinal)) continue;
 
-                var language = table.Substring(L10nTablePrefix.Length);
+                var language = table[L10NTablePrefix.Length..];
                 if (string.IsNullOrEmpty(language)) continue;
                 if (languages.Contains(language)) continue;
 
@@ -1192,22 +1299,22 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUILayout.LabelField($"{LC.Combine(Lc.Path)}: {LocalizationData.ValuesPath}",
                 EditorStyles.miniLabel);
-            EditorGUILayout.Space(6f);
+            EditorGUILayout.Space(SpaceRow);
 
             EditorGUILayout.BeginHorizontal();
 
             float third = Mathf.Floor(AvailableWidth / 3f);
 
             if (GUILayout.Button($"{LC.Combine(Lc.Export, Lc.All, Lc.Data)}",
-                    GUILayout.Width(third), GUILayout.Height(22f)))
+                    GUILayout.Width(third), GUILayout.Height(ExportBtnHeight)))
                 ExportAllValues();
 
             if (GUILayout.Button($"{LC.Combine(Lc.Open, Lc.Path)}",
-                    GUILayout.Width(third), GUILayout.Height(22f)))
+                    GUILayout.Width(third), GUILayout.Height(ExportBtnHeight)))
                 OpenValuesFolder();
 
             if (GUILayout.Button($"{LC.Combine(Lc.Refresh, Lc.All, Lc.Content)}",
-                    GUILayout.Width(AvailableWidth - third * 2f), GUILayout.Height(22f)))
+                    GUILayout.Width(AvailableWidth - third * 2f), GUILayout.Height(ExportBtnHeight)))
                 LoadOrCreate();
 
             EditorGUILayout.EndHorizontal();
@@ -1414,7 +1521,8 @@ namespace EasyFramework.Localization.Edit
             var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             if (file == null)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), "LocalizationKeys.json not found.", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{KeysJsonFileName} not found.",
+                    LC.Combine(Lc.Confirm));
                 return;
             }
 
@@ -1430,7 +1538,8 @@ namespace EasyFramework.Localization.Edit
             }
 
             var text = string.Join("\n", issues);
-            EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}", LC.Combine(Lc.Confirm));
+            EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}",
+                LC.Combine(Lc.Confirm));
         }
 
         // 供菜单调用：按 Key 清单导出全部语言的 value 表（与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。
@@ -1443,7 +1552,7 @@ namespace EasyFramework.Localization.Edit
             if (file == null)
             {
                 EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"LocalizationKeys.json not found.\n{LocalizationData.JsonPath}",
+                    $"{KeysJsonFileName} not found.\n{LocalizationData.JsonPath}",
                     LC.Combine(Lc.Confirm));
                 return;
             }
@@ -1474,15 +1583,5 @@ namespace EasyFramework.Localization.Edit
         }
 
         #endregion
-
-        // 子页：Key 列表 / 分组与种类 / value 表导出
-        private enum SubTab
-        {
-            [InspectorName("KeyList")] Keys = 0,
-
-            [InspectorName("GroupType")] Groups = 1,
-
-            [InspectorName("ValueTable")] Values = 2,
-        }
     }
 }
