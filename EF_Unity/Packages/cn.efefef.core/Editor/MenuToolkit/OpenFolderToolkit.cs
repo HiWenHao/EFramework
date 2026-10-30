@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-05-12 17:11:40
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-10-22 16:30:00
- * ScriptVersion: 0.3
+ * ModifyTime:    2026-10-30 10:05:00
+ * ScriptVersion: 0.4
  * ===============================================
  */
 
@@ -52,7 +52,13 @@ namespace EasyFramework.Edit.MenuToolkit
             OpenFolder(Application.temporaryCachePath);
         }
 
-        [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 6)]
+        [MenuItem(MenuItemToolkit.Folders + "EFTools", false, MenuItemToolkit.FoldersPriority + 6)]
+        public static void OpenEfToolsPath()
+        {
+            OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "EFTools"));
+        }
+
+        [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 7)]
         public static void OpenExcelFolderPath()
         {
             OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));

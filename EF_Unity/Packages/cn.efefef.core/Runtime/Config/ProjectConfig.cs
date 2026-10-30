@@ -20,6 +20,27 @@ namespace EasyFramework
     /// </summary>
     public class ProjectConfig : ScriptableObject
     {
+        
+        [SerializeField, HeaderPro("自动判断显示语言", "Automatically detect display language")]
+        private bool _autoLanguage = true;
+
+        [SerializeField, HeaderPro("显示语言, AutoLanguage 为 false 时生效.", "The Display Language, effective when AutoLanguage is false.")]
+        private SystemLanguage _displayLanguage;
+
+        /// <summary>
+        /// 自动判断显示语言（true 时忽略 DisplayLanguage，跟随系统语言）
+        /// <para>Automatically detect the display language; when true, DisplayLanguage is
+        /// ignored and the system language is followed.</para>
+        /// </summary>
+        public bool AutoLanguage { get => _autoLanguage; set => _autoLanguage = value; }
+
+        /// <summary>
+        /// 显示语言（AutoLanguage 为 false 时生效；取值与编辑器语言 code 同为 SystemLanguage 枚举名）
+        /// <para>The display language; effective when AutoLanguage is false. Uses the same
+        /// SystemLanguage enum name as the editor language codes.</para>
+        /// </summary>
+        public SystemLanguage DisplayLanguage { get => _displayLanguage; set => _displayLanguage = value; }
+
         [SerializeField, HeaderPro("脚本作者名", "The script author")]
         private string _scriptAuthor = "Default";
 

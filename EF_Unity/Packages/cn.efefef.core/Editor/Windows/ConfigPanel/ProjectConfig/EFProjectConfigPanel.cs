@@ -132,10 +132,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             if (selectedIndex != previousIndex)
                 LC.EditorLanguageCode = options[selectedIndex].Code;
-
-            EditorGUILayout.HelpBox(
-                $"{LC.Format(Lc.Cs_CurrentLanguage, LC.GetCurrentDisplayName())}\n{LC.Format(Lc.Cs_LanguageCount, options.Count)}",
-                MessageType.Info);
         }
 
         /// <summary>
