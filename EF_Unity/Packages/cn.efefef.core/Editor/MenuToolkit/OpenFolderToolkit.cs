@@ -69,7 +69,9 @@ namespace EasyFramework.Edit.MenuToolkit
             if (Directory.Exists(folderPath))
                 EditorUtility.RevealInFinder(folderPath + "/");
             else
-                D.Warning($"[OpenFolder] Folder not found: {folderPath}");
+                D.Warning(LC.Tr(
+                    $"[ OpenFolder ] 未找到文件夹: {folderPath}",
+                    $"[ OpenFolder ] Folder not found: {folderPath}"));
         }
     }
 }
