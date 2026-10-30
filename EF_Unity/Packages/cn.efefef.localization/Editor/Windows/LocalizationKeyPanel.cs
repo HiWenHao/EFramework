@@ -787,7 +787,7 @@ namespace EasyFramework.Localization.Edit
             var groups = _file.GetGroupsOrInfer();
 
             if (groups.Count == 0)
-                EditorGUILayout.HelpBox($"[Localization] {LC.Combine(Lc.Class, Lc.Is, Lc.Empty)}", MessageType.Info);
+                EditorGUILayout.HelpBox($"[ Localization ] {LC.Combine(Lc.Class, Lc.Is, Lc.Empty)}", MessageType.Info);
 
             foreach (var group in groups)
             {
@@ -1130,16 +1130,16 @@ namespace EasyFramework.Localization.Edit
             if (!XlsxRowAppender.Exists())
             {
                 D.Error(LC.Tr(
-                    "[ LocalizationKeyPanel ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）",
-                    "[ LocalizationKeyPanel ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)"));
+                    "[ Localization ] 同步失败：找不到 __tables__.xlsx，请先在 数据表配置 中完成初始化（生成 luban.conf 时会自动创建表定义工作簿）",
+                    "[ Localization ] Sync failed: __tables__.xlsx not found. Please finish the initialization in Data Table Config first (the workbook is created when luban.conf is generated)"));
                 return;
             }
 
             // 前置：确保 L10n.Text bean 已登记（__beans__.xlsx；幂等，已存在自动跳过）——缺失时 Luban 导表会失败
             if (!XlsxRowAppender.AppendBean(L10NBeanName, 0, ("key", "string"), ("value", "string")))
             {
-                D.Error(LC.Tr("[ LocalizationKeyPanel ] bean 登记失败，详见 Console",
-                    "[ LocalizationKeyPanel ] Bean registration failed, see Console"));
+                D.Error(LC.Tr("[ Localization ] bean 登记失败，详见 Console",
+                    "[ Localization ] Bean registration failed, see Console"));
                 return;
             }
 
@@ -1264,7 +1264,7 @@ namespace EasyFramework.Localization.Edit
             }
             else
             {
-                D.Log($"[ LocalizationKeyPanel ] {LC.Tr("同步配置：", "Sync: ")}{summary}\n{string.Join("\n", lines)}");
+                D.Log($"[ Localization ] {LC.Tr("同步配置：", "Sync: ")}{summary}\n{string.Join("\n", lines)}");
             }
         }
 
@@ -1424,7 +1424,7 @@ namespace EasyFramework.Localization.Edit
                     sb.AppendLine($"  - {LC.Combine(Lc.Delete)}: {removed}");
             }
 
-            D.Log(LC.Tr("[Localization] 导出数据\n{0}", "[Localization] Export data\n{0}", sb.ToString()));
+            D.Log(LC.Tr("[ Localization ] 导出数据\n{0}", "[ Localization ] Export data\n{0}", sb.ToString()));
 
             EditorUtility.DisplayDialog(
                 allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error), sb.ToString(),
@@ -1576,7 +1576,7 @@ namespace EasyFramework.Localization.Edit
                 sb.AppendLine(report.Summary);
             }
 
-            D.Log(LC.Tr("[Localization] 导出数据\n{0}", "[Localization] Export data\n{0}", sb.ToString()));
+            D.Log(LC.Tr("[ Localization ] 导出数据\n{0}", "[ Localization ] Export data\n{0}", sb.ToString()));
 
             EditorUtility.DisplayDialog(allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error),
                 sb.ToString(), LC.Combine(Lc.Confirm));

@@ -260,8 +260,8 @@ namespace EasyFramework.Localization.Edit
 
             if (file.keys.Any(k => k.name == name))
             {
-                D.Error(LC.Tr("[ KeySearchWindow ] key 已存在：{0}",
-                    "[ KeySearchWindow ] key already exists: {0}",
+                D.Error(LC.Tr("[ Localization ] key 已存在：{0}",
+                    "[ Localization ] key already exists: {0}",
                     name));
                 return null;
             }
@@ -275,16 +275,16 @@ namespace EasyFramework.Localization.Edit
 
             if (!file.Save(path))
             {
-                D.Error(LC.Tr("[ KeySearchWindow ] Key 清单保存失败：{0}",
-                    "[ KeySearchWindow ] Failed to save the Key manifest: {0}",
+                D.Error(LC.Tr("[ Localization ] Key 清单保存失败：{0}",
+                    "[ Localization ] Failed to save the Key manifest: {0}",
                     path));
                 return null;
             }
 
             LocalizationKeyPanel.ExternalManifestChanged = true;
             D.Log(LC.Tr(
-                "[ KeySearchWindow ] key 已创建：{0}（记得导出 value 表并填写译文后重新导表）",
-                "[ KeySearchWindow ] Key created: {0} (remember to export value tables, fill translations and regenerate)",
+                "[ Localization ] key 已创建：{0}（记得导出 value 表并填写译文后重新导表）",
+                "[ Localization ] Key created: {0} (remember to export value tables, fill translations and regenerate)",
                 name));
             return name;
         }

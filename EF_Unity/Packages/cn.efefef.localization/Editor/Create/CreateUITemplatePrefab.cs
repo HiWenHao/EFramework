@@ -58,8 +58,8 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error(LC.Tr("{0}: 挂载组件失败，多半是 API 变更！   {1}",
-                    "{0}: failed to attach the component, most likely an API change!   {1}",
+                D.Error(LC.Tr("[ Localization ] {0}: 挂载组件失败，多半是 API 变更！   {1}",
+                    "[ Localization ] {0}: failed to attach the component, most likely an API change!   {1}",
                     types[0].Name, e.Message));
                 throw;
             }

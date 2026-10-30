@@ -331,8 +331,8 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error(LC.Tr("[Localization] 读取 Key 清单失败：{0}\n{1}",
-                    "[Localization] Failed to read the Key manifest: {0}\n{1}",
+                D.Error(LC.Tr("[ Localization ] 读取 Key 清单失败：{0}\n{1}",
+                    "[ Localization ] Failed to read the Key manifest: {0}\n{1}",
                     path, e.Message));
                 return null;
             }
@@ -365,8 +365,8 @@ namespace EasyFramework.Localization.Edit
             }
             catch (Exception e)
             {
-                D.Error(LC.Tr("[Localization] 写入 Key 清单失败：{0}\n{1}",
-                    "[Localization] Failed to write the Key manifest: {0}\n{1}",
+                D.Error(LC.Tr("[ Localization ] 写入 Key 清单失败：{0}\n{1}",
+                    "[ Localization ] Failed to write the Key manifest: {0}\n{1}",
                     path, e.Message));
                 return false;
             }
