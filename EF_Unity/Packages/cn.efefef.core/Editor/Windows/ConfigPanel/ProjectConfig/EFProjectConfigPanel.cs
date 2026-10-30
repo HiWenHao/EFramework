@@ -68,11 +68,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Current, Lc.Project, Lc.Information }));
+            EditorGUILayout.LabelField(LC.Combine(Lc.Current, Lc.Project, Lc.Information));
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
 
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Editor, Lc.User }), _editorUser);
+            EditorGUILayout.LabelField(LC.Combine(Lc.Editor, Lc.User), _editorUser);
             _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Author),
                 _scriptAuthor.stringValue);
             _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine(Lc.Script, Lc.Version),
@@ -83,7 +83,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.PropertyField(_appConstConfig);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Project, Lc.Settings })))
+            if (GUILayout.Button(LC.Combine(Lc.Reset, Lc.Project, Lc.Settings)))
             {
                 string appName = Application.productName;
                 _appConstConfig.FindPropertyRelative("_appName").stringValue = appName;
@@ -123,7 +123,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.BeginHorizontal();
             int previousIndex = LC.GetSelectedIndex();
             int selectedIndex = EditorGUILayout.Popup(
-                LC.Combine(new Lc[] { Lc.Framework, Lc.Display, Lc.Language }), previousIndex, displayNames);
+                LC.Combine(Lc.Display, Lc.Language), previousIndex, displayNames);
             if (GUILayout.Button("+", EditorStyles.miniButton, GUILayout.Width(22f)))
                 EFEditorLanguageCreateWindow.OpenWindow();
             if (GUILayout.Button("↻", EditorStyles.miniButton, GUILayout.Width(22f)))
@@ -140,30 +140,30 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void SystemInfos()
         {
             _systemInfoSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(_systemInfoSwitch,
-                LC.Combine(new Lc[] { Lc.Current, Lc.Hardware, Lc.Information }));
+                LC.Combine(Lc.Current, Lc.Hardware, Lc.Information));
             if (_systemInfoSwitch)
             {
                 string contents =
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Operating, Lc.System })}: {SystemInfo.operatingSystem}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.System, Lc.Memory, Lc.Size })}: {SystemInfo.systemMemorySize} MB\n" +
-                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Name })}: {SystemInfo.processorType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.CPU, Lc.Count })}: {SystemInfo.processorCount}\n" +
+                    $"{LC.Combine(Lc.Operating, Lc.System)}: {SystemInfo.operatingSystem}\n" +
+                    $"{LC.Combine(Lc.System, Lc.Memory, Lc.Size)}: {SystemInfo.systemMemorySize} MB\n" +
+                    $"{LC.Combine(Lc.CPU, Lc.Name)}: {SystemInfo.processorType}\n" +
+                    $"{LC.Combine(Lc.CPU, Lc.Count)}: {SystemInfo.processorCount}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Name })}: {SystemInfo.graphicsDeviceName}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Type })}: {SystemInfo.graphicsDeviceType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Memory, Lc.Size })}: {SystemInfo.graphicsMemorySize} MB\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Id })}: {SystemInfo.graphicsDeviceID}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor })}: {SystemInfo.graphicsDeviceVendor}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.GPU, Lc.Vendor, Lc.Id })}: {SystemInfo.graphicsDeviceVendorID}\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Name)}: {SystemInfo.graphicsDeviceName}\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Type)}: {SystemInfo.graphicsDeviceType}\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Memory, Lc.Size)}: {SystemInfo.graphicsMemorySize} MB\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Id)}: {SystemInfo.graphicsDeviceID}\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Vendor)}: {SystemInfo.graphicsDeviceVendor}\n" +
+                    $"{LC.Combine(Lc.GPU, Lc.Vendor, Lc.Id)}: {SystemInfo.graphicsDeviceVendorID}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Version })}: {SystemInfo.deviceModel}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Name })}: {SystemInfo.deviceName}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Type })}: {SystemInfo.deviceType}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Device, Lc.Id })}: {SystemInfo.deviceUniqueIdentifier}\n" +
+                    $"{LC.Combine(Lc.Device, Lc.Version)}: {SystemInfo.deviceModel}\n" +
+                    $"{LC.Combine(Lc.Device, Lc.Name)}: {SystemInfo.deviceName}\n" +
+                    $"{LC.Combine(Lc.Device, Lc.Type)}: {SystemInfo.deviceType}\n" +
+                    $"{LC.Combine(Lc.Device, Lc.Id)}: {SystemInfo.deviceUniqueIdentifier}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Current })} Dpi: {Screen.dpi}\n" +
-                    $"{LC.Combine(new Lc[] { Lc.Screen, Lc.Resolution })}: {Screen.currentResolution}\n" +
+                    $"{LC.Combine(Lc.Screen, Lc.Current)} Dpi: {Screen.dpi}\n" +
+                    $"{LC.Combine(Lc.Screen, Lc.Resolution)}: {Screen.currentResolution}\n" +
                     "--------------------------------------------------------------------------------";
 
                 GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));
