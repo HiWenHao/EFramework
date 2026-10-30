@@ -36,25 +36,15 @@ namespace EasyFramework.Edit
         private const string EnumOutputDir = "Editor/Config/Language";                      // 枚举输出目录（包内相对路径）
         private const string BuiltinLanguageDir = "Editor Resources/Language";              // 内置语言数据目录（包内相对路径）
         private const string ExternalLanguageDirName = "EFTools/EditorLanguage";            // 工程扩展语言目录（相对工程根）
-        private const string PrefsKeyCode = "EasyFramework.EditorLanguageCode";             // 当前语言 code 的 EditorPrefs 键
-        private const string LegacyPrefsKeyChoice = "EasyFramework.EditorDisplayLanguage";  // 旧版四项选择的 EditorPrefs 键
-        private const string LegacyPrefsKeyIndexSuffix = "_EditorLanguageIndex";            // 旧版 int 索引的 EditorPrefs 键后缀（产品名前缀）
         private const string LegacyListPath = "Editor Resources/Description/Editorlanguages.json";      // 旧版双语键清单（维护入口）
 
-        /// <summary>英文回落语言 code<para>Fallback language code.</para></summary>
-        public const string EnglishCode = "en";
-        /// <summary>中文语言 code<para>Chinese language code.</para></summary>
-        public const string ChineseCode = "zh";
-        /// <summary>自动跟随系统语言的 code<para>Auto follow system language code.</para></summary>
-        public const string AutoCode = "Auto";
+        private const string AutoCode = "Auto";              // 自动跟随系统语言的选择值
 
-        private static readonly Regex CodePattern = new Regex(@"^[A-Za-z0-9_]{1,16}$", RegexOptions.Compiled); // 语言 code 合法性
         private static readonly Regex IdentifierPattern = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled); // 语言键词法校验（枚举生成前键尚不存在，不能依赖 TryParse）
         private static readonly object _lock = new object();   // 加载线程锁
 
         private static List<LanguageRuntime> _languages;       // 语言注册表：内置 zh/en 在前 + 外部按 code 排序
         private static bool _loaded;                            // 注册表是否已加载
-        private static string _selectedCode;                    // 已解析的持久化选择（null = 尚未读取）
 
         /// <summary>语言文件 JSON 模型<para>JSON model of a language file.</para></summary>
         private sealed class LanguageFileModel
@@ -124,24 +114,49 @@ namespace EasyFramework.Edit
         #region Properties
 
         /// <summary>
-        /// 编辑器 UI 语言（"Auto" / "zh" / "en" / 扩展语言 code）
-        /// <para>Editor UI language; persisted via EditorPrefs and reload-safe.</para>
+        /// 编辑器 UI 语言（"Auto" / 语言 code），持久化于 ProjectConfig 资产（随工程 git 同步，全队生效）
+        /// <para>Editor UI language persisted in the ProjectConfig asset: "Auto" lets every
+        /// machine follow its own system language, while an explicit choice applies to the
+        /// whole team via version control.</para>
         /// </summary>
         public static string EditorLanguageCode
         {
             get
             {
-                if (_selectedCode == null)
-                    _selectedCode = LoadPersistedCode();
-                return _selectedCode;
+                var project = ConfigManager.Project;
+                if (project == null)
+                    return AutoCode;
+                if (project.AutoLanguage)
+                    return AutoCode;
+                return project.DisplayLanguage.ToString();
             }
             set
             {
-                string next = string.IsNullOrEmpty(value) ? AutoCode : value;
-                if (_selectedCode == next)
+                var project = ConfigManager.Project;
+                if (project == null)
+                {
+                    D.Warning("[ LC ] ProjectConfig is not ready; the language choice is not saved.");
                     return;
-                _selectedCode = next;
-                EditorPrefs.SetString(PrefsKeyCode, next);
+                }
+                string next = string.IsNullOrEmpty(value) ? AutoCode : value;
+                if (EditorLanguageCode == next)
+                    return;
+                if (next == AutoCode)
+                {
+                    project.AutoLanguage = true;
+                }
+                else if (Enum.TryParse(next, out SystemLanguage language))
+                {
+                    project.AutoLanguage = false;
+                    project.DisplayLanguage = language;
+                }
+                else
+                {
+                    // 非枚举名 code（旧手工格式如 "ja"）无法入 SO，回落自动
+                    D.Warning($"[ LC ] Unknown language code '{next}', fallback to Auto.");
+                    project.AutoLanguage = true;
+                }
+                EditorUtility.SetDirty(project);
             }
         }
 
@@ -150,13 +165,13 @@ namespace EasyFramework.Edit
         /// <para>Whether the resolved editor language is the English fallback; non-English
         /// (including external languages) renders built-in bilingual text as Chinese.</para>
         /// </summary>
-        public static bool IsEnglish => ResolveCode() == EnglishCode;
+        public static bool IsEnglish => ResolveCode() == nameof(SystemLanguage.English);
 
         /// <summary>
         /// 当前编辑器语言是否为中文
         /// <para>Whether the resolved editor language is Chinese.</para>
         /// </summary>
-        public static bool IsChinese => ResolveCode() == ChineseCode;
+        public static bool IsChinese => ResolveCode() == nameof(SystemLanguage.Chinese);
 
         #endregion
 
@@ -175,8 +190,8 @@ namespace EasyFramework.Edit
                 if (_loaded)
                     return;
                 _languages = new List<LanguageRuntime>();
-                LoadBuiltin(ChineseCode, false);
-                LoadBuiltin(EnglishCode, true);
+                LoadBuiltin(nameof(SystemLanguage.Chinese), false);
+                LoadBuiltin(nameof(SystemLanguage.English), true);
                 LoadExternal();
                 _loaded = true;
             }
@@ -298,51 +313,25 @@ namespace EasyFramework.Edit
         /// Auto 模式下按系统语言推导编辑器语言
         /// <para>Derive the editor language from the system language in Auto mode.</para>
         /// </summary>
-        /// <returns>推导 code；无法匹配时回落 English<para>Derived code; falls back to English when unmatched.</para></returns>
+        /// <returns>推导 code；无法匹配时回落 English（繁体系统回落简体）<para>Derived code; English when unmatched (Traditional Chinese falls back to Simplified).</para></returns>
         private static string ResolveAutoCode()
         {
+            EnsureLoaded();
             var system = Application.systemLanguage;
-            if (system == SystemLanguage.Chinese || system == SystemLanguage.ChineseSimplified || system == SystemLanguage.ChineseTraditional)
-                return ChineseCode;
+            if (system == SystemLanguage.Chinese || system == SystemLanguage.ChineseSimplified)
+                return nameof(SystemLanguage.Chinese);
             if (system == SystemLanguage.English)
-                return EnglishCode;
-            // 其它系统语言：优先匹配声明了 systemLanguage 的扩展语言
+                return nameof(SystemLanguage.English);
+            // 其余系统语言（含繁体中文）：优先命中外部语言声明的 systemLanguage，其次按 code 同名匹配
             foreach (var language in _languages)
             {
-                if (!string.IsNullOrEmpty(language.SystemLanguage) && language.SystemLanguage == system.ToString())
+                string declared = string.IsNullOrEmpty(language.SystemLanguage) ? language.Code : language.SystemLanguage;
+                if (declared == system.ToString())
                     return language.Code;
             }
-            return EnglishCode;
-        }
-
-        /// <summary>
-        /// 读取旧版 EditorPrefs 并迁移到新 string 键
-        /// <para>Migrate legacy EditorPrefs entries to the new string key.</para>
-        /// </summary>
-        /// <returns>迁移后的语言 code<para>Migrated language code.</para></returns>
-        private static string LoadPersistedCode()
-        {
-            if (EditorPrefs.HasKey(PrefsKeyCode))
-                return EditorPrefs.GetString(PrefsKeyCode, AutoCode);
-
-            // 旧版四项选择：0=Auto 1=zh 2=en 3=Other（Other 无法确定具体语言，回落 Auto）
-            if (EditorPrefs.HasKey(LegacyPrefsKeyChoice))
-            {
-                int legacy = EditorPrefs.GetInt(LegacyPrefsKeyChoice, 0);
-                string migrated = legacy == 1 ? ChineseCode : legacy == 2 ? EnglishCode : AutoCode;
-                EditorPrefs.SetString(PrefsKeyCode, migrated);
-                return migrated;
-            }
-
-            // 更早的 int 索引：0=en 1=zh（键名含产品名前缀）
-            string legacyIndexKey = $"{Application.productName}{LegacyPrefsKeyIndexSuffix}";
-            if (EditorPrefs.HasKey(legacyIndexKey))
-            {
-                string migrated = EditorPrefs.GetInt(legacyIndexKey, 0) == 1 ? ChineseCode : EnglishCode;
-                EditorPrefs.SetString(PrefsKeyCode, migrated);
-                return migrated;
-            }
-            return AutoCode;
+            if (system == SystemLanguage.ChineseTraditional)
+                return nameof(SystemLanguage.Chinese); // 繁体系统未建繁体语言时回落简体
+            return nameof(SystemLanguage.English);
         }
 
         /// <summary>
@@ -374,7 +363,7 @@ namespace EasyFramework.Edit
             var language = FindLanguage(ResolveCode());
             if (language != null && language.Texts.TryGetValue(key, out text))
                 return true;
-            var fallback = FindLanguage(EnglishCode);
+            var fallback = FindLanguage(nameof(SystemLanguage.English));
             if (fallback != null && fallback.Texts.TryGetValue(key, out text))
                 return true;
             text = null;
@@ -482,14 +471,21 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 当前选择在选项列表中的下标；未命中回落 0（Auto）
-        /// <para>Index of the current selection; 0 (Auto) when unmatched.</para>
+        /// 当前是否为自动跟随系统语言模式
+        /// <para>Whether the Auto (follow system language) mode is active.</para>
+        /// </summary>
+        public static bool IsAutoLanguage => EditorLanguageCode == AutoCode;
+
+        /// <summary>
+        /// 当前选择在选项列表中的下标（按原始选择匹配：Auto 模式选中「自动」项而非推导结果）；未命中回落 0
+        /// <para>Index of the raw selection (Auto mode selects the "Auto" item, not the derived
+        /// result); 0 when unmatched.</para>
         /// </summary>
         /// <returns>选项下标<para>Option index.</para></returns>
         public static int GetSelectedIndex()
         {
             var options = GetLanguageOptions();
-            string code = ResolveCode();
+            string code = EditorLanguageCode;
             for (int i = 0; i < options.Count; i++)
             {
                 if (options[i].Code == code)
@@ -502,16 +498,17 @@ namespace EasyFramework.Edit
         /// 当前生效语言的显示名（Auto 显示推导结果）
         /// <para>Display name of the effective language (Auto shows the derived one).</para>
         /// </summary>
-        /// <returns>显示名；未命中回落 "en"<para>The display name; "en" when unmatched.</para></returns>
+        /// <returns>显示名；未命中回落 English<para>The display name; English when unmatched.</para></returns>
         public static string GetCurrentDisplayName()
         {
             EnsureLoaded();
-            return FindLanguage(ResolveCode())?.DisplayName ?? EnglishCode;
+            return FindLanguage(ResolveCode())?.DisplayName ?? nameof(SystemLanguage.English);
         }
 
         /// <summary>
-        /// 重扫内置与扩展语言数据（面板打开、新增语言或外部手工放文件后调用）
-        /// <para>Rescan builtin and external languages; call on panel enable, after creating a language, or after manually dropping files.</para>
+        /// 重扫内置与扩展语言数据（面板打开、新增语言、外部手工放文件后调用）
+        /// <para>Rescan builtin and external languages; call on panel enable, after creating
+        /// a language, or after manually dropping files.</para>
         /// </summary>
         public static void ReloadLanguages()
         {
@@ -535,32 +532,40 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 校验并生成扩展语言模板（全键、text=null 待翻译、保留 desc 与占位符说明）
-        /// <para>Validate and create an external language template (all keys, text=null for translation, keeping desc and placeholder hints).</para>
+        /// 判断系统语言是否已被内置语言表覆盖（不允许再建同名外部语言）
+        /// <para>Whether the system language is already covered by a builtin language table
+        /// (creating an external language with it is rejected).</para>
         /// </summary>
-        /// <param name="code">语言 code（字母数字下划线，≤16 位，不得与内置/已有语言冲突）<para>Language code (word chars, ≤16, must not clash).</para></param>
-        /// <param name="displayName">下拉显示名（空缺省用 code）<para>Display name (defaults to code).</para></param>
-        /// <param name="systemLanguage">可选 SystemLanguage 枚举名（null 表示不同步）<para>Optional SystemLanguage enum name (null = no sync).</para></param>
+        /// <param name="systemLanguage">系统语言<para>The system language.</para></param>
+        /// <returns>已被覆盖返回 true<para>True when covered.</para></returns>
+        public static bool IsBuiltinCoveredLanguage(SystemLanguage systemLanguage)
+        {
+            return systemLanguage == SystemLanguage.English ||
+                   systemLanguage == SystemLanguage.Chinese ||
+                   systemLanguage == SystemLanguage.ChineseSimplified;
+        }
+
+        /// <summary>
+        /// 校验并生成扩展语言模板（以系统语言为标识，全键 text=null 待翻译、保留 desc 与占位符说明）
+        /// <para>Validate and create an external language template keyed by a SystemLanguage
+        /// (all keys, text=null for translation, keeping desc and placeholder hints).</para>
+        /// </summary>
+        /// <param name="systemLanguage">系统语言——作为语言标识（code/文件名）与 Auto 推导依据<para>System language used as the code, file name and Auto key.</para></param>
+        /// <param name="displayName">下拉显示名（空缺省用枚举名）<para>Display name (defaults to the enum name).</para></param>
         /// <param name="error">校验失败原因<para>Failure reason.</para></param>
         /// <returns>成功返回 true<para>True on success.</para></returns>
-        public static bool CreateLanguageTemplate(string code, string displayName, string systemLanguage, out string error)
+        public static bool CreateLanguageTemplate(SystemLanguage systemLanguage, string displayName, out string error)
         {
             error = null;
             EnsureLoaded();
-            code = code?.Trim() ?? string.Empty;
+            string code = systemLanguage.ToString();
             displayName = displayName?.Trim();
-            systemLanguage = string.IsNullOrWhiteSpace(systemLanguage) ? null : systemLanguage.Trim();
 
-            if (!CodePattern.IsMatch(code))
+            // 与内置语言语义重复的标识不允许再建（English 与简中已有完整内置数据）
+            if (IsBuiltinCoveredLanguage(systemLanguage))
             {
-                error = Tr("语言代码仅允许字母、数字、下划线，且不超过 16 位。", "Language code allows letters/digits/underscore only, up to 16 chars.");
-                return false;
-            }
-            if (code.Equals(EnglishCode, StringComparison.OrdinalIgnoreCase) ||
-                code.Equals(ChineseCode, StringComparison.OrdinalIgnoreCase) ||
-                code.Equals(AutoCode, StringComparison.OrdinalIgnoreCase))
-            {
-                error = Tr($"'{code}' 是内置保留语言代码。", $"'{code}' is a reserved builtin language code.");
+                error = Tr($"'{code}' 已拥有内置语言表，请直接使用内置语言。",
+                    $"'{code}' already has a builtin language table; use it directly.");
                 return false;
             }
             if (FindLanguage(code) != null)
@@ -574,19 +579,14 @@ namespace EasyFramework.Edit
                 error = Tr($"文件已存在：{path}", $"File already exists: {path}");
                 return false;
             }
-            if (systemLanguage != null && !Enum.TryParse(systemLanguage, out SystemLanguage _))
-            {
-                error = Tr($"非法的 SystemLanguage 名称：{systemLanguage}", $"Invalid SystemLanguage name: {systemLanguage}");
-                return false;
-            }
 
             try
             {
-                string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, EnglishCode + ".json");
-                var source = JsonConvert.DeserializeObject<LanguageFileModel>(File.ReadAllText(englishPath));
-                if (source?.entries == null)
+                string englishSourcePath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
+                var source = ReadLanguageFile(englishSourcePath, out var readError);
+                if (source == null)
                 {
-                    error = Tr("内置语言数据缺失，无法生成模板。", "Builtin language data is missing, cannot create template.");
+                    error = readError;
                     return false;
                 }
 
@@ -594,7 +594,7 @@ namespace EasyFramework.Edit
                 {
                     code = code,
                     displayName = string.IsNullOrEmpty(displayName) ? code : displayName,
-                    systemLanguage = systemLanguage,
+                    systemLanguage = code, // 标识即系统语言，Auto 推导天然生效
                     entries = new List<EntryModel>(),
                 };
                 foreach (var entry in source.entries)
@@ -608,7 +608,7 @@ namespace EasyFramework.Edit
                     });
                 }
                 Directory.CreateDirectory(GetExternalLanguageDirectory());
-                File.WriteAllText(path, JsonConvert.SerializeObject(template, Formatting.Indented), new UTF8Encoding(false));
+                WriteLanguageFile(path, template);
                 return true;
             }
             catch (Exception ex)
@@ -704,8 +704,8 @@ namespace EasyFramework.Edit
                 return false;
             }
 
-            // 1) 内置 en：读一次全程复用（en.json 是键真相，枚举与外部同步都从它出发）
-            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, EnglishCode + ".json");
+            // 1) 内置 en：读一次全程复用（en 是键真相，枚举与外部同步都从它出发）
+            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
             var englishModel = ReadLanguageFile(englishPath, out string error);
             if (englishModel == null)
             {
@@ -717,14 +717,14 @@ namespace EasyFramework.Edit
                 WriteLanguageFile(englishPath, englishModel);
 
             // 2) 内置 zh 增量（array[1]=中文）
-            int chineseAdded = SyncBuiltinFile(ChineseCode, 1, legacy.LcList, out _, out error);
+            int chineseAdded = SyncBuiltinFile(nameof(SystemLanguage.Chinese), 1, legacy.LcList, out _, out error);
             if (error != null)
             {
                 report = error;
                 return false;
             }
 
-            // 3) EFTools 外部语言：以 en.json 全键为源补 text=null（保证与 en 键集一致）
+            // 3) EFTools 外部语言：以 English.json 全键为源补 text=null（保证与 English 键集一致）
             var externalLines = new List<string>();
             int externalAdded = SyncExternalFiles(englishModel.entries, externalLines, out error);
             if (error != null)
@@ -733,7 +733,7 @@ namespace EasyFramework.Edit
                 return false;
             }
 
-            // 3) 从 en.json 重新生成 Lc 枚举
+            // 3) 从 English.json 重新生成 Lc 枚举
             if (!RegenerateEnum(out error))
             {
                 report = error;
@@ -851,7 +851,7 @@ namespace EasyFramework.Edit
         /// <para>Append missing keys as text=null to every external language file, keyed by the full
         /// en entry set; existing entries untouched.</para>
         /// </summary>
-        /// <param name="keySource">en.json 词条全集（键真相）<para>The full en entry set (key truth).</para></param>
+        /// <param name="keySource">English.json 词条全集（键真相）<para>The full English entry set (key truth).</para></param>
         /// <param name="lines">逐文件统计行（用于报告）<para>Per-file stat lines for the report.</para></param>
         /// <param name="error">失败原因（解析失败仅跳过并记录，不中断）<para>Failure reason (parse failures are logged and skipped).</para></param>
         /// <returns>追加的键总数<para>Total appended keys.</para></returns>
@@ -922,15 +922,15 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 从 en.json 重新生成 Lc 枚举文件
-        /// <para>Regenerate the Lc enum file from en.json.</para>
+        /// 从 English.json 重新生成 Lc 枚举文件
+        /// <para>Regenerate the Lc enum file from English.json.</para>
         /// </summary>
         /// <param name="error">失败原因<para>Failure reason.</para></param>
         /// <returns>成功返回 true<para>True on success.</para></returns>
         private static bool RegenerateEnum(out string error)
         {
             error = null;
-            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, EnglishCode + ".json");
+            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
             LanguageFileModel source;
             try
             {
@@ -938,7 +938,7 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                error = Tr($"读取 en.json 失败：{ex.Message}", $"Failed to read en.json: {ex.Message}");
+                error = Tr($"读取 English.json 失败：{ex.Message}", $"Failed to read English.json: {ex.Message}");
                 return false;
             }
             if (source?.entries == null || source.entries.Count == 0)

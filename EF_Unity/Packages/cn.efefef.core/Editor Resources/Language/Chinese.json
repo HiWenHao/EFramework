@@ -1,1692 +1,1692 @@
 {
-  "code": "en",
-  "displayName": "English",
-  "systemLanguage": "English",
+  "code": "Chinese",
+  "displayName": "中文",
+  "systemLanguage": "SimplifiedChinese",
   "entries": [
     {
       "key": "S",
       "desc": "分隔符",
-      "text": " "
+      "text": ""
     },
     {
       "key": "All",
       "desc": "全部",
-      "text": "All"
+      "text": "全部"
     },
     {
       "key": "Add",
       "desc": "添加",
-      "text": "Add"
+      "text": "添加"
     },
     {
       "key": "And",
       "desc": "和",
-      "text": "And"
+      "text": "和"
     },
     {
       "key": "Any",
       "desc": "任何",
-      "text": "Any"
+      "text": "任何"
     },
     {
       "key": "Auto",
       "desc": "自动",
-      "text": "Auto"
+      "text": "自动"
     },
     {
       "key": "Axis",
       "desc": "轴",
-      "text": "Axis"
+      "text": "轴"
     },
     {
       "key": "Audio",
       "desc": "音频",
-      "text": "Audio"
+      "text": "音频"
     },
     {
       "key": "Async",
       "desc": "异步",
-      "text": "Async"
+      "text": "异步"
     },
     {
       "key": "Atlas",
       "desc": "图集",
-      "text": "Atlas"
+      "text": "图集"
     },
     {
       "key": "Await",
       "desc": "等待",
-      "text": "Await"
+      "text": "等待"
     },
     {
       "key": "Active",
       "desc": "活跃",
-      "text": "Active"
+      "text": "活跃"
     },
     {
       "key": "Author",
       "desc": "作者",
-      "text": "Author"
+      "text": "作者"
     },
     {
       "key": "Assets",
       "desc": "资源",
-      "text": "Assets"
+      "text": "资源"
     },
     {
       "key": "Absent",
       "desc": "缺失",
-      "text": "Absent"
+      "text": "缺失"
     },
     {
       "key": "Animat",
       "desc": "动画",
-      "text": "Animat"
+      "text": "动画"
     },
     {
       "key": "AlignAt",
       "desc": "对齐",
-      "text": "AlignAt"
+      "text": "对齐"
     },
     {
       "key": "Already",
       "desc": "已经",
-      "text": "Already"
+      "text": "已经"
     },
     {
       "key": "Archive",
       "desc": "存档",
-      "text": "Archive"
+      "text": "存档"
     },
     {
       "key": "Activity",
       "desc": "活动的",
-      "text": "Activity"
+      "text": "活动"
     },
     {
       "key": "Abandon",
       "desc": "放弃",
-      "text": "Abandon"
+      "text": "放弃"
     },
     {
       "key": "Be",
       "desc": "有",
-      "text": "Be"
+      "text": "有"
     },
     {
       "key": "By",
       "desc": "按照",
-      "text": "By"
+      "text": "按"
     },
     {
       "key": "Bind",
       "desc": "绑定",
-      "text": "Bind"
+      "text": "绑定"
     },
     {
       "key": "Bone",
       "desc": "骨骼",
-      "text": "Bone"
+      "text": "骨骼"
     },
     {
       "key": "BeingProcessed",
       "desc": "正在处理中...",
-      "text": "Being processed..."
+      "text": "正在处理中..."
     },
     {
       "key": "Can",
       "desc": "可以",
-      "text": "Can"
+      "text": "可以"
     },
     {
       "key": "CPU",
       "desc": "计算机处理器",
-      "text": "CPU"
+      "text": "处理器"
     },
     {
       "key": "Code",
       "desc": "代码",
-      "text": "Code"
+      "text": "代码"
     },
     {
       "key": "Copy",
       "desc": "复制",
-      "text": "Copy"
+      "text": "复制"
     },
     {
       "key": "Clear",
       "desc": "清空",
-      "text": "Clear"
+      "text": "清空"
     },
     {
       "key": "Class",
       "desc": "类",
-      "text": "Class"
+      "text": "类"
     },
     {
       "key": "Chain",
       "desc": "链",
-      "text": "Chain"
+      "text": "链"
     },
     {
       "key": "Check",
       "desc": "检查",
-      "text": "Check"
+      "text": "检查"
     },
     {
       "key": "Color",
       "desc": "颜色",
-      "text": "Color"
+      "text": "颜色"
     },
     {
       "key": "Close",
       "desc": "关闭",
-      "text": "Close"
+      "text": "关闭"
     },
     {
       "key": "Count",
       "desc": "数量",
-      "text": "Count"
+      "text": "数量"
     },
     {
       "key": "Center",
       "desc": "中心",
-      "text": "Center"
+      "text": "中心"
     },
     {
       "key": "Cancel",
       "desc": "取消",
-      "text": "Cancel"
+      "text": "取消"
     },
     {
       "key": "Config",
       "desc": "配置",
-      "text": "Config"
+      "text": "配置"
     },
     {
       "key": "Create",
       "desc": "创建",
-      "text": "Create"
+      "text": "创建"
     },
     {
       "key": "Confirm",
       "desc": "确认",
-      "text": "Confirm"
+      "text": "确认"
     },
     {
       "key": "Column",
       "desc": "列",
-      "text": "Column"
+      "text": "列"
     },
     {
       "key": "Custom",
       "desc": "自定义",
-      "text": "Custom"
+      "text": "自定义"
     },
     {
       "key": "Current",
       "desc": "当前",
-      "text": "Current"
+      "text": "当前"
     },
     {
       "key": "Content",
       "desc": "内容",
-      "text": "Content"
+      "text": "内容"
     },
     {
       "key": "Compare",
       "desc": "对比",
-      "text": "Compare"
+      "text": "对比"
     },
     {
       "key": "Compile",
       "desc": "编译",
-      "text": "Compile"
+      "text": "编译"
     },
     {
       "key": "Capacity",
       "desc": "容量",
-      "text": "Capacity"
+      "text": "容量"
     },
     {
       "key": "Character",
       "desc": "字符",
-      "text": "Character"
+      "text": "字符"
     },
     {
       "key": "Compiling",
       "desc": "编译中",
-      "text": "Compiling"
+      "text": "编译中"
     },
     {
       "key": "Countdown",
       "desc": "倒计时",
-      "text": "Countdown"
+      "text": "倒计时"
     },
     {
       "key": "Catalogue",
       "desc": "目录",
-      "text": "Catalogue"
+      "text": "目录"
     },
     {
       "key": "Consistency",
       "desc": "一致的",
-      "text": "Consistency"
+      "text": "一致"
     },
     {
       "key": "Component",
       "desc": "组件",
-      "text": "Component"
+      "text": "组件"
     },
     {
       "key": "Compression",
       "desc": "压缩",
-      "text": "Compression"
+      "text": "压缩"
     },
     {
       "key": "Dot",
       "desc": "点",
-      "text": "Dot"
+      "text": "点"
     },
     {
       "key": "Data",
       "desc": "数据",
-      "text": "Data"
+      "text": "数据"
     },
     {
       "key": "Demo",
       "desc": "样品",
-      "text": "Demo"
+      "text": "样品"
     },
     {
       "key": "Done",
       "desc": "完成",
-      "text": "Done"
+      "text": "完成"
     },
     {
       "key": "Down",
       "desc": "向下",
-      "text": "Down"
+      "text": "向下"
     },
     {
       "key": "Drag",
       "desc": "拖动",
-      "text": "Drag"
+      "text": "拖动"
     },
     {
       "key": "Dock",
       "desc": "停靠",
-      "text": "Dock"
+      "text": "停靠"
     },
     {
       "key": "Debug",
       "desc": "调试",
-      "text": "Debug"
+      "text": "调试"
     },
     {
       "key": "Doing",
       "desc": "正在做",
-      "text": "Doing"
+      "text": "正在做"
     },
     {
       "key": "Delay",
       "desc": "延迟",
-      "text": "Delay"
+      "text": "延迟"
     },
     {
       "key": "Depth",
       "desc": "深度",
-      "text": "Depth"
+      "text": "深度"
     },
     {
       "key": "Delete",
       "desc": "删除",
-      "text": "Delete"
+      "text": "删除"
     },
     {
       "key": "Details",
       "desc": "详情",
-      "text": "Details"
+      "text": "详情"
     },
     {
       "key": "Destroy",
       "desc": "销毁",
-      "text": "Destroy"
+      "text": "销毁"
     },
     {
       "key": "Device",
       "desc": "设备",
-      "text": "Device"
+      "text": "设备"
     },
     {
       "key": "Display",
       "desc": "显示",
-      "text": "Display"
+      "text": "显示"
     },
     {
       "key": "Disable",
       "desc": "禁用",
-      "text": "Disable"
+      "text": "禁用"
     },
     {
       "key": "Default",
       "desc": "默认",
-      "text": "Default"
+      "text": "默认"
     },
     {
       "key": "Dynamic",
       "desc": "动态",
-      "text": "Dynamic"
+      "text": "动态"
     },
     {
       "key": "Download",
       "desc": "下载",
-      "text": "Download"
+      "text": "下载"
     },
     {
       "key": "Distance",
       "desc": "距离",
-      "text": "Distance"
+      "text": "距离"
     },
     {
       "key": "Direction",
       "desc": "方向",
-      "text": "Direction"
+      "text": "方向"
     },
     {
       "key": "Different",
       "desc": "不同、差异",
-      "text": "Different"
+      "text": "不同"
     },
     {
       "key": "DrawCall",
       "desc": "绘制次数",
-      "text": "DrawCall"
+      "text": "绘制次数"
     },
     {
       "key": "Decryption",
       "desc": "解密",
-      "text": "Decryption"
+      "text": "解密"
     },
     {
       "key": "Description",
       "desc": "描述",
-      "text": "Description"
+      "text": "描述"
     },
     {
       "key": "Deceleration",
       "desc": "减速",
-      "text": "Deceleration"
+      "text": "减速"
     },
     {
       "key": "End",
       "desc": "结束",
-      "text": "End"
+      "text": "结束"
     },
     {
       "key": "Exit",
       "desc": "退出",
-      "text": "Exit"
+      "text": "退出"
     },
     {
       "key": "Edges",
       "desc": "边数",
-      "text": "Edges"
+      "text": "边数"
     },
     {
       "key": "Empty",
       "desc": "空的",
-      "text": "Empty"
+      "text": "空的"
     },
     {
       "key": "Error",
       "desc": "错误",
-      "text": "Error"
+      "text": "错误"
     },
     {
       "key": "Excel",
       "desc": "电子表格",
-      "text": "Excel"
+      "text": "电子表格"
     },
     {
       "key": "Exist",
       "desc": "存在",
-      "text": "Exist"
+      "text": "存在"
     },
     {
       "key": "Enter",
       "desc": "进入",
-      "text": "Enter"
+      "text": "进入"
     },
     {
       "key": "Event",
       "desc": "事件",
-      "text": "Event"
+      "text": "事件"
     },
     {
       "key": "Editor",
       "desc": "编辑器",
-      "text": "Editor"
+      "text": "编辑器"
     },
     {
       "key": "Enable",
       "desc": "启动",
-      "text": "Enable"
+      "text": "启动"
     },
     {
       "key": "Equals",
       "desc": "相等",
-      "text": "Equals"
+      "text": "相等"
     },
     {
       "key": "Export",
       "desc": "导出",
-      "text": "Export"
+      "text": "导出"
     },
     {
       "key": "Element",
       "desc": "元素",
-      "text": "Element"
+      "text": "元素"
     },
     {
       "key": "Effects",
       "desc": "特效",
-      "text": "Effects"
+      "text": "特效"
     },
     {
       "key": "Example",
       "desc": "示例",
-      "text": "Example"
+      "text": "示例"
     },
     {
       "key": "Extract",
       "desc": "提取",
-      "text": "Extract"
+      "text": "提取"
     },
     {
       "key": "Encrypt",
       "desc": "加密",
-      "text": "Encrypt"
+      "text": "加密"
     },
     {
       "key": "Exception",
       "desc": "异常",
-      "text": "Exception"
+      "text": "异常"
     },
     {
       "key": "Execution",
       "desc": "执行",
-      "text": "Execution"
+      "text": "执行"
     },
     {
       "key": "Elasticity",
       "desc": "弹性",
-      "text": "Elasticity"
+      "text": "弹性"
     },
     {
       "key": "EditorPrefs",
       "desc": "编辑器数据存档",
-      "text": "Editor Prefs"
+      "text": "编辑器数据存档"
     },
     {
       "key": "File",
       "desc": "文件",
-      "text": "File"
+      "text": "文件"
     },
     {
       "key": "Find",
       "desc": "查找",
-      "text": "Find"
+      "text": "查找"
     },
     {
       "key": "Fold",
       "desc": "折叠",
-      "text": "Fold"
+      "text": "折叠"
     },
     {
       "key": "First",
       "desc": "首个",
-      "text": "First"
+      "text": "首个"
     },
     {
       "key": "Force",
       "desc": "强制",
-      "text": "Force"
+      "text": "强制"
     },
     {
       "key": "Found",
       "desc": "找到",
-      "text": "Found"
+      "text": "找到"
     },
     {
       "key": "Folder",
       "desc": "文件夹",
-      "text": "Folder"
+      "text": "文件夹"
     },
     {
       "key": "Friend",
       "desc": "朋友",
-      "text": "Friend"
+      "text": "朋友"
     },
     {
       "key": "Filtrate",
       "desc": "筛选",
-      "text": "Filtrate"
+      "text": "筛选"
     },
     {
       "key": "Framework",
       "desc": "框架",
-      "text": "Framework"
+      "text": "框架"
     },
     {
       "key": "Frequently",
       "desc": "频繁",
-      "text": "Frequently"
+      "text": "频繁"
     },
     {
       "key": "GPU",
       "desc": "计算器显卡、图形处理器",
-      "text": "GPU"
+      "text": "显卡"
     },
     {
       "key": "Have",
       "desc": "拥有、具备",
-      "text": "Have"
+      "text": "拥有"
     },
     {
       "key": "Hints",
       "desc": "提示",
-      "text": "Hints"
+      "text": "提示"
     },
     {
       "key": "Height",
       "desc": "高度",
-      "text": "Height"
+      "text": "高度"
     },
     {
       "key": "Holdon",
       "desc": "继续、等一等",
-      "text": "Holdon"
+      "text": "继续"
     },
     {
       "key": "Hardware",
       "desc": "硬件",
-      "text": "Hardware"
+      "text": "硬件"
     },
     {
       "key": "Highlight",
       "desc": "强调",
-      "text": "Highlight"
+      "text": "强调"
     },
     {
       "key": "In",
       "desc": "在...里",
-      "text": "In"
+      "text": "在"
     },
     {
       "key": "Id",
       "desc": "标识码",
-      "text": "Id"
+      "text": "标识码"
     },
     {
       "key": "Is",
       "desc": "是",
-      "text": "Is"
+      "text": "是"
     },
     {
       "key": "Idle",
       "desc": "空闲",
-      "text": "Idle"
+      "text": "空闲"
     },
     {
       "key": "Init",
       "desc": "初始化",
-      "text": "Init"
+      "text": "初始化"
     },
     {
       "key": "Input",
       "desc": "输入",
-      "text": "Input"
+      "text": "输入"
     },
     {
       "key": "Install",
       "desc": "安装",
-      "text": "Install"
+      "text": "安装"
     },
     {
       "key": "Import",
       "desc": "导入",
-      "text": "Import"
+      "text": "导入"
     },
     {
       "key": "Inertia",
       "desc": "惯性",
-      "text": "Inertia"
+      "text": "惯性"
     },
     {
       "key": "Illegal",
       "desc": "非法",
-      "text": "Illegal"
+      "text": "非法"
     },
     {
       "key": "Instance",
       "desc": "实例",
-      "text": "Instance"
+      "text": "实例"
     },
     {
       "key": "Interval",
       "desc": "间隔",
-      "text": "Interval"
+      "text": "间隔"
     },
     {
       "key": "Information",
       "desc": "信息",
-      "text": "Information"
+      "text": "信息"
     },
     {
       "key": "Key",
       "desc": "键",
-      "text": "Key"
+      "text": "键"
     },
     {
       "key": "Keyword",
       "desc": "关键字",
-      "text": "Keyword"
+      "text": "关键字"
     },
     {
       "key": "List",
       "desc": "列表",
-      "text": "List"
+      "text": "列表"
     },
     {
       "key": "Left",
       "desc": "左边",
-      "text": "Left"
+      "text": "左边"
     },
     {
       "key": "Lost",
       "desc": "丢失",
-      "text": "Lost"
+      "text": "丢失"
     },
     {
       "key": "Load",
       "desc": "加载",
-      "text": "Load"
+      "text": "加载"
     },
     {
       "key": "Loop",
       "desc": "循环",
-      "text": "Loop"
+      "text": "循环"
     },
     {
       "key": "Limit",
       "desc": "限制",
-      "text": "Limit"
+      "text": "限制"
     },
     {
       "key": "Layer",
       "desc": "层",
-      "text": "Layer"
+      "text": "层"
     },
     {
       "key": "Level",
       "desc": "级别",
-      "text": "Level"
+      "text": "级别"
     },
     {
       "key": "Length",
       "desc": "长、长度",
-      "text": "Length"
+      "text": "长度"
     },
     {
       "key": "Letter",
       "desc": "字母",
-      "text": "Letter"
+      "text": "字母"
     },
     {
       "key": "Language",
       "desc": "语言",
-      "text": "Language"
+      "text": "语言"
     },
     {
       "key": "My",
       "desc": "我的",
-      "text": "My"
+      "text": "我的"
     },
     {
       "key": "Min",
       "desc": "最小",
-      "text": "Min"
+      "text": "最小"
     },
     {
       "key": "Max",
       "desc": "最大",
-      "text": "Max"
+      "text": "最大"
     },
     {
       "key": "Mark",
       "desc": "标记",
-      "text": "Mark"
+      "text": "标记"
     },
     {
       "key": "More",
       "desc": "更多",
-      "text": "More"
+      "text": "更多"
     },
     {
       "key": "Move",
       "desc": "移动",
-      "text": "Move"
+      "text": "移动"
     },
     {
       "key": "Must",
       "desc": "必须",
-      "text": "Must"
+      "text": "必须"
     },
     {
       "key": "Match",
       "desc": "匹配项",
-      "text": "Match"
+      "text": "匹配项"
     },
     {
       "key": "Model",
       "desc": "模型",
-      "text": "Model"
+      "text": "模型"
     },
     {
       "key": "Mouse",
       "desc": "鼠标",
-      "text": "Mouse"
+      "text": "鼠标"
     },
     {
       "key": "Monitor",
       "desc": "监控",
-      "text": "Monitor"
+      "text": "监控"
     },
     {
       "key": "Missing",
       "desc": "缺失",
-      "text": "Missing"
+      "text": "缺失"
     },
     {
       "key": "Minutes",
       "desc": "分钟",
-      "text": "Minutes"
+      "text": "分钟"
     },
     {
       "key": "Manager",
       "desc": "管理者",
-      "text": "Manager"
+      "text": "管理者"
     },
     {
       "key": "Memory",
       "desc": "内存",
-      "text": "Memory"
+      "text": "内存"
     },
     {
       "key": "MoveUp",
       "desc": "上移",
-      "text": "MoveUp"
+      "text": "上移"
     },
     {
       "key": "MoveDown",
       "desc": "下移",
-      "text": "MoveDown"
+      "text": "下移"
     },
     {
       "key": "Manually",
       "desc": "手动",
-      "text": "Manually"
+      "text": "手动"
     },
     {
       "key": "Materials",
       "desc": "材质球",
-      "text": "Materials"
+      "text": "材质"
     },
     {
       "key": "Multilingual",
       "desc": "多语言",
-      "text": "Multilingual"
+      "text": "多语言"
     },
     {
       "key": "No",
       "desc": "没有",
-      "text": "No"
+      "text": "没有"
     },
     {
       "key": "Non",
       "desc": "非",
-      "text": "Non"
+      "text": "非"
     },
     {
       "key": "Not",
       "desc": "不",
-      "text": "Not"
+      "text": "不"
     },
     {
       "key": "New",
       "desc": "新",
-      "text": "New"
+      "text": "新"
     },
     {
       "key": "Name",
       "desc": "名称",
-      "text": "Name"
+      "text": "名称"
     },
     {
       "key": "Node",
       "desc": "节点",
-      "text": "Node"
+      "text": "节点"
     },
     {
       "key": "Namespace",
       "desc": "命名空间",
-      "text": "Namespace"
+      "text": "命名空间"
     },
     {
       "key": "Ok",
       "desc": "好的",
-      "text": "Ok"
+      "text": "好的"
     },
     {
       "key": "Or",
       "desc": "或",
-      "text": "or"
+      "text": "或"
     },
     {
       "key": "Of",
       "desc": ".....的",
-      "text": "of"
+      "text": "的"
     },
     {
       "key": "On",
       "desc": "第",
-      "text": "On"
+      "text": "第"
     },
     {
       "key": "Old",
       "desc": "老",
-      "text": "Old"
+      "text": "老"
     },
     {
       "key": "One",
       "desc": "一个",
-      "text": "One"
+      "text": "一个"
     },
     {
       "key": "Open",
       "desc": "打开",
-      "text": "Open"
+      "text": "打开"
     },
     {
       "key": "Only",
       "desc": "仅仅、只",
-      "text": "Only"
+      "text": "只"
     },
     {
       "key": "Other",
       "desc": "其他",
-      "text": "Other"
+      "text": "其他"
     },
     {
       "key": "Object",
       "desc": "对象、物体",
-      "text": "Object"
+      "text": "对象"
     },
     {
       "key": "Options",
       "desc": "选项",
-      "text": "Options"
+      "text": "选项"
     },
     {
       "key": "Overview",
       "desc": "总览",
-      "text": "Overview"
+      "text": "总览"
     },
     {
       "key": "Occupancy",
       "desc": "占用",
-      "text": "Occupancy"
+      "text": "占用"
     },
     {
       "key": "Overwrite",
       "desc": "覆写",
-      "text": "Overwrite"
+      "text": "覆写"
     },
     {
       "key": "Operating",
       "desc": "操作",
-      "text": "Operating"
+      "text": "操作"
     },
     {
       "key": "Path",
       "desc": "路径",
-      "text": "Path"
+      "text": "路径"
     },
     {
       "key": "Pack",
       "desc": "打包",
-      "text": "Pack"
+      "text": "打包"
     },
     {
       "key": "Pool",
       "desc": "池",
-      "text": "Pool"
+      "text": "池"
     },
     {
       "key": "Param",
       "desc": "参数",
-      "text": "Param"
+      "text": "参数"
     },
     {
       "key": "Panel",
       "desc": "面板",
-      "text": "Panel"
+      "text": "面板"
     },
     {
       "key": "Parent",
       "desc": "父",
-      "text": "Parent"
+      "text": "父"
     },
     {
       "key": "Prefab",
       "desc": "预制件",
-      "text": "Prefab"
+      "text": "预制件"
     },
     {
       "key": "Please",
       "desc": "请",
-      "text": "Please"
+      "text": "请"
     },
     {
       "key": "Pending",
       "desc": "待",
-      "text": "Pending"
+      "text": "待"
     },
     {
       "key": "Plugins",
       "desc": "插件",
-      "text": "Plugins"
+      "text": "插件"
     },
     {
       "key": "Project",
       "desc": "项目",
-      "text": "Project"
+      "text": "项目"
     },
     {
       "key": "Platform",
       "desc": "平台",
-      "text": "Platform"
+      "text": "平台"
     },
     {
       "key": "Particle",
       "desc": "粒子",
-      "text": "Particle"
+      "text": "粒子"
     },
     {
       "key": "Position",
       "desc": "位置",
-      "text": "Position"
+      "text": "位置"
     },
     {
       "key": "Package",
       "desc": "包",
-      "text": "Package"
+      "text": "包"
     },
     {
       "key": "Progress",
       "desc": "进度",
-      "text": "Progress"
+      "text": "进度"
     },
     {
       "key": "Procedure",
       "desc": "流程",
-      "text": "Procedure"
+      "text": "流程"
     },
     {
       "key": "PlayerPrefs",
       "desc": "游戏存档",
-      "text": "PlayerPrefs"
+      "text": "游戏存档"
     },
     {
       "key": "Preferences",
       "desc": "预设、偏好",
-      "text": "Preferences"
+      "text": "预设"
     },
     {
       "key": "Query",
       "desc": "查询",
-      "text": "Query"
+      "text": "查询"
     },
     {
       "key": "Red",
       "desc": "红",
-      "text": "Red"
+      "text": "红"
     },
     {
       "key": "Row",
       "desc": "行",
-      "text": "Row"
+      "text": "行"
     },
     {
       "key": "Rate",
       "desc": "比率",
-      "text": "Rate"
+      "text": "比率"
     },
     {
       "key": "Rely",
       "desc": "依赖",
-      "text": "Rely"
+      "text": "依赖"
     },
     {
       "key": "Root",
       "desc": "根",
-      "text": "Root"
+      "text": "根"
     },
     {
       "key": "Right",
       "desc": "右边",
-      "text": "Right"
+      "text": "右边"
     },
     {
       "key": "Reset",
       "desc": "重置",
-      "text": "Reset"
+      "text": "重置"
     },
     {
       "key": "Radius",
       "desc": "半径",
-      "text": "Radius"
+      "text": "半径"
     },
     {
       "key": "Reason",
       "desc": "原因",
-      "text": "Reason"
+      "text": "原因"
     },
     {
       "key": "Record",
       "desc": "记录",
-      "text": "Record"
+      "text": "记录"
     },
     {
       "key": "Remark",
       "desc": "备注",
-      "text": "Remark"
+      "text": "备注"
     },
     {
       "key": "Reflect",
       "desc": "反射",
-      "text": "Reflect"
+      "text": "反射"
     },
     {
       "key": "Reverse",
       "desc": "反向",
-      "text": "Reverse"
+      "text": "反向"
     },
     {
       "key": "Running",
       "desc": "运行时",
-      "text": "Running"
+      "text": "运行时"
     },
     {
       "key": "Related",
       "desc": "相关",
-      "text": "Related"
+      "text": "相关"
     },
     {
       "key": "Refresh",
       "desc": "刷新",
-      "text": "Refresh"
+      "text": "刷新"
     },
     {
       "key": "Request",
       "desc": "请求",
-      "text": "Request"
+      "text": "请求"
     },
     {
       "key": "Radian",
       "desc": "弧度",
-      "text": "Radian"
+      "text": "弧度"
     },
     {
       "key": "Remove",
       "desc": "去除、解除",
-      "text": "Remove"
+      "text": "删除"
     },
     {
       "key": "Resource",
       "desc": "资源",
-      "text": "Resource"
+      "text": "资源"
     },
     {
       "key": "RadarMap",
       "desc": "雷达图",
-      "text": "RadarMap"
+      "text": "雷达图"
     },
     {
       "key": "Register",
       "desc": "注册",
-      "text": "Register"
+      "text": "注册"
     },
     {
       "key": "Rendering",
       "desc": "渲染",
-      "text": "Rendering"
+      "text": "渲染"
     },
     {
       "key": "Repetition",
       "desc": "重复",
-      "text": "Repetition"
+      "text": "重复"
     },
     {
       "key": "Resolution",
       "desc": "分辨率",
-      "text": "Resolution"
+      "text": "分辨率"
     },
     {
       "key": "Size",
       "desc": "尺寸",
-      "text": "Size"
+      "text": "尺寸"
     },
     {
       "key": "Sync",
       "desc": "同步",
-      "text": "Sync"
+      "text": "同步"
     },
     {
       "key": "Sort",
       "desc": "排序",
-      "text": "Sort"
+      "text": "排序"
     },
     {
       "key": "Save",
       "desc": "保存",
-      "text": "Save"
+      "text": "保存"
     },
     {
       "key": "Self",
       "desc": "自身",
-      "text": "Self"
+      "text": "自身"
     },
     {
       "key": "Score",
       "desc": "分数",
-      "text": "Score"
+      "text": "分数"
     },
     {
       "key": "Scene",
       "desc": "场景",
-      "text": "Scene"
+      "text": "场景"
     },
     {
       "key": "State",
       "desc": "状态",
-      "text": "State"
+      "text": "状态"
     },
     {
       "key": "Speed",
       "desc": "速度、只表示大小，不涉及方向",
-      "text": "Speed"
+      "text": "速度"
     },
     {
       "key": "Script",
       "desc": "脚本",
-      "text": "Script"
+      "text": "脚本"
     },
     {
       "key": "Screen",
       "desc": "屏幕",
-      "text": "Screen"
+      "text": "屏幕"
     },
     {
       "key": "Scroll",
       "desc": "滚动",
-      "text": "Scroll"
+      "text": "滚动"
     },
     {
       "key": "Select",
       "desc": "选择",
-      "text": "Select"
+      "text": "选择"
     },
     {
       "key": "Server",
       "desc": "服务器",
-      "text": "Server"
+      "text": "服务器"
     },
     {
       "key": "System",
       "desc": "系统",
-      "text": "System"
+      "text": "系统"
     },
     {
       "key": "Switch",
       "desc": "开关",
-      "text": "Switch"
+      "text": "开关"
     },
     {
       "key": "Source",
       "desc": "源",
-      "text": "Source"
+      "text": "源"
     },
     {
       "key": "Search",
       "desc": "搜索",
-      "text": "Search"
+      "text": "搜索"
     },
     {
       "key": "Spacing",
       "desc": "间距",
-      "text": "Spacing"
+      "text": "间距"
     },
     {
       "key": "Simplex",
       "desc": "单一的",
-      "text": "Simplex"
+      "text": "单一的"
     },
     {
       "key": "Settings",
       "desc": "设置",
-      "text": "Settings"
+      "text": "设置"
     },
     {
       "key": "Surviving",
       "desc": "存活",
-      "text": "Surviving"
+      "text": "存活"
     },
     {
       "key": "Suspended",
       "desc": "挂起",
-      "text": "Suspended"
+      "text": "挂起"
     },
     {
       "key": "Scrollbar",
       "desc": "滑动条",
-      "text": "Scrollbar"
+      "text": "滑动条"
     },
     {
       "key": "Sensitivity",
       "desc": "灵敏度",
-      "text": "Sensitivity"
+      "text": "灵敏度"
     },
     {
       "key": "Subscriptions",
       "desc": "订阅",
-      "text": "Subscriptions"
+      "text": "订阅"
     },
     {
       "key": "To",
       "desc": "到",
-      "text": "To"
+      "text": "到"
     },
     {
       "key": "Too",
       "desc": "太",
-      "text": "Too"
+      "text": "太"
     },
     {
       "key": "Time",
       "desc": "时间",
-      "text": "Time"
+      "text": "时间"
     },
     {
       "key": "This",
       "desc": "这个",
-      "text": "This"
+      "text": "这个"
     },
     {
       "key": "Tips",
       "desc": "提示、便签",
-      "text": "Tips"
+      "text": "便签"
     },
     {
       "key": "Task",
       "desc": "任务",
-      "text": "Task"
+      "text": "任务"
     },
     {
       "key": "Tool",
       "desc": "工具",
-      "text": "Tool"
+      "text": "工具"
     },
     {
       "key": "Type",
       "desc": "类型",
-      "text": "Type"
+      "text": "类型"
     },
     {
       "key": "Tree",
       "desc": "树",
-      "text": "Tree"
+      "text": "树"
     },
     {
       "key": "Title",
       "desc": "标题",
-      "text": "Title"
+      "text": "标题"
     },
     {
       "key": "Total",
       "desc": "总数",
-      "text": "Total"
+      "text": "总数"
     },
     {
       "key": "Target",
       "desc": "目标",
-      "text": "Target"
+      "text": "目标"
     },
     {
       "key": "Texture",
       "desc": "材质、贴图",
-      "text": "Texture"
+      "text": "纹理贴图"
     },
     {
       "key": "Timeout",
       "desc": "超时",
-      "text": "Timeout"
+      "text": "超时"
     },
     {
       "key": "Triangular",
       "desc": "三角面",
-      "text": "Triangular"
+      "text": "三角面"
     },
     {
       "key": "Up",
       "desc": "向上",
-      "text": "Up"
+      "text": "向上"
     },
     {
       "key": "User",
       "desc": "用户",
-      "text": "User"
+      "text": "用户"
     },
     {
       "key": "Use",
       "desc": "使用",
-      "text": "Use"
+      "text": "使用"
     },
     {
       "key": "Under",
       "desc": "之下",
-      "text": "Under"
+      "text": "之下"
     },
     {
       "key": "Update",
       "desc": "更新",
-      "text": "Update"
+      "text": "更新"
     },
     {
       "key": "Unfold",
       "desc": "展开",
-      "text": "Unfold"
+      "text": "展开"
     },
     {
       "key": "Updating",
       "desc": "更新中",
-      "text": "Updating"
+      "text": "更新中"
     },
     {
       "key": "Upload",
       "desc": "上传",
-      "text": "Upload"
+      "text": "上传"
     },
     {
       "key": "Uploading",
       "desc": "上传中",
-      "text": "Uploading"
+      "text": "上传中"
     },
     {
       "key": "Unload",
       "desc": "卸载",
-      "text": "Unload"
+      "text": "卸载"
     },
     {
       "key": "Underscore",
       "desc": "下划线",
-      "text": "Underscore"
+      "text": "下划线"
     },
     {
       "key": "View",
       "desc": "视窗",
-      "text": "View"
+      "text": "视窗"
     },
     {
       "key": "Value",
       "desc": "值",
-      "text": "Value"
+      "text": "值"
     },
     {
       "key": "Vertex",
       "desc": "顶点",
-      "text": "Vertex"
+      "text": "顶点"
     },
     {
       "key": "Vendor",
       "desc": "供应商",
-      "text": "Vendor"
+      "text": "供应商"
     },
     {
       "key": "Version",
       "desc": "版本",
-      "text": "Version"
+      "text": "版本"
     },
     {
       "key": "Velocity",
       "desc": "速度、包含了方向的信息",
-      "text": "Velocity"
+      "text": "速度"
     },
     {
       "key": "When",
       "desc": "当..",
-      "text": "When"
+      "text": "当"
     },
     {
       "key": "With",
       "desc": "对于",
-      "text": "With"
+      "text": "对于"
     },
     {
       "key": "Will",
       "desc": "将会",
-      "text": "Will"
+      "text": "将会"
     },
     {
       "key": "Width",
       "desc": "宽度",
-      "text": "Width"
+      "text": "宽度"
     },
     {
       "key": "Warning",
       "desc": "警告",
-      "text": "Warning"
+      "text": "警告"
     },
     {
       "key": "Yes",
       "desc": "是的",
-      "text": "Yes"
+      "text": "是的"
     },
     {
       "key": "TryAgain",
       "desc": "再试试",
-      "text": "Try Again"
+      "text": "再试试"
     },
     {
       "key": "LongTimeNoSee",
       "desc": "好久不见",
-      "text": "Long time no see"
+      "text": "好久不见"
     },
     {
       "key": "PleaseWaitMoment",
       "desc": "请稍后",
-      "text": "Please wait a moment"
+      "text": "请稍后"
     },
     {
       "key": "SC_AtlasExistInCollection",
       "desc": "当前收集器中已经存在图集，请检查！",
-      "text": "Atlas already exists in the current collector. Check it!"
+      "text": "当前收集器中已经存在图集，请检查！"
     },
     {
       "key": "SC_AtlasExistAlsoOverwrite",
       "desc": "图集已存在，是否覆盖？",
-      "text": "Atlas already exists. Whether to overwrite?"
+      "text": "  图集已存在，是否覆盖？"
     },
     {
       "key": "Ppe_ImportHint",
       "desc": "存档数据 - 导入提示",
-      "text": "Import PlayerPrefs from another project.\\nAlso useful if you change product or company name"
+      "text": "从另一个项目导入存储数据。\\n如果你更换了公司或产品，填写下边的信息将对你很有帮助。"
     },
     {
       "key": "Ppe_DeleteAllHint",
       "desc": "存档数据 - 删除全部的提示",
-      "text": "Are you sure you want to delete all preferences?"
+      "text": "你确定你想要删除全部存档预设？"
     },
     {
       "key": "Ppe_CreateCustomHint",
       "desc": "存档数据 - 创建自定义提示",
-      "text": "Generate a script file in your project specifying a unique key to use."
+      "text": "在项目中生成一个脚本文件，指定要使用的唯一密钥。"
     },
     {
       "key": "Stw_RecurseDependencies",
       "desc": "递归查找, 资源过多时非常慢。",
-      "text": "Recurse Dependencies.    (Warning: Very slow with too many resources)"
+      "text": "递归查找, 资源过多时非常慢。"
     },
     {
       "key": "Prefix",
       "desc": "前缀",
-      "text": "Prefix"
+      "text": "前缀"
     },
     {
       "key": "Suffix",
       "desc": "后缀",
-      "text": "Suffix"
+      "text": "后缀"
     },
     {
       "key": "Replace",
       "desc": "替换",
-      "text": "Replace"
+      "text": "替换"
     },
     {
       "key": "Sequence",
       "desc": "序号",
-      "text": "Sequence"
+      "text": "序号"
     },
     {
       "key": "Preview",
       "desc": "预览",
-      "text": "Preview"
+      "text": "预览"
     },
     {
       "key": "Apply",
       "desc": "应用",
-      "text": "Apply"
+      "text": "应用"
     },
     {
       "key": "Step",
       "desc": "步长",
-      "text": "Step"
+      "text": "步长"
     },
     {
       "key": "Start",
       "desc": "起始",
-      "text": "Start"
+      "text": "起始"
     },
     {
       "key": "Padding",
       "desc": "补零",
-      "text": "Padding"
+      "text": "补零"
     },
     {
       "key": "Conflict",
       "desc": "冲突",
-      "text": "Conflict"
+      "text": "冲突"
     },
     {
       "key": "Skip",
       "desc": "跳过",
-      "text": "Skip"
+      "text": "跳过"
     },
     {
       "key": "Success",
       "desc": "成功",
-      "text": "Success"
+      "text": "成功"
     },
     {
       "key": "Failed",
       "desc": "失败",
-      "text": "Failed"
+      "text": "失败"
     },
     {
       "key": "Shader",
       "desc": "着色器",
-      "text": "Shader"
+      "text": "着色器"
     },
     {
       "key": "Artw_SelectAssetsHint",
       "desc": "请在Project窗口选中资源，或点击刷新选中按钮",
-      "text": "Select assets in Project window, or click Refresh Selection"
+      "text": "请在Project窗口选中资源，或点击刷新选中按钮"
     },
     {
       "key": "Artw_RenameConflictSkip",
       "desc": "重命名冲突，跳过",
-      "text": "Rename conflict, skipped"
+      "text": "重命名冲突，跳过"
     },
     {
       "key": "Artw_RenameFailed",
       "desc": "重命名失败",
-      "text": "Rename failed"
+      "text": "重命名失败"
     },
     {
       "key": "Artw_NoNeedRename",
       "desc": "没有需要重命名的资源",
-      "text": "No assets need renaming"
+      "text": "没有需要重命名的资源"
     },
     {
       "key": "Mode",
       "desc": "模式",
-      "text": "Mode"
+      "text": "模式"
     },
     {
       "key": "Text",
       "desc": "文本",
-      "text": "Text"
+      "text": "文本"
     },
     {
       "key": "Rename",
       "desc": "重命名",
-      "text": "Rename"
+      "text": "重命名"
     },
     {
       "key": "Artw_ReplaceTo",
       "desc": "替换为",
-      "text": "Replace With"
+      "text": "替换为"
     },
     {
       "key": "Asset",
       "desc": "资源",
-      "text": "Asset"
+      "text": "资源"
     },
     {
       "key": "Complete",
       "desc": "完成",
-      "text": "Complete"
+      "text": "完成"
     },
     {
       "key": "Option",
       "desc": "选项",
-      "text": "Option"
+      "text": "选项"
     },
     {
       "key": "Group",
       "desc": "组",
-      "text": "Group"
+      "text": "组"
     },
     {
       "key": "Generate",
       "desc": "生成",
-      "text": "Generate"
+      "text": "生成"
     },
     {
       "key": "Latest",
       "desc": "最新",
-      "text": "Latest"
+      "text": "最新"
     },
     {
       "key": "Git",
@@ -1696,62 +1696,62 @@
     {
       "key": "Local",
       "desc": "本地",
-      "text": "Local"
+      "text": "本地"
     },
     {
       "key": "Remote",
       "desc": "远端",
-      "text": "Remote"
+      "text": "远端"
     },
     {
       "key": "Need",
       "desc": "需要",
-      "text": "Need"
+      "text": "需要"
     },
     {
       "key": "Maintain",
       "desc": "维护",
-      "text": "Maintain"
+      "text": "维护"
     },
     {
       "key": "Develop",
       "desc": "开发",
-      "text": "Develop"
+      "text": "开发"
     },
     {
       "key": "Unknown",
       "desc": "未知",
-      "text": "Unknown"
+      "text": "未知"
     },
     {
       "key": "Slot",
       "desc": "槽位",
-      "text": "Slot"
+      "text": "槽位"
     },
     {
       "key": "Play",
       "desc": "游玩",
-      "text": "Play"
+      "text": "游玩"
     },
     {
       "key": "Play1",
       "desc": "播放",
-      "text": "Play"
+      "text": "播放"
     },
     {
       "key": "Last",
       "desc": "上次",
-      "text": "Last"
+      "text": "上次"
     },
     {
       "key": "Modified",
       "desc": "修改",
-      "text": "Modified"
+      "text": "修改"
     },
     {
       "key": "Provider",
       "desc": "提供者",
-      "text": "Provider"
+      "text": "提供者"
     },
     {
       "key": "Cs_LanguageCount",
@@ -1759,7 +1759,7 @@
       "params": [
         "语言数量"
       ],
-      "text": "There are {0} languages."
+      "text": "当前有{0}种语言"
     },
     {
       "key": "Cs_CurrentLanguage",
@@ -1767,7 +1767,7 @@
       "params": [
         "语言显示名"
       ],
-      "text": "Current language: {0}"
+      "text": "当前生效语言：{0}"
     }
   ]
 }
