@@ -15,7 +15,6 @@ using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Assets;
 using EasyFramework.Managers.Event;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace EasyFramework.Localization
@@ -155,44 +154,18 @@ namespace EasyFramework.Localization
 
             _table = table;
             _currentLanguage = language;
-            D.Log($"[ I18NManager ] 语言表装载完成：{language}（{table.Count} 条）");
+            D.Log($"[ Localization ] 语言表装载完成：{language}（{table.Count} 条）");
             NotifyLanguageChanged(language);
             return true;
         }
 
-        // 经 AssetsManager 加载并解析指定语言的表（资源缺失返回 null）
+        // 经 AssetsManager 加载并解析指定语言的表（资源缺失返回 null；格式无关：json / Luban bytes 等由解析层按内容分发）
         private async UniTask<Dictionary<string, string>> LoadTableAsync(string language)
         {
             var asset = await AssetsManager.Instance.LoadAsync<TextAsset>(
                 string.Format(TableAssetPathFormat, language));
 
-            return asset != null ? ParseTable(asset.text) : null;
-        }
-
-        // 解析语言表 JSON（失败属真故障：输出错误日志并按空表处理）
-        private static Dictionary<string, string> ParseTable(string text)
-        {
-            var table = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (string.IsNullOrEmpty(text)) return table;
-
-            try
-            {
-                // 导出文件可能带 UTF-8 BOM：BOM 字符混进 JSON 首位会让反序列化直接失败，先剥掉
-                var rows = JsonConvert.DeserializeObject<List<TableRow>>(text.TrimStart('\uFEFF'));
-                if (rows == null) return table;
-
-                foreach (var row in rows)
-                {
-                    if (row == null || string.IsNullOrEmpty(row.key)) continue;
-                    table[row.key] = row.value ?? string.Empty;
-                }
-            }
-            catch (Exception e)
-            {
-                D.Error($"[ I18NManager ] 解析语言表失败\n{e.Message}");
-            }
-
-            return table;
+            return asset != null ? L10nTableParser.Parse(asset.bytes, asset.name) : null;
         }
 
         // 确定初始语言：玩家偏好优先，否则兜底语言（是否真的可用由装载阶段校验）
@@ -285,7 +258,7 @@ namespace EasyFramework.Localization
             }
             catch (FormatException e)
             {
-                D.Warning($"[ I18NManager ] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
+                D.Warning($"[ Localization ] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
                 return raw;
             }
         }
@@ -343,11 +316,11 @@ namespace EasyFramework.Localization
             {
                 if (language == FallbackLanguage)
                 {
-                    D.Error($"[ I18NManager ] 兜底语言 {FallbackLanguage} 的语言表缺失，本地化不可用。");
+                    D.Error($"[ Localization ] 兜底语言 {FallbackLanguage} 的语言表缺失，本地化不可用。");
                     return false;
                 }
 
-                D.Warning($"[ I18NManager ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
+                D.Warning($"[ Localization ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
                 if (!await TryApplyAsync(generation, FallbackLanguage)) return false;
             }
 
@@ -355,16 +328,5 @@ namespace EasyFramework.Localization
         }
 
         #endregion
-
-        // 语言表单行（与导表产物 JSON 结构一一对应，字段名不可改）
-        [Serializable]
-        private sealed class TableRow
-        {
-            // 本地化 key
-            public string key = string.Empty;
-
-            // 译文
-            public string value = string.Empty;
-        }
     }
 }

@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace EasyFramework.Localization
@@ -39,10 +38,16 @@ namespace EasyFramework.Localization
         // 是否发现了至少一张语言表
         private static bool _hasTables;
 
-        // Resources 下的语言表目录（相对 Resources 根）
+        /// <summary>
+        /// Resources 下的语言表目录（相对 Resources 根）
+        /// <para>Folder under Resources (relative to the Resources root).</para>
+        /// </summary>
         internal const string ResourcesFolder = "L10n";
 
-        // 语言表文件名前缀，语言代码紧跟其后（如 l10n_tbtext_zh.json）；新增语言只需多导一张表
+        /// <summary>
+        /// 语言表文件名前缀，语言代码紧跟其后；新增语言只需多导一张表
+        /// <para>Table file name prefix; the language code follows it. One more table per new language.</para>
+        /// </summary>
         internal const string TableFilePrefix = "l10n_tbtext_";
 
         #endregion
@@ -121,34 +126,10 @@ namespace EasyFramework.Localization
             if (Tables.TryGetValue(language, out var cached)) return cached;
 
             var asset = Resources.Load<TextAsset>($"{ResourcesFolder}/{TableFilePrefix}{language}");
-            var table = ParseTable(language, asset != null ? asset.text : null);
+            var table = asset != null
+                ? L10nTableParser.Parse(asset.bytes, asset.name)
+                : new Dictionary<string, string>(StringComparer.Ordinal);
             Tables[language] = table;
-            return table;
-        }
-
-        // 解析一张语言表 JSON（解析失败属真故障：输出错误日志并按空表处理）
-        private static Dictionary<string, string> ParseTable(string language, string text)
-        {
-            var table = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (string.IsNullOrEmpty(text)) return table;
-
-            try
-            {
-                // 导出文件可能带 UTF-8 BOM：BOM 字符混进 JSON 首位会让反序列化直接失败，先剥掉
-                var rows = JsonConvert.DeserializeObject<List<TableRow>>(text.TrimStart('\uFEFF'));
-                if (rows == null) return table;
-
-                foreach (var row in rows)
-                {
-                    if (row == null || string.IsNullOrEmpty(row.key)) continue;
-                    table[row.key] = row.value ?? string.Empty;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[L10nTableStore] 解析语言表失败：{TableFilePrefix}{language}.json\n{e.Message}");
-            }
-
             return table;
         }
 
@@ -183,16 +164,5 @@ namespace EasyFramework.Localization
         }
 
         #endregion
-
-        // 语言表单行（与导表产物 JSON 结构一一对应，字段名不可改）
-        [Serializable]
-        private sealed class TableRow
-        {
-            // 本地化 key
-            public string key = string.Empty;
-
-            // 译文
-            public string value = string.Empty;
-        }
     }
 }
