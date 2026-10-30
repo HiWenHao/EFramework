@@ -58,7 +58,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _extractPath = _customSettings.FindProperty("_extractPath");
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             _customSettings.Update();
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();

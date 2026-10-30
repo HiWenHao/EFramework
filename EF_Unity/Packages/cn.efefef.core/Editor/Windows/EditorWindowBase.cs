@@ -4,8 +4,8 @@
  * Author:        Alvin.Wang(Wenhao)
  * CreationTime:  2026-03-19 18:19:50
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-10-23 13:45:00
- * ScriptVersion: 0.3
+ * ModifyTime:    2026-10-30 10:50:00
+ * ScriptVersion: 0.4
  * ===============================================
  */
 
@@ -23,12 +23,12 @@ namespace EasyFramework.Edit.Windows
     {
         #region Fields
 
-        private const int RequiredStableTicks = 3; //确认刷新结束需累积的稳定更新数（EditorApplication.update 计数，非渲染帧）;
+        private const int RequiredStableTicks = 3;      // 确认刷新结束需累积的稳定更新数（EditorApplication.update 计数，非渲染帧）
 
-        [SerializeField] private bool isRefreshing; //是否处于刷新/编译状态（序列化以在域重载后恢复）;
-        private int _stableTickCount; //刷新结束后的稳定计数，防止短暂恢复造成误判;
-        private Exception _lastError; //最近捕获的异常，非 null 时显示错误覆盖层（不序列化，域重载后自动清零）;
-        private Vector2 _errorScrollPos; //错误覆盖层堆栈区滚动位置;
+        [SerializeField] private bool isRefreshing;     // 是否处于刷新/编译状态（序列化以在域重载后恢复）
+        private int _stableTickCount;                   // 刷新结束后的稳定计数，防止短暂恢复造成误判
+        private Exception _lastError;                   // 最近捕获的异常，非 null 时显示错误覆盖层（不序列化，域重载后自动清零）
+        private Vector2 _errorScrollPos;                // 错误覆盖层堆栈区滚动位置
 
         #endregion
 
@@ -145,6 +145,8 @@ namespace EasyFramework.Edit.Windows
 
         private void OnGUI()
         {
+            if (HandleEscapeToClose())
+                return;
             if (isRefreshing)
             {
                 DrawRefreshOverlay();
@@ -202,7 +204,7 @@ namespace EasyFramework.Edit.Windows
             EditorGUILayout.EndScrollView();
             GUILayout.EndArea();
 
-            if (GUI.Button(new Rect(rect.width / 2f - 110f, rect.height - 45f, 100f, 25f), "复制错误"))
+            if (GUI.Button(new Rect(rect.width / 2f - 110f, rect.height - 45f, 100f, 25f), LC.Tr("复制错误", "Copy Error")))
             {
                 GUIUtility.systemCopyBuffer = e.ToString();
             }
@@ -211,6 +213,32 @@ namespace EasyFramework.Edit.Windows
             {
                 HandleErrorRetry();
             }
+        }
+
+        /// <summary>
+        /// 处理 ESC 关闭：窗口聚焦时按下 ESC 关闭本窗口（全部派生窗口统一生效）
+        /// <para>Handle ESC-to-close: pressing Escape while the window is focused closes it
+        /// (applies to every derived window).</para>
+        /// </summary>
+        /// <returns>ESC 已消费返回 true，本次 OnGUI 结束<para>True when ESC was consumed and OnGUI should return.</para></returns>
+        private bool HandleEscapeToClose()
+        {
+            var evt = Event.current;
+            if (evt is not { type: EventType.KeyDown } || evt.keyCode != KeyCode.Escape)
+                return false;
+            evt.Use();
+            OnEscapePressed();
+            return true;
+        }
+
+        /// <summary>
+        /// ESC 按下时的行为（默认关闭窗口；子类可重写以触发取消回调等清理逻辑）
+        /// <para>Behavior on Escape pressed (closes the window by default; override to run
+        /// cancel callbacks or other cleanup first).</para>
+        /// </summary>
+        protected virtual void OnEscapePressed()
+        {
+            Close();
         }
 
         protected virtual void OnEnable()

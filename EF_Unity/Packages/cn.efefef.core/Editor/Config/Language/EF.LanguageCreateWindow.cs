@@ -11,6 +11,7 @@
 
 using UnityEditor;
 using UnityEngine;
+using EasyFramework.Edit.Windows;
 
 namespace EasyFramework.Edit
 {
@@ -20,16 +21,30 @@ namespace EasyFramework.Edit
     /// display name, then a template is generated under EFTools/EditorLanguage. The system
     /// language doubles as the code, so Auto detection works out of the box.</para>
     /// </summary>
-    internal class EFEditorLanguageCreateWindow : EditorWindow
+    internal class EFEditorLanguageCreateWindow : EditorWindowBase
     {
         #region Fields
 
-        private SystemLanguage _systemLanguage; // 语言标识（兼作文件名与 Auto 推导依据）
-        private string _displayName = string.Empty;          // 下拉框显示名（空缺省用系统语言名）
+        private SystemLanguage _systemLanguage;     // 语言标识（兼作文件名与 Auto 推导依据）
+        private string _displayName = string.Empty; // 下拉框显示名（空缺省用系统语言名）
 
         #endregion
 
         #region Methods
+
+        // 校验并生成语言模板，成功后刷新语言列表并定位到新文件
+        private void TryCreate()
+        {
+            if (!LC.CreateLanguageTemplate(_systemLanguage, _displayName, out string error))
+            {
+                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), error, LC.Combine(Lc.Confirm));
+                return;
+            }
+
+            LC.ReloadLanguages();
+            EditorUtility.RevealInFinder(LC.GetExternalLanguagePath(_systemLanguage.ToString()));
+            Close();
+        }
 
         /// <summary>
         /// 打开新增语言窗口
@@ -41,11 +56,15 @@ namespace EasyFramework.Edit
             window.minSize = new Vector2(400f, 120f);
         }
 
-        private void OnGUI()
+        /// <summary>
+        /// 绘制语言选择表单与创建按钮，Enter 快捷触发创建
+        /// <para>Draws the language selection form and the create button; Enter triggers creation.</para>
+        /// </summary>
+        protected override void OnSmartGUI()
         {
-            var selected = (SystemLanguage)EditorGUILayout.EnumPopup(
-                new GUIContent("系统语言 / System Language",
-                    "作为语言标识（文件名）与 Auto 推导依据；选中已拥有内置语言表的项会提示并回落到列表首项"), _systemLanguage);
+            var selected =
+                (SystemLanguage)EditorGUILayout.EnumPopup(
+                    LC.Combine(Lc.Select, Lc.System, Lc.Language), _systemLanguage);
             if (selected != _systemLanguage)
             {
                 _systemLanguage = selected;
@@ -59,9 +78,7 @@ namespace EasyFramework.Edit
                 }
             }
 
-            _displayName = EditorGUILayout.TextField(
-                new GUIContent("显示名 / Display Name",
-                    "下拉框中显示的语言名称。例如：日本語；留空直接使用系统语言名"), _displayName);
+            _displayName = EditorGUILayout.TextField(LC.Combine(Lc.Display, Lc.Name), _displayName);
 
             EditorGUILayout.Space(6f);
             if (GUILayout.Button(LC.Combine(Lc.Create), GUILayout.Height(26f)))
@@ -72,23 +89,6 @@ namespace EasyFramework.Edit
                 TryCreate();
                 Event.current.Use();
             }
-        }
-
-        /// <summary>
-        /// 校验并生成语言模板；成功后刷新语言列表并定位到新文件
-        /// <para>Validate and create the template; reloads languages and reveals the file on success.</para>
-        /// </summary>
-        private void TryCreate()
-        {
-            if (!LC.CreateLanguageTemplate(_systemLanguage, _displayName, out string error))
-            {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), error, LC.Combine(Lc.Confirm));
-                return;
-            }
-
-            LC.ReloadLanguages();
-            EditorUtility.RevealInFinder(LC.GetExternalLanguagePath(_systemLanguage.ToString()));
-            Close();
         }
 
         #endregion

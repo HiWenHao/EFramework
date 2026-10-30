@@ -12,13 +12,14 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using EasyFramework.Edit.Windows;
 
 namespace EasyFramework.Edit
 {
     /// <summary>
     /// 自定义内容输入窗口，通过静态方法 <see cref="ShowWindow"/> 打开 <br/>支持 Enter与Escape的快捷操作。
     /// </summary>
-    public class CustomInputWindow : EditorWindow
+    public class CustomInputWindow : EditorWindowBase
     {
         private const float MinWidth = 300f;        // 窗口最小宽度
         private const float RowHeight = 40f;        // 单个输入行高度
@@ -87,7 +88,7 @@ namespace EasyFramework.Edit
         #region GUI
 
         // 绘制输入框、确认/取消按钮，处理键盘快捷键
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             EditorGUILayout.Space(10);
 
@@ -120,10 +121,6 @@ namespace EasyFramework.Edit
                 case KeyCode.Return or KeyCode.KeypadEnter:
                     current.Use();
                     Confirm();
-                    break;
-                case KeyCode.Escape:
-                    current.Use();
-                    Close();
                     break;
             }
         }

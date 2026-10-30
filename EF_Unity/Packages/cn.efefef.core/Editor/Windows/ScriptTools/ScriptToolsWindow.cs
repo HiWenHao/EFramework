@@ -23,7 +23,7 @@ namespace EasyFramework.Windows.ScriptTools
     /// <summary>
     /// The script tools panel
     /// </summary>
-    internal class ScriptToolsWindow : EditorWindow
+    internal class ScriptToolsWindow : EditorWindowBase
     {
         private struct Info
         {
@@ -58,7 +58,7 @@ namespace EasyFramework.Windows.ScriptTools
             window.Show();
         }
 
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             EditorGUILayout.LabelField(LC.Combine(Lc.Script, Lc.Tool), GUIUtils.BoldCenterTitle());
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);

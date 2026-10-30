@@ -4,8 +4,8 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2024-10-10 15:43:25
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-04-01 16:47:08
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-10-30 10:55:00
+ * ScriptVersion: 0.3
  * ===============================================
  */
 
@@ -35,9 +35,20 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         }
 
         /// <summary>
-        /// 界面绘制
+        /// 界面绘制（模板方法：为子类绘制预留统一的窗口级横切入口，实际绘制在 OnPanelGUI）
+        /// <para>Panel drawing (template method): a unified window-level hook for subclasses;
+        /// the actual content lives in OnPanelGUI.</para>
         /// </summary>
-        public abstract void OnGUI();
+        public void OnGUI()
+        {
+            OnPanelGUI();
+        }
+
+        /// <summary>
+        /// 面板绘制内容（子类实现）
+        /// <para>Panel content to be implemented by subclasses.</para>
+        /// </summary>
+        protected abstract void OnPanelGUI();
 
         /// <summary>
         /// 当销毁时

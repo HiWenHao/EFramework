@@ -22,7 +22,7 @@ namespace EasyFramework.Edit
     /// <para>用法：<see cref="ShowWindow"/> 打开 → <see cref="UpdateInfo"/> 更新进度 → <see cref="CloseWindow"/> 关闭。</para>
     /// <para>同时只允许存在一个进度窗口；支持取消按钮回调。</para>
     /// </summary>
-    public class CustomProgressWindow : EditorWindow
+    public class CustomProgressWindow : EditorWindowBase
     {
         #region 静态常量
 
@@ -124,6 +124,16 @@ namespace EasyFramework.Edit
             Cleanup();
         }
 
+        /// <summary>
+        /// ESC 按下时走与「取消」按钮一致的逻辑：先触发取消回调再关闭，避免基类默认的裸 Close 跳过回调。
+        /// <para>On Escape, run the same path as the Cancel button: invoke the cancel callback then close,
+        /// instead of the base's default bare Close which would skip the callback.</para>
+        /// </summary>
+        protected override void OnEscapePressed()
+        {
+            CloseWindow();
+        }
+
         #endregion
 
         #region GUI 绘制
@@ -209,7 +219,7 @@ namespace EasyFramework.Edit
             EditorGUI.DrawRect(new Rect(r.xMax - 1f, r.y, 1f, r.height), GUIUtils.ProgressBorder);
         }
 
-        private void OnGUI()
+        protected override void OnSmartGUI()
         {
             GUILayout.Space(18);
             DrawStatusLine();

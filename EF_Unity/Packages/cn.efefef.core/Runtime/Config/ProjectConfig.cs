@@ -20,7 +20,6 @@ namespace EasyFramework
     /// </summary>
     public class ProjectConfig : ScriptableObject
     {
-        
         [SerializeField, HeaderPro("自动判断显示语言", "Automatically detect display language")]
         private bool _autoLanguage = true;
 

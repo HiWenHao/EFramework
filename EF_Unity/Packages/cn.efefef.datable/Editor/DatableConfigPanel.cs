@@ -60,7 +60,7 @@ namespace EasyFramework.Edit.Windows.Dataable
             InitConfig();
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             if (!_config)
             {

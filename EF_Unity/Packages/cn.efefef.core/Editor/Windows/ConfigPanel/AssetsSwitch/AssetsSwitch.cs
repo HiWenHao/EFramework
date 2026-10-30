@@ -49,7 +49,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _managerCount = _assets.Managers.Count;
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             //  ScrollView
             _allPostation = EditorGUILayout.BeginScrollView(_allPostation);

@@ -64,7 +64,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             _customSettings.Update();
 

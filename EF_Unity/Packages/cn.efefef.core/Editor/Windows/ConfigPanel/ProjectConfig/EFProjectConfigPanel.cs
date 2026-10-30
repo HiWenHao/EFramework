@@ -61,7 +61,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _systemInfoSwitch = true;
         }
 
-        public override void OnGUI()
+        protected override void OnPanelGUI()
         {
             SystemInfos();
             DrawLanguageSelector();
