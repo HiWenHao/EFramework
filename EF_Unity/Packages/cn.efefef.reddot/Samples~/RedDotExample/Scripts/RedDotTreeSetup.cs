@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using EasyFramework.Edit;
 using EasyFramework.Systems.RedDot;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace EasyFramework.Test.RedDot
 {
     public class RedDotTreeSetup : MonoBehaviour
     {
-        [Header("UI 引用 (自动查找, 也可手动拖拽)")]
+        [HeaderPro("UI 引用 (自动查找, 也可手动拖拽)", "UI References (auto-found, draggable)")]
         public GameObject mailNumberText;
         public GameObject taskRedDotImage;
         public GameObject friendIconImage;

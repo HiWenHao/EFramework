@@ -96,7 +96,7 @@ namespace EasyFramework
                     var shader = _roundedRectangleShader;
                     if (shader == null)
                     {
-                        D.Error($"{gameObject.name} shader UI/RoundedRectangle not found");
+                        D.Error($"[ UiSystem ] [ ImagePro ] {gameObject.name} shader UI/RoundedRectangle not found");
                         break;
                     }
 
@@ -115,7 +115,7 @@ namespace EasyFramework
                     var shader = _defaultGrayShader;
                     if (shader == null)
                     {
-                        D.Error($"{gameObject.name} shader UI/DefaultGray not found");
+                        D.Error($"[ UiSystem ] [ ImagePro ] {gameObject.name} shader UI/DefaultGray not found");
                         break;
                     }
 
@@ -286,14 +286,14 @@ namespace EasyFramework
             SpriteAtlas atlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
             if (atlas == null)
             {
-                D.Warning($"Atlas '{atlasName}' not found for UIAtlasType.{type}");
+                D.Warning($"[ UiSystem ] [ ImagePro ] Atlas '{atlasName}' not found for UIAtlasType.{type}");
                 return null;
             }
 
             Sprite sp = atlas.GetSprite(spriteName);
             if (sp == null)
             {
-                D.Warning($"Sprite '{spriteName}' not found in atlas '{atlasName}'.");
+                D.Warning($"[ UiSystem ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{atlasName}'.");
                 return null;
             }
 
@@ -368,21 +368,21 @@ namespace EasyFramework
                 SpriteAtlas spriteAtlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
                 if (null == spriteAtlas)
                 {
-                    D.Warning($"Not found {atlasName} atlas..");
+                    D.Warning($"[ UiSystem ] [ ImagePro ] Not found {atlasName} atlas..");
                     return null;
                 }
 
                 hasAtlas = true;
                 newSprite = spriteAtlas.GetSprite(spriteName);
                 if (newSprite == null)
-                    D.Warning($"{spriteName} not found in {atlasName} atlas.");
+                    D.Warning($"[ UiSystem ] [ ImagePro ] {spriteName} not found in {atlasName} atlas.");
             }
             else
                 newSprite = await AssetsManager.Instance.LoadAsync<Sprite>(url);
 
             if (null == newSprite)
             {
-                if (!hasAtlas) D.Warning($"Not found {url} sprite.");
+                if (!hasAtlas) D.Warning($"[ UiSystem ] [ ImagePro ] Not found {url} sprite.");
                 return null;
             }
 

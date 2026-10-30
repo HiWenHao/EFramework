@@ -146,7 +146,7 @@ namespace EasyFramework.Managers.Ui
 
             if (_contentRect == null)
             {
-                D.Error("[ UI ] [ CircularScrollListPro ] ScrollRect.Content 为空。");
+                D.Error("[ UiSystem ] [ CircularScrollListPro ] ScrollRect.Content 为空。");
                 enabled = false;
                 return;
             }
