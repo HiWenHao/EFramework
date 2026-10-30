@@ -250,7 +250,7 @@ namespace EasyFramework.Localization.Edit
             if (!EditorL10nPreview.IsDataAvailable)
             {
                 EditorGUI.HelpBox(rect,
-                    "未找到语言表（l10n_tbtext_*.json）\n" +
+                    "未找到语言表（l10n_tbtext_*.json / .bytes）\n" +
                     "请在 多语言设置 导出 value 表并填好译文，再到 数据表配置 执行 Luban 导表；产物会自动同步进 Resources/L10n",
                     MessageType.Warning);
                 return;

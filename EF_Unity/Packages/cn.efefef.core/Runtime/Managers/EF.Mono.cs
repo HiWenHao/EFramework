@@ -37,8 +37,8 @@ public sealed class EFC : MonoBehaviour
     private EFC()
     {
     }
-    
-    private static EFC _monoEFC;    // 协程助手
+
+    private static EFC _monoEFC; // 协程助手
 
     /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }
@@ -143,6 +143,7 @@ public sealed class EFC : MonoBehaviour
             _lateUpdaters.Clear();
             _singletonMap.Clear();
         }
+
         _resolvingSet.Clear();
         _orderCache.Clear();
     }
@@ -160,7 +161,7 @@ public sealed class EFC : MonoBehaviour
         _orderCache[type] = order;
         return order;
     }
-    
+
     // 按 order 降序插入到列表中（大的在前）
     private static void InsertByOrder<T>(List<T> list, T item, int order)
     {
@@ -171,6 +172,7 @@ public sealed class EFC : MonoBehaviour
             if (order > existingOrder)
                 break;
         }
+
         list.Insert(index, item);
     }
 
@@ -182,7 +184,8 @@ public sealed class EFC : MonoBehaviour
                 BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             if (instanceProp == null || !instanceProp.CanRead)
             {
-                D.Error($"Type {type.Name} is a MonoBehaviour singleton but has no static Instance property. Please ensure it derives from MonoSingleton<T>.");
+                D.Error(
+                    $"Type {type.Name} is a MonoBehaviour singleton but has no static Instance property. Please ensure it derives from MonoSingleton<T>.");
                 return null;
             }
 
@@ -193,7 +196,8 @@ public sealed class EFC : MonoBehaviour
 
         var instance = getter();
         if (instance is ISingleton singleton && !_singletonMap.ContainsKey(type))
-            D.Warning($"MonoSingleton {type.Name} was created but not registered in EF. Ensure its Instance property calls EF.Register.");
+            D.Warning(
+                $"MonoSingleton {type.Name} was created but not registered in EF. Ensure its Instance property calls EF.Register.");
 
         return instance;
     }
@@ -261,7 +265,8 @@ public sealed class EFC : MonoBehaviour
         }
 
         if (!_resolvingSet.Add(managerType))
-            D.Exception($"[EasyFramework] Circular dependency detected: {managerType.Name} is already in the resolution chain.");
+            D.Exception(
+                $"[EasyFramework] Circular dependency detected: {managerType.Name} is already in the resolution chain.");
 
         object[] attributes = managerType.GetCustomAttributes(typeof(DependencyAttribute), false);
         List<Type> dependencies = new List<Type>();
@@ -278,10 +283,12 @@ public sealed class EFC : MonoBehaviour
 
             if (Attribute.IsDefined(dep, typeof(IgnoreAutoRegisterAttribute)))
             {
-                D.Error($"Dependency {dep.Name} is marked with IgnoreAutoRegister, cannot be used as a dependency of {managerType.Name}." +
-                        "Remove the dependency or remove the IgnoreAutoRegister attribute.");
+                D.Error(
+                    $"Dependency {dep.Name} is marked with IgnoreAutoRegister, cannot be used as a dependency of {managerType.Name}." +
+                    "Remove the dependency or remove the IgnoreAutoRegister attribute.");
                 continue;
             }
+
             EnsureDependencies(dep);
             GetOrCreateSingletonByType(dep);
         }
@@ -301,7 +308,7 @@ public sealed class EFC : MonoBehaviour
     {
         Type type = item.GetType();
         bool isManager = Attribute.IsDefined(type, typeof(ManagerAttribute));
-        int order = GetOrder(item);   // 使用 GetOrder 获取（普通单例 order=0）
+        int order = GetOrder(item); // 使用 GetOrder 获取（普通单例 order=0）
 
         EnsureDependencies(type);
 
@@ -379,8 +386,9 @@ public sealed class EFC : MonoBehaviour
     }
 
     #endregion
-    
+
     #region Coroutine  协程
+
     /// <summary>
     /// Start a coroutine.
     /// <para>开启一个协程</para>
@@ -389,6 +397,7 @@ public sealed class EFC : MonoBehaviour
     {
         return _monoEFC.StartCoroutine(coroutine);
     }
+
     /// <summary>
     /// Start a coroutine.
     /// <para>开启一个协程</para>
@@ -399,6 +408,7 @@ public sealed class EFC : MonoBehaviour
             return _monoEFC.StartCoroutine(coroutine);
         return _monoEFC.StartCoroutine(coroutine, value);
     }
+
     /// <summary>
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
@@ -407,6 +417,7 @@ public sealed class EFC : MonoBehaviour
     {
         _monoEFC.StopCoroutine(coroutine);
     }
+
     /// <summary>
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
@@ -415,6 +426,7 @@ public sealed class EFC : MonoBehaviour
     {
         _monoEFC.StopCoroutine(coroutine);
     }
+
     /// <summary>
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
@@ -423,6 +435,7 @@ public sealed class EFC : MonoBehaviour
     {
         _monoEFC.StopCoroutine(methodName);
     }
+
     /// <summary>
     /// Stop all coroutines and use with caution.
     /// <para>停止所有协程, 谨慎使用</para>
@@ -431,5 +444,6 @@ public sealed class EFC : MonoBehaviour
     {
         _monoEFC.StopAllCoroutines();
     }
+
     #endregion
 }

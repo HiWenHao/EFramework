@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows.Dataable;
-using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -60,6 +59,9 @@ namespace EasyFramework.Localization.Edit
         // 语言表缓存对应的文件时间戳：语言 → LastWriteTimeUtc（导表重写后自动重读）
         private static readonly Dictionary<string, DateTime> DiskTableStamps =
             new Dictionary<string, DateTime>(StringComparer.Ordinal);
+
+        // 各格式产物的探测优先序：bytes 优先（当前导表格式），json 兜底（旧产物 / 未切格式工程）
+        private static readonly string[] TableExtensions = { ".bytes", ".json" };
 
         #endregion
 
@@ -215,18 +217,20 @@ namespace EasyFramework.Localization.Edit
             return Path.GetFullPath(Path.Combine(projectRoot, normalized));
         }
 
-        // 扫描导出目录，从文件名发现语言（目录时间戳变化才重扫；en 优先排序）
+        // 扫描导出目录，从文件名发现语言（目录时间戳变化才重扫；en 优先排序；.json/.bytes 等格式均参与发现）
         private static List<string> GetDiskLanguages(string dir)
         {
             var stamp = Directory.GetLastWriteTimeUtc(dir);
             if (_diskLanguages != null && stamp == _diskLanguagesStamp) return _diskLanguages;
 
             var languages = new List<string>();
-            foreach (string file in Directory.GetFiles(dir, TableFilePrefix + "*.json"))
+            foreach (string file in Directory.GetFiles(dir, TableFilePrefix + "*"))
             {
+                if (file.EndsWith(".meta", StringComparison.Ordinal)) continue;
+
                 var name = Path.GetFileNameWithoutExtension(file);
                 var language = name.StartsWith(TableFilePrefix, StringComparison.Ordinal)
-                    ? name.Substring(TableFilePrefix.Length)
+                    ? name[TableFilePrefix.Length..]
                     : string.Empty;
 
                 if (string.IsNullOrEmpty(language) || languages.Contains(language)) continue;
@@ -254,59 +258,30 @@ namespace EasyFramework.Localization.Edit
             string dir = GetExportDir();
             if (dir == null) return null;
 
-            string path = Path.Combine(dir, TableFilePrefix + language + ".json");
-            if (!File.Exists(path)) return null;
+            // 按格式优先序定位产物文件（同语言多格式并存时取优先级最高者）
+            string path = null;
+            foreach (var ext in TableExtensions)
+            {
+                var candidate = Path.Combine(dir, TableFilePrefix + language + ext);
+                if (!File.Exists(candidate)) continue;
+                path = candidate;
+                break;
+            }
+
+            if (path == null) return null;
 
             var stamp = File.GetLastWriteTimeUtc(path);
             if (!DiskTables.TryGetValue(language, out var table) || DiskTableStamps[language] != stamp)
             {
-                table = ParseTable(File.ReadAllText(path));
+                // 格式无关：json / Luban bytes 等由解析层按内容分发
+                table = L10nTableParser.Parse(File.ReadAllBytes(path), Path.GetFileName(path));
                 DiskTables[language] = table;
                 DiskTableStamps[language] = stamp;
             }
 
-            return table.TryGetValue(key, out var value) ? value : null;
-        }
-
-        // 解析语言表 JSON（剥 BOM；解析失败输出错误日志并按空表处理）
-        private static Dictionary<string, string> ParseTable(string text)
-        {
-            var table = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (string.IsNullOrEmpty(text)) return table;
-
-            try
-            {
-                // 导出文件可能带 UTF-8 BOM：BOM 字符混进 JSON 首位会让反序列化直接失败，先剥掉
-                var rows = JsonConvert.DeserializeObject<List<TableRow>>(text.TrimStart('\uFEFF'));
-                if (rows == null) return table;
-
-                foreach (var row in rows)
-                {
-                    if (row == null || string.IsNullOrEmpty(row.key)) continue;
-                    table[row.key] = row.value ?? string.Empty;
-                }
-            }
-            catch (Exception e)
-            {
-                D.Error(LC.Tr("[EditorL10nPreview] 解析语言表失败\n{0}",
-                    "[EditorL10nPreview] Failed to parse the language table\n{0}",
-                    e.Message));
-            }
-
-            return table;
+            return table.GetValueOrDefault(key);
         }
 
         #endregion
-
-        // 语言表单行（与导表产物 JSON 结构一一对应，字段名不可改）
-        [Serializable]
-        private sealed class TableRow
-        {
-            // 本地化 key
-            public string key = string.Empty;
-
-            // 译文
-            public string value = string.Empty;
-        }
     }
 }
