@@ -164,32 +164,32 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         protected override void DrawOne(int index)
         {
             ModelInformation model = _showModelInfo[index];
-            if (GUILayout.Button(model.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.Width(140f)))
+            if (GUILayout.Button(model.Name, AssetCheckerStyles.Button, GUILayout.Width(140f)))
             {
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(model.FilePath);
             }
 
             float width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
 
-            GUILayout.Label(model.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(model.AssetDesc, AssetCheckerStyles.Label, GUILayout.Width(width));
 
             SetGUIColor(model.VetexScore);
-            GUILayout.Label(model.VertexCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(model.VertexCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
 
             SetGUIColor(model.TriangleScore);
-            GUILayout.Label(model.TriangleCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(model.TriangleCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
 
             SetGUIColor(model.BondScore);
-            GUILayout.Label(model.BondCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(model.BondCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            GUILayout.Label($"{model.TextureSize.x} x {model.TextureSize.y}", AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label($"{model.TextureSize.x} x {model.TextureSize.y}", AssetCheckerStyles.Label, GUILayout.Width(width));
 
             int lv = AssetsCheckerConfig.CalScoreLevel(model.Score);
             GUI.color = AssetsCheckerConfig.ScoreColors[lv];
-            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetCheckerStyles.Label, GUILayout.Width(width));
 
             GUI.color = Color.white;
         }

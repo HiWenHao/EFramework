@@ -98,6 +98,15 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
 
                 _initialized = true;
             }
+        }
+
+        /// <summary>
+        /// 创建 GUI 样式：<c>GUIStyle</c> 依赖 <c>GUI.skin</c>，只能在 OnGUI 内创建。
+        /// <para>Creates GUI styles; GUIStyle depends on GUI.skin and can only be created inside OnGUI.</para>
+        /// </summary>
+        private void EnsureStyles()
+        {
+            if (_missingLabel != null) return;
 
             _missingLabel = new GUIStyle("label")
             {
@@ -227,6 +236,7 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
         protected override void OnSmartGUI()
         {
             InitIfNeeded();
+            EnsureStyles();
 
             OnToolBar();
 
