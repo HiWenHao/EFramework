@@ -4,8 +4,8 @@
  * Author:        Alvin.Wang(Wenhao)
  * CreationTime:  2026-03-19 18:19:50
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-10-30 10:50:00
- * ScriptVersion: 0.4
+ * ModifyTime:    2026-10-31 22:55:00
+ * ScriptVersion: 0.5
  * ===============================================
  */
 
@@ -162,6 +162,12 @@ namespace EasyFramework.Edit.Windows
             try
             {
                 OnSmartGUI();
+            }
+            catch (ExitGUIException)
+            {
+                // Unity 用 ExitGUIException 作为「中止本次 GUI pass」的控制流信号（典型触发：GUILayout 控件数量不匹配）。
+                // 必须原样上抛：吞掉它会丢失中止信号，GUI 状态继续错乱并连锁报错；它也不是业务异常，不进错误覆盖层。
+                throw;
             }
             catch (Exception e)
             {

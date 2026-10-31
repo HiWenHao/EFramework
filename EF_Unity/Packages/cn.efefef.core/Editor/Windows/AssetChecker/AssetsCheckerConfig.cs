@@ -39,22 +39,10 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         internal static string[] ScoreNames { get; private set; } = new[] { "完 美", "优 秀", "合 格", "超 标", "想起飞?" };
 
-        internal static readonly GUIStyle LabelStyle = new GUIStyle(GUI.skin.label)
-        {
-            normal = new GUIStyleState()
-            {
-                textColor = Color.white,
-            },
-            clipping = TextClipping.Clip,
-            padding = new RectOffset(0, 0, 4, 0),
-            alignment = TextAnchor.MiddleCenter,
-
-        };
-
-        internal static readonly GUIStyle ButtonStyle = new GUIStyle("Button")
-        {
-            alignment = TextAnchor.MiddleLeft
-        };
+        // 注意：本类只保留纯配置数据，不要放 GUIStyle 等 GUI 对象。
+        // GUI.skin 只能在 OnGUI 内访问，放进静态字段初始化器会在「打开窗口但还没进 OnGUI」时抛
+        // ArgumentException: You can only call GUI functions from inside OnGUI。
+        // 界面样式统一走 AssetCheckerStyles（懒创建）。
 
         /// <summary>
         /// 计算评分

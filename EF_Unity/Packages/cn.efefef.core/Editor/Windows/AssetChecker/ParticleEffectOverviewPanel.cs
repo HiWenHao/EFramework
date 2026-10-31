@@ -167,28 +167,28 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         {
             EffectInformation effect = _showEffectInfo[index];
 
-            if (GUILayout.Button(effect.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.MaxWidth(140f)))
+            if (GUILayout.Button(effect.Name, AssetCheckerStyles.Button, GUILayout.MaxWidth(140f)))
             {
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(effect.FilePath);
             }
 
             float width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
 
-            GUILayout.Label(effect.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(effect.AssetDesc, AssetCheckerStyles.Label, GUILayout.Width(width));
 
             SetGUIColor(effect.DrawCallScore);
-            GUILayout.Label(effect.DrawCallCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(effect.DrawCallCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
 
-            GUILayout.Label(effect.TextureCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(effect.TextureCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
 
             SetGUIColor(effect.ParticeScore);
-            GUILayout.Label(effect.ParticelCount.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(effect.ParticelCount.ToString(), AssetCheckerStyles.Label, GUILayout.Width(width));
 
             int lv = AssetsCheckerConfig.CalScoreLevel(effect.Score);
             GUI.color = AssetsCheckerConfig.ScoreColors[lv];
-            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetsCheckerConfig.LabelStyle, GUILayout.Width(width));
+            GUILayout.Label(AssetsCheckerConfig.ScoreNames[lv], AssetCheckerStyles.Label, GUILayout.Width(width));
             GUI.color = Color.white;
         }
 

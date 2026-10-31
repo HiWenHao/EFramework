@@ -171,26 +171,26 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         protected override void DrawOne(int index)
         {
             TextureInformation _texture = _showTextureInfo[index];
-            if (GUILayout.Button(_texture.Name, AssetsCheckerConfig.ButtonStyle, GUILayout.Width(140f)))
+            if (GUILayout.Button(_texture.Name, AssetCheckerStyles.Button, GUILayout.Width(140f)))
             {
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(_texture.FilePath);
             }
 
             float _width = (Screen.width - 150f) / (ObjectInfoList.Length - 1);
-            GUILayout.Label(_texture.AssetDesc, AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(_texture.AssetDesc, AssetCheckerStyles.Label, GUILayout.Width(_width));
 
-            GUILayout.Label(_texture.Width.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
-            GUILayout.Label(_texture.Height.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(_texture.Width.ToString(), AssetCheckerStyles.Label, GUILayout.Width(_width));
+            GUILayout.Label(_texture.Height.ToString(), AssetCheckerStyles.Label, GUILayout.Width(_width));
 
             GUI.color = (_settingMap.TryGetValue(_texture.AssetDesc, out var setting)
                 && _texture.MipMaps != setting.MipMaps) ? Color.red : Color.white;
-            GUILayout.Label(_texture.MipMaps.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(_texture.MipMaps.ToString(), AssetCheckerStyles.Label, GUILayout.Width(_width));
             GUI.color = Color.white;
 
-            GUILayout.Label(_texture.MaxSize.ToString(), AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
-            GUILayout.Label(_texture.Format, AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(_texture.MaxSize.ToString(), AssetCheckerStyles.Label, GUILayout.Width(_width));
+            GUILayout.Label(_texture.Format, AssetCheckerStyles.Label, GUILayout.Width(_width));
 
-            GUILayout.Label(_texture.MemoryText, AssetsCheckerConfig.LabelStyle, GUILayout.Width(_width));
+            GUILayout.Label(_texture.MemoryText, AssetCheckerStyles.Label, GUILayout.Width(_width));
 
         }
 

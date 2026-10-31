@@ -4,8 +4,8 @@
  * Author:          Xiaohei.Wang(Wenhao)
  * CreationTime:    2023-05-12 14:41:18
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-06-01 17:51:29
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-10-31 22:55:00
+ * ScriptVersion:   0.2
  * ===============================================
  */
 
@@ -37,7 +37,6 @@ namespace EasyFramework.Windows.ScriptTools
         private int _missingOpt;
         private int _missingTempOpt;
         private int _missingMaxCount;
-        private int _missingTempCount;
         private int _dependenciesMaxCount;
 
         private bool _shouldRecurse;
@@ -50,6 +49,25 @@ namespace EasyFramework.Windows.ScriptTools
         private readonly List<Info> _entries = new List<Info>();
         private readonly List<string> _results = new List<string>();
 
+        /// <summary>
+        /// 待执行的数据刷新类型
+        /// <para>Pending data refresh kind.</para>
+        /// </summary>
+        private enum PendingWork
+        {
+            /// <summary>无<para>None.</para></summary>
+            None = 0,
+
+            /// <summary>重扫丢失脚本<para>Rescan missing scripts.</para></summary>
+            MissingScan = 1,
+
+            /// <summary>重扫依赖预制体<para>Rescan prefab dependencies.</para></summary>
+            DependencyScan = 2,
+        }
+
+        // 待执行的数据刷新（点击只登记意图，真正刷新延后到下一次 Layout 事件）
+        private PendingWork _pendingWork = PendingWork.None;
+
         [MenuItem(MenuItemToolkit.Tools + "🔍 Script Tools", false, MenuItemToolkit.ToolsPriority + 2)]
         private static void OpenWindow()
         {
@@ -60,6 +78,10 @@ namespace EasyFramework.Windows.ScriptTools
 
         protected override void OnSmartGUI()
         {
+            // 必须先于任何控件绘制执行：本次刷新会让列表行数变化，延后到 Layout 事件可保证
+            // Layout 与随后的 Repaint 看到同一份数据（详见 ApplyPendingWork 注释）
+            ApplyPendingWork();
+
             EditorGUILayout.LabelField(LC.Combine(Lc.Script, Lc.Tool), GUIUtils.BoldCenterTitle());
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
             _typeIndex = EditorGUILayout.Popup(LC.Combine(Lc.Select, Lc.Find, Lc.Type),
@@ -82,7 +104,7 @@ namespace EasyFramework.Windows.ScriptTools
                 _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), _shouldRecurse);
                 if (GUILayout.Button(LC.Combine(Lc.Find, Lc.Script, Lc.Rely)))
                 {
-                    ActionSearchForComponent();
+                    _pendingWork = PendingWork.DependencyScan;
                 }
 
                 if (_dependenciesMaxCount != 0)
@@ -97,7 +119,7 @@ namespace EasyFramework.Windows.ScriptTools
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button(LC.Combine(Lc.Find)))
                 {
-                    MissingFind();
+                    _pendingWork = PendingWork.MissingScan;
                 }
 
                 _missingOpt = EditorGUILayout.Popup(_missingOpt, new[]
@@ -108,7 +130,7 @@ namespace EasyFramework.Windows.ScriptTools
                 if (_missingOpt != _missingTempOpt)
                 {
                     _missingTempOpt = _missingOpt;
-                    MissingFind();
+                    _pendingWork = PendingWork.MissingScan;
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -118,6 +140,41 @@ namespace EasyFramework.Windows.ScriptTools
                 EditorGUILayout.Space();
 
                 MissingListInfoShow();
+            }
+        }
+
+        /// <summary>
+        /// 执行被延后的数据刷新。
+        /// <para>Executes the deferred data refresh.</para>
+        /// <para>
+        /// IMGUI 中 Layout 事件负责计算并缓存控件矩形，Repaint / MouseUp 复用同一份布局结果；
+        /// 若在同一次 GUI pass 内改变控件数量（例如点击按钮后立刻把列表从 0 行刷成 N 行），
+        /// Unity 会判定 GUILayout 不匹配并抛 <c>ExitGUIException</c> 中止本次绘制（表现为控制台报错、界面不刷新）。
+        /// 因此点击只登记意图，真正刷新等到下一次 Layout 事件执行，保证 Layout 与随后的 Repaint 数据一致。
+        /// </para>
+        /// </summary>
+        private void ApplyPendingWork()
+        {
+            if (_pendingWork == PendingWork.None) return;
+            if (Event.current.type != EventType.Layout)
+            {
+                // 主动请求一次重绘，保证后续一定会来 Layout 事件，刷新不会一直挂起
+                Repaint();
+                return;
+            }
+
+            PendingWork work = _pendingWork;
+            _pendingWork = PendingWork.None;
+
+            switch (work)
+            {
+                case PendingWork.MissingScan:
+                    MissingFind();
+                    break;
+
+                case PendingWork.DependencyScan:
+                    ActionSearchForComponent();
+                    break;
             }
         }
 
@@ -206,12 +263,13 @@ namespace EasyFramework.Windows.ScriptTools
                 return;
 
             _missingScroll = EditorGUILayout.BeginScrollView(_missingScroll);
+            int invalidCount = 0;
             for (int i = 0; i < _missingMaxCount; i++)
             {
                 Info info = _entries[i];
                 if (!info.Target)
                 {
-                    _missingTempCount--;
+                    invalidCount++;
                     continue;
                 }
 
@@ -231,9 +289,11 @@ namespace EasyFramework.Windows.ScriptTools
                 EditorGUILayout.EndHorizontal();
             }
 
-            if (_missingTempCount != _missingMaxCount)
+            // 目标对象已被销毁（场景/预制体被改动）：登记一次重扫。
+            // 注意不能在这里直接重扫——绘制过程中改变数据会让本次 GUI pass 的控件数量与 Layout 缓存不一致，触发 ExitGUIException
+            if (invalidCount > 0)
             {
-                MissingFind();
+                _pendingWork = PendingWork.MissingScan;
             }
 
             EditorGUILayout.Space();
@@ -290,7 +350,6 @@ namespace EasyFramework.Windows.ScriptTools
 
             _entries.Sort((a, b) => a.DetailsPath.CompareTo(b.DetailsPath));
             _missingMaxCount = _entries.Count;
-            _missingTempCount = _missingMaxCount;
         }
 
         #endregion
