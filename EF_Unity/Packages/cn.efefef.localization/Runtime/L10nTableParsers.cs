@@ -157,9 +157,9 @@ namespace EasyFramework.Localization
     }
 
     /// <summary>
-    /// Luban bytes 解析器：varint 整型；map 表 = varint 记录数 + N×(key:string, value:string)
-    /// <para>Parser for Luban binary export (LEB128 varint layout), with full-consumption validation.
-    /// 布局经实测验证（l10n_tbtext_en.bytes / example_tbitem.bytes）。</para>
+    /// Luban bytes 解析器：整型/长度用 Luban 前缀编码；map 表 = 记录数 + N×(key:string, value:string)
+    /// <para>Parser for Luban binary export (Luban prefix-coded integers), with full-consumption validation.
+    /// 布局以项目内 Luban 运行时 ByteBuf.WriteUint/ReadUint 为准（见 ByteBuf.cs 注释）。</para>
     /// </summary>
     public sealed class LubanBytesL10nTableParser : IL10nTableParser
     {
@@ -187,6 +187,7 @@ namespace EasyFramework.Localization
                 {
                     var key = buf.ReadString();
                     var value = buf.ReadString();
+                    // 空 value 合法（未翻译项），保留为空串，不中断整表解析
                     if (string.IsNullOrEmpty(key)) continue;
                     result[key] = value ?? string.Empty;
                 }
@@ -197,9 +198,10 @@ namespace EasyFramework.Localization
                 table = result;
                 return true;
             }
-            catch
+            catch (Exception e)
             {
-                // 非本格式或布局不符：交下一个解析器，全部失败时门面报错
+                // 非本格式或布局不符：交下一个解析器，全部失败时门面报错；这里补上具体原因，避免只有"无法识别"这种黑盒信息
+                D.Error($"[ Localization ] 解析 {sourceName} 失败：{e.Message}");
                 return false;
             }
         }
