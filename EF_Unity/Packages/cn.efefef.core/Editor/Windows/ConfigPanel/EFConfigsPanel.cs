@@ -130,11 +130,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private void DrawButton(int index, EFConfigPanelBase configPanel)
         {
-            bool clicked = GUILayout.Button(configPanel.Name,
-                GUIUtils.Button(color: index == _panelIndex ? GUIUtils.LightGreen : Color.white));
+            bool selected = index == _panelIndex;
+            if (selected) GUI.backgroundColor = GUIUtils.SelectedButtonColor;
+            bool clicked = GUILayout.Button(configPanel.Name);
+            if (selected) GUI.backgroundColor = Color.white;
 
-            if (!clicked)
-                return;
+            if (!clicked) return;
 
             _panelIndex = index;
             configPanel.OnEnable(_assetsPath);

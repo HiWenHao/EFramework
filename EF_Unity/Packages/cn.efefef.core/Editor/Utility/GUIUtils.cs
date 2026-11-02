@@ -29,6 +29,9 @@ namespace EasyFramework.Edit.Windows
 
         /// <summary> 浅绿色 </summary>
         public static Color LightGreen = new Color(0.3f, 0.8f, 0.3f);
+
+        /// <summary> 选中态背景色 </summary>
+        public static Color SelectedButtonColor => new Color(0.0f, 0.45f, 1.0f);
         #endregion
 
         #region Text
