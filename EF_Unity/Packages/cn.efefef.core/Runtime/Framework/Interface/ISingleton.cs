@@ -2,9 +2,9 @@
  * ================================================
  * Describe:        框架单例接口
  * Author:          Xiaohei.Wang(Wenhao)
- * CreationTime:    2022-05-14:42:36
- * ModifyAuthor:    Xiaohei.Wang(Wenhao)
- * ModifyTime:      2022-05-14:42:36
+ * CreationTime:    2022-05-14 10:42:36
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-11-03 11:40:00
  * Version:         1.0
  * ===============================================
  */
@@ -17,6 +17,8 @@ namespace EasyFramework
     /// </summary>
     public interface ISingleton
     {
+        #region Methods
+
         /// <summary>
         /// Initialize
         /// <para>初始化</para>
@@ -28,5 +30,7 @@ namespace EasyFramework
         /// <para>退出</para>
         /// </summary>
         public void Quit();
+
+        #endregion
     }
 }

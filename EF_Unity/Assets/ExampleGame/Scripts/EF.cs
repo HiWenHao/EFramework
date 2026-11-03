@@ -50,12 +50,6 @@ public static class EF
     public static PoolManager Pool => PoolManager.Instance;
 
     /// <summary>
-    /// 事件管理器（带参数）
-    /// <para>Event manager (with payload)</para>
-    /// </summary>
-    public static EventsManager Event => EventsManager.Instance;
-
-    /// <summary>
     /// 流程系统
     /// <para>Procedure system</para>
     /// </summary>
