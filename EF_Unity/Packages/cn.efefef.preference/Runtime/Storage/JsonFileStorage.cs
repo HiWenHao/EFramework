@@ -1,43 +1,39 @@
 /*
  * ================================================
- * Describe:        基于 JSON 文件的键值存储实现（脏标记落盘）
+ * Describe:        基于 JSON 文件的键值存储实现（脏标记落盘，值以原生 JSON 节点内嵌）
  * Author:          Alvin8412
  * CreationTime:    2026-11-03 13:20:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-03 13:20:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-03 17:32:00
+ * ScriptVersion:   0.3
  * ===============================================
  */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace EasyFramework.Preference
 {
     /// <summary>
-    /// JSON 文件实现：内存缓存 + 脏标记，Flush 时整体写盘，文件可读可手动改
-    /// <para>JSON file storage: in-memory cache with dirty flag, writes the whole file on Flush, human-readable</para>
+    /// JSON 文件实现：内存缓存 + 脏标记，Flush 时整体写盘；存入的字符串须为合法 JSON 值文本（由 PreferenceManager 保证），文件中以原生 JSON 节点呈现而非转义字符串
+    /// <para>JSON file storage: in-memory cache with dirty flag, writes the whole file on Flush; stored strings must be valid JSON value texts (guaranteed by PreferenceManager) and appear as native JSON nodes instead of escaped strings</para>
     /// </summary>
     public sealed class JsonFileStorage : IKeyValueStorage
     {
-        // 单条键值记录
-        [Serializable]
-        private class StorageData
+        // 单条键值记录，Value 以 object 承载原生 JSON 节点，序列化时按运行时类型原样嵌入
+        private class ItemData
         {
             public string Key;
-            public string Value;
+            public object Value;
         }
 
-        // 序列化根对象：JsonUtility 不支持根级 List，须包一层普通类
-        [Serializable]
-        private class StorageFile
+        // 序列化根对象
+        private class FileData
         {
-            public List<StorageData> PreferenceItems = new List<StorageData>();
+            public List<ItemData> PreferenceItems = new();
         }
-
-        #region Fields
 
         // 偏好文件根目录，与 archive 包的 Archives 根约定一致
         private const string RootFolder = "Preference";
@@ -51,8 +47,6 @@ namespace EasyFramework.Preference
         // 是否有未落盘的变更
         private bool _dirty;
 
-        #endregion
-
         #region Methods
 
         /// <summary>
@@ -60,7 +54,7 @@ namespace EasyFramework.Preference
         /// <para>Creates a file storage under persistentDataPath/Preference</para>
         /// </summary>
         /// <param name="fileName">存储文件名<para>The storage file name</para></param>
-        public JsonFileStorage(string fileName = "ef.preferences.json")
+        public JsonFileStorage(string fileName = "preferences.json")
         {
             _filePath = Path.Combine(Application.persistentDataPath, RootFolder, fileName);
         }
@@ -84,13 +78,14 @@ namespace EasyFramework.Preference
             EnsureCache().GetValueOrDefault(key, fallback);
 
         /// <summary>
-        /// 写入指定键的字符串值并标记脏
-        /// <para>Writes the string value of the given key and marks dirty</para>
+        /// 写入指定键的字符串值并标记脏，值须为合法 JSON 值文本
+        /// <para>Writes the string value of the given key and marks dirty; the value must be a valid JSON value text</para>
         /// </summary>
         /// <param name="key">偏好键名<para>The preference key</para></param>
-        /// <param name="value">要写入的字符串值<para>The string value to write</para></param>
+        /// <param name="value">要写入的 JSON 值文本<para>The JSON value text to write</para></param>
         public void SetString(string key, string value)
         {
+            JsonConvert.DeserializeObject(value);
             EnsureCache()[key] = value;
             _dirty = true;
         }
@@ -108,31 +103,44 @@ namespace EasyFramework.Preference
         }
 
         /// <summary>
-        /// 有脏变更时将缓存整体序列化写盘
-        /// <para>Serializes and writes the whole cache when dirty</para>
+        /// 有脏变更时将缓存整体序列化写盘，值以原生 JSON 节点内嵌
+        /// <para>Serializes and writes the whole cache when dirty, values embedded as native JSON nodes</para>
         /// </summary>
         public void Flush()
         {
             if (!_dirty)
                 return;
 
-            var file = new StorageFile();
+            var file = new FileData();
             foreach (var pair in EnsureCache())
             {
-                file.PreferenceItems.Add(new StorageData
+                file.PreferenceItems.Add(new ItemData
                 {
                     Key = pair.Key,
-                    Value = pair.Value
+                    Value = ToNode(pair.Value)
                 });
             }
 
             // 幂等创建根目录，避免首次落盘因目录不存在而失败
             Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
-            File.WriteAllText(_filePath, JsonUtility.ToJson(file, true));
+            File.WriteAllText(_filePath, JsonConvert.SerializeObject(file, Formatting.Indented));
             _dirty = false;
         }
 
-        // 懒加载磁盘文件到内存缓存
+        // 将 JSON 值文本转为原生节点；非 JSON 文本（如绕过管理器写入的密文）降级为字符串节点
+        private static object ToNode(string text)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject(text);
+            }
+            catch
+            {
+                return text;
+            }
+        }
+
+        // 懒加载磁盘文件到内存缓存，值节点还原为 JSON 值文本
         private Dictionary<string, string> EnsureCache()
         {
             if (_cache != null)
@@ -142,15 +150,12 @@ namespace EasyFramework.Preference
             if (!File.Exists(_filePath))
                 return _cache;
 
-            var file = JsonUtility.FromJson<StorageFile>(File.ReadAllText(_filePath));
+            var file = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(_filePath));
             if (file?.PreferenceItems == null)
                 return _cache;
 
-            foreach (var storageData in file.PreferenceItems)
-            {
-                _cache[storageData.Key] = storageData.Value;
-            }
-
+            foreach (var item in file.PreferenceItems)
+                _cache[item.Key] = JsonConvert.SerializeObject(item.Value);
             return _cache;
         }
 

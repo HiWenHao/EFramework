@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 using EasyFramework.Managers;
-using UnityEngine;
+using Newtonsoft.Json;
 
 namespace EasyFramework.Preference
 {
@@ -21,7 +21,7 @@ namespace EasyFramework.Preference
     /// <para>Preference manager: typed read/write, per-key change notification and lifecycle auto flush on top of the storage contract</para>
     /// </summary>
     [Manager(Order = 99850)]
-    public sealed class PreferenceManager : Singleton<PreferenceManager>, ISingleton, IOnAppPause
+    public sealed class PreferenceManager : Singleton<PreferenceManager>, ISingleton
     {
         // 退订句柄
         private sealed class Subscription : IDisposable
@@ -38,6 +38,9 @@ namespace EasyFramework.Preference
 
         // 存储实现，默认 PlayerPrefs，可在启动早期替换
         private IKeyValueStorage _storage;
+
+        // 偏好加密器，null 表示不加密
+        private IPreferenceCrypto _crypto;
 
         // 键级变更通知缓存，懒创建
         private Dictionary<string, BindableProperty<string>> _properties;
@@ -60,12 +63,6 @@ namespace EasyFramework.Preference
             _storage = null;
         }
 
-        void IOnAppPause.OnAppPause(bool paused)
-        {
-            if (!paused) return;
-            Flush();
-        }
-
         /// <summary>
         /// 替换存储实现，须在任何读写前调用；框架内置两种实现：<see cref="PlayerPrefStorage"/>（默认，平台托管）与 <see cref="JsonFileStorage"/>（本地 JSON 文件，位于 persistentDataPath/Preference 下）
         /// <para>Replaces the storage; call before any read/write. Two built-in implementations: <see cref="PlayerPrefStorage"/> (default, platform-managed) and <see cref="JsonFileStorage"/> (local JSON file under persistentDataPath/Preference)</para>
@@ -74,6 +71,17 @@ namespace EasyFramework.Preference
         public void SetStorage(IKeyValueStorage storage)
         {
             _storage = storage;
+            _properties.Clear();
+        }
+
+        /// <summary>
+        /// 设置偏好加密器，传 null 关闭加密（默认不加密）；框架内置一种实现：<see cref="XorPreferenceCrypto"/>（XOR+Base64 简单混淆，仅防明文直接可见，非安全实现）；切换会清空已缓存的通知值，建议仅启动早期调用
+        /// <para>Sets the preference crypto, pass null to disable (off by default). One built-in implementation: <see cref="XorPreferenceCrypto"/> (simple XOR+Base64 obfuscation, hides plain text only, NOT secure); switching clears cached values, call early at startup only</para>
+        /// </summary>
+        /// <param name="crypto">加密器实例<para>The crypto instance</para></param>
+        public void SetCrypto(IPreferenceCrypto crypto)
+        {
+            _crypto = crypto;
             _properties.Clear();
         }
 
@@ -89,13 +97,13 @@ namespace EasyFramework.Preference
         /// 读取偏好值，键不存在或反序列化失败时返回回退值
         /// <para>Reads the preference value; returns the fallback when the key is missing or deserialization fails</para>
         /// </summary>
-        /// <typeparam name="T">偏好值类型，须可被 JsonUtility 序列化<para>The value type, must be JsonUtility-serializable</para></typeparam>
+        /// <typeparam name="T">偏好值类型，须可被 Newtonsoft 序列化<para>The value type, must be Newtonsoft-serializable</para></typeparam>
         /// <param name="key">偏好键名<para>The preference key</para></param>
         /// <param name="fallback">回退值<para>The fallback value</para></param>
         /// <returns>偏好值<para>The preference value</para></returns>
         public T Get<T>(string key, T fallback = default)
         {
-            string raw = _storage != null && _storage.ExistKey(key) ? _storage.GetString(key) : null;
+            string raw = _storage != null && _storage.ExistKey(key) ? Decrypt(_storage.GetString(key)) : null;
             return Deserialize(raw, fallback);
         }
 
@@ -103,7 +111,7 @@ namespace EasyFramework.Preference
         /// 写入偏好值并广播变更，值未变化时不触发通知
         /// <para>Writes the preference value and raises change notification; no-op notification when the value is unchanged</para>
         /// </summary>
-        /// <typeparam name="T">偏好值类型，须可被 JsonUtility 序列化<para>The value type, must be JsonUtility-serializable</para></typeparam>
+        /// <typeparam name="T">偏好值类型，须可被 Newtonsoft 序列化<para>The value type, must be Newtonsoft-serializable</para></typeparam>
         /// <param name="key">偏好键名<para>The preference key</para></param>
         /// <param name="value">要写入的偏好值<para>The preference value to write</para></param>
         public void Set<T>(string key, T value)
@@ -111,9 +119,9 @@ namespace EasyFramework.Preference
             if (_storage == null)
                 return;
 
-            string raw = JsonUtility.ToJson(value);
+            string raw = JsonConvert.SerializeObject(value);
             GetProperty(key, raw).Value = raw;
-            _storage.SetString(key, raw);
+            _storage.SetString(key, Encrypt(raw));
         }
 
         /// <summary>
@@ -131,7 +139,7 @@ namespace EasyFramework.Preference
         /// 订阅偏好变更：立即回调一次当前值，之后每次变化回调，返回退订句柄
         /// <para>Subscribes to changes: invokes once with the current value, then on every change; returns an unsubscribe handle</para>
         /// </summary>
-        /// <typeparam name="T">偏好值类型，须可被 JsonUtility 序列化<para>The value type, must be JsonUtility-serializable</para></typeparam>
+        /// <typeparam name="T">偏好值类型，须可被 Newtonsoft 序列化<para>The value type, must be Newtonsoft-serializable</para></typeparam>
         /// <param name="key">偏好键名<para>The preference key</para></param>
         /// <param name="onChanged">变更回调<para>The change callback</para></param>
         /// <returns>退订句柄<para>The unsubscribe handle</para></returns>
@@ -161,7 +169,7 @@ namespace EasyFramework.Preference
                 return property;
 
             if (initial == null && _storage != null && _storage.ExistKey(key))
-                initial = _storage.GetString(key);
+                initial = Decrypt(_storage.GetString(key));
 
             property = new BindableProperty<string> { Value = initial };
             _properties[key] = property;
@@ -175,12 +183,31 @@ namespace EasyFramework.Preference
                 return fallback;
             try
             {
-                return JsonUtility.FromJson<T>(raw);
+                return JsonConvert.DeserializeObject<T>(raw);
             }
             catch (Exception e)
             {
-                D.Error($"[ Preference ] Deserialize {typeof(T).Name} failed:\t{e.Message}");
+                D.Error($"[ PreferenceManager ] Deserialize {typeof(T).Name} failed:\t{e.Message}");
                 return fallback;
+            }
+        }
+
+        // 加密，未设置加密器时原样返回
+        private string Encrypt(string plain) => _crypto != null ? _crypto.Encrypt(plain) : plain;
+
+        // 解密，未设置加密器时原样返回，解密失败时返回 null 走回退值
+        private string Decrypt(string cipher)
+        {
+            if (_crypto == null || string.IsNullOrEmpty(cipher))
+                return cipher;
+            try
+            {
+                return _crypto.Decrypt(cipher);
+            }
+            catch (Exception e)
+            {
+                D.Warning($"[ PreferenceManager ] Decrypt failed, fallback to default:\t{e.Message}");
+                return null;
             }
         }
 
