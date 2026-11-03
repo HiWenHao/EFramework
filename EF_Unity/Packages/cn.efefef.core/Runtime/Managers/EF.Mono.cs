@@ -125,8 +125,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (var updater in _updater)
+            for (var i = 0; i < _updater.Count; i++)
             {
+                var updater = _updater[i];
                 if (updater.IsPaused) continue;
                 updater.Update(Time.deltaTime, Time.unscaledDeltaTime);
             }
@@ -138,8 +139,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (var fixedUpdater in _fixedUpdaters)
+            for (var i = 0; i < _fixedUpdaters.Count; i++)
             {
+                var fixedUpdater = _fixedUpdaters[i];
                 if (fixedUpdater.IsPaused) continue;
                 fixedUpdater.FixedUpdate(Time.fixedDeltaTime);
             }
@@ -151,8 +153,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (var lateUpdater in _lateUpdaters)
+            for (var i = 0; i < _lateUpdaters.Count; i++)
             {
+                var lateUpdater = _lateUpdaters[i];
                 if (lateUpdater.IsPaused) continue;
                 lateUpdater.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
             }
@@ -167,8 +170,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (IOnAppPause listener in _pauseListeners)
+            for (var i = 0; i < _pauseListeners.Count; i++)
             {
+                var listener = _pauseListeners[i];
                 listener.OnAppPause(paused);
             }
         }
@@ -179,8 +183,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (IOnAppFocus listener in _focusListeners)
+            for (var i = 0; i < _focusListeners.Count; i++)
             {
+                var listener = _focusListeners[i];
                 listener.OnAppFocus(focused);
             }
         }
@@ -192,8 +197,9 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            foreach (IOnLowMemory listener in _lowMemoryListeners)
+            for (var i = 0; i < _lowMemoryListeners.Count; i++)
             {
+                var listener = _lowMemoryListeners[i];
                 listener.OnLowMemory();
             }
         }
