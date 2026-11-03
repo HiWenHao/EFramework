@@ -32,13 +32,13 @@ namespace EasyFramework
                 if (value.Equals(_value))
                     return;
                 _value = value;
-                OnVlaueChanged?.Invoke(_value);
+                OnValueChanged?.Invoke(_value);
             }
         }
 
         /// <summary>
         /// 当值发生变化时
         /// </summary>
-        public Action<T> OnVlaueChanged;
+        public Action<T> OnValueChanged;
     }
 }

@@ -4,7 +4,7 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-06-17 16:31:29
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-16 00:09:01
+ * ModifyTime:    2026-11-03 11:50:00
  * Version:       1.0
  * ===============================================
  */
@@ -18,27 +18,53 @@ using EasyFramework.Managers;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+/// <summary>
+/// 框架引擎：单例注册中心、三级轮询驱动、协程宿主与应用生命周期通知
+/// <para>Framework engine: singleton registry, triple update driver, coroutine host and application lifecycle notification</para>
+/// </summary>
 public sealed class EFC : MonoBehaviour
 {
+    #region Fields
+
+    // 框架运行标记，防止重复初始化与退出后仍轮询
     private static volatile bool _inRunning;
 
+    // 带 ManagerAttribute 的核心管理器，按优先级降序
     private static List<ISingleton> _managers;
+    // 普通业务单例
     private static List<ISingleton> _singletons;
+    // 按优先级降序的帧更新列表
     private static List<IUpdate> _updater;
+    // 按优先级降序的物理帧更新列表
     private static List<IFixedUpdate> _fixedUpdaters;
+    // 按优先级降序的渲染帧更新列表
     private static List<ILateUpdate> _lateUpdaters;
+    // 按优先级降序的应用暂停通知列表
+    private static List<IOnAppPause> _pauseListeners;
+    // 按优先级降序的应用焦点通知列表
+    private static List<IOnAppFocus> _focusListeners;
+    // 按优先级降序的应用退出通知列表
+    private static List<IOnAppQuit> _quitListeners;
+    // 按优先级降序的低内存告警通知列表
+    private static List<IOnLowMemory> _lowMemoryListeners;
 
+    // 依赖解析链，用于检测循环依赖
     private static HashSet<Type> _resolvingSet;
+    // 单例优先级缓存，按类型记录
     private static Dictionary<Type, int> _orderCache;
+    // 已注册单例映射，按类型索引
     private static Dictionary<Type, ISingleton> _singletonMap;
+    // MonoSingleton 静态 Instance 取值委托缓存
     private static Dictionary<Type, Func<object>> _monoSingletonInstanceGetters;
+    // 注册与轮询共用的锁对象
     private static readonly object LockObj = new object();
 
-    private EFC()
-    {
-    }
+    // 协程宿主实例
+    private static EFC _monoEFC;
 
-    private static EFC _monoEFC; // 协程助手
+    #endregion
+
+    #region Properties
 
     /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }
@@ -49,11 +75,19 @@ public sealed class EFC : MonoBehaviour
     /// <summary> Project allocation resource.<para>项目配置资源</para></summary>
     public static ProjectConfig Projects { get; private set; }
 
-    #region Lifecycle / 生命周期
+    #endregion
+
+    #region Methods
+
+    // 防止外部实例化
+    private EFC()
+    {
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
     private static void BeforeSplashScreen() => SplashScreen.Stop(SplashScreen.StopBehavior.StopImmediate);
 
+    // 框架入口：创建宿主节点、初始化各容器、加载项目配置
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void Initialize()
     {
@@ -69,6 +103,10 @@ public sealed class EFC : MonoBehaviour
         _singletons = new List<ISingleton>();
         _lateUpdaters = new List<ILateUpdate>();
         _fixedUpdaters = new List<IFixedUpdate>();
+        _pauseListeners = new List<IOnAppPause>();
+        _focusListeners = new List<IOnAppFocus>();
+        _quitListeners = new List<IOnAppQuit>();
+        _lowMemoryListeners = new List<IOnLowMemory>();
 
         _orderCache = new Dictionary<Type, int>();
         _singletonMap = new Dictionary<Type, ISingleton>();
@@ -76,6 +114,8 @@ public sealed class EFC : MonoBehaviour
         _monoSingletonInstanceGetters = new Dictionary<Type, Func<object>>();
 
         Projects = Resources.Load<ProjectConfig>("Configs/ProjectConfig");
+
+        Application.lowMemory += _monoEFC.OnLowMemory;
 
         _inRunning = true;
     }
@@ -85,10 +125,10 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            for (int i = 0; i < _updater.Count; i++)
+            foreach (var updater in _updater)
             {
-                if (_updater[i].IsPaused) continue;
-                _updater[i].Update(Time.deltaTime, Time.unscaledDeltaTime);
+                if (updater.IsPaused) continue;
+                updater.Update(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
     }
@@ -98,10 +138,10 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            for (int i = 0; i < _fixedUpdaters.Count; i++)
+            foreach (var fixedUpdater in _fixedUpdaters)
             {
-                if (_fixedUpdaters[i].IsPaused) continue;
-                _fixedUpdaters[i].FixedUpdate(Time.fixedDeltaTime);
+                if (fixedUpdater.IsPaused) continue;
+                fixedUpdater.FixedUpdate(Time.fixedDeltaTime);
             }
         }
     }
@@ -111,10 +151,10 @@ public sealed class EFC : MonoBehaviour
         if (!_inRunning) return;
         lock (LockObj)
         {
-            for (int i = 0; i < _lateUpdaters.Count; i++)
+            foreach (var lateUpdater in _lateUpdaters)
             {
-                if (_lateUpdaters[i].IsPaused) continue;
-                _lateUpdaters[i].LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
+                if (lateUpdater.IsPaused) continue;
+                lateUpdater.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
     }
@@ -122,35 +162,44 @@ public sealed class EFC : MonoBehaviour
     private void OnDestroy() => QuitGames();
     private void OnApplicationQuit() => QuitGames();
 
-    public static void QuitGames()
+    private void OnApplicationPause(bool paused)
     {
         if (!_inRunning) return;
-        _inRunning = false;
-
         lock (LockObj)
         {
-            var allSingletons = new List<ISingleton>(_managers);
-            allSingletons.AddRange(_singletons);
-            allSingletons.Sort((a, b) => GetOrder(a).CompareTo(GetOrder(b)));
-
-            foreach (var singleton in allSingletons)
-                Unregister(singleton, destroyGameObject: true);
-
-            _singletons.Clear();
-            _managers.Clear();
-            _updater.Clear();
-            _fixedUpdaters.Clear();
-            _lateUpdaters.Clear();
-            _singletonMap.Clear();
+            foreach (IOnAppPause listener in _pauseListeners)
+            {
+                listener.OnAppPause(paused);
+            }
         }
-
-        _resolvingSet.Clear();
-        _orderCache.Clear();
     }
 
-    #endregion
+    private void OnApplicationFocus(bool focused)
+    {
+        if (!_inRunning) return;
+        lock (LockObj)
+        {
+            foreach (IOnAppFocus listener in _focusListeners)
+            {
+                listener.OnAppFocus(focused);
+            }
+        }
+    }
 
-    // 获取顺序
+    // 转发系统低内存告警给订阅者
+    private void OnLowMemory()
+    {
+        if (!_inRunning) return;
+        lock (LockObj)
+        {
+            foreach (IOnLowMemory listener in _lowMemoryListeners)
+            {
+                listener.OnLowMemory();
+            }
+        }
+    }
+
+    // 读取单例优先级，带类型级缓存
     private static int GetOrder(ISingleton singleton)
     {
         Type type = singleton.GetType();
@@ -176,7 +225,8 @@ public sealed class EFC : MonoBehaviour
         list.Insert(index, item);
     }
 
-    private static object GetOrCreateMonoSingleton(Type type)
+    // 反射获取 MonoSingleton 的静态 Instance 属性
+    private static void GetOrCreateMonoSingleton(Type type)
     {
         if (!_monoSingletonInstanceGetters.TryGetValue(type, out var getter))
         {
@@ -186,7 +236,7 @@ public sealed class EFC : MonoBehaviour
             {
                 D.Error(
                     $"Type {type.Name} is a MonoBehaviour singleton but has no static Instance property. Please ensure it derives from MonoSingleton<T>.");
-                return null;
+                return;
             }
 
             var methodInfo = instanceProp.GetMethod;
@@ -198,16 +248,9 @@ public sealed class EFC : MonoBehaviour
         if (instance is ISingleton singleton && !_singletonMap.ContainsKey(type))
             D.Warning(
                 $"MonoSingleton {type.Name} was created but not registered in EF. Ensure its Instance property calls EF.Register.");
-
-        return instance;
     }
 
-    #region 依赖解析和自动注册
-
-    /// <summary>
-    /// 强制获取或创建单例
-    /// <para>Force get or create a singleton</para>
-    /// </summary>
+    // 强制获取或创建单例
     private static T GetOrCreateSingleton<T>() where T : class, ISingleton, new()
     {
         if (TryGetSingleton<T>(out var existing))
@@ -215,10 +258,7 @@ public sealed class EFC : MonoBehaviour
         return Singleton<T>.Instance;
     }
 
-    /// <summary>
-    /// 通过类型获取或创建单例
-    /// <para>Get or create a singleton by type </para>
-    /// </summary>
+    // 按类型获取或创建单例，分派 MonoSingleton 与普通单例两条路径
     private static void GetOrCreateSingletonByType(Type type)
     {
         if (type.IsValueType)
@@ -251,10 +291,7 @@ public sealed class EFC : MonoBehaviour
         method?.Invoke(null, null);
     }
 
-    /// <summary>
-    /// 递归解析依赖，确保所有依赖已注册，并检测循环依赖
-    /// <para>Recursively resolve dependencies, ensure all dependencies are registered, and detect circular dependencies.</para>
-    /// </summary>
+    // 递归解析依赖，确保所有依赖已注册，并检测循环依赖
     private static void EnsureDependencies(Type managerType)
     {
         // 已注册的单例不再重复解析依赖
@@ -270,9 +307,9 @@ public sealed class EFC : MonoBehaviour
 
         object[] attributes = managerType.GetCustomAttributes(typeof(DependencyAttribute), false);
         List<Type> dependencies = new List<Type>();
-        for (int i = 0; i < attributes.Length; i++)
+        foreach (var attribute in attributes)
         {
-            if (attributes[i] is DependencyAttribute depAttr &&
+            if (attribute is DependencyAttribute depAttr &&
                 typeof(ISingleton).IsAssignableFrom(depAttr.DependencyType))
                 dependencies.Add(depAttr.DependencyType);
         }
@@ -296,14 +333,51 @@ public sealed class EFC : MonoBehaviour
         _resolvingSet.Remove(managerType);
     }
 
-    #endregion
+    /// <summary>
+    /// 退出框架：先按销毁顺序通知 IOnAppQuit 订阅者，再按优先级升序注销全部单例
+    /// <para>Quit the framework: notifies IOnAppQuit subscribers in teardown order first, then unregisters all singletons in ascending priority</para>
+    /// </summary>
+    public static void QuitGames()
+    {
+        if (!_inRunning) return;
+        _inRunning = false;
 
-    #region Public methods / 公开函数
+        Application.lowMemory -= _monoEFC.OnLowMemory;
+
+        lock (LockObj)
+        {
+            // 与销毁同序（优先级升序）通知，低优先级先收到保存机会
+            for (int i = _quitListeners.Count - 1; i >= 0; i--)
+                _quitListeners[i].OnAppQuit();
+
+            var allSingletons = new List<ISingleton>(_managers);
+            allSingletons.AddRange(_singletons);
+            allSingletons.Sort((a, b) => GetOrder(a).CompareTo(GetOrder(b)));
+
+            foreach (var singleton in allSingletons)
+                Unregister(singleton, destroyGameObject: true);
+
+            _singletons.Clear();
+            _managers.Clear();
+            _updater.Clear();
+            _fixedUpdaters.Clear();
+            _lateUpdaters.Clear();
+            _pauseListeners.Clear();
+            _focusListeners.Clear();
+            _quitListeners.Clear();
+            _lowMemoryListeners.Clear();
+            _singletonMap.Clear();
+        }
+
+        _resolvingSet.Clear();
+        _orderCache.Clear();
+    }
 
     /// <summary>
     /// Register a singleton.
     /// <para>注册一个单例</para>
     /// </summary>
+    /// <param name="item">待注册的单例实例<para>The singleton instance to register</para></param>
     public static void Register(ISingleton item)
     {
         Type type = item.GetType();
@@ -325,6 +399,10 @@ public sealed class EFC : MonoBehaviour
             if (item is IUpdate update) InsertByOrder(_updater, update, order);
             if (item is IFixedUpdate fixedUpdater) InsertByOrder(_fixedUpdaters, fixedUpdater, order);
             if (item is ILateUpdate lateUpdater) InsertByOrder(_lateUpdaters, lateUpdater, order);
+            if (item is IOnAppPause pauseListener) InsertByOrder(_pauseListeners, pauseListener, order);
+            if (item is IOnAppFocus focusListener) InsertByOrder(_focusListeners, focusListener, order);
+            if (item is IOnAppQuit quitListener) InsertByOrder(_quitListeners, quitListener, order);
+            if (item is IOnLowMemory lowMemoryListener) InsertByOrder(_lowMemoryListeners, lowMemoryListener, order);
 
             if (item is MonoBehaviour mono)
                 mono.transform.SetParent(isManager ? Managers : Singleton);
@@ -338,6 +416,8 @@ public sealed class EFC : MonoBehaviour
     /// 注销一个单例
     /// <para>Unregister a singleton</para>
     /// </summary>
+    /// <param name="item">待注销的单例实例<para>The singleton instance to unregister</para></param>
+    /// <param name="destroyGameObject">是否同时销毁其 GameObject<para>Whether to destroy its GameObject as well</para></param>
     public static void Unregister(ISingleton item, bool destroyGameObject = true)
     {
         Type type = item.GetType();
@@ -359,6 +439,10 @@ public sealed class EFC : MonoBehaviour
             if (item is IUpdate update) _updater.Remove(update);
             if (item is IFixedUpdate fixedUpdater) _fixedUpdaters.Remove(fixedUpdater);
             if (item is ILateUpdate lateUpdater) _lateUpdaters.Remove(lateUpdater);
+            if (item is IOnAppPause pauseListener) _pauseListeners.Remove(pauseListener);
+            if (item is IOnAppFocus focusListener) _focusListeners.Remove(focusListener);
+            if (item is IOnAppQuit quitListener) _quitListeners.Remove(quitListener);
+            if (item is IOnLowMemory lowMemoryListener) _lowMemoryListeners.Remove(lowMemoryListener);
         }
 
         if (destroyGameObject && item is MonoBehaviour mono)
@@ -369,6 +453,9 @@ public sealed class EFC : MonoBehaviour
     /// 尝试获取已注册的单例.
     /// <para>Try to get a registered singleton</para>
     /// </summary>
+    /// <typeparam name="T">目标单例类型<para>The target singleton type</para></typeparam>
+    /// <param name="singleton">获取到的单例实例<para>The retrieved singleton instance</para></param>
+    /// <returns>是否已注册<para>Whether the singleton is registered</para></returns>
     public static bool TryGetSingleton<T>(out T singleton) where T : ISingleton
     {
         Type t = typeof(T);
@@ -385,14 +472,12 @@ public sealed class EFC : MonoBehaviour
         return false;
     }
 
-    #endregion
-
-    #region Coroutine  协程
-
     /// <summary>
     /// Start a coroutine.
     /// <para>开启一个协程</para>
     /// </summary>
+    /// <param name="coroutine">协程迭代器<para>The coroutine enumerator</para></param>
+    /// <returns>协程句柄<para>The coroutine handle</para></returns>
     public static Coroutine StartCoroutines(IEnumerator coroutine)
     {
         return _monoEFC.StartCoroutine(coroutine);
@@ -402,6 +487,9 @@ public sealed class EFC : MonoBehaviour
     /// Start a coroutine.
     /// <para>开启一个协程</para>
     /// </summary>
+    /// <param name="coroutine">协程方法名字符串<para>The coroutine method name string</para></param>
+    /// <param name="value">传递给协程的参数<para>The argument passed to the coroutine</para></param>
+    /// <returns>协程句柄<para>The coroutine handle</para></returns>
     public static Coroutine StartCoroutines(string coroutine, object value)
     {
         if (null == value)
@@ -413,6 +501,7 @@ public sealed class EFC : MonoBehaviour
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
     /// </summary>
+    /// <param name="coroutine">协程句柄<para>The coroutine handle</para></param>
     public static void StopCoroutines(Coroutine coroutine)
     {
         _monoEFC.StopCoroutine(coroutine);
@@ -422,6 +511,7 @@ public sealed class EFC : MonoBehaviour
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
     /// </summary>
+    /// <param name="coroutine">协程迭代器<para>The coroutine enumerator</para></param>
     public static void StopCoroutines(IEnumerator coroutine)
     {
         _monoEFC.StopCoroutine(coroutine);
@@ -431,6 +521,7 @@ public sealed class EFC : MonoBehaviour
     /// Stop a coroutines.
     /// <para>停止一个协程</para>
     /// </summary>
+    /// <param name="methodName">协程方法名字符串<para>The coroutine method name string</para></param>
     public static void StopCoroutines(string methodName)
     {
         _monoEFC.StopCoroutine(methodName);
