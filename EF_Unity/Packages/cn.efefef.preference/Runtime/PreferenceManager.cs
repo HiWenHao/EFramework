@@ -155,16 +155,35 @@ namespace EasyFramework.Preference
                 return;
 
             // 类型守卫：同键已有不同类型时提示
-            if (_types.TryGetValue(key, out var existing) && existing != typeof(T))
+            if (_types.TryGetValue(key, out var existing1) && existing1 != typeof(T))
             {
-                Warning($"[ {key} ] 键已有 {FriendlyName(existing)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
-                    $"The key [ {key} ] already has {existing.Name} typed data, mismatched with {typeof(T).Name}, write aborted");
+                Warning($"[ {key} ] 键已有 {FriendlyName(existing1)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
+                    $"The key [ {key} ] already has {existing1.Name} typed data, mismatched with {typeof(T).Name}, write aborted");
                 return;
             }
 
+            // 序列化失败则退出写入，不改动类型注册表
+            string raw;
+            try
+            {
+                raw = JsonConvert.SerializeObject(value);
+            }
+            catch (Exception e)
+            {
+                Error($"{FriendlyName(typeof(T))} 序列化失败，已退出写入：{e.Message}",
+                    $"Failed to serialize {FriendlyName(typeof(T))}, write aborted: {e.Message}");
+                return;
+            }
+
+            // 类型守卫：同键已有不同类型时提示
+            if (_types.TryGetValue(key, out var existing) && existing != typeof(T))
+            {
+                Warning($"[ {key} ] 键已有 {FriendlyName(existing)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
+                    $"The key [ {key} ] already has {FriendlyName(existing)} typed data, mismatched with {FriendlyName(typeof(T))}, write aborted");
+                return;
+            }
             _types[key] = typeof(T);
 
-            string raw = JsonConvert.SerializeObject(value);
             GetProperty(key, raw).Value = raw;
             _storage.SetString(key, Encrypt(raw));
         }
