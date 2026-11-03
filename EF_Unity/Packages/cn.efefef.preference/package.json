@@ -1,0 +1,19 @@
+{
+  "name": "cn.efefef.preference",
+  "displayName": "EF.Preference",
+  "version": "0.0.1",
+  "unity": "2022.3",
+  "unityRelease": "10f1",
+  "description": "玩家偏好管理：存储可替换、类型化读写、键级变更通知、生命周期自动落盘",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://gitee.com/AlvinCN/EFramework",
+  "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
+  "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "cn.efefef.core": "0.1.0"
+  },
+  "samples": null
+}
