@@ -65,6 +65,8 @@ public sealed class EFC : MonoBehaviour
     #endregion
 
     #region Properties
+    /// <summary> Whether to enable debug logs. The default setting is yes.<para>是否开启调试日志，默认为是</para></summary>
+    public static bool EnableDebug { get; set; } = true;
 
     /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }

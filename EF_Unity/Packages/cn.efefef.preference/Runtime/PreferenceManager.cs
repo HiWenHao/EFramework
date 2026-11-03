@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using EasyFramework.Managers;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace EasyFramework.Preference
 {
@@ -45,6 +46,19 @@ namespace EasyFramework.Preference
         // 键级变更通知缓存，懒创建
         private Dictionary<string, BindableProperty<string>> _properties;
 
+        // 键类型注册表，用于写入与读取时的类型守卫
+        private Dictionary<string, Type> _types;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// 是否开启调试日志（类型守卫、解密失败等提示）
+        /// <para>Whether debug logs are enabled (type guard, decrypt failure notices)</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = EFC.EnableDebug;
+
         #endregion
 
         #region Methods
@@ -52,6 +66,7 @@ namespace EasyFramework.Preference
         void ISingleton.Init()
         {
             _properties = new Dictionary<string, BindableProperty<string>>();
+            _types = new Dictionary<string, Type>();
             _storage ??= new PlayerPrefStorage();
         }
 
@@ -59,7 +74,9 @@ namespace EasyFramework.Preference
         {
             Flush();
             _properties.Clear();
+            _types.Clear();
             _properties = null;
+            _types = null;
             _storage = null;
         }
 
@@ -72,6 +89,7 @@ namespace EasyFramework.Preference
         {
             _storage = storage;
             _properties.Clear();
+            _types.Clear();
         }
 
         /// <summary>
@@ -83,6 +101,7 @@ namespace EasyFramework.Preference
         {
             _crypto = crypto;
             _properties.Clear();
+            _types.Clear();
         }
 
         /// <summary>
@@ -94,8 +113,8 @@ namespace EasyFramework.Preference
         public bool Exist(string key) => _storage != null && _storage.ExistKey(key);
 
         /// <summary>
-        /// 读取偏好值，键不存在或反序列化失败时返回回退值
-        /// <para>Reads the preference value; returns the fallback when the key is missing or deserialization fails</para>
+        /// 读取偏好值，键不存在、类型不符或反序列化失败时返回回退值并告警
+        /// <para>Reads the preference value; returns the fallback with a warning when the key is missing, the type mismatches or deserialization fails</para>
         /// </summary>
         /// <typeparam name="T">偏好值类型，须可被 Newtonsoft 序列化<para>The value type, must be Newtonsoft-serializable</para></typeparam>
         /// <param name="key">偏好键名<para>The preference key</para></param>
@@ -103,7 +122,23 @@ namespace EasyFramework.Preference
         /// <returns>偏好值<para>The preference value</para></returns>
         public T Get<T>(string key, T fallback = default)
         {
-            string raw = _storage != null && _storage.ExistKey(key) ? Decrypt(_storage.GetString(key)) : null;
+            if (_storage == null || !_storage.ExistKey(key))
+                return fallback;
+
+            string raw = Decrypt(_storage.GetString(key));
+            if (string.IsNullOrEmpty(raw))
+                return fallback;
+
+            // 类型守卫：首次访问时探测存储类型并记录，与请求类型不符则提示并返回回退值
+            if (!_types.TryGetValue(key, out var stored))
+                _types[key] = stored = ProbeType(raw);
+            if (!IsCompatible(stored, typeof(T)))
+            {
+                Warning($"[ {key} ] 键已有 {FriendlyName(stored)} 类型数据，与请求的 {FriendlyName(typeof(T))} 不符，返回回退值",
+                    $"The key [ {key} ] already has {stored.Name} typed data, mismatched with requested {typeof(T).Name}, fallback returned");
+                return fallback;
+            }
+
             return Deserialize(raw, fallback);
         }
 
@@ -119,6 +154,16 @@ namespace EasyFramework.Preference
             if (_storage == null)
                 return;
 
+            // 类型守卫：同键已有不同类型时提示
+            if (_types.TryGetValue(key, out var existing) && existing != typeof(T))
+            {
+                Warning($"[ {key} ] 键已有 {FriendlyName(existing)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
+                    $"The key [ {key} ] already has {existing.Name} typed data, mismatched with {typeof(T).Name}, write aborted");
+                return;
+            }
+
+            _types[key] = typeof(T);
+
             string raw = JsonConvert.SerializeObject(value);
             GetProperty(key, raw).Value = raw;
             _storage.SetString(key, Encrypt(raw));
@@ -133,6 +178,7 @@ namespace EasyFramework.Preference
         {
             _storage?.DeleteKey(key);
             _properties.Remove(key);
+            _types.Remove(key);
         }
 
         /// <summary>
@@ -177,7 +223,7 @@ namespace EasyFramework.Preference
         }
 
         // 反序列化，空串或失败时返回回退值
-        private static T Deserialize<T>(string raw, T fallback)
+        private T Deserialize<T>(string raw, T fallback)
         {
             if (string.IsNullOrEmpty(raw))
                 return fallback;
@@ -187,9 +233,54 @@ namespace EasyFramework.Preference
             }
             catch (Exception e)
             {
-                D.Error($"[ PreferenceManager ] Deserialize {typeof(T).Name} failed:\t{e.Message}");
+                Error($"类型 [ {typeof(T).Name} ] 反序列化失败:{e.Message}",
+                    $"Failed to deserialize [ {typeof(T).Name} ] : {e.Message}");
                 return fallback;
             }
+        }
+
+        // 探测存储值的类型：数字→long/double、布尔→bool、字符串→string、复合节点统一为 object
+        private static Type ProbeType(string raw)
+        {
+            try
+            {
+                var value = JsonConvert.DeserializeObject<object>(raw);
+                return value switch
+                {
+                    null => typeof(object),
+                    string => typeof(string),
+                    bool => typeof(bool),
+                    long => typeof(long),
+                    double => typeof(double),
+                    _ => typeof(object)
+                };
+            }
+            catch
+            {
+                return typeof(object);
+            }
+        }
+
+        // 类型友好名：.NET 类型名转 C# 关键字别名（Single→float、Int32→int 等）
+        private static string FriendlyName(Type type) =>
+            type == typeof(int) ? "int" :
+            type == typeof(long) ? "long" :
+            type == typeof(float) ? "float" :
+            type == typeof(double) ? "double" :
+            type == typeof(bool) ? "bool" :
+            type == typeof(string) ? "string" : type.Name;
+
+        // 判断存储类型与请求类型是否兼容（数值族 int/long/float/double 互相兼容）
+        private static bool IsCompatible(Type stored, Type requested)
+        {
+            if (stored == typeof(long) || stored == typeof(double))
+                return requested == typeof(int) || requested == typeof(long)
+                                                || requested == typeof(float) || requested == typeof(double);
+            if (stored == typeof(bool))
+                return requested == typeof(bool);
+            if (stored == typeof(string))
+                return requested == typeof(string);
+            return true;
         }
 
         // 加密，未设置加密器时原样返回
@@ -206,9 +297,33 @@ namespace EasyFramework.Preference
             }
             catch (Exception e)
             {
-                D.Warning($"[ PreferenceManager ] Decrypt failed, fallback to default:\t{e.Message}");
+                Warning($"解密失败,已回退默认值:{e.Message}",
+                    $"Decryption failed, fallback to default: {e.Message}");
                 return null;
             }
+        }
+
+        // 打印调试警告：仅 OpenDebug 开启时输出，按系统语言选择中英文
+        private void Warning(string zh, string en)
+        {
+            if (OpenDebug) D.Warning("[ PreferenceManager ] " + (IsZh() ? zh : en));
+        }
+
+        // 打印调试错误：仅 OpenDebug 开启时输出，按系统语言选择中英文
+        private void Error(string zh, string en)
+        {
+            if (OpenDebug) D.Error("[ PreferenceManager ] " + (IsZh() ? zh : en));
+        }
+
+        // 判断当前生效语言是否为中文（AutoLanguage 开启时跟随系统语言）
+        private static bool IsZh()
+        {
+            var language = EFC.Projects != null && !EFC.Projects.AutoLanguage
+                ? EFC.Projects.DisplayLanguage
+                : Application.systemLanguage;
+            return language is SystemLanguage.Chinese
+                or SystemLanguage.ChineseSimplified
+                or SystemLanguage.ChineseTraditional;
         }
 
         #endregion

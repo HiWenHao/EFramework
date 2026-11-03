@@ -69,6 +69,14 @@
         "cn.efefef.core": "0.0.1"
       }
     },
+    "cn.efefef.preference": {
+      "version": "file:cn.efefef.preference",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.1.0"
+      }
+    },
     "cn.efefef.reddot": {
       "version": "file:cn.efefef.reddot",
       "depth": 0,
