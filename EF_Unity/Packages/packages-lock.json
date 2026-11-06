@@ -13,7 +13,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1"
+        "cn.efefef.core": "0.0.1",
+        "cn.efefef.preference": "0.0.1"
       }
     },
     "cn.efefef.core": {
@@ -50,7 +51,8 @@
       "source": "embedded",
       "dependencies": {
         "cn.efefef.core": "0.0.1",
-        "cn.efefef.datable": "0.0.1"
+        "cn.efefef.datable": "0.0.1",
+        "cn.efefef.preference": "0.0.1"
       }
     },
     "cn.efefef.net": {

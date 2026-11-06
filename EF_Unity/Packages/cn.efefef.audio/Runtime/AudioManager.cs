@@ -14,6 +14,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Pool;
 using EasyFramework.Managers.Assets;
+using EasyFramework.Preference;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -33,11 +34,14 @@ namespace EasyFramework.Managers.Audio
         /// </summary>
         public AudioMixer CurrentMixer => audioMixer;
 
+        // 全局静音状态（字段支撑，供偏好持久化读写）
+        private bool _isMuted;
+
         /// <summary>
         /// 是否全局静音
         /// <para>Is globally muted.</para>
         /// </summary>
-        public bool IsMuted { get; private set; }
+        public bool IsMuted { get => _isMuted; private set => _isMuted = value; }
 
         /// <summary>
         /// 音频系统暂停
@@ -77,6 +81,11 @@ namespace EasyFramework.Managers.Audio
         private string _effectVolumeKey;    // Effect 音量键
         private string _masterVolumeKey;    // 主音量键
 
+        // 运行时音量状态
+        private float _masterVolume = 1f;
+        private float _bgmVolume = 1f;
+        private float _effectVolume = 1f;
+
         private AudioMixerGroup _masterGroup;   // 主混音器组
         private AudioMixerGroup _bgmGroup;      // 背景音乐混音器组
         private AudioMixerGroup _effectGroup;   // 音效混音器组
@@ -94,10 +103,10 @@ namespace EasyFramework.Managers.Audio
 
         void ISingleton.Init()
         {
-            _muteKey = Application.productName + "Audio_Muted";
-            _bgmVolumeKey = Application.productName + "Audio_BGM_Volume";
-            _effectVolumeKey = Application.productName + "Audio_Effect_Volume";
-            _masterVolumeKey = Application.productName + "Audio_Master_Volume";
+            _muteKey = "Audio_Muted";
+            _bgmVolumeKey = "Audio_BGM_Volume";
+            _effectVolumeKey = "Audio_Effect_Volume";
+            _masterVolumeKey = "Audio_Master_Volume";
 
             _lifetimeCts = new CancellationTokenSource();
 
@@ -342,13 +351,14 @@ namespace EasyFramework.Managers.Audio
             return AssetsManager.Instance.Load<AudioClip>(path);
         }
 
-        // 从 PlayerPrefs 恢复设置
+        // 从偏好存储恢复设置
         private void LoadSettings()
         {
-            float master = PlayerPrefs.GetFloat(_masterVolumeKey, 1f);
-            float bgm = PlayerPrefs.GetFloat(_bgmVolumeKey, defaultBgmVolume);
-            float effect = PlayerPrefs.GetFloat(_effectVolumeKey, defaultEffectVolume);
-            bool muted = PlayerPrefs.GetInt(_muteKey, 0) == 1;
+            var preference = PreferenceManager.Instance;
+            float master = preference.Get(_masterVolumeKey, 1f);
+            float bgm = preference.Get(_bgmVolumeKey, defaultBgmVolume);
+            float effect = preference.Get(_effectVolumeKey, defaultEffectVolume);
+            bool muted = preference.Get(_muteKey, false);
 
             SetMasterVolume(master);
             SetBgmVolume(bgm);
@@ -356,13 +366,15 @@ namespace EasyFramework.Managers.Audio
             if (muted) SetMute(true);
         }
 
-        // 保存设置到 PlayerPrefs
+        // 保存设置到偏好存储
         private void SaveSettings()
         {
-            PlayerPrefs.SetFloat(_masterVolumeKey, GetMasterVolume());
-            PlayerPrefs.SetFloat(_bgmVolumeKey, GetBgmVolume());
-            PlayerPrefs.SetFloat(_effectVolumeKey, GetEffectVolume());
-            PlayerPrefs.SetInt(_muteKey, IsMuted ? 1 : 0);
+            var preference = PreferenceManager.Instance;
+            preference.Set(_masterVolumeKey, GetMasterVolume());
+            preference.Set(_bgmVolumeKey, GetBgmVolume());
+            preference.Set(_effectVolumeKey, GetEffectVolume());
+            preference.Set(_muteKey, IsMuted);
+            preference.Flush();
         }
 
         // 安全获取混音器组
@@ -665,7 +677,7 @@ namespace EasyFramework.Managers.Audio
         {
             IsMuted = mute;
             SetMixerVolume(_masterGroup, mute ? -80f : ToDecibel(GetMasterVolume()));
-            PlayerPrefs.SetInt(_muteKey, mute ? 1 : 0);
+            PreferenceManager.Instance.Set(_muteKey, mute);
         }
 
         /// <summary>
@@ -726,8 +738,9 @@ namespace EasyFramework.Managers.Audio
         public void SetMasterVolume(float volume)
         {
             volume = Mathf.Clamp01(volume);
+            _masterVolume = volume;
             SetMixerVolume(_masterGroup, ToDecibel(volume));
-            PlayerPrefs.SetFloat(_masterVolumeKey, volume);
+            PreferenceManager.Instance.Set(_masterVolumeKey, volume);
         }
 
         /// <summary>
@@ -737,8 +750,9 @@ namespace EasyFramework.Managers.Audio
         public void SetBgmVolume(float volume)
         {
             volume = Mathf.Clamp01(volume);
+            _bgmVolume = volume;
             SetMixerVolume(_bgmGroup, ToDecibel(volume));
-            PlayerPrefs.SetFloat(_bgmVolumeKey, volume);
+            PreferenceManager.Instance.Set(_bgmVolumeKey, volume);
         }
 
         /// <summary>
@@ -748,27 +762,28 @@ namespace EasyFramework.Managers.Audio
         public void SetEffectVolume(float volume)
         {
             volume = Mathf.Clamp01(volume);
+            _effectVolume = volume;
             SetMixerVolume(_effectGroup, ToDecibel(volume));
-            PlayerPrefs.SetFloat(_effectVolumeKey, volume);
+            PreferenceManager.Instance.Set(_effectVolumeKey, volume);
         }
 
         /// <summary>
         /// 获取当前背景音乐音量（0~1）
         /// <para>Get current BGM volume.</para>
         /// </summary>
-        public float GetBgmVolume() => PlayerPrefs.GetFloat(_bgmVolumeKey, defaultBgmVolume);
+        public float GetBgmVolume() => _bgmVolume;
 
         /// <summary>
         /// 获取当前音效音量（0~1）
         /// <para>Get current Effect volume.</para>
         /// </summary>
-        public float GetEffectVolume() => PlayerPrefs.GetFloat(_effectVolumeKey, defaultEffectVolume);
+        public float GetEffectVolume() => _effectVolume;
 
         /// <summary>
         /// 获取当前主音量（0~1）
         /// <para>Get current master volume.</para>
         /// </summary>
-        public float GetMasterVolume() => PlayerPrefs.GetFloat(_masterVolumeKey, 1f);
+        public float GetMasterVolume() => _masterVolume;
 
         /// <summary>
         /// 背景音乐淡入到目标音量

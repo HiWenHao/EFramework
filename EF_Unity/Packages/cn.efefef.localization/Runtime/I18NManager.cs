@@ -15,6 +15,7 @@ using Cysharp.Threading.Tasks;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Assets;
 using EasyFramework.Managers.Event;
+using EasyFramework.Preference;
 using UnityEngine;
 
 namespace EasyFramework.Localization
@@ -87,8 +88,8 @@ namespace EasyFramework.Localization
         // 兜底语言代码：目标语言加载失败时回落这里
         private const string FallbackLanguage = LanguageCode.En;
 
-        // PlayerPrefs 中保存玩家语言选择的键（带包名前缀避免撞名）
-        private const string PrefsLanguageKey = "EF.Localization.Language";
+        // 偏好存储中保存玩家语言选择的键
+        private const string PrefsLanguageKey = "Localization_Language";
 
         // 当前语言代码，未初始化时为空串（装载完成前先行赋值，供并发防串比对）
         private string _currentLanguage = string.Empty;
@@ -173,7 +174,7 @@ namespace EasyFramework.Localization
         {
             if (!AutoPersist) return FallbackLanguage;
 
-            var saved = PlayerPrefs.GetString(PrefsLanguageKey, string.Empty);
+            var saved = PreferenceManager.Instance.Get(PrefsLanguageKey, string.Empty);
             return string.IsNullOrEmpty(saved) ? FallbackLanguage : saved;
         }
 
@@ -181,9 +182,8 @@ namespace EasyFramework.Localization
         private static void SavePersistedLanguage(string language)
         {
             if (string.IsNullOrEmpty(language)) return;
-            PlayerPrefs.SetString(PrefsLanguageKey, language);
-            // 立刻落盘：不落盘的话，进程被系统杀掉（安卓后台回收）时这次设置会丢
-            PlayerPrefs.Save();
+            PreferenceManager.Instance.Set(PrefsLanguageKey, language);
+            PreferenceManager.Instance.Flush();
         }
 
         // 构造缺词占位文本

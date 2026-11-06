@@ -13,7 +13,8 @@
   "documentationUrl": "https://github.com/HiWenHao/EFramework",
   "licensesUrl": "https://github.com/HiWenHao/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
-    "cn.efefef.core": "0.0.1"
+    "cn.efefef.core": "0.0.1",
+    "cn.efefef.preference": "0.0.1"
   },
   "samples": null
 }
