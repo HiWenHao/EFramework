@@ -25,53 +25,43 @@ namespace EasyFramework.Edit.MenuToolkit
         [MenuItem(MenuItemToolkit.Folders + "Assets", false, MenuItemToolkit.FoldersPriority + 1)]
         public static void OpenDataPath()
         {
-            OpenFolder(Application.dataPath);
+            EditorCommands.OpenFolder(Application.dataPath);
         }
 
         [MenuItem(MenuItemToolkit.Folders + "Library", false, MenuItemToolkit.FoldersPriority + 2)]
         public static void OpenLibraryPath()
         {
-            OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "Library"));
+            EditorCommands.OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "Library"));
         }
 
         [MenuItem(MenuItemToolkit.Folders + "StreamingAssets", false, MenuItemToolkit.FoldersPriority + 3)]
         public static void OpenStreamingAssetsPath()
         {
-            OpenFolder(Application.streamingAssetsPath);
+            EditorCommands.OpenFolder(Application.streamingAssetsPath);
         }
 
         [MenuItem(MenuItemToolkit.Folders + "PersistentData", false, MenuItemToolkit.FoldersPriority + 4)]
         public static void OpenPersistent()
         {
-            OpenFolder(Application.persistentDataPath);
+            EditorCommands.OpenFolder(Application.persistentDataPath);
         }
 
         [MenuItem(MenuItemToolkit.Folders + "TemporaryCache", false, MenuItemToolkit.FoldersPriority + 5)]
         public static void OpenTemporaryCachePath()
         {
-            OpenFolder(Application.temporaryCachePath);
+            EditorCommands.OpenFolder(Application.temporaryCachePath);
         }
 
         [MenuItem(MenuItemToolkit.Folders + "EFTools", false, MenuItemToolkit.FoldersPriority + 6)]
         public static void OpenEfToolsPath()
         {
-            OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "EFTools"));
+            EditorCommands.OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "EFTools"));
         }
 
         [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 7)]
         public static void OpenExcelFolderPath()
         {
-            OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));
-        }
-
-        private static void OpenFolder(string folderPath)
-        {
-            if (Directory.Exists(folderPath))
-                EditorUtility.RevealInFinder(folderPath + "/");
-            else
-                D.Warning(LC.Tr(
-                    $"[ OpenFolder ] 未找到文件夹: {folderPath}",
-                    $"[ OpenFolder ] Folder not found: {folderPath}"));
+            EditorCommands.OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));
         }
     }
 }

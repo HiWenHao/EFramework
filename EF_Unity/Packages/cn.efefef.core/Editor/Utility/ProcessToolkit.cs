@@ -66,7 +66,10 @@ namespace EasyFramework.Edit
             Action<ProcessResult> onExited = null, bool showWindow = false)
         {
             string message = $"cmd:\n{command}\nargs:\n{string.Join("\n", arguments ?? Array.Empty<string>())}\nwd:\n{workingDirectory}";
-            D.Log($"Process RunAsync {message}");
+            D.Log(LC.Tr(
+                "[ ProcessToolkit ] 异步启动进程 RunAsync：\n{0}",
+                "[ ProcessToolkit ] Process RunAsync:\n{0}",
+                message));
             try
             {
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -109,7 +112,10 @@ namespace EasyFramework.Edit
                 Process process = Process.Start(info);
                 if (process == null)
                 {
-                    D.Error($"[ ProcessToolkit ] Failed to start process: {command}");
+                    D.Error(LC.Tr(
+                        "[ ProcessToolkit ] 启动进程失败：{0}",
+                        "[ ProcessToolkit ] Failed to start process: {0}",
+                        command));
                     onExited?.Invoke(new ProcessResult { ExitCode = -1 });
                     return;
                 }
@@ -177,7 +183,10 @@ namespace EasyFramework.Edit
             string[] arguments = null, int timeoutMs = -1)
         {
             string message = $"cmd:\n{command}\nargs:\n{string.Join("\n", arguments ?? Array.Empty<string>())}\nwd:\n{workingDirectory}";
-            D.Log($"Process RunCaptured {message}");
+            D.Log(LC.Tr(
+                "[ ProcessToolkit ] 捕获输出启动进程 RunCaptured：\n{0}",
+                "[ ProcessToolkit ] Process RunCaptured:\n{0}",
+                message));
             try
             {
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -204,7 +213,10 @@ namespace EasyFramework.Edit
                 using Process process = Process.Start(info);
                 if (process == null)
                 {
-                    D.Error($"[ ProcessToolkit ] Failed to start process: {command}");
+                    D.Error(LC.Tr(
+                        "[ ProcessToolkit ] 启动进程失败：{0}",
+                        "[ ProcessToolkit ] Failed to start process: {0}",
+                        command));
                     return new ProcessResult { ExitCode = -1 };
                 }
 

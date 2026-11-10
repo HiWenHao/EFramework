@@ -29,8 +29,15 @@ namespace EasyFramework.Localization.Edit
         // 存放目录（相对工程根，Assets 外的编辑器数据目录：清单只是面板数据源，运行时不用，不随包打进构建）
         internal const string Folder = "EFTools/Localization";
 
+        // Luban 数据根目录（相对工程根，与 luban.conf 的 dataDir 一致）
+        internal const string ValuesRootDir = "EFTools/Datable/Datas";
+
+        // 多语言外壳目录名（相对 ValuesRootDir）：把 L10n_*.csv 与其它业务表隔开；
+        // Luban 的 input 相对 dataDir 解析，登记时必须带上这层目录
+        internal const string ValuesFolder = "Localization";
+
         // value 表目录（相对工程根，非 Resources；供翻译填写的源文件，Luban 导表后产出 bytes 进包）
-        internal const string ValuesDir = "EFTools/Datable/Datas";
+        internal const string ValuesDir = ValuesRootDir + "/" + ValuesFolder;
 
         // value 表文件名前缀（按语言分文件：{Lang}.csv → {Lang}.bytes）
         internal const string ValuesFilePrefix = "L10n_";
@@ -45,6 +52,10 @@ namespace EasyFramework.Localization.Edit
         // value 表目录绝对路径（不存在时导出函数会自动创建）
         internal static string ValuesPath
             => Path.GetFullPath(Path.Combine(Application.dataPath, "..", ValuesDir));
+
+        // 旧版 value 表目录绝对路径（外壳之前平铺在 Datas 根下；只读回退用，避免已填译文丢失）
+        internal static string LegacyValuesPath
+            => Path.GetFullPath(Path.Combine(Application.dataPath, "..", ValuesRootDir));
 
         // 选择 key 后是否自动把预览译文写入文本框（true：隐藏「应用」按钮，选 key 即自动应用；
         // false（默认）：显示按钮手动应用。设置面板写入、Inspector 读取；写入端只在值变化时赋值，避免每帧重绘落盘）
@@ -74,6 +85,14 @@ namespace EasyFramework.Localization.Edit
         // 指定语言的 value 表（CSV）绝对路径
         internal static string GetValuesPath(string language)
             => Path.Combine(ValuesPath, $"{ValuesFilePrefix}{language}.csv");
+
+        // 旧版平铺路径（仅当新路径无文件、旧路径有文件时用于读回退）
+        internal static string GetLegacyValuesPath(string language)
+            => Path.Combine(LegacyValuesPath, $"{ValuesFilePrefix}{language}.csv");
+
+        // Luban __tables__.xlsx 的 input 值：相对 dataDir 的路径，必须带上外壳目录
+        internal static string GetLubanInput(string language)
+            => $"{ValuesFolder}/{ValuesFilePrefix}{language}.csv";
 
         #endregion
     }

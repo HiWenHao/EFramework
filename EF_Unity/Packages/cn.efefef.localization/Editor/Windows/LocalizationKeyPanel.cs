@@ -1174,12 +1174,14 @@ namespace EasyFramework.Localization.Edit
                     continue;
                 }
 
+                // input 相对 luban.conf 的 dataDir 解析，必须带上多语言外壳目录，
+                // 否则 Luban 会去 Datas 根下找 CSV 而报文件缺失
                 var cells = new Dictionary<int, object>
                 {
                     [XlsxRowAppender.ColFullName] = fullName,
                     [XlsxRowAppender.ColBeanType] = L10NBeanName,
                     [XlsxRowAppender.ColReadSchema] = 0,
-                    [XlsxRowAppender.ColInput] = $"{LocalizationData.ValuesFilePrefix}{language}.csv",
+                    [XlsxRowAppender.ColInput] = LocalizationData.GetLubanInput(language),
                     [XlsxRowAppender.ColIndex] = "key",
                     [XlsxRowAppender.ColMode] = "map",
                     [XlsxRowAppender.ColGroup] = "c",
@@ -1253,6 +1255,12 @@ namespace EasyFramework.Localization.Edit
                 ? LC.Tr("清单中没有语言", "No language in the manifest")
                 : string.Join(LC.Tr("，", ", "), parts) + LC.Tr("。新登记后执行「生成全部Excel数据」即可生效",
                     ". Run 'Generate All Excel Data' to take effect");
+
+            // 已存在的表定义不会被改写：外壳之前登记的旧 input 仍需人工删除后重新同步
+            if (existed > 0)
+                summary += LC.Tr(
+                    "；已存在的表定义 input 不会自动改写，若为外壳之前登记，请删除该行后重新同步",
+                    "; existing rows keep their input; if registered before the folder change, delete and re-sync them");
 
             // 弹窗策略：有实质结果（新增 / 删除 / 失败）才弹窗
             if (added > 0 || removed > 0 || failed > 0 || removeFailed > 0)
@@ -1431,7 +1439,7 @@ namespace EasyFramework.Localization.Edit
                 LC.Combine(Lc.Confirm));
         }
 
-        // 在文件管理器中打开 value 表目录
+        // 在系统文件管理器中打开 value 表目录本身（显示目录内容）
         private void OpenValuesFolder()
         {
             var path = LocalizationData.ValuesPath;
@@ -1448,7 +1456,7 @@ namespace EasyFramework.Localization.Edit
                 Directory.CreateDirectory(path);
             }
 
-            EditorUtility.RevealInFinder(path);
+            EditorCommands.OpenFolder(path);
         }
 
         // 静态校验（面板未打开时用）

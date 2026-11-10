@@ -47,7 +47,7 @@ namespace EasyFramework.Systems.Archive.Editor
                 D.Warning($"[Archive] Failed to create archives directory '{path}': {ex.Message}");
                 return;
             }
-            EditorUtility.RevealInFinder(path);
+            EditorCommands.OpenFolder(path);
         }
 
         // 危险操作：清空磁盘上所有存档数据

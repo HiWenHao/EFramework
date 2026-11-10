@@ -87,16 +87,18 @@ namespace EasyFramework.Edit.Windows.Dataable
         {
             int checkCount = 0;
             float width = 111.5f;
+            // 入库值是工程根相对路径；界面展示、复制与打开统一换算成本机绝对路径
+            string sourceDir = _config.ResolveSourcePath();
             EditorGUILayout.LabelField(LC.Combine(Lc.Excel, Lc.Path), GUIUtils.ColorText(textColor: Color.white));
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(_config.LubanSourcePath);
+            EditorGUILayout.LabelField(sourceDir);
             if (GUILayout.Button(LC.Combine(Lc.Copy), GUILayout.Width(width)))
             {
-                if (!string.IsNullOrEmpty(_config.LubanSourcePath))
-                    EditorGUIUtility.systemCopyBuffer = _config.LubanSourcePath;
+                if (!string.IsNullOrEmpty(sourceDir))
+                    EditorGUIUtility.systemCopyBuffer = sourceDir;
             }
 
-            EditorGuiToolkit.OpenFolderButton(_config.LubanSourcePath, width);
+            EditorGuiToolkit.OpenFolderButton(sourceDir, width);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
@@ -169,8 +171,8 @@ namespace EasyFramework.Edit.Windows.Dataable
         private void DrawExcelList()
         {
             if (_config == null) return;
-            string root = _config.LubanSourcePath;
-            if (string.IsNullOrEmpty(root))
+            string root = _config.ResolveSourcePath();
+            if (string.IsNullOrWhiteSpace(_config.LubanSourcePath))
             {
                 EditorGUILayout.HelpBox(LC.Combine(Lc.Please, Lc.Settings, Lc.Excel, Lc.Path), MessageType.Info);
                 return;
@@ -226,7 +228,9 @@ namespace EasyFramework.Edit.Windows.Dataable
         private void InitConfig()
         {
             bool dirty = false;
-            string fixedSource = Path.Combine(ExcelFolderPath, "Datas\\");
+            // Excel 源表目录固定写入「工程根相对」值：历史上这里写入本机绝对路径（Path.GetFullPath），
+            // 同一份 .asset 在不同电脑上会被反复改写，git 永远提示有修改；改成相对值后跨机器一致。
+            string fixedSource = DatableConfig.DefaultSourceDir;
             if (_config.LubanSourcePath != fixedSource)
             {
                 _config.LubanSourcePath = fixedSource;
@@ -253,8 +257,10 @@ namespace EasyFramework.Edit.Windows.Dataable
                 AssetDatabase.SaveAssets();
             }
 
-            if (!Directory.Exists(fixedSource))
-                Directory.CreateDirectory(fixedSource);
+            // 建目录、扫描表格一律使用换算后的绝对路径
+            string sourceDir = _config.ResolveSourcePath();
+            if (!Directory.Exists(sourceDir))
+                Directory.CreateDirectory(sourceDir);
 
             EnsureUserConfig();
 
@@ -266,8 +272,8 @@ namespace EasyFramework.Edit.Windows.Dataable
         private void RefreshExcelList()
         {
             _excelFiles.Clear();
-            string root = _config.LubanSourcePath;
-            if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+            string root = _config.ResolveSourcePath();
+            if (!Directory.Exists(root))
                 return;
             foreach (string path in Directory.GetFiles(root, "*.*", SearchOption.AllDirectories))
             {
@@ -345,10 +351,13 @@ namespace EasyFramework.Edit.Windows.Dataable
             Directory.CreateDirectory(dstDir);
 
             string sourceRoot = "Datas/";
-            if (_config != null && !string.IsNullOrEmpty(_config.LubanSourcePath) &&
-                Directory.Exists(_config.LubanSourcePath))
-                sourceRoot = Path.GetRelativePath(dstDir, _config.LubanSourcePath).Replace('\\', '/').TrimEnd('/') +
-                             "/";
+            if (_config != null)
+            {
+                // luban.conf 里的路径相对 EFTools/Datable，必须用换算后的绝对路径求相对值
+                string sourceDir = _config.ResolveSourcePath();
+                if (Directory.Exists(sourceDir))
+                    sourceRoot = Path.GetRelativePath(dstDir, sourceDir).Replace('\\', '/').TrimEnd('/') + "/";
+            }
 
             var sb = new StringBuilder();
             sb.AppendLine("{");
@@ -490,8 +499,8 @@ namespace EasyFramework.Edit.Windows.Dataable
                 }
             }
 
-            string sourcePath = _config.LubanSourcePath;
-            if (string.IsNullOrEmpty(sourcePath) || !Directory.Exists(sourcePath))
+            string sourcePath = _config.ResolveSourcePath();
+            if (!Directory.Exists(sourcePath))
             {
                 D.Warning($"[ DatableConfigPanel ] Excel 源路径无效或未设置：{sourcePath}");
                 return;

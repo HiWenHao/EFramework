@@ -50,7 +50,10 @@ namespace EasyFramework.Edit
             {
                 foreach (var path in globalAssetPaths)
                 {
-                    D.Error($"Not allow has multi type of {assetType}. Path is [ {AssetDatabase.GUIDToAssetPath(path)} ] ");
+                    D.Error(LC.Tr(
+                        "[ EditorUtils ] 不允许存在多个 {0} 类型的资产，冲突路径：[ {1} ]",
+                        "[ EditorUtils ] Multiple assets of type {0} are not allowed, conflicting path: [ {1} ]",
+                        assetType, AssetDatabase.GUIDToAssetPath(path)));
                 }
             }
 
@@ -135,7 +138,10 @@ namespace EasyFramework.Edit
             int endIdx = Math.Min(endIndex, strList.Count);
             if (endIndex > strList.Count)
             {
-                D.Warning($"The parameter [ endIndex={endIndex} ] greater than array length [ {strList.Count} ], will be limited.");
+                D.Warning(LC.Tr(
+                    "[ EditorUtils ] 参数 [ endIndex={0} ] 超出数组长度 [ {1} ]，将被限制。",
+                    "[ EditorUtils ] Parameter [ endIndex={0} ] exceeds array length [ {1} ]; it will be limited.",
+                    endIndex, strList.Count));
             }
 
             for (int i = startIndex; i < endIdx; i++)
@@ -160,7 +166,10 @@ namespace EasyFramework.Edit
                 return ver1 > ver2;
             }
 
-            D.Error($"Version info is error, version1 = {version1},  version2 = {version2}");
+            D.Error(LC.Tr(
+                "[ EditorUtils ] 版本信息无效：version1 = {0}, version2 = {1}",
+                "[ EditorUtils ] Invalid version info: version1 = {0}, version2 = {1}",
+                version1, version2));
             return false;
         }
 
@@ -181,7 +190,10 @@ namespace EasyFramework.Edit
             {
                 if (!Directory.Exists(sourceDir))
                 {
-                    D.Error($"Source directory not found: {sourceDir}");
+                    D.Error(LC.Tr(
+                        "[ EditorUtils ] 源目录不存在：{0}",
+                        "[ EditorUtils ] Source directory not found: {0}",
+                        sourceDir));
                     return;
                 }
 
@@ -204,7 +216,10 @@ namespace EasyFramework.Edit
             }
             catch (Exception ex)
             {
-                D.Error($"Copy folder failed: {sourceDir} → {destDir}, {ex.Message}");
+                D.Error(LC.Tr(
+                    "[ EditorUtils ] 复制文件夹失败：{0} → {1}，{2}",
+                    "[ EditorUtils ] Copy folder failed: {0} → {1}, {2}",
+                    sourceDir, destDir, ex.Message));
             }
         }
 
@@ -229,7 +244,10 @@ namespace EasyFramework.Edit
                 }
             }
 
-            D.Error($"Not found this assembly with name: {assemblyName}");
+            D.Error(LC.Tr(
+                "[ EditorUtils ] 未找到名为 {0} 的程序集",
+                "[ EditorUtils ] Assembly not found: {0}",
+                assemblyName));
             return null;
         }
 

@@ -61,7 +61,10 @@ namespace EasyFramework.Edit
                 string normalized = picked.Replace('\\', '/');
                 if (!normalized.StartsWith(dataPath, System.StringComparison.OrdinalIgnoreCase))
                 {
-                    D.Warning($"[ EditorGuiToolkit ] 选择的文件夹不在 Assets 目录下，已忽略：{picked}");
+                    D.Warning(LC.Tr(
+                        "[ EditorGuiToolkit ] 选择的文件夹不在 Assets 目录下，已忽略：{0}",
+                        "[ EditorGuiToolkit ] Selected folder is outside Assets, ignored: {0}",
+                        picked));
                 }
                 else
                 {
@@ -108,25 +111,29 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 在系统文件管理器中打开指定绝对路径的文件夹
+        /// 在系统文件管理器中打开指定路径：文件夹显示其内容，文件则定位并选中
+        /// <para>Open a path in the OS file manager: show a folder's contents, or reveal a file.</para>
         /// </summary>
-        /// <param name="absolutePath">要打开的文件夹绝对路径</param>
-        /// <param name="width">按钮宽度</param>
+        /// <param name="absolutePath">文件或文件夹的绝对路径 / Absolute path of a file or folder</param>
+        /// <param name="width">按钮宽度 / Button width</param>
         public static void OpenFolderButton(string absolutePath, float width = OpenPathWidth)
         {
             if (GUILayout.Button(LC.Combine(Lc.Open), GUILayout.Width(width)))
             {
                 if (string.IsNullOrEmpty(absolutePath))
                 {
-                    D.Warning("[ EditorGuiToolkit ] 路径为空，无法打开文件夹。");
+                    D.Warning(LC.Tr(
+                        "[ EditorGuiToolkit ] 路径为空，无法打开文件夹。",
+                        "[ EditorGuiToolkit ] Folder path is empty; cannot open."));
                 }
-                else if (!Directory.Exists(absolutePath) && !File.Exists(absolutePath))
+                else if (File.Exists(absolutePath))
                 {
-                    D.Warning($"[ EditorGuiToolkit ] 路径不存在，无法打开：{absolutePath}");
+                    // 文件直接定位：打开所在目录并高亮该文件
+                    EditorUtility.RevealInFinder(absolutePath);
                 }
                 else
                 {
-                    EditorUtility.RevealInFinder(absolutePath);
+                    EditorCommands.OpenFolder(absolutePath);
                 }
             }
         }

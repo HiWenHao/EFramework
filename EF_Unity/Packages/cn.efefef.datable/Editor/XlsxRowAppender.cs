@@ -17,7 +17,6 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using EasyFramework.Edit.Windows.Dataable;
-using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace EasyFramework.Edit
@@ -380,18 +379,15 @@ namespace EasyFramework.Edit
             }
         }
 
-        // 解析 Luban 表定义工作簿绝对路径：DatableConfig.LubanSourcePath 优先（相对值按工程根归一化、目录必须存在），否则回落默认数据源目录
+        // 解析 Luban 表定义工作簿绝对路径：统一走 DatableConfig.ResolveSourcePath()（相对值按工程根归一化、目录必须存在），否则回落默认数据源目录
         private static string ResolveTablesPath()
         {
             if (EditorUtils.CheckAssets<DatableConfig>(out var configPath))
             {
                 var config = EditorUtils.LoadSettingAtPath<DatableConfig>(configPath);
-                var source = config != null ? config.LubanSourcePath : null;
-                if (!string.IsNullOrWhiteSpace(source))
+                if (config != null)
                 {
-                    var directory = Path.IsPathRooted(source)
-                        ? source
-                        : Path.GetFullPath(Path.Combine(Application.dataPath, "..", source));
+                    var directory = config.ResolveSourcePath();
                     if (Directory.Exists(directory))
                         return Path.Combine(directory, TablesFileName);
                 }

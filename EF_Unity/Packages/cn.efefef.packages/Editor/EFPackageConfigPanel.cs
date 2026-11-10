@@ -495,7 +495,7 @@ namespace EasyFramework.Edit
         {
             string packagePath = Path.GetFullPath(
                 Path.Combine(Application.dataPath, "..", "Packages", packageName));
-            if (Directory.Exists(packagePath)) EditorUtility.RevealInFinder(packagePath);
+            EditorCommands.OpenFolder(packagePath);
         }
 
         #region Client Task - 客户端任务
