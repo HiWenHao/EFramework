@@ -414,8 +414,8 @@ namespace EasyFramework.Localization.Edit
         public List<string> groups = new List<string>();
 
         /// <summary>
-        /// 目标语言登记表（决定导出几份 value 表；为空时面板回落到默认语言）
-        /// <para>Target languages; each one produces an L10n_{lang}.csv value table.</para>
+        /// 目标语言登记表（决定导出几份 value 表，落在 Datas/Localization 下；为空时面板回落到默认语言）
+        /// <para>Target languages; each one produces a Localization/L10n_{lang}.csv value table.</para>
         /// </summary>
         public List<string> languages = new List<string>();
 

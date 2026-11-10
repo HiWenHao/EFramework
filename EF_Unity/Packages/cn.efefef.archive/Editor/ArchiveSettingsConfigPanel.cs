@@ -85,7 +85,7 @@ namespace EasyFramework.Systems.Archive.Editor
             if (GUILayout.Button("Open Archives Folder"))
             {
                 string path = Path.Combine(Application.persistentDataPath, _settings.fileStorageRoot);
-                EditorUtility.RevealInFinder(path + "/");
+                EditorCommands.OpenFolder(path);
             }
 
             if (GUILayout.Button("Reset to Defaults"))

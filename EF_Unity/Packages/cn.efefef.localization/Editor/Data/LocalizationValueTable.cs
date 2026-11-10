@@ -59,6 +59,9 @@ namespace EasyFramework.Localization.Edit
         // 行尾统一 CRLF，兼容 Excel 另存为与 Luban 读取
         private const string NEWLINE = "\r\n";
 
+        // 旧目录回退提示去重（按语言，每个编译域只提示一次，避免每次导出刷屏）
+        private static readonly HashSet<string> LegacyWarned = new HashSet<string>(StringComparer.Ordinal);
+
         // key 列名
         internal const string ColKey = "key";
 
@@ -288,18 +291,38 @@ namespace EasyFramework.Localization.Edit
                 path = LocalizationData.GetValuesPath(language),
             };
 
-            if (!File.Exists(table.path)) return table;
+            // 外壳迁移兼容：新目录还没有该语言表、旧目录（平铺在 Datas 根下）有时，从旧位置读回译文。
+            // 只读不搬动旧文件；随后导出会把译文写进新目录，避免改目录后把已填译文当成空表重建
+            var legacyPath = LocalizationData.GetLegacyValuesPath(language);
+            var readPath = File.Exists(table.path) ? table.path
+                : File.Exists(legacyPath) ? legacyPath : null;
+
+            if (readPath == null) return table;
+
+            if (readPath != table.path && LegacyWarned.Add(language))
+            {
+                D.Warning(LC.Tr(
+                    "[ Localization ] 检测到旧目录的 value 表，已从旧位置带回译文（导出后写入新目录）：{0}",
+                    "[ Localization ] Found a value table in the legacy folder; translations were read from it " +
+                    "(the next export writes them to the new folder): {0}",
+                    readPath));
+            }
 
             try
             {
                 // 编码自愈：严格 UTF-8 优先，非法序列回退 GBK（Excel 在中文系统另存 CSV 的默认编码）；
-                // 检测到非 UTF-8 时就地重写为 UTF-8 BOM，让 Excel / 本面板 / Luban 三方后续读取保持一致
-                var raw = File.ReadAllBytes(table.path);
-                var (text, healed) = DecodeWithHealing(raw, table.path);
+                // 检测到非 UTF-8 时重写为 UTF-8 BOM，让 Excel / 本面板 / Luban 三方后续读取保持一致
+                var raw = File.ReadAllBytes(readPath);
+                var (text, healed) = DecodeWithHealing(raw, readPath);
                 if (text == null) return table;
 
                 if (healed)
                 {
+                    // 回写始终落到新目录，不改动旧文件；目录可能尚未创建，先补齐
+                    var dir = Path.GetDirectoryName(table.path);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
                     File.WriteAllText(table.path, text, new UTF8Encoding(UseUtf8Bom));
                     D.Warning(LC.Tr(
                         "[ Localization ] value 表编码已自动修复并回写为 UTF-8 BOM（原文件为非 UTF-8，常见于 Excel 另存降级）：{0}",
@@ -321,7 +344,7 @@ namespace EasyFramework.Localization.Edit
                         "[ Localization ] value 表格式不正确（缺少 Luban 标记行），已按空表处理：{0}\n请用面板重新导出，不要手工增删标记行。",
                         "[ Localization ] value table is malformed (missing Luban marker rows), treated as empty: {0}\n" +
                         "Re-export it from the panel; do not add or remove marker rows by hand.",
-                        table.path));
+                        readPath));
                     return table;
                 }
 
@@ -336,7 +359,7 @@ namespace EasyFramework.Localization.Edit
                     D.Error(LC.Tr(
                         "[ Localization ] value 表缺少 {0} 或 {1} 列，已按空表处理：{2}",
                         "[ Localization ] value table is missing the {0} or {1} column, treated as empty: {2}",
-                        ColKey, ColValue, table.path));
+                        ColKey, ColValue, readPath));
                     return table;
                 }
 
@@ -369,7 +392,7 @@ namespace EasyFramework.Localization.Edit
                 D.Error(LC.Tr(
                     "[ Localization ] 读取 value 表失败：{0}\n{1}",
                     "[ Localization ] Failed to read the value table: {0}\n{1}",
-                    table.path, e.Message));
+                    readPath, e.Message));
             }
 
             return table;

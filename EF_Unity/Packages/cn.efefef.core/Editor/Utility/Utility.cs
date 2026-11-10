@@ -94,7 +94,10 @@ namespace EasyFramework.Edit
                 }
                 catch (System.Exception ex)
                 {
-                    D.Warning($"[Utility] RemoveEmptyDirectory failed for '{directoryName}': {ex.Message}");
+                    D.Warning(LC.Tr(
+                        "[ Utility ] 移除空文件夹失败：{0}，原因：{1}",
+                        "[ Utility ] RemoveEmptyDirectory failed for '{0}': {1}",
+                        directoryName, ex.Message));
                     return false;
                 }
             }
