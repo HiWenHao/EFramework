@@ -28,6 +28,9 @@ namespace EasyFramework.Systems.Net
     {
         #region Fields
 
+        // 出站帧缓冲的初始容量（够放 12B 帧头 + 小消息，按需扩容）
+        private const int MinFrameBufferSize = 256;
+
         // 传输层
         private readonly ISocket _socket;
         // 消息路由（与其它会话共用）
@@ -41,6 +44,9 @@ namespace EasyFramework.Systems.Net
 
         // kcp.Recv → 帧解析（大消息时扩容，故非 readonly）
         private byte[] _kcpRecvBuffer;
+
+        // 出站复用帧缓冲（按需扩容）：每条消息只做一次拷贝，不再每条新建数组
+        private byte[] _frameBuffer;
 
         // 最近一次收到消息的时刻（秒，单调时钟）
         private double _lastReceiveTime;
@@ -160,9 +166,7 @@ namespace EasyFramework.Systems.Net
         /// <param name="payload">载荷字节<para>Payload bytes</para></param>
         public void Send(int opcode, byte[] payload = null)
         {
-            if (!_socket.IsConnected) return;
-            byte[] frame = MessagePipe.Encode(opcode, 0, payload);
-            _kcp.Send(frame, 0, frame.Length);
+            Send(opcode, 0, payload);
         }
 
         /// <summary>
@@ -175,8 +179,15 @@ namespace EasyFramework.Systems.Net
         public void Send(int opcode, int rpcId, byte[] payload)
         {
             if (!_socket.IsConnected) return;
-            byte[] frame = MessagePipe.Encode(opcode, rpcId, payload);
-            _kcp.Send(frame, 0, frame.Length);
+
+            // 复用帧缓冲：编码直接写进去，KCP 再拷进段，全程不新建数组
+            int required = MessagePipe.HeaderSize + (payload?.Length ?? 0);
+            if (_frameBuffer == null || _frameBuffer.Length < required)
+                _frameBuffer = new byte[Math.Max(required, MinFrameBufferSize)];
+
+            if (!MessagePipe.Encode(opcode, rpcId, payload, _frameBuffer, out int length)) return;
+
+            _kcp.Send(_frameBuffer, 0, length);
         }
 
         /// <summary>
@@ -268,7 +279,8 @@ namespace EasyFramework.Systems.Net
                     continue;
                 }
                 if (size <= 0) break;
-                if (!MessagePipe.TryDecodePacket(SessionId, _kcpRecvBuffer, out var packet)) continue;
+                // 传真实消息长度而不是缓冲容量：伪造的超长 payloadLength 会被拒，而不是读出上一条的残留
+                if (!MessagePipe.TryDecodePacket(SessionId, _kcpRecvBuffer, 0, size, out var packet)) continue;
 
                 // 记录接收时刻（心跳保活据此判断链路活性）
                 _lastReceiveTime = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
