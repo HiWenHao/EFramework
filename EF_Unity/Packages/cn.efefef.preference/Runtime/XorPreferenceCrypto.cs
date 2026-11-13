@@ -20,14 +20,25 @@ namespace EasyFramework.Preference
     /// </summary>
     public sealed class XorPreferenceCrypto : IPreferenceCrypto
     {
-        #region Fields
+        #region 字段 / Fields
 
         // 异或密钥字节序列，循环使用
         private readonly byte[] _keys;
 
         #endregion
 
-        #region Methods
+        #region 方法 / Methods
+
+        // 异或密钥字节序列
+        private byte[] Xor(byte[] bytes)
+        {
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] ^= _keys[i % _keys.Length];
+            return bytes;
+        }
+
+        // 字节转 Base64 字符串
+        private static string ToBase64(byte[] bytes) => Convert.ToBase64String(bytes);
 
         /// <summary>
         /// 创建简单加密器，密钥为 UTF8 字节序列循环使用
@@ -57,18 +68,8 @@ namespace EasyFramework.Preference
         /// <param name="cipher">密文字符串<para>The cipher string</para></param>
         /// <returns>明文字符串<para>The plain string</para></returns>
         public string Decrypt(string cipher) =>
-            System.Text.Encoding.UTF8.GetString(Xor(Convert.FromBase64String(JsonConvert.DeserializeObject<string>(cipher))));
-
-        // 异或密钥字节序列
-        private byte[] Xor(byte[] bytes)
-        {
-            for (int i = 0; i < bytes.Length; i++)
-                bytes[i] ^= _keys[i % _keys.Length];
-            return bytes;
-        }
-
-        // 字节转 Base64 字符串
-        private static string ToBase64(byte[] bytes) => Convert.ToBase64String(bytes);
+            System.Text.Encoding.UTF8.GetString(
+                Xor(Convert.FromBase64String(JsonConvert.DeserializeObject<string>(cipher))));
 
         #endregion
     }

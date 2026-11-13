@@ -17,7 +17,7 @@ namespace EasyFramework.Preference
     /// </summary>
     public interface IPreferenceCrypto
     {
-        #region Methods
+        #region 方法 / Methods
 
         /// <summary>
         /// 加密：写入存储前调用

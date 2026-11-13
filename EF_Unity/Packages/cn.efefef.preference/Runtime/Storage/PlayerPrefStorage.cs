@@ -19,7 +19,7 @@ namespace EasyFramework.Preference
     /// </summary>
     public sealed class PlayerPrefStorage : IKeyValueStorage
     {
-        #region Methods
+        #region 方法 / Methods
 
         /// <summary>
         /// 判断指定键是否存在
