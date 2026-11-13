@@ -1,10 +1,10 @@
 {
   "name": "cn.efefef.http",
   "displayName": "EF.Http",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unity": "2021.3",
   "unityRelease": "10f1",
-  "description": "\u4e00\u4e2a\u7b80\u5355\u7684HTTP\u8bf7\u6c42\u7ba1\u7406\u5668\u3002",
+  "description": "EFramework HTTP 请求门面：可替换的发送 / 缓存 / 重试 / 设置接口，门面只做编排，生命周期与持久化边界纪律化。",
   "author": {
     "name": "Alvin",
     "url": "https://blog.csdn.net/Wenhao_China"

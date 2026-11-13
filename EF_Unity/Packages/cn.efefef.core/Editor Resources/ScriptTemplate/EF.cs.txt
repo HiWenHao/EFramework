@@ -90,7 +90,7 @@ public static class EF
     // public static PatchManager Patch => PatchManager.Instance;
 
     // /// <summary>HTTP 请求管理器<para>HTTP request manager</para></summary>
-    // public static HttpsSystem Http => HttpsSystem.Instance;
+    // public static HttpManager Http => HttpManager.Instance;
 
     // /// <summary>红点系统<para>Red-dot notification system</para></summary>
     // public static RedDotSystem RedDot => RedDotSystem.Instance;
