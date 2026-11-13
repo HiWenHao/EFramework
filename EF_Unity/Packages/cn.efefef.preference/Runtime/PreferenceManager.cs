@@ -135,7 +135,7 @@ namespace EasyFramework.Preference
             if (!IsCompatible(stored, typeof(T)))
             {
                 Warning($"[ {key} ] 键已有 {FriendlyName(stored)} 类型数据，与请求的 {FriendlyName(typeof(T))} 不符，返回回退值",
-                    $"The key [ {key} ] already has {stored.Name} typed data, mismatched with requested {typeof(T).Name}, fallback returned");
+                    $"The key [ {key} ] already has {FriendlyName(stored)} typed data, mismatched with requested {FriendlyName(typeof(T))}, fallback returned");
                 return fallback;
             }
 
@@ -154,11 +154,13 @@ namespace EasyFramework.Preference
             if (_storage == null)
                 return;
 
-            // 类型守卫：同键已有不同类型时提示
-            if (_types.TryGetValue(key, out var existing1) && existing1 != typeof(T))
+            // 类型守卫：必须与 Get 使用同一套兼容判定。存储里的 JSON 数字经 ProbeType 探测只会得到
+            // long / double（Newtonsoft 把数值反序列化为 object 时的默认行为），若此处用严格相等判断，
+            // 任何「先 Get<float> 再 Set<float>」的链路都会被误判成类型不符而拒绝写入。
+            if (_types.TryGetValue(key, out var existing) && !IsCompatible(existing, typeof(T)))
             {
-                Warning($"[ {key} ] 键已有 {FriendlyName(existing1)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
-                    $"The key [ {key} ] already has {existing1.Name} typed data, mismatched with {typeof(T).Name}, write aborted");
+                Warning($"[ {key} ] 键已有 {FriendlyName(existing)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
+                    $"The key [ {key} ] already has {FriendlyName(existing)} typed data, mismatched with {FriendlyName(typeof(T))}, write aborted");
                 return;
             }
 
@@ -175,13 +177,6 @@ namespace EasyFramework.Preference
                 return;
             }
 
-            // 类型守卫：同键已有不同类型时提示
-            if (_types.TryGetValue(key, out var existing) && existing != typeof(T))
-            {
-                Warning($"[ {key} ] 键已有 {FriendlyName(existing)} 类型数据，与本次 {FriendlyName(typeof(T))} 不符，已退出写入",
-                    $"The key [ {key} ] already has {FriendlyName(existing)} typed data, mismatched with {FriendlyName(typeof(T))}, write aborted");
-                return;
-            }
             _types[key] = typeof(T);
 
             GetProperty(key, raw).Value = raw;
@@ -289,17 +284,21 @@ namespace EasyFramework.Preference
             type == typeof(bool) ? "bool" :
             type == typeof(string) ? "string" : type.Name;
 
-        // 判断存储类型与请求类型是否兼容（数值族 int/long/float/double 互相兼容）
+        // 数值族：JSON 数字无法区分 int/long/float/double，互相视为兼容
+        private static bool IsNumeric(Type type) =>
+            type == typeof(int) || type == typeof(long)
+            || type == typeof(float) || type == typeof(double);
+
+        // 判断存储类型与请求类型是否兼容（数值族互相兼容，其余要求严格相等）
+        // 写入后 _types 保存的是业务声明类型（如 float），探测得到的只有 long/double，两侧都必须覆盖
         private static bool IsCompatible(Type stored, Type requested)
         {
-            if (stored == typeof(long) || stored == typeof(double))
-                return requested == typeof(int) || requested == typeof(long)
-                                                || requested == typeof(float) || requested == typeof(double);
-            if (stored == typeof(bool))
-                return requested == typeof(bool);
-            if (stored == typeof(string))
-                return requested == typeof(string);
-            return true;
+            // object 表示复合节点或探测失败，JSON 还原不出确切类型，沿用单键单类型约定放行
+            if (stored == typeof(object) || requested == typeof(object))
+                return true;
+            if (IsNumeric(stored) && IsNumeric(requested))
+                return true;
+            return stored == requested;
         }
 
         // 加密，未设置加密器时原样返回
