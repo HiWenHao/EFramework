@@ -17,16 +17,16 @@ namespace EasyFramework.Systems.Http
     /// HTTP 重试策略：控制失败时的重试次数与退避延迟。
     /// <para>Retry policy controlling retry count and backoff delay on failure.</para>
     /// </summary>
-    [Serializable]
-    public sealed class HttpRetryPolicy
+    public sealed class HttpRetryPolicy : IHttpRetryPolicy
     {
         /// <summary>
         /// 最大重试次数（0 表示不重试）
         /// <para>Max retry count (0 = no retry).</para>
         /// </summary>
-        public int MaxRetries = 0;
+        public int MaxRetries { get; set; } = 0;
 
-        /// <summary> 基础延迟
+        /// <summary>
+        /// 基础延迟
         /// <para>Base delay in milliseconds.</para>
         /// </summary>
         public int BaseDelayMs = 200;
