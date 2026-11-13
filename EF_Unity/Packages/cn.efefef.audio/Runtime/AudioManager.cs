@@ -1,28 +1,27 @@
 /*
  * ================================================
- * Describe:      现代音频系统，使用 AudioMixer、UniTask 异步、对象池（EF.Pool）与 3D 音效，支持音效播放器空闲自动销毁。
+ * Describe:      音频系统门面：统一对外暴露音频能力，编排「加载 → 缓存 → 播放」并转发框架生命周期。
+ *               加载 / 播放 / 设置由可替换的接口实现提供默认实现；缓存接口无默认实现，由业务侧注入。
  * Author:        Alvin8412
  * CreationTime:  2026-05-09 23:00
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-10
+ * ModifyTime:    2026-11-13 11:20
  * ScriptVersion: 2.0
  * ================================================
  */
 
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Pool;
 using EasyFramework.Managers.Assets;
-using EasyFramework.Preference;
 using UnityEngine;
 using UnityEngine.Audio;
 
 namespace EasyFramework.Managers.Audio
 {
     /// <summary>
-    /// 音频系统，统一管理 BGM 与音效，支持混音器、对象池、异步播放。
-    /// <para>Audio system, managing BGM and Effect with mixer, pool and async playback.</para>
+    /// 音频系统门面，编排加载、缓存与播放并对外提供统一入口
+    /// <para>Audio facade orchestrating loading, caching and playback behind one entry point</para>
     /// </summary>
     [Manager(Order = 89700)]
     [Dependency(typeof(PoolManager)), Dependency(typeof(AssetsManager))]
@@ -34,14 +33,11 @@ namespace EasyFramework.Managers.Audio
         /// </summary>
         public AudioMixer CurrentMixer => audioMixer;
 
-        // 全局静音状态（字段支撑，供偏好持久化读写）
-        private bool _isMuted;
-
         /// <summary>
         /// 是否全局静音
         /// <para>Is globally muted.</para>
         /// </summary>
-        public bool IsMuted { get => _isMuted; private set => _isMuted = value; }
+        public bool IsMuted => _settings is { IsMuted: true };
 
         /// <summary>
         /// 音频系统暂停
@@ -55,340 +51,158 @@ namespace EasyFramework.Managers.Audio
         /// </summary>
         public bool OpenDebug { get; set; }
 
-        #region 配置字段（仅通过 Editor 或运行时设置）
+        /// <summary>
+        /// 当前活跃音效数量
+        /// <para>Count of active effects</para>
+        /// </summary>
+        public int ActiveEffectCount => _player?.ActiveEffectCount ?? 0;
 
-        [HideInInspector, SerializeField] private AudioMixer audioMixer; // 主混音器资源
-        [HideInInspector, SerializeField] private int maxEffectPoolSize = 20; // 音效对象池最大空闲数量
-        [HideInInspector, SerializeField] private int prewarmCount = 1; // 音效对象池预热数量
-        [HideInInspector, SerializeField] private float effectIdleTimeout = 30f; // 音效播放器闲置超时销毁时间（秒），≤0 不启用
-        [HideInInspector, SerializeField, Range(0f, 1f)] private float defaultBgmVolume = 1f; // 默认背景音乐音量
-        [HideInInspector, SerializeField, Range(0f, 1f)] private float defaultEffectVolume = 1f; // 默认音效音量
+        #region 配置字段（序列化锚点，字段名被 AudioManagerInspector 依赖，勿改）
+
+        // 主混音器资源
+        [HideInInspector, SerializeField] private AudioMixer audioMixer;
+
+        // 音效对象池最大空闲数量
+        [HideInInspector, SerializeField] private int maxEffectPoolSize = 20;
+
+        // 音效对象池预热数量
+        [HideInInspector, SerializeField] private int prewarmCount = 1;
+
+        // 音效播放器闲置超时销毁时间（秒），≤0 不启用
+        [HideInInspector, SerializeField] private float effectIdleTimeout = 30f;
+
+        // 默认背景音乐音量
+        [HideInInspector, SerializeField, Range(0f, 1f)]
+        private float defaultBgmVolume = 1f;
+
+        // 默认音效音量
+        [HideInInspector, SerializeField, Range(0f, 1f)]
+        private float defaultEffectVolume = 1f;
 
         #endregion
 
-        #region 私有变量
+        #region 四类服务实例
 
-        // 混音器通道名称
+        // 主混音器组名称
         private const string MasterGroupName = "Master";
+
+        // BGM 混音器组名称
         private const string BgmGroupName = "BGM";
+
+        // 音效混音器组名称
         private const string EffectGroupName = "Effect";
 
-        private uint _autoIncrementID;  // 音频自增ID
+        // 共享运行时上下文，由 Init 创建、Quit 置空
+        private AudioContext _context;
 
-        // PlayerPrefs 键
-        private string _muteKey;            // 静音键
-        private string _bgmVolumeKey;       // BGM 音量键
-        private string _effectVolumeKey;    // Effect 音量键
-        private string _masterVolumeKey;    // 主音量键
+        // 当前音频加载实现，默认 DefaultAudioClipLoader
+        private IAudioClipLoader _loader;
 
-        // 运行时音量状态
-        private float _masterVolume = 1f;
-        private float _bgmVolume = 1f;
-        private float _effectVolume = 1f;
+        // 当前音频缓存实现，null 表示不缓存（包内无默认实现）
+        private IAudioClipCache _cache;
 
-        private AudioMixerGroup _masterGroup;   // 主混音器组
-        private AudioMixerGroup _bgmGroup;      // 背景音乐混音器组
-        private AudioMixerGroup _effectGroup;   // 音效混音器组
+        // 当前音频播放实现，默认 DefaultAudioPlayer
+        private IAudioPlayer _player;
 
-        private AudioSource _bgmSource; // BGM 专用播放器
-        private List<ActiveEffect> _activeEffects; // 当前活动的音效列表
-        private Dictionary<uint, ActiveEffect> _activeEffectDict; // 活动音效映射图
+        // 当前音频设置实现，默认 DefaultAudioSettings
+        private IAudioSettings _settings;
 
-        private Transform _effectRoot;      // 音效对象池根节点
-        private GameObject _effectPrefab;   // 音效对象池预制件
+        // Init 之前到达的注入请求，Init 完成后补应用
+        private AudioServices _pendingServices;
 
-        private CancellationTokenSource _lifetimeCts; // 系统生命周期取消令牌
+        /// <summary>
+        /// 当前生效的音频加载实现
+        /// <para>Active clip loader.</para>
+        /// </summary>
+        public IAudioClipLoader CurrentLoader => _loader;
+
+        /// <summary>
+        /// 当前生效的音频缓存实现
+        /// <para>Active clip cache</para>
+        /// </summary>
+        public IAudioClipCache CurrentCache => _cache;
+
+        /// <summary>
+        /// 当前生效的音频播放实现
+        /// <para>Active audio player.</para>
+        /// </summary>
+        public IAudioPlayer CurrentPlayer => _player;
+
+        /// <summary>
+        /// 当前生效的音频设置实现
+        /// <para>Active audio settings.</para>
+        /// </summary>
+        public IAudioSettings CurrentSettings => _settings;
 
         #endregion
 
+        #region 框架生命周期
+
+        // 框架初始化：构建共享上下文并装配四类服务
         void ISingleton.Init()
         {
-            _muteKey = "Audio_Muted";
-            _bgmVolumeKey = "Audio_BGM_Volume";
-            _effectVolumeKey = "Audio_Effect_Volume";
-            _masterVolumeKey = "Audio_Master_Volume";
-
-            _lifetimeCts = new CancellationTokenSource();
-
-            // 创建音效对象池根节点
-            _effectRoot = new GameObject("EffectRoot").transform;
-            _effectRoot.SetParent(transform);
-
-            // 初始化混音器组
-            if (audioMixer)
+            _context = new AudioContext
             {
-                _masterGroup = audioMixer.FindMatchingGroups(MasterGroupName)[0];
-                _bgmGroup = audioMixer.FindMatchingGroups(BgmGroupName)[0];
-                _effectGroup = audioMixer.FindMatchingGroups(EffectGroupName)[0];
-            }
-
-            // 创建 BGM 播放器
-            var bgmGo = new GameObject("BGM_Source");
-            bgmGo.transform.SetParent(_effectRoot);
-            _bgmSource = bgmGo.AddComponent<AudioSource>();
-            _bgmSource.outputAudioMixerGroup = _bgmGroup;
-            _bgmSource.loop = true;
-            _bgmSource.playOnAwake = false;
-
-            _effectPrefab = CreateEffectPrefab();
-            Pool.PoolManager.Instance.CreateGameObjectPool(_effectPrefab, _effectRoot, prewarmCount, maxEffectPoolSize, effectIdleTimeout);
-
-            _activeEffects = new List<ActiveEffect>();
-            _activeEffectDict = new Dictionary<uint, ActiveEffect>();
-
-            LoadSettings();
-        }
-
-        void IUpdate.Update(float elapse, float realElapse)
-        {
-            // 回收播放完毕的非循环音效
-            for (int i = _activeEffects.Count - 1; i >= 0; i--)
-            {
-                var effect = _activeEffects[i];
-                if (effect.IsPaused || effect.Source.loop || effect.Source.isPlaying) continue;
-                if (effect.IsReleased) continue;
-                effect.IsReleased = true;
-                effect.CompletionSource?.TrySetResult();
-                effect.CompletionSource = null;
-                effect.Cancellation.Dispose();
-                ReturnEffectToPool(effect.Source);
-                _activeEffects.RemoveAt(i);
-                _activeEffectDict.Remove(effect.ID);
-            }
-        }
-
-        void ISingleton.Quit()
-        {
-            _lifetimeCts.Cancel();
-            _lifetimeCts.Dispose();
-
-            StopAll();
-
-            _activeEffects.Clear();
-            _activeEffectDict.Clear();
-
-            if (_bgmSource)
-                Destroy(_bgmSource.gameObject);
-
-            if (_effectRoot)
-                Destroy(_effectRoot.gameObject);
-
-            // 销毁音效对象池
-            if (_effectPrefab)
-                Pool.PoolManager.Instance.DestroyGameObjectPool(_effectPrefab);
-
-            SaveSettings();
-        }
-
-        #region 内部函数
-
-        // 创建用于对象池的预制体
-        private GameObject CreateEffectPrefab()
-        {
-            var go = new GameObject("EffectPrototype");
-            go.transform.SetParent(_effectRoot);
-            var source = go.AddComponent<AudioSource>();
-            source.outputAudioMixerGroup = _effectGroup;
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            go.SetActive(false);
-            return go;
-        }
-
-        #region 对象池辅助
-
-        // 从池中获取激活的 AudioSource
-        private AudioSource GetEffectFromPool()
-        {
-            var go = Pool.PoolManager.Instance.Spawn(_effectPrefab);
-            if (go)
-            {
-                var source = go.GetComponent<AudioSource>();
-                ResetEffectSource(source);
-                return source;
-            }
-            else
-            {
-                D.Error("[ AudioSystem ] Failed to get AudioSource from pool. Creating fallback.");
-                var goFallback = new GameObject("EffectFallback");
-                goFallback.transform.SetParent(_effectRoot);
-                var source = goFallback.AddComponent<AudioSource>();
-                source.outputAudioMixerGroup = _effectGroup;
-                source.playOnAwake = false;
-                return source;
-            }
-        }
-
-        // 归还音效播放器到对象池
-        private void ReturnEffectToPool(AudioSource source)
-        {
-            if (!source) return;
-            source.Stop();
-            source.gameObject.SetActive(false);
-            source.transform.SetParent(_effectRoot, false);
-            Pool.PoolManager.Instance.Despawn(source.gameObject);
-        }
-
-        // 重置从池中取出的 AudioSource 状态
-        private void ResetEffectSource(AudioSource source)
-        {
-            if (!source) return;
-            source.Stop();
-            source.clip = null;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            source.mute = false;
-            source.volume = 1f;
-            source.priority = 128;
-            source.pitch = 1f;
-            source.outputAudioMixerGroup = _effectGroup;
-            source.transform.localPosition = Vector3.zero;
-            source.transform.localRotation = Quaternion.identity;
-        }
-
-        #endregion
-
-        // 内部音效播放实现
-        private ActiveEffect PlayEffect(AudioClip clip, bool loop, Vector3 pos, CancellationToken token, bool is3D, float startTime = 0f)
-        {
-            var source = GetEffectFromPool();
-
-            if (token.IsCancellationRequested)
-            {
-                ReturnEffectToPool(source);
-                return null;
-            }
-
-            source.clip = clip;
-            source.loop = loop;
-
-            if (is3D)
-            {
-                source.spatialBlend = 1f;
-                source.transform.position = pos;
-            }
-            else
-            {
-                source.spatialBlend = 0f;
-                source.transform.localPosition = Vector3.zero;
-            }
-
-            source.volume = GetEffectVolume();
-            source.mute = IsMuted;
-            source.time = Mathf.Clamp(startTime, 0f, clip.length);
-            source.Play();
-
-            var effect = new ActiveEffect
-            {
-                ID = ++_autoIncrementID,
-                IsPaused = false,
-                IsReleased = false,
-                Source = source,
-                CompletionSource = null
+                Mixer = audioMixer,
+                MaxEffectPoolSize = maxEffectPoolSize,
+                PrewarmCount = prewarmCount,
+                EffectIdleTimeout = effectIdleTimeout,
+                DefaultBgmVolume = defaultBgmVolume,
+                DefaultEffectVolume = defaultEffectVolume,
+                OwnerRoot = transform,
+                Warn = Warning
             };
 
-            if (!loop)
-                effect.CompletionSource = new UniTaskCompletionSource();
+            // 混音器分组先解析好，播放器创建 AudioSource 时即可直接绑定
+            _context.MasterGroup = AudioContext.FindGroup(audioMixer, MasterGroupName, Warning);
+            _context.BgmGroup = AudioContext.FindGroup(audioMixer, BgmGroupName, Warning);
+            _context.EffectGroup = AudioContext.FindGroup(audioMixer, EffectGroupName, Warning);
 
-            RegisterCancelCallback(effect, token);
-
-            _activeEffects.Add(effect);
-            _activeEffectDict.Add(effect.ID, effect);
-            return effect;
-        }
-
-        // 注册取消回调
-        private void RegisterCancelCallback(ActiveEffect effect, CancellationToken token)
-        {
-            if (!token.CanBeCanceled) return;
-
-            effect.Cancellation = token.RegisterWithoutCaptureExecutionContext(() =>
+            // 有提前注入的配置时，由 Configure 内的四个 Swap 各建一次默认实现即可；
+            // 否则走 ResetToDefaults，避免同一帧内重复创建 / 销毁场景物体
+            if (_pendingServices != null)
             {
-                UniTask.Post(() =>
-                {
-                    if (effect.IsReleased) return;
-                    effect.IsReleased = true;
-                    effect.IsPaused = false;
-
-                    effect.CompletionSource?.TrySetCanceled();
-                    effect.CompletionSource = null;
-
-                    if (effect.Source)
-                    {
-                        effect.Source.Stop();
-                        ReturnEffectToPool(effect.Source);
-                    }
-
-                    _activeEffects.Remove(effect);
-                    _activeEffectDict.Remove(effect.ID);
-                    effect.Cancellation.Dispose();
-                });
-            });
+                var pending = _pendingServices;
+                _pendingServices = null;
+                Configure(pending);
+            }
+            else
+            {
+                ResetToDefaults();
+            }
         }
 
-        #region Assist - 辅助
-
-        // 设置混音器组音量（分贝）
-        private void SetMixerVolume(AudioMixerGroup group, float db)
+        // 逐帧转发给实现了 IAudioTickable 的播放器
+        void IUpdate.Update(float elapse, float realElapse)
         {
-            if (audioMixer && group)
-                audioMixer.SetFloat(group.name + "Volume", db);
+            // 只有实现了逐帧契约的播放器需要驱动（默认实现用于回收播放完毕的音效）
+            if (_player is not IAudioTickable tickable) return;
+            tickable.Tick(elapse, realElapse);
         }
 
-        // 线性值转分贝
-        private static float ToDecibel(float linear)
+        // 框架退出：保存设置、逆序释放服务并清空引用
+        void ISingleton.Quit()
         {
-            return linear <= 0.0001f ? -80f : 20f * Mathf.Log10(linear);
+            _settings?.Save();
+            StopAll();
+
+            // 逆序释放，播放器最后（它持有场景物体，其余实现只读上下文）
+            _settings?.Dispose();
+            _cache?.Dispose();
+            _loader?.Dispose();
+            _player?.Dispose();
+            _context?.ClearEvents();
+
+            // 置空引用，避免 HybridCLR 域重载后残留热更侧实现实例
+            _loader = null;
+            _cache = null;
+            _player = null;
+            _settings = null;
+            _context = null;
+            _pendingServices = null;
         }
 
-        // 加载音频资源
-        private AudioClip LoadClip(string clipName)
-        {
-            string path = AssetsManager.Instance.CurrentSystemType == AssetsSystemType.Default
-                ? $"{EFC.Projects.AppConst.AudioPath}{clipName}"
-                : clipName;
-            return AssetsManager.Instance.Load<AudioClip>(path);
-        }
-
-        // 从偏好存储恢复设置
-        private void LoadSettings()
-        {
-            var preference = PreferenceManager.Instance;
-            float master = preference.Get(_masterVolumeKey, 1f);
-            float bgm = preference.Get(_bgmVolumeKey, defaultBgmVolume);
-            float effect = preference.Get(_effectVolumeKey, defaultEffectVolume);
-            bool muted = preference.Get(_muteKey, false);
-
-            SetMasterVolume(master);
-            SetBgmVolume(bgm);
-            SetEffectVolume(effect);
-            if (muted) SetMute(true);
-        }
-
-        // 保存设置到偏好存储
-        private void SaveSettings()
-        {
-            var preference = PreferenceManager.Instance;
-            preference.Set(_masterVolumeKey, GetMasterVolume());
-            preference.Set(_bgmVolumeKey, GetBgmVolume());
-            preference.Set(_effectVolumeKey, GetEffectVolume());
-            preference.Set(_muteKey, IsMuted);
-            preference.Flush();
-        }
-
-        // 安全获取混音器组
-        private AudioMixerGroup GetMixerGroupSafe(string groupName)
-        {
-            if (audioMixer == null) return null;
-            var groups = audioMixer.FindMatchingGroups(groupName);
-            if (groups.Length > 0) return groups[0];
-            Warning($"Mixer group '{groupName}' not found");
-            return null;
-        }
-
-        #endregion
-
+        // 统一警告入口，按 OpenDebug 过滤
         private void Warning(string message)
         {
             if (OpenDebug)
@@ -397,54 +211,227 @@ namespace EasyFramework.Managers.Audio
 
         #endregion
 
+        #region 服务注入（四类接口均可单独或整体替换）
+
+        /// <summary>
+        /// 一次性配置四类服务
+        /// <para>Configure all four audio services at once</para>
+        /// </summary>
+        /// <param name="services">四类服务配置包 <para>Services bundle</para></param>
+        public void Configure(AudioServices services)
+        {
+            if (_context == null)
+            {
+                _pendingServices = services;
+                return;
+            }
+
+            if (services == null)
+            {
+                ResetToDefaults();
+                return;
+            }
+
+            SwapLoader(services.Loader);
+            SwapCache(services.Cache);
+            SwapPlayer(services.Player);
+            SwapSettings(services.Settings);
+        }
+
+        /// <summary>
+        /// 恢复全部默认实现
+        /// <para>Restore all package defaults</para>
+        /// </summary>
+        public void ResetToDefaults()
+        {
+            if (_context == null) return;
+            SwapLoader(null);
+            SwapCache(null);
+            SwapPlayer(null);
+            SwapSettings(null);
+        }
+
+        /// <summary>
+        /// 替换音频加载实现
+        /// <para>Replace the clip loader</para>
+        /// </summary>
+        /// <param name="loader">下游加载器 <para>Downstream loader</para></param>
+        public void SetClipLoader(IAudioClipLoader loader)
+        {
+            if (_context == null)
+            {
+                EnsurePending().Loader = loader;
+                return;
+            }
+
+            SwapLoader(loader);
+        }
+
+        /// <summary>
+        /// 替换音频缓存实现
+        /// <para>Replace the clip cache</para>
+        /// </summary>
+        /// <param name="cache">缓存实现 <para>Cache implementation</para></param>
+        public void SetClipCache(IAudioClipCache cache)
+        {
+            if (_context == null)
+            {
+                EnsurePending().Cache = cache;
+                return;
+            }
+
+            SwapCache(cache);
+        }
+
+        /// <summary>
+        /// 替换音频播放实现
+        /// <para>Replace the audio player</para>
+        /// </summary>
+        /// <param name="player">播放实现 <para>Player implementation</para></param>
+        public void SetPlayer(IAudioPlayer player)
+        {
+            if (_context == null)
+            {
+                EnsurePending().Player = player;
+                return;
+            }
+
+            SwapPlayer(player);
+        }
+
+        /// <summary>
+        /// 替换音频设置实现
+        /// <para>Replace the audio settings</para>
+        /// </summary>
+        /// <param name="settings">设置实现 <para>Settings implementation</para></param>
+        public void SetSettings(IAudioSettings settings)
+        {
+            if (_context == null)
+            {
+                EnsurePending().Settings = settings;
+                return;
+            }
+
+            SwapSettings(settings);
+        }
+
+        // Init 之前到达的单次替换请求合并进配置包，Init 完成时统一应用
+        private AudioServices EnsurePending() => _pendingServices ??= new AudioServices();
+
+        // 局部替换加载器，只释放并初始化该服务
+        private void SwapLoader(IAudioClipLoader next)
+        {
+            IAudioClipLoader resolved = next ?? new DefaultAudioClipLoader();
+            if (ReferenceEquals(resolved, _loader) && _loader != null) return;
+            _loader?.Dispose();
+            _loader = resolved;
+            _loader.Initialize(_context);
+        }
+
+        // 局部替换缓存实现，null 表示关闭缓存
+        private void SwapCache(IAudioClipCache next)
+        {
+            if (ReferenceEquals(next, _cache)) return;
+            _cache?.Dispose();
+            _cache = next; // null = 不缓存
+            _cache?.Initialize(_context);
+        }
+
+        // 局部替换播放器，会重建场景物体与对象池
+        private void SwapPlayer(IAudioPlayer next)
+        {
+            IAudioPlayer resolved = next ?? new DefaultAudioPlayer();
+            if (ReferenceEquals(resolved, _player) && _player != null) return;
+            _player?.Dispose();
+            _player = resolved;
+            _player.Initialize(_context);
+        }
+
+        // 局部替换设置实现，并从偏好存储重新载入
+        private void SwapSettings(IAudioSettings next)
+        {
+            IAudioSettings resolved = next ?? new DefaultAudioSettings();
+            if (ReferenceEquals(resolved, _settings) && _settings != null) return;
+            _settings?.Dispose();
+            _settings = resolved;
+            _settings.Initialize(_context);
+            _settings.Load();
+        }
+
+        #endregion
+
+        #region 加载编排（门面独有职责）
+
+        /// <summary>
+        /// 按资源名加载音频
+        /// <para>Load an audio clip by asset key</para>
+        /// </summary>
+        /// <param name="key">资源键 <para>Asset key</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <returns>可播放的 AudioClip；失败为 null <para>Playable AudioClip, or null on failure</para></returns>
+        public UniTask<AudioClip> LoadClipAsync(string key, CancellationToken token = default)
+            => ResolveClipAsync(key, AudioLoadKind.Asset, token);
+
+        /// <summary>
+        /// 按 URL 加载音频
+        /// <para>Load an audio clip by URL</para>
+        /// </summary>
+        /// <param name="url">网络音频直链 <para>Remote audio URL</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <returns>可播放的 AudioClip；失败为 null <para>Playable AudioClip, or null on failure</para></returns>
+        public UniTask<AudioClip> LoadClipFromUrlAsync(string url, CancellationToken token = default)
+            => ResolveClipAsync(url, AudioLoadKind.Url, token);
+
+        // 门面唯一知道「加载 + 缓存」的地方；播放器与设置都不参与
+        private UniTask<AudioClip> ResolveClipAsync(string key, AudioLoadKind kind, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(key) || _loader == null)
+                return UniTask.FromResult<AudioClip>(null);
+
+            if (_cache != null)
+                return _cache.GetOrLoadAsync(key, _loader, kind, token);
+
+            return kind == AudioLoadKind.Url
+                ? _loader.LoadFromUrlAsync(key, token)
+                : _loader.LoadAsync(key, token);
+        }
+
+        #endregion
+
         #region 运行时配置方法
 
         /// <summary>
         /// 设置主混音器
-        /// <para>Set the main AudioMixer at runtime.</para>
+        /// <para>Set the main AudioMixer</para>
         /// </summary>
+        /// <param name="newMixer">新的主混音器 <para>New main AudioMixer</para></param>
         public void SetAudioMixer(AudioMixer newMixer)
         {
             if (newMixer == audioMixer) return;
             audioMixer = newMixer;
-
-            var newMaster = GetMixerGroupSafe(MasterGroupName);
-            var newBgm = GetMixerGroupSafe(BgmGroupName);
-            var newEffect = GetMixerGroupSafe(EffectGroupName);
-
-            bool effectGroupChanged = (newEffect != _effectGroup);
-            _masterGroup = newMaster;
-            _bgmGroup = newBgm;
-            _effectGroup = newEffect;
-
-            if (_bgmSource)
-                _bgmSource.outputAudioMixerGroup = _bgmGroup;
-
-            if (!effectGroupChanged || _activeEffects == null) return;
-            for (var i = 0; i < _activeEffects.Count; i++)
-            {
-                var effect = _activeEffects[i];
-                if (effect.Source)
-                    effect.Source.outputAudioMixerGroup = _effectGroup;
-            }
+            _settings?.SetAudioMixer(newMixer);
         }
 
         /// <summary>
-        /// 设置默认背景音乐音量（0~1），仅影响后续播放，已播放的不变。
-        /// <para>Set default BGM volume, only affects future playback.</para>
+        /// 设置默认背景音乐音量
+        /// <para>Set default BGM volume</para>
         /// </summary>
+        /// <param name="volume">音量（0~1） <para>Volume (0~1)</para></param>
         public void SetDefaultBgmVolume(float volume)
         {
             defaultBgmVolume = Mathf.Clamp01(volume);
+            if (_context != null) _context.DefaultBgmVolume = defaultBgmVolume;
         }
 
         /// <summary>
-        /// 设置默认音效音量（0~1），仅影响后续播放，已播放的不变。
-        /// <para>Set default Effect volume, only affects future playback.</para>
+        /// 设置默认音效音量
+        /// <para>Set default effect volume</para>
         /// </summary>
+        /// <param name="volume">音量（0~1） <para>Volume (0~1)</para></param>
         public void SetDefaultEffectVolume(float volume)
         {
             defaultEffectVolume = Mathf.Clamp01(volume);
+            if (_context != null) _context.DefaultEffectVolume = defaultEffectVolume;
         }
 
         #endregion
@@ -452,210 +439,236 @@ namespace EasyFramework.Managers.Audio
         #region BGM - 背景音乐
 
         /// <summary>
-        /// 播放背景音乐（可指定起始时间，单位秒）
-        /// <para>Play BGM with optional start time (in seconds).</para>
+        /// 播放背景音乐
+        /// <para>Play BGM</para>
         /// </summary>
+        /// <param name="clip">待播放的音频片段 <para>AudioClip to play</para></param>
+        /// <param name="isLoop">是否循环 <para>Whether to loop</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
         public void PlayBGM(AudioClip clip, bool isLoop = true, float startTime = 0f)
-        {
-            if (!clip) return;
-            if (_bgmSource.clip == clip && _bgmSource.isPlaying) return;
+            => _player.PlayBGM(clip, isLoop, startTime);
 
-            _bgmSource.clip = clip;
-            _bgmSource.loop = isLoop;
-            _bgmSource.Play();
-            _bgmSource.time = Mathf.Clamp(startTime, 0f, clip.length);
+        /// <summary>
+        /// 按资源名播放背景音乐
+        /// <para>Play BGM by asset name</para>
+        /// </summary>
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <param name="isLoop">是否循环 <para>Whether to loop</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        public void PlayBGM(string clipName, bool isLoop = true, float startTime = 0f)
+        {
+            PlayBGMAsync(clipName, isLoop, startTime).Forget();
         }
 
         /// <summary>
-        /// 播放背景音乐（通过资源名）
-        /// <para>Play BGM by asset name.</para>
+        /// 按资源名播放背景音乐（可等待）
+        /// <para>Play BGM by asset name, awaitable</para>
         /// </summary>
-        public void PlayBGM(string clipName, bool isLoop = true, float startTime = 0f)
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <param name="isLoop">是否循环 <para>Whether to loop</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        public async UniTask PlayBGMAsync(string clipName, bool isLoop = true, float startTime = 0f,
+            CancellationToken token = default)
         {
-            var clip = LoadClip(clipName);
-            PlayBGM(clip, isLoop, startTime);
+            var clip = await ResolveClipAsync(clipName, AudioLoadKind.Asset, token);
+            _player.PlayBGM(clip, isLoop, startTime);
+        }
+
+        /// <summary>
+        /// 按 URL 播放背景音乐
+        /// <para>Play BGM by URL</para>
+        /// </summary>
+        /// <param name="url">网络音频直链 <para>Remote audio URL</para></param>
+        /// <param name="isLoop">是否循环 <para>Whether to loop</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        public void PlayBGMFromUrl(string url, bool isLoop = true, float startTime = 0f)
+        {
+            PlayBGMFromUrlAsync(url, isLoop, startTime).Forget();
+        }
+
+        /// <summary>
+        /// 按 URL 播放背景音乐（可等待）
+        /// <para>Play BGM by URL, awaitable</para>
+        /// </summary>
+        /// <param name="url">网络音频直链 <para>Remote audio URL</para></param>
+        /// <param name="isLoop">是否循环 <para>Whether to loop</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        public async UniTask PlayBGMFromUrlAsync(string url, bool isLoop = true, float startTime = 0f,
+            CancellationToken token = default)
+        {
+            var clip = await ResolveClipAsync(url, AudioLoadKind.Url, token);
+            _player.PlayBGM(clip, isLoop, startTime);
         }
 
         /// <summary>
         /// 停止背景音乐
         /// <para>Stop BGM.</para>
         /// </summary>
-        public void StopBGM() => _bgmSource.Stop();
+        public void StopBGM() => _player.StopBGM();
 
         /// <summary>
         /// 暂停背景音乐
         /// <para>Pause BGM.</para>
         /// </summary>
-        public void PauseBGM() => _bgmSource.Pause();
+        public void PauseBGM() => _player.PauseBGM();
 
         /// <summary>
         /// 恢复背景音乐
         /// <para>Unpause BGM.</para>
         /// </summary>
-        public void UnPauseBGM() => _bgmSource.UnPause();
+        public void UnPauseBGM() => _player.UnPauseBGM();
 
         #endregion
 
         #region Effect - 音效
 
         /// <summary>
-        /// 播放 2D 音效，等待自然结束
-        /// <para>Play 2D effect and await its completion.</para>
+        /// 播放 2D 音效
+        /// <para>Play a 2D effect</para>
         /// </summary>
-        public async UniTask<uint> Play2DEffect(AudioClip clip, CancellationToken token = default, float startTime = 0f)
-        {
-            if (!clip) return 0;
-            var effect = PlayEffect(clip, false, Vector3.zero, token, is3D: false, startTime: startTime);
-            if (null == effect) return 0;
-            if (effect.CompletionSource != null)
-                await effect.CompletionSource.Task;
-            return effect.ID;
-        }
+        /// <param name="clip">待播放的音频片段 <para>AudioClip to play</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
+        public UniTask<uint> Play2DEffect(AudioClip clip, CancellationToken token = default, float startTime = 0f)
+            => _player.Play2DEffect(clip, token, startTime);
 
         /// <summary>
-        /// 播放 2D 音效（通过资源名）
-        /// <para>Play 2D effect by asset name.</para>
+        /// 按资源名播放 2D 音效
+        /// <para>Play a 2D effect by asset name</para>
         /// </summary>
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
         public async UniTask<uint> Play2DEffect(string clipName, CancellationToken token = default,
             float startTime = 0f)
         {
-            var clip = LoadClip(clipName);
-            return await Play2DEffect(clip, token, startTime);
+            var clip = await ResolveClipAsync(clipName, AudioLoadKind.Asset, token);
+            return await _player.Play2DEffect(clip, token, startTime);
         }
 
         /// <summary>
-        /// 播放 3D 音效，等待自然结束
-        /// <para>Play 3D effect at world position and await its completion.</para>
+        /// 播放 3D 音效
+        /// <para>Play a 3D effect</para>
         /// </summary>
-        public async UniTask<uint> Play3DEffect(AudioClip clip, Vector3 worldPos, CancellationToken token = default,
+        /// <param name="clip">待播放的音频片段 <para>AudioClip to play</para></param>
+        /// <param name="worldPos">世界坐标 <para>World position</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
+        public UniTask<uint> Play3DEffect(AudioClip clip, Vector3 worldPos, CancellationToken token = default,
             float startTime = 0f)
-        {
-            if (!clip) return 0;
-            var effect = PlayEffect(clip, false, worldPos, token, is3D: true, startTime: startTime);
-            if (null == effect) return 0;
-            if (effect.CompletionSource != null)
-                await effect.CompletionSource.Task;
-            return effect.ID;
-        }
+            => _player.Play3DEffect(clip, worldPos, token, startTime);
 
         /// <summary>
-        /// 播放 3D 音效（通过资源名）
-        /// <para>Play 3D effect by asset name.</para>
+        /// 按资源名播放 3D 音效
+        /// <para>Play a 3D effect by asset name</para>
         /// </summary>
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <param name="worldPos">世界坐标 <para>World position</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
         public async UniTask<uint> Play3DEffect(string clipName, Vector3 worldPos, CancellationToken token = default,
             float startTime = 0f)
         {
-            var clip = LoadClip(clipName);
-            return await Play3DEffect(clip, worldPos, token, startTime);
+            var clip = await ResolveClipAsync(clipName, AudioLoadKind.Asset, token);
+            return await _player.Play3DEffect(clip, worldPos, token, startTime);
         }
 
         /// <summary>
-        /// 播放循环音效（返回 AudioSource 供手动停止）
-        /// <para>Play looping effect, returns the AudioSource for manual control.</para>
+        /// 按 URL 播放 2D 音效
+        /// <para>Play a 2D effect by URL</para>
         /// </summary>
-        public AudioSource PlayLoopEffect(AudioClip clip, bool is3D = false, Vector3 pos = default,
+        /// <param name="url">网络音频直链 <para>Remote audio URL</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
+        public async UniTask<uint> Play2DEffectFromUrl(string url, CancellationToken token = default,
             float startTime = 0f)
         {
-            return !clip ? null : PlayEffect(clip, true, pos, CancellationToken.None, is3D, startTime).Source;
+            var clip = await ResolveClipAsync(url, AudioLoadKind.Url, token);
+            return await _player.Play2DEffect(clip, token, startTime);
         }
+
+        /// <summary>
+        /// 按 URL 播放 3D 音效
+        /// <para>Play a 3D effect by URL</para>
+        /// </summary>
+        /// <param name="url">网络音频直链 <para>Remote audio URL</para></param>
+        /// <param name="worldPos">世界坐标 <para>World position</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>音效 ID；失败或取消为 0 <para>Effect id, or 0 on failure/cancellation</para></returns>
+        public async UniTask<uint> Play3DEffectFromUrl(string url, Vector3 worldPos, CancellationToken token = default,
+            float startTime = 0f)
+        {
+            var clip = await ResolveClipAsync(url, AudioLoadKind.Url, token);
+            return await _player.Play3DEffect(clip, worldPos, token, startTime);
+        }
+
+        /// <summary>
+        /// 播放循环音效
+        /// <para>Play a looping effect</para>
+        /// </summary>
+        /// <param name="clip">待播放的音频片段 <para>AudioClip to play</para></param>
+        /// <param name="is3D">是否按 3D 空间播放 <para>Whether to play in 3D space</para></param>
+        /// <param name="pos">世界坐标 <para>World position</para></param>
+        /// <param name="startTime">起始播放时间（秒） <para>Start time in seconds</para></param>
+        /// <returns>循环音效播放器；失败为 null <para>Looping AudioSource, or null on failure</para></returns>
+        public AudioSource PlayLoopEffect(AudioClip clip, bool is3D = false, Vector3 pos = default,
+            float startTime = 0f)
+            => _player.PlayLoopEffect(clip, is3D, pos, startTime);
 
         /// <summary>
         /// 通过 ID 停止指定的音效
-        /// <para>Stop the specified sound effect by id</para>
+        /// <para>Stop an effect by id.</para>
         /// </summary>
-        public void StopEffect(uint id)
-        {
-            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
-            if (effect.IsReleased) return;
-            effect.IsReleased = true;
-            effect.IsPaused = false;
-            effect.Source.Stop();
-            effect.CompletionSource?.TrySetCanceled();
-            effect.CompletionSource = null;
-            effect.Cancellation.Dispose();
-            ReturnEffectToPool(effect.Source);
-            _activeEffects.Remove(effect);
-            _activeEffectDict.Remove(id);
-        }
+        /// <param name="id">音效 ID <para>Effect id</para></param>
+        public void StopEffect(uint id) => _player.StopEffect(id);
 
         /// <summary>
         /// 通过 ID 暂停指定的音效
-        /// <para>Pause the specified sound effect by ID</para>
+        /// <para>Pause an effect by id.</para>
         /// </summary>
-        public void PauseEffect(uint id)
-        {
-            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
-            if (effect.IsReleased || effect.IsPaused) return;
-            effect.IsPaused = true;
-            effect.Source.Pause();
-        }
+        /// <param name="id">音效 ID <para>Effect id</para></param>
+        public void PauseEffect(uint id) => _player.PauseEffect(id);
 
         /// <summary>
         /// 通过 ID 恢复指定的音效
-        /// <para>Restore the specified sound effect through the ID</para>
+        /// <para>Unpause an effect by id.</para>
         /// </summary>
-        public async UniTask UnPauseEffect(uint id)
-        {
-            if (!_activeEffectDict.TryGetValue(id, out var effect)) return;
-            if (effect.IsReleased || !effect.IsPaused) return;
-            effect.Source.UnPause();
-            await UniTask.Yield(PlayerLoopTiming.Update);
-            if (!effect.IsReleased)
-                effect.IsPaused = false;
-        }
+        /// <param name="id">音效 ID <para>Effect id</para></param>
+        public UniTask UnPauseEffect(uint id) => _player.UnPauseEffect(id);
 
         /// <summary>
         /// 暂停所有当前正在播放的音效
-        /// <para>Pause all the currently playing sound effects</para>
+        /// <para>Pause all effects.</para>
         /// </summary>
-        public void PauseAllEffect()
-        {
-            foreach (var effect in _activeEffects)
-            {
-                if (effect.IsReleased || effect.IsPaused) continue;
-                effect.IsPaused = true;
-                effect.Source.Pause();
-            }
-        }
+        public void PauseAllEffect() => _player.PauseAllEffect();
 
         /// <summary>
-        /// 恢复所有音效（仅恢复被暂停的，不会重新开始已停止的音效）
-        /// <para>Restore all sound effects (only restore those that were paused; existing stopped effects will not be restarted)</para>
+        /// 恢复所有被暂停的音效
+        /// <para>Unpause all paused effects.</para>
         /// </summary>
-        public async UniTask UnPauseAllEffect()
-        {
-            var toUnpause = new List<ActiveEffect>();
-            foreach (var effect in _activeEffects)
-            {
-                if (!effect.IsReleased && effect.IsPaused)
-                    toUnpause.Add(effect);
-            }
-
-            foreach (var effect in toUnpause)
-                effect.Source.UnPause();
-
-            await UniTask.Yield(PlayerLoopTiming.Update);
-
-            foreach (var effect in toUnpause)
-            {
-                if (!effect.IsReleased)
-                    effect.IsPaused = false;
-            }
-        }
+        public UniTask UnPauseAllEffect() => _player.UnPauseAllEffect();
 
         #endregion
 
         #region Global Control - 全局控制
 
         /// <summary>
-        /// 暂停所有音频（BGM + 音效）
-        /// <para>Pause all audio (BGM and Effect).</para>
+        /// 暂停所有音频
+        /// <para>Pause all audio</para>
         /// </summary>
         public void PauseAll()
         {
             IsPaused = true;
-            _bgmSource.Pause();
-            PauseAllEffect();
+            _player.PauseBGM();
+            _player.PauseAllEffect();
         }
 
         /// <summary>
@@ -665,66 +678,39 @@ namespace EasyFramework.Managers.Audio
         public async UniTask UnPauseAll()
         {
             IsPaused = false;
-            _bgmSource.UnPause();
-            await UnPauseAllEffect();
+            _player.UnPauseBGM();
+            await _player.UnPauseAllEffect();
         }
 
         /// <summary>
         /// 设置全局静音
         /// <para>Set global mute.</para>
         /// </summary>
-        public void SetMute(bool mute)
-        {
-            IsMuted = mute;
-            SetMixerVolume(_masterGroup, mute ? -80f : ToDecibel(GetMasterVolume()));
-            PreferenceManager.Instance.Set(_muteKey, mute);
-        }
+        /// <param name="mute">是否静音 <para>Whether to mute</para></param>
+        public void SetMute(bool mute) => _settings.SetMute(mute);
 
         /// <summary>
-        /// 停止所有音效， BGM不受影响
-        /// <para>Stop all Effect, BGM untouched.</para>
+        /// 停止所有音效
+        /// <para>Stop all effects</para>
         /// </summary>
-        public void StopAllEffects()
-        {
-            for (int i = _activeEffects.Count - 1; i >= 0; i--)
-            {
-                var effect = _activeEffects[i];
-                if (effect.IsReleased) continue;
-                effect.IsReleased = true;
-                effect.Source.Stop();
-                effect.CompletionSource?.TrySetResult();
-                effect.CompletionSource = null;
-                effect.Cancellation.Dispose();
-                ReturnEffectToPool(effect.Source);
-                _activeEffects.RemoveAt(i);
-                _activeEffectDict.Remove(effect.ID);
-            }
-        }
+        public void StopAllEffects() => _player.StopAllEffects();
 
         /// <summary>
         /// 停止循环音效
-        /// <para>Stop the looping sound effect</para>
+        /// <para>Stop the looping sound effect.</para>
         /// </summary>
-        /// <param name="source">音频源</param>
-        public void StopLoopEffect(AudioSource source)
-        {
-            if (source == null) return;
-            for (int i = 0; i < _activeEffects.Count; i++)
-            {
-                if (_activeEffects[i].Source != source) continue;
-                StopEffect(_activeEffects[i].ID);
-                break;
-            }
-        }
+        /// <param name="source">待停止的循环音效播放器 <para>Looping AudioSource to stop.</para></param>
+        public void StopLoopEffect(AudioSource source) => _player.StopLoopEffect(source);
 
         /// <summary>
-        /// 停止所有音频（BGM + 音效）
-        /// <para>Stop all audio.</para>
+        /// 停止所有音频
+        /// <para>Stop all audio</para>
         /// </summary>
         public void StopAll()
         {
-            StopBGM();
-            StopAllEffects();
+            if (_player == null) return;
+            _player.StopBGM();
+            _player.StopAllEffects();
         }
 
         #endregion
@@ -732,105 +718,78 @@ namespace EasyFramework.Managers.Audio
         #region 音量与淡入淡出
 
         /// <summary>
-        /// 设置主音量（0~1），影响所有通道
-        /// <para>Set master volume (0~1), affects all groups.</para>
+        /// 设置主音量
+        /// <para>Set master volume</para>
         /// </summary>
-        public void SetMasterVolume(float volume)
-        {
-            volume = Mathf.Clamp01(volume);
-            _masterVolume = volume;
-            SetMixerVolume(_masterGroup, ToDecibel(volume));
-            PreferenceManager.Instance.Set(_masterVolumeKey, volume);
-        }
+        /// <param name="volume">音量（0~1） <para>Volume (0~1)</para></param>
+        public void SetMasterVolume(float volume) => _settings.SetMasterVolume(volume);
 
         /// <summary>
-        /// 设置背景音乐音量（0~1）
-        /// <para>Set BGM volume (0~1).</para>
+        /// 设置 BGM 音量
+        /// <para>Set BGM volume</para>
         /// </summary>
-        public void SetBgmVolume(float volume)
-        {
-            volume = Mathf.Clamp01(volume);
-            _bgmVolume = volume;
-            SetMixerVolume(_bgmGroup, ToDecibel(volume));
-            PreferenceManager.Instance.Set(_bgmVolumeKey, volume);
-        }
+        /// <param name="volume">音量（0~1） <para>Volume (0~1)</para></param>
+        public void SetBgmVolume(float volume) => _settings.SetBgmVolume(volume);
 
         /// <summary>
-        /// 设置音效音量（0~1）
-        /// <para>Set Effect volume (0~1).</para>
+        /// 设置音效音量
+        /// <para>Set effect volume</para>
         /// </summary>
-        public void SetEffectVolume(float volume)
-        {
-            volume = Mathf.Clamp01(volume);
-            _effectVolume = volume;
-            SetMixerVolume(_effectGroup, ToDecibel(volume));
-            PreferenceManager.Instance.Set(_effectVolumeKey, volume);
-        }
+        /// <param name="volume">音量（0~1） <para>Volume (0~1)</para></param>
+        public void SetEffectVolume(float volume) => _settings.SetEffectVolume(volume);
 
         /// <summary>
-        /// 获取当前背景音乐音量（0~1）
-        /// <para>Get current BGM volume.</para>
+        /// 获取 BGM 音量
+        /// <para>Get BGM volume</para>
         /// </summary>
-        public float GetBgmVolume() => _bgmVolume;
+        /// <returns>当前音量（0~1） <para>Current volume (0~1)</para></returns>
+        public float GetBgmVolume() => _settings.GetBgmVolume();
 
         /// <summary>
-        /// 获取当前音效音量（0~1）
-        /// <para>Get current Effect volume.</para>
+        /// 获取音效音量
+        /// <para>Get effect volume</para>
         /// </summary>
-        public float GetEffectVolume() => _effectVolume;
+        /// <returns>当前音量（0~1） <para>Current volume (0~1)</para></returns>
+        public float GetEffectVolume() => _settings.GetEffectVolume();
 
         /// <summary>
-        /// 获取当前主音量（0~1）
-        /// <para>Get current master volume.</para>
+        /// 获取主音量
+        /// <para>Get master volume</para>
         /// </summary>
-        public float GetMasterVolume() => _masterVolume;
+        /// <returns>当前音量（0~1） <para>Current volume (0~1)</para></returns>
+        public float GetMasterVolume() => _settings.GetMasterVolume();
 
         /// <summary>
         /// 背景音乐淡入到目标音量
         /// <para>Fade BGM to a target volume.</para>
         /// </summary>
-        public async UniTask FadeBGM(float targetVolume, float duration, CancellationToken token = default)
-        {
-            float start = _bgmSource.volume;
-            await FadeVolume(_bgmSource, start, targetVolume, duration, token);
-        }
+        /// <param name="targetVolume">目标音量 <para>Target volume</para></param>
+        /// <param name="duration">淡变时长（秒） <para>Fade duration in seconds</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        public UniTask FadeBGM(float targetVolume, float duration, CancellationToken token = default)
+            => _settings.FadeBGM(targetVolume, duration, token);
 
         /// <summary>
         /// 背景音乐淡出并停止
         /// <para>Fade out BGM and stop.</para>
         /// </summary>
-        public async UniTask FadeOutBGM(float duration, CancellationToken token = default)
-        {
-            await FadeVolume(_bgmSource, _bgmSource.volume, 0f, duration, token);
-            _bgmSource.Stop();
-            _bgmSource.volume = 0f;
-        }
+        /// <param name="duration">淡变时长（秒） <para>Fade duration in seconds</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        public UniTask FadeOutBGM(float duration, CancellationToken token = default)
+            => _settings.FadeOutBGM(duration, token);
 
         /// <summary>
-        /// 线性淡入淡出指定 AudioSource 的音量（静态工具方法）
-        /// <para>Linearly fade an AudioSource volume.</para>
+        /// 淡入淡出 AudioSource 音量
+        /// <para>Fade an AudioSource volume</para>
         /// </summary>
-        public async UniTask FadeVolume(AudioSource source, float from, float to, float duration,
+        /// <param name="source">目标播放器 <para>Target AudioSource</para></param>
+        /// <param name="from">起始音量 <para>Starting volume</para></param>
+        /// <param name="to">目标音量 <para>Target volume</para></param>
+        /// <param name="duration">淡变时长（秒） <para>Fade duration in seconds</para></param>
+        /// <param name="token">取消令牌 <para>Cancellation token</para></param>
+        public UniTask FadeVolume(AudioSource source, float from, float to, float duration,
             CancellationToken token = default)
-        {
-            if (!source) return;
-
-            if (duration <= 0f)
-            {
-                source.volume = to;
-                return;
-            }
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                source.volume = Mathf.Lerp(from, to, elapsed / duration);
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
-            }
-
-            source.volume = to;
-        }
+            => _settings.FadeVolume(source, from, to, duration, token);
 
         #endregion
 
@@ -840,25 +799,17 @@ namespace EasyFramework.Managers.Audio
         /// 指定名字的 BGM 是否正在播放
         /// <para>Check if BGM with given name is playing.</para>
         /// </summary>
-        public bool IsPlayingBGM(string clipName)
-        {
-            return _bgmSource.isPlaying && _bgmSource.clip != null && _bgmSource.clip.name == clipName;
-        }
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <returns>是否处于目标状态 <para>Whether the condition holds</para></returns>
+        public bool IsPlayingBGM(string clipName) => _player.IsPlayingBGM(clipName);
 
         /// <summary>
         /// 指定名字的音效是否正在播放
         /// <para>Check if any Effect with given name is playing.</para>
         /// </summary>
-        public bool IsPlayingEffect(string clipName)
-        {
-            foreach (var effect in _activeEffects)
-            {
-                if (effect.Source.isPlaying && effect.Source.clip != null && effect.Source.clip.name == clipName)
-                    return true;
-            }
-
-            return false;
-        }
+        /// <param name="clipName">资源名 <para>Asset name</para></param>
+        /// <returns>是否处于目标状态 <para>Whether the condition holds</para></returns>
+        public bool IsPlayingEffect(string clipName) => _player.IsPlayingEffect(clipName);
 
         #endregion
     }

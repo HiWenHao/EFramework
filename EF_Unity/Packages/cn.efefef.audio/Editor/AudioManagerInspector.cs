@@ -17,16 +17,32 @@ using UnityEngine;
 
 namespace EasyFramework.Managers.Audio.Editor
 {
+    /// <summary>
+    /// 音频管理器自定义检视面板
+    /// <para>Custom inspector for AudioManager</para>
+    /// </summary>
     [CustomEditor(typeof(AudioManager))]
     public class AudioManagerInspector : UnityEditor.Editor
     {
+        // 主混音器序列化属性
         private SerializedProperty audioMixerProp;
+
+        // 默认 BGM 音量序列化属性
         private SerializedProperty defaultBgmVolumeProp;
+
+        // 默认音效音量序列化属性
         private SerializedProperty defaultEffectVolumeProp;
+
+        // 对象池最大空闲数序列化属性
         private SerializedProperty maxEffectPoolSizeProp;
+
+        // 对象池预热数量序列化属性
         private SerializedProperty prewarmCountProp;
 
+        // 检视面板中用于试听的音频片段
         private AudioClip testClip;
+
+        // 运行时信息折叠面板是否展开
         private bool showRuntimeInfo = true;
 
         private void OnEnable()
@@ -41,13 +57,13 @@ namespace EasyFramework.Managers.Audio.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            
+
             EditorGUILayout.Space(10);
             var titleRect = GUILayoutUtility.GetRect(GUIContent.none, GUIUtils.InspectorTitle());
             EditorGUI.DrawRect(titleRect, new Color(0.2f, 0.2f, 0.2f, 0.3f));
-            EditorGUI.LabelField(titleRect, LC.Combine(Lc.Audio, Lc.Data, Lc.Panel ), GUIUtils.InspectorTitle());
+            EditorGUI.LabelField(titleRect, LC.Combine(Lc.Audio, Lc.Data, Lc.Panel), GUIUtils.InspectorTitle());
 
-            
+
             var sys = (AudioManager)target;
             serializedObject.Update();
 
@@ -96,18 +112,8 @@ namespace EasyFramework.Managers.Audio.Editor
                 EditorUtility.SetDirty(target);
         }
 
-        private int GetActiveEffectCount(AudioManager sys)
-        {
-            var field = typeof(AudioManager).GetField("_activeEffects",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null)
-            {
-                var list = field.GetValue(sys);
-                if (list is System.Collections.IList iList)
-                    return iList.Count;
-            }
-            return -1;
-        }
+        // 门面公开 ActiveEffectCount：播放实现已被替换，反射私有字段不再可靠
+        private int GetActiveEffectCount(AudioManager sys) => sys.ActiveEffectCount;
     }
 }
 #endif
