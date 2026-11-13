@@ -155,8 +155,9 @@ namespace EasyFramework.Systems.Net
         }
 
         /// <summary>
-        /// 编码一帧
-        /// <para>Encode one frame</para>
+        /// 编码一帧（每次分配新缓冲；每条消息都发的热路径请用写入指定缓冲的重载）
+        /// <para>Encode one frame into a fresh buffer (hot paths that send per message should use the
+        /// destination overload).</para>
         /// </summary>
         /// <param name="opcode">消息操作码<para>Message opcode</para></param>
         /// <param name="rpcId">RPC 配对 Id<para>RPC pairing id</para></param>
@@ -166,12 +167,37 @@ namespace EasyFramework.Systems.Net
         {
             int payloadLength = payload?.Length ?? 0;
             var frame = new byte[HeaderSize + payloadLength];
-            WriteInt32(frame, 0, opcode);
-            WriteInt32(frame, 4, rpcId);
-            WriteInt32(frame, 8, payloadLength);
-            if (payloadLength > 0)
-                Buffer.BlockCopy(payload, 0, frame, HeaderSize, payloadLength);
+            Encode(opcode, rpcId, payload, frame, out _);
             return frame;
+        }
+
+        /// <summary>
+        /// 编码一帧到指定缓冲：配合会话持有的复用缓冲，可让每条消息的编码零分配。
+        /// <para>Encode one frame into a caller-owned buffer: paired with a session-owned reusable buffer,
+        /// encoding becomes allocation-free per message.</para>
+        /// </summary>
+        /// <param name="opcode">消息操作码<para>Message opcode</para></param>
+        /// <param name="rpcId">RPC 配对 Id<para>RPC pairing id</para></param>
+        /// <param name="payload">载荷字节，可为 null<para>Payload bytes; may be null</para></param>
+        /// <param name="destination">目标缓冲，容量须 >= HeaderSize + 载荷长度<para>Destination buffer; capacity must be at least HeaderSize + payload length</para></param>
+        /// <param name="length">输出：写入的字节数<para>Output: bytes written</para></param>
+        /// <returns>缓冲不足或参数非法时返回 false<para>False when the buffer is too small or arguments are invalid</para></returns>
+        public static bool Encode(int opcode, int rpcId, byte[] payload, byte[] destination, out int length)
+        {
+            length = 0;
+
+            int payloadLength = payload?.Length ?? 0;
+            int required = HeaderSize + payloadLength;
+            if (destination == null || destination.Length < required) return false;
+
+            WriteInt32(destination, 0, opcode);
+            WriteInt32(destination, 4, rpcId);
+            WriteInt32(destination, 8, payloadLength);
+            if (payloadLength > 0)
+                Buffer.BlockCopy(payload, 0, destination, HeaderSize, payloadLength);
+
+            length = required;
+            return true;
         }
 
         /// <summary>
@@ -187,20 +213,48 @@ namespace EasyFramework.Systems.Net
         public static bool TryDecode(byte[] frame, out int opcode, out int rpcId, out int payloadOffset,
             out int payloadLength)
         {
+            return TryDecode(frame, 0, frame?.Length ?? 0, out opcode, out rpcId, out payloadOffset, out payloadLength);
+        }
+
+        /// <summary>
+        /// 尝试解码一帧，只认 [frameOffset, frameOffset + frameLength) 这一段真实消息。
+        /// <para>Decode one frame trusting only the message slice [frameOffset, frameOffset + frameLength).</para>
+        /// </summary>
+        /// <remarks>
+        /// 收包缓冲是复用的「大缓冲」，真实消息只占其中一段。载荷长度必须按 <b>消息长度</b> 校验而不是按
+        /// 缓冲容量：否则对端只要伪造一个超长 payloadLength 的帧，解码方就会把上一条消息残留在缓冲里的
+        /// 字节当成载荷读出去（越界读到旧数据）。复用缓冲的会话必须走这个重载。
+        /// <para>The receive buffer is a reused large buffer and a message occupies only a slice of it. The
+        /// payload length must be validated against the <b>message length</b>, not the buffer capacity;
+        /// otherwise a frame declaring an oversized payloadLength makes the decoder read the previous
+        /// message's leftovers. Sessions with reused buffers must call this overload.</para>
+        /// </remarks>
+        /// <param name="frame">帧缓冲<para>Frame buffer</para></param>
+        /// <param name="frameOffset">消息起始偏移<para>Message start offset</para></param>
+        /// <param name="frameLength">消息长度<para>Message length</para></param>
+        /// <param name="opcode">输出消息操作码<para>Output message opcode</para></param>
+        /// <param name="rpcId">输出 RPC 配对 Id<para>Output RPC pairing id</para></param>
+        /// <param name="payloadOffset">输出载荷偏移<para>Output payload offset</para></param>
+        /// <param name="payloadLength">输出载荷长度<para>Output payload length</para></param>
+        /// <returns>是否解码成功<para>Whether decoding succeeded</para></returns>
+        public static bool TryDecode(byte[] frame, int frameOffset, int frameLength, out int opcode, out int rpcId,
+            out int payloadOffset, out int payloadLength)
+        {
             opcode = 0;
             rpcId = 0;
             payloadOffset = 0;
             payloadLength = 0;
 
-            if (frame == null || frame.Length < HeaderSize) return false;
+            if (frame == null || frameOffset < 0 || frameLength < HeaderSize) return false;
+            if (frameOffset + frameLength > frame.Length) return false;
 
-            opcode = ReadInt32(frame, 0);
-            rpcId = ReadInt32(frame, 4);
-            payloadLength = ReadInt32(frame, 8);
+            opcode = ReadInt32(frame, frameOffset);
+            rpcId = ReadInt32(frame, frameOffset + 4);
+            payloadLength = ReadInt32(frame, frameOffset + 8);
 
-            if (payloadLength < 0 || HeaderSize + payloadLength > frame.Length) return false;
+            if (payloadLength < 0 || HeaderSize + payloadLength > frameLength) return false;
 
-            payloadOffset = HeaderSize;
+            payloadOffset = frameOffset + HeaderSize;
             return true;
         }
 
@@ -226,8 +280,25 @@ namespace EasyFramework.Systems.Net
         /// <returns>是否解码成功<para>Whether decoding succeeded</para></returns>
         public static bool TryDecodePacket(int sessionId, byte[] frame, out NetPacket packet)
         {
+            return TryDecodePacket(sessionId, frame, 0, frame?.Length ?? 0, out packet);
+        }
+
+        /// <summary>
+        /// 把一段真实消息解码为 <see cref="NetPacket"/>（载荷独立拷贝，长度按消息长度校验）。
+        /// <para>Decode a message slice into <see cref="NetPacket"/> (payload copied; length validated
+        /// against the slice).</para>
+        /// </summary>
+        /// <param name="sessionId">来源会话 Id<para>Source session id</para></param>
+        /// <param name="frame">帧缓冲<para>Frame buffer</para></param>
+        /// <param name="frameOffset">消息起始偏移<para>Message start offset</para></param>
+        /// <param name="frameLength">消息长度<para>Message length</para></param>
+        /// <param name="packet">输出消息包<para>Output packet</para></param>
+        /// <returns>是否解码成功<para>Whether decoding succeeded</para></returns>
+        public static bool TryDecodePacket(int sessionId, byte[] frame, int frameOffset, int frameLength,
+            out NetPacket packet)
+        {
             packet = default;
-            if (!TryDecode(frame, out int opcode, out int rpcId, out int offset, out int length))
+            if (!TryDecode(frame, frameOffset, frameLength, out int opcode, out int rpcId, out int offset, out int length))
                 return false;
 
             byte[] payload = null;
