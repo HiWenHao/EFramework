@@ -35,6 +35,8 @@ namespace EasyFramework.Preference
             public List<ItemData> PreferenceItems = new();
         }
 
+        #region 字段 / Fields
+
         // 偏好文件根目录，与 archive 包的 Archives 根约定一致
         private const string RootFolder = "Preference";
 
@@ -47,7 +49,41 @@ namespace EasyFramework.Preference
         // 是否有未落盘的变更
         private bool _dirty;
 
-        #region Methods
+        #endregion
+
+        #region 方法 / Methods
+
+        // 将 JSON 值文本转为原生节点；非 JSON 文本（如绕过管理器写入的密文）降级为字符串节点
+        private static object ToNode(string text)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject(text);
+            }
+            catch
+            {
+                return text;
+            }
+        }
+
+        // 懒加载磁盘文件到内存缓存，值节点还原为 JSON 值文本
+        private Dictionary<string, string> EnsureCache()
+        {
+            if (_cache != null)
+                return _cache;
+
+            _cache = new Dictionary<string, string>();
+            if (!File.Exists(_filePath))
+                return _cache;
+
+            var file = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(_filePath));
+            if (file?.PreferenceItems == null)
+                return _cache;
+
+            foreach (var item in file.PreferenceItems)
+                _cache[item.Key] = JsonConvert.SerializeObject(item.Value);
+            return _cache;
+        }
 
         /// <summary>
         /// 创建文件存储，文件位于 persistentDataPath/Preference 下
@@ -125,38 +161,6 @@ namespace EasyFramework.Preference
             Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(file, Formatting.Indented));
             _dirty = false;
-        }
-
-        // 将 JSON 值文本转为原生节点；非 JSON 文本（如绕过管理器写入的密文）降级为字符串节点
-        private static object ToNode(string text)
-        {
-            try
-            {
-                return JsonConvert.DeserializeObject(text);
-            }
-            catch
-            {
-                return text;
-            }
-        }
-
-        // 懒加载磁盘文件到内存缓存，值节点还原为 JSON 值文本
-        private Dictionary<string, string> EnsureCache()
-        {
-            if (_cache != null)
-                return _cache;
-
-            _cache = new Dictionary<string, string>();
-            if (!File.Exists(_filePath))
-                return _cache;
-
-            var file = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(_filePath));
-            if (file?.PreferenceItems == null)
-                return _cache;
-
-            foreach (var item in file.PreferenceItems)
-                _cache[item.Key] = JsonConvert.SerializeObject(item.Value);
-            return _cache;
         }
 
         #endregion
