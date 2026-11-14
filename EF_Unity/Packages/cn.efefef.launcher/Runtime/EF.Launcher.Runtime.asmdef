@@ -1,0 +1,17 @@
+{
+    "name": "EF.Launcher.Runtime",
+    "rootNamespace": "EasyFramework.Launcher",
+    "references": [
+        "YooAsset",
+        "HybridCLR.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
