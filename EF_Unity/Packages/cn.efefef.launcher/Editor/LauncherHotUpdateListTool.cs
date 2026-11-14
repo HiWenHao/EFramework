@@ -55,21 +55,27 @@ namespace EasyFramework.Launcher.Editor
                 return;
 
             var existing = CollectExistingPaths(list);
-            var toAdd = new List<string>();
-            foreach (string path in candidates)
+            var toAdd = new List<AsmdefInfo>();
+            var candidatePaths = new List<string>(candidates.Count);
+
+            foreach (var info in candidates)
             {
-                if (!existing.Contains(path))
-                    toAdd.Add(path);
+                candidatePaths.Add(info.Path);
+                if (!existing.Contains(info.Path))
+                    toAdd.Add(info);
             }
 
-            var candidateSet = new HashSet<string>(candidates, StringComparer.OrdinalIgnoreCase);
+            var candidateSet = new HashSet<string>(candidatePaths, StringComparer.OrdinalIgnoreCase);
             var scan = ScanConsumers(database, candidateSet, existing);
 
             if (toAdd.Count == 0 && scan.IsEmpty)
             {
+                // 列表已经是全的，但骨架可能还没生成，顺便补一次
+                int filledAlready = LauncherHotfixDllFillTool.FillExistingConfig(out int totalAlready);
                 EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "EF 的运行时程序集已经全部在热更列表里了。",
-                    "All EF runtime assemblies are already in the hot update list."), LC.Tr("确定", "OK"));
+                        "EF 的运行时程序集已经全部在热更列表里了。\n\n" + DescribeFillResult(filledAlready, totalAlready),
+                        "All EF runtime assemblies are already in the hot update list.\n\n" + DescribeFillResult(filledAlready, totalAlready)),
+                    LC.Tr("确定", "OK"));
                 return;
             }
 
@@ -79,9 +85,10 @@ namespace EasyFramework.Launcher.Editor
 
             serialized.Update();
             int added = 0;
-            foreach (string path in toAdd)
+            var addedPaths = new List<string>(toAdd.Count);
+            foreach (var info in toAdd)
             {
-                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(info.Path);
                 if (asset == null)
                     continue;
 
@@ -89,23 +96,46 @@ namespace EasyFramework.Launcher.Editor
                 list.InsertArrayElementAtIndex(index);
                 list.GetArrayElementAtIndex(index).objectReferenceValue = asset;
                 added++;
+                addedPaths.Add(info.Path);
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
             Debug.Log(LC.Tr(
-                $"[EF.Launcher] 已加入 {added} 个 EF 程序集到热更列表：\n  {string.Join("\n  ", toAdd)}",
-                $"[EF.Launcher] Added {added} EF assemblies to the hot update list:\n  {string.Join("\n  ", toAdd)}"));
+                $"[EF.Launcher] 已加入 {added} 个 EF 程序集到热更列表：\n  {string.Join("\n  ", addedPaths)}",
+                $"[EF.Launcher] Added {added} EF assemblies to the hot update list:\n  {string.Join("\n  ", addedPaths)}"));
+
+            // 顺手把 LauncherConfig.HotfixDlls 的骨架也铺好（按依赖序）
+            int filled = LauncherHotfixDllFillTool.FillExistingConfig(out int total);
 
             EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    $"已加入 {added} 个程序集。\n\n下一步：\n" +
+                    $"已加入 {added} 个程序集。\n\n" +
+                    DescribeFillResult(filled, total) + "\n\n" +
+                    "下一步：\n" +
                     "1. 执行 HybridCLR/Generate/All\n" +
-                    "2. 把 HybridCLRData/HotUpdateDlls 里的 dll 按拓扑序填进 LauncherConfig.HotfixDlls",
-                    $"Added {added} assemblies.\n\nNext:\n" +
+                    "2. 把 dll 放进 YooAsset，并核对 HotfixDlls 里的 Location",
+                    $"Added {added} assemblies.\n\n" +
+                    DescribeFillResult(filled, total) + "\n\n" +
+                    "Next:\n" +
                     "1. Run HybridCLR/Generate/All\n" +
-                    "2. Fill LauncherConfig.HotfixDlls with the dlls from HybridCLRData/HotUpdateDlls, in topological order"),
+                    "2. Put the dlls into YooAsset and verify each Location in HotfixDlls"),
                 LC.Tr("好", "OK"));
+        }
+
+        /// <summary>把填充结果翻译成一句人话（filled = -1 表示没有可用的 LauncherConfig）</summary>
+        private static string DescribeFillResult(int filled, int total)
+        {
+            if (filled < 0)
+            {
+                return LC.Tr(
+                    "未找到 LauncherConfig，HotfixDlls 骨架未生成（可先创建配置，再用 📦 菜单补）。",
+                    "No LauncherConfig found, so the HotfixDlls skeleton was skipped (create one, then run the 📦 menu).");
+            }
+
+            return LC.Tr(
+                $"HotfixDlls 骨架已更新：新增 {filled} 条，共 {total} 条（已按依赖序排好）。",
+                $"HotfixDlls skeleton updated: {filled} added, {total} total (already in dependency order).");
         }
 
         [MenuItem(MenuRoot + "🗑️ Remove All EF Assemblies From Hot Update", false, MenuItemToolkit.UtilityPriority + 52)]
@@ -197,9 +227,9 @@ namespace EasyFramework.Launcher.Editor
         /// <summary>
         /// 收集所有 EF 运行时 asmdef（排除 launcher 自己、编辑器程序集、Plugins 下的第三方）
         /// </summary>
-        private static List<string> CollectEfRuntimeAsmdefs(AsmdefDatabase database)
+        internal static List<AsmdefInfo> CollectEfRuntimeAsmdefs(AsmdefDatabase database)
         {
-            var result = new List<string>();
+            var result = new List<AsmdefInfo>();
 
             foreach (var info in database.All)
             {
@@ -224,7 +254,7 @@ namespace EasyFramework.Launcher.Editor
                 if (info.Path.IndexOf("/Editor/", StringComparison.OrdinalIgnoreCase) >= 0)
                     continue;
 
-                result.Add(info.Path);
+                result.Add(info);
             }
 
             result.Sort(CompareForDisplay);
@@ -232,10 +262,10 @@ namespace EasyFramework.Launcher.Editor
         }
 
         /// <summary>EF.Core 排最前，其余按名字</summary>
-        private static int CompareForDisplay(string left, string right)
+        private static int CompareForDisplay(AsmdefInfo left, AsmdefInfo right)
         {
-            string a = System.IO.Path.GetFileNameWithoutExtension(left);
-            string b = System.IO.Path.GetFileNameWithoutExtension(right);
+            string a = left.Name;
+            string b = right.Name;
 
             bool aCore = string.Equals(a, "EF.Core", StringComparison.Ordinal);
             bool bCore = string.Equals(b, "EF.Core", StringComparison.Ordinal);
