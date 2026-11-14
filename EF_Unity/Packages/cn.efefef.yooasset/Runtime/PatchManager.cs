@@ -62,7 +62,11 @@ namespace EasyFramework.Managers.Assets
 
         void ISingleton.Init()
         {
-            YooAssets.Initialize();
+            // 幂等：Launcher 可能已经初始化过 YooAssets，重复调用只会刷一条 warning
+            // Idempotent: the launcher may have initialized YooAssets already
+            if (!YooAssets.Initialized)
+                YooAssets.Initialize();
+
             _subPackages = new Dictionary<string, SubPackageInfo>();
             IsUse = true;
         }
