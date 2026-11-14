@@ -24,9 +24,45 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 031b6db1e40a7aa4bbf9d28be224a7ce, type: 3}
   - {fileID: 4900000, guid: b47d7ad75fe0a08439b86d30253289f9, type: 3}
   HotfixDlls:
-  - Name: "\u903B\u8F91\u70ED\u66F4"
-    Location: Assets/AssetsHotfix/Code/ExampleGameHotfix.dll
-    FallbackAsset: {fileID: 4900000, guid: 295688d04e2ab534d9cd38139d4f1e55, type: 3}
+  - Name: EF.Core
+    Location: HotfixDlls/EF.Core.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Net
+    Location: HotfixDlls/EF.Net.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Archive.Runtime
+    Location: HotfixDlls/EF.Archive.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Preference.Runtime
+    Location: HotfixDlls/EF.Preference.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Audio.Runtime
+    Location: HotfixDlls/EF.Audio.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Http.Runtime
+    Location: HotfixDlls/EF.Http.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.Localization.Runtime
+    Location: HotfixDlls/EF.Localization.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.RedDot.Runtime
+    Location: HotfixDlls/EF.RedDot.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.UI.Runtime
+    Location: HotfixDlls/EF.UI.Runtime.dll
+    FallbackAsset: {fileID: 0}
+    Enabled: 1
+  - Name: EF.YooAsset.Runtime
+    Location: HotfixDlls/EF.YooAsset.Runtime.dll
+    FallbackAsset: {fileID: 0}
     Enabled: 1
   EntryType: EFExample.HotfixTest
   EntryMethod: Init
