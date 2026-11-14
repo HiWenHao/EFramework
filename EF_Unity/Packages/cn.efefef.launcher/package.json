@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "unity": "2022.3",
   "unityRelease": "10f1",
-  "description": "框架启动包，纯 AOT 代码：YooAsset 初始化/更新 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口。本包禁止引用任何 cn.efefef.* 包。",
+  "description": "框架启动包：Runtime 为纯 AOT 代码（禁引 cn.efefef.*），负责 YooAsset 初始化/更新 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口；Editor 复用 EF.Editor 的菜单规范与中英双语。",
   "author": {
     "name": "Alvin",
     "url": null
@@ -13,6 +13,7 @@
   "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
   "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
   "dependencies": {
+    "cn.efefef.core": "0.1.0",
     "com.tuyoogame.yooasset": "2.3.19",
     "com.code-philosophy.hybridclr": "8.11.0"
   },

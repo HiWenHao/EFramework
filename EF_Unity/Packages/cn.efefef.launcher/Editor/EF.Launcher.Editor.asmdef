@@ -2,7 +2,9 @@
     "name": "EF.Launcher.Editor",
     "rootNamespace": "EasyFramework.Launcher.Editor",
     "references": [
-        "EF.Launcher.Runtime"
+        "EF.Launcher.Runtime",
+        "EF.Editor",
+        "HybridCLR.Editor"
     ],
     "includePlatforms": [
         "Editor"
