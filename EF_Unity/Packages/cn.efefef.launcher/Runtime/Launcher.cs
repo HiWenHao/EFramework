@@ -29,18 +29,18 @@ namespace EasyFramework.Launcher
     /// 一旦这里引用了它们，il2cpp 打包阶段就会断。
     /// </remarks>
     [DisallowMultipleComponent]
-    [AddComponentMenu("EF/Launcher")]
     public sealed class Launcher : MonoBehaviour
     {
-        private const string LogTag = "[EF.Launcher]";
+        private const string LogTag = "[ Launcher ]";
 
         #region 字段
 
-        [Header("配置 / Config")]
-        [SerializeField] private LauncherConfig _config = null;
+        [Header("配置 / Config")] [SerializeField]
+        private LauncherConfig _config;
 
-        [Header("运行 / Runtime")]
-        [SerializeField] private bool _runOnStart = true;
+        [Header("运行 / Runtime")] [SerializeField]
+        private bool _runOnStart = true;
+
         [SerializeField] private bool _dontDestroyOnLoad = true;
         [SerializeField] private bool _verbose = true;
 
@@ -67,13 +67,18 @@ namespace EasyFramework.Launcher
 
         #region Unity 生命周期
 
+        private void Reset()
+        {
+            name = "GameLauncher";
+        }
+
         private void Awake()
         {
             _view = FindComponent<ILauncherView>();
             _hook = FindComponent<ILauncherHook>();
 
             if (_view == null)
-                Debug.LogWarning($"{LogTag} 未找到 ILauncherView 实现，启动过程将没有界面反馈。");
+                D.Warning($"{LogTag} 未找到 ILauncherView 实现，启动过程将没有界面反馈。");
 
             if (_dontDestroyOnLoad && transform.parent == null)
                 DontDestroyOnLoad(gameObject);
@@ -130,7 +135,8 @@ namespace EasyFramework.Launcher
                 yield break;
             }
 
-            // 1. 项目钩子：隐私协议 / 渠道 SDK / 登录
+            #region 1. 项目钩子：隐私协议 / 渠道 SDK / 登录
+
             SetState(LauncherState.Booting, "初始化");
             if (_hook != null)
             {
@@ -149,7 +155,10 @@ namespace EasyFramework.Launcher
                     yield return null;
             }
 
-            // 2. 资源系统
+            #endregion
+
+            #region 2. 资源系统
+
             SetState(LauncherState.Initializing, "初始化资源系统");
             if (!TryCreatePackage(out string packageError))
             {
@@ -179,7 +188,10 @@ namespace EasyFramework.Launcher
                 }
             }
 
-            // 3. 版本 + 清单
+            #endregion
+
+            #region 3. 版本 + 清单
+
             SetState(LauncherState.CheckingVersion, "检查资源版本");
             var versionOp = _package.RequestPackageVersionAsync(timeout: _config.TimeoutSeconds);
             yield return versionOp;
@@ -197,7 +209,10 @@ namespace EasyFramework.Launcher
                 yield break;
             }
 
-            // 4. 下载
+            #endregion
+
+            #region 4. 下载
+
             SetState(LauncherState.Downloading, "更新资源");
             ReportProgress(0, 0, 0, 0);
             var downloader = _package.CreateResourceDownloader(_config.DownloadingMaxNumber, _config.FailedTryAgain);
@@ -221,7 +236,10 @@ namespace EasyFramework.Launcher
                 }
             }
 
-            // 5. AOT 补充元数据（必须在热更程序集之前）
+            #endregion
+
+            #region 5. AOT 补充元数据（必须在热更程序集之前）
+
             SetState(LauncherState.LoadingMetadata, "加载 AOT 元数据");
             if (!TryLoadAotMetadata(out string metadataError))
             {
@@ -229,7 +247,10 @@ namespace EasyFramework.Launcher
                 yield break;
             }
 
-            // 6. 热更程序集（按配置顺序，即拓扑序）
+            #endregion
+
+            #region 6. 热更程序集（按配置顺序，即拓扑序）
+
             SetState(LauncherState.LoadingHotfix, "加载热更程序集");
             var entries = _config.HotfixDlls;
             if (entries != null)
@@ -237,7 +258,7 @@ namespace EasyFramework.Launcher
                 for (int i = 0; i < entries.Length; i++)
                 {
                     var entry = entries[i];
-                    if (entry == null || !entry.Enabled)
+                    if (entry is not { Enabled: true })
                         continue;
 
                     string entryName = string.IsNullOrEmpty(entry.Name) ? $"#{i}" : entry.Name;
@@ -284,13 +305,16 @@ namespace EasyFramework.Launcher
                 }
             }
 
-            if (_hotfixAssemblies.Count == 0 && entries != null && entries.Length > 0)
+            if (_hotfixAssemblies.Count == 0 && entries is { Length: > 0 })
             {
                 Fail(LauncherErrorCode.AssemblyLoadFailed, "没有任何热更程序集被加载，请检查配置");
                 yield break;
             }
 
-            // 7. 调热更入口
+            #endregion
+
+            #region 7. 调热更入口
+
             SetState(LauncherState.Invoking, "启动游戏");
             if (!TryInvokeEntry(out LauncherErrorCode entryCode, out string entryError))
             {
@@ -298,9 +322,14 @@ namespace EasyFramework.Launcher
                 yield break;
             }
 
-            // 8. 完成
+            #endregion
+
+            #region 8. 完成
+
             SetState(LauncherState.Completed, "进入游戏");
             _running = false;
+
+            #endregion
         }
 
         #endregion
@@ -387,7 +416,8 @@ namespace EasyFramework.Launcher
                     return new EditorSimulateModeParameters
                     {
                         EditorFileSystemParameters =
-                            FileSystemParameters.CreateDefaultEditorFileSystemParameters(buildResult.PackageRootDirectory)
+                            FileSystemParameters.CreateDefaultEditorFileSystemParameters(buildResult
+                                .PackageRootDirectory)
                     };
                 }
 #endif
@@ -408,7 +438,8 @@ namespace EasyFramework.Launcher
                 case EPlayMode.WebPlayMode:
                     return new WebPlayModeParameters
                     {
-                        WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters()
+                        WebServerFileSystemParameters =
+                            FileSystemParameters.CreateDefaultWebServerFileSystemParameters()
                     };
 
                 case EPlayMode.CustomPlayMode:
@@ -491,18 +522,18 @@ namespace EasyFramework.Launcher
 
         private Type FindType(string fullName)
         {
-            for (int i = 0; i < _hotfixAssemblies.Count; i++)
+            foreach (var assembly in _hotfixAssemblies)
             {
-                var type = _hotfixAssemblies[i].GetType(fullName, false);
+                var type = assembly.GetType(fullName, false);
                 if (type != null)
                     return type;
             }
 
             // 编辑器模拟模式：热更程序集本来就随工程编译，直接在当前域里找
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
+            foreach (var assembly in assemblies)
             {
-                var type = assemblies[i].GetType(fullName, false);
+                var type = assembly.GetType(fullName, false);
                 if (type != null)
                     return type;
             }
@@ -551,7 +582,7 @@ namespace EasyFramework.Launcher
         {
             _running = false;
             State = LauncherState.Failed;
-            Debug.LogError($"{LogTag} 启动失败 [{code}] {message}");
+            D.Error($"{LogTag} 启动失败 [{code}] {message}");
 
             if (_view == null)
                 return;
@@ -562,22 +593,22 @@ namespace EasyFramework.Launcher
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                D.Exception(e);
             }
         }
 
         private void Log(string message)
         {
             if (_verbose)
-                Debug.Log($"{LogTag} {message}");
+                D.Log($"{LogTag} {message}");
         }
 
         private T FindComponent<T>() where T : class
         {
             var behaviours = GetComponentsInChildren<MonoBehaviour>(true);
-            for (int i = 0; i < behaviours.Length; i++)
+            foreach (var mono in behaviours)
             {
-                if (behaviours[i] is T target)
+                if (mono is T target)
                     return target;
             }
 

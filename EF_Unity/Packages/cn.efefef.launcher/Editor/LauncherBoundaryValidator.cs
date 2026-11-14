@@ -38,6 +38,12 @@ namespace EasyFramework.Launcher.Editor
         private const string HybridClrSettingsPath = "ProjectSettings/HybridCLRSettings.asset";
         private const string MenuPath = "EF/Launcher/校验 AOT 边界";
 
+        /// <summary>
+        /// 名字像 EF、但已核实「只依赖 BCL + UnityEngine」的插件 DLL，允许 launcher 直接引用。
+        /// <para>EasyFrameworkTools 里是 D（日志门面）与 TStatic（字符串校验工具），不引用任何 cn.efefef.*。</para>
+        /// </summary>
+        private static readonly string[] AllowedPluginDlls = { "EasyFrameworkTools" };
+
         #region 入口
 
         [InitializeOnLoadMethod]
@@ -207,12 +213,23 @@ namespace EasyFramework.Launcher.Editor
             if (string.IsNullOrEmpty(name))
                 return false;
 
-            if (name.StartsWith("EF.Launcher", StringComparison.Ordinal))
+            string normalized = name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                ? name.Substring(0, name.Length - 4)
+                : name;
+
+            // 白名单：名字像 EF，但已核实不依赖任何 cn.efefef.* 的插件 DLL
+            for (int i = 0; i < AllowedPluginDlls.Length; i++)
+            {
+                if (string.Equals(normalized, AllowedPluginDlls[i], StringComparison.Ordinal))
+                    return false;
+            }
+
+            if (normalized.StartsWith("EF.Launcher", StringComparison.Ordinal))
                 return false;
 
-            return name.StartsWith("EF.", StringComparison.Ordinal)
-                   || name.StartsWith("EasyFramework", StringComparison.Ordinal)
-                   || name.StartsWith("cn.efefef.", StringComparison.Ordinal);
+            return normalized.StartsWith("EF.", StringComparison.Ordinal)
+                   || normalized.StartsWith("EasyFramework", StringComparison.Ordinal)
+                   || normalized.StartsWith("cn.efefef.", StringComparison.Ordinal);
         }
 
         #endregion

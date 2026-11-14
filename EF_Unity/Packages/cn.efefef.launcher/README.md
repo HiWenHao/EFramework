@@ -74,6 +74,13 @@ Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版
 3. **自举**：Launcher 自己的 asmdef 不能出现在 `HybridCLRSettings` 的 `hotUpdateAssemblyDefinitions` / `hotUpdateAssemblies` / `preserveHotUpdateAssemblies` 里
 4. **GUID 兜底**：asmdef 按 GUID 引用时，解析到 `Packages/cn.efefef.*` 路径也算违规
 
+**白名单**：`EasyFrameworkTools.dll`（`cn.efefef.core/Plugins/`）名字像 EF，但只依赖 BCL + UnityEngine
+（里面是 `D` 日志门面与 `TStatic` 字符串工具），已在 `AllowedPluginDlls` 里放行，可以放心被 launcher 引用。
+
+**盲区**：Plugins 下的 DLL 默认 `Auto Reference`，不会写进 asmdef，校验器只查显式声明的 `precompiledReferences`。
+如果将来新增一个**引用了 EF 程序集**的插件 DLL，这条闸门是看不见的 —— 需要人工确认，或把该 DLL 改成
+`overrideReferences: true` + 显式 `precompiledReferences`，让它进入检查范围。
+
 CI 用法：
 
 ```bash
