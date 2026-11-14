@@ -1,0 +1,26 @@
+{
+  "name": "cn.efefef.launcher",
+  "displayName": "EF.Launcher",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "unityRelease": "10f1",
+  "description": "框架启动包，纯 AOT 代码：YooAsset 初始化/更新 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口。本包禁止引用任何 cn.efefef.* 包。",
+  "author": {
+    "name": "Alvin",
+    "url": null
+  },
+  "changelogUrl": "https://gitee.com/AlvinCN/EFramework",
+  "documentationUrl": "https://gitee.com/AlvinCN/EFramework",
+  "licensesUrl": "https://gitee.com/AlvinCN/EFramework?tab=MIT-1-ov-file",
+  "dependencies": {
+    "com.tuyoogame.yooasset": "2.3.19",
+    "com.code-philosophy.hybridclr": "8.11.0"
+  },
+  "samples": [
+    {
+      "displayName": "Boot Scene (UGUI)",
+      "description": "极简启动界面示例：运行时用 UGUI 拼出进度条与重试按钮，可直接复制修改。",
+      "path": "Samples~/BootScene"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+    "name": "EF.LauncherSample",
+    "rootNamespace": "EFLauncherSample",
+    "references": [
+        "EF.Launcher.Runtime",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -45,6 +45,15 @@
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },
+    "cn.efefef.launcher": {
+      "version": "file:cn.efefef.launcher",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.tuyoogame.yooasset": "2.3.19",
+        "com.code-philosophy.hybridclr": "8.11.0"
+      }
+    },
     "cn.efefef.localization": {
       "version": "file:cn.efefef.localization",
       "depth": 0,
