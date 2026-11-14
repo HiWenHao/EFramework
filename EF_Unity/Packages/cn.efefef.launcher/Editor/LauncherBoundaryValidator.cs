@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 16:38:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 16:38:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-14 21:35:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -36,7 +37,7 @@ namespace EasyFramework.Launcher.Editor
         private const string RuntimeAsmdefPath = LauncherPackageRoot + "/Runtime/EF.Launcher.Runtime.asmdef";
         private const string EditorAsmdefPath = LauncherPackageRoot + "/Editor/EF.Launcher.Editor.asmdef";
         private const string HybridClrSettingsPath = "ProjectSettings/HybridCLRSettings.asset";
-        private const string MenuPath = "EF/Launcher/校验 AOT 边界";
+        private const string MenuPath = MenuItemToolkit.Utility + "🔍 Validate AOT Boundary";
 
         /// <summary>
         /// 名字像 EF、但已核实「只依赖 BCL + UnityEngine」的插件 DLL，允许 launcher 直接引用。
@@ -58,12 +59,14 @@ namespace EasyFramework.Launcher.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[EF.Launcher] AOT 边界校验自身异常（不影响编译）：{e.Message}");
+                    Debug.LogWarning(LC.Tr(
+                        $"[EF.Launcher] AOT 边界校验自身异常（不影响编译）：{e.Message}",
+                        $"[EF.Launcher] Boundary check threw (compilation is unaffected): {e.Message}"));
                 }
             };
         }
 
-        [MenuItem(MenuPath)]
+        [MenuItem(MenuPath, false, MenuItemToolkit.UtilityPriority + 50)]
         private static void ValidateFromMenu()
         {
             Validate(logWhenClean: true);
@@ -87,11 +90,13 @@ namespace EasyFramework.Launcher.Editor
         internal static bool Validate(bool logWhenClean)
         {
             var violations = new List<string>();
-            var index = AsmdefIndex.Build();
+            var index = AsmdefDatabase.Build();
 
-            if (!index.ByPath.TryGetValue(RuntimeAsmdefPath, out var runtime))
+            if (!index.TryGetByPath(RuntimeAsmdefPath, out var runtime))
             {
-                Debug.LogWarning($"[EF.Launcher] 找不到 {RuntimeAsmdefPath}，跳过 AOT 边界校验");
+                Debug.LogWarning(LC.Tr(
+                    $"[EF.Launcher] 找不到 {RuntimeAsmdefPath}，跳过 AOT 边界校验",
+                    $"[EF.Launcher] {RuntimeAsmdefPath} not found, skipping the AOT boundary check."));
                 return true;
             }
 
@@ -102,21 +107,30 @@ namespace EasyFramework.Launcher.Editor
             if (violations.Count == 0)
             {
                 if (logWhenClean)
-                    Debug.Log("[EF.Launcher] AOT 边界校验通过：EF.Launcher.Runtime 没有任何 cn.efefef.* 引用");
+                {
+                    Debug.Log(LC.Tr(
+                        "[EF.Launcher] AOT 边界校验通过：EF.Launcher.Runtime 没有任何 cn.efefef.* 引用",
+                        "[EF.Launcher] AOT boundary OK: EF.Launcher.Runtime references no cn.efefef.* assembly."));
+                }
+
                 return true;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine("[EF.Launcher] AOT 边界被破坏 —— 这会让「全量热更」形态在打包时直接失败：");
+            sb.AppendLine(LC.Tr(
+                "[EF.Launcher] AOT 边界被破坏 —— 这会让「全量热更」形态在打包时直接失败：",
+                "[EF.Launcher] AOT boundary broken - the full hot-update setup will fail at build time:"));
             for (int i = 0; i < violations.Count; i++)
                 sb.AppendLine($"  {i + 1}. {violations[i]}");
-            sb.AppendLine("规则：EF.Launcher.Runtime 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。");
+            sb.AppendLine(LC.Tr(
+                "规则：EF.Launcher.Runtime 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。",
+                "Rule: EF.Launcher.Runtime may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list."));
 
             Debug.LogError(sb.ToString());
             return false;
         }
 
-        private static void CheckDirectReferences(AsmdefInfo runtime, AsmdefIndex index, List<string> violations)
+        private static void CheckDirectReferences(AsmdefInfo runtime, AsmdefDatabase index, List<string> violations)
         {
             foreach (string reference in runtime.References)
             {
@@ -128,23 +142,36 @@ namespace EasyFramework.Launcher.Editor
                 if (target != null)
                 {
                     if (IsEfCoreAssembly(target))
-                        violations.Add($"直接引用 EF 程序集：{target.Name}（{target.Path}）");
+                    {
+                        violations.Add(LC.Tr(
+                            $"直接引用 EF 程序集：{target.Name}（{target.Path}）",
+                            $"Direct reference to an EF assembly: {target.Name} ({target.Path})"));
+                    }
+
                     continue;
                 }
 
                 // 解析不到 asmdef 的（比如引用了不存在的程序集），按名字兜底
                 if (LooksLikeEfAssemblyName(reference))
-                    violations.Add($"直接引用 EF 程序集：{reference}（未找到对应 asmdef，按名字判定）");
+                {
+                    violations.Add(LC.Tr(
+                        $"直接引用 EF 程序集：{reference}（未找到对应 asmdef，按名字判定）",
+                        $"Direct reference to an EF assembly: {reference} (asmdef not found, judged by name)"));
+                }
             }
 
             foreach (string precompiled in runtime.PrecompiledReferences)
             {
                 if (!string.IsNullOrEmpty(precompiled) && LooksLikeEfAssemblyName(precompiled))
-                    violations.Add($"precompiledReferences 里出现 EF 程序集：{precompiled}");
+                {
+                    violations.Add(LC.Tr(
+                        $"precompiledReferences 里出现 EF 程序集：{precompiled}",
+                        $"EF assembly found in precompiledReferences: {precompiled}"));
+                }
             }
         }
 
-        private static void CheckTransitiveReferences(AsmdefInfo runtime, AsmdefIndex index, List<string> violations)
+        private static void CheckTransitiveReferences(AsmdefInfo runtime, AsmdefDatabase index, List<string> violations)
         {
             // BFS：Launcher → A → EF.Core 这种间接依赖，Unity 会把 EF.Core 一起塞进编译引用，同样会炸
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { runtime.Path };
@@ -163,11 +190,13 @@ namespace EasyFramework.Launcher.Editor
 
                     if (IsEfCoreAssembly(target))
                     {
-                        violations.Add($"传递引用 EF 程序集：{chain} → {target.Name}（{target.Path}）");
+                        violations.Add(LC.Tr(
+                            $"传递引用 EF 程序集：{chain} → {target.Name}（{target.Path}）",
+                            $"Transitive reference to an EF assembly: {chain} -> {target.Name} ({target.Path})"));
                         continue;
                     }
 
-                    queue.Enqueue((target, chain + " → " + target.Name));
+                    queue.Enqueue((target, chain + " -> " + target.Name));
                 }
             }
         }
@@ -184,14 +213,22 @@ namespace EasyFramework.Launcher.Editor
             {
                 string guid = AssetDatabase.AssetPathToGUID(asmdefPath);
                 if (!string.IsNullOrEmpty(guid) && yaml.Contains(guid))
-                    violations.Add($"Launcher 程序集被写进了热更列表（会自举失败）：{asmdefPath}");
+                {
+                    violations.Add(LC.Tr(
+                        $"Launcher 程序集被写进了热更列表（会自举失败）：{asmdefPath}",
+                        $"Launcher assembly is listed as a hot update assembly (self-bootstrap will fail): {asmdefPath}"));
+                }
             }
 
             foreach (string rawLine in yaml.Split('\n'))
             {
                 string line = rawLine.Trim();
                 if (line.StartsWith("- EF.Launcher", StringComparison.Ordinal))
-                    violations.Add($"热更列表里出现 Launcher 程序集名（会自举失败）：{line}");
+                {
+                    violations.Add(LC.Tr(
+                        $"热更列表里出现 Launcher 程序集名（会自举失败）：{line}",
+                        $"Launcher assembly name found in the hot update list (self-bootstrap will fail): {line}"));
+                }
             }
         }
 
@@ -233,99 +270,6 @@ namespace EasyFramework.Launcher.Editor
         }
 
         #endregion
-
-        #region 数据
-
-        [Serializable]
-        private sealed class AsmdefData
-        {
-            public string name = null;
-            public string[] references = null;
-            public string[] precompiledReferences = null;
-        }
-
-        private sealed class AsmdefInfo
-        {
-            public string Path;
-            public string Name;
-            public string[] References = Array.Empty<string>();
-            public string[] PrecompiledReferences = Array.Empty<string>();
-
-            public static AsmdefInfo Load(string path)
-            {
-                if (string.IsNullOrEmpty(path) || !path.EndsWith(".asmdef", StringComparison.OrdinalIgnoreCase))
-                    return null;
-
-                // 直接读文件，不依赖 AssemblyDefinitionAsset（不同 Unity 版本所在程序集不一样）
-                string fullPath = System.IO.Path.GetFullPath(path);
-                if (!File.Exists(fullPath))
-                    return null;
-
-                var data = JsonUtility.FromJson<AsmdefData>(File.ReadAllText(fullPath));
-                if (data == null)
-                    return null;
-
-                return new AsmdefInfo
-                {
-                    Path = path,
-                    Name = string.IsNullOrEmpty(data.name) ? System.IO.Path.GetFileNameWithoutExtension(path) : data.name,
-                    References = data.references ?? Array.Empty<string>(),
-                    PrecompiledReferences = data.precompiledReferences ?? Array.Empty<string>(),
-                };
-            }
-        }
-
-        /// <summary>
-        /// 全工程 asmdef 索引，支持按路径（GUID 引用）和按名字（name 引用）两种解析
-        /// </summary>
-        private sealed class AsmdefIndex
-        {
-            public readonly Dictionary<string, AsmdefInfo> ByPath =
-                new Dictionary<string, AsmdefInfo>(StringComparer.OrdinalIgnoreCase);
-
-            private readonly Dictionary<string, AsmdefInfo> _byName =
-                new Dictionary<string, AsmdefInfo>(StringComparer.Ordinal);
-
-            public static AsmdefIndex Build()
-            {
-                var index = new AsmdefIndex();
-
-                foreach (string guid in AssetDatabase.FindAssets("t:AssemblyDefinitionAsset"))
-                {
-                    string path = AssetDatabase.GUIDToAssetPath(guid);
-                    var info = AsmdefInfo.Load(path);
-                    if (info == null)
-                        continue;
-
-                    index.ByPath[path] = info;
-                    index._byName[info.Name] = info;
-                }
-
-                return index;
-            }
-
-            public AsmdefInfo Resolve(string reference)
-            {
-                if (string.IsNullOrEmpty(reference))
-                    return null;
-
-                if (reference.StartsWith("GUID:", StringComparison.OrdinalIgnoreCase))
-                {
-                    string path = AssetDatabase.GUIDToAssetPath(reference.Substring(5));
-                    if (string.IsNullOrEmpty(path))
-                        return null;
-
-                    if (ByPath.TryGetValue(path, out var byPath))
-                        return byPath;
-
-                    return AsmdefInfo.Load(path);
-                }
-
-                return _byName.TryGetValue(reference, out var byName) ? byName : null;
-            }
-        }
-
-        #endregion
     }
 
     /// <summary>
@@ -340,9 +284,11 @@ namespace EasyFramework.Launcher.Editor
         {
             if (!LauncherBoundaryValidator.Validate(logWhenClean: false))
             {
-                throw new BuildFailedException(
+                throw new BuildFailedException(LC.Tr(
                     "[EF.Launcher] AOT 边界被破坏，已中止打包。详情见上一条 Error 日志" +
-                    "（菜单 EF/Launcher/校验 AOT 边界 可复现）。");
+                    "（菜单 EFTools/🎈 Utility/🔍 Validate AOT Boundary 可复现）。",
+                    "[EF.Launcher] AOT boundary broken, build aborted. See the error log above " +
+                    "(reproduce via EFTools/🎈 Utility/🔍 Validate AOT Boundary)."));
             }
         }
     }

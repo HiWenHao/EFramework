@@ -14,6 +14,10 @@ Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版
 
 `EF.Launcher.Runtime.asmdef` 只允许引用：`YooAsset`、`HybridCLR.Runtime`。
 
+> **这条铁律只管 Runtime。** `EF.Launcher.Editor` 是编辑器程序集（不进包体），它引用了
+> `EF.Editor`（为了复用 `LC.Tr` 双语与 `MenuItemToolkit` 菜单规范）和 `HybridCLR.Editor`，
+> 不影响 AOT 边界。package.json 里也因此声明了 `cn.efefef.core` 依赖。
+
 ---
 
 ## 二、启动顺序
@@ -65,7 +69,7 @@ Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版
 |---|---|
 | 编辑器每次重编译（`[InitializeOnLoadMethod]` + `delayCall`） | 违规 → Console 报 Error |
 | 打包前（`IPreprocessBuildWithReport`） | 违规 → `BuildFailedException`，直接中止出包 |
-| 手动 / CI（`EF/Launcher/校验 AOT 边界` 或 `-executeMethod`） | 违规 → 返回 false / 退出码 1 |
+| 手动 / CI（`EFTools/🎈 Utility/🔍 Validate AOT Boundary` 或 `-executeMethod`） | 违规 → 返回 false / 退出码 1 |
 
 检查四项：
 
@@ -95,7 +99,36 @@ Unity -batchmode -quit -projectPath <proj> \
 
 ---
 
-## 六、已知边界
+## 六、一键切换热更列表
+
+菜单 `EFTools/🎈 Utility/`（平铺，最多三层）：
+
+| 菜单项 | 作用 |
+|---|---|
+| **🔍 Validate AOT Boundary** | 手动跑一次边界校验，结果打到 Console |
+| **➕ Add All EF Assemblies To Hot Update** | 把 10 个 EF 运行时 asmdef 追加进 `HybridCLRSettings.hotUpdateAssemblyDefinitions`（已存在的跳过，不覆盖原有条目） |
+| **🗑️ Remove All EF Assemblies From Hot Update** | 把它们移出列表，回到 Classic 形态 |
+
+菜单名保持英文：`[MenuItem]` 的路径必须是编译期常量，没法跟着语言设置动态切换
+（EF 自己的菜单也是英文）。**对话框、日志、异常信息全部走 `LC.Tr(zh, en)`**，跟随
+`ProjectConfig.DisplayLanguage` / 系统语言切换。
+
+**加入前会先扫一遍「还有哪些 AOT 程序集在引用 EF」**，并在确认框里直接列出来 ——
+那些引用会让打包当场失败（il2cpp 找不到被剔除的程序集）。看到警告就先去改 AOT 侧，别硬点。
+
+自动排除的：`EF.Launcher.*`、所有 `*.Editor`、`/Editor/` 路径、`/Plugins/` 下的 UniTask。
+
+加入后仍需手动两步：
+
+1. 执行 `HybridCLR/Generate/All`
+2. 把 `HybridCLRData/HotUpdateDlls/<target>/` 里的 dll 按拓扑序填进 `LauncherConfig.HotfixDlls`
+
+> 这个工具只改配置，不改代码。`ExampleGame` 对 EF 的引用、`EF.cs` 门面、启动场景，都得按
+> 《EF_Launcher_设计方案.md》第七节那 7 项改造自己动手。
+
+---
+
+## 七、已知边界
 
 
 - **不要用 `EFC.Projects` 取 CDN 地址**：那个 ScriptableObject 在热更层，启动时读不到。
