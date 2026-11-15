@@ -29,10 +29,10 @@ namespace EasyFramework.Launcher.Editor
     /// </remarks>
     public static class LauncherHotfixDllSortTool
     {
-        private const string MenuRoot = MenuItemToolkit.Utility;
+        private const string MenuRoot = MenuItemToolkit.Launcher;
         private const string DialogTitle = "EF.Launcher";
 
-        [MenuItem(MenuRoot + "🔀 Sort Hotfix Dlls By Dependency", false, MenuItemToolkit.UtilityPriority + 53)]
+        [MenuItem(MenuRoot + "🔀 Sort Hotfix Dlls By Dependency", false, MenuItemToolkit.LauncherPriority + 53)]
         public static void SortSelectedConfig()
         {
             var config = ResolveTargetConfig(createIfMissing: false);

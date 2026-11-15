@@ -4,12 +4,11 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 22:40:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 22:40:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-15 18:20:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
-using System;
 using System.Collections.Generic;
 using EasyFramework.Edit;
 using UnityEditor;
@@ -18,20 +17,18 @@ using UnityEngine;
 namespace EasyFramework.Launcher.Editor
 {
     /// <summary>
-    /// 按依赖序铺好 <see cref="LauncherConfig.HotfixDlls"/> 骨架：缺失的 EF 程序集自动补条目，已有的保持原样。
-    /// <para>Builds the HotfixDlls skeleton in dependency order. Existing entries are preserved untouched.</para>
+    /// 一步铺好 <see cref="LauncherConfig.HotfixDlls"/>：补条目 → 拓扑排序 → 绑定 Location / FallbackAsset。
+    /// <para>One-step fill: add missing entries, order by dependency, bind Location / FallbackAsset.</para>
     /// </summary>
     /// <remarks>
-    /// 只负责「补条目 + 排序」，不猜 YooAsset 地址之外的任何东西：
-    /// Location 默认写 <c>HotfixDlls/&lt;程序集名&gt;.dll</c>，是占位路径，用户按自己的收集器规则改。
+    /// 绑定规则（.bytes 目录、Location 生成方式、是否覆盖）在
+    /// 「EF 配置面板 → 热更程序集」里配置；这里直接复用保存的设置。
     /// </remarks>
     public static class LauncherHotfixDllFillTool
     {
-        private const string MenuRoot = MenuItemToolkit.Utility;
         private const string DialogTitle = "EF.Launcher";
-        private const string LocationFolder = "HotfixDlls";
 
-        [MenuItem(MenuRoot + "📦 Fill LauncherConfig Hotfix Dlls", false, MenuItemToolkit.UtilityPriority + 54)]
+        [MenuItem(MenuItemToolkit.Launcher + "📦 Fill LauncherConfig Hotfix Dlls", false, MenuItemToolkit.LauncherPriority + 54)]
         public static void FillFromMenu()
         {
             var config = LauncherHotfixDllSortTool.ResolveTargetConfig(createIfMissing: true);
@@ -44,23 +41,8 @@ namespace EasyFramework.Launcher.Editor
                 return;
             }
 
-            int added = Fill(config, out int total, out List<string> unknown);
-
-            var message = LC.Tr(
-                $"「{config.name}」已更新：新增 {added} 条，共 {total} 条，已按依赖序排好。",
-                $"\"{config.name}\" updated: {added} added, {total} total, ordered by dependency.");
-
-            if (unknown.Count > 0)
-            {
-                message += "\n\n" + LC.Tr(
-                    "以下条目找不到同名 asmdef，已排在最后：",
-                    "These entries have no matching asmdef and were placed last:") +
-                    "\n  - " + string.Join("\n  - ", unknown);
-            }
-
-            message += "\n\n" + LC.Tr(
-                "Location 目前是占位路径（HotfixDlls/<程序集名>.dll），请按你的 YooAsset 收集器规则改。",
-                "Location currently holds a placeholder path (HotfixDlls/<assembly>.dll); adjust it to your YooAsset collector rules.");
+            var result = LauncherHotfixEntryBinder.Build(config, HotfixBindOptions.Load(), apply: true);
+            string message = Describe(config, result);
 
             Debug.Log("[EF.Launcher] " + message.Replace("\n", "\n[EF.Launcher] "));
             EditorUtility.DisplayDialog(DialogTitle, message, LC.Tr("好", "OK"));
@@ -78,60 +60,49 @@ namespace EasyFramework.Launcher.Editor
             if (config == null)
                 return -1;
 
-            return Fill(config, out total, out _);
+            var result = LauncherHotfixEntryBinder.Build(config, HotfixBindOptions.Load(), apply: true);
+            total = result.Rows.Count;
+            return result.Added;
         }
 
-        private static int Fill(LauncherConfig config, out int total, out List<string> unknown)
+        private static string Describe(LauncherConfig config, HotfixBindResult result)
         {
-            var database = AsmdefDatabase.Build();
-            var efAssemblies = LauncherHotUpdateListTool.CollectEfRuntimeAsmdefs(database);
+            if (!string.IsNullOrEmpty(result.Error))
+                return result.Error;
 
-            var merged = new List<HotUpdateDllEntry>();
-            var existingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (config.HotfixDlls != null)
+            var lines = new List<string>
             {
-                foreach (var entry in config.HotfixDlls)
+                LC.Tr(
+                    $"「{config.name}」已更新：共 {result.Rows.Count} 条，新增 {result.Added} 条，" +
+                    $"绑定 Location {result.LocationBound} 条 / FallbackAsset {result.FallbackBound} 条。",
+                    $"\"{config.name}\" updated: {result.Rows.Count} total, {result.Added} added, " +
+                    $"{result.LocationBound} locations / {result.FallbackBound} fallbacks bound."),
+            };
+
+            if (result.Missing > 0)
+            {
+                lines.Add(LC.Tr(
+                    $"⚠ 有 {result.Missing} 条找不到 .dll.bytes，Location / FallbackAsset 留空：" +
+                    "请先执行 HybridCLR/Generate/All 与 BuildAssetsAndCopyToStreamingAssets，" +
+                    "或到「EF 配置面板 → 热更程序集」调整 .bytes 目录。",
+                    $"⚠ {result.Missing} entries have no matching .dll.bytes and were left blank. " +
+                    "Run HybridCLR/Generate/All + BuildAssetsAndCopyToStreamingAssets, " +
+                    "or adjust the .bytes folder in the EF config panel."));
+
+                foreach (var row in result.Rows)
                 {
-                    if (entry == null)
-                        continue;
-
-                    merged.Add(entry);
-
-                    string name = LauncherHotfixDllSortTool.ResolveAssemblyName(entry);
-                    if (!string.IsNullOrEmpty(name))
-                        existingNames.Add(name);
+                    if (row.AssetPath == null)
+                        lines.Add("   - " + row.AssemblyName);
                 }
             }
 
-            int added = 0;
-            foreach (var info in efAssemblies)
-            {
-                if (existingNames.Contains(info.Name))
-                    continue;
+            lines.Add(LC.Tr(
+                "绑定规则可在「EF 配置面板 → 热更程序集」修改；只想重跑绑定可用 " +
+                "🔗 Auto Bind Hotfix Dll Entries。",
+                "Rules live in the EF config panel (Hotfix Assemblies); " +
+                "use 🔗 Auto Bind Hotfix Dll Entries to rebind only."));
 
-                merged.Add(new HotUpdateDllEntry
-                {
-                    Name = info.Name,
-                    Location = LocationFolder + "/" + info.Name + ".dll",
-                    Enabled = true,
-                });
-
-                existingNames.Add(info.Name);
-                added++;
-            }
-
-            var sorted = LauncherHotfixDllSortTool.Sort(merged.ToArray(), out unknown, out bool changed);
-
-            if (added > 0 || changed || config.HotfixDlls == null || config.HotfixDlls.Length != sorted.Length)
-            {
-                config.HotfixDlls = sorted;
-                EditorUtility.SetDirty(config);
-                AssetDatabase.SaveAssets();
-            }
-
-            total = sorted.Length;
-            return added;
+            return string.Join("\n\n", lines);
         }
     }
 }

@@ -228,7 +228,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fdc9b87ed963c043afe8a010de1cea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _config: {fileID: 11400000, guid: 3e9f69cedeff3b747804003a556dd9b1, type: 2}
+  _config: {fileID: 11400000, guid: 6bd960c49f3204c458a6a70d58219faa, type: 2}
   _runOnStart: 1
   _dontDestroyOnLoad: 1
   _verbose: 1

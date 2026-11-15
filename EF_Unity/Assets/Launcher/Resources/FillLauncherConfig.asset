@@ -60,5 +60,9 @@ MonoBehaviour:
     Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.Runtime.dll
     FallbackAsset: {fileID: 4900000, guid: 2a17e02500402804da2f66af00db2fb2, type: 3}
     Enabled: 1
+  - Name: ExampleGameHotfix
+    Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.Runtime.dll
+    FallbackAsset: {fileID: 4900000, guid: e4a6b174eb4f30c47acc130456b443cc, type: 3}
+    Enabled: 1
   EntryType: EFExample.HotfixTest
   EntryMethod: Init

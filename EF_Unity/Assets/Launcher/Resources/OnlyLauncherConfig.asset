@@ -20,9 +20,9 @@ MonoBehaviour:
   DownloadingMaxNumber: 10
   FailedTryAgain: 3
   AotMetadataDlls:
-  - {fileID: 4900000, guid: b7ccaafc46b5c4544a217e9bfab54434, type: 3}
-  - {fileID: 4900000, guid: cd1d997476e215c4fba9d344ab820ae1, type: 3}
-  - {fileID: 4900000, guid: a9b40242e8c81414fa1055c8590a15f0, type: 3}
+  - {fileID: 4900000, guid: 4e30fea4a85e7d843a73e2e64ee21b78, type: 3}
+  - {fileID: 4900000, guid: 6781597c3a2f9404ab7963d4135c5ad0, type: 3}
+  - {fileID: 4900000, guid: c1ebfb1a940f4564584633478785598b, type: 3}
   HotfixDlls:
   - Name: ExampleGameHotfix.dll
     Location: Assets/AssetsHotfix/OnlyHotfixCode/ExampleGameHotfix.dll

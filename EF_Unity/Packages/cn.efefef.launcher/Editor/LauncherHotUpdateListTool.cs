@@ -32,12 +32,12 @@ namespace EasyFramework.Launcher.Editor
         private const string LauncherPackageRoot = "Packages/cn.efefef.launcher";
         private const string EfPackageRoot = "Packages/cn.efefef.";
         private const string DefinitionsProperty = "hotUpdateAssemblyDefinitions";
-        private const string MenuRoot = MenuItemToolkit.Utility;
+        private const string MenuRoot = MenuItemToolkit.Launcher;
         private const string DialogTitle = "EF.Launcher";
 
         #region 菜单
 
-        [MenuItem(MenuRoot + "➕ Add All EF Assemblies To Hot Update", false, MenuItemToolkit.UtilityPriority + 51)]
+        [MenuItem(MenuRoot + "➕ Add All EF Assemblies To Hot Update", false, MenuItemToolkit.LauncherPriority + 51)]
         public static void AddEfAssembliesToHotUpdateList()
         {
             var database = AsmdefDatabase.Build();
@@ -151,7 +151,7 @@ namespace EasyFramework.Launcher.Editor
                 $"HotfixDlls skeleton updated: {filled} added, {total} total (already in dependency order).");
         }
 
-        [MenuItem(MenuRoot + "🗑️ Remove All EF Assemblies From Hot Update", false, MenuItemToolkit.UtilityPriority + 52)]
+        [MenuItem(MenuRoot + "🗑️ Remove All EF Assemblies From Hot Update", false, MenuItemToolkit.LauncherPriority + 52)]
         public static void RemoveEfAssembliesFromHotUpdateList()
         {
             if (!TryGetDefinitionsProperty(out var serialized, out var list))

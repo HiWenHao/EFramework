@@ -37,7 +37,7 @@ namespace EasyFramework.Launcher.Editor
         private const string RuntimeAsmdefPath = LauncherPackageRoot + "/Runtime/EF.Launcher.Runtime.asmdef";
         private const string EditorAsmdefPath = LauncherPackageRoot + "/Editor/EF.Launcher.Editor.asmdef";
         private const string HybridClrSettingsPath = "ProjectSettings/HybridCLRSettings.asset";
-        private const string MenuPath = MenuItemToolkit.Utility + "🔍 Validate AOT Boundary";
+        private const string MenuPath = MenuItemToolkit.Launcher + "🔍 Validate AOT Boundary";
 
         /// <summary>
         /// 名字像 EF、但已核实「只依赖 BCL + UnityEngine」的插件 DLL，允许 launcher 直接引用。
@@ -66,7 +66,7 @@ namespace EasyFramework.Launcher.Editor
             };
         }
 
-        [MenuItem(MenuPath, false, MenuItemToolkit.UtilityPriority + 50)]
+        [MenuItem(MenuPath, false, MenuItemToolkit.LauncherPriority + 50)]
         private static void ValidateFromMenu()
         {
             Validate(logWhenClean: true);
