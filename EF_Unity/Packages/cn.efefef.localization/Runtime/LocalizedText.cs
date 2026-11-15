@@ -120,13 +120,13 @@ namespace EasyFramework.Localization
             _languageChangedToken = null;
             base.OnDisable();
         }
-
+#if UNITY_EDITOR
         protected override void Reset()
         {
             base.Reset();
             key = NoKey;
         }
-
+#endif
         /// <summary>
         /// 设置运行时格式化参数并立即刷新（Dynamic 文案用；传空则清除参数）
         /// <para>Sets runtime format args and refreshes immediately.</para>
