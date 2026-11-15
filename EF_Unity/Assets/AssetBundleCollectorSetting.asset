@@ -64,8 +64,8 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/AssetsHotfix
-        CollectorGUID: 937b0593a409953408bd4efba83fba28
+      - CollectPath: Assets/AssetsHotfix/OnlyHotfixCode
+        CollectorGUID: d7830332ceca4da4caf68d6fb69b74fe
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
@@ -86,7 +86,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
       - CollectPath: Packages/cn.efefef.core/Resources/Prefabs/UI
-        CollectorGUID: 0c034a85274a83245ae9ea454b9a144b
+        CollectorGUID: 
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackSeparately

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7dca90a5ae2fc64e8b54a6eb9565560, type: 3}
+  m_Name: OnlyLauncherConfig
+  m_EditorClassIdentifier: 
+  PlayMode: 0
+  PackageName: DefaultPackage
+  MainUrl: http://127.0.0.1:8080
+  FallbackUrl: http://127.0.0.1:8080
+  TimeoutSeconds: 60
+  DownloadingMaxNumber: 10
+  FailedTryAgain: 3
+  AotMetadataDlls:
+  - {fileID: 4900000, guid: b7ccaafc46b5c4544a217e9bfab54434, type: 3}
+  - {fileID: 4900000, guid: cd1d997476e215c4fba9d344ab820ae1, type: 3}
+  - {fileID: 4900000, guid: a9b40242e8c81414fa1055c8590a15f0, type: 3}
+  HotfixDlls:
+  - Name: ExampleGameHotfix.dll
+    Location: Assets/AssetsHotfix/OnlyHotfixCode/ExampleGameHotfix.dll
+    FallbackAsset: {fileID: 4900000, guid: b728c14322abc7144959c68e5e297ea1, type: 3}
+    Enabled: 1
+  EntryType: EFExample.HotfixTest
+  EntryMethod: Init

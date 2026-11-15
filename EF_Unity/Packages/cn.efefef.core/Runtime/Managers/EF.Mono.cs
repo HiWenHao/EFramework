@@ -382,6 +382,26 @@ public sealed class EFC : MonoBehaviour
     }
 
     /// <summary>
+    /// 取当前已注册的全部单例快照（供编辑器调试工具使用）
+    /// <para>Snapshot of every registered singleton, for editor tooling and debug panels.</para>
+    /// </summary>
+    /// <returns>单例快照；框架未初始化时返回空集合<para>Singleton snapshot; empty when the framework is not initialized.</para></returns>
+    public static IReadOnlyList<ISingleton> GetAllSingletons()
+    {
+        if (_singletonMap == null)
+            return Array.Empty<ISingleton>();
+
+        lock (LockObj)
+        {
+            var snapshot = new List<ISingleton>(_singletonMap.Count);
+            foreach (var pair in _singletonMap)
+                snapshot.Add(pair.Value);
+
+            return snapshot;
+        }
+    }
+
+    /// <summary>
     /// Register a singleton.
     /// <para>注册一个单例</para>
     /// </summary>

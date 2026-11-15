@@ -108,6 +108,8 @@ Unity -batchmode -quit -projectPath <proj> \
 | **🔍 Validate AOT Boundary** | 手动跑一次边界校验，结果打到 Console |
 | **➕ Add All EF Assemblies To Hot Update** | 把 10 个 EF 运行时 asmdef 追加进 `HybridCLRSettings.hotUpdateAssemblyDefinitions`（已存在的跳过，不覆盖原有条目） |
 | **🗑️ Remove All EF Assemblies From Hot Update** | 把它们移出列表，回到 Classic 形态 |
+| **🔀 Sort Hotfix Dlls By Dependency** | 对 `LauncherConfig.HotfixDlls` 按 asmdef 依赖图拓扑排序，**用户不用自己排顺序** |
+| **📦 Fill LauncherConfig Hotfix Dlls** | 按依赖序铺 `HotfixDlls` 骨架：缺的 EF 程序集自动补条目，已有的原样保留。没有配置时会自动建一个 |
 
 菜单名保持英文：`[MenuItem]` 的路径必须是编译期常量，没法跟着语言设置动态切换
 （EF 自己的菜单也是英文）。**对话框、日志、异常信息全部走 `LC.Tr(zh, en)`**，跟随
@@ -121,7 +123,14 @@ Unity -batchmode -quit -projectPath <proj> \
 加入后仍需手动两步：
 
 1. 执行 `HybridCLR/Generate/All`
-2. 把 `HybridCLRData/HotUpdateDlls/<target>/` 里的 dll 按拓扑序填进 `LauncherConfig.HotfixDlls`
+2. 把 dll 放进 YooAsset，并核对每个条目的 `Location`
+
+> **顺序和骨架都不用手排。** 点 `➕ Add All EF Assemblies To Hot Update` 时会顺带铺好
+> `LauncherConfig.HotfixDlls`（按 asmdef 依赖图排好序，已有条目原样保留）。
+> 想单独重跑用 `📦 Fill LauncherConfig Hotfix Dlls`，只想重排用 `🔀 Sort Hotfix Dlls By Dependency`。
+>
+> `Location` 默认写的是占位路径 `HotfixDlls/<程序集名>.dll`，需要按你的 YooAsset 收集器规则改。
+> 匹配不到同名 asmdef 的条目会排到末尾并在日志点名（多用于发现拼写错误）。
 
 > 这个工具只改配置，不改代码。`ExampleGame` 对 EF 的引用、`EF.cs` 门面、启动场景，都得按
 > 《EF_Launcher_设计方案.md》第七节那 7 项改造自己动手。

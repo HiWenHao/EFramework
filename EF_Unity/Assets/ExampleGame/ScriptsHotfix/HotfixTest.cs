@@ -26,13 +26,37 @@ namespace EFExample
     /// </summary>
     public class HotfixTest : MonoBehaviour
     {
+        /// <summary>
+        /// 保证 EF 框架已初始化。
+        /// <para>Classic 形态下 EFC 由 [RuntimeInitializeOnLoadMethod] 自动拉起；</para>
+        /// <para>Full 形态下 EF.Core 位于热更层，该特性不会触发，必须在这里补一次（已初始化则跳过）。</para>
+        /// </summary>
+        private static void EnsureFrameworkInitialized()
+        {
+            if (EFC.Managers != null)
+                return;
+
+            var method = typeof(EFC).GetMethod("Initialize",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            if (method == null)
+            {
+                D.Error("[Hotfix] 找不到 EFC.Initialize，框架未初始化，后续流程会失败");
+                return;
+            }
+
+            method.Invoke(null, null);
+        }
+
         public static void Init()
         {
+            //EnsureFrameworkInitialized();
+
             D.Emphasize("Hello Game and HybridCLR");
 
 
             //FPS展示
-            FPSOnGUI.Instance.AllowDrag = true;
+            //FPSOnGUI.Instance.AllowDrag = true;
 
             //UI进入
             UiSystem.Instance.OpenView<UiAView>().Forget();

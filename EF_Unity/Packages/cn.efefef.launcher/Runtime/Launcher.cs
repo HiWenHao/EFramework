@@ -108,6 +108,16 @@ namespace EasyFramework.Launcher
         }
 
         /// <summary>
+        /// 运行时注入配置（供代码动态 AddComponent 使用）
+        /// <para>Injects the config at runtime, for launchers created via AddComponent.</para>
+        /// </summary>
+        public void Configure(LauncherConfig config)
+        {
+            if (config != null)
+                _config = config;
+        }
+
+        /// <summary>
         /// 失败后重试
         /// <para>Retry after a failure.</para>
         /// </summary>

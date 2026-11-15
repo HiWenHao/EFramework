@@ -80,8 +80,21 @@ namespace EasyFramework.Launcher.Editor
             }
 
             string message = BuildAddMessage(toAdd.Count, existing.Count, scan);
-            if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Tr("加入", "Add"), LC.Tr("取消", "Cancel")))
+
+            if (scan.AotConsumers.Count > 0)
+            {
+                // 有 AOT 程序集还在引用 EF 时，这一步必然导致打包失败；
+                // 把「取消」放在第一个按钮，避免手快回车直接踩坑
+                if (EditorUtility.DisplayDialog(DialogTitle, message,
+                        LC.Tr("取消", "Cancel"), LC.Tr("仍然加入（会打包失败）", "Add anyway (build will fail)")))
+                {
+                    return;
+                }
+            }
+            else if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Tr("加入", "Add"), LC.Tr("取消", "Cancel")))
+            {
                 return;
+            }
 
             serialized.Update();
             int added = 0;
@@ -361,8 +374,10 @@ namespace EasyFramework.Launcher.Editor
             {
                 sb.AppendLine();
                 sb.AppendLine(LC.Tr(
-                    "⚠ 以下 AOT 程序集仍在引用 EF，加入热更后打包会失败：",
-                    "⚠ These AOT assemblies still reference EF; the build will fail after adding them:"));
+                    "⚠ 以下 AOT 程序集仍在引用 EF。加入后 HybridCLR 会把 EF 从包体剔除，" +
+                    "打包时会报 Failed to resolve assembly: 'EF.Core'：",
+                    "⚠ These AOT assemblies still reference EF. HybridCLR strips EF from the player, " +
+                    "so the build will fail with Failed to resolve assembly: 'EF.Core':"));
                 foreach (string name in scan.AotConsumers)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();
