@@ -47,7 +47,7 @@ namespace EasyFramework.Launcher.Editor
         private Vector2 _scroll;
         private string _status = string.Empty;
 
-        public override string Name => LC.Tr("热更程序集", "Hotfix Assemblies");
+        public override string Name => LC.Combine(Lc.HotfixAssemblies);
 
         public override void OnEnable(string assetsPath) => LoadWindowData();
 
@@ -64,11 +64,7 @@ namespace EasyFramework.Launcher.Editor
             if (_options == null)
                 LoadWindowData();
 
-            EditorGUILayout.HelpBox(LC.Tr(
-                "按 HybridCLR 热更列表生成 HotfixDlls 条目，并自动填 Location / FallbackAsset。" +
-                "条目全集取自 hotUpdateAssemblyDefinitions，不会漏掉业务热更程序集。",
-                "Builds HotfixDlls entries from the HybridCLR hot update list and fills Location / FallbackAsset. " +
-                "The entry set comes from hotUpdateAssemblyDefinitions, so business assemblies are never missed."),
+            EditorGUILayout.HelpBox(LC.Combine(Lc.Cs_LauncherBinderIntro),
                 MessageType.Info);
 
             DrawTargetConfig();
@@ -93,11 +89,11 @@ namespace EasyFramework.Launcher.Editor
         private void DrawTargetConfig()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Tr("目标配置", "Target config"), GUILayout.Width(80f));
+            EditorGUILayout.LabelField(LC.Combine(Lc.TargetConfig), GUILayout.Width(80f));
 
             if (_configs.Length == 0)
             {
-                EditorGUILayout.LabelField(LC.Tr("工程里没有 LauncherConfig", "No LauncherConfig found"));
+                EditorGUILayout.LabelField(LC.Combine(Lc.Cs_LauncherNoConfig));
                 EditorGUILayout.EndHorizontal();
                 return;
             }
@@ -112,13 +108,13 @@ namespace EasyFramework.Launcher.Editor
                 _preview = null;
             }
 
-            if (GUILayout.Button(LC.Tr("定位", "Ping"), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine(Lc.Ping), GUILayout.Width(60f)))
             {
                 Selection.activeObject = _configs[_configIndex];
                 EditorGUIUtility.PingObject(_configs[_configIndex]);
             }
 
-            if (GUILayout.Button(LC.Tr("刷新", "Refresh"), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine(Lc.Refresh), GUILayout.Width(60f)))
                 RefreshConfigs();
 
             EditorGUILayout.EndHorizontal();
@@ -126,14 +122,14 @@ namespace EasyFramework.Launcher.Editor
 
         private void DrawOptions()
         {
-            EditorGUILayout.LabelField(LC.Tr("── 绑定规则 ──", "── Binding rules ──"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine(Lc.BindingRules), EditorStyles.boldLabel);
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Tr(".bytes 目录", ".bytes folder"), GUILayout.Width(80f));
+            EditorGUILayout.LabelField(LC.Combine(Lc.BytesFolder), GUILayout.Width(80f));
             _options.SearchRoot = EditorGUILayout.TextField(_options.SearchRoot);
-            if (GUILayout.Button(LC.Tr("选择", "Browse"), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine(Lc.Browse), GUILayout.Width(60f)))
             {
-                string picked = EditorUtility.OpenFolderPanel(LC.Tr("选择热更 dll 目录", "Pick hotfix dll folder"),
+                string picked = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Cs_LauncherPickBytesFolder),
                     Application.dataPath, string.Empty);
 
                 if (!string.IsNullOrEmpty(picked))
@@ -150,29 +146,24 @@ namespace EasyFramework.Launcher.Editor
             EditorGUILayout.EndHorizontal();
 
             _options.SearchWholeAssets = EditorGUILayout.ToggleLeft(
-                LC.Tr("目录里找不到时，全 Assets 搜索同名 .dll.bytes", "Fall back to a project-wide .dll.bytes search"),
+                LC.Combine(Lc.Cs_LauncherWholeAssetsSearch),
                 _options.SearchWholeAssets);
 
             string[] ruleNames = LC.IsEnglish ? RuleNamesEn : RuleNamesZh;
             _options.Rule = (HotfixLocationRule)EditorGUILayout.Popup(
-                LC.Tr("Location 规则", "Location rule"), (int)_options.Rule, ruleNames);
+                LC.Combine(Lc.LocationRule), (int)_options.Rule, ruleNames);
 
             if (_options.Rule == HotfixLocationRule.CustomPrefix)
             {
                 _options.CustomPrefix = EditorGUILayout.TextField(
-                    LC.Tr("自定义前缀", "Custom prefix"), _options.CustomPrefix);
+                    LC.Combine(Lc.CustomPrefix), _options.CustomPrefix);
             }
 
             _options.OverwriteExisting = EditorGUILayout.ToggleLeft(
-                LC.Tr("覆盖已填的 Location / FallbackAsset（默认只补空字段）",
-                    "Overwrite existing Location / FallbackAsset (off = fill blanks only)"),
+                LC.Combine(Lc.Cs_LauncherOverwriteOption),
                 _options.OverwriteExisting);
 
-            EditorGUILayout.HelpBox(LC.Tr(
-                "当前工程收集器为 AddressByFileName，Location 应为纯文件名（如 EF.UI.Runtime.dll）。" +
-                "若手工填的是 Assets/... 全路径，可切到「按文件名」并勾选覆盖来批量修正。",
-                "This project's collector uses AddressByFileName, so Location should be a bare file name " +
-                "(e.g. EF.UI.Runtime.dll). To fix hand-written full paths, pick the file-name rule and enable overwrite."),
+            EditorGUILayout.HelpBox(LC.Combine(Lc.Cs_LauncherAddressRuleHint),
                 MessageType.Info);
         }
 
@@ -180,20 +171,20 @@ namespace EasyFramework.Launcher.Editor
         {
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(LC.Tr("🔍 扫描预览", "🔍 Scan preview"), GUILayout.Height(26f)))
+            if (GUILayout.Button(LC.Combine(Lc.ScanPreview), GUILayout.Height(26f)))
             {
                 _options.Save();
                 _preview = LauncherHotfixEntryBinder.Build(CurrentConfig, _options, apply: false);
                 _status = Describe(_preview, applied: false);
             }
 
-            if (GUILayout.Button(LC.Tr("✅ 应用到配置", "✅ Apply to config"), GUILayout.Height(26f)))
+            if (GUILayout.Button(LC.Combine(Lc.ApplyToConfig), GUILayout.Height(26f)))
             {
                 var config = CurrentConfig;
                 if (config == null)
                 {
                     EditorUtility.DisplayDialog(DialogTitle,
-                        LC.Tr("请先选择一个 LauncherConfig。", "Select a LauncherConfig first."), LC.Tr("确定", "OK"));
+                        LC.Combine(Lc.Cs_LauncherSelectConfig), LC.Combine(Lc.Cs_OkConfirm));
                 }
                 else
                 {
@@ -213,15 +204,15 @@ namespace EasyFramework.Launcher.Editor
                 return;
 
             EditorGUILayout.Space(4f);
-            EditorGUILayout.LabelField(LC.Tr("── 预览 ──", "── Preview ──"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine(Lc.PreviewHeader), EditorStyles.boldLabel);
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.MinHeight(120f));
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Tr("程序集", "Assembly"), GUILayout.Width(170f));
+            EditorGUILayout.LabelField(LC.Combine(Lc.Assembly), GUILayout.Width(170f));
             EditorGUILayout.LabelField("Location", GUILayout.Width(220f));
             EditorGUILayout.LabelField("Fallback", GUILayout.Width(90f));
-            EditorGUILayout.LabelField(LC.Tr("状态", "Status"));
+            EditorGUILayout.LabelField(LC.Combine(Lc.Status));
             EditorGUILayout.EndHorizontal();
 
             foreach (var row in _preview.Rows)
@@ -280,14 +271,10 @@ namespace EasyFramework.Launcher.Editor
                 return result.Error;
 
             string head = applied
-                ? LC.Tr("已写入配置", "Config updated")
-                : LC.Tr("预览结果", "Preview");
+                ? LC.Combine(Lc.ConfigUpdated)
+                : LC.Combine(Lc.PreviewResult);
 
-            return LC.Tr(
-                $"{head}：共 {result.Rows.Count} 条，新增 {result.Added} 条，" +
-                $"绑定 Location {result.LocationBound} 条 / FallbackAsset {result.FallbackBound} 条，缺失 {result.Missing} 条。",
-                $"{head}: {result.Rows.Count} entries, {result.Added} added, " +
-                $"{result.LocationBound} locations / {result.FallbackBound} fallbacks bound, {result.Missing} missing.");
+            return LC.Format(Lc.Cs_LauncherPreviewSummary, head, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound, result.Missing);
         }
 
         #endregion
@@ -302,18 +289,16 @@ namespace EasyFramework.Launcher.Editor
 
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "没找到唯一的 LauncherConfig。\n\n请在 Project 窗口选中配置，或在「EF 配置面板 → 热更程序集」里选一个。",
-                    "No single LauncherConfig found.\n\nSelect one in the Project window, or pick one in the EF config panel."),
-                    LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSelectConfigMenu),
+                    LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
             var result = LauncherHotfixEntryBinder.Build(config, options, apply: true);
             string message = Describe(result, applied: true);
-            Debug.Log("[EF.Launcher] " + message + LC.Tr($"\n目标配置：{config.name}", $"\nConfig: {config.name}"));
-            EditorUtility.DisplayDialog(DialogTitle, message + LC.Tr($"\n\n目标配置：{config.name}", $"\n\nConfig: {config.name}"),
-                LC.Tr("好", "OK"));
+            Debug.Log("[EF.Launcher] " + message + LC.Format(Lc.Cs_LauncherConfigLabel, config.name));
+            EditorUtility.DisplayDialog(DialogTitle, message + LC.Format(Lc.Cs_LauncherConfigLabel2, config.name),
+                LC.Combine(Lc.Cs_Ok));
         }
 
         private static LauncherConfig ResolveConfig(HotfixBindOptions options)

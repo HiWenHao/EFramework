@@ -59,9 +59,7 @@ namespace EasyFramework.Launcher.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(LC.Tr(
-                        $"[EF.Launcher] AOT 边界校验自身异常（不影响编译）：{e.Message}",
-                        $"[EF.Launcher] Boundary check threw (compilation is unaffected): {e.Message}"));
+                    Debug.LogWarning(LC.Format(Lc.Cs_LauncherBoundaryException, e.Message));
                 }
             };
         }
@@ -94,9 +92,7 @@ namespace EasyFramework.Launcher.Editor
 
             if (!index.TryGetByPath(RuntimeAsmdefPath, out var runtime))
             {
-                Debug.LogWarning(LC.Tr(
-                    $"[EF.Launcher] 找不到 {RuntimeAsmdefPath}，跳过 AOT 边界校验",
-                    $"[EF.Launcher] {RuntimeAsmdefPath} not found, skipping the AOT boundary check."));
+                Debug.LogWarning(LC.Format(Lc.Cs_LauncherSkipBoundaryCheck, RuntimeAsmdefPath));
                 return true;
             }
 
@@ -108,23 +104,17 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (logWhenClean)
                 {
-                    Debug.Log(LC.Tr(
-                        "[EF.Launcher] AOT 边界校验通过：EF.Launcher.Runtime 没有任何 cn.efefef.* 引用",
-                        "[EF.Launcher] AOT boundary OK: EF.Launcher.Runtime references no cn.efefef.* assembly."));
+                    Debug.Log(LC.Combine(Lc.Cs_LauncherBoundaryOk));
                 }
 
                 return true;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Tr(
-                "[EF.Launcher] AOT 边界被破坏 —— 这会让热更形态在打包时直接失败：",
-                "[EF.Launcher] AOT boundary broken - the full hot-update setup will fail at build time:"));
+            sb.AppendLine(LC.Combine(Lc.Cs_LauncherBoundaryBroken));
             for (int i = 0; i < violations.Count; i++)
                 sb.AppendLine($"  {i + 1}. {violations[i]}");
-            sb.AppendLine(LC.Tr(
-                "规则：EF.Launcher.Runtime 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。",
-                "Rule: EF.Launcher.Runtime may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list."));
+            sb.AppendLine(LC.Combine(Lc.Cs_LauncherBoundaryRule));
 
             Debug.LogError(sb.ToString());
             return false;
@@ -143,9 +133,7 @@ namespace EasyFramework.Launcher.Editor
                 {
                     if (IsEfCoreAssembly(target))
                     {
-                        violations.Add(LC.Tr(
-                            $"直接引用 EF 程序集：{target.Name}（{target.Path}）",
-                            $"Direct reference to an EF assembly: {target.Name} ({target.Path})"));
+                        violations.Add(LC.Format(Lc.Cs_LauncherDirectRef, target.Name, target.Path));
                     }
 
                     continue;
@@ -154,9 +142,7 @@ namespace EasyFramework.Launcher.Editor
                 // 解析不到 asmdef 的（比如引用了不存在的程序集），按名字兜底
                 if (LooksLikeEfAssemblyName(reference))
                 {
-                    violations.Add(LC.Tr(
-                        $"直接引用 EF 程序集：{reference}（未找到对应 asmdef，按名字判定）",
-                        $"Direct reference to an EF assembly: {reference} (asmdef not found, judged by name)"));
+                    violations.Add(LC.Format(Lc.Cs_LauncherDirectRefByName, reference));
                 }
             }
 
@@ -164,9 +150,7 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (!string.IsNullOrEmpty(precompiled) && LooksLikeEfAssemblyName(precompiled))
                 {
-                    violations.Add(LC.Tr(
-                        $"precompiledReferences 里出现 EF 程序集：{precompiled}",
-                        $"EF assembly found in precompiledReferences: {precompiled}"));
+                    violations.Add(LC.Format(Lc.Cs_LauncherPrecompiledRef, precompiled));
                 }
             }
         }
@@ -190,9 +174,7 @@ namespace EasyFramework.Launcher.Editor
 
                     if (IsEfCoreAssembly(target))
                     {
-                        violations.Add(LC.Tr(
-                            $"传递引用 EF 程序集：{chain} → {target.Name}（{target.Path}）",
-                            $"Transitive reference to an EF assembly: {chain} -> {target.Name} ({target.Path})"));
+                        violations.Add(LC.Format(Lc.Cs_LauncherTransitiveRef, chain, target.Name, target.Path));
                         continue;
                     }
 
@@ -214,9 +196,7 @@ namespace EasyFramework.Launcher.Editor
                 string guid = AssetDatabase.AssetPathToGUID(asmdefPath);
                 if (!string.IsNullOrEmpty(guid) && yaml.Contains(guid))
                 {
-                    violations.Add(LC.Tr(
-                        $"Launcher 程序集被写进了热更列表（会自举失败）：{asmdefPath}",
-                        $"Launcher assembly is listed as a hot update assembly (self-bootstrap will fail): {asmdefPath}"));
+                    violations.Add(LC.Format(Lc.Cs_LauncherSelfBootstrapPath, asmdefPath));
                 }
             }
 
@@ -225,9 +205,7 @@ namespace EasyFramework.Launcher.Editor
                 string line = rawLine.Trim();
                 if (line.StartsWith("- EF.Launcher", StringComparison.Ordinal))
                 {
-                    violations.Add(LC.Tr(
-                        $"热更列表里出现 Launcher 程序集名（会自举失败）：{line}",
-                        $"Launcher assembly name found in the hot update list (self-bootstrap will fail): {line}"));
+                    violations.Add(LC.Format(Lc.Cs_LauncherSelfBootstrapName, line));
                 }
             }
         }
@@ -284,11 +262,7 @@ namespace EasyFramework.Launcher.Editor
         {
             if (!LauncherBoundaryValidator.Validate(logWhenClean: false))
             {
-                throw new BuildFailedException(LC.Tr(
-                    "[EF.Launcher] AOT 边界被破坏，已中止打包。详情见上一条 Error 日志" +
-                    "（菜单 EFTools/🎈 Utility/🔍 Validate AOT Boundary 可复现）。",
-                    "[EF.Launcher] AOT boundary broken, build aborted. See the error log above " +
-                    "(reproduce via EFTools/🎈 Utility/🔍 Validate AOT Boundary)."));
+                throw new BuildFailedException(LC.Combine(Lc.Cs_LauncherBuildAborted));
             }
         }
     }

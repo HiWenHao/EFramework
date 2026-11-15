@@ -38,29 +38,21 @@ namespace EasyFramework.Launcher.Editor
             var config = ResolveTargetConfig(createIfMissing: false);
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "没找到 LauncherConfig。\n\n请先在 Project 窗口选中一个 LauncherConfig 资产再执行；" +
-                    "工程里有多个时无法自动判断用哪个。",
-                    "No LauncherConfig found.\n\nSelect one in the Project window first; " +
-                    "when several exist the tool cannot guess which one to use."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSortNoConfig), LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
             var entries = config.HotfixDlls;
             if (entries == null || entries.Length == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    $"「{config.name}」里还没有热更程序集条目。",
-                    $"\"{config.name}\" has no hotfix dll entries yet."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherNoEntries, config.name), LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
             var result = Sort(entries, out var unknown, out var changed);
             if (!changed)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "当前顺序已经是依赖序，不需要调整。",
-                    "The current order already matches the dependency order."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherOrderAlreadyOk), LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
@@ -69,26 +61,24 @@ namespace EasyFramework.Launcher.Editor
             AssetDatabase.SaveAssets();
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Tr("已按依赖序重排：", "Reordered by dependency:"));
+            sb.AppendLine(LC.Combine(Lc.Cs_LauncherReordered));
             for (int i = 0; i < result.Length; i++)
             {
                 string name = string.IsNullOrEmpty(result[i].Name) ? "(未命名)" : result[i].Name;
-                string mark = result[i].Enabled ? string.Empty : LC.Tr("  [已禁用]", "  [disabled]");
+                string mark = result[i].Enabled ? string.Empty : LC.Combine(Lc.Disabled);
                 sb.AppendLine($"  {i + 1}. {name}{mark}");
             }
 
             if (unknown.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Tr(
-                    "以下条目在工程里找不到同名 asmdef，无法判断依赖，已排在最后：",
-                    "These entries have no asmdef with the same name, so their dependencies are unknown; they were placed last:"));
+                sb.AppendLine(LC.Combine(Lc.Cs_LauncherUnknownAsmdef));
                 foreach (string name in unknown)
                     sb.AppendLine("  - " + name);
             }
 
             Debug.Log("[EF.Launcher] " + sb.ToString().Replace("\n", "\n[EF.Launcher] "));
-            EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Tr("好", "OK"));
+            EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine(Lc.Cs_Ok));
         }
 
         #region 排序
@@ -177,7 +167,7 @@ namespace EasyFramework.Launcher.Editor
                 result.Add(entries[index]);
 
                 string name = entryNames[index];
-                unknown.Add(string.IsNullOrEmpty(name) ? LC.Tr("(未命名条目)", "(unnamed entry)") : name);
+                unknown.Add(string.IsNullOrEmpty(name) ? LC.Combine(Lc.UnnamedEntry) : name);
             }
 
             changed = !SameOrder(result, entries);
@@ -275,8 +265,7 @@ namespace EasyFramework.Launcher.Editor
             AssetDatabase.CreateAsset(config, assetPath);
             AssetDatabase.SaveAssets();
 
-            Debug.Log(LC.Tr($"[EF.Launcher] 已创建启动配置：{assetPath}",
-                $"[EF.Launcher] Created launcher config: {assetPath}"));
+            Debug.Log(LC.Format(Lc.Cs_LauncherCreatedConfig, assetPath));
 
             Selection.activeObject = config;
             return config;

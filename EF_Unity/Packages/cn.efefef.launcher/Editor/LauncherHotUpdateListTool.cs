@@ -45,9 +45,7 @@ namespace EasyFramework.Launcher.Editor
 
             if (candidates.Count == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "没有在工程里找到 cn.efefef.* 的运行时程序集。",
-                    "No cn.efefef.* runtime assembly was found in this project."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherNoEfAssembly), LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
@@ -72,10 +70,8 @@ namespace EasyFramework.Launcher.Editor
             {
                 // 列表已经是全的，但骨架可能还没生成，顺便补一次
                 int filledAlready = LauncherHotfixDllFillTool.FillExistingConfig(out int totalAlready);
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                        "EF 的运行时程序集已经全部在热更列表里了。\n\n" + DescribeFillResult(filledAlready, totalAlready),
-                        "All EF runtime assemblies are already in the hot update list.\n\n" + DescribeFillResult(filledAlready, totalAlready)),
-                    LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherAllAlreadyAdded, DescribeFillResult(filledAlready, totalAlready)),
+                    LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
@@ -86,12 +82,12 @@ namespace EasyFramework.Launcher.Editor
                 // 有 AOT 程序集还在引用 EF 时，这一步必然导致打包失败；
                 // 把「取消」放在第一个按钮，避免手快回车直接踩坑
                 if (EditorUtility.DisplayDialog(DialogTitle, message,
-                        LC.Tr("取消", "Cancel"), LC.Tr("仍然加入（会打包失败）", "Add anyway (build will fail)")))
+                        LC.Combine(Lc.Cancel), LC.Combine(Lc.Cs_LauncherAddAnyway)))
                 {
                     return;
                 }
             }
-            else if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Tr("加入", "Add"), LC.Tr("取消", "Cancel")))
+            else if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine(Lc.AddEntry), LC.Combine(Lc.Cancel)))
             {
                 return;
             }
@@ -115,25 +111,13 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Tr(
-                $"[EF.Launcher] 已加入 {added} 个 EF 程序集到热更列表：\n  {string.Join("\n  ", addedPaths)}",
-                $"[EF.Launcher] Added {added} EF assemblies to the hot update list:\n  {string.Join("\n  ", addedPaths)}"));
+            Debug.Log(LC.Format(Lc.Cs_LauncherAddedLog, added, string.Join("\n  ", addedPaths)));
 
             // 顺手把 LauncherConfig.HotfixDlls 的骨架也铺好（按依赖序）
             int filled = LauncherHotfixDllFillTool.FillExistingConfig(out int total);
 
-            EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    $"已加入 {added} 个程序集。\n\n" +
-                    DescribeFillResult(filled, total) + "\n\n" +
-                    "下一步：\n" +
-                    "1. 执行 HybridCLR/Generate/All\n" +
-                    "2. 把 dll 放进 YooAsset，并核对 HotfixDlls 里的 Location",
-                    $"Added {added} assemblies.\n\n" +
-                    DescribeFillResult(filled, total) + "\n\n" +
-                    "Next:\n" +
-                    "1. Run HybridCLR/Generate/All\n" +
-                    "2. Put the dlls into YooAsset and verify each Location in HotfixDlls"),
-                LC.Tr("好", "OK"));
+            EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherAddedDialog, added, DescribeFillResult(filled, total)),
+                LC.Combine(Lc.Cs_Ok));
         }
 
         /// <summary>把填充结果翻译成一句人话（filled = -1 表示没有可用的 LauncherConfig）</summary>
@@ -141,14 +125,10 @@ namespace EasyFramework.Launcher.Editor
         {
             if (filled < 0)
             {
-                return LC.Tr(
-                    "未找到 LauncherConfig，HotfixDlls 骨架未生成（可先创建配置，再用 📦 菜单补）。",
-                    "No LauncherConfig found, so the HotfixDlls skeleton was skipped (create one, then run the 📦 menu).");
+                return LC.Combine(Lc.Cs_LauncherFillSkipped);
             }
 
-            return LC.Tr(
-                $"HotfixDlls 骨架已更新：新增 {filled} 条，共 {total} 条（已按依赖序排好）。",
-                $"HotfixDlls skeleton updated: {filled} added, {total} total (already in dependency order).");
+            return LC.Format(Lc.Cs_LauncherFillSummary, filled, total);
         }
 
         [MenuItem(MenuRoot + "🗑️ Remove All EF Assemblies From Hot Update", false, MenuItemToolkit.LauncherPriority + 52)]
@@ -175,24 +155,18 @@ namespace EasyFramework.Launcher.Editor
 
             if (toRemove.Count == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "热更列表里没有 EF 相关程序集，当前就是 Classic 形态。",
-                    "No EF assembly is in the hot update list; the project is already in Classic mode."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherAlreadyClassic), LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Tr(
-                $"将从热更列表移除 {toRemove.Count} 个程序集，移除后 EF 回到 AOT（Classic 形态）：",
-                $"About to remove {toRemove.Count} assemblies; EF returns to AOT (Classic mode):"));
+            sb.AppendLine(LC.Format(Lc.Cs_LauncherAboutToRemove, toRemove.Count));
             foreach (string path in toRemove)
                 sb.AppendLine("  - " + System.IO.Path.GetFileNameWithoutExtension(path));
             sb.AppendLine();
-            sb.AppendLine(LC.Tr(
-                "注意：热更程序集被移除后，热更层将不能再覆盖这些类型。确认吗？",
-                "Note: once removed, the hot update layer can no longer override these types. Continue?"));
+            sb.AppendLine(LC.Combine(Lc.Cs_LauncherRemoveWarning));
 
-            if (!EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Tr("移除", "Remove"), LC.Tr("取消", "Cancel")))
+            if (!EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine(Lc.RemoveEntry), LC.Combine(Lc.Cancel)))
                 return;
 
             serialized.Update();
@@ -223,14 +197,10 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Tr(
-                $"[EF.Launcher] 已从热更列表移除 {toRemove.Count} 个程序集。",
-                $"[EF.Launcher] Removed {toRemove.Count} assemblies from the hot update list."));
+            Debug.Log(LC.Format(Lc.Cs_LauncherRemovedCount, toRemove.Count));
 
-            EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                $"已移除 {toRemove.Count} 个程序集。\n\n下一步：执行 HybridCLR/Generate/All 让产物同步。",
-                $"Removed {toRemove.Count} assemblies.\n\nNext: run HybridCLR/Generate/All to refresh the generated output."),
-                LC.Tr("好", "OK"));
+            EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherRemovedNext, toRemove.Count),
+                LC.Combine(Lc.Cs_Ok));
         }
 
         #endregion
@@ -372,46 +342,32 @@ namespace EasyFramework.Launcher.Editor
         private static string BuildAddMessage(int addCount, int existingCount, ConsumerScan scan)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Tr(
-                $"将新增 {addCount} 个 EF 程序集，列表原有 {existingCount} 个，加入后共 {existingCount + addCount} 个。",
-                $"About to add {addCount} EF assemblies. The list already has {existingCount}, total will be {existingCount + addCount}."));
+            sb.AppendLine(LC.Format(Lc.Cs_LauncherAboutToAdd, addCount, existingCount, existingCount + addCount));
 
             if (scan.AotConsumers.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Tr(
-                    "⚠ 以下 AOT 程序集仍在引用 EF。加入后 HybridCLR 会把被标记的 EF 程序集从包体剔除，" +
-                    "打包时会报 Failed to resolve assembly: '<EF 程序集名>'：",
-                    "⚠ These AOT assemblies still reference EF. HybridCLR strips the marked EF assemblies from the player, " +
-                    "so the build will fail with Failed to resolve assembly: '<EF assembly>':"));
+                sb.AppendLine(LC.Combine(Lc.Cs_LauncherAotConsumerWarning));
                 foreach (string name in scan.AotConsumers)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();
-                sb.AppendLine(LC.Tr(
-                    "请先把这些引用移除，或改用 Launcher 启动场景，再执行打包。",
-                    "Remove those references (or switch to the Launcher boot scene) before building."));
+                sb.AppendLine(LC.Combine(Lc.Cs_LauncherRemoveReferences));
             }
 
             if (scan.MisconfiguredEditors.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Tr(
-                    "ℹ 以下编辑器程序集没锁平台（asmdef 缺 includePlatforms: Editor），不会被拦下，但它们是配置问题，建议修掉：",
-                    "ℹ These editor assemblies are not restricted to the Editor platform (missing includePlatforms: Editor). They are not blocked here, but the misconfiguration should be fixed:"));
+                sb.AppendLine(LC.Combine(Lc.Cs_LauncherEditorAssemblyHint));
                 foreach (string name in scan.MisconfiguredEditors)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();
-                sb.AppendLine(LC.Tr(
-                    "编辑器程序集不进包体，本来不会影响热更；这里列出来只是提醒它们的 asmdef 少了平台限制。",
-                    "Editor assemblies do not ship in the player, so they do not affect hot update; they are listed only because their asmdef lacks the platform restriction."));
+                sb.AppendLine(LC.Combine(Lc.Cs_LauncherEditorAssemblyNote));
             }
 
             sb.AppendLine();
-            sb.AppendLine(LC.Tr(
-                "加入后需要执行 HybridCLR/Generate/All，并按拓扑序填写 LauncherConfig.HotfixDlls。",
-                "After adding, run HybridCLR/Generate/All and fill LauncherConfig.HotfixDlls in topological order."));
+            sb.AppendLine(LC.Combine(Lc.Cs_LauncherAfterAdd));
             sb.AppendLine();
-            sb.Append(LC.Tr("确认加入？", "Proceed?"));
+            sb.Append(LC.Combine(Lc.Proceed));
 
             return sb.ToString();
         }
@@ -433,9 +389,7 @@ namespace EasyFramework.Launcher.Editor
             var settings = HybridCLRSettings.Instance;
             if (settings == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "读不到 HybridCLRSettings，请确认工程已安装 HybridCLR。",
-                    "HybridCLRSettings is unavailable; make sure HybridCLR is installed."), LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherNoHybridClrSettings), LC.Combine(Lc.Cs_OkConfirm));
                 return false;
             }
 
@@ -443,10 +397,8 @@ namespace EasyFramework.Launcher.Editor
             list = serialized.FindProperty(DefinitionsProperty);
             if (list == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                        $"HybridCLRSettings 里找不到字段 {DefinitionsProperty}，HybridCLR 版本可能不兼容。",
-                        $"Field {DefinitionsProperty} not found in HybridCLRSettings; the HybridCLR version may be incompatible."),
-                    LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherMissingField, DefinitionsProperty),
+                    LC.Combine(Lc.Cs_OkConfirm));
                 return false;
             }
 

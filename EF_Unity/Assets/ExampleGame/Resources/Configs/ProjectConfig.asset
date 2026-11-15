@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff1de8b37ddcbd54aaacb0b32865a699, type: 3}
   m_Name: ProjectConfig
   m_EditorClassIdentifier: 
+  _autoLanguage: 1
+  _displayLanguage: 6
   _scriptAuthor: Alvin8412
   _scriptVersion: 0.1
+  _scriptNamespace: PleaseModifyTheNamespace.
   _resourcesArea:
     m_CopyResToCommit: 0
     m_CleanCommitRes: 1

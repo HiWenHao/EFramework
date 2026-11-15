@@ -109,8 +109,7 @@ namespace EasyFramework.Launcher.Editor
             var settings = HybridCLRSettings.Instance;
             if (settings == null)
             {
-                error = LC.Tr("读不到 HybridCLRSettings，请确认工程已安装 HybridCLR。",
-                    "HybridCLRSettings is unavailable; make sure HybridCLR is installed.");
+                error = LC.Combine(Lc.Cs_LauncherNoHybridClrSettings);
                 return result;
             }
 
@@ -118,8 +117,7 @@ namespace EasyFramework.Launcher.Editor
             var list = serialized.FindProperty(DefinitionsProperty);
             if (list == null)
             {
-                error = LC.Tr($"HybridCLRSettings 里找不到 {DefinitionsProperty}，HybridCLR 版本可能不兼容。",
-                    $"Field {DefinitionsProperty} not found; the HybridCLR version may be incompatible.");
+                error = LC.Format(Lc.Cs_LauncherMissingFieldShort, DefinitionsProperty);
                 return result;
             }
 
@@ -163,7 +161,7 @@ namespace EasyFramework.Launcher.Editor
             var result = new HotfixBindResult();
             if (config == null)
             {
-                result.Error = LC.Tr("未指定 LauncherConfig。", "No LauncherConfig specified.");
+                result.Error = LC.Combine(Lc.Cs_LauncherConfigRequired);
                 return result;
             }
 
@@ -213,7 +211,7 @@ namespace EasyFramework.Launcher.Editor
 
                 if (assetPath == null)
                 {
-                    row.Status = LC.Tr("缺 .dll.bytes", "missing .dll.bytes");
+                    row.Status = LC.Combine(Lc.MissingBytes);
                     result.Missing++;
                     continue;
                 }
@@ -243,14 +241,14 @@ namespace EasyFramework.Launcher.Editor
                     bool mismatch = !string.IsNullOrWhiteSpace(entry.Location) &&
                                     !string.Equals(entry.Location, location, StringComparison.Ordinal);
                     row.Status = mismatch
-                        ? LC.Tr("⚠ 保留（与规则不符）", "⚠ kept (rule mismatch)")
-                        : LC.Tr("保留原值", "kept");
+                        ? LC.Combine(Lc.Cs_LauncherKeptMismatch)
+                        : LC.Combine(Lc.Kept);
                 }
                 else
                 {
                     row.Status = isNew
-                        ? LC.Tr("新增并绑定", "added + bound")
-                        : LC.Tr("已绑定", "bound");
+                        ? LC.Combine(Lc.AddedAndBound)
+                        : LC.Combine(Lc.Bound);
                 }
             }
 

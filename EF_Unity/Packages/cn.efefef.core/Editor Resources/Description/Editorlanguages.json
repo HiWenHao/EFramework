@@ -2799,6 +2799,662 @@
         "Provider",
         "提供者"
       ]
+    },
+    {
+      "name": "Disabled",
+      "desc": "  [已禁用]",
+      "array": [
+        "  [disabled]",
+        "  [已禁用]"
+      ]
+    },
+    {
+      "name": "UnnamedEntry",
+      "desc": "(未命名条目)",
+      "array": [
+        "(unnamed entry)",
+        "(未命名条目)"
+      ]
+    },
+    {
+      "name": "BytesFolder",
+      "desc": ".bytes 目录",
+      "array": [
+        ".bytes folder",
+        ".bytes 目录"
+      ]
+    },
+    {
+      "name": "LocationRule",
+      "desc": "Location 规则",
+      "array": [
+        "Location rule",
+        "Location 规则"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBoundaryOk",
+      "desc": "[EF.Launcher] AOT ",
+      "array": [
+        "[EF.Launcher] AOT boundary OK: EF.Launcher.Runtime references no cn.efefef.* assembly.",
+        "[EF.Launcher] AOT 边界校验通过：EF.Launcher.Runtime 没有任何 cn.efefef.* 引用"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBoundaryBroken",
+      "desc": "[EF.Launcher] AOT ",
+      "array": [
+        "[EF.Launcher] AOT boundary broken - the full hot-update setup will fail at build time:",
+        "[EF.Launcher] AOT 边界被破坏 —— 这会让热更形态在打包时直接失败："
+      ]
+    },
+    {
+      "name": "Cs_LauncherEditorAssemblyHint",
+      "desc": "ℹ 以下编辑器程序集没锁平台（asm",
+      "array": [
+        "ℹ These editor assemblies are not restricted to the Editor platform (missing includePlatforms: Editor). They are not blocked here, but the misconfiguration should be fixed:",
+        "ℹ 以下编辑器程序集没锁平台（asmdef 缺 includePlatforms: Editor），不会被拦下，但它们是配置问题，建议修掉："
+      ]
+    },
+    {
+      "name": "BindingRules",
+      "desc": "── 绑定规则 ──",
+      "array": [
+        "── Binding rules ──",
+        "── 绑定规则 ──"
+      ]
+    },
+    {
+      "name": "PreviewHeader",
+      "desc": "── 预览 ──",
+      "array": [
+        "── Preview ──",
+        "── 预览 ──"
+      ]
+    },
+    {
+      "name": "Cs_LauncherKeptMismatch",
+      "desc": "⚠ 保留（与规则不符）",
+      "array": [
+        "⚠ kept (rule mismatch)",
+        "⚠ 保留（与规则不符）"
+      ]
+    },
+    {
+      "name": "ApplyToConfig",
+      "desc": "✅ 应用到配置",
+      "array": [
+        "✅ Apply to config",
+        "✅ 应用到配置"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAddAnyway",
+      "desc": "仍然加入（会打包失败）",
+      "array": [
+        "Add anyway (build will fail)",
+        "仍然加入（会打包失败）"
+      ]
+    },
+    {
+      "name": "Cs_LauncherUnknownAsmdef",
+      "desc": "以下条目在工程里找不到同名 asmd",
+      "array": [
+        "These entries have no asmdef with the same name, so their dependencies are unknown; they were placed last:",
+        "以下条目在工程里找不到同名 asmdef，无法判断依赖，已排在最后："
+      ]
+    },
+    {
+      "name": "Kept",
+      "desc": "保留原值",
+      "array": [
+        "kept",
+        "保留原值"
+      ]
+    },
+    {
+      "name": "AddEntry",
+      "desc": "加入",
+      "array": [
+        "Add",
+        "加入"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAfterAdd",
+      "desc": "加入后需要执行 HybridCLR/",
+      "array": [
+        "After adding, run HybridCLR/Generate/All and fill LauncherConfig.HotfixDlls in topological order.",
+        "加入后需要执行 HybridCLR/Generate/All，并按拓扑序填写 LauncherConfig.HotfixDlls。"
+      ]
+    },
+    {
+      "name": "Cs_Ok",
+      "desc": "好",
+      "array": [
+        "OK",
+        "好"
+      ]
+    },
+    {
+      "name": "Ping",
+      "desc": "定位",
+      "array": [
+        "Ping",
+        "定位"
+      ]
+    },
+    {
+      "name": "Cs_LauncherNoConfig",
+      "desc": "工程里没有 LauncherConf",
+      "array": [
+        "No LauncherConfig found",
+        "工程里没有 LauncherConfig"
+      ]
+    },
+    {
+      "name": "ConfigUpdated",
+      "desc": "已写入配置",
+      "array": [
+        "Config updated",
+        "已写入配置"
+      ]
+    },
+    {
+      "name": "Cs_LauncherReordered",
+      "desc": "已按依赖序重排：",
+      "array": [
+        "Reordered by dependency:",
+        "已按依赖序重排："
+      ]
+    },
+    {
+      "name": "Bound",
+      "desc": "已绑定",
+      "array": [
+        "bound",
+        "已绑定"
+      ]
+    },
+    {
+      "name": "Cs_LauncherOrderAlreadyOk",
+      "desc": "当前顺序已经是依赖序，不需要调整。",
+      "array": [
+        "The current order already matches the dependency order.",
+        "当前顺序已经是依赖序，不需要调整。"
+      ]
+    },
+    {
+      "name": "AddedAndBound",
+      "desc": "新增并绑定",
+      "array": [
+        "added + bound",
+        "新增并绑定"
+      ]
+    },
+    {
+      "name": "Cs_LauncherFillSkipped",
+      "desc": "未找到 LauncherConfig",
+      "array": [
+        "No LauncherConfig found, so the HotfixDlls skeleton was skipped (create one, then run the 📦 menu).",
+        "未找到 LauncherConfig，HotfixDlls 骨架未生成（可先创建配置，再用 📦 菜单补）。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherConfigRequired",
+      "desc": "未指定 LauncherConfig",
+      "array": [
+        "No LauncherConfig specified.",
+        "未指定 LauncherConfig。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSelectConfigToFill",
+      "desc": "没找到唯一的 LauncherCon",
+      "array": [
+        "No single LauncherConfig found.\n\nSelect the config to fill in the Project window first.",
+        "没找到唯一的 LauncherConfig。\n\n请先在 Project 窗口选中要填充的配置再执行。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSelectConfigMenu",
+      "desc": "没找到唯一的 LauncherCon",
+      "array": [
+        "No single LauncherConfig found.\n\nSelect one in the Project window, or pick one in the EF config panel.",
+        "没找到唯一的 LauncherConfig。\n\n请在 Project 窗口选中配置，或在「EF 配置面板 → 热更程序集」里选一个。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherNoEfAssembly",
+      "desc": "没有在工程里找到 cn.efefef",
+      "array": [
+        "No cn.efefef.* runtime assembly was found in this project.",
+        "没有在工程里找到 cn.efefef.* 的运行时程序集。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherRemoveWarning",
+      "desc": "注意：热更程序集被移除后，热更层将不",
+      "array": [
+        "Note: once removed, the hot update layer can no longer override these types. Continue?",
+        "注意：热更程序集被移除后，热更层将不能再覆盖这些类型。确认吗？"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAlreadyClassic",
+      "desc": "热更列表里没有 EF 相关程序集，当",
+      "array": [
+        "No EF assembly is in the hot update list; the project is already in Classic mode.",
+        "热更列表里没有 EF 相关程序集，当前就是 Classic 形态。"
+      ]
+    },
+    {
+      "name": "HotfixAssemblies",
+      "desc": "热更程序集",
+      "array": [
+        "Hotfix Assemblies",
+        "热更程序集"
+      ]
+    },
+    {
+      "name": "Status",
+      "desc": "状态",
+      "array": [
+        "Status",
+        "状态"
+      ]
+    },
+    {
+      "name": "Cs_LauncherWholeAssetsSearch",
+      "desc": "目录里找不到时，全 Assets 搜",
+      "array": [
+        "Fall back to a project-wide .dll.bytes search",
+        "目录里找不到时，全 Assets 搜索同名 .dll.bytes"
+      ]
+    },
+    {
+      "name": "TargetConfig",
+      "desc": "目标配置",
+      "array": [
+        "Target config",
+        "目标配置"
+      ]
+    },
+    {
+      "name": "Cs_OkConfirm",
+      "desc": "确定",
+      "array": [
+        "OK",
+        "确定"
+      ]
+    },
+    {
+      "name": "Proceed",
+      "desc": "确认加入？",
+      "array": [
+        "Proceed?",
+        "确认加入？"
+      ]
+    },
+    {
+      "name": "RemoveEntry",
+      "desc": "移除",
+      "array": [
+        "Remove",
+        "移除"
+      ]
+    },
+    {
+      "name": "Assembly",
+      "desc": "程序集",
+      "array": [
+        "Assembly",
+        "程序集"
+      ]
+    },
+    {
+      "name": "Cs_LauncherEditorAssemblyNote",
+      "desc": "编辑器程序集不进包体，本来不会影响热",
+      "array": [
+        "Editor assemblies do not ship in the player, so they do not affect hot update; they are listed only because their asmdef lacks the platform restriction.",
+        "编辑器程序集不进包体，本来不会影响热更；这里列出来只是提醒它们的 asmdef 少了平台限制。"
+      ]
+    },
+    {
+      "name": "MissingBytes",
+      "desc": "缺 .dll.bytes",
+      "array": [
+        "missing .dll.bytes",
+        "缺 .dll.bytes"
+      ]
+    },
+    {
+      "name": "CustomPrefix",
+      "desc": "自定义前缀",
+      "array": [
+        "Custom prefix",
+        "自定义前缀"
+      ]
+    },
+    {
+      "name": "Cs_LauncherOverwriteOption",
+      "desc": "覆盖已填的 Location / F",
+      "array": [
+        "Overwrite existing Location / FallbackAsset (off = fill blanks only)",
+        "覆盖已填的 Location / FallbackAsset（默认只补空字段）"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBoundaryRule",
+      "desc": "规则：EF.Launcher.Run",
+      "array": [
+        "Rule: EF.Launcher.Runtime may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list.",
+        "规则：EF.Launcher.Runtime 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherRemoveReferences",
+      "desc": "请先把这些引用移除，或改用 Laun",
+      "array": [
+        "Remove those references (or switch to the Launcher boot scene) before building.",
+        "请先把这些引用移除，或改用 Launcher 启动场景，再执行打包。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSelectConfig",
+      "desc": "请先选择一个 LauncherCon",
+      "array": [
+        "Select a LauncherConfig first.",
+        "请先选择一个 LauncherConfig。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherNoHybridClrSettings",
+      "desc": "读不到 HybridCLRSetti",
+      "array": [
+        "HybridCLRSettings is unavailable; make sure HybridCLR is installed.",
+        "读不到 HybridCLRSettings，请确认工程已安装 HybridCLR。"
+      ]
+    },
+    {
+      "name": "Browse",
+      "desc": "选择",
+      "array": [
+        "Browse",
+        "选择"
+      ]
+    },
+    {
+      "name": "Cs_LauncherPickBytesFolder",
+      "desc": "选择热更 dll 目录",
+      "array": [
+        "Pick hotfix dll folder",
+        "选择热更 dll 目录"
+      ]
+    },
+    {
+      "name": "PreviewResult",
+      "desc": "预览结果",
+      "array": [
+        "Preview",
+        "预览结果"
+      ]
+    },
+    {
+      "name": "ScanPreview",
+      "desc": "🔍 扫描预览",
+      "array": [
+        "🔍 Scan preview",
+        "🔍 扫描预览"
+      ]
+    },
+    {
+      "name": "Cs_LauncherFillSummary",
+      "desc": "HotfixDlls 骨架已更新：新",
+      "array": [
+        "HotfixDlls skeleton updated: {0} added, {1} total (already in dependency order).",
+        "HotfixDlls 骨架已更新：新增 {0} 条，共 {1} 条（已按依赖序排好）。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherMissingFieldShort",
+      "desc": "HybridCLRSettings ",
+      "array": [
+        "Field {0} not found; the HybridCLR version may be incompatible.",
+        "HybridCLRSettings 里找不到 {0}，HybridCLR 版本可能不兼容。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherMissingField",
+      "desc": "HybridCLRSettings ",
+      "array": [
+        "Field {0} not found in HybridCLRSettings; the HybridCLR version may be incompatible.",
+        "HybridCLRSettings 里找不到字段 {0}，HybridCLR 版本可能不兼容。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSelfBootstrapPath",
+      "desc": "Launcher 程序集被写进了热更",
+      "array": [
+        "Launcher assembly is listed as a hot update assembly (self-bootstrap will fail): {0}",
+        "Launcher 程序集被写进了热更列表（会自举失败）：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBoundaryException",
+      "desc": "[EF.Launcher] AOT ",
+      "array": [
+        "[EF.Launcher] Boundary check threw (compilation is unaffected): {0}",
+        "[EF.Launcher] AOT 边界校验自身异常（不影响编译）：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherRemovedCount",
+      "desc": "[EF.Launcher] 已从热更",
+      "array": [
+        "[EF.Launcher] Removed {0} assemblies from the hot update list.",
+        "[EF.Launcher] 已从热更列表移除 {0} 个程序集。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherCreatedConfig",
+      "desc": "[EF.Launcher] 已创建启",
+      "array": [
+        "[EF.Launcher] Created launcher config: {0}",
+        "[EF.Launcher] 已创建启动配置：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSkipBoundaryCheck",
+      "desc": "[EF.Launcher] 找不到 ",
+      "array": [
+        "[EF.Launcher] {0} not found, skipping the AOT boundary check.",
+        "[EF.Launcher] 找不到 {0}，跳过 AOT 边界校验"
+      ]
+    },
+    {
+      "name": "Cs_LauncherConfigLabel2",
+      "desc": "  目标配置：{0}",
+      "array": [
+        "\n\nConfig: {0}",
+        "\n\n目标配置：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherConfigLabel",
+      "desc": " 目标配置：{0}",
+      "array": [
+        "\nConfig: {0}",
+        "\n目标配置：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherPrecompiledRef",
+      "desc": "precompiledReferen",
+      "array": [
+        "EF assembly found in precompiledReferences: {0}",
+        "precompiledReferences 里出现 EF 程序集：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherNoEntries",
+      "desc": "「{0}」里还没有热更程序集条目。",
+      "array": [
+        "\"{0}\" has no hotfix dll entries yet.",
+        "「{0}」里还没有热更程序集条目。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherTransitiveRef",
+      "desc": "传递引用 EF 程序集：{0} → ",
+      "array": [
+        "Transitive reference to an EF assembly: {0} -> {1} ({2})",
+        "传递引用 EF 程序集：{0} → {1}（{2}）"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAboutToRemove",
+      "desc": "将从热更列表移除 {0} 个程序集，",
+      "array": [
+        "About to remove {0} assemblies; EF returns to AOT (Classic mode):",
+        "将从热更列表移除 {0} 个程序集，移除后 EF 回到 AOT（Classic 形态）："
+      ]
+    },
+    {
+      "name": "Cs_LauncherAboutToAdd",
+      "desc": "将新增 {0} 个 EF 程序集，列",
+      "array": [
+        "About to add {0} EF assemblies. The list already has {1}, total will be {2}.",
+        "将新增 {0} 个 EF 程序集，列表原有 {1} 个，加入后共 {2} 个。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherRemovedNext",
+      "desc": "已移除 {0} 个程序集。  下一步",
+      "array": [
+        "Removed {0} assemblies.\n\nNext: run HybridCLR/Generate/All to refresh the generated output.",
+        "已移除 {0} 个程序集。\n\n下一步：执行 HybridCLR/Generate/All 让产物同步。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSelfBootstrapName",
+      "desc": "热更列表里出现 Launcher 程",
+      "array": [
+        "Launcher assembly name found in the hot update list (self-bootstrap will fail): {0}",
+        "热更列表里出现 Launcher 程序集名（会自举失败）：{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherDirectRefByName",
+      "desc": "直接引用 EF 程序集：{0}（未找",
+      "array": [
+        "Direct reference to an EF assembly: {0} (asmdef not found, judged by name)",
+        "直接引用 EF 程序集：{0}（未找到对应 asmdef，按名字判定）"
+      ]
+    },
+    {
+      "name": "Cs_LauncherDirectRef",
+      "desc": "直接引用 EF 程序集：{0}（{1",
+      "array": [
+        "Direct reference to an EF assembly: {0} ({1})",
+        "直接引用 EF 程序集：{0}（{1}）"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBuildAborted",
+      "desc": "[EF.Launcher] AOT ",
+      "array": [
+        "[EF.Launcher] AOT boundary broken, build aborted. See the error log above (reproduce via EFTools/🚀 启动模块/🔍 Validate AOT Boundary).",
+        "[EF.Launcher] AOT 边界被破坏，已中止打包。详情见上一条 Error 日志（菜单 EFTools/🚀 启动模块/🔍 Validate AOT Boundary 可复现）。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherBinderIntro",
+      "desc": "按 HybridCLR 热更列表生成",
+      "array": [
+        "Builds HotfixDlls entries from the HybridCLR hot update list and fills Location / FallbackAsset. The entry set comes from hotUpdateAssemblyDefinitions, so business assemblies are never missed.",
+        "按 HybridCLR 热更列表生成 HotfixDlls 条目，并自动填 Location / FallbackAsset。条目全集取自 hotUpdateAssemblyDefinitions，不会漏掉业务热更程序集。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAddressRuleHint",
+      "desc": "当前工程收集器为 AddressBy",
+      "array": [
+        "This project's collector uses AddressByFileName, so Location should be a bare file name (e.g. EF.UI.Runtime.dll). To fix hand-written full paths, pick the file-name rule and enable overwrite.",
+        "当前工程收集器为 AddressByFileName，Location 应为纯文件名（如 EF.UI.Runtime.dll）。若手工填的是 Assets/... 全路径，可切到「按文件名」并勾选覆盖来批量修正。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherPreviewSummary",
+      "desc": "{0}：共 {1} 条，新增 {2}",
+      "array": [
+        "{0}: {1} entries, {2} added, {3} locations / {4} fallbacks bound, {5} missing.",
+        "{0}：共 {1} 条，新增 {2} 条，绑定 Location {3} 条 / FallbackAsset {4} 条，缺失 {5} 条。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherFillUpdated",
+      "desc": "「{0}」已更新：共 {1} 条，新",
+      "array": [
+        "\"{0}\" updated: {1} total, {2} added, {3} locations / {4} fallbacks bound.",
+        "「{0}」已更新：共 {1} 条，新增 {2} 条，绑定 Location {3} 条 / FallbackAsset {4} 条。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherFillMissing",
+      "desc": "⚠ 有 {0} 条找不到 .dll.",
+      "array": [
+        "⚠ {0} entries have no matching .dll.bytes and were left blank. Run HybridCLR/Generate/All + BuildAssetsAndCopyToStreamingAssets, or adjust the .bytes folder in the EF config panel.",
+        "⚠ 有 {0} 条找不到 .dll.bytes，Location / FallbackAsset 留空：请先执行 HybridCLR/Generate/All 与 BuildAssetsAndCopyToStreamingAssets，或到「EF 配置面板 → 热更程序集」调整 .bytes 目录。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherRulesHint",
+      "desc": "绑定规则可在「EF 配置面板 → 热",
+      "array": [
+        "Rules live in the EF config panel (Hotfix Assemblies); use 🔗 Auto Bind Hotfix Dll Entries to rebind only.",
+        "绑定规则可在「EF 配置面板 → 热更程序集」修改；只想重跑绑定可用 🔗 Auto Bind Hotfix Dll Entries。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherSortNoConfig",
+      "desc": "没找到 LauncherConfig",
+      "array": [
+        "No LauncherConfig found.\n\nSelect one in the Project window first; when several exist the tool cannot guess which one to use.",
+        "没找到 LauncherConfig。\n\n请先在 Project 窗口选中一个 LauncherConfig 资产再执行；工程里有多个时无法自动判断用哪个。"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAllAlreadyAdded",
+      "desc": "EF 的运行时程序集已经全部在热更列",
+      "array": [
+        "All EF runtime assemblies are already in the hot update list.\n\n{0}",
+        "EF 的运行时程序集已经全部在热更列表里了。\n\n{0}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAddedLog",
+      "desc": "[EF.Launcher] 已加入 ",
+      "array": [
+        "[EF.Launcher] Added {0} EF assemblies to the hot update list:\n  {1}",
+        "[EF.Launcher] 已加入 {0} 个 EF 程序集到热更列表：\n  {1}"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAddedDialog",
+      "desc": "已加入 {0} 个程序集。  {1}",
+      "array": [
+        "Added {0} assemblies.\n\n{1}\n\nNext:\n1. Run HybridCLR/Generate/All\n2. Put the dlls into YooAsset and verify each Location in HotfixDlls",
+        "已加入 {0} 个程序集。\n\n{1}\n\n下一步：\n1. 执行 HybridCLR/Generate/All\n2. 把 dll 放进 YooAsset，并核对 HotfixDlls 里的 Location"
+      ]
+    },
+    {
+      "name": "Cs_LauncherAotConsumerWarning",
+      "desc": "⚠ 以下 AOT 程序集仍在引用 E",
+      "array": [
+        "⚠ These AOT assemblies still reference EF. HybridCLR strips the marked EF assemblies from the player, so the build will fail with Failed to resolve assembly: '<EF assembly>':",
+        "⚠ 以下 AOT 程序集仍在引用 EF。加入后 HybridCLR 会把被标记的 EF 程序集从包体剔除，打包时会报 Failed to resolve assembly: '<EF 程序集名>'："
+      ]
     }
   ]
 }

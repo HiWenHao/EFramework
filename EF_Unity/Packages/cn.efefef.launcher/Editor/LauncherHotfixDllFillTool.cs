@@ -34,10 +34,8 @@ namespace EasyFramework.Launcher.Editor
             var config = LauncherHotfixDllSortTool.ResolveTargetConfig(createIfMissing: true);
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Tr(
-                    "没找到唯一的 LauncherConfig。\n\n请先在 Project 窗口选中要填充的配置再执行。",
-                    "No single LauncherConfig found.\n\nSelect the config to fill in the Project window first."),
-                    LC.Tr("确定", "OK"));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSelectConfigToFill),
+                    LC.Combine(Lc.Cs_OkConfirm));
                 return;
             }
 
@@ -45,7 +43,7 @@ namespace EasyFramework.Launcher.Editor
             string message = Describe(config, result);
 
             Debug.Log("[EF.Launcher] " + message.Replace("\n", "\n[EF.Launcher] "));
-            EditorUtility.DisplayDialog(DialogTitle, message, LC.Tr("好", "OK"));
+            EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine(Lc.Cs_Ok));
         }
 
         /// <summary>
@@ -72,22 +70,12 @@ namespace EasyFramework.Launcher.Editor
 
             var lines = new List<string>
             {
-                LC.Tr(
-                    $"「{config.name}」已更新：共 {result.Rows.Count} 条，新增 {result.Added} 条，" +
-                    $"绑定 Location {result.LocationBound} 条 / FallbackAsset {result.FallbackBound} 条。",
-                    $"\"{config.name}\" updated: {result.Rows.Count} total, {result.Added} added, " +
-                    $"{result.LocationBound} locations / {result.FallbackBound} fallbacks bound."),
+                LC.Format(Lc.Cs_LauncherFillUpdated, config.name, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound),
             };
 
             if (result.Missing > 0)
             {
-                lines.Add(LC.Tr(
-                    $"⚠ 有 {result.Missing} 条找不到 .dll.bytes，Location / FallbackAsset 留空：" +
-                    "请先执行 HybridCLR/Generate/All 与 BuildAssetsAndCopyToStreamingAssets，" +
-                    "或到「EF 配置面板 → 热更程序集」调整 .bytes 目录。",
-                    $"⚠ {result.Missing} entries have no matching .dll.bytes and were left blank. " +
-                    "Run HybridCLR/Generate/All + BuildAssetsAndCopyToStreamingAssets, " +
-                    "or adjust the .bytes folder in the EF config panel."));
+                lines.Add(LC.Format(Lc.Cs_LauncherFillMissing, result.Missing));
 
                 foreach (var row in result.Rows)
                 {
@@ -96,11 +84,7 @@ namespace EasyFramework.Launcher.Editor
                 }
             }
 
-            lines.Add(LC.Tr(
-                "绑定规则可在「EF 配置面板 → 热更程序集」修改；只想重跑绑定可用 " +
-                "🔗 Auto Bind Hotfix Dll Entries。",
-                "Rules live in the EF config panel (Hotfix Assemblies); " +
-                "use 🔗 Auto Bind Hotfix Dll Entries to rebind only."));
+            lines.Add(LC.Combine(Lc.Cs_LauncherRulesHint));
 
             return string.Join("\n\n", lines);
         }
