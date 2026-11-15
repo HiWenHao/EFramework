@@ -64,8 +64,8 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/AssetsHotfix/OnlyHotfixCode
-        CollectorGUID: d7830332ceca4da4caf68d6fb69b74fe
+      - CollectPath: Assets/AssetsHotfix/FullCode
+        CollectorGUID: e3aec4aabb9e6474f9d9e238365400e1
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory

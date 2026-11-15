@@ -238,15 +238,21 @@ namespace EasyFramework.Launcher.Editor
         #region 收集与判定
 
         /// <summary>
-        /// 收集所有 EF 运行时 asmdef（排除 launcher 自己、编辑器程序集、Plugins 下的第三方）
+        /// 收集所有 EF 运行时 asmdef（排除 launcher 自己、编辑器程序集、Plugins 下的第三方）。
+        /// <para>当前形态 Core 留 AOT，默认排除 EF.Core；只有回到「含 Core 的全量热更」实验形态才传 includeCore: true。</para>
         /// </summary>
-        internal static List<AsmdefInfo> CollectEfRuntimeAsmdefs(AsmdefDatabase database)
+        internal static List<AsmdefInfo> CollectEfRuntimeAsmdefs(AsmdefDatabase database, bool includeCore = false)
         {
             var result = new List<AsmdefInfo>();
 
             foreach (var info in database.All)
             {
                 if (!info.Path.StartsWith(EfPackageRoot, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Core 是 AOT 底座：热更程序集单向引用它，它自己绝不能进热更列表。
+                // 同一程序集既在包体又被 Assembly.Load，会分裂出第二份类型身份（InvalidCastException）。
+                if (!includeCore && string.Equals(info.Name, "EF.Core", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 // launcher 是加载器，永远不能进热更列表
@@ -374,10 +380,10 @@ namespace EasyFramework.Launcher.Editor
             {
                 sb.AppendLine();
                 sb.AppendLine(LC.Tr(
-                    "⚠ 以下 AOT 程序集仍在引用 EF。加入后 HybridCLR 会把 EF 从包体剔除，" +
-                    "打包时会报 Failed to resolve assembly: 'EF.Core'：",
-                    "⚠ These AOT assemblies still reference EF. HybridCLR strips EF from the player, " +
-                    "so the build will fail with Failed to resolve assembly: 'EF.Core':"));
+                    "⚠ 以下 AOT 程序集仍在引用 EF。加入后 HybridCLR 会把被标记的 EF 程序集从包体剔除，" +
+                    "打包时会报 Failed to resolve assembly: '<EF 程序集名>'：",
+                    "⚠ These AOT assemblies still reference EF. HybridCLR strips the marked EF assemblies from the player, " +
+                    "so the build will fail with Failed to resolve assembly: '<EF assembly>':"));
                 foreach (string name in scan.AotConsumers)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();

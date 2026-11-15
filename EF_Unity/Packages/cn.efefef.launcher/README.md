@@ -1,18 +1,24 @@
 # EF.Launcher
 
-Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版本检查 → 下载 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口。
+Unity 热更的 **AOT 启动内核**（当前形态：**Core 留 AOT**）。负责：YooAsset 初始化 → 版本检查 → 下载 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口。
 
 ---
 
-## 一、铁律（违反必炸）
+## 一、形态与铁律（违反必炸）
 
-**本包（`EF.Launcher.Runtime`）不得引用任何 `cn.efefef.*` 包。**
+| 程序集 | 形态 |
+|---|---|
+| `EF.Core`（含 `EFC` / `ISingleton` / `ProjectConfig` / UniTask） | **AOT**，不进热更列表 |
+| 其余 9 个 EF 运行时程序集 + `ExampleGameHotfix` | 热更 |
+| `EF.Launcher.Runtime` | AOT 启动内核，永远不进热更列表 |
 
-原因：HybridCLR 在打包时会把热更程序集从包体里剔除（`FilterHotFixAssemblies`），
-所以 AOT 程序集一旦引用了热更程序集，il2cpp 阶段就会断。EF.Core / EF.UI / EF.YooAsset
-都会进热更层，因此启动段必须是零 EF 依赖的。
+热更程序集**单向引用** AOT 程序集是 HybridCLR 的标准形态；反向引用（AOT → 热更）会在 il2cpp 阶段断。
+`EF.Core` 留在 AOT 还带来三个好处：`ProjectConfig.asset` 可正常反序列化、UniTask 的泛型实例化本就在 AOT 侧、
+Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 
-`EF.Launcher.Runtime.asmdef` 只允许引用：`YooAsset`、`HybridCLR.Runtime`。
+**铁律：`EF.Launcher.Runtime` 不得引用任何 `cn.efefef.*` 包。**
+`EF.Launcher.Runtime.asmdef` 只允许引用 `YooAsset`、`HybridCLR.Runtime`。
+启动段是零 EF 依赖的，否则打包时 HybridCLR 把热更程序集从包体剔除后，链接器会找不到引用。
 
 > **这条铁律只管 Runtime。** `EF.Launcher.Editor` 是编辑器程序集（不进包体），它引用了
 > `EF.Editor`（为了复用 `LC.Tr` 双语与 `MenuItemToolkit` 菜单规范）和 `HybridCLR.Editor`，
@@ -35,6 +41,14 @@ Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版
 
 **顺序不能换**：AOT 元数据必须在热更程序集之前加载，否则热更代码里出现 AOT 泛型实例化会踩空。
 
+**三条运行约束**
+
+- `AotMetadataDlls` 里出现引用丢失（`.dll.bytes` 重新导入后 `.meta` guid 变化）会**直接失败**并点名数量，
+  不再静默跳过——补元数据没生效是隐形故障，只会在热更代码踩到泛型时以难定位的方式崩。
+- 资源句柄无论加载成功失败都会 `Release()`。
+- 已加载过的热更程序集在重试时跳过：`Assembly.Load(byte[])` 每次都会产生新程序集，
+  重复加载同名 dll 会分裂出第二份类型身份（典型症状 `InvalidCastException`）。
+
 ---
 
 ## 三、接入步骤
@@ -48,9 +62,12 @@ Unity 全量热更的 **AOT 启动内核**。负责：YooAsset 初始化 → 版
    - `PackageName`：与资源构建配置一致
    - `MainUrl` / `FallbackUrl`
    - `AotMetadataDlls`：随包的裁剪后 AOT dll（与 `HybridCLRSettings.patchAOTAssemblies` 对齐）
-   - `HotfixDlls`：**拓扑序**，被依赖的排前面（`EF.Core` 必须在 `EF.UI` 之前）
+   - `HotfixDlls`：**拓扑序**，被依赖的排前面。Core-AOT 形态下 **列表里不应出现 `EF.Core`**，
+     它已在包体里，再 `Assembly.Load` 一份会导致类型身份分裂
    - `EntryType` / `EntryMethod`：热更入口，例如 `EFExample.HotfixTest` / `Init`
 5. `HybridCLRSettings` 里确认 `EF.Launcher.Runtime` / `EF.Launcher.Editor` **不在**热更列表。
+
+> 运行时 `AddComponent<Launcher>()` 后要立刻 `Configure(config)`；启动流程一旦开始就不再接受配置注入。
 
 ---
 
@@ -106,10 +123,14 @@ Unity -batchmode -quit -projectPath <proj> \
 | 菜单项 | 作用 |
 |---|---|
 | **🔍 Validate AOT Boundary** | 手动跑一次边界校验，结果打到 Console |
-| **➕ Add All EF Assemblies To Hot Update** | 把 10 个 EF 运行时 asmdef 追加进 `HybridCLRSettings.hotUpdateAssemblyDefinitions`（已存在的跳过，不覆盖原有条目） |
+| **➕ Add All EF Assemblies To Hot Update** | 把 EF 运行时 asmdef 追加进 `HybridCLRSettings.hotUpdateAssemblyDefinitions`（已存在的跳过） |
 | **🗑️ Remove All EF Assemblies From Hot Update** | 把它们移出列表，回到 Classic 形态 |
 | **🔀 Sort Hotfix Dlls By Dependency** | 对 `LauncherConfig.HotfixDlls` 按 asmdef 依赖图拓扑排序，**用户不用自己排顺序** |
 | **📦 Fill LauncherConfig Hotfix Dlls** | 按依赖序铺 `HotfixDlls` 骨架：缺的 EF 程序集自动补条目，已有的原样保留。没有配置时会自动建一个 |
+
+**Core-AOT 形态下，`CollectEfRuntimeAsmdefs` 默认排除 `EF.Core`**：加入列表与填充 `HotfixDlls` 都只会得到
+9 个 EF 程序集（外加 `ExampleGameHotfix` 共 10 条）。要回到「含 Core 的全量热更」实验形态，
+需显式传 `includeCore: true`。
 
 菜单名保持英文：`[MenuItem]` 的路径必须是编译期常量，没法跟着语言设置动态切换
 （EF 自己的菜单也是英文）。**对话框、日志、异常信息全部走 `LC.Tr(zh, en)`**，跟随
@@ -118,7 +139,7 @@ Unity -batchmode -quit -projectPath <proj> \
 **加入前会先扫一遍「还有哪些 AOT 程序集在引用 EF」**，并在确认框里直接列出来 ——
 那些引用会让打包当场失败（il2cpp 找不到被剔除的程序集）。看到警告就先去改 AOT 侧，别硬点。
 
-自动排除的：`EF.Launcher.*`、所有 `*.Editor`、`/Editor/` 路径、`/Plugins/` 下的 UniTask。
+自动排除的：`EF.Launcher.*`、**`EF.Core`（Core 留 AOT）**、所有 `*.Editor`、`/Editor/` 路径、`/Plugins/` 下的 UniTask。
 
 加入后仍需手动两步：
 
@@ -139,9 +160,11 @@ Unity -batchmode -quit -projectPath <proj> \
 
 ## 七、已知边界
 
-
-- **不要用 `EFC.Projects` 取 CDN 地址**：那个 ScriptableObject 在热更层，启动时读不到。
-  `LauncherConfig` 是唯一真源，热更层应该反过来读它。
+- **不要用 `EFC.Projects` 取 CDN 地址**：虽然 Core 留 AOT 后它可读，但启动配置仍以 `LauncherConfig` 为唯一真源，
+  避免启动段依赖框架初始化顺序。
 - **`YooAssets.Initialize()` 是幂等的**：重复调用只会打一条 warning，不会崩。
   但热更层的 `PatchManager` 建议改成 `if (!YooAssets.Initialized)`，省掉噪音日志。
+- **`EFC.Initialize()` 的时序**：Core 留 AOT 后 `[RuntimeInitializeOnLoadMethod(AfterAssembliesLoaded)]` 会生效，
+  它早于 Launcher 的 `Assembly.Load`。若 `EFC` 在初始化阶段按依赖链创建热更层单例，此时类型还没加载。
+  需把「容器初始化」与「单例解析」拆成两段，后者延后到热更入口。
 - 本包只管「把热更层拉起来」，不管分包下载、资源热更策略——那些属于热更层的 `EF.Patch`。

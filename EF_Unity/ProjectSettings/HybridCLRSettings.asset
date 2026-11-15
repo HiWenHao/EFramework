@@ -18,6 +18,15 @@ MonoBehaviour:
   il2cppPlusRepoURL: https://github.com/focus-creative-games/il2cpp_plus
   hotUpdateAssemblyDefinitions:
   - {fileID: 5897886265953266890, guid: ba2dff4c7255a9849a59eb2c069c7b56, type: 3}
+  - {fileID: 5897886265953266890, guid: 523a06a4a731d5145bac3af10cfba1f0, type: 3}
+  - {fileID: 5897886265953266890, guid: 9790f86e8b373fd4c80ccc6b291ad2b3, type: 3}
+  - {fileID: 5897886265953266890, guid: da27c3a15f55a6446a067d73a600c0af, type: 3}
+  - {fileID: 5897886265953266890, guid: c9dd50ed52062c04fbd451fe6b4d5b25, type: 3}
+  - {fileID: 5897886265953266890, guid: 9a52594da0499734087c301f463a306a, type: 3}
+  - {fileID: 5897886265953266890, guid: 2a916911cf848cf42a63896ee9926676, type: 3}
+  - {fileID: 5897886265953266890, guid: b95e25f724df103448b1a28ae6dc19e7, type: 3}
+  - {fileID: 5897886265953266890, guid: 9e2083eb85898e14fb6b01d689ad482e, type: 3}
+  - {fileID: 5897886265953266890, guid: 41ab4279c1ae09b4ca0241431788d06d, type: 3}
   hotUpdateAssemblies: []
   preserveHotUpdateAssemblies: []
   hotUpdateDllCompileOutputRootDir: HybridCLRData/HotUpdateDlls

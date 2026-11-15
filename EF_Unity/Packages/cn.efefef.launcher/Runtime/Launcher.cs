@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 15:58:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-15 17:10:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -25,8 +25,8 @@ namespace EasyFramework.Launcher
     /// </summary>
     /// <remarks>
     /// <b>铁律：本程序集不得引用任何 cn.efefef.* 包。</b>
-    /// EF.Core / EF.UI / EF.YooAsset 都会进热更层，而 HybridCLR 会把热更程序集从包体剔除，
-    /// 一旦这里引用了它们，il2cpp 打包阶段就会断。
+    /// HybridCLR 会把热更程序集从包体剔除，AOT 侧一旦引用它们，il2cpp 打包阶段就会断。
+    /// 当前形态下 EF.Core 留在 AOT，其余 EF 运行时程序集进热更层；无论哪种形态，启动段都必须零 EF 依赖。
     /// </remarks>
     [DisallowMultipleComponent]
     public sealed class Launcher : MonoBehaviour
@@ -49,6 +49,8 @@ namespace EasyFramework.Launcher
         private ResourcePackage _package;
         private bool _running;
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
+        // Assembly.Load(byte[]) 每次都会创建新程序集；重试时重复加载同名 dll 会产生第二份类型身份
+        private readonly HashSet<string> _loadedAssemblyNames = new HashSet<string>();
 
         #endregion
 
@@ -78,7 +80,7 @@ namespace EasyFramework.Launcher
             _hook = FindComponent<ILauncherHook>();
 
             if (_view == null)
-                D.Warning($"{LogTag} 未找到 ILauncherView 实现，启动过程将没有界面反馈。");
+                Warn("未找到 ILauncherView 实现，启动过程将没有界面反馈。");
 
             if (_dontDestroyOnLoad && transform.parent == null)
                 DontDestroyOnLoad(gameObject);
@@ -113,6 +115,12 @@ namespace EasyFramework.Launcher
         /// </summary>
         public void Configure(LauncherConfig config)
         {
+            if (_running)
+            {
+                Warn("启动流程运行中，忽略 Configure（配置只可在启动前注入）。");
+                return;
+            }
+
             if (config != null)
                 _config = config;
         }
@@ -137,7 +145,8 @@ namespace EasyFramework.Launcher
         private IEnumerator RunPipeline()
         {
             _running = true;
-            _hotfixAssemblies.Clear();
+            // 不清空 _hotfixAssemblies：已加载的程序集无法卸载，重试时继续复用。
+            // 重复 Assembly.Load 同名 dll 会产生第二份类型身份，是 InvalidCastException 的常见来源。
 
             if (!ValidateConfig(out string configError))
             {
@@ -272,6 +281,14 @@ namespace EasyFramework.Launcher
                         continue;
 
                     string entryName = string.IsNullOrEmpty(entry.Name) ? $"#{i}" : entry.Name;
+                    string assemblyName = ResolveAssemblyName(entry, entryName);
+
+                    if (assemblyName != null && _loadedAssemblyNames.Contains(assemblyName))
+                    {
+                        Log($"跳过已加载的热更程序集：{assemblyName}");
+                        continue;
+                    }
+
                     byte[] dllBytes = null;
 
                     if (!string.IsNullOrEmpty(entry.Location))
@@ -279,16 +296,23 @@ namespace EasyFramework.Launcher
                         var handle = _package.LoadAssetAsync(entry.Location, typeof(TextAsset));
                         yield return handle;
 
-                        if (handle.Status != EOperationStatus.Succeed)
+                        EOperationStatus status = handle.Status;
+                        string lastError = handle.LastError;
+                        if (status == EOperationStatus.Succeed)
                         {
-                            Fail(LauncherErrorCode.AssemblyLoadFailed,
-                                $"热更程序集加载失败：{entryName}（{handle.LastError}）");
-                            yield break;
+                            var textAsset = handle.GetAssetObject<TextAsset>();
+                            dllBytes = textAsset != null ? textAsset.bytes : null;
                         }
 
-                        var textAsset = handle.GetAssetObject<TextAsset>();
-                        dllBytes = textAsset != null ? textAsset.bytes : null;
+                        // 无论成功失败都释放句柄，失败分支不能泄漏
                         handle.Release();
+
+                        if (status != EOperationStatus.Succeed)
+                        {
+                            Fail(LauncherErrorCode.AssemblyLoadFailed,
+                                $"热更程序集加载失败：{entryName}（{lastError}）");
+                            yield break;
+                        }
                     }
                     else if (entry.FallbackAsset != null)
                     {
@@ -305,6 +329,9 @@ namespace EasyFramework.Launcher
                     {
                         var assembly = Assembly.Load(dllBytes);
                         _hotfixAssemblies.Add(assembly);
+                        _loadedAssemblyNames.Add(assembly.GetName().Name);
+                        if (assemblyName != null)
+                            _loadedAssemblyNames.Add(assemblyName);
                         Log($"已加载热更程序集：{entryName}（{assembly.GetName().Name}）");
                     }
                     catch (Exception e)
@@ -470,10 +497,16 @@ namespace EasyFramework.Launcher
                 return true;
             }
 
+            int missing = 0;
+            int loaded = 0;
+
             foreach (var asset in assets)
             {
                 if (asset == null)
+                {
+                    missing++;
                     continue;
+                }
 
                 var code = RuntimeApi.LoadMetadataForAOTAssembly(asset.bytes, HomologousImageMode.SuperSet);
                 if (code != LoadImageErrorCode.OK)
@@ -482,7 +515,17 @@ namespace EasyFramework.Launcher
                     return false;
                 }
 
+                loaded++;
                 Log($"已补充 AOT 元数据：{asset.name}");
+            }
+
+            // 配置了却引用丢失 = 配置错误。静默跳过会让「补元数据从未生效」变成隐形故障，
+            // 后续只在热更代码踩到 AOT 泛型时以难以定位的方式崩掉。
+            if (missing > 0)
+            {
+                error = $"AOT 元数据配置了 {assets.Length} 项，其中 {missing} 项引用丢失（常见于 .dll.bytes 重新导入后 .meta guid 变化）。" +
+                        $"成功补充 {loaded} 项。请在 LauncherConfig 里重新绑定，或清空 AotMetadataDlls 以显式跳过。";
+                return false;
             }
 
             return true;
@@ -551,6 +594,25 @@ namespace EasyFramework.Launcher
             return null;
         }
 
+        /// <summary>条目 → 程序集名，用于跨次运行去重（解析口径与编辑器里的拓扑排序工具一致）</summary>
+        private static string ResolveAssemblyName(HotUpdateDllEntry entry, string fallback)
+        {
+            string raw = string.IsNullOrWhiteSpace(entry.Name) ? entry.Location : entry.Name;
+            if (string.IsNullOrWhiteSpace(raw))
+                return fallback;
+
+            int slash = raw.LastIndexOfAny(new[] { '/', '\\' });
+            if (slash >= 0 && slash + 1 < raw.Length)
+                raw = raw.Substring(slash + 1);
+
+            if (raw.EndsWith(".bytes", StringComparison.OrdinalIgnoreCase))
+                raw = raw.Substring(0, raw.Length - 6);
+            if (raw.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                raw = raw.Substring(0, raw.Length - 4);
+
+            return raw.Trim();
+        }
+
         #endregion
 
         #region 状态与反馈
@@ -569,7 +631,7 @@ namespace EasyFramework.Launcher
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                D.Exception(e);
             }
         }
 
@@ -584,7 +646,7 @@ namespace EasyFramework.Launcher
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                D.Exception(e);
             }
         }
 
@@ -611,6 +673,11 @@ namespace EasyFramework.Launcher
         {
             if (_verbose)
                 D.Log($"{LogTag} {message}");
+        }
+
+        private void Warn(string message)
+        {
+            D.Warning($"{LogTag} {message}");
         }
 
         private T FindComponent<T>() where T : class

@@ -22,7 +22,7 @@
 
 导入到 `Assets/Samples/...` 后，如果没有 asmdef，脚本会掉进 `Assembly-CSharp`，
 而 `Assembly-CSharp` 会自动引用所有 `autoReferenced` 程序集（包含 `EF.Core`）。
-某天有人顺手写一句 `using EasyFramework;`，EF.Core 就被拖回 AOT 引用链，全量热更当场失效。
+某天有人顺手写一句 `using EasyFramework;`，AOT 侧就会引用到热更程序集，打包当场失败。
 
 有了这个 asmdef，误用会**立刻编译报错**，而不是埋到打包那天才炸。
 

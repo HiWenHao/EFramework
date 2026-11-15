@@ -118,7 +118,7 @@ namespace EasyFramework.Launcher.Editor
 
             var sb = new StringBuilder();
             sb.AppendLine(LC.Tr(
-                "[EF.Launcher] AOT 边界被破坏 —— 这会让「全量热更」形态在打包时直接失败：",
+                "[EF.Launcher] AOT 边界被破坏 —— 这会让热更形态在打包时直接失败：",
                 "[EF.Launcher] AOT boundary broken - the full hot-update setup will fail at build time:"));
             for (int i = 0; i < violations.Count; i++)
                 sb.AppendLine($"  {i + 1}. {violations[i]}");

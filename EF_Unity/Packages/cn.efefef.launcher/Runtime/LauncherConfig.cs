@@ -68,7 +68,7 @@ namespace EasyFramework.Launcher
         public TextAsset[] AotMetadataDlls = Array.Empty<TextAsset>();
 
         [Header("热更程序集 / Hot update assemblies")]
-        [Tooltip("顺序即加载顺序（拓扑序）：被依赖的排前面，例如 EF.Core 必须在 EF.UI 之前")]
+        [Tooltip("顺序即加载顺序（拓扑序）：被依赖的排前面。Core-AOT 形态下 EF.Core 已在包体，不应出现在此列表")]
         public HotUpdateDllEntry[] HotfixDlls = Array.Empty<HotUpdateDllEntry>();
 
         #endregion
