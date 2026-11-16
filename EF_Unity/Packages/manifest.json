@@ -2,6 +2,7 @@
   "dependencies": {
     "com.code-philosophy.hybridclr": "https://github.com/focus-creative-games/hybridclr_unity.git",
     "com.code-philosophy.luban": "https://github.com/focus-creative-games/luban_unity.git",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask#2.5.10",
     "com.tuyoogame.yooasset": "2.3.19",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.rider": "3.0.38",

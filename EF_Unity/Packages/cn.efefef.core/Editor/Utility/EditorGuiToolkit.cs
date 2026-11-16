@@ -89,6 +89,47 @@ namespace EasyFramework.Edit
         /// <param name="showCopy">显示复制按钮</param>
         /// <param name="showOpen">显示打开按钮</param>
         /// <returns>本次是否成功重新选择了文件夹</returns>
+        /// <summary>
+        /// 选择 Assets 目录下的文件夹并写回 SerializedProperty（配置面板专用重载）
+        /// <para>Pick a folder under Assets and write it back to a SerializedProperty (config-panel overload).</para>
+        /// </summary>
+        /// <param name="label">提示文本<para>Label above the row.</para></param>
+        /// <param name="property">目标字符串字段<para>The target string property.</para></param>
+        /// <returns>用户确认了新路径返回 true<para>True when a new path was picked.</para></returns>
+        public static bool SelectionFolderPath(string label, SerializedProperty property)
+        {
+            EditorGUILayout.LabelField(label, GUIUtils.ColorText(textColor: Color.white));
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.DelayedTextField(property.stringValue);
+            bool changed = false;
+            if (GUILayout.Button(LC.Combine("SelectPath"), GUILayout.Width(PathSelectWidth)))
+            {
+                string folder = Path.Combine(Application.dataPath, property.stringValue);
+                if (!Directory.Exists(folder))
+                    folder = Application.dataPath;
+
+                string picked = EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), folder, "");
+                if (!string.IsNullOrEmpty(picked))
+                {
+                    string dataPath = Application.dataPath.Replace('\\', '/');
+                    string normalized = picked.Replace('\\', '/');
+                    if (normalized.Equals(dataPath, System.StringComparison.OrdinalIgnoreCase))
+                        property.stringValue = AssetsRoot + "/";
+                    else if (normalized.StartsWith(dataPath, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        property.stringValue = AssetsRoot + normalized[dataPath.Length..].TrimEnd('/') + "/";
+                        changed = true;
+                    }
+                    else
+                        D.Warning(LC.Tr("[ EditorGuiToolkit ] 选择的文件夹不在 Assets 目录下，已忽略：{0}",
+                            "[ EditorGuiToolkit ] Selected folder is outside Assets, ignored: {0}", picked));
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
+            return changed;
+        }
+
         public static bool SelectionFolderPath(string label, ref string selectPath, bool showCopy = true, bool showOpen = true)
         {
             EditorGUILayout.LabelField(label, GUIUtils.ColorText(textColor: Color.white));

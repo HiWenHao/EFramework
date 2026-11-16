@@ -24,6 +24,7 @@
       "dependencies": {
         "com.code-philosophy.hybridclr": "8.11.0",
         "com.code-philosophy.luban": "1.0.0",
+        "com.cysharp.unitask": "2.5.10",
         "com.unity.nuget.newtonsoft-json": "3.2.1",
         "com.unity.scriptablebuildpipeline": "1.21.25"
       }
@@ -50,6 +51,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
+        "cn.efefef.core": "0.1.0",
         "com.tuyoogame.yooasset": "2.3.19",
         "com.code-philosophy.hybridclr": "8.11.0"
       }
@@ -128,6 +130,13 @@
       "source": "git",
       "dependencies": {},
       "hash": "005c365bac0b245048050d48d27df098739a6f8f"
+    },
+    "com.cysharp.unitask": {
+      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask#2.5.10",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "7c0f199fe0d3fc528024488ccd671e6c7b27745b"
     },
     "com.tuyoogame.yooasset": {
       "version": "2.3.19",

@@ -126,7 +126,8 @@ namespace EasyFramework.Edit.Create
 
                     metaContent = metaContent.Contains("icon:")
                         ? Regex.Replace(metaContent, @"  icon:.*", iconLine)
-                        : Regex.Replace(metaContent, @"(MonoImporter:\s*\n)", "$1" + iconLine + "\n");
+                        // ${1} 而非 $1：$1 紧跟数字时会被解析成第 10 个捕获组，是无声音损坏的经典陷阱
+                        : Regex.Replace(metaContent, @"(MonoImporter:\s*\n)", "${1}" + iconLine + "\n");
 
                     File.WriteAllText(metaFullPath, metaContent);
                     AssetDatabase.ImportAsset(newScriptPath);

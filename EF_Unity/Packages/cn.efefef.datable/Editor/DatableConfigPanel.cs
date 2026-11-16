@@ -22,7 +22,7 @@ namespace EasyFramework.Edit.Windows.Dataable
     /// Excel表配置面板，方便用户设置内容
     /// </summary>
     [EFConfigPanel(Priority = 195)]
-    public class DatableConfigPanel : EFConfigPanelBase
+    public class DatableConfigPanel : EFAssetConfigPanelBase
     {
         internal static string ExcelFolderPath =>
             Path.GetFullPath(Path.Combine(Application.dataPath, "..", "EFTools", "Datable"));
@@ -64,13 +64,13 @@ namespace EasyFramework.Edit.Windows.Dataable
         {
             if (!_config)
             {
-                EditorGUILayout.Space(12f);
-                EditorGUILayout.HelpBox(LC.Combine("Datable.ConfigNotExist"), MessageType.Warning);
-                EditorGUILayout.Space(12f);
-                if (!GUILayout.Button(LC.Combine("CreateConfig"))) return;
-                _config = Create.CreateSettings.Instance<DatableConfig>(true, ConfigManager.ConfigEditPath);
-                InitConfig();
-                RefreshExcelList();
+                _config = DrawMissingConfigGuide<DatableConfig>(LC.Combine("Datable.ConfigNotExist"),
+                    LC.Combine("CreateConfig"), persistent: false);
+                if (_config)
+                {
+                    InitConfig();
+                    RefreshExcelList();
+                }
                 return;
             }
 

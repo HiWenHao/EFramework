@@ -1,7 +1,7 @@
 {
   "name": "cn.efefef.http",
   "displayName": "EF.Http",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "unity": "2021.3",
   "unityRelease": "10f1",
   "description": "EFramework HTTP 请求门面：可替换的发送 / 缓存 / 重试 / 设置接口，门面只做编排，生命周期与持久化边界纪律化。",

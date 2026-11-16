@@ -22,51 +22,34 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <para>UI auto-binding settings (also hosts in-project UI path settings)</para>
     /// </summary>
     [EFConfigPanel]
-    internal class EFUiBindingConfigPanel : EFConfigPanelBase
+    internal class EFUiBindingConfigPanel : EFSerializedConfigPanelBase<UiBindingConfig>
     {
         private const string DefaultFileName = "UiBindingConfig";
         private const string FileExtension = "json";
 
-        private Vector2 _scrollPos;
-
         private SerializedProperty _rulePrefixes;
-        private SerializedObject _customSettings;
+        private SerializedObject _customSettings => SerializedConfig;
 
         // —— 以下为自 EFPathConfigPanel 迁入的「工程内 UI 路径」配置（数据现与规则前缀同存于 UiBindingConfig 资产）——
         // Moved from EFPathConfigPanel: in-project UI paths (now stored in the UiBindingConfig asset alongside rule prefixes)
         private SerializedProperty _atlasFolder;
         private SerializedProperty _uiPrefabPath;
         private SerializedProperty _uiCodePath;
-        private GUIStyle _uiStyle;
 
         public override string Name => "UI " + LC.Combine("Ui.DataConfig");
 
-        public override void OnEnable(string assetsPath)
-        {
-            LoadWindowData();
-        }
-
         public override void LoadWindowData()
         {
-            _uiStyle = new GUIStyle()
-            {
-                fontSize = 14,
-                normal =
-                {
-                    textColor = Color.white,
-                }
-            };
-
-            _customSettings = new SerializedObject(UiBindingConfig.Instance);
-            _atlasFolder = _customSettings.FindProperty("_atlasFolder");
-            _uiPrefabPath = _customSettings.FindProperty("_uiPrefabPath");
-            _uiCodePath = _customSettings.FindProperty("_uiCodePath");
-            _rulePrefixes = _customSettings.FindProperty("_rulePrefixes");
+            BindConfig(UiBindingConfig.Instance);
+            _atlasFolder = FindConfigProperty("_atlasFolder");
+            _uiPrefabPath = FindConfigProperty("_uiPrefabPath");
+            _uiCodePath = FindConfigProperty("_uiCodePath");
+            _rulePrefixes = FindConfigProperty("_rulePrefixes");
         }
 
         protected override void OnPanelGUI()
         {
-            _customSettings.Update();
+            SerializedConfig.Update();
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
@@ -84,81 +67,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            SelectionFolderPath(LC.Combine("Ui.AtlasSavePath"), _atlasFolder);
-            SelectionFolderPath(
+            EditorGuiToolkit.SelectionFolderPath(LC.Combine("Ui.AtlasSavePath"), _atlasFolder);
+            EditorGuiToolkit.SelectionFolderPath(
                 LC.Combine("Default") + "UI" + LC.Combine("Ui.PrefabSavePath"),
                 _uiPrefabPath);
-            SelectionFolderPath(LC.Combine("Default") + "UI" + LC.Combine("Ui.CodeSavePath"),
+            EditorGuiToolkit.SelectionFolderPath(LC.Combine("Default") + "UI" + LC.Combine("Ui.CodeSavePath"),
                 _uiCodePath);
 
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
+            ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition);
             EditorGUILayout.PropertyField(_rulePrefixes);
             EditorGUILayout.EndScrollView();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            if (!changeCheckScope.changed) return;
-
-            _customSettings.ApplyModifiedProperties();
-            AssetDatabase.SaveAssets();
+            ApplyConfigIfChanged(changeCheckScope.changed);
         }
 
-        #region UI Paths
-
-        /// <summary>
-        /// 绘制目录选择行：标签 + 当前路径 + 选择按钮
-        /// <para>Draw a folder-selection row: label + current path + browse button</para>
-        /// </summary>
-        void SelectionFolderPath(string label, SerializedProperty property)
-        {
-            EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.DelayedTextField(property.stringValue);
-            if (GUILayout.Button(LC.Combine("SelectPath"), GUILayout.Width(140f)))
-            {
-                string folder = Path.Combine(Application.dataPath, property.stringValue);
-                if (!Directory.Exists(folder))
-                {
-                    folder = Application.dataPath;
-                }
-
-                string path =
-                    EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), folder, "");
-                if (!string.IsNullOrEmpty(path))
-                {
-                    if (path.Equals(Application.dataPath))
-                        property.stringValue = "Assets/";
-                    else
-                        property.stringValue = "Assets" + path.Replace(Application.dataPath, "") + "/";
-                    SaveAssetsInfo();
-                }
-            }
-
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-        }
-
-        /// <summary>
-        /// 获取（复用）面板文本样式
-        /// <para>Get (reuse) the panel text style</para>
-        /// </summary>
-        GUIStyle SetUIStyle(Color color, int fontSize = 12)
-        {
-            _uiStyle.normal.textColor = color;
-            _uiStyle.fontSize = fontSize;
-            return _uiStyle;
-        }
-
-        /// <summary>
-        /// 保存并刷新资源数据库
-        /// <para>Save assets and refresh the AssetDatabase</para>
-        /// </summary>
-        void SaveAssetsInfo()
-        {
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-
-        #endregion
 
         #region Import / Export
 

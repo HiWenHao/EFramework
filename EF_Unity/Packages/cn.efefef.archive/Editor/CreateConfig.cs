@@ -15,7 +15,8 @@ using UnityEditor;
 namespace EasyFramework.Systems.Archive.Editor
 {
     /// <summary>
-    /// Please modify the description。
+    /// 注册 Assets/Create 菜单项，用于创建 ArchiveSettings 配置资产。
+    /// <para>Registers the Assets/Create menu item that creates the ArchiveSettings asset.</para>
     /// </summary>
     public class CreateConfig
     {

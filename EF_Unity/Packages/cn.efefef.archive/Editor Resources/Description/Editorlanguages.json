@@ -49,6 +49,22 @@
       ]
     },
     {
+      "name": "Archive.ClearAllArchives",
+      "desc": "清空全部存档",
+      "array": [
+        "Clear All Archives",
+        "清空全部存档"
+      ]
+    },
+    {
+      "name": "Archive.ClearAllHint",
+      "desc": "这将从磁盘删除全部存档数据！\n\n此操作无法撤销。\n\n确定继续吗？",
+      "array": [
+        "This will DELETE all archive data from disk!\n\nThis action CANNOT be undone.\n\nAre you sure?",
+        "这将从磁盘删除全部存档数据！\n\n此操作无法撤销。\n\n确定继续吗？"
+      ]
+    },
+    {
       "name": "Archive.DataVersion",
       "desc": "数据版本",
       "array": [
@@ -65,11 +81,43 @@
       ]
     },
     {
+      "name": "Archive.KeyList",
+      "desc": "存档键列表",
+      "array": [
+        "Key List",
+        "存档键列表"
+      ]
+    },
+    {
       "name": "Archive.LastModified",
       "desc": "上次修改",
       "array": [
         "Last Modified",
         "上次修改"
+      ]
+    },
+    {
+      "name": "Archive.LocateSettingsAsset",
+      "desc": "定位配置资产",
+      "array": [
+        "Locate Settings Asset",
+        "定位配置资产"
+      ]
+    },
+    {
+      "name": "Archive.NoSlotFound",
+      "desc": "未找到槽位",
+      "array": [
+        "No Slot Found",
+        "未找到槽位"
+      ]
+    },
+    {
+      "name": "Archive.OpenArchivesFolder",
+      "desc": "打开存档目录",
+      "array": [
+        "Open Archives Folder",
+        "打开存档目录"
       ]
     },
     {
@@ -82,14 +130,14 @@
     },
     {
       "name": "Archive.PleaseCheckConfigByPath",
-      "desc": "请按路径检查配置。",
+      "desc": "请检查以下路径的配置：{0}",
       "array": [
-        "Please check the config at the specified path.",
-        "请按路径检查配置。"
+        "Please check the config at: {0}",
+        "请检查以下路径的配置：{0}"
       ]
     },
     {
-      "name": "Provider",
+      "name": "Archive.Provider",
       "desc": "提供者",
       "array": [
         "Provider",
@@ -97,19 +145,83 @@
       ]
     },
     {
-      "name": "Size",
-      "desc": "尺寸",
+      "name": "Archive.QuickActions",
+      "desc": "快捷操作",
       "array": [
-        "Size",
-        "尺寸"
+        "Quick Actions",
+        "快捷操作"
       ]
     },
     {
-      "name": "Slot",
+      "name": "Archive.ResetSettingsHint",
+      "desc": "是否将所有设置恢复为默认值？",
+      "array": [
+        "Restore all settings to default values?",
+        "是否将所有设置恢复为默认值？"
+      ]
+    },
+    {
+      "name": "Archive.ResetSettingsTitle",
+      "desc": "重置存档设置",
+      "array": [
+        "Reset Archive Settings",
+        "重置存档设置"
+      ]
+    },
+    {
+      "name": "Archive.ResetToDefaults",
+      "desc": "恢复默认值",
+      "array": [
+        "Reset to Defaults",
+        "恢复默认值"
+      ]
+    },
+    {
+      "name": "Archive.Size",
+      "desc": "占用大小",
+      "array": [
+        "Size",
+        "占用大小"
+      ]
+    },
+    {
+      "name": "Archive.Slot",
       "desc": "槽位",
       "array": [
         "Slot",
         "槽位"
+      ]
+    },
+    {
+      "name": "Archive.SlotList",
+      "desc": "槽位列表",
+      "array": [
+        "Slot List",
+        "槽位列表"
+      ]
+    },
+    {
+      "name": "Archive.SystemConfigHint",
+      "desc": "以下设置控制加密强度、自动保存行为、备份策略与存储后端。修改后将在下次运行 / 构建时生效。",
+      "array": [
+        "These settings control encryption strength, auto-save behavior, backup strategy, and the storage backend. Changes take effect on next Play / Build.",
+        "以下设置控制加密强度、自动保存行为、备份策略与存储后端。修改后将在下次运行 / 构建时生效。"
+      ]
+    },
+    {
+      "name": "Archive.SystemConfiguration",
+      "desc": "存档系统配置",
+      "array": [
+        "Archive System Configuration",
+        "存档系统配置"
+      ]
+    },
+    {
+      "name": "Archive.YesDeleteEverything",
+      "desc": "是，全部删除",
+      "array": [
+        "Yes, Delete Everything",
+        "是，全部删除"
       ]
     }
   ]

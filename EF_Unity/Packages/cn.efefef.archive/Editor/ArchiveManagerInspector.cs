@@ -20,6 +20,9 @@ namespace EasyFramework.Systems.Archive.Editor
     [CustomEditor(typeof(ArchiveManager))]
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>
     {
+        // 存档配置资产在 Resources 下的相对路径
+        private const string ConfigAssetPath = "Resources/Configs/ArchiveSettings.asset";
+
         protected override string Title => LC.Combine("Archive.ArchiveDataMonitor");
 
         private bool _showSlots = true;     // 是否展开槽位折叠区
@@ -39,13 +42,12 @@ namespace EasyFramework.Systems.Archive.Editor
                 EditorGUILayout.HelpBox(
                     LC.Combine("Archive.ArchiveConfigLoadFailed")
                     + "\n"
-                    + LC.Combine("Archive.PleaseCheckConfigByPath")
-                    + ": Resources/Configs/ArchiveSettings.asset.",
+                    + LC.Format("Archive.PleaseCheckConfigByPath", ConfigAssetPath),
                     MessageType.Warning);
                 return;
             }
 
-            EditorGUILayout.LabelField(LC.Combine("Provider"),
+            EditorGUILayout.LabelField(LC.Combine("Archive.Provider"),
                 string.IsNullOrEmpty(Target.Settings.providerTypeName)
                     ? LC.Combine("Archive.FileArchiveProviderDefault")
                     : Target.Settings.providerTypeName);
@@ -59,7 +61,7 @@ namespace EasyFramework.Systems.Archive.Editor
             EditorGUILayout.Space();
 
             // 槽位列表
-            _showSlots = EditorGUILayout.Foldout(_showSlots, LC.Combine(ArmSlotList), true);
+            _showSlots = EditorGUILayout.Foldout(_showSlots, LC.Combine("Archive.SlotList"), true);
             if (_showSlots)
             {
                 EditorGUI.indentLevel++;
@@ -67,7 +69,7 @@ namespace EasyFramework.Systems.Archive.Editor
                 var slots = _cachedSlots;
                 if (slots == null || slots.Length == 0)
                 {
-                    EditorGUILayout.LabelField(LC.Combine(ArmSlotEmpty));
+                    EditorGUILayout.LabelField(LC.Combine("Archive.NoSlotFound"));
                 }
                 else
                 {
@@ -77,12 +79,12 @@ namespace EasyFramework.Systems.Archive.Editor
 
                         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                         EditorGUILayout.LabelField(
-                            $"{LC.Combine("Slot")} {slot.slotId}: {slot.slotName}",
+                            $"{LC.Combine("Archive.Slot")} {slot.slotId}: {slot.slotName}",
                             EditorStyles.boldLabel);
                         EditorGUILayout.LabelField(LC.Combine("Progress"), slot.progressDescription);
                         EditorGUILayout.LabelField(LC.Combine("Archive.PlayTime"), slot.PlayTimeFormatted);
                         EditorGUILayout.LabelField(LC.Combine("Archive.LastModified"), slot.LastModifiedFormatted);
-                        EditorGUILayout.LabelField(LC.Combine("Size"), FormatBytes(slot.totalSizeBytes));
+                        EditorGUILayout.LabelField(LC.Combine("Archive.Size"), FormatBytes(slot.totalSizeBytes));
                         EditorGUILayout.EndVertical();
                     }
                 }
@@ -91,7 +93,7 @@ namespace EasyFramework.Systems.Archive.Editor
             }
 
             // Key 列表
-            _showKeys = EditorGUILayout.Foldout(_showKeys, LC.Combine(ArmKeyList), true);
+            _showKeys = EditorGUILayout.Foldout(_showKeys, LC.Combine("Archive.KeyList"), true);
             if (!_showKeys) return;
             EditorGUI.indentLevel++;
 
@@ -142,14 +144,6 @@ namespace EasyFramework.Systems.Archive.Editor
                 _refreshInFlight = false;
             }
         }
-
-        #region Fallback Strings
-
-        private static readonly string[] ArmSlotList = { "Slot", "List" };
-        private static readonly string[] ArmSlotEmpty = { "No", "Slot", "Found" };
-        private static readonly string[] ArmKeyList = { "Active", "Slot", "In", "Key", "List" };
-
-        #endregion
 
         private static string FormatBytes(long bytes)
         {

@@ -12,7 +12,6 @@
 
 using System.IO;
 using EasyFramework.Edit;
-using EasyFramework.Edit.Create;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
@@ -20,12 +19,12 @@ using UnityEngine;
 namespace EasyFramework.Systems.Archive.Editor
 {
     [EFConfigPanel(Priority = 200)]
-    public class ArchiveSettingsConfigPanel : EFConfigPanelBase
+    public class ArchiveSettingsConfigPanel : EFAssetConfigPanelBase
     {
         public override string Name => LC.Combine("Archive.ArchiveDataConfig");
 
         private UnityEditor.Editor _cachedEditor; // 缓存的 Settings Editor 实例（避免每帧重建）
-        private ArchiveSettings _settings;         // 当前存档配置资产
+        private ArchiveSettings _settings; // 当前存档配置资产
 
         public override void OnEnable(string assetsPath)
         {
@@ -43,12 +42,8 @@ namespace EasyFramework.Systems.Archive.Editor
         {
             if (_settings == null)
             {
-                EditorGUILayout.Space(12f);
-                EditorGUILayout.HelpBox(LC.Combine("Archive.ArchiveConfigNotExist"), MessageType.Warning);
-                EditorGUILayout.Space(12f);
-                if (!GUILayout.Button(LC.Combine("CreateConfig"))) return;
-                _settings = CreateSettings.Instance<ArchiveSettings>(true, ConfigManager.ConfigRuntimePath);
-                EditorGUIUtility.PingObject(_settings);
+                _settings = DrawMissingConfigGuide<ArchiveSettings>(LC.Combine("Archive.ArchiveConfigNotExist"),
+                    LC.Combine("CreateConfig"));
                 return;
             }
 
@@ -56,12 +51,8 @@ namespace EasyFramework.Systems.Archive.Editor
                 _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
 
             EditorGUILayout.Space(5);
-            EditorGUILayout.LabelField("Archive System Configuration", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox(
-                "These settings control encryption strength, auto-save behavior, " +
-                "backup strategy, and the storage backend. " +
-                "Changes take effect on next Play / Build.",
-                MessageType.Info);
+            EditorGUILayout.LabelField(LC.Combine("Archive.SystemConfiguration"), EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(LC.Combine("Archive.SystemConfigHint"), MessageType.Info);
 
             using (var scope = new EditorGUI.ChangeCheckScope())
             {
@@ -77,21 +68,21 @@ namespace EasyFramework.Systems.Archive.Editor
 
             EditorGUILayout.Space(10);
 
-            EditorGUILayout.LabelField("Quick Actions", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Archive.QuickActions"), EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Locate Settings Asset"))
+            if (GUILayout.Button(LC.Combine("Archive.LocateSettingsAsset")))
                 EditorGUIUtility.PingObject(_settings);
 
-            if (GUILayout.Button("Open Archives Folder"))
+            if (GUILayout.Button(LC.Combine("Archive.OpenArchivesFolder")))
             {
                 string path = Path.Combine(Application.persistentDataPath, _settings.fileStorageRoot);
                 EditorCommands.OpenFolder(path);
             }
 
-            if (GUILayout.Button("Reset to Defaults"))
+            if (GUILayout.Button(LC.Combine("Archive.ResetToDefaults")))
             {
-                if (EditorUtility.DisplayDialog("Reset Archive Settings",
-                        "Restore all settings to default values?", "Reset", "Cancel"))
+                if (EditorUtility.DisplayDialog(LC.Combine("Archive.ResetSettingsTitle"),
+                        LC.Combine("Archive.ResetSettingsHint"), LC.Combine("Reset"), LC.Combine("Cancel")))
                 {
                     var defaults = ScriptableObject.CreateInstance<ArchiveSettings>();
 

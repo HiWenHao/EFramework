@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "EF.Localization.Editor",
     "rootNamespace": "",
     "references": [
@@ -7,7 +7,7 @@
         "Unity.TextMeshPro",
         "EF.Localization",
         "Unity.TextMeshPro.Editor",
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"

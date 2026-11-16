@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Edit.Packages;
 using EasyFramework.Edit.Windows;
@@ -68,6 +67,14 @@ namespace EasyFramework.Edit
         private string _token;
         private string[] _createPackageTips;
 
+        // 是否为框架源码工程（维护者模式）：决定版本上升等维护按钮是否出现。
+        // 缓存一次即可，避免每个包每帧重复做文件存在性检测。
+        private bool _isMaintainer;
+
+        // 官方目录（Editor Resources/EFPackageCache.json，提交到 Git）里记录的包版本，
+        // 作为"恢复默认版本"的目标值来源；面板打开时刷新一次即可。
+        private readonly Dictionary<string, string> _catalogVersions = new Dictionary<string, string>();
+
         private ServerType _serverType;
         private Vector2 _scrollPosition;
 
@@ -82,8 +89,6 @@ namespace EasyFramework.Edit
         public override void OnEnable(string assetsPath)
         {
             LoadWindowData();
-            // if (EditorUtils.TimestampIsExceeded(_config.lastUpdateTimestamp, 180))
-            //     GetLocalPackages();//FindCustomPackages();
         }
 
         public override void OnDestroy()
@@ -94,27 +99,71 @@ namespace EasyFramework.Edit
 
         public override void LoadWindowData()
         {
-            if (null != _config)
+            _isMaintainer = ServerToolkit.IsFrameworkProject;
+            RefreshCatalogVersions();
+
+            if (null == _config)
+            {
+                _packageFolder = new Dictionary<string, bool>();
+
+                _createPackageTips = new[]
+                {
+                    LC.Combine("Packages.PackageName") + "cn.efefef.{0}",
+                    LC.Combine("Packages.PackageDescription"),
+                    LC.Combine("Packages.AuthorName"),
+                };
+
+                _allUnfold = true;
+
+                _config = ServerToolkit.GetPackageConfig() ?? new PackageConfig();
+
+                foreach (EFPackageInfo packageInfo in _config.packagesInfo)
+                {
+                    _packageFolder.Add(packageInfo.DisplayName, true);
+                }
+                _token = ServerToolkit.GetToken(_config.serverType);
+            }
+
+            RefreshLocalVersions();
+        }
+
+        /// <summary>
+        /// 刷新官方目录里的包版本快照（"恢复默认版本"的目标值来源）
+        /// <para>Refresh the catalog version snapshot used as the restore target.</para>
+        /// </summary>
+        private void RefreshCatalogVersions()
+        {
+            _catalogVersions.Clear();
+
+            EFPackageCatalog catalog = ServerToolkit.LoadCatalog();
+            if (null == catalog || null == catalog.packages)
                 return;
 
-            _packageFolder = new Dictionary<string, bool>();
-
-            _createPackageTips = new[]
+            foreach (EFPackageCatalogEntry entry in catalog.packages)
             {
-                LC.Combine("Packages.PackageName") + "cn.efefef.{0}",
-                LC.Combine("Packages.PackageDescription"),
-                LC.Combine("Packages.AuthorName"),
-            };
+                if (null == entry || string.IsNullOrEmpty(entry.name))
+                    continue;
+                _catalogVersions[entry.name] = entry.version;
+            }
+        }
 
-            _allUnfold = true;
-
-            _config = ServerToolkit.GetPackageConfig() ?? new PackageConfig();
-
+        /// <summary>
+        /// 以磁盘 package.json 为准刷新各包的当前版本（缓存值可能在外部改动后过期）。
+        /// 存在待发布版本时以暂存值为准，避免刷新把面板上的上升结果抹掉。
+        /// <para>Refresh each package's current version from the package.json on disk.
+        /// A pending (not yet published) version wins, so refreshing never discards a bump.</para>
+        /// </summary>
+        private void RefreshLocalVersions()
+        {
             foreach (EFPackageInfo packageInfo in _config.packagesInfo)
             {
-                _packageFolder.Add(packageInfo.DisplayName, true);
+                if (!ServerToolkit.TryReadPackageJsonVersion(packageInfo.Name, out string diskVersion))
+                    continue;
+
+                packageInfo.CurrentVersion = string.IsNullOrEmpty(packageInfo.PendingVersion)
+                    ? diskVersion
+                    : packageInfo.PendingVersion;
             }
-            _token = ServerToolkit.GetToken(_config.serverType);
         }
 
         protected override void OnPanelGUI()
@@ -157,7 +206,7 @@ namespace EasyFramework.Edit
 
             #region Top Buttons - 顶部操作按钮
 
-            bool isMaintainer = ServerToolkit.IsFrameworkProject;
+            bool isMaintainer = _isMaintainer;
             
             if (isMaintainer)
             {
@@ -170,6 +219,8 @@ namespace EasyFramework.Edit
                     GetLocalPackages();
                     MergeCatalogToConfig(catalog);
                     ServerToolkit.SavePackageConfig(_config);
+                    // 新目录即新的"默认版本"基准，立即刷新，避免恢复按钮指向旧版本
+                    RefreshCatalogVersions();
                 }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space(8f);
@@ -289,22 +340,32 @@ namespace EasyFramework.Edit
 
                 // 版本行
                 EditorGUILayout.BeginHorizontal();
+                bool hasPending = !string.IsNullOrEmpty(packageInfo.PendingVersion);
                 string currentText = string.IsNullOrEmpty(packageInfo.CurrentVersion)
                     ? LC.Combine("Non")
                     : packageInfo.CurrentVersion;
+                if (hasPending)
+                    currentText += "*";     // * = 已上升但尚未写入 package.json
+
                 string serverText = string.IsNullOrEmpty(packageInfo.ServerVersion)
                     ? LC.Combine("NotFound")
                     : packageInfo.ServerVersion;
                 
-                Color currentColor = packageInfo.SourceType == EFPackageSource.Local
-                    ? Color.green : Color.white;
-                
                 EditorGUILayout.LabelField(
-                    $"{LC.Combine("Packages.CurrentVersion")}:  {currentText}", 
+                    new GUIContent($"{LC.Combine("Packages.CurrentVersion")}:  {currentText}",
+                        hasPending ? LC.Combine("Packages.PendingVersionTip") : string.Empty),
                     GUILayout.Width(160));
                 EditorGUILayout.LabelField(
                     $"{LC.Combine("Packages.ServerVersion")}:  {serverText}", 
                     GUILayout.Width(160));
+
+                // 维护者专用：末位版本号 +1（Git 包在 PackageCache 内只读，故只对本地嵌入式包开放）
+                if (_isMaintainer && packageInfo.SourceType == EFPackageSource.Local)
+                {
+                    DrawBumpVersionButton(packageInfo);
+                    // 版本与默认值不一致时才出现的"恢复默认"按钮
+                    DrawResetVersionButton(packageInfo);
+                }
                 
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space();
@@ -317,6 +378,147 @@ namespace EasyFramework.Edit
             
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
+        }
+
+        /// <summary>
+        /// 版本上升按钮：末位版本号 +1（按十进制进位，0.0.9 → 0.1.0），
+        /// 仅更新面板上的待发布版本，不写 package.json
+        /// <para>Bump-version button: increments the last version segment (decimal carrying,
+        /// 0.0.9 -> 0.1.0) and stages it in the panel only; package.json is untouched.</para>
+        /// </summary>
+        /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
+        private void DrawBumpVersionButton(EFPackageInfo packageInfo)
+        {
+            // 先算出目标版本，既用于禁用判断也用于悬浮提示，避免点击后才发现无法解析。
+            // 内存版本为空时（如刚卸载过）回读磁盘，保证提示与暂存值基于同一基准。
+            string sourceVersion = packageInfo.CurrentVersion;
+            if (string.IsNullOrEmpty(sourceVersion)
+                && !ServerToolkit.TryReadPackageJsonVersion(packageInfo.Name, out sourceVersion))
+                sourceVersion = "0.0.0";
+
+            bool canBump = ServerToolkit.TryBumpVersion(sourceVersion, out string nextVersion);
+            string tip = canBump
+                ? LC.Format("Packages.BumpVersionTip", sourceVersion, nextVersion)
+                : LC.Combine("Packages.VersionUnparsable");
+            var content = new GUIContent(LC.Combine("Packages.BumpVersion"), tip);
+
+            EditorGUI.BeginDisabledGroup(!canBump);
+            bool clicked = GUILayout.Button(content,
+                GUIUtils.Button(canBump ? Color.cyan : Color.gray), GUILayout.Width(110));
+            EditorGUI.EndDisabledGroup();
+            if (!clicked)
+                return;
+
+            // 只改面板暂存值：真正写 package.json 放在“发布版本”时进行
+            packageInfo.CurrentVersion = nextVersion;
+            packageInfo.PendingVersion = nextVersion;
+            ServerToolkit.SavePackageConfig(_config);
+        }
+
+        /// <summary>
+        /// 恢复默认版本按钮：仅在当前版本与默认版本不一致时出现，点击后把默认版本写回 package.json
+        /// <para>Restore-default button: shown only when the current version differs from the default,
+        /// and writes the default version back to package.json when clicked.</para>
+        /// </summary>
+        /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
+        private void DrawResetVersionButton(EFPackageInfo packageInfo)
+        {
+            string defaultVersion = ResolveDefaultVersion(packageInfo);
+            if (string.IsNullOrEmpty(defaultVersion))
+                return;
+
+            // 版本未变化时不显示该按钮（默认版本未知的情况已在上面提前返回）
+            string currentVersion = packageInfo.CurrentVersion;
+            if (string.Equals(currentVersion, defaultVersion, StringComparison.Ordinal))
+                return;
+
+            string tip = LC.Format("Packages.ResetVersionTip",
+                string.IsNullOrEmpty(currentVersion) ? LC.Combine("Non") : currentVersion,
+                defaultVersion);
+
+            if (!GUILayout.Button(new GUIContent(LC.Combine("Packages.ResetVersion"), tip),
+                    GUIUtils.Button(Color.yellow), GUILayout.Width(110)))
+                return;
+
+            ResetVersion(packageInfo, defaultVersion);
+        }
+
+        /// <summary>
+        /// 把包的当前版本恢复为默认版本：丢弃待发布暂存值，必要时回写 package.json
+        /// <para>Restore a package's current version to the default: drop the pending stage value
+        /// and write package.json back when the disk differs.</para>
+        /// </summary>
+        /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
+        /// <param name="defaultVersion">默认版本号<para>Default version.</para></param>
+        private void ResetVersion(EFPackageInfo packageInfo, string defaultVersion)
+        {
+            // 磁盘已是默认版本时这里不会产生写入（TryWritePackageVersion 对同值直接成功）
+            PackageVersionWriteResult result = ServerToolkit.TryWritePackageVersion(
+                packageInfo.Name, defaultVersion, out _);
+
+            if (result != PackageVersionWriteResult.Success)
+            {
+                D.Error(LC.Format("Packages.ResetVersionFailed", GetVersionWriteFailureReason(result)));
+                return;
+            }
+
+            packageInfo.CurrentVersion = defaultVersion;
+            packageInfo.PendingVersion = string.Empty;
+            ServerToolkit.SavePackageConfig(_config);
+        }
+
+        /// <summary>
+        /// 发布版本：把面板上暂存的版本号写入该包的 package.json
+        /// <para>Publish the staged version into the package's package.json.</para>
+        /// </summary>
+        /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
+        private void PublishVersion(EFPackageInfo packageInfo)
+        {
+            PackageVersionWriteResult result = ServerToolkit.TryWritePackageVersion(
+                packageInfo.Name, packageInfo.CurrentVersion, out _);
+
+            if (result != PackageVersionWriteResult.Success)
+            {
+                D.Error(LC.Format("Packages.PublishVersionFailed", GetVersionWriteFailureReason(result)));
+                return;
+            }
+
+            // 暂存值已落到 manifest，清掉待发布标记，当前版本保持不变
+            packageInfo.PendingVersion = string.Empty;
+            ServerToolkit.SavePackageConfig(_config);
+        }
+
+        /// <summary>
+        /// 解析该包的“默认版本”：优先取官方目录（提交到 Git 的 EFPackageCache.json），
+        /// 目录未收录该包时回落到服务器版本
+        /// <para>Resolve the package's default version: the official catalog first,
+        /// then the server version when the catalog has no entry.</para>
+        /// </summary>
+        /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
+        /// <returns>默认版本号；无从得知时返回空串<para>The default version, or an empty string when unknown.</para></returns>
+        private string ResolveDefaultVersion(EFPackageInfo packageInfo)
+        {
+            if (_catalogVersions.TryGetValue(packageInfo.Name, out string catalogVersion)
+                && !string.IsNullOrEmpty(catalogVersion))
+                return catalogVersion;
+
+            return packageInfo.ServerVersion;
+        }
+
+        /// <summary>
+        /// 版本写盘失败的本地化原因（上升与恢复共用）
+        /// <para>Localized failure reason for a version write (shared by bump and restore).</para>
+        /// </summary>
+        /// <param name="result">失败的写盘结果<para>Failed write result.</para></param>
+        /// <returns>本地化原因文本<para>Localized reason text.</para></returns>
+        private static string GetVersionWriteFailureReason(PackageVersionWriteResult result)
+        {
+            return result switch
+            {
+                PackageVersionWriteResult.PackageJsonNotFound => LC.Combine("Packages.VersionNoJson"),
+                PackageVersionWriteResult.VersionUnparsable => LC.Combine("Packages.VersionUnparsable"),
+                _ => LC.Combine("Packages.VersionWriteFailed"),
+            };
         }
 
         /// <summary>
@@ -388,8 +590,11 @@ namespace EasyFramework.Edit
             EditorGUI.BeginDisabledGroup(!canAction);
             if (GUILayout.Button(actionLabel, GUIUtils.Button(actionColor), GUILayout.Width(140)))
             {
-                // 本地包的操作后续可以扩展：更新 package.json 版本 / git push 等
-                D.Warning($"[EF.Packages] 本地包 [{packageInfo.Name}] 操作暂未实现: {actionLabel}");
+                // 本地有新版本时，这一步才真正把版本号写进 package.json
+                if (versionType == PackageVersionState.Upload)
+                    PublishVersion(packageInfo);
+                else
+                    D.Warning($"[EF.Packages] 本地包 [{packageInfo.Name}] 操作暂未实现: {actionLabel}");
             }
             EditorGUI.EndDisabledGroup();
 
@@ -460,6 +665,7 @@ namespace EasyFramework.Edit
             EditorApplication.update += AddPackageProgress;
 
             packageInfo.CurrentVersion = packageInfo.ServerVersion;
+            packageInfo.PendingVersion = string.Empty;      // 安装/更新会替换 manifest，暂存值随之失效
             packageInfo.NeedUpdate = false;
             _hasProcess = true;
         }
@@ -479,37 +685,25 @@ namespace EasyFramework.Edit
             EditorApplication.update += RemovePackageProgress;
 
             packageInfo.CurrentVersion = "";
+            packageInfo.PendingVersion = string.Empty;      // 卸载后包目录消失，暂存值随之失效
             packageInfo.NeedUpdate = true;
             _hasProcess = true;
         }
 
         /// <summary>
-        /// 版本比较
+        /// 版本比较（委托 EditorUtils.CompareVersionState：空串=Download/Unload，1.0.1 vs 1.0.0=Upload/Update）
         /// </summary>
         private PackageVersionState CompareVersion(string v1, string v2)
         {
-            if (string.IsNullOrEmpty(v1))
+            int result = EditorUtils.CompareVersionState(v1, v2);
+            if (result == -2)
                 return PackageVersionState.Download;
-            if (string.IsNullOrEmpty(v2))
+            if (result == 2)
                 return PackageVersionState.Unload;
-
-            var parts1 = v1.Split('.');
-            var parts2 = v2.Split('.');
-
-            for (int i = 0; i < 3; i++)
-            {
-                if (parts1[i] == parts2[i])
-                    continue;
-
-                int n1 = int.Parse(parts1[i]);
-                int n2 = int.Parse(parts2[i]);
-
-                if (n1 < n2)
-                    return PackageVersionState.Update;
-                if (n1 > n2)
-                    return PackageVersionState.Upload;
-            }
-
+            if (result > 0)
+                return PackageVersionState.Upload;
+            if (result < 0)
+                return PackageVersionState.Update;
             return PackageVersionState.Unload;
         }
 
@@ -580,13 +774,18 @@ namespace EasyFramework.Edit
                     _ => EFPackageSource.Unknown
                 };
                 
+                // 本地嵌入式包以磁盘 package.json 为准：刚用"版本上升"写过盘时 Unity 缓存仍是旧值
+                string currentVersion = ServerToolkit.TryReadPackageJsonVersion(name, out string diskVersion)
+                    ? diskVersion
+                    : packageInfo.version;
+
                 _config.packagesInfo.Add(new EFPackageInfo()
                 {
                     Name = name,
                     DisplayName = displayName,
                     SourceType = source,
                     Description = packageInfo.description,
-                    CurrentVersion = packageInfo.version,
+                    CurrentVersion = currentVersion,
                     ServerVersion = "",
                 });
                 _packageFolder.TryAdd(displayName, _allUnfold);
@@ -803,7 +1002,7 @@ namespace EasyFramework.Edit
 
             // 1) Runtime asmdef：引用 core Runtime + UniTask（与 EF.RedDot 等现有包一致）
             string runtimeAsmdefName = $"EF.{packageName}";
-            WriteTextWithMeta(Path.Combine(packageRuntimePath, runtimeAsmdefName + ".asmdef"),
+            EditorUtils.WriteTextWithMeta(Path.Combine(packageRuntimePath, runtimeAsmdefName + ".asmdef"),
                 BuildAssemblyDefinition(runtimeAsmdefName, new[]
                 {
                     UniTaskAssemblyGuid,
@@ -812,7 +1011,7 @@ namespace EasyFramework.Edit
 
             // 2) Editor asmdef：Editor 平台，引用 core Editor + 自身 Runtime + core Runtime
             string editorAsmdefName = $"EF.{packageName}.Editor";
-            WriteTextWithMeta(Path.Combine(packageEditorPath, editorAsmdefName + ".asmdef"),
+            EditorUtils.WriteTextWithMeta(Path.Combine(packageEditorPath, editorAsmdefName + ".asmdef"),
                 BuildAssemblyDefinition(editorAsmdefName, new[]
                 {
                     CoreEditorAssemblyGuid,
@@ -821,7 +1020,7 @@ namespace EasyFramework.Edit
                 }, true));
 
             // 3) 多语言：Editor Resources/Description/Editorlanguages.json（空键清单）
-            WriteTextWithMeta(Path.Combine(langPath, "Editorlanguages.json"),
+            EditorUtils.WriteTextWithMeta(Path.Combine(langPath, "Editorlanguages.json"),
                 "{\n  \"LcList\": []\n}");
         }
 
@@ -860,25 +1059,6 @@ namespace EasyFramework.Edit
             builder.AppendLine("    \"noEngineReferences\": false");
             builder.AppendLine("}");
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// 写入文本文件并生成配套 .meta（GUID 用新生成的；可指定以便其他文件引用）
-        /// <para>Write a text file with a companion .meta (fresh GUID; an explicit one may be supplied
-        /// so other files can reference it).</para>
-        /// </summary>
-        /// <param name="path">文件绝对路径<para>Absolute file path.</para></param>
-        /// <param name="content">文件内容<para>File content.</para></param>
-        /// <param name="guid">指定 GUID（默认新建）<para>Explicit GUID (fresh one by default).</para></param>
-        private static void WriteTextWithMeta(string path, string content, string guid = null)
-        {
-            File.WriteAllText(path, content);
-            string metaGuid = string.IsNullOrEmpty(guid) ? Guid.NewGuid().ToString("N") : guid;
-            string importer = Path.GetExtension(path) == ".asmdef"
-                ? "AssemblyDefinitionImporter"
-                : "TextScriptImporter";
-            string metaContent = $"fileFormatVersion: 2\nguid: {metaGuid}\n{importer}:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n";
-            File.WriteAllText(path + ".meta", metaContent);
         }
 
         #endregion

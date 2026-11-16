@@ -19,13 +19,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// 项目设置面板
     /// </summary>
     [EFConfigPanel(Priority = 0)]
-    internal class EFProjectConfigPanel : EFConfigPanelBase
+    internal class EFProjectConfigPanel : EFSerializedConfigPanelBase<ProjectConfig>
     {
         bool _systemInfoSwitch;
         string _editorUser;
-        Vector2 _scrollPos;
 
-        private SerializedObject _settingPanel;
         private SerializedProperty _scriptAuthor;
         private SerializedProperty _scriptVersion;
         private SerializedProperty _resourcesArea;
@@ -37,17 +35,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void OnEnable(string assetsPath)
         {
             LC.ReloadLanguages();
-            LoadWindowData();
+            base.OnEnable(assetsPath);
         }
 
         public override void LoadWindowData()
         {
-            _settingPanel = new SerializedObject(ConfigManager.Project);
-            _appConstConfig = _settingPanel.FindProperty("_appConst");
-            _scriptAuthor = _settingPanel.FindProperty("_scriptAuthor");
-            _scriptVersion = _settingPanel.FindProperty("_scriptVersion");
-            _resourcesArea = _settingPanel.FindProperty("_resourcesArea");
-            _scriptNamespace = _settingPanel.FindProperty("_scriptNamespace");
+            BindConfig(ConfigManager.Project);
+            _appConstConfig = FindConfigProperty("_appConst");
+            _scriptAuthor = FindConfigProperty("_scriptAuthor");
+            _scriptVersion = FindConfigProperty("_scriptVersion");
+            _resourcesArea = FindConfigProperty("_resourcesArea");
+            _scriptNamespace = FindConfigProperty("_scriptNamespace");
 
             var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
             MethodInfo methodInfo = type.GetMethod("GetUserInfo");
@@ -70,7 +68,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.LabelField(LC.Combine("Core.CurrentProjectInfo"));
 
-            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
+            ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, GUIUtils.ScrollViewBackground());
 
             EditorGUILayout.LabelField(LC.Combine("Core.EditorUser"), _editorUser);
             _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptAuthor"),
@@ -101,12 +99,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.EndScrollView();
 
-
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-
-            if (!changeCheckScope.changed) return;
-            _settingPanel.ApplyModifiedPropertiesWithoutUndo();
-            _settingPanel.ApplyModifiedProperties();
+            ApplyConfigIfChanged(changeCheckScope.changed, withoutUndo: true);
         }
 
         /// <summary>

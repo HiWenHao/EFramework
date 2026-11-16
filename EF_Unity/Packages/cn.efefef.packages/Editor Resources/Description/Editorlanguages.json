@@ -57,6 +57,22 @@
       ]
     },
     {
+      "name": "Packages.BumpVersion",
+      "desc": "版本上升",
+      "array": [
+        "Bump Version",
+        "版本上升"
+      ]
+    },
+    {
+      "name": "Packages.BumpVersionTip",
+      "desc": "末位版本号 +1：{0} → {1}",
+      "array": [
+        "Increment the last version segment by one: {0} -> {1}",
+        "末位版本号 +1：{0} → {1}"
+      ]
+    },
+    {
       "name": "Packages.CreateNewPackage",
       "desc": "创建新包",
       "array": [
@@ -169,11 +185,51 @@
       ]
     },
     {
+      "name": "Packages.PendingVersionTip",
+      "desc": "已在面板上升但尚未写入 package.json，点击「发布版本」后生效。",
+      "array": [
+        "Bumped but not written to package.json yet. Click Publish to apply.",
+        "已在面板上升但尚未写入 package.json，点击「发布版本」后生效。"
+      ]
+    },
+    {
+      "name": "Packages.PublishVersionFailed",
+      "desc": "发布版本失败：{0}",
+      "array": [
+        "Failed to publish the version: {0}",
+        "发布版本失败：{0}"
+      ]
+    },
+    {
       "name": "Packages.RemoteSync",
       "desc": "远端同步",
       "array": [
         "Remote Sync",
         "远端同步"
+      ]
+    },
+    {
+      "name": "Packages.ResetVersion",
+      "desc": "恢复默认",
+      "array": [
+        "Restore Default",
+        "恢复默认"
+      ]
+    },
+    {
+      "name": "Packages.ResetVersionFailed",
+      "desc": "恢复默认版本失败：{0}",
+      "array": [
+        "Failed to restore the default version: {0}",
+        "恢复默认版本失败：{0}"
+      ]
+    },
+    {
+      "name": "Packages.ResetVersionTip",
+      "desc": "恢复到默认版本：{0} → {1}",
+      "array": [
+        "Restore to the default version: {0} -> {1}",
+        "恢复到默认版本：{0} → {1}"
       ]
     },
     {
@@ -254,6 +310,30 @@
       "array": [
         "Publish Version",
         "上传版本"
+      ]
+    },
+    {
+      "name": "Packages.VersionNoJson",
+      "desc": "未找到该包的 package.json。",
+      "array": [
+        "The package.json of this package was not found.",
+        "未找到该包的 package.json。"
+      ]
+    },
+    {
+      "name": "Packages.VersionUnparsable",
+      "desc": "版本号为空或含非数字分段。",
+      "array": [
+        "The version is empty or contains a non-numeric segment.",
+        "版本号为空或含非数字分段。"
+      ]
+    },
+    {
+      "name": "Packages.VersionWriteFailed",
+      "desc": "写入 package.json 失败。",
+      "array": [
+        "Writing package.json failed.",
+        "写入 package.json 失败。"
       ]
     },
     {

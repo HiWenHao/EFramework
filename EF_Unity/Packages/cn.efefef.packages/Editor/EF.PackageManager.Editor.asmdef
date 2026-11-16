@@ -1,8 +1,8 @@
-{
+﻿{
     "name": "EF.PackageManager.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "UniTask",
         "GUID:a4a7eea321f5a024bb7118f90940975f"
     ],
     "includePlatforms": [

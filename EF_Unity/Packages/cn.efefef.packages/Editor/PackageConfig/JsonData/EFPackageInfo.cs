@@ -68,6 +68,15 @@ namespace EasyFramework.Edit.Packages
         /// 当前版本
         /// </summary>
         [SerializeField] public string CurrentVersion = "0.0.1";
+
+        /// <summary>
+        /// 待发布版本：在面板上做过版本上升、但尚未写入 package.json 的目标版本；
+        /// 空串表示当前版本与磁盘一致。只有点击“发布版本”才会真正落盘。
+        /// <para>Pending version: the target version bumped in the panel but not yet written to
+        /// package.json. Empty means the current version matches the disk; only the publish
+        /// action writes it.</para>
+        /// </summary>
+        [SerializeField] public string PendingVersion = "";
         
     }
 }

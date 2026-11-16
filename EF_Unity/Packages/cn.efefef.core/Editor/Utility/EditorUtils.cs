@@ -153,6 +153,36 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
+        /// 对比版本号（格式: x.x.x，纯数字；支持空串与不等长段）
+        /// <para>Compare two version strings (format: x.x.x, digits only; supports empty strings and unequal segment counts)</para>
+        /// </summary>
+        /// <param name="version1">版本号1<para>Version 1</para></param>
+        /// <param name="version2">版本号2<para>Version 2</para></param>
+        /// <returns>version1 > version2 返回 1，相等返回 0，小于返回 -1；任一为空分别按 -2 / 2 处理
+        /// <para>1 when greater, 0 when equal, -1 when less; -2 / 2 when one side is empty.</para></returns>
+        public static int CompareVersionState(string version1, string version2)
+        {
+            bool empty1 = string.IsNullOrEmpty(version1);
+            bool empty2 = string.IsNullOrEmpty(version2);
+            if (empty1 || empty2)
+                return empty1 && empty2 ? 0 : (empty1 ? -2 : 2);
+
+            string[] parts1 = version1.Split('.');
+            string[] parts2 = version2.Split('.');
+            int count = Math.Max(parts1.Length, parts2.Length);
+            for (int i = 0; i < count; i++)
+            {
+                int n1 = i < parts1.Length && int.TryParse(parts1[i], out int v1) ? v1 : 0;
+                int n2 = i < parts2.Length && int.TryParse(parts2[i], out int v2) ? v2 : 0;
+                if (n1 > n2)
+                    return 1;
+                if (n1 < n2)
+                    return -1;
+            }
+            return 0;
+        }
+
+        /// <summary>
         /// 对比版本号（格式: x.x.x，纯数字）
         /// <para>Compare two version strings (format: x.x.x, digits only)</para>
         /// </summary>
@@ -221,6 +251,26 @@ namespace EasyFramework.Edit
                     "[ EditorUtils ] Copy folder failed: {0} → {1}, {2}",
                     sourceDir, destDir, ex.Message));
             }
+        }
+
+        /// <summary>
+        /// 写文本文件并生成配套 .meta（GUID 新建或指定；importer 按扩展名自动选择）
+        /// <para>Write a text file with a companion .meta (fresh or explicit GUID; importer picked by extension).</para>
+        /// </summary>
+        /// <param name="path">文件绝对路径<para>Absolute file path.</para></param>
+        /// <param name="content">文件内容<para>File content.</para></param>
+        /// <param name="guid">指定 GUID（默认新建）<para>Explicit GUID (fresh one by default).</para></param>
+        /// <returns>写入 .meta 的 GUID<para>The GUID written into the .meta.</para></returns>
+        public static string WriteTextWithMeta(string path, string content, string guid = null)
+        {
+            File.WriteAllText(path, content);
+            string metaGuid = string.IsNullOrEmpty(guid) ? Guid.NewGuid().ToString("N") : guid;
+            string importer = Path.GetExtension(path) == ".asmdef"
+                ? "AssemblyDefinitionImporter"
+                : "TextScriptImporter";
+            string metaContent = $"fileFormatVersion: 2\nguid: {metaGuid}\n{importer}:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n";
+            File.WriteAllText(path + ".meta", metaContent);
+            return metaGuid;
         }
 
         #endregion

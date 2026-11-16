@@ -54,11 +54,9 @@ namespace EasyFramework.Systems.Archive.Editor
         [MenuItem(Root + "🗑️ Clear All Archives", false, RootPriority + 3)]
         private static void ClearAllArchives()
         {
-            if (!EditorUtility.DisplayDialog("Clear All Archives",
-                "This will DELETE all archive data from disk!\n\n" +
-                "This action CANNOT be undone.\n\n" +
-                "Are you sure?",
-                "Yes, Delete Everything", "Cancel"))
+            if (!EditorUtility.DisplayDialog(LC.Combine("Archive.ClearAllArchives"),
+                LC.Combine("Archive.ClearAllHint"),
+                LC.Combine("Archive.YesDeleteEverything"), LC.Combine("Cancel")))
                 return;
 
             var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
