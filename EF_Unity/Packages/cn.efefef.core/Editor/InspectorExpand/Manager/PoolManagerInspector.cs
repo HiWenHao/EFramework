@@ -65,7 +65,7 @@ namespace EasyFramework.Managers.Pool.Editor
         private GUIStyle _cardStyle;
         private GUIStyle _sectionHeaderStyle;
 
-        protected override string Title => LC.Combine(Lc.Pool, Lc.Data, Lc.Monitor);
+        protected override string Title => LC.Combine("Pool", "Data", "Monitor");
 
         protected override void OnEditorEnable()
         {
@@ -172,12 +172,12 @@ namespace EasyFramework.Managers.Pool.Editor
         {
             if (_gameObjectPoolsField == null || _objectPoolsField == null)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Reflect, Lc.Error, Lc.Please, Lc.Check, Lc.Code),
+                EditorGUILayout.HelpBox(LC.Combine("Reflect", "Error", "Please", "Check", "Code"),
                     MessageType.Error);
                 return;
             }
 
-            _openDebug = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Open, Lc.Debug), _openDebug);
+            _openDebug = EditorGUILayout.ToggleLeft(LC.Combine("Open", "Debug"), _openDebug);
             Target.SetOpenDebug(_openDebug);
             if (_openDebug && GUILayout.Button("Dump Leaks"))
             {
@@ -268,23 +268,23 @@ namespace EasyFramework.Managers.Pool.Editor
             // 核心数据行
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Idle)}: {info.Count}", GUILayout.Width(80));
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Active)}: {info.ActiveCount}", GUILayout.Width(80));
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Total)}: {info.TotalCount}", GUILayout.Width(80));
+            EditorGUILayout.LabelField($"{LC.Combine("Idle")}: {info.Count}", GUILayout.Width(80));
+            EditorGUILayout.LabelField($"{LC.Combine("Active")}: {info.ActiveCount}", GUILayout.Width(80));
+            EditorGUILayout.LabelField($"{LC.Combine("Total")}: {info.TotalCount}", GUILayout.Width(80));
             EditorGUILayout.EndHorizontal();
 
             float activePercent = info.TotalCount > 0 ? (float)info.ActiveCount / info.TotalCount : 0f;
-            DrawProgressBar(activePercent, new Color(0.4f, 0.7f, 1f), LC.Combine(Lc.Activity, Lc.Rate));
+            DrawProgressBar(activePercent, new Color(0.4f, 0.7f, 1f), LC.Combine("Activity", "Rate"));
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
             EditorGUILayout.LabelField(
-                LC.Combine(Lc.Max, Lc.Idle, Lc.Count) + $": {(info.MaxSize == -1 ? "∞" : info.MaxSize.ToString())}",
+                LC.Combine("Max", "Idle", "Count") + $": {(info.MaxSize == -1 ? "∞" : info.MaxSize.ToString())}",
                 GUILayout.Width(120));
             EditorGUILayout.LabelField(
-                LC.Combine(Lc.Idle, Lc.Timeout) +
-                $": {(info.IdleTimeout > 0 ? info.IdleTimeout + "s" : LC.Combine(Lc.Disable))}", GUILayout.Width(120));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Debug) + $": {(info.OpenDebug ? "√" : "X")}", GUILayout.Width(80));
+                LC.Combine("Idle", "Timeout") +
+                $": {(info.IdleTimeout > 0 ? info.IdleTimeout + "s" : LC.Combine("Disable"))}", GUILayout.Width(120));
+            EditorGUILayout.LabelField(LC.Combine("Debug") + $": {(info.OpenDebug ? "√" : "X")}", GUILayout.Width(80));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -299,13 +299,13 @@ namespace EasyFramework.Managers.Pool.Editor
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Idle) + $": {info.Count}", GUILayout.Width(100));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Max, Lc.Capacity) + (info.MaxSize == -1 ? "∞" : $"{info.MaxSize}"),
+            EditorGUILayout.LabelField(LC.Combine("Idle") + $": {info.Count}", GUILayout.Width(100));
+            EditorGUILayout.LabelField(LC.Combine("Max", "Capacity") + (info.MaxSize == -1 ? "∞" : $"{info.MaxSize}"),
                 GUILayout.Width(120));
             EditorGUILayout.EndHorizontal();
 
             float idlePercent = info.MaxSize > 0 ? (float)info.Count / info.MaxSize : 0f;
-            DrawProgressBar(idlePercent, new Color(0.6f, 0.9f, 0.4f), LC.Combine(Lc.Idle, Lc.Occupancy, Lc.Rate));
+            DrawProgressBar(idlePercent, new Color(0.6f, 0.9f, 0.4f), LC.Combine("Idle", "Occupancy", "Rate"));
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(5);

@@ -181,12 +181,12 @@ namespace EasyFramework.Edit.Windows
         {
             var rect = new Rect(0, 0, position.width, position.height);
             EditorGUI.DrawRect(rect, GUIUtils.OverlayRefreshBg);
-            string status = LC.Combine(EditorApplication.isCompiling ? Lc.Compiling : Lc.Refresh) + "....";
+            string status = LC.Combine(EditorApplication.isCompiling ? "Compiling" : "Refresh") + "....";
             GUI.Label(rect, status, GUIUtils.OverlayLabel);
 
             var progress = (float)(EditorApplication.timeSinceStartup % 1.0);
             var progressRect = new Rect(rect.width / 2 - 100, rect.height / 2 + 20, 200, 20);
-            EditorGUI.ProgressBar(progressRect, progress, LC.Combine(Lc.PleaseWaitMoment));
+            EditorGUI.ProgressBar(progressRect, progress, LC.Combine("PleaseWaitMoment"));
 
             Repaint();
         }
@@ -199,7 +199,7 @@ namespace EasyFramework.Edit.Windows
             EditorGUI.DrawRect(rect, GUIUtils.OverlayErrorBg);
 
             GUI.Label(new Rect(0, 10f, rect.width, 30f),
-                $"{LC.Combine(Lc.Error)}: {e.GetType().Name}", GUIUtils.OverlayLabel);
+                $"{LC.Combine("Error")}: {e.GetType().Name}", GUIUtils.OverlayLabel);
 
             GUI.Label(new Rect(20f, 45f, rect.width - 40f, 25f),
                 e.Message, GUIUtils.OverlaySmallLabel);
@@ -215,7 +215,7 @@ namespace EasyFramework.Edit.Windows
                 GUIUtility.systemCopyBuffer = e.ToString();
             }
 
-            if (GUI.Button(new Rect(rect.width / 2f + 10f, rect.height - 45f, 100f, 25f), LC.Combine(Lc.Refresh)))
+            if (GUI.Button(new Rect(rect.width / 2f + 10f, rect.height - 45f, 100f, 25f), LC.Combine("Refresh")))
             {
                 HandleErrorRetry();
             }

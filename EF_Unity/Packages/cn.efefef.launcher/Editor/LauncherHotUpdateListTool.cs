@@ -47,7 +47,7 @@ namespace EasyFramework.Launcher.Editor
 
             if (candidates.Count == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherNoEfAssembly), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.NoEfAssembly"), LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
@@ -72,8 +72,8 @@ namespace EasyFramework.Launcher.Editor
             {
                 // 列表已经是全的，但骨架可能还没生成，顺便补一次
                 int filledAlready = LauncherHotfixDllFillTool.FillExistingConfig(out int totalAlready);
-                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherAllAlreadyAdded, DescribeFillResult(filledAlready, totalAlready)),
-                    LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.AllAlreadyAdded", DescribeFillResult(filledAlready, totalAlready)),
+                    LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
@@ -84,12 +84,12 @@ namespace EasyFramework.Launcher.Editor
                 // 有 AOT 程序集还在引用 EF 时，这一步必然导致打包失败；
                 // 把「取消」放在第一个按钮，避免手快回车直接踩坑
                 if (EditorUtility.DisplayDialog(DialogTitle, message,
-                        LC.Combine(Lc.Cancel), LC.Combine(Lc.Cs_LauncherAddAnyway)))
+                        LC.Combine("Cancel"), LC.Combine("Launcher.AddAnyway")))
                 {
                     return;
                 }
             }
-            else if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine(Lc.AddEntry), LC.Combine(Lc.Cancel)))
+            else if (!EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine("Launcher.AddEntry"), LC.Combine("Cancel")))
             {
                 return;
             }
@@ -113,13 +113,13 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Format(Lc.Cs_LauncherAddedLog, added, string.Join("\n  ", addedPaths)));
+            Debug.Log(LC.Format("Launcher.AddedLog", added, string.Join("\n  ", addedPaths)));
 
             // 顺手把 LauncherConfig.HotfixDlls 的骨架也铺好（按依赖序）
             int filled = LauncherHotfixDllFillTool.FillExistingConfig(out int total);
 
-            EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherAddedDialog, added, DescribeFillResult(filled, total)),
-                LC.Combine(Lc.Cs_Ok));
+            EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.AddedDialog", added, DescribeFillResult(filled, total)),
+                LC.Combine("Launcher.Ok"));
         }
 
         /// <summary>把填充结果翻译成一句人话（filled = -1 表示没有可用的 LauncherConfig）</summary>
@@ -127,10 +127,10 @@ namespace EasyFramework.Launcher.Editor
         {
             if (filled < 0)
             {
-                return LC.Combine(Lc.Cs_LauncherFillSkipped);
+                return LC.Combine("Launcher.FillSkipped");
             }
 
-            return LC.Format(Lc.Cs_LauncherFillSummary, filled, total);
+            return LC.Format("Launcher.FillSummary", filled, total);
         }
 
         [MenuItem(MenuRoot + "🗑️ Remove All EF Assemblies From Hot Update", false, MenuItemToolkit.LauncherPriority + 52)]
@@ -157,18 +157,18 @@ namespace EasyFramework.Launcher.Editor
 
             if (toRemove.Count == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherAlreadyClassic), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.AlreadyClassic"), LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Format(Lc.Cs_LauncherAboutToRemove, toRemove.Count));
+            sb.AppendLine(LC.Format("Launcher.AboutToRemove", toRemove.Count));
             foreach (string path in toRemove)
                 sb.AppendLine("  - " + System.IO.Path.GetFileNameWithoutExtension(path));
             sb.AppendLine();
-            sb.AppendLine(LC.Combine(Lc.Cs_LauncherRemoveWarning));
+            sb.AppendLine(LC.Combine("Launcher.RemoveWarning"));
 
-            if (!EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine(Lc.RemoveEntry), LC.Combine(Lc.Cancel)))
+            if (!EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine("Launcher.RemoveEntry"), LC.Combine("Cancel")))
                 return;
 
             serialized.Update();
@@ -199,10 +199,10 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Format(Lc.Cs_LauncherRemovedCount, toRemove.Count));
+            Debug.Log(LC.Format("Launcher.RemovedCount", toRemove.Count));
 
-            EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherRemovedNext, toRemove.Count),
-                LC.Combine(Lc.Cs_Ok));
+            EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.RemovedNext", toRemove.Count),
+                LC.Combine("Launcher.Ok"));
         }
 
         #endregion
@@ -344,32 +344,32 @@ namespace EasyFramework.Launcher.Editor
         private static string BuildAddMessage(int addCount, int existingCount, ConsumerScan scan)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Format(Lc.Cs_LauncherAboutToAdd, addCount, existingCount, existingCount + addCount));
+            sb.AppendLine(LC.Format("Launcher.AboutToAdd", addCount, existingCount, existingCount + addCount));
 
             if (scan.AotConsumers.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Combine(Lc.Cs_LauncherAotConsumerWarning));
+                sb.AppendLine(LC.Combine("Launcher.AotConsumerWarning"));
                 foreach (string name in scan.AotConsumers)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();
-                sb.AppendLine(LC.Combine(Lc.Cs_LauncherRemoveReferences));
+                sb.AppendLine(LC.Combine("Launcher.RemoveReferences"));
             }
 
             if (scan.MisconfiguredEditors.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Combine(Lc.Cs_LauncherEditorAssemblyHint));
+                sb.AppendLine(LC.Combine("Launcher.EditorAssemblyHint"));
                 foreach (string name in scan.MisconfiguredEditors)
                     sb.AppendLine("   - " + name);
                 sb.AppendLine();
-                sb.AppendLine(LC.Combine(Lc.Cs_LauncherEditorAssemblyNote));
+                sb.AppendLine(LC.Combine("Launcher.EditorAssemblyNote"));
             }
 
             sb.AppendLine();
-            sb.AppendLine(LC.Combine(Lc.Cs_LauncherAfterAdd));
+            sb.AppendLine(LC.Combine("Launcher.AfterAdd"));
             sb.AppendLine();
-            sb.Append(LC.Combine(Lc.Proceed));
+            sb.Append(LC.Combine("Launcher.Proceed"));
 
             return sb.ToString();
         }
@@ -391,7 +391,7 @@ namespace EasyFramework.Launcher.Editor
             var settings = HybridCLRSettings.Instance;
             if (settings == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherNoHybridClrSettings), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.NoHybridClrSettings"), LC.Combine("Launcher.OkConfirm"));
                 return false;
             }
 
@@ -399,8 +399,8 @@ namespace EasyFramework.Launcher.Editor
             list = serialized.FindProperty(DefinitionsProperty);
             if (list == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherMissingField, DefinitionsProperty),
-                    LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.MissingField", DefinitionsProperty),
+                    LC.Combine("Launcher.OkConfirm"));
                 return false;
             }
 

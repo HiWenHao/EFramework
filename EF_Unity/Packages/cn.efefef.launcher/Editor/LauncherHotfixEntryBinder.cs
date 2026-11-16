@@ -109,7 +109,7 @@ namespace EasyFramework.Launcher.Editor
             var settings = HybridCLRSettings.Instance;
             if (settings == null)
             {
-                error = LC.Combine(Lc.Cs_LauncherNoHybridClrSettings);
+                error = LC.Combine("Launcher.NoHybridClrSettings");
                 return result;
             }
 
@@ -117,7 +117,7 @@ namespace EasyFramework.Launcher.Editor
             var list = serialized.FindProperty(DefinitionsProperty);
             if (list == null)
             {
-                error = LC.Format(Lc.Cs_LauncherMissingFieldShort, DefinitionsProperty);
+                error = LC.Format("Launcher.MissingFieldShort", DefinitionsProperty);
                 return result;
             }
 
@@ -161,7 +161,7 @@ namespace EasyFramework.Launcher.Editor
             var result = new HotfixBindResult();
             if (config == null)
             {
-                result.Error = LC.Combine(Lc.Cs_LauncherConfigRequired);
+                result.Error = LC.Combine("Launcher.ConfigRequired");
                 return result;
             }
 
@@ -211,7 +211,7 @@ namespace EasyFramework.Launcher.Editor
 
                 if (assetPath == null)
                 {
-                    row.Status = LC.Combine(Lc.MissingBytes);
+                    row.Status = LC.Combine("Launcher.MissingBytes");
                     result.Missing++;
                     continue;
                 }
@@ -241,14 +241,14 @@ namespace EasyFramework.Launcher.Editor
                     bool mismatch = !string.IsNullOrWhiteSpace(entry.Location) &&
                                     !string.Equals(entry.Location, location, StringComparison.Ordinal);
                     row.Status = mismatch
-                        ? LC.Combine(Lc.Cs_LauncherKeptMismatch)
-                        : LC.Combine(Lc.Kept);
+                        ? LC.Combine("Launcher.KeptMismatch")
+                        : LC.Combine("Launcher.Kept");
                 }
                 else
                 {
                     row.Status = isNew
-                        ? LC.Combine(Lc.AddedAndBound)
-                        : LC.Combine(Lc.Bound);
+                        ? LC.Combine("Launcher.AddedAndBound")
+                        : LC.Combine("Launcher.Bound");
                 }
             }
 

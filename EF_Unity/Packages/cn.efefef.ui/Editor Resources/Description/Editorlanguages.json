@@ -1,0 +1,828 @@
+﻿{
+  "LcList": [
+    {
+      "name": "Add",
+      "desc": "添加",
+      "array": [
+        "Add",
+        "添加"
+      ]
+    },
+    {
+      "name": "All",
+      "desc": "全部",
+      "array": [
+        "All",
+        "全部"
+      ]
+    },
+    {
+      "name": "And",
+      "desc": "和",
+      "array": [
+        "And",
+        "和"
+      ]
+    },
+    {
+      "name": "Animat",
+      "desc": "动画",
+      "array": [
+        "Animat",
+        "动画"
+      ]
+    },
+    {
+      "name": "Atlas",
+      "desc": "图集",
+      "array": [
+        "Atlas",
+        "图集"
+      ]
+    },
+    {
+      "name": "Auto",
+      "desc": "自动",
+      "array": [
+        "Auto",
+        "自动"
+      ]
+    },
+    {
+      "name": "Axis",
+      "desc": "轴",
+      "array": [
+        "Axis",
+        "轴"
+      ]
+    },
+    {
+      "name": "Be",
+      "desc": "有",
+      "array": [
+        "Be",
+        "有"
+      ]
+    },
+    {
+      "name": "Bind",
+      "desc": "绑定",
+      "array": [
+        "Bind",
+        "绑定"
+      ]
+    },
+    {
+      "name": "By",
+      "desc": "按照",
+      "array": [
+        "By",
+        "按"
+      ]
+    },
+    {
+      "name": "Can",
+      "desc": "可以",
+      "array": [
+        "Can",
+        "可以"
+      ]
+    },
+    {
+      "name": "Cancel",
+      "desc": "取消",
+      "array": [
+        "Cancel",
+        "取消"
+      ]
+    },
+    {
+      "name": "Center",
+      "desc": "中心",
+      "array": [
+        "Center",
+        "中心"
+      ]
+    },
+    {
+      "name": "Character",
+      "desc": "字符",
+      "array": [
+        "Character",
+        "字符"
+      ]
+    },
+    {
+      "name": "Class",
+      "desc": "类",
+      "array": [
+        "Class",
+        "类"
+      ]
+    },
+    {
+      "name": "Clear",
+      "desc": "清空",
+      "array": [
+        "Clear",
+        "清空"
+      ]
+    },
+    {
+      "name": "Close",
+      "desc": "关闭",
+      "array": [
+        "Close",
+        "关闭"
+      ]
+    },
+    {
+      "name": "Code",
+      "desc": "代码",
+      "array": [
+        "Code",
+        "代码"
+      ]
+    },
+    {
+      "name": "Column",
+      "desc": "列",
+      "array": [
+        "Column",
+        "列"
+      ]
+    },
+    {
+      "name": "Compile",
+      "desc": "编译",
+      "array": [
+        "Compile",
+        "编译"
+      ]
+    },
+    {
+      "name": "Component",
+      "desc": "组件",
+      "array": [
+        "Component",
+        "组件"
+      ]
+    },
+    {
+      "name": "Config",
+      "desc": "配置",
+      "array": [
+        "Config",
+        "配置"
+      ]
+    },
+    {
+      "name": "Confirm",
+      "desc": "确认",
+      "array": [
+        "Confirm",
+        "确认"
+      ]
+    },
+    {
+      "name": "Content",
+      "desc": "内容",
+      "array": [
+        "Content",
+        "内容"
+      ]
+    },
+    {
+      "name": "Count",
+      "desc": "数量",
+      "array": [
+        "Count",
+        "数量"
+      ]
+    },
+    {
+      "name": "Countdown",
+      "desc": "倒计时",
+      "array": [
+        "Countdown",
+        "倒计时"
+      ]
+    },
+    {
+      "name": "Create",
+      "desc": "创建",
+      "array": [
+        "Create",
+        "创建"
+      ]
+    },
+    {
+      "name": "Data",
+      "desc": "数据",
+      "array": [
+        "Data",
+        "数据"
+      ]
+    },
+    {
+      "name": "Deceleration",
+      "desc": "减速",
+      "array": [
+        "Deceleration",
+        "减速"
+      ]
+    },
+    {
+      "name": "Default",
+      "desc": "默认",
+      "array": [
+        "Default",
+        "默认"
+      ]
+    },
+    {
+      "name": "Delete",
+      "desc": "删除",
+      "array": [
+        "Delete",
+        "删除"
+      ]
+    },
+    {
+      "name": "Description",
+      "desc": "描述",
+      "array": [
+        "Description",
+        "描述"
+      ]
+    },
+    {
+      "name": "Destroy",
+      "desc": "销毁",
+      "array": [
+        "Destroy",
+        "销毁"
+      ]
+    },
+    {
+      "name": "Direction",
+      "desc": "方向",
+      "array": [
+        "Direction",
+        "方向"
+      ]
+    },
+    {
+      "name": "Distance",
+      "desc": "距离",
+      "array": [
+        "Distance",
+        "距离"
+      ]
+    },
+    {
+      "name": "Dock",
+      "desc": "停靠",
+      "array": [
+        "Dock",
+        "停靠"
+      ]
+    },
+    {
+      "name": "Drag",
+      "desc": "拖动",
+      "array": [
+        "Drag",
+        "拖动"
+      ]
+    },
+    {
+      "name": "Elasticity",
+      "desc": "弹性",
+      "array": [
+        "Elasticity",
+        "弹性"
+      ]
+    },
+    {
+      "name": "Element",
+      "desc": "元素",
+      "array": [
+        "Element",
+        "元素"
+      ]
+    },
+    {
+      "name": "Empty",
+      "desc": "空的",
+      "array": [
+        "Empty",
+        "空的"
+      ]
+    },
+    {
+      "name": "Enable",
+      "desc": "启动",
+      "array": [
+        "Enable",
+        "启动"
+      ]
+    },
+    {
+      "name": "Error",
+      "desc": "错误",
+      "array": [
+        "Error",
+        "错误"
+      ]
+    },
+    {
+      "name": "Export",
+      "desc": "导出",
+      "array": [
+        "Export",
+        "导出"
+      ]
+    },
+    {
+      "name": "Failed",
+      "desc": "失败",
+      "array": [
+        "Failed",
+        "失败"
+      ]
+    },
+    {
+      "name": "First",
+      "desc": "首个",
+      "array": [
+        "First",
+        "首个"
+      ]
+    },
+    {
+      "name": "Folder",
+      "desc": "文件夹",
+      "array": [
+        "Folder",
+        "文件夹"
+      ]
+    },
+    {
+      "name": "Generate",
+      "desc": "生成",
+      "array": [
+        "Generate",
+        "生成"
+      ]
+    },
+    {
+      "name": "Have",
+      "desc": "拥有、具备",
+      "array": [
+        "Have",
+        "拥有"
+      ]
+    },
+    {
+      "name": "Hints",
+      "desc": "提示",
+      "array": [
+        "Hints",
+        "提示"
+      ]
+    },
+    {
+      "name": "Illegal",
+      "desc": "非法",
+      "array": [
+        "Illegal",
+        "非法"
+      ]
+    },
+    {
+      "name": "Import",
+      "desc": "导入",
+      "array": [
+        "Import",
+        "导入"
+      ]
+    },
+    {
+      "name": "Inertia",
+      "desc": "惯性",
+      "array": [
+        "Inertia",
+        "惯性"
+      ]
+    },
+    {
+      "name": "Is",
+      "desc": "是",
+      "array": [
+        "Is",
+        "是"
+      ]
+    },
+    {
+      "name": "Keyword",
+      "desc": "关键字",
+      "array": [
+        "Keyword",
+        "关键字"
+      ]
+    },
+    {
+      "name": "Length",
+      "desc": "长、长度",
+      "array": [
+        "Length",
+        "长度"
+      ]
+    },
+    {
+      "name": "Letter",
+      "desc": "字母",
+      "array": [
+        "Letter",
+        "字母"
+      ]
+    },
+    {
+      "name": "Limit",
+      "desc": "限制",
+      "array": [
+        "Limit",
+        "限制"
+      ]
+    },
+    {
+      "name": "List",
+      "desc": "列表",
+      "array": [
+        "List",
+        "列表"
+      ]
+    },
+    {
+      "name": "Loop",
+      "desc": "循环",
+      "array": [
+        "Loop",
+        "循环"
+      ]
+    },
+    {
+      "name": "Materials",
+      "desc": "材质球",
+      "array": [
+        "Materials",
+        "材质"
+      ]
+    },
+    {
+      "name": "Max",
+      "desc": "最大",
+      "array": [
+        "Max",
+        "最大"
+      ]
+    },
+    {
+      "name": "Min",
+      "desc": "最小",
+      "array": [
+        "Min",
+        "最小"
+      ]
+    },
+    {
+      "name": "Move",
+      "desc": "移动",
+      "array": [
+        "Move",
+        "移动"
+      ]
+    },
+    {
+      "name": "Must",
+      "desc": "必须",
+      "array": [
+        "Must",
+        "必须"
+      ]
+    },
+    {
+      "name": "Name",
+      "desc": "名称",
+      "array": [
+        "Name",
+        "名称"
+      ]
+    },
+    {
+      "name": "Namespace",
+      "desc": "命名空间",
+      "array": [
+        "Namespace",
+        "命名空间"
+      ]
+    },
+    {
+      "name": "Of",
+      "desc": ".....的",
+      "array": [
+        "of",
+        "的"
+      ]
+    },
+    {
+      "name": "Ok",
+      "desc": "好的",
+      "array": [
+        "Ok",
+        "好的"
+      ]
+    },
+    {
+      "name": "One",
+      "desc": "一个",
+      "array": [
+        "One",
+        "一个"
+      ]
+    },
+    {
+      "name": "Open",
+      "desc": "打开",
+      "array": [
+        "Open",
+        "打开"
+      ]
+    },
+    {
+      "name": "Or",
+      "desc": "或",
+      "array": [
+        "or",
+        "或"
+      ]
+    },
+    {
+      "name": "Overwrite",
+      "desc": "覆写",
+      "array": [
+        "Overwrite",
+        "覆写"
+      ]
+    },
+    {
+      "name": "Path",
+      "desc": "路径",
+      "array": [
+        "Path",
+        "路径"
+      ]
+    },
+    {
+      "name": "Play1",
+      "desc": "播放",
+      "array": [
+        "Play",
+        "播放"
+      ]
+    },
+    {
+      "name": "Prefab",
+      "desc": "预制件",
+      "array": [
+        "Prefab",
+        "预制件"
+      ]
+    },
+    {
+      "name": "RadarMap",
+      "desc": "雷达图",
+      "array": [
+        "RadarMap",
+        "雷达图"
+      ]
+    },
+    {
+      "name": "Radian",
+      "desc": "弧度",
+      "array": [
+        "Radian",
+        "弧度"
+      ]
+    },
+    {
+      "name": "Radius",
+      "desc": "半径",
+      "array": [
+        "Radius",
+        "半径"
+      ]
+    },
+    {
+      "name": "Rate",
+      "desc": "比率",
+      "array": [
+        "Rate",
+        "比率"
+      ]
+    },
+    {
+      "name": "Repetition",
+      "desc": "重复",
+      "array": [
+        "Repetition",
+        "重复"
+      ]
+    },
+    {
+      "name": "Reverse",
+      "desc": "反向",
+      "array": [
+        "Reverse",
+        "反向"
+      ]
+    },
+    {
+      "name": "Row",
+      "desc": "行",
+      "array": [
+        "Row",
+        "行"
+      ]
+    },
+    {
+      "name": "SC_AtlasExistAlsoOverwrite",
+      "desc": "图集已存在，是否覆盖？",
+      "array": [
+        "Atlas already exists. Whether to overwrite?",
+        "  图集已存在，是否覆盖？"
+      ]
+    },
+    {
+      "name": "SC_AtlasExistInCollection",
+      "desc": "当前收集器中已经存在图集，请检查！",
+      "array": [
+        "Atlas already exists in the current collector. Check it!",
+        "当前收集器中已经存在图集，请检查！"
+      ]
+    },
+    {
+      "name": "Save",
+      "desc": "保存",
+      "array": [
+        "Save",
+        "保存"
+      ]
+    },
+    {
+      "name": "Script",
+      "desc": "脚本",
+      "array": [
+        "Script",
+        "脚本"
+      ]
+    },
+    {
+      "name": "Scroll",
+      "desc": "滚动",
+      "array": [
+        "Scroll",
+        "滚动"
+      ]
+    },
+    {
+      "name": "Scrollbar",
+      "desc": "滑动条",
+      "array": [
+        "Scrollbar",
+        "滑动条"
+      ]
+    },
+    {
+      "name": "Select",
+      "desc": "选择",
+      "array": [
+        "Select",
+        "选择"
+      ]
+    },
+    {
+      "name": "Settings",
+      "desc": "设置",
+      "array": [
+        "Settings",
+        "设置"
+      ]
+    },
+    {
+      "name": "Size",
+      "desc": "尺寸",
+      "array": [
+        "Size",
+        "尺寸"
+      ]
+    },
+    {
+      "name": "Sort",
+      "desc": "排序",
+      "array": [
+        "Sort",
+        "排序"
+      ]
+    },
+    {
+      "name": "Spacing",
+      "desc": "间距",
+      "array": [
+        "Spacing",
+        "间距"
+      ]
+    },
+    {
+      "name": "Speed",
+      "desc": "速度、只表示大小，不涉及方向",
+      "array": [
+        "Speed",
+        "速度"
+      ]
+    },
+    {
+      "name": "Time",
+      "desc": "时间",
+      "array": [
+        "Time",
+        "时间"
+      ]
+    },
+    {
+      "name": "To",
+      "desc": "到",
+      "array": [
+        "To",
+        "到"
+      ]
+    },
+    {
+      "name": "Total",
+      "desc": "总数",
+      "array": [
+        "Total",
+        "总数"
+      ]
+    },
+    {
+      "name": "Type",
+      "desc": "类型",
+      "array": [
+        "Type",
+        "类型"
+      ]
+    },
+    {
+      "name": "Underscore",
+      "desc": "下划线",
+      "array": [
+        "Underscore",
+        "下划线"
+      ]
+    },
+    {
+      "name": "Vertex",
+      "desc": "顶点",
+      "array": [
+        "Vertex",
+        "顶点"
+      ]
+    },
+    {
+      "name": "View",
+      "desc": "视窗",
+      "array": [
+        "View",
+        "视窗"
+      ]
+    },
+    {
+      "name": "When",
+      "desc": "当..",
+      "array": [
+        "When",
+        "当"
+      ]
+    },
+    {
+      "name": "Will",
+      "desc": "将会",
+      "array": [
+        "Will",
+        "将会"
+      ]
+    }
+  ]
+}

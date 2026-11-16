@@ -16,7 +16,7 @@
 | 文件 | 说明 |
 |---|---|
 | `SampleLauncherView.cs` | 实现 `ILauncherView`，画状态文案 + 进度条 + 重试按钮 |
-| `EF.LauncherSample.asmdef` | **必须保留**：只引 `EF.Launcher.Runtime` + `UnityEngine.UI` |
+| `EF.LauncherSample.asmdef` | **必须保留**：只引 `EF.Launcher` + `UnityEngine.UI` |
 
 ## 为什么要单独的 asmdef
 

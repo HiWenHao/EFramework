@@ -39,7 +39,7 @@ public class 源生自定义菜单
                 {
                     Vector2 mousePosition = e.mousePosition;
                     //设置菜单项
-                    var options = new GUIContent[]
+                    var options = new[]
                     {
                     new GUIContent("Test1"),
                     new GUIContent(""),

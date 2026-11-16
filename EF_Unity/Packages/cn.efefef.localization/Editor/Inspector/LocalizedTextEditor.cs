@@ -125,7 +125,7 @@ namespace EasyFramework.Localization.Edit
 
             using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(value)))
             {
-                if (!GUILayout.Button(LC.Combine(Lc.Apply), GUILayout.Width(64f)))
+                if (!GUILayout.Button(LC.Combine("Apply"), GUILayout.Width(64f)))
                     return;
             }
 
@@ -153,7 +153,7 @@ namespace EasyFramework.Localization.Edit
 
             serializedObject.Update();
             EditorGUILayout.PropertyField(serializedObject.FindProperty("formatArgs"),
-                new GUIContent(LC.Combine(Lc.Param)), true);
+                new GUIContent(LC.Combine("Param")), true);
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -243,7 +243,7 @@ namespace EasyFramework.Localization.Edit
 
             if (!_target.HasKey)
             {
-                EditorGUI.LabelField(rect, $"({LC.Combine(Lc.Empty)})", EditorStyles.miniLabel);
+                EditorGUI.LabelField(rect, $"({LC.Combine("Empty")})", EditorStyles.miniLabel);
                 return;
             }
 
@@ -260,7 +260,7 @@ namespace EasyFramework.Localization.Edit
             if (string.IsNullOrEmpty(value))
             {
                 EditorGUI.HelpBox(rect,
-                    $"[{LC.Combine(Lc.Missing)}] {_target.Key} 请在 多语言设置 中补译该条目",
+                    $"[{LC.Combine("Missing")}] {_target.Key} 请在 多语言设置 中补译该条目",
                     MessageType.Info);
                 return;
             }
@@ -279,8 +279,8 @@ namespace EasyFramework.Localization.Edit
             {
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.HelpBox(
-                    $"LocalizationKeys.json {LC.Combine(Lc.File, Lc.Missing)}" +
-                    $"\n{LC.Combine(Lc.Please, Lc.Create, Lc.In, Lc.Panel)}: EFTools/Settings/{LC.Combine(Lc.Multilingual, Lc.Config)}",
+                    $"LocalizationKeys.json {LC.Combine("File", "Missing")}" +
+                    $"\n{LC.Combine("Please", "Create", "In", "Panel")}: EFTools/Settings/{LC.Combine("Multilingual", "Config")}",
                     MessageType.Warning);
                 return;
             }
@@ -328,7 +328,7 @@ namespace EasyFramework.Localization.Edit
         // 绘制搜索按钮：打开搜索窗供快速定位 key（选中结果经回调写回组件，支持 Undo）
         private void DrawSearchButton(List<LocalizationKeyEntry> keys)
         {
-            if (!GUILayout.Button(LC.Combine(Lc.Search), GUILayout.Width(50f)))
+            if (!GUILayout.Button(LC.Combine("Search"), GUILayout.Width(50f)))
                 return;
 
             KeySearchWindow.Show(keys, _target.Key, picked =>

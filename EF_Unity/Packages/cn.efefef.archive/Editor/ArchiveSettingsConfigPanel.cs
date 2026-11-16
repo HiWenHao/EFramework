@@ -22,7 +22,7 @@ namespace EasyFramework.Systems.Archive.Editor
     [EFConfigPanel(Priority = 200)]
     public class ArchiveSettingsConfigPanel : EFConfigPanelBase
     {
-        public override string Name => LC.Combine(Lc.Archive, Lc.Data, Lc.Config);
+        public override string Name => LC.Combine("Archive", "Data", "Config");
 
         private UnityEditor.Editor _cachedEditor; // 缓存的 Settings Editor 实例（避免每帧重建）
         private ArchiveSettings _settings;         // 当前存档配置资产
@@ -44,9 +44,9 @@ namespace EasyFramework.Systems.Archive.Editor
             if (_settings == null)
             {
                 EditorGUILayout.Space(12f);
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Archive, Lc.Config, Lc.Not, Lc.Exist), MessageType.Warning);
+                EditorGUILayout.HelpBox(LC.Combine("Archive", "Config", "Not", "Exist"), MessageType.Warning);
                 EditorGUILayout.Space(12f);
-                if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config))) return;
+                if (!GUILayout.Button(LC.Combine("Create", "Config"))) return;
                 _settings = CreateSettings.Instance<ArchiveSettings>(true, ConfigManager.ConfigRuntimePath);
                 EditorGUIUtility.PingObject(_settings);
                 return;

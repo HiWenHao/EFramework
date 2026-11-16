@@ -1,0 +1,556 @@
+﻿{
+  "LcList": [
+    {
+      "name": "Add",
+      "desc": "添加",
+      "array": [
+        "Add",
+        "添加"
+      ]
+    },
+    {
+      "name": "All",
+      "desc": "全部",
+      "array": [
+        "All",
+        "全部"
+      ]
+    },
+    {
+      "name": "Apply",
+      "desc": "应用",
+      "array": [
+        "Apply",
+        "应用"
+      ]
+    },
+    {
+      "name": "Auto",
+      "desc": "自动",
+      "array": [
+        "Auto",
+        "自动"
+      ]
+    },
+    {
+      "name": "Cancel",
+      "desc": "取消",
+      "array": [
+        "Cancel",
+        "取消"
+      ]
+    },
+    {
+      "name": "Character",
+      "desc": "字符",
+      "array": [
+        "Character",
+        "字符"
+      ]
+    },
+    {
+      "name": "Class",
+      "desc": "类",
+      "array": [
+        "Class",
+        "类"
+      ]
+    },
+    {
+      "name": "Clear",
+      "desc": "清空",
+      "array": [
+        "Clear",
+        "清空"
+      ]
+    },
+    {
+      "name": "Config",
+      "desc": "配置",
+      "array": [
+        "Config",
+        "配置"
+      ]
+    },
+    {
+      "name": "Confirm",
+      "desc": "确认",
+      "array": [
+        "Confirm",
+        "确认"
+      ]
+    },
+    {
+      "name": "Content",
+      "desc": "内容",
+      "array": [
+        "Content",
+        "内容"
+      ]
+    },
+    {
+      "name": "Count",
+      "desc": "数量",
+      "array": [
+        "Count",
+        "数量"
+      ]
+    },
+    {
+      "name": "Create",
+      "desc": "创建",
+      "array": [
+        "Create",
+        "创建"
+      ]
+    },
+    {
+      "name": "Current",
+      "desc": "当前",
+      "array": [
+        "Current",
+        "当前"
+      ]
+    },
+    {
+      "name": "Data",
+      "desc": "数据",
+      "array": [
+        "Data",
+        "数据"
+      ]
+    },
+    {
+      "name": "Delete",
+      "desc": "删除",
+      "array": [
+        "Delete",
+        "删除"
+      ]
+    },
+    {
+      "name": "Description",
+      "desc": "描述",
+      "array": [
+        "Description",
+        "描述"
+      ]
+    },
+    {
+      "name": "Display",
+      "desc": "显示",
+      "array": [
+        "Display",
+        "显示"
+      ]
+    },
+    {
+      "name": "Element",
+      "desc": "元素",
+      "array": [
+        "Element",
+        "元素"
+      ]
+    },
+    {
+      "name": "Empty",
+      "desc": "空的",
+      "array": [
+        "Empty",
+        "空的"
+      ]
+    },
+    {
+      "name": "Error",
+      "desc": "错误",
+      "array": [
+        "Error",
+        "错误"
+      ]
+    },
+    {
+      "name": "Excel",
+      "desc": "电子表格",
+      "array": [
+        "Excel",
+        "电子表格"
+      ]
+    },
+    {
+      "name": "Exist",
+      "desc": "存在",
+      "array": [
+        "Exist",
+        "存在"
+      ]
+    },
+    {
+      "name": "Export",
+      "desc": "导出",
+      "array": [
+        "Export",
+        "导出"
+      ]
+    },
+    {
+      "name": "Failed",
+      "desc": "失败",
+      "array": [
+        "Failed",
+        "失败"
+      ]
+    },
+    {
+      "name": "File",
+      "desc": "文件",
+      "array": [
+        "File",
+        "文件"
+      ]
+    },
+    {
+      "name": "Find",
+      "desc": "查找",
+      "array": [
+        "Find",
+        "查找"
+      ]
+    },
+    {
+      "name": "Fold",
+      "desc": "折叠",
+      "array": [
+        "Fold",
+        "折叠"
+      ]
+    },
+    {
+      "name": "Group",
+      "desc": "组",
+      "array": [
+        "Group",
+        "组"
+      ]
+    },
+    {
+      "name": "Illegal",
+      "desc": "非法",
+      "array": [
+        "Illegal",
+        "非法"
+      ]
+    },
+    {
+      "name": "In",
+      "desc": "在...里",
+      "array": [
+        "In",
+        "在"
+      ]
+    },
+    {
+      "name": "Is",
+      "desc": "是",
+      "array": [
+        "Is",
+        "是"
+      ]
+    },
+    {
+      "name": "Key",
+      "desc": "键",
+      "array": [
+        "Key",
+        "键"
+      ]
+    },
+    {
+      "name": "Language",
+      "desc": "语言",
+      "array": [
+        "Language",
+        "语言"
+      ]
+    },
+    {
+      "name": "List",
+      "desc": "列表",
+      "array": [
+        "List",
+        "列表"
+      ]
+    },
+    {
+      "name": "Match",
+      "desc": "匹配项",
+      "array": [
+        "Match",
+        "匹配项"
+      ]
+    },
+    {
+      "name": "Missing",
+      "desc": "缺失",
+      "array": [
+        "Missing",
+        "缺失"
+      ]
+    },
+    {
+      "name": "Multilingual",
+      "desc": "多语言",
+      "array": [
+        "Multilingual",
+        "多语言"
+      ]
+    },
+    {
+      "name": "Name",
+      "desc": "名称",
+      "array": [
+        "Name",
+        "名称"
+      ]
+    },
+    {
+      "name": "Need",
+      "desc": "需要",
+      "array": [
+        "Need",
+        "需要"
+      ]
+    },
+    {
+      "name": "New",
+      "desc": "新",
+      "array": [
+        "New",
+        "新"
+      ]
+    },
+    {
+      "name": "No",
+      "desc": "没有",
+      "array": [
+        "No",
+        "没有"
+      ]
+    },
+    {
+      "name": "Not",
+      "desc": "不",
+      "array": [
+        "Not",
+        "不"
+      ]
+    },
+    {
+      "name": "One",
+      "desc": "一个",
+      "array": [
+        "One",
+        "一个"
+      ]
+    },
+    {
+      "name": "Only",
+      "desc": "仅仅、只",
+      "array": [
+        "Only",
+        "只"
+      ]
+    },
+    {
+      "name": "Open",
+      "desc": "打开",
+      "array": [
+        "Open",
+        "打开"
+      ]
+    },
+    {
+      "name": "Panel",
+      "desc": "面板",
+      "array": [
+        "Panel",
+        "面板"
+      ]
+    },
+    {
+      "name": "Param",
+      "desc": "参数",
+      "array": [
+        "Param",
+        "参数"
+      ]
+    },
+    {
+      "name": "Path",
+      "desc": "路径",
+      "array": [
+        "Path",
+        "路径"
+      ]
+    },
+    {
+      "name": "Please",
+      "desc": "请",
+      "array": [
+        "Please",
+        "请"
+      ]
+    },
+    {
+      "name": "Refresh",
+      "desc": "刷新",
+      "array": [
+        "Refresh",
+        "刷新"
+      ]
+    },
+    {
+      "name": "Remark",
+      "desc": "备注",
+      "array": [
+        "Remark",
+        "备注"
+      ]
+    },
+    {
+      "name": "Rename",
+      "desc": "重命名",
+      "array": [
+        "Rename",
+        "重命名"
+      ]
+    },
+    {
+      "name": "Repetition",
+      "desc": "重复",
+      "array": [
+        "Repetition",
+        "重复"
+      ]
+    },
+    {
+      "name": "Row",
+      "desc": "行",
+      "array": [
+        "Row",
+        "行"
+      ]
+    },
+    {
+      "name": "Save",
+      "desc": "保存",
+      "array": [
+        "Save",
+        "保存"
+      ]
+    },
+    {
+      "name": "Search",
+      "desc": "搜索",
+      "array": [
+        "Search",
+        "搜索"
+      ]
+    },
+    {
+      "name": "Select",
+      "desc": "选择",
+      "array": [
+        "Select",
+        "选择"
+      ]
+    },
+    {
+      "name": "Settings",
+      "desc": "设置",
+      "array": [
+        "Settings",
+        "设置"
+      ]
+    },
+    {
+      "name": "Success",
+      "desc": "成功",
+      "array": [
+        "Success",
+        "成功"
+      ]
+    },
+    {
+      "name": "Sync",
+      "desc": "同步",
+      "array": [
+        "Sync",
+        "同步"
+      ]
+    },
+    {
+      "name": "Text",
+      "desc": "文本",
+      "array": [
+        "Text",
+        "文本"
+      ]
+    },
+    {
+      "name": "Tips",
+      "desc": "提示、便签",
+      "array": [
+        "Tips",
+        "便签"
+      ]
+    },
+    {
+      "name": "Total",
+      "desc": "总数",
+      "array": [
+        "Total",
+        "总数"
+      ]
+    },
+    {
+      "name": "Type",
+      "desc": "类型",
+      "array": [
+        "Type",
+        "类型"
+      ]
+    },
+    {
+      "name": "Unfold",
+      "desc": "展开",
+      "array": [
+        "Unfold",
+        "展开"
+      ]
+    },
+    {
+      "name": "Use",
+      "desc": "使用",
+      "array": [
+        "Use",
+        "使用"
+      ]
+    },
+    {
+      "name": "Value",
+      "desc": "值",
+      "array": [
+        "Value",
+        "值"
+      ]
+    },
+    {
+      "name": "Warning",
+      "desc": "警告",
+      "array": [
+        "Warning",
+        "警告"
+      ]
+    }
+  ]
+}

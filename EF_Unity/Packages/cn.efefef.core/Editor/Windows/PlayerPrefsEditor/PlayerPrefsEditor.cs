@@ -471,7 +471,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             // Allow the user to toggle between editor and PlayerPrefs
             int oldIndex = _showEditorPrefs ? 1 : 0;
-            int newIndex = GUILayout.Toolbar(oldIndex, new[] { LC.Combine(Lc.PlayerPrefs), LC.Combine(Lc.EditorPrefs) });
+            int newIndex = GUILayout.Toolbar(oldIndex, new[] { LC.Combine("PlayerPrefs"), LC.Combine("EditorPrefs") });
 
             // Has the toggle changed?
             if (newIndex != oldIndex)
@@ -515,10 +515,10 @@ namespace Sabresaurus.PlayerPrefsEditor
             GUI.backgroundColor = EditorGUIUtility.isProSkin ? new Color(0.61f, 0.61f, 0.61f) : new Color(0.89f, 0.89f, 0.89f);
             GUI.Label(rowRect, GUIContent.none, style);
 
-            GUI.Label(keyRect, LC.Combine(Lc.Key), style);
-            GUI.Label(valueRect, LC.Combine(Lc.Value), style);
-            GUI.Label(typeRect, LC.Combine(Lc.Type), style);
-            GUI.Label(rightRect, LC.Combine(Lc.Delete), style);
+            GUI.Label(keyRect, LC.Combine("Key"), style);
+            GUI.Label(valueRect, LC.Combine("Value"), style);
+            GUI.Label(typeRect, LC.Combine("Type"), style);
+            GUI.Label(rightRect, LC.Combine("Delete"), style);
             GUI.backgroundColor = oldBackgroundColor;
 
             // Create a GUIStyle that can be manipulated for the various text fields
@@ -873,7 +873,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.EndScrollView();
 
             // Display the number of PlayerPrefs
-            GUILayout.Label($"{LC.Combine(Lc.Count)}: " + entryCount);
+            GUILayout.Label($"{LC.Combine("Count")}: " + entryCount);
 
             Rect rect = GUILayoutUtility.GetLastRect();
             rect.height = 1;
@@ -890,21 +890,21 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.Space();
 
             // Heading
-            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine(new Lc[] { Lc.Add, _showEditorPrefs ? Lc.EditorPrefs : Lc.PlayerPrefs }));
+            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine("Add", _showEditorPrefs ? "EditorPrefs" : "PlayerPrefs"));
             if (DisplayAddPref)
             {
                 // UI for whether the new PlayerPref is encrypted and what type it is
                 EditorGUILayout.BeginHorizontal();
-                _newEntryIsEncrypted = GUILayout.Toggle(_newEntryIsEncrypted, LC.Combine(Lc.Encrypt));
+                _newEntryIsEncrypted = GUILayout.Toggle(_newEntryIsEncrypted, LC.Combine("Encrypt"));
 
-                _newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)_newEntryType, new string[] { "float", "int", "string" });
+                _newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)_newEntryType, new[] { "float", "int", "string" });
 
                 EditorGUILayout.EndHorizontal();
 
                 // Key and Value headings
                 EditorGUILayout.BeginHorizontal();
-                GUILayout.Label(LC.Combine(Lc.Key), EditorStyles.boldLabel);
-                GUILayout.Label(LC.Combine(Lc.Value), EditorStyles.boldLabel);
+                GUILayout.Label(LC.Combine("Key"), EditorStyles.boldLabel);
+                GUILayout.Label(LC.Combine("Value"), EditorStyles.boldLabel);
                 EditorGUILayout.EndHorizontal();
 
                 // If the new value will be encrypted tint the text boxes blue (in line with the display style for existing
@@ -951,7 +951,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 bool keyboardAddPressed = Event.current.isKey && Event.current.keyCode == KeyCode.Return && Event.current.type == EventType.KeyUp && (GUI.GetNameOfFocusedControl() == "newEntryKey" || GUI.GetNameOfFocusedControl() == "newEntryValue");
 
                 // If the user clicks the Add button or hits return (and there is a non-empty key), create the PlayerPref
-                if ((GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(_newEntryKey))
+                if ((GUILayout.Button(LC.Combine("Add"), GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(_newEntryKey))
                 {
                     // If the PlayerPref we're creating is encrypted
                     if (_newEntryIsEncrypted)
@@ -1032,13 +1032,13 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void DrawBottomMenu()
         {
             EditorGUILayout.Space();
-            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, LC.Combine(new Lc[] { Lc.More, Lc.Options }));
+            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, LC.Combine("More", "Options"));
 
             if (DisplayMoreOptions)
             {
                 EditorGUILayout.BeginHorizontal();
                 // UI for toggling automatic decryption on and off
-                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine(new Lc[] { Lc.Auto, Lc.Decryption }), _automaticDecryption);
+                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine("Auto", "Decryption"), _automaticDecryption);
 
                 if (this.position.width < 390)
                 {
@@ -1046,10 +1046,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                     EditorGUILayout.BeginHorizontal();
                 }
 
-                GUILayout.Label(LC.Combine(new Lc[] { Lc.Active, Lc.Key }), EditorStyles.boldLabel);
+                GUILayout.Label(LC.Combine("Active", "Key"), EditorStyles.boldLabel);
                 if (!SimpleEncryption.IsCustomKeyApplied)
                 {
-                    if (GUILayout.Button(new GUIContent(LC.Combine(new Lc[] { Lc.Create, Lc.Custom }), LC.Combine(Lc.Ppe_CreateCustomHint))))
+                    if (GUILayout.Button(new GUIContent(LC.Combine("Create", "Custom"), LC.Combine("Ppe_CreateCustomHint"))))
                     {
                         // Get the contents of the template file
                         string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
@@ -1079,18 +1079,18 @@ namespace Sabresaurus.PlayerPrefsEditor
                 if (_showEditorPrefs == false)
                 {
                     // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
-                    if (GUILayout.Button(LC.Combine(Lc.Import)))
+                    if (GUILayout.Button(LC.Combine("Import")))
                     {
-                        ImportPlayerPrefsWizard wizard = ScriptableWizard.DisplayWizard<ImportPlayerPrefsWizard>("Import PlayerPrefs", LC.Combine(Lc.Import));
+                        ImportPlayerPrefsWizard wizard = ScriptableWizard.DisplayWizard<ImportPlayerPrefsWizard>("Import PlayerPrefs", LC.Combine("Import"));
                     }
                 }
 
                 EditorGUILayout.BeginHorizontal();
                 float buttonWidth = (EditorGUIUtility.currentViewWidth - 10) / 2f;
                 // Delete all PlayerPrefs
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.All }) + LC.Combine(Lc.Preferences), GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button(LC.Combine("Delete", "All") + LC.Combine("Preferences"), GUILayout.Width(buttonWidth)))
                 {
-                    if (EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Delete, Lc.All }), LC.Combine(Lc.Ppe_DeleteAllHint), LC.Combine(Lc.Yes), LC.Combine(Lc.Cancel)))
+                    if (EditorUtility.DisplayDialog(LC.Combine("Delete", "All"), LC.Combine("Ppe_DeleteAllHint"), LC.Combine("Yes"), LC.Combine("Cancel")))
                     {
                         DeleteAll();
                         Save();
@@ -1103,7 +1103,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 GUILayout.FlexibleSpace();
 
                 // Mainly needed for OSX, this will encourage PlayerPrefs to save to file (but still may take a few seconds)
-                if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Force, Lc.Save }), GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button(LC.Combine("Force", "Save"), GUILayout.Width(buttonWidth)))
                 {
                     Save();
                 }

@@ -34,8 +34,8 @@ namespace EasyFramework.Launcher.Editor
             var config = LauncherHotfixDllSortTool.ResolveTargetConfig(createIfMissing: true);
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSelectConfigToFill),
-                    LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.SelectConfigToFill"),
+                    LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace EasyFramework.Launcher.Editor
             string message = Describe(config, result);
 
             Debug.Log("[EF.Launcher] " + message.Replace("\n", "\n[EF.Launcher] "));
-            EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine(Lc.Cs_Ok));
+            EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine("Launcher.Ok"));
         }
 
         /// <summary>
@@ -70,12 +70,12 @@ namespace EasyFramework.Launcher.Editor
 
             var lines = new List<string>
             {
-                LC.Format(Lc.Cs_LauncherFillUpdated, config.name, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound),
+                LC.Format("Launcher.FillUpdated", config.name, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound),
             };
 
             if (result.Missing > 0)
             {
-                lines.Add(LC.Format(Lc.Cs_LauncherFillMissing, result.Missing));
+                lines.Add(LC.Format("Launcher.FillMissing", result.Missing));
 
                 foreach (var row in result.Rows)
                 {
@@ -84,7 +84,7 @@ namespace EasyFramework.Launcher.Editor
                 }
             }
 
-            lines.Add(LC.Combine(Lc.Cs_LauncherRulesHint));
+            lines.Add(LC.Combine("Launcher.RulesHint"));
 
             return string.Join("\n\n", lines);
         }

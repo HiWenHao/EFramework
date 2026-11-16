@@ -22,7 +22,7 @@ namespace Cysharp.Threading.Tasks.Editor
         static Lazy<ConstructorInfo> splitterStateCtor = new Lazy<ConstructorInfo>(() =>
         {
             var type = splitterStateType.Value;
-            return type.GetConstructor(flags, null, new Type[] { typeof(float[]), typeof(int[]), typeof(int[]) }, null);
+            return type.GetConstructor(flags, null, new[] { typeof(float[]), typeof(int[]), typeof(int[]) }, null);
         });
 
         static Lazy<Type> splitterGUILayoutType = new Lazy<Type>(() =>
@@ -34,7 +34,7 @@ namespace Cysharp.Threading.Tasks.Editor
         static Lazy<MethodInfo> beginVerticalSplit = new Lazy<MethodInfo>(() =>
         {
             var type = splitterGUILayoutType.Value;
-            return type.GetMethod("BeginVerticalSplit", flags, null, new Type[] { splitterStateType.Value, typeof(GUILayoutOption[]) }, null);
+            return type.GetMethod("BeginVerticalSplit", flags, null, new[] { splitterStateType.Value, typeof(GUILayoutOption[]) }, null);
         });
 
         static Lazy<MethodInfo> endVerticalSplit = new Lazy<MethodInfo>(() =>
@@ -50,7 +50,7 @@ namespace Cysharp.Threading.Tasks.Editor
 
         public static void BeginVerticalSplit(object splitterState, params GUILayoutOption[] options)
         {
-            beginVerticalSplit.Value.Invoke(null, new object[] { splitterState, options });
+            beginVerticalSplit.Value.Invoke(null, new[] { splitterState, options });
         }
 
         public static void EndVerticalSplit()

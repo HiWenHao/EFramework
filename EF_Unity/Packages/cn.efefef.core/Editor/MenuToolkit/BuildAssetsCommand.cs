@@ -137,7 +137,7 @@ namespace EasyFramework.Edit.MenuToolkit
             string streamingAssetPathDst = Application.streamingAssetsPath;
             Directory.CreateDirectory(streamingAssetPathDst);
             string outputDir = GetAssetBundleOutputDirByTarget(target);
-            var abs = new string[] { "prefabs" };
+            var abs = new[] { "prefabs" };
             foreach (var ab in abs)
             {
                 string srcAb = ToRelativeAssetPath($"{outputDir}/{ab}");

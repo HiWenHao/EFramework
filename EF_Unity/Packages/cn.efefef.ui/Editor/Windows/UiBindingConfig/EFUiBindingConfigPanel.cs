@@ -39,7 +39,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _uiCodePath;
         private GUIStyle _uiStyle;
 
-        public override string Name => "UI " + LC.Combine(Lc.Data, Lc.Config);
+        public override string Name => "UI " + LC.Combine("Data", "Config");
 
         public override void OnEnable(string assetsPath)
         {
@@ -71,12 +71,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine(Lc.Import, Lc.Config)))
+            if (GUILayout.Button(LC.Combine("Import", "Config")))
             {
                 ImportConfig();
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Export, Lc.Config)))
+            if (GUILayout.Button(LC.Combine("Export", "Config")))
             {
                 ExportConfig();
             }
@@ -84,11 +84,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            SelectionFolderPath(LC.Combine(Lc.Atlas, Lc.Save, Lc.Path), _atlasFolder);
+            SelectionFolderPath(LC.Combine("Atlas", "Save", "Path"), _atlasFolder);
             SelectionFolderPath(
-                LC.Combine(Lc.Default) + "UI" + LC.Combine(Lc.Prefab, Lc.Save, Lc.Path),
+                LC.Combine("Default") + "UI" + LC.Combine("Prefab", "Save", "Path"),
                 _uiPrefabPath);
-            SelectionFolderPath(LC.Combine(Lc.Default) + "UI" + LC.Combine(Lc.Code, Lc.Save, Lc.Path),
+            SelectionFolderPath(LC.Combine("Default") + "UI" + LC.Combine("Code", "Save", "Path"),
                 _uiCodePath);
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
@@ -113,7 +113,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.DelayedTextField(property.stringValue);
-            if (GUILayout.Button(LC.Combine(Lc.Path, Lc.Select), GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
                 if (!Directory.Exists(folder))
@@ -122,7 +122,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 }
 
                 string path =
-                    EditorUtility.OpenFolderPanel(LC.Combine(Lc.Path, Lc.Select), folder, "");
+                    EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     if (path.Equals(Application.dataPath))
@@ -168,7 +168,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// </summary>
         private void ImportConfig()
         {
-            string path = EditorUtility.OpenFilePanel(LC.Combine(Lc.Import, Lc.Config),
+            string path = EditorUtility.OpenFilePanel(LC.Combine("Import", "Config"),
                 Application.dataPath, FileExtension);
 
             if (string.IsNullOrEmpty(path)) return;
@@ -187,9 +187,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (!hasItems && !hasPaths)
                 {
                     EditorUtility.DisplayDialog(
-                        LC.Combine(Lc.Import, Lc.Config),
-                        LC.Combine(Lc.Import, Lc.Data, Lc.Is, Lc.Empty),
-                        LC.Combine(Lc.Ok));
+                        LC.Combine("Import", "Config"),
+                        LC.Combine("Import", "Data", "Is", "Empty"),
+                        LC.Combine("Ok"));
                     return;
                 }
 
@@ -223,17 +223,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _customSettings.Update();
 
                 EditorUtility.DisplayDialog(
-                    LC.Combine(Lc.Import, Lc.Config),
-                    $"{LC.Combine(Lc.Import, Lc.Element, Lc.Total, Lc.Is)}:  {(hasItems ? wrapper.Items.Length : 0)}\n" +
-                    $"{LC.Combine(Lc.Import, Lc.Path, Lc.Total, Lc.Is)}:  {pathCount}",
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Import", "Config"),
+                    $"{LC.Combine("Import", "Element", "Total", "Is")}:  {(hasItems ? wrapper.Items.Length : 0)}\n" +
+                    $"{LC.Combine("Import", "Path", "Total", "Is")}:  {pathCount}",
+                    LC.Combine("Ok"));
             }
             catch (Exception e)
             {
                 EditorUtility.DisplayDialog(
-                    LC.Combine(Lc.Import, Lc.Config, Lc.Failed),
+                    LC.Combine("Import", "Config", "Failed"),
                     e.Message,
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Ok"));
             }
         }
 
@@ -244,7 +244,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void ExportConfig()
         {
             string path = EditorUtility.SaveFilePanel(
-                LC.Combine(Lc.Export, Lc.Config),
+                LC.Combine("Export", "Config"),
                 Application.dataPath,
                 DefaultFileName,
                 FileExtension);
@@ -267,17 +267,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 AssetDatabase.Refresh();
 
                 EditorUtility.DisplayDialog(
-                    LC.Combine(Lc.Export, Lc.Config),
-                    $"{LC.Combine(Lc.Export, Lc.Element, Lc.Total, Lc.Is)}:  {wrapper.Items.Length}\n" +
-                    $"{LC.Combine(Lc.Export, Lc.Path, Lc.Total, Lc.Is)}:  {CountPaths(wrapper)}",
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Export", "Config"),
+                    $"{LC.Combine("Export", "Element", "Total", "Is")}:  {wrapper.Items.Length}\n" +
+                    $"{LC.Combine("Export", "Path", "Total", "Is")}:  {CountPaths(wrapper)}",
+                    LC.Combine("Ok"));
             }
             catch (Exception e)
             {
                 EditorUtility.DisplayDialog(
-                    LC.Combine(Lc.Export, Lc.Config, Lc.Failed),
+                    LC.Combine("Export", "Config", "Failed"),
                     e.Message,
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Ok"));
             }
         }
 

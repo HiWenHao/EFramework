@@ -181,7 +181,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (null == _window)
             {
                 _window = CreateInstance<EFConfigsPanel>(); // GetWindow<EFConfigsPanel>(false, "EF Settings");
-                _window.titleContent = new GUIContent("EF " + LC.Combine(Lc.Config));
+                _window.titleContent = new GUIContent("EF " + LC.Combine("Config"));
                 _window.minSize = new Vector2(650.0f, 350.0f);
                 _window.Show();
                 _window.Focus();

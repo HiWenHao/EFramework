@@ -38,21 +38,21 @@ namespace EasyFramework.Launcher.Editor
             var config = ResolveTargetConfig(createIfMissing: false);
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSortNoConfig), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.SortNoConfig"), LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
             var entries = config.HotfixDlls;
             if (entries == null || entries.Length == 0)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Format(Lc.Cs_LauncherNoEntries, config.name), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.NoEntries", config.name), LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
             var result = Sort(entries, out var unknown, out var changed);
             if (!changed)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherOrderAlreadyOk), LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.OrderAlreadyOk"), LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
@@ -61,24 +61,24 @@ namespace EasyFramework.Launcher.Editor
             AssetDatabase.SaveAssets();
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Combine(Lc.Cs_LauncherReordered));
+            sb.AppendLine(LC.Combine("Launcher.Reordered"));
             for (int i = 0; i < result.Length; i++)
             {
                 string name = string.IsNullOrEmpty(result[i].Name) ? "(未命名)" : result[i].Name;
-                string mark = result[i].Enabled ? string.Empty : LC.Combine(Lc.Disabled);
+                string mark = result[i].Enabled ? string.Empty : LC.Combine("Launcher.Disabled");
                 sb.AppendLine($"  {i + 1}. {name}{mark}");
             }
 
             if (unknown.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine(LC.Combine(Lc.Cs_LauncherUnknownAsmdef));
+                sb.AppendLine(LC.Combine("Launcher.UnknownAsmdef"));
                 foreach (string name in unknown)
                     sb.AppendLine("  - " + name);
             }
 
             Debug.Log("[EF.Launcher] " + sb.ToString().Replace("\n", "\n[EF.Launcher] "));
-            EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine(Lc.Cs_Ok));
+            EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine("Launcher.Ok"));
         }
 
         #region 排序
@@ -167,7 +167,7 @@ namespace EasyFramework.Launcher.Editor
                 result.Add(entries[index]);
 
                 string name = entryNames[index];
-                unknown.Add(string.IsNullOrEmpty(name) ? LC.Combine(Lc.UnnamedEntry) : name);
+                unknown.Add(string.IsNullOrEmpty(name) ? LC.Combine("Launcher.UnnamedEntry") : name);
             }
 
             changed = !SameOrder(result, entries);
@@ -265,7 +265,7 @@ namespace EasyFramework.Launcher.Editor
             AssetDatabase.CreateAsset(config, assetPath);
             AssetDatabase.SaveAssets();
 
-            Debug.Log(LC.Format(Lc.Cs_LauncherCreatedConfig, assetPath));
+            Debug.Log(LC.Format("Launcher.CreatedConfig", assetPath));
 
             Selection.activeObject = config;
             return config;

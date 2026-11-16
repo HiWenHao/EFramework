@@ -32,7 +32,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _extractPath;
         private SerializedObject _customSettings;
 
-        public override string Name => LC.Combine(new Lc[] { Lc.Path, Lc.Config });
+        public override string Name => LC.Combine("Path", "Config");
         
         public override void OnEnable(string assetsPath)
         {
@@ -66,15 +66,15 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
 
             EditorGUILayout.LabelField(
-                $"----- {LC.Combine(new Lc[] { Lc.In, Lc.Project, Lc.Path, Lc.Under })} -----",
+                $"----- {LC.Combine("In", "Project", "Path", "Under")} -----",
                 SetUIStyle(GUIUtils.LightGreen, 14));
-            SelectionFolderPath(LC.Combine(new Lc[] { Lc.Animat, Lc.Extract, Lc.Path }), _extractPath);
+            SelectionFolderPath(LC.Combine("Animat", "Extract", "Path"), _extractPath);
 
             EditorGUILayout.LabelField(
-                $"----- {LC.Combine(new Lc[] { Lc.Non, Lc.Project, Lc.Path, Lc.Under })} -----",
+                $"----- {LC.Combine("Non", "Project", "Path", "Under")} -----",
                 SetUIStyle(GUIUtils.LightRed, 14));
-            SelectionEXEPath("Sublime" + LC.Combine(Lc.Path), new string[] { "sublime_text" }, _sublimePath);
-            SelectionEXEPath("Notepad" + LC.Combine(Lc.Path), new string[] { "notepad" }, _notepadPath);
+            SelectionEXEPath("Sublime" + LC.Combine("Path"), new[] { "sublime_text" }, _sublimePath);
+            SelectionEXEPath("Notepad" + LC.Combine("Path"), new[] { "notepad" }, _notepadPath);
 
 
             EditorGUILayout.EndScrollView();
@@ -101,13 +101,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(property.stringValue);
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
                 if (!Directory.Exists(folder))
                     folder = Application.dataPath;
                 string path =
-                    EditorUtility.OpenFilePanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "exe");
+                    EditorUtility.OpenFilePanel(LC.Combine("Path", "Select"), folder, "exe");
                 if (!string.IsNullOrEmpty(path))
                 {
                     bool exit = false;
@@ -126,8 +126,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                         SaveAssetsInfo();
                     }
                     else
-                        EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }),
-                            LC.Combine(new Lc[] { Lc.Path, Lc.Select, Lc.Error }), LC.Combine(Lc.Ok));
+                        EditorUtility.DisplayDialog(LC.Combine("Path", "Select", "Error"),
+                            LC.Combine("Path", "Select", "Error"), LC.Combine("Ok"));
                 }
             }
 
@@ -140,7 +140,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.LabelField(label, SetUIStyle(Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.DelayedTextField(property.stringValue);
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), GUILayout.Width(140f)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(140f)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
                 if (!Directory.Exists(folder))
@@ -149,7 +149,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 }
 
                 string path =
-                    EditorUtility.OpenFolderPanel(LC.Combine(new Lc[] { Lc.Path, Lc.Select }), folder, "");
+                    EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     if (path.Equals(Application.dataPath))

@@ -37,7 +37,7 @@ namespace Cysharp.Threading.Tasks.Editor
         void OnEnable()
         {
             window = this; // set singleton.
-            splitterState = SplitterGUILayout.CreateSplitterState(new float[] { 75f, 25f }, new int[] { 32, 32 }, null);
+            splitterState = SplitterGUILayout.CreateSplitterState(new[] { 75f, 25f }, new[] { 32, 32 }, null);
             treeView = new UniTaskTrackerTreeView();
             TaskTracker.EditorEnableState.EnableAutoReload = EditorPrefs.GetBool(TaskTracker.EnableAutoReloadKey, false);
             TaskTracker.EditorEnableState.EnableTracking = EditorPrefs.GetBool(TaskTracker.EnableTrackingKey, false);
@@ -129,16 +129,8 @@ namespace Cysharp.Threading.Tasks.Editor
 
             EditorGUILayout.BeginVertical(tableListStyle, EmptyLayoutOption);
 
-            this.tableScroll = EditorGUILayout.BeginScrollView(this.tableScroll, new GUILayoutOption[]
-            {
-                GUILayout.ExpandWidth(true),
-                GUILayout.MaxWidth(2000f)
-            });
-            var controlRect = EditorGUILayout.GetControlRect(new GUILayoutOption[]
-            {
-                GUILayout.ExpandHeight(true),
-                GUILayout.ExpandWidth(true)
-            });
+            this.tableScroll = EditorGUILayout.BeginScrollView(this.tableScroll, GUILayout.ExpandWidth(true), GUILayout.MaxWidth(2000f));
+            var controlRect = EditorGUILayout.GetControlRect(GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
 
 
             treeView?.OnGUI(controlRect);
@@ -193,13 +185,7 @@ namespace Cysharp.Threading.Tasks.Editor
 
             detailsScroll = EditorGUILayout.BeginScrollView(this.detailsScroll, EmptyLayoutOption);
             var vector = detailsStyle.CalcSize(new GUIContent(message));
-            EditorGUILayout.SelectableLabel(message, detailsStyle, new GUILayoutOption[]
-            {
-                GUILayout.ExpandHeight(true),
-                GUILayout.ExpandWidth(true),
-                GUILayout.MinWidth(vector.x),
-                GUILayout.MinHeight(vector.y)
-            });
+            EditorGUILayout.SelectableLabel(message, detailsStyle, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true), GUILayout.MinWidth(vector.x), GUILayout.MinHeight(vector.y));
             EditorGUILayout.EndScrollView();
         }
 

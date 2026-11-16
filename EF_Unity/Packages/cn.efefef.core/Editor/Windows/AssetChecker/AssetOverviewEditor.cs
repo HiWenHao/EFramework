@@ -74,10 +74,10 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         {
             int newTab = _tabIndex;
             GUILayout.BeginHorizontal();
-            if (GUILayout.Toggle(newTab == 0, LC.Combine(Lc.Texture), "ButtonLeft")) newTab = 0;
-            if (GUILayout.Toggle(newTab == 1, LC.Combine(Lc.Model), "ButtonMid")) newTab = 1;
-            if (GUILayout.Toggle(newTab == 2, LC.Combine(Lc.Effects), "ButtonMid")) newTab = 2;
-            if (GUILayout.Toggle(newTab == 3, LC.Combine(Lc.Settings), "ButtonRight")) newTab = 3;
+            if (GUILayout.Toggle(newTab == 0, LC.Combine("Texture"), "ButtonLeft")) newTab = 0;
+            if (GUILayout.Toggle(newTab == 1, LC.Combine("Model"), "ButtonMid")) newTab = 1;
+            if (GUILayout.Toggle(newTab == 2, LC.Combine("Effects"), "ButtonMid")) newTab = 2;
+            if (GUILayout.Toggle(newTab == 3, LC.Combine("Settings"), "ButtonRight")) newTab = 3;
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
 

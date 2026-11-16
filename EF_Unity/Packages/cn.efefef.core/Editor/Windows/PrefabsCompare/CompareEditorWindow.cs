@@ -181,12 +181,12 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
             switch (info.MissType)
             {
                 case MissType.missLeft:
-                    _missRight.AppendLine(LC.Combine(new Lc[] { Lc.Left, Lc.Missing, Lc.Object }) + ", " +
-                                          LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
+                    _missRight.AppendLine(LC.Combine("Left", "Missing", "Object") + ", " +
+                                          LC.Combine("Or", "Position", "Different"));
                     break;
                 case MissType.missRight:
-                    _missLeft.AppendLine(LC.Combine(new Lc[] { Lc.Right, Lc.Missing, Lc.Object }) + ", " +
-                                         LC.Combine(new Lc[] { Lc.Or, Lc.Position, Lc.Different }));
+                    _missLeft.AppendLine(LC.Combine("Right", "Missing", "Object") + ", " +
+                                         LC.Combine("Or", "Position", "Different"));
                     break;
                 default:
                     break;
@@ -202,7 +202,7 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
                     case MissType.missLeft:
                         if (_missLeft.Length == 0)
                         {
-                            _missLeft.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
+                            _missLeft.AppendLine($"{LC.Combine("Lost")}:\n");
                         }
 
                         _missLeft.AppendLine(item.Name);
@@ -210,7 +210,7 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
                     case MissType.missRight:
                         if (_missRight.Length == 0)
                         {
-                            _missRight.AppendLine($"{LC.Combine(Lc.Lost)}:\n");
+                            _missRight.AppendLine($"{LC.Combine("Lost")}:\n");
                         }
 
                         _missRight.AppendLine(item.Name);
@@ -257,7 +257,7 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
         {
             EditorGUILayout.BeginHorizontal(new GUIStyle("ToolBar"));
 
-            if (GUILayout.Button(LC.Combine(Lc.Compare), _toolButtonStyle, GUILayout.Width(80.0f)))
+            if (GUILayout.Button(LC.Combine("Compare"), _toolButtonStyle, GUILayout.Width(80.0f)))
             {
                 Compare();
             }
@@ -267,12 +267,12 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
             using (var check = new EditorGUI.ChangeCheckScope())
             {
                 CompareData.ShowEqual = GUILayout.Toggle(CompareData.ShowEqual,
-                    new GUIContent(PrefabsCompareStyle.successImg, LC.Combine(new Lc[] { Lc.Display, Lc.Consistency })),
+                    new GUIContent(PrefabsCompareStyle.successImg, LC.Combine("Display", "Consistency")),
                     _toolButtonStyle, GUILayout.Width(30.0f));
 
                 CompareData.ShowMiss = GUILayout.Toggle(CompareData.ShowMiss,
                     new GUIContent(PrefabsCompareStyle.inconclusiveImg,
-                        LC.Combine(new Lc[] { Lc.Display, Lc.Simplex })), _toolButtonStyle, GUILayout.Width(30.0f));
+                        LC.Combine("Display", "Simplex")), _toolButtonStyle, GUILayout.Width(30.0f));
 
                 if (check.changed)
                 {
@@ -320,10 +320,10 @@ namespace EasyFramework.Edit.Windows.PrefabsCompare
             }
 
             EditorGUILayout.BeginHorizontal("box");
-            GUILayout.Label(new GUIContent(_missLeft.ToString(), LC.Combine(new Lc[] { Lc.Left, Lc.Lost, Lc.Content })),
+            GUILayout.Label(new GUIContent(_missLeft.ToString(), LC.Combine("Left", "Lost", "Content")),
                 ChangedLabel(true), GUILayout.ExpandWidth(true));
             GUILayout.Label(
-                new GUIContent(_missRight.ToString(), LC.Combine(new Lc[] { Lc.Right, Lc.Lost, Lc.Content })),
+                new GUIContent(_missRight.ToString(), LC.Combine("Right", "Lost", "Content")),
                 ChangedLabel(false), GUILayout.ExpandWidth(true));
             EditorGUILayout.EndHorizontal();
         }

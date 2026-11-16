@@ -44,7 +44,7 @@ namespace EasyFramework.Managers.Event.Editor
         private GUIStyle _labelStyle;
         private List<EventInfo> _eventInfos;
 
-        protected override string Title => LC.Combine(Lc.Event, Lc.Data, Lc.Monitor);
+        protected override string Title => LC.Combine("Event", "Data", "Monitor");
 
         protected override void OnEditorEnable()
         {
@@ -61,7 +61,7 @@ namespace EasyFramework.Managers.Event.Editor
             var subscriptionsDict = GetSubscriptionsDictionary(Target);
             if (subscriptionsDict == null)
             {
-                _errorMessage = LC.Combine(Lc.Reflect, Lc.Error);
+                _errorMessage = LC.Combine("Reflect", "Error");
                 return;
             }
 
@@ -97,16 +97,16 @@ namespace EasyFramework.Managers.Event.Editor
 
             if (_eventInfos.Count == 0)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Current, Lc.No, Lc.Any, Lc.Event, Lc.Subscriptions),
+                EditorGUILayout.HelpBox(LC.Combine("Current", "No", "Any", "Event", "Subscriptions"),
                     MessageType.Info);
             }
             else
             {
                 EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-                EditorGUILayout.LabelField(LC.Combine(Lc.Event, Lc.Type), GUILayout.Width(200));
+                EditorGUILayout.LabelField(LC.Combine("Event", "Type"), GUILayout.Width(200));
                 GUILayout.FlexibleSpace();
-                EditorGUILayout.LabelField(LC.Combine(Lc.Sync, Lc.Count), _labelStyle, GUILayout.Width(Width));
-                EditorGUILayout.LabelField(LC.Combine(Lc.Async, Lc.Count), _labelStyle, GUILayout.Width(Width));
+                EditorGUILayout.LabelField(LC.Combine("Sync", "Count"), _labelStyle, GUILayout.Width(Width));
+                EditorGUILayout.LabelField(LC.Combine("Async", "Count"), _labelStyle, GUILayout.Width(Width));
                 EditorGUILayout.EndHorizontal();
 
                 _scrollPos =
@@ -122,7 +122,7 @@ namespace EasyFramework.Managers.Event.Editor
                 }
 
                 EditorGUILayout.EndScrollView();
-                EditorGUILayout.HelpBox($"{LC.Combine(Lc.Event, Lc.Total, Lc.Is)}: {_eventInfos.Count}",
+                EditorGUILayout.HelpBox($"{LC.Combine("Event", "Total", "Is")}: {_eventInfos.Count}",
                     MessageType.None);
             }
         }

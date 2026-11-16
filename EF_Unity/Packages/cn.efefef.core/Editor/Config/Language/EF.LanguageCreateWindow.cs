@@ -37,7 +37,7 @@ namespace EasyFramework.Edit
         {
             if (!LC.CreateLanguageTemplate(_systemLanguage, _displayName, out string error))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), error, LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"), error, LC.Combine("Confirm"));
                 return;
             }
 
@@ -64,7 +64,7 @@ namespace EasyFramework.Edit
         {
             var selected =
                 (SystemLanguage)EditorGUILayout.EnumPopup(
-                    LC.Combine(Lc.Select, Lc.System, Lc.Language), _systemLanguage);
+                    LC.Combine("Select", "System", "Language"), _systemLanguage);
             if (selected != _systemLanguage)
             {
                 _systemLanguage = selected;
@@ -78,10 +78,10 @@ namespace EasyFramework.Edit
                 }
             }
 
-            _displayName = EditorGUILayout.TextField(LC.Combine(Lc.Display, Lc.Name), _displayName);
+            _displayName = EditorGUILayout.TextField(LC.Combine("Display", "Name"), _displayName);
 
             EditorGUILayout.Space(6f);
-            if (GUILayout.Button(LC.Combine(Lc.Create), GUILayout.Height(26f)))
+            if (GUILayout.Button(LC.Combine("Create"), GUILayout.Height(26f)))
                 TryCreate();
 
             if (Event.current.isKey && Event.current.keyCode == KeyCode.Return)

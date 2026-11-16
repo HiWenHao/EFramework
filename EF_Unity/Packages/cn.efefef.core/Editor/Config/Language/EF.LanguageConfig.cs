@@ -22,9 +22,13 @@ using UnityEngine;
 namespace EasyFramework.Edit
 {
     /// <summary>
-    /// 编辑器多语言辅助类
-    /// <para>Editor localization helper. One language one JSON file: builtin zh/en live in
-    /// "Editor Resources/Language" inside the package, extensible languages live in
+    /// 编辑器多语言辅助类（各包键清单即唯一数据源 + 作用域键）
+    /// <para>Editor localization helper where each package's bilingual key list
+    /// "Editor Resources/Description/Editorlanguages.json" is the single data source: entries
+    /// (array[0]=English, array[1]=Chinese) are merged into the runtime registry by language
+    /// code — no standalone translation files and no registration inside core are required.
+    /// Package entries use "{PackageShortName}.{EntryName}" scoped keys queried via
+    /// Combine(string)/Format(string); Extensible languages live in
     /// "{projectRoot}/EFTools/EditorLanguage/{code}.json". Supports word combining and
     /// composite sentences with "{0}" placeholders.</para>
     /// </summary>
@@ -32,15 +36,14 @@ namespace EasyFramework.Edit
     {
         #region Fields
 
-        private const string EnumOutputFile = "EF.LanguageEnum.cs";                        // 枚举输出文件名
-        private const string EnumOutputDir = "Editor/Config/Language";                      // 枚举输出目录（包内相对路径）
-        private const string BuiltinLanguageDir = "Editor Resources/Language";              // 内置语言数据目录（包内相对路径）
+        private const string PackagesRoot = "Packages";                                     // 包扫描根目录名（拼接到工程绝对路径使用）
+        private const string KeyListDir = "Editor Resources/Description";                   // 各包双语键清单目录约定（包内相对路径）
+        private const string KeyListFileName = "Editorlanguages.json";                      // 各包双语键清单文件名（唯一语言数据源 + 维护入口）
         private const string ExternalLanguageDirName = "EFTools/EditorLanguage";            // 工程扩展语言目录（相对工程根）
-        private const string LegacyListPath = "Editor Resources/Description/Editorlanguages.json";      // 旧版双语键清单（维护入口）
 
         private const string AutoCode = "Auto";              // 自动跟随系统语言的选择值
 
-        private static readonly Regex IdentifierPattern = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled); // 语言键词法校验（枚举生成前键尚不存在，不能依赖 TryParse）
+        private static readonly Regex ScopedKeyPattern = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$", RegexOptions.Compiled); // 语言键词法校验（允许 "包名.键"；枚举生成前键尚不存在，不能依赖 TryParse）
         private static readonly object _lock = new object();   // 加载线程锁
 
         private static List<LanguageRuntime> _languages;       // 语言注册表：内置 zh/en 在前 + 外部按 code 排序
@@ -97,6 +100,15 @@ namespace EasyFramework.Edit
             [JsonProperty("params", NullValueHandling = NullValueHandling.Ignore)] public List<string> ParamHints;
         }
 
+        /// <summary>单个包的键清单整合结果<para>Merged key list of one package.</para></summary>
+        private sealed class PackageKeyList
+        {
+            // 包目录（"Packages/cn.efefef.launcher" 形式的工程相对路径）
+            public string PackageDir;
+            // 键条目（name 需通过作用域键校验）
+            public List<LegacyItemModel> Items;
+        }
+
         /// <summary>加载后的语言运行时数据<para>Loaded runtime language data.</para></summary>
         private sealed class LanguageRuntime
         {
@@ -106,8 +118,8 @@ namespace EasyFramework.Edit
             public string DisplayName;
             // 可选 SystemLanguage 枚举名
             public string SystemLanguage;
-            // 键 -> 文本（未翻译条目不入典）
-            public readonly Dictionary<Lc, string> Texts = new Dictionary<Lc, string>();
+            // 键 -> 文本（字符串作用域键；未翻译条目不入典；忽略大小写以兼容旧枚举名解析）
+            public readonly Dictionary<string, string> Texts = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         #endregion
@@ -196,9 +208,10 @@ namespace EasyFramework.Edit
                 try
                 {
                     _languages = new List<LanguageRuntime>();
-                    LoadBuiltin(nameof(SystemLanguage.Chinese), false);
-                    LoadBuiltin(nameof(SystemLanguage.English), true);
+                    LoadPackageLanguages();
                     LoadExternal();
+                    SortLanguages();
+                    EnsureFallbackLanguages();
                     _loaded = true;
                 }
                 finally
@@ -209,23 +222,132 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 加载包内内置语言文件
-        /// <para>Load a builtin language file inside the package.</para>
+        /// 从全部包的键清单构建中文/英文运行时语言数据（键清单即唯一数据源，无独立翻译文件）
+        /// <para>Build the Chinese/English runtime language data from every package's key list
+        /// (the key list is the single data source; no standalone translation files).</para>
+        /// </summary>
+        /// <remarks>
+        /// 每条键清单条目的 array[0]=English、array[1]=中文，分别入对应语言的词条表；
+        /// 某一侧缺失时该侧不入典（查询链回落另一侧或占位符）。
+        /// <para>Each key list entry provides array[0]=English and array[1]=Chinese into the
+        /// matching language table; a missing side is not added (the query chain falls back).</para>
+        /// </remarks>
+        private static void LoadPackageLanguages()
+        {
+            var packageLists = CollectPackageKeyLists(new List<string>());
+            foreach (var package in packageLists)
+            {
+                foreach (var item in package.Items)
+                {
+                    if (TryGetListItemText(item, 0, out string english))
+                        AddPackageText(nameof(SystemLanguage.English), item.name, english);
+                    if (TryGetListItemText(item, 1, out string chinese))
+                        AddPackageText(nameof(SystemLanguage.Chinese), item.name, chinese);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 读取键清单条目的指定侧文本（null 或数组缺失视为未提供；空串为有意空文本，正常采用）
+        /// <para>Read one side of a key list entry's bilingual text (null or a missing array means
+        /// not provided; an empty string is intentional empty text and is adopted as-is).</para>
+        /// </summary>
+        /// <param name="item">键清单条目<para>Key list item.</para></param>
+        /// <param name="textIndex">文本数组下标（0=English, 1=中文）<para>Text array index.</para></param>
+        /// <param name="text">命中文本<para>Matched text.</para></param>
+        /// <returns>存在非 null 文本返回 true<para>True when a non-null text exists.</para></returns>
+        private static bool TryGetListItemText(LegacyItemModel item, int textIndex, out string text)
+        {
+            text = null;
+            // 注意：空串与 null 语义不同（空串=有意空文本，如中文分隔符；null=该侧未提供，查询时回落）
+            if (item?.array == null || item.array.Count <= textIndex || item.array[textIndex] == null)
+                return false;
+            text = item.array[textIndex];
+            return true;
+        }
+
+        /// <summary>
+        /// 将词条文本写入指定语言的运行时表（语言不存在时按兜底元数据创建）
+        /// <para>Add one entry text into the runtime table of the given language (the language is
+        /// created with builtin metadata when absent).</para>
+        /// </summary>
+        /// <param name="code">语言 code（English/Chinese）<para>Language code (English/Chinese).</para></param>
+        /// <param name="key">词条键<para>Entry key.</para></param>
+        /// <param name="text">文本<para>Text.</para></param>
+        private static void AddPackageText(string code, string key, string text)
+        {
+            var language = FindLanguage(code);
+            if (language == null)
+            {
+                // 显示名与系统语言标识与原内置语言文件一致（下拉显示与 Auto 推导依赖）
+                string displayName = code;
+                string systemLanguage = code;
+                if (string.Equals(code, nameof(SystemLanguage.Chinese), StringComparison.OrdinalIgnoreCase))
+                {
+                    displayName = "中文";
+                    systemLanguage = nameof(SystemLanguage.ChineseSimplified);
+                }
+                language = new LanguageRuntime { Code = code, DisplayName = displayName, SystemLanguage = systemLanguage };
+                _languages.Add(language);
+            }
+            if (language.Texts.ContainsKey(key))
+                return; // CollectPackageKeyLists 已过滤跨包同名键，此处为防御
+            language.Texts.Add(key, text);
+        }
+
+        /// <summary>
+        /// 注册表排序：中文、英文置前（兜底语言），其余按 code 字母序
+        /// <para>Sort the registry: Chinese and English first (fallback languages), the rest by code ordinal.</para>
+        /// </summary>
+        private static void SortLanguages()
+        {
+            _languages.Sort((a, b) =>
+            {
+                int weightA = GetSortWeight(a.Code);
+                int weightB = GetSortWeight(b.Code);
+                if (weightA != weightB)
+                    return weightA - weightB;
+                return string.Compare(a.Code, b.Code, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// 语言排序权重（0=中文, 1=英文, 2=其余）
+        /// <para>Sort weight (0=Chinese, 1=English, 2=others).</para>
         /// </summary>
         /// <param name="code">语言 code<para>Language code.</para></param>
-        /// <param name="required">是否必需（缺失时报错）<para>Whether a missing file is an error.</para></param>
-        private static void LoadBuiltin(string code, bool required)
+        /// <returns>排序权重<para>The sort weight.</para></returns>
+        private static int GetSortWeight(string code)
         {
-            string path = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, code + ".json");
-            if (!File.Exists(path))
-            {
-                if (required)
-                    D.Error(Tr($"内置语言文件缺失：\n{path}", $"Builtin language file is missing:\n{path}"));
-                return;
-            }
-            var runtime = ParseLanguageFile(ReadFileSafe(path), code);
-            if (runtime != null)
-                _languages.Add(runtime);
+            if (string.Equals(code, nameof(SystemLanguage.Chinese), StringComparison.OrdinalIgnoreCase))
+                return 0;
+            if (string.Equals(code, nameof(SystemLanguage.English), StringComparison.OrdinalIgnoreCase))
+                return 1;
+            return 2;
+        }
+
+        /// <summary>
+        /// 校验兜底语言（中文/英文）存在，缺失时报错并给出修复指引（查询链会退化为占位符）
+        /// <para>Verify fallback languages (Chinese/English) exist; log an error with a repair
+        /// hint when missing (the query chain degrades to placeholders).</para>
+        /// </summary>
+        /// <remarks>
+        /// 键清单即唯一数据源：兜底语言可由任一包的 Editorlanguages.json 提供；缺失时在任一包键清单补回
+        /// 词条并跑同步菜单（刷新运行时缓存）即可恢复。
+        /// <para>The key list is the single data source: fallback languages may come from any
+        /// package's Editorlanguages.json; restore by adding entries back to any package key list
+        /// and running the sync menu (which reloads the runtime cache).</para>
+        /// </remarks>
+        private static void EnsureFallbackLanguages()
+        {
+            string repairHint = Tr("请在任一包的 Editorlanguages.json 补回双语词条，并跑菜单 \"✍️ Update Edit Language\" 刷新。",
+                "Restore bilingual entries in any package's Editorlanguages.json, then run the menu \"✍️ Update Edit Language\" to refresh.");
+            if (FindLanguage(nameof(SystemLanguage.Chinese)) == null)
+                D.Error(Tr($"兜底语言 '{nameof(SystemLanguage.Chinese)}' 缺失：中文文案不可用。",
+                    $"Fallback language '{nameof(SystemLanguage.Chinese)}' is missing: Chinese texts are unavailable.") + " " + repairHint);
+            if (FindLanguage(nameof(SystemLanguage.English)) == null)
+                D.Error(Tr($"兜底语言 '{nameof(SystemLanguage.English)}' 缺失：未翻译词条无法回落英文。",
+                    $"Fallback language '{nameof(SystemLanguage.English)}' is missing: untranslated entries cannot fall back to English.") + " " + repairHint);
         }
 
         /// <summary>
@@ -290,16 +412,16 @@ namespace EasyFramework.Edit
                 {
                     if (entry == null || entry.text == null)
                         continue; // text=null 表示未翻译，回落 English
-                    if (!Enum.TryParse(entry.key, true, out Lc key))
+                    if (string.IsNullOrEmpty(entry.key))
                     {
                         skipped++;
                         continue;
                     }
-                    runtime.Texts[key] = entry.text;
+                    runtime.Texts[entry.key] = entry.text;
                 }
                 if (skipped > 0)
-                    D.Warning(Tr($"语言 '{runtime.Code}' 中有 {skipped} 个未知键已跳过",
-                        $"{skipped} unknown keys skipped in language '{runtime.Code}'"));
+                    D.Warning(Tr($"语言 '{runtime.Code}' 中有 {skipped} 个空键词条已跳过",
+                        $"{skipped} entries with empty keys skipped in language '{runtime.Code}'"));
                 return runtime;
             }
             catch (Exception ex)
@@ -366,13 +488,13 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 查询链：当前语言 -> 回落 English
-        /// <para>Query chain: current language -> English fallback.</para>
+        /// 查询链：当前语言 -> 回落 English（键为字符串作用域键或枚举名）
+        /// <para>Query chain: current language -> English fallback (key is a scoped string key or enum name).</para>
         /// </summary>
         /// <param name="key">语言键<para>Language key.</para></param>
         /// <param name="text">命中文本<para>Matched text.</para></param>
         /// <returns>命中返回 true<para>True when found.</para></returns>
-        private static bool TryGetText(Lc key, out string text)
+        private static bool TryGetText(string key, out string text)
         {
             EnsureLoaded();
             var language = FindLanguage(ResolveCode());
@@ -386,48 +508,61 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 获取单个键的本地化文本
-        /// <para>Get localized text for a single key.</para>
+        /// 获取单个作用域键的本地化文本（"{包短名}.{词条名}"，各包词条入口）
+        /// <para>Get localized text for a single scoped key ("{PackageShortName}.{EntryName}"),
+        /// the entry point for package-owned entries.</para>
         /// </summary>
-        /// <param name="key">语言键<para>Language key.</para></param>
-        /// <returns>对应文本；缺失时返回 "[键名]" 便于排查<para>The text; "[key]" on missing.</para></returns>
-        public static string Combine(Lc key)
+        /// <param name="key">作用域键<para>Scoped key.</para></param>
+        /// <returns>对应文本；未命中返回 "[键名]" 占位符便于排查<para>The text; "[key]" placeholder when missing.</para></returns>
+        public static string Combine(string key)
         {
             return TryGetText(key, out var text) ? text : $"[{key}]";
         }
 
         /// <summary>
-        /// 使用当前语言的分隔符（Lc.S）拼接多个本地化文本
-        /// <para>Combine multiple localized texts with the current separator (Lc.S).</para>
+        /// 使用当前语言的分隔符（键 "S"）拼接多个作用域键
+        /// <para>Combine multiple scoped keys with the current separator (key "S").</para>
         /// </summary>
-        /// <param name="keys">要拼接的语言键数组<para>Keys to combine.</para></param>
+        /// <param name="keys">要拼接的作用域键数组<para>Scoped keys to combine.</para></param>
         /// <returns>拼接后的字符串；空数组返回空串<para>Combined string; empty for no keys.</para></returns>
-        public static string Combine(params Lc[] keys)
+        public static string Combine(params string[] keys)
         {
             if (keys == null || keys.Length == 0)
                 return string.Empty;
             if (keys.Length == 1)
                 return Combine(keys[0]);
+            return JoinTexts(keys.Length, i => Combine(keys[i]));
+        }
 
-            string separator = Combine(Lc.S);
+        /// <summary>
+        /// 以当前语言分隔符拼接已解析文本的核心实现
+        /// <para>Core helper joining resolved texts with the current separator.</para>
+        /// </summary>
+        /// <param name="count">文本数量<para>Number of texts.</para></param>
+        /// <param name="resolve">按下标取文本的委托<para>Resolver from index to text.</para></param>
+        /// <returns>拼接后的字符串<para>The combined string.</para></returns>
+        private static string JoinTexts(int count, Func<int, string> resolve)
+        {
+            string separator = Combine("S");
             var builder = new StringBuilder();
-            for (int i = 0; i < keys.Length; i++)
+            for (int i = 0; i < count; i++)
             {
-                builder.Append(Combine(keys[i]));
-                if (i < keys.Length - 1)
+                builder.Append(resolve(i));
+                if (i < count - 1)
                     builder.Append(separator);
             }
             return builder.ToString();
         }
 
         /// <summary>
-        /// 复合语句：取当前语言模板并填充 "{0}" 占位符
-        /// <para>Composite sentence: format the current language template with "{0}" placeholders.</para>
+        /// 复合语句（作用域键）：取当前语言模板并填充 "{0}" 占位符
+        /// <para>Composite sentence by scoped key: format the current language template with
+        /// "{0}" placeholders.</para>
         /// </summary>
-        /// <param name="key">模板键<para>Template key.</para></param>
+        /// <param name="key">模板作用域键<para>Template scoped key.</para></param>
         /// <param name="args">占位符参数<para>Placeholder args.</para></param>
         /// <returns>填充后的句子；占位符与参数不匹配时降级返回模板原文并告警<para>The formatted sentence; degrades to the raw template with a warning on mismatch.</para></returns>
-        public static string Format(Lc key, params object[] args)
+        public static string Format(string key, params object[] args)
         {
             string template = Combine(key);
             if (args == null || args.Length == 0)
@@ -536,6 +671,35 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
+        /// 整合全部包键清单的词条检视列表（按包分组、键排序）
+        /// <para>Merged entry list from every package's key list for inspection (grouped by
+        /// package, ordered by key).</para>
+        /// </summary>
+        /// <returns>词条信息平铺列表（含包名字段，供窗口分组）<para>Flat entry list with a package-name field for window grouping.</para></returns>
+        public static List<LanguageEntryInfo> CollectEntriesForInspection()
+        {
+            var result = new List<LanguageEntryInfo>();
+            foreach (var package in CollectPackageKeyLists(new List<string>()))
+            {
+                string packageName = Path.GetFileName(package.PackageDir);
+                foreach (var item in package.Items)
+                {
+                    TryGetListItemText(item, 1, out string chinese);
+                    TryGetListItemText(item, 0, out string english);
+                    result.Add(new LanguageEntryInfo
+                    {
+                        PackageName = packageName,
+                        Key = item.name,
+                        Desc = item.desc,
+                        Chinese = chinese,
+                        English = english,
+                    });
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 获取扩展语言文件完整路径
         /// <para>Get the full path of an external language file.</para>
         /// </summary>
@@ -597,11 +761,12 @@ namespace EasyFramework.Edit
 
             try
             {
-                string englishSourcePath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
-                var source = ReadLanguageFile(englishSourcePath, out var readError);
-                if (source == null)
+                // 键源 = 全部包键清单的整合（扩展包词条一并导出，非法键已在整合时剔除）
+                var keySource = CollectPackageKeyLists(new List<string>());
+                if (keySource.Count == 0)
                 {
-                    error = readError;
+                    error = Tr("没有找到任何包的键清单文件，无法生成语言模板。",
+                        "No package key list file was found; cannot create the language template.");
                     return false;
                 }
 
@@ -612,15 +777,18 @@ namespace EasyFramework.Edit
                     systemLanguage = code, // 标识即系统语言，Auto 推导天然生效
                     entries = new List<EntryModel>(),
                 };
-                foreach (var entry in source.entries)
+                foreach (var package in keySource)
                 {
-                    template.entries.Add(new EntryModel
+                    foreach (var item in package.Items)
                     {
-                        key = entry.key,
-                        desc = entry.desc,
-                        text = null, // 待翻译，运行时回落 English
-                        ParamHints = entry.ParamHints,
-                    });
+                        template.entries.Add(new EntryModel
+                        {
+                            key = item.name,
+                            desc = item.desc,
+                            text = null, // 待翻译，运行时回落 English
+                            ParamHints = item.ParamHints,
+                        });
+                    }
                 }
                 Directory.CreateDirectory(GetExternalLanguageDirectory());
                 WriteLanguageFile(path, template);
@@ -666,105 +834,75 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 编辑器菜单：从双语键清单同步全部语言文件并重新生成 Lc 枚举
-        /// <para>Editor menu: sync all language files from the bilingual key list and regenerate the Lc enum.</para>
+        /// 编辑器菜单：整合全部包键清单（补齐外部语言 + 刷新运行时缓存）
+        /// <para>Editor menu: merge all package key lists (fill external languages + reload runtime cache).</para>
         /// </summary>
         [MenuItem(MenuItemToolkit.Utility + "✍️ Update Edit Language", false, MenuItemToolkit.UtilityPriority + 3)]
         private static void UpdateLanguageConfig()
         {
-            EditorUtility.DisplayDialog(SyncAndRegenerate(out string report) ? Combine(Lc.Done) : Combine(Lc.Error),
-                report, Combine(Lc.Confirm));
+            EditorUtility.DisplayDialog(SyncAndRegenerate(out string report) ? Combine("Done") : Combine("Error"),
+                report, Combine("Confirm"));
         }
 
         /// <summary>
-        /// 从双语键清单（Editorlanguages.json）增量同步全部语言文件，并重新生成 Lc 枚举
-        /// <para>Incrementally sync all language files from the bilingual key list
-        /// (Editorlanguages.json), then regenerate the Lc enum.</para>
+        /// 整合全部包键清单：补齐 EFTools 外部语言词条并刷新运行时缓存（键清单即唯一数据源，无枚举生成）
+        /// <para>Merge every package's key list: fill external language entries and reload the
+        /// runtime cache (the key list is the single data source; no enum generation).</para>
         /// </summary>
         /// <remarks>
-        /// 同步规则：键清单是唯一键入口；en/zh 只追加缺失键（text 取 array 对位值），EFTools 外部语言只追加
-        /// text=null 的待翻译键；**任何已存在条目一律不碰**（已填译文绝不覆盖，多余条目绝不删除）。
-        /// <para>Sync rules: the key list is the single key entry; en/zh get missing keys appended
-        /// (text from the paired array), external files get text=null placeholders; **existing entries
-        /// are never touched** (translations never overwritten, extra entries never deleted).</para>
+        /// 键清单由各包手工维护且直接作为运行时数据，本菜单不再同步任何包内文件，只做两件事：
+        /// EFTools 外部语言以键清单整合全集为源补 text=null 词条；最后刷新运行时缓存
+        /// （改键清单后不重跑菜单则运行时仍用旧数据）。
+        /// <para>Key lists are hand-maintained and directly serve as runtime data; this menu no
+        /// longer syncs any in-package files. It fills external language files from the merged
+        /// key set and reloads the runtime cache (stale runtime data until the menu runs).</para>
         /// </remarks>
-        /// <param name="report">同步统计报告（已按当前语言本地化）<para>Localized sync report.</para></param>
+        /// <param name="report">整合统计报告（已按当前语言本地化）<para>Localized merge report.</para></param>
         /// <returns>成功返回 true<para>True on success.</para></returns>
         public static bool SyncAndRegenerate(out string report)
         {
             EnsureLoaded();
-            string legacyPath = Path.Combine(Utility.Path.GetEfPath(), LegacyListPath);
-            if (!File.Exists(legacyPath))
-            {
-                report = Tr($"未找到键清单文件：\n{legacyPath}", $"Key list file not found:\n{legacyPath}");
-                return false;
-            }
+            var warnings = new List<string>();
 
-            LegacyLanguageModel legacy;
-            try
+            // 1) 整合全部包的键清单（core 与扩展包同一入口）
+            var packageLists = CollectPackageKeyLists(warnings);
+            if (packageLists.Count == 0)
             {
-                legacy = JsonConvert.DeserializeObject<LegacyLanguageModel>(ReadFileSafe(legacyPath));
-            }
-            catch (Exception ex)
-            {
-                D.Error(Tr("解析键清单 JSON 失败：", "Failed to parse the key list JSON: ") + ex.Message);
-                report = Tr("解析键清单 JSON 失败，请检查文件格式。", "Failed to parse the key list JSON. Please check the file format.");
+                report = Tr("没有找到任何包的键清单文件。", "No package key list file was found.");
                 return false;
             }
-            if (legacy?.LcList == null || legacy.LcList.Count == 0)
-            {
-                report = Tr("键清单中没有包含任何条目。", "The key list contains no entries.");
-                return false;
-            }
-
-            // 1) 内置 en：读一次全程复用（en 是键真相，枚举与外部同步都从它出发）
-            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
-            var englishModel = ReadLanguageFile(englishPath, out string error);
-            if (englishModel == null)
-            {
-                report = error;
-                return false;
-            }
-            int englishAdded = SyncEntriesInto(englishModel, legacy.LcList, 0, out int skipped);
-            if (englishAdded > 0)
-                WriteLanguageFile(englishPath, englishModel);
-
-            // 2) 内置 zh 增量（array[1]=中文）
-            int chineseAdded = SyncBuiltinFile(nameof(SystemLanguage.Chinese), 1, legacy.LcList, out _, out error);
-            if (error != null)
-            {
-                report = error;
-                return false;
-            }
-
-            // 3) EFTools 外部语言：以 English.json 全键为源补 text=null（保证与 English 键集一致）
-            var externalLines = new List<string>();
-            int externalAdded = SyncExternalFiles(englishModel.entries, externalLines, out error);
-            if (error != null)
-            {
-                report = error;
-                return false;
-            }
-
-            // 3) 从 English.json 重新生成 Lc 枚举
-            if (!RegenerateEnum(out error))
-            {
-                report = error;
-                return false;
-            }
-
-            // 4) 刷新运行中缓存
-            ReloadLanguages();
 
             var builder = new StringBuilder();
-            builder.AppendLine(Tr("同步完成。", "Sync completed."));
-            builder.AppendLine(Tr($"en +{englishAdded}，zh +{chineseAdded}；非法键跳过 {skipped}。",
-                $"en +{englishAdded}, zh +{chineseAdded}; {skipped} invalid keys skipped."));
+            builder.AppendLine(Tr("整合完成。", "Merge completed."));
+            foreach (var package in packageLists)
+                builder.AppendLine($"{package.PackageDir}: {package.Items.Count}");
+
+            // 2) EFTools 外部语言：以键清单整合全集为源补 text=null（覆盖所有包词条）
+            var mergedEntries = new List<EntryModel>();
+            foreach (var package in packageLists)
+            {
+                foreach (var item in package.Items)
+                {
+                    mergedEntries.Add(new EntryModel { key = item.name, desc = item.desc, text = null, ParamHints = item.ParamHints });
+                }
+            }
+            var externalLines = new List<string>();
+            int externalAdded = SyncExternalFiles(mergedEntries, externalLines, out string externalError);
+            if (externalError != null)
+            {
+                report = externalError;
+                return false;
+            }
+
+            // 3) 刷新运行中缓存（键清单改动在重跑菜单后生效）
+            ReloadLanguages();
+
+            foreach (string warning in warnings)
+                builder.AppendLine(Tr("[ 警告 ] ", "[ Warning ] ") + warning);
             foreach (string line in externalLines)
                 builder.AppendLine(line);
             if (externalLines.Count > 0)
                 builder.AppendLine(Tr($"外部语言共 +{externalAdded}。", $"External languages +{externalAdded} in total."));
-            builder.Append(Tr("Lc 枚举已重新生成。", "Lc enum regenerated."));
             report = builder.ToString();
             return true;
         }
@@ -802,69 +940,148 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 将键清单中缺失的键追加进语言模型（不碰已有条目）
-        /// <para>Append keys missing from a language model; existing entries untouched.</para>
+        /// 获取工程 Packages 目录绝对路径（基于 Application.dataPath 推导，规避 Editor 工作目录漂移）
+        /// <para>Get the absolute path of the project's Packages folder (derived from
+        /// Application.dataPath to avoid Editor working-directory drift).</para>
         /// </summary>
-        /// <param name="model">语言文件模型<para>Language model.</para></param>
-        /// <param name="items">键清单条目<para>Key list items.</para></param>
-        /// <param name="textIndex">文本数组下标（0=English, 1=中文）<para>Text array index.</para></param>
-        /// <param name="skipped">跳过的非法键数量<para>Count of invalid keys skipped.</para></param>
-        /// <returns>追加的键数量<para>Number of appended keys.</para></returns>
-        private static int SyncEntriesInto(LanguageFileModel model, List<LegacyItemModel> items, int textIndex, out int skipped)
+        /// <returns>{projectRoot}/Packages<para>The packages root path.</para></returns>
+        private static string GetPackagesRoot()
         {
-            skipped = 0;
-            var existing = CollectEntryKeys(model.entries);
-            int added = 0;
-            foreach (var item in items)
+            var projectRoot = Directory.GetParent(Application.dataPath);
+            return projectRoot == null
+                ? PackagesRoot
+                : Path.Combine(projectRoot.FullName, PackagesRoot);
+        }
+
+        /// <summary>
+        /// 扫描并整合全部包的双语键清单（Packages/*/Editor Resources/Description/Editorlanguages.json）
+        /// <para>Collect and merge every package's bilingual key list
+        /// (Packages/*/Editor Resources/Description/Editorlanguages.json).</para>
+        /// </summary>
+        /// <param name="warnings">整合过程中的告警（坏文件 / 非法键 / 跨包同名键）<para>Warnings (broken files, invalid keys, cross-package duplicates).</para></param>
+        /// <returns>按包分组的键清单（包路径字母序）<para>Key lists grouped by package (ordered by package path).</para></returns>
+        /// <remarks>
+        /// 各扩展包把键清单放于约定目录即完成接入；跨包同名键保留先扫描（字母序靠前）的包并告警。
+        /// <para>Packages opt in by shipping the key list in the conventional folder; cross-package
+        /// duplicate keys keep the first-scanned (ordinal-first) package with a warning.</para>
+        /// </remarks>
+        private static List<PackageKeyList> CollectPackageKeyLists(List<string> warnings)
+        {
+            var results = new List<PackageKeyList>();
+            var seenKeys = new Dictionary<string, LegacyItemModel>(StringComparer.Ordinal);   // 键 -> 首个条目（跨包去重/内容对比）
+            string packagesRoot = GetPackagesRoot();
+            if (!Directory.Exists(packagesRoot))
             {
-                if (item == null || string.IsNullOrEmpty(item.name))
+                warnings.Add(Tr($"Packages 目录不存在：{packagesRoot}", $"Packages directory not found: {packagesRoot}"));
+                return results;
+            }
+
+            var packageDirs = new List<string>(Directory.GetDirectories(packagesRoot));
+            packageDirs.Sort((a, b) => string.Compare(a, b, StringComparison.Ordinal));
+            int keyListCount = 0;
+            foreach (string packageDir in packageDirs)
+            {
+                string listPath = Path.Combine(packageDir, KeyListDir, KeyListFileName);
+                if (!File.Exists(listPath))
                     continue;
-                if (!IdentifierPattern.IsMatch(item.name))
+
+                LegacyLanguageModel model;
+                try
                 {
-                    skipped++;
+                    model = JsonConvert.DeserializeObject<LegacyLanguageModel>(ReadFileSafe(listPath));
+                }
+                catch (Exception ex)
+                {
+                    warnings.Add(Tr($"解析键清单 '{listPath}' 失败：{ex.Message}",
+                        $"Failed to parse key list '{listPath}': {ex.Message}"));
                     continue;
                 }
-                if (existing.Contains(item.name))
+                if (model?.LcList == null || model.LcList.Count == 0)
                     continue;
-                string text = item.array != null && item.array.Count > textIndex ? item.array[textIndex] : null;
-                model.entries.Add(new EntryModel { key = item.name, desc = item.desc, text = text, ParamHints = item.ParamHints });
-                existing.Add(item.name);
-                added++;
+
+                // 逐条校验作用域键并检测跨包同名键（非法键剔除，保证同步产物键法正确）
+                var validItems = new List<LegacyItemModel>();
+                foreach (var item in model.LcList)
+                {
+                    if (item == null || string.IsNullOrEmpty(item.name))
+                        continue;
+                    if (!ScopedKeyPattern.IsMatch(item.name))
+                    {
+                        warnings.Add(Tr($"键清单 '{listPath}' 含非法键 '{item.name}'，已跳过。",
+                            $"Key list '{listPath}' contains invalid key '{item.name}', skipped."));
+                        continue;
+                    }
+                    if (seenKeys.TryGetValue(item.name, out var firstItem))
+                    {
+                        // 公共词按归属复制到多个包属预期行为：内容一致时静默去重，仅内容冲突才告警
+                        if (!HasSameContent(firstItem, item))
+                            warnings.Add(Tr($"键 '{item.name}' 在多个包的键清单中内容不同，保留先扫描包的条目（当前：{packageDir}）。",
+                                $"Key '{item.name}' differs between packages; the first-scanned entry wins (current: {packageDir})."));
+                        continue;
+                    }
+                    seenKeys.Add(item.name, item);
+                    validItems.Add(item);
+                }
+                if (validItems.Count > 0)
+                {
+                    keyListCount++;
+                    results.Add(new PackageKeyList { PackageDir = packageDir, Items = validItems });
+                }
             }
-            return added;
+            if (keyListCount == 0)
+                warnings.Add(Tr($"没有在任何包中找到键清单（{KeyListFileName}）——扫描根：{packagesRoot}。",
+                    $"No key list ({KeyListFileName}) found in any package — scan root: {packagesRoot}."));
+            return results;
         }
 
         /// <summary>
-        /// 将键清单中缺失的键追加到内置语言文件（不碰已有条目）
-        /// <para>Append keys missing from a builtin language file; existing entries untouched.</para>
+        /// 比较两个键清单条目的内容是否一致（描述 + 双语文本 + 占位符说明；用于跨包公共词静默去重）
+        /// <para>Whether two key-list entries carry identical content (description, bilingual texts
+        /// and placeholder hints); used to silently dedupe shared vocabulary across packages.</para>
         /// </summary>
-        /// <param name="code">内置语言 code<para>Builtin language code.</para></param>
-        /// <param name="textIndex">文本数组下标（0=English, 1=中文）<para>Text array index.</para></param>
-        /// <param name="items">键清单条目<para>Key list items.</para></param>
-        /// <param name="skipped">跳过的非法键数量<para>Count of invalid keys skipped.</para></param>
-        /// <param name="error">失败原因<para>Failure reason.</para></param>
-        /// <returns>追加的键数量<para>Number of appended keys.</para></returns>
-        private static int SyncBuiltinFile(string code, int textIndex, List<LegacyItemModel> items, out int skipped, out string error)
+        /// <param name="a">条目 A<para>Entry A.</para></param>
+        /// <param name="b">条目 B<para>Entry B.</para></param>
+        /// <returns>内容一致返回 true<para>True when contents match.</para></returns>
+        private static bool HasSameContent(LegacyItemModel a, LegacyItemModel b)
         {
-            string path = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, code + ".json");
-            var model = ReadLanguageFile(path, out error);
-            if (model == null)
-            {
-                skipped = 0;
-                return 0;
-            }
-            int added = SyncEntriesInto(model, items, textIndex, out skipped);
-            if (added > 0)
-                WriteLanguageFile(path, model);
-            return added;
+            if (a == null || b == null)
+                return false;
+            if (!string.Equals(a.desc, b.desc, StringComparison.Ordinal))
+                return false;
+            if (!HasSameStringList(a.array, b.array))
+                return false;
+            return HasSameStringList(a.ParamHints, b.ParamHints);
         }
 
         /// <summary>
-        /// 以 en 词条全集为源，将缺失键以 text=null 追加到全部 EFTools 外部语言文件（不碰已有条目）
-        /// <para>Append missing keys as text=null to every external language file, keyed by the full
-        /// en entry set; existing entries untouched.</para>
+        /// 比较两个字符串列表是否逐项一致（顺序敏感；null 与空列表视为等价）
+        /// <para>Whether two string lists are item-wise identical (order-sensitive; null and empty
+        /// are treated as equivalent).</para>
         /// </summary>
-        /// <param name="keySource">English.json 词条全集（键真相）<para>The full English entry set (key truth).</para></param>
+        /// <param name="a">列表 A<para>List A.</para></param>
+        /// <param name="b">列表 B<para>List B.</para></param>
+        /// <returns>一致返回 true<para>True when identical.</para></returns>
+        private static bool HasSameStringList(List<string> a, List<string> b)
+        {
+            int countA = a == null ? 0 : a.Count;
+            int countB = b == null ? 0 : b.Count;
+            if (countA != countB)
+                return false;
+            for (int i = 0; i < countA; i++)
+            {
+                if (!string.Equals(a[i], b[i], StringComparison.Ordinal))
+                    return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// 以键清单整合全集为源，将缺失键以 text=null 追加到全部 EFTools 外部语言文件（不碰已有条目）
+        /// <para>Append missing keys as text=null to every external language file, keyed by the
+        /// merged key-list set; existing entries untouched.</para>
+        /// </summary>
+        /// <param name="keySource">键清单整合全集（键真相）<para>The merged key-list set (key truth).</para></param>
         /// <param name="lines">逐文件统计行（用于报告）<para>Per-file stat lines for the report.</para></param>
         /// <param name="error">失败原因（解析失败仅跳过并记录，不中断）<para>Failure reason (parse failures are logged and skipped).</para></param>
         /// <returns>追加的键总数<para>Total appended keys.</para></returns>
@@ -934,79 +1151,25 @@ namespace EasyFramework.Edit
             File.WriteAllText(path, JsonConvert.SerializeObject(model, Formatting.Indented), new UTF8Encoding(false));
         }
 
-        /// <summary>
-        /// 从 English.json 重新生成 Lc 枚举文件
-        /// <para>Regenerate the Lc enum file from English.json.</para>
-        /// </summary>
-        /// <param name="error">失败原因<para>Failure reason.</para></param>
-        /// <returns>成功返回 true<para>True on success.</para></returns>
-        private static bool RegenerateEnum(out string error)
-        {
-            error = null;
-            string englishPath = Path.Combine(Utility.Path.GetEfPath(), BuiltinLanguageDir, nameof(SystemLanguage.English) + ".json");
-            LanguageFileModel source;
-            try
-            {
-                source = JsonConvert.DeserializeObject<LanguageFileModel>(File.ReadAllText(englishPath));
-            }
-            catch (Exception ex)
-            {
-                error = Tr($"读取 English.json 失败：{ex.Message}", $"Failed to read English.json: {ex.Message}");
-                return false;
-            }
-            if (source?.entries == null || source.entries.Count == 0)
-            {
-                error = Tr("语言 JSON 中没有包含任何条目。", "The language JSON contains no entries.");
-                return false;
-            }
-
-            string enumContent = GenerateEnumContent(source.entries);
-            string outputDir = Path.Combine(Utility.Path.GetEfPath(), EnumOutputDir);
-            string outputPath = Path.Combine(outputDir, EnumOutputFile);
-            try
-            {
-                Directory.CreateDirectory(outputDir);
-                File.WriteAllText(outputPath, enumContent, new UTF8Encoding(false));
-                AssetDatabase.Refresh();
-            }
-            catch (Exception ex)
-            {
-                error = Tr("写入枚举文件失败:\n{0}", "Failed to write enum file:\n{0}", ex.Message);
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 根据词条集合生成 Lc 枚举的 C# 代码内容
-        /// <para>Generate the Lc enum C# content from entries.</para>
-        /// </summary>
-        /// <param name="entries">词条集合（key + desc）<para>Entries (key + desc).</para></param>
-        /// <returns>完整的枚举代码字符串<para>The full enum code string.</para></returns>
-        private static string GenerateEnumContent(List<EntryModel> entries)
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine("// <auto-generated>");
-            builder.AppendLine("// 此文件由 LC.UpdateLanguageConfig() 自动生成");
-            builder.AppendLine("// 请勿手动修改");
-            builder.AppendLine();
-            builder.AppendLine("namespace EasyFramework.Edit");
-            builder.AppendLine("{");
-            builder.AppendLine("\t/// <summary> 编辑器语言键 </summary>");
-            builder.AppendLine("\tpublic enum Lc");
-            builder.AppendLine("\t{");
-            foreach (var entry in entries)
-            {
-                string desc = string.IsNullOrEmpty(entry.desc) ? entry.key : entry.desc;
-                builder.AppendLine($"\t\t/// <summary> {desc} </summary>");
-                builder.AppendLine($"\t\t{entry.key},");
-            }
-            builder.AppendLine("\t}");
-            builder.AppendLine("}");
-            return builder.ToString();
-        }
-
         #endregion
+    }
+
+    /// <summary>
+    /// 词条检视信息（管理窗口展示用：来源包 + 键 + 描述 + 中英文本）
+    /// <para>Entry info for the management window: source package, key, description and zh/en texts.</para>
+    /// </summary>
+    public sealed class LanguageEntryInfo
+    {
+        /// <summary>来源包名<para>Source package name.</para></summary>
+        public string PackageName;
+        /// <summary>词条键（公共词枚举名或作用域键）<para>Entry key (shared enum name or scoped key).</para></summary>
+        public string Key;
+        /// <summary>描述（翻译参考）<para>Description (translation hint).</para></summary>
+        public string Desc;
+        /// <summary>中文文本<para>Chinese text.</para></summary>
+        public string Chinese;
+        /// <summary>英文文本<para>English text.</para></summary>
+        public string English;
     }
 
     /// <summary>

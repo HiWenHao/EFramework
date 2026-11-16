@@ -1,0 +1,28 @@
+﻿{
+  "LcList": [
+    {
+      "name": "Audio",
+      "desc": "音频",
+      "array": [
+        "Audio",
+        "音频"
+      ]
+    },
+    {
+      "name": "Data",
+      "desc": "数据",
+      "array": [
+        "Data",
+        "数据"
+      ]
+    },
+    {
+      "name": "Panel",
+      "desc": "面板",
+      "array": [
+        "Panel",
+        "面板"
+      ]
+    }
+  ]
+}

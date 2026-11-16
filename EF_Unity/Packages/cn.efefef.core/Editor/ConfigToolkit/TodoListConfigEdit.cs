@@ -66,14 +66,14 @@ namespace EasyFramework.Edit.TodoList
                 wordWrap = true
             };
 
-            _uiPopupContents = new string[]
+            _uiPopupContents = new[]
             {
-                LC.Combine(Lc.Doing),
-                LC.Combine(Lc.Done),
-                LC.Combine(Lc.Timeout),
-                LC.Combine(Lc.Abandon)
+                LC.Combine("Doing"),
+                LC.Combine("Done"),
+                LC.Combine("Timeout"),
+                LC.Combine("Abandon")
             };
-            _contentColors = new Color[]
+            _contentColors = new[]
             {
                 Color.yellow,
                 Color.green,
@@ -96,12 +96,12 @@ namespace EasyFramework.Edit.TodoList
         {
             serializedObject.Update();
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField(new GUIContent(LC.Combine(new Lc[] { Lc.Task, Lc.List })), _headStyle);
+            EditorGUILayout.LabelField(new GUIContent(LC.Combine("Task", "List")), _headStyle);
 
             ShowListInfo();
 
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Add, Lc.Task })))
+            if (GUILayout.Button(LC.Combine("Add", "Task")))
             {
                 _mark.InsertArrayElementAtIndex(_taskCount.intValue);
                 _title.InsertArrayElementAtIndex(_taskCount.intValue);
@@ -112,17 +112,17 @@ namespace EasyFramework.Edit.TodoList
                 _progress.GetArrayElementAtIndex(_taskCount.intValue).intValue = 0;
                 _mark.GetArrayElementAtIndex(_taskCount.intValue).boolValue = false;
                 _enabled.GetArrayElementAtIndex(_taskCount.intValue).boolValue = true;
-                _title.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine(Lc.Title);
-                _description.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine(new Lc[] { Lc.Task, Lc.Description });
+                _title.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine("Title");
+                _description.GetArrayElementAtIndex(_taskCount.intValue).stringValue = LC.Combine("Task", "Description");
 
                 _taskCount.intValue++;
             }
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Remove, Lc.All })))
+            if (GUILayout.Button(LC.Combine("Remove", "All")))
             {
-                if (0 != _taskCount.intValue && EditorUtility.DisplayDialog(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), LC.Combine(new Lc[] { Lc.Remove, Lc.All, Lc.Task }), LC.Combine(Lc.Ok)))
+                if (0 != _taskCount.intValue && EditorUtility.DisplayDialog(LC.Combine("Delete", "Task"), LC.Combine("Remove", "All", "Task"), LC.Combine("Ok")))
                 {
                     _taskCount.intValue = 0;
                     _mark.ClearArray();
@@ -154,16 +154,16 @@ namespace EasyFramework.Edit.TodoList
                     EditorGUILayout.BeginVertical("AvatarMappingBox");
 
                     EditorGUILayout.BeginHorizontal();
-                    _progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Combine(Lc.Progress),
+                    _progress.GetArrayElementAtIndex(i).intValue = EditorGUILayout.IntPopup(LC.Combine("Progress"),
                         selectedValue: _progress.GetArrayElementAtIndex(i).intValue,
                         displayedOptions: _uiPopupContents,
-                        optionValues: new int[] { 0, 1, 2, 3 },
+                        optionValues: new[] { 0, 1, 2, 3 },
                         style: TaskStyle(_progress.GetArrayElementAtIndex(i).intValue, false)
                         );
                     GUILayout.Space(15f);
                     if (GUILayout.Button(_mark.GetArrayElementAtIndex(i).boolValue ?
-                        LC.Combine(new Lc[] { Lc.Cancel, Lc.Mark }) :
-                        LC.Combine(new Lc[] { Lc.Highlight, Lc.Mark }),
+                        LC.Combine("Cancel", "Mark") :
+                        LC.Combine("Highlight", "Mark"),
                         _highlightMarkStyle)
                         )
                     {
@@ -174,7 +174,7 @@ namespace EasyFramework.Edit.TodoList
                     _description.GetArrayElementAtIndex(i).stringValue = EditorGUILayout.TextArea(_description.GetArrayElementAtIndex(i).stringValue, _descriptionStyle);
 
                     EditorGUILayout.BeginHorizontal();
-                    if (i != 0 && GUILayout.Button(LC.Combine(Lc.MoveUp)))
+                    if (i != 0 && GUILayout.Button(LC.Combine("MoveUp")))
                     {
                         _mark.MoveArrayElement(i, i - 1);
                         _enabled.MoveArrayElement(i, i - 1);
@@ -182,7 +182,7 @@ namespace EasyFramework.Edit.TodoList
                         _title.MoveArrayElement(i, i - 1);
                         _description.MoveArrayElement(i, i - 1);
                     }
-                    if (i != (_taskCount.intValue - 1) && GUILayout.Button(LC.Combine(Lc.MoveDown)))
+                    if (i != (_taskCount.intValue - 1) && GUILayout.Button(LC.Combine("MoveDown")))
                     {
                         _mark.MoveArrayElement(i, i + 1);
                         _enabled.MoveArrayElement(i, i + 1);
@@ -190,7 +190,7 @@ namespace EasyFramework.Edit.TodoList
                         _title.MoveArrayElement(i, i + 1);
                         _description.MoveArrayElement(i, i + 1);
                     }
-                    if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Delete, Lc.Task }), _deleteStyle))
+                    if (GUILayout.Button(LC.Combine("Delete", "Task"), _deleteStyle))
                     {
                         _mark.DeleteArrayElementAtIndex(i);
                         _enabled.DeleteArrayElementAtIndex(i);

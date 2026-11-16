@@ -47,7 +47,7 @@ namespace EasyFramework.Launcher.Editor
         private Vector2 _scroll;
         private string _status = string.Empty;
 
-        public override string Name => LC.Combine(Lc.HotfixAssemblies);
+        public override string Name => LC.Combine("Launcher.HotfixAssemblies");
 
         public override void OnEnable(string assetsPath) => LoadWindowData();
 
@@ -64,7 +64,7 @@ namespace EasyFramework.Launcher.Editor
             if (_options == null)
                 LoadWindowData();
 
-            EditorGUILayout.HelpBox(LC.Combine(Lc.Cs_LauncherBinderIntro),
+            EditorGUILayout.HelpBox(LC.Combine("Launcher.BinderIntro"),
                 MessageType.Info);
 
             DrawTargetConfig();
@@ -89,11 +89,11 @@ namespace EasyFramework.Launcher.Editor
         private void DrawTargetConfig()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(Lc.TargetConfig), GUILayout.Width(80f));
+            EditorGUILayout.LabelField(LC.Combine("Launcher.TargetConfig"), GUILayout.Width(80f));
 
             if (_configs.Length == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine(Lc.Cs_LauncherNoConfig));
+                EditorGUILayout.LabelField(LC.Combine("Launcher.NoConfig"));
                 EditorGUILayout.EndHorizontal();
                 return;
             }
@@ -108,13 +108,13 @@ namespace EasyFramework.Launcher.Editor
                 _preview = null;
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Ping), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine("Launcher.Ping"), GUILayout.Width(60f)))
             {
                 Selection.activeObject = _configs[_configIndex];
                 EditorGUIUtility.PingObject(_configs[_configIndex]);
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Refresh), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine("Refresh"), GUILayout.Width(60f)))
                 RefreshConfigs();
 
             EditorGUILayout.EndHorizontal();
@@ -122,14 +122,14 @@ namespace EasyFramework.Launcher.Editor
 
         private void DrawOptions()
         {
-            EditorGUILayout.LabelField(LC.Combine(Lc.BindingRules), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Launcher.BindingRules"), EditorStyles.boldLabel);
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine(Lc.BytesFolder), GUILayout.Width(80f));
+            EditorGUILayout.LabelField(LC.Combine("Launcher.BytesFolder"), GUILayout.Width(80f));
             _options.SearchRoot = EditorGUILayout.TextField(_options.SearchRoot);
-            if (GUILayout.Button(LC.Combine(Lc.Browse), GUILayout.Width(60f)))
+            if (GUILayout.Button(LC.Combine("Launcher.Browse"), GUILayout.Width(60f)))
             {
-                string picked = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Cs_LauncherPickBytesFolder),
+                string picked = EditorUtility.OpenFolderPanel(LC.Combine("Launcher.PickBytesFolder"),
                     Application.dataPath, string.Empty);
 
                 if (!string.IsNullOrEmpty(picked))
@@ -146,24 +146,24 @@ namespace EasyFramework.Launcher.Editor
             EditorGUILayout.EndHorizontal();
 
             _options.SearchWholeAssets = EditorGUILayout.ToggleLeft(
-                LC.Combine(Lc.Cs_LauncherWholeAssetsSearch),
+                LC.Combine("Launcher.WholeAssetsSearch"),
                 _options.SearchWholeAssets);
 
             string[] ruleNames = LC.IsEnglish ? RuleNamesEn : RuleNamesZh;
             _options.Rule = (HotfixLocationRule)EditorGUILayout.Popup(
-                LC.Combine(Lc.LocationRule), (int)_options.Rule, ruleNames);
+                LC.Combine("Launcher.LocationRule"), (int)_options.Rule, ruleNames);
 
             if (_options.Rule == HotfixLocationRule.CustomPrefix)
             {
                 _options.CustomPrefix = EditorGUILayout.TextField(
-                    LC.Combine(Lc.CustomPrefix), _options.CustomPrefix);
+                    LC.Combine("Launcher.CustomPrefix"), _options.CustomPrefix);
             }
 
             _options.OverwriteExisting = EditorGUILayout.ToggleLeft(
-                LC.Combine(Lc.Cs_LauncherOverwriteOption),
+                LC.Combine("Launcher.OverwriteOption"),
                 _options.OverwriteExisting);
 
-            EditorGUILayout.HelpBox(LC.Combine(Lc.Cs_LauncherAddressRuleHint),
+            EditorGUILayout.HelpBox(LC.Combine("Launcher.AddressRuleHint"),
                 MessageType.Info);
         }
 
@@ -171,20 +171,20 @@ namespace EasyFramework.Launcher.Editor
         {
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(LC.Combine(Lc.ScanPreview), GUILayout.Height(26f)))
+            if (GUILayout.Button(LC.Combine("Launcher.ScanPreview"), GUILayout.Height(26f)))
             {
                 _options.Save();
                 _preview = LauncherHotfixEntryBinder.Build(CurrentConfig, _options, apply: false);
                 _status = Describe(_preview, applied: false);
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.ApplyToConfig), GUILayout.Height(26f)))
+            if (GUILayout.Button(LC.Combine("Launcher.ApplyToConfig"), GUILayout.Height(26f)))
             {
                 var config = CurrentConfig;
                 if (config == null)
                 {
                     EditorUtility.DisplayDialog(DialogTitle,
-                        LC.Combine(Lc.Cs_LauncherSelectConfig), LC.Combine(Lc.Cs_OkConfirm));
+                        LC.Combine("Launcher.SelectConfig"), LC.Combine("Launcher.OkConfirm"));
                 }
                 else
                 {
@@ -204,15 +204,15 @@ namespace EasyFramework.Launcher.Editor
                 return;
 
             EditorGUILayout.Space(4f);
-            EditorGUILayout.LabelField(LC.Combine(Lc.PreviewHeader), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Launcher.PreviewHeader"), EditorStyles.boldLabel);
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.MinHeight(120f));
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Assembly), GUILayout.Width(170f));
+            EditorGUILayout.LabelField(LC.Combine("Launcher.Assembly"), GUILayout.Width(170f));
             EditorGUILayout.LabelField("Location", GUILayout.Width(220f));
             EditorGUILayout.LabelField("Fallback", GUILayout.Width(90f));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Status));
+            EditorGUILayout.LabelField(LC.Combine("Launcher.Status"));
             EditorGUILayout.EndHorizontal();
 
             foreach (var row in _preview.Rows)
@@ -271,10 +271,10 @@ namespace EasyFramework.Launcher.Editor
                 return result.Error;
 
             string head = applied
-                ? LC.Combine(Lc.ConfigUpdated)
-                : LC.Combine(Lc.PreviewResult);
+                ? LC.Combine("Launcher.ConfigUpdated")
+                : LC.Combine("Launcher.PreviewResult");
 
-            return LC.Format(Lc.Cs_LauncherPreviewSummary, head, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound, result.Missing);
+            return LC.Format("Launcher.PreviewSummary", head, result.Rows.Count, result.Added, result.LocationBound, result.FallbackBound, result.Missing);
         }
 
         #endregion
@@ -289,16 +289,16 @@ namespace EasyFramework.Launcher.Editor
 
             if (config == null)
             {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine(Lc.Cs_LauncherSelectConfigMenu),
-                    LC.Combine(Lc.Cs_OkConfirm));
+                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.SelectConfigMenu"),
+                    LC.Combine("Launcher.OkConfirm"));
                 return;
             }
 
             var result = LauncherHotfixEntryBinder.Build(config, options, apply: true);
             string message = Describe(result, applied: true);
-            Debug.Log("[EF.Launcher] " + message + LC.Format(Lc.Cs_LauncherConfigLabel, config.name));
-            EditorUtility.DisplayDialog(DialogTitle, message + LC.Format(Lc.Cs_LauncherConfigLabel2, config.name),
-                LC.Combine(Lc.Cs_Ok));
+            Debug.Log("[EF.Launcher] " + message + LC.Format("Launcher.ConfigLabel", config.name));
+            EditorUtility.DisplayDialog(DialogTitle, message + LC.Format("Launcher.ConfigLabel2", config.name),
+                LC.Combine("Launcher.Ok"));
         }
 
         private static LauncherConfig ResolveConfig(HotfixBindOptions options)

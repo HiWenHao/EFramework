@@ -64,7 +64,7 @@ namespace EasyFramework.Edit.MenuToolkit
             Debug.Log("====> Build App");
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions()
             {
-                scenes = new string[] { "Assets/Scenes/main.unity" },
+                scenes = new[] { "Assets/Scenes/main.unity" },
                 locationPathName = location,
                 options = buildOptions,
                 target = target,

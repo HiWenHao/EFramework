@@ -190,7 +190,7 @@ namespace EasyFramework.Localization.Edit
         }
 
         // 面板名称
-        public override string Name => LC.Combine(Lc.Multilingual, Lc.Config);
+        public override string Name => LC.Combine("Multilingual", "Config");
 
         #endregion
 
@@ -249,8 +249,8 @@ namespace EasyFramework.Localization.Edit
 
             if (!template.Save(LocalizationData.JsonPath))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"{KeysJsonFileName}\n{LC.Combine(Lc.Save, Lc.Failed)}", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"),
+                    $"{KeysJsonFileName}\n{LC.Combine("Save", "Failed")}", LC.Combine("Confirm"));
                 return;
             }
 
@@ -273,10 +273,10 @@ namespace EasyFramework.Localization.Edit
             {
                 if (!silent)
                     EditorUtility.DisplayDialog(
-                        LC.Combine(Lc.Save, Lc.Failed),
+                        LC.Combine("Save", "Failed"),
                         LC.Tr("无法写入 Key 清单文件，请查看 Console。",
                             "Failed to write the Key manifest file, see Console for details."),
-                        LC.Combine(Lc.Confirm));
+                        LC.Combine("Confirm"));
                 return false;
             }
 
@@ -347,10 +347,10 @@ namespace EasyFramework.Localization.Edit
         private void DrawEmptyState()
         {
             EditorGUILayout.Space(SpaceSection);
-            EditorGUILayout.HelpBox(LC.Combine(Lc.Multilingual, Lc.Config, Lc.Not, Lc.Exist), MessageType.Warning);
+            EditorGUILayout.HelpBox(LC.Combine("Multilingual", "Config", "Not", "Exist"), MessageType.Warning);
             EditorGUILayout.Space(SpaceSection);
 
-            if (!GUILayout.Button(LC.Combine(Lc.Create, Lc.Config), GUILayout.Width(AvailableWidth))) return;
+            if (!GUILayout.Button(LC.Combine("Create", "Config"), GUILayout.Width(AvailableWidth))) return;
             CreateFile();
         }
 
@@ -371,9 +371,9 @@ namespace EasyFramework.Localization.Edit
         // 子页标题文案
         private static string TabText(SubTab tab) => tab switch
         {
-            SubTab.Keys => LC.Combine(Lc.Key, Lc.Name, Lc.List),
-            SubTab.Groups => LC.Combine(Lc.Multilingual, Lc.Config, Lc.Settings),
-            SubTab.Values => LC.Combine(Lc.Value, Lc.Data, Lc.Excel),
+            SubTab.Keys => LC.Combine("Key", "Name", "List"),
+            SubTab.Groups => LC.Combine("Multilingual", "Config", "Settings"),
+            SubTab.Values => LC.Combine("Value", "Data", "Excel"),
             _ => string.Empty,
         };
 
@@ -383,10 +383,10 @@ namespace EasyFramework.Localization.Edit
             // 过滤区
             EditorGUILayout.BeginHorizontal();
 
-            GUILayout.Label(LC.Combine(Lc.Find), GUILayout.Width(40f));
+            GUILayout.Label(LC.Combine("Find"), GUILayout.Width(40f));
             _filter = EditorGUILayout.TextField(_filter, GUILayout.Width(200f));
 
-            _onlyDynamic = GUILayout.Toggle(_onlyDynamic, $"{LC.Combine(Lc.Only, Lc.Display)} Dynamic",
+            _onlyDynamic = GUILayout.Toggle(_onlyDynamic, $"{LC.Combine("Only", "Display")} Dynamic",
                 GUILayout.Width(180f));
 
             GUILayout.FlexibleSpace();
@@ -448,7 +448,7 @@ namespace EasyFramework.Localization.Edit
                 // 快速添加：新元素直接归入本组，按钮靠右与删除列 x 错开一列
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(LC.Combine(Lc.Add), GUILayout.Width(COL_KIND)))
+                if (GUILayout.Button(LC.Combine("Add"), GUILayout.Width(COL_KIND)))
                 {
                     _file.keys.Add(new LocalizationKeyEntry { group = group });
                     _dirty = true;
@@ -502,12 +502,12 @@ namespace EasyFramework.Localization.Edit
             var w = GetKeyColWidths();
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Key, Lc.Name), GUILayout.Width(w[0]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Description), GUILayout.Width(w[1]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Group, Lc.Name), GUILayout.Width(w[2]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Display, Lc.Type), GUILayout.Width(_kindWidth));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Remark), GUILayout.Width(w[3]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Delete), GUILayout.Width(_btnWidth));
+            EditorGUILayout.LabelField(LC.Combine("Key", "Name"), GUILayout.Width(w[0]));
+            EditorGUILayout.LabelField(LC.Combine("Description"), GUILayout.Width(w[1]));
+            EditorGUILayout.LabelField(LC.Combine("Group", "Name"), GUILayout.Width(w[2]));
+            EditorGUILayout.LabelField(LC.Combine("Display", "Type"), GUILayout.Width(_kindWidth));
+            EditorGUILayout.LabelField(LC.Combine("Remark"), GUILayout.Width(w[3]));
+            EditorGUILayout.LabelField(LC.Combine("Delete"), GUILayout.Width(_btnWidth));
             EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
             EditorGUILayout.EndHorizontal();
         }
@@ -616,7 +616,7 @@ namespace EasyFramework.Localization.Edit
 
             var prevColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightRed;
-            if (GUILayout.Button(LC.Combine(Lc.Delete, Lc.All),
+            if (GUILayout.Button(LC.Combine("Delete", "All"),
                     GUILayout.Width(slot)))
                 DeleteAllKeys();
             GUI.contentColor = prevColor;
@@ -626,8 +626,8 @@ namespace EasyFramework.Localization.Edit
             // 槽 4：一键折叠/展开所有分组，文案随当前状态切换；折叠目标取 keys 的非空组名，与渲染分组同源
             GUI.enabled = _file.keys.Exists(k => !string.IsNullOrEmpty(k.group));
             if (GUILayout.Button(_collapsedGroups.Count > 0
-                    ? LC.Combine(Lc.Unfold, Lc.All)
-                    : LC.Combine(Lc.Fold, Lc.All), GUILayout.Width(slot), GUILayout.Height(BtnHeight)))
+                    ? LC.Combine("Unfold", "All")
+                    : LC.Combine("Fold", "All"), GUILayout.Width(slot), GUILayout.Height(BtnHeight)))
             {
                 if (_collapsedGroups.Count > 0)
                     _collapsedGroups.Clear();
@@ -642,7 +642,7 @@ namespace EasyFramework.Localization.Edit
             GUI.enabled = true;
 
             // 槽 5：增加一个新的（末槽吸收取整余数）
-            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.Element)}",
+            if (GUILayout.Button($"+ {LC.Combine("Add", "One", "Element")}",
                     GUILayout.Width(AvailableWidth - slot * 4f), GUILayout.Height(BtnHeight)))
             {
                 _file.keys.Add(new LocalizationKeyEntry { name = "", des = "", group = DefaultGroup });
@@ -658,7 +658,7 @@ namespace EasyFramework.Localization.Edit
             {
                 var warnColor = GUI.contentColor;
                 GUI.contentColor = ColorWarn;
-                GUILayout.Label($"⚠ {LC.Combine(Lc.Illegal, Lc.Element, Lc.Count)}: {issues.Count} ");
+                GUILayout.Label($"⚠ {LC.Combine("Illegal", "Element", "Count")}: {issues.Count} ");
                 GUI.contentColor = warnColor;
             }
             else GUILayout.Label("");
@@ -673,18 +673,18 @@ namespace EasyFramework.Localization.Edit
             float half = Mathf.Floor(AvailableWidth * 0.5f);
 
             // （显式宽度：裸 Button 会按整行宽撑开，比表格列宽多出左侧菜单那部分，导致右侧被裁）
-            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.All, Lc.Content),
+            if (GUILayout.Button(LC.Combine("Refresh", "All", "Content"),
                     GUILayout.Width(half), GUILayout.Height(MainBtnHeight)))
             {
                 if (!_dirty ||
-                    EditorUtility.DisplayDialog(LC.Combine(Lc.Tips), LC.Combine(Lc.Refresh, Lc.Text),
-                        LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
+                    EditorUtility.DisplayDialog(LC.Combine("Tips"), LC.Combine("Refresh", "Text"),
+                        LC.Combine("Confirm"), LC.Combine("Cancel")))
                     LoadOrCreate();
             }
 
             var prevColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button(LC.Combine(Lc.Save, Lc.Content),
+            if (GUILayout.Button(LC.Combine("Save", "Content"),
                     GUILayout.Width(AvailableWidth - half), GUILayout.Height(MainBtnHeight)))
                 Save();
             GUI.contentColor = prevColor;
@@ -692,7 +692,7 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            GUILayout.Label(_dirty ? LC.Combine(Lc.Need, Lc.Save, Lc.Text) : "",
+            GUILayout.Label(_dirty ? LC.Combine("Need", "Save", "Text") : "",
                 GUIUtils.ColorText(textColor: Color.yellow));
             GUILayout.Space(COL_BTN);
             EditorGUILayout.EndHorizontal();
@@ -705,11 +705,11 @@ namespace EasyFramework.Localization.Edit
             if (count == 0) return;
 
             if (!EditorUtility.DisplayDialog(
-                    LC.Combine(Lc.Delete, Lc.All),
-                    $"{LC.Combine(Lc.Confirm, Lc.Delete, Lc.All, Lc.Key)} ? " +
-                    $"\n{LC.Combine(Lc.Current, Lc.Count, Lc.Is)}:  {count} ",
-                    LC.Combine(Lc.Confirm),
-                    LC.Combine(Lc.Cancel)))
+                    LC.Combine("Delete", "All"),
+                    $"{LC.Combine("Confirm", "Delete", "All", "Key")} ? " +
+                    $"\n{LC.Combine("Current", "Count", "Is")}:  {count} ",
+                    LC.Combine("Confirm"),
+                    LC.Combine("Cancel")))
                 return;
 
             _file?.keys.Clear();
@@ -739,7 +739,7 @@ namespace EasyFramework.Localization.Edit
             bool collapsed = _collapsedGroups.Contains(group);
 
             EditorGUILayout.BeginHorizontal();
-            bool nowCollapsed = EditorGUILayout.Foldout(collapsed, $" {LC.Combine(Lc.Group)}: [ {group} ]", true);
+            bool nowCollapsed = EditorGUILayout.Foldout(collapsed, $" {LC.Combine("Group")}: [ {group} ]", true);
             EditorGUILayout.EndHorizontal();
 
             _collapsedGroups.Remove(group);
@@ -768,7 +768,7 @@ namespace EasyFramework.Localization.Edit
         {
             var autoApply = LocalizationData.AutoApplyOnKeySelected;
             var updated = EditorGUILayout.ToggleLeft(new GUIContent(
-                    LC.Combine(Lc.Auto, Lc.Apply),
+                    LC.Combine("Auto", "Apply"),
                     LC.Tr("勾选后，LocalizedText 的 Inspector 选择 key 会自动把预览译文写入文本框，并隐藏「应用」按钮\n不勾选：显示「应用」按钮，手动应用",
                         "When enabled, picking a key auto-writes the previewed translation into the text field.")),
                 autoApply);
@@ -787,7 +787,7 @@ namespace EasyFramework.Localization.Edit
             var groups = _file.GetGroupsOrInfer();
 
             if (groups.Count == 0)
-                EditorGUILayout.HelpBox($"[ Localization ] {LC.Combine(Lc.Class, Lc.Is, Lc.Empty)}", MessageType.Info);
+                EditorGUILayout.HelpBox($"[ Localization ] {LC.Combine("Class", "Is", "Empty")}", MessageType.Info);
 
             foreach (var group in groups)
             {
@@ -841,10 +841,10 @@ namespace EasyFramework.Localization.Edit
                 // 占位，保持与 count 列对齐
                 EditorGUILayout.LabelField("", EditorStyles.miniLabel, GUILayout.Width(w[1]));
 
-                if (GUILayout.Button(LC.Combine(Lc.Confirm), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
+                if (GUILayout.Button(LC.Combine("Confirm"), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                     CommitRename(group, newName);
 
-                if (GUILayout.Button(LC.Combine(Lc.Cancel), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
+                if (GUILayout.Button(LC.Combine("Cancel"), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                 {
                     _renamingGroup = null;
                     _renamingInput = string.Empty;
@@ -864,18 +864,18 @@ namespace EasyFramework.Localization.Edit
             // ---------- count 列 ----------
             GUI.color = prevColor;
             if (keyCount == 0) GUI.color = ColorMissing;
-            EditorGUILayout.LabelField($"{keyCount} {LC.Combine(Lc.Row)}",
+            EditorGUILayout.LabelField($"{keyCount} {LC.Combine("Row")}",
                 EditorStyles.miniLabel, GUILayout.Width(w[1]));
             GUI.color = prevColor;
 
             // ---------- 操作列 ----------
-            if (GUILayout.Button(LC.Combine(Lc.Rename), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
+            if (GUILayout.Button(LC.Combine("Rename"), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
             {
                 _renamingGroup = group;
                 _renamingInput = group;
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
+            if (GUILayout.Button(LC.Combine("Delete"), EditorStyles.miniButton, GUILayout.Width(MiniBtnWidth)))
                 _pendingDeleteGroup = group;
 
             EditorGUILayout.LabelField("", GUILayout.Width(COL_TAIL_PAD));
@@ -895,8 +895,8 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.GetGroupsOrInfer().Contains(newName))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{newName} {LC.Combine(Lc.Exist)}",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"), $"{newName} {LC.Combine("Exist")}",
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -926,11 +926,11 @@ namespace EasyFramework.Localization.Edit
 
             // 有key 归属时先说明后果，避免误删
             string message = keyCount > 0
-                ? $"{LC.Combine(Lc.Warning)}: {keyCount} {LC.Combine(Lc.Row)} → {LC.Combine(Lc.Class, Lc.Is, Lc.Empty)}"
-                : $"{LC.Combine(Lc.Class)}: {group}";
+                ? $"{LC.Combine("Warning")}: {keyCount} {LC.Combine("Row")} → {LC.Combine("Class", "Is", "Empty")}"
+                : $"{LC.Combine("Class")}: {group}";
 
-            if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Delete, Lc.Class), message,
-                    LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
+            if (!EditorUtility.DisplayDialog(LC.Combine("Delete", "Class"), message,
+                    LC.Combine("Confirm"), LC.Combine("Cancel")))
                 return;
 
             foreach (var entry in _file.keys)
@@ -950,9 +950,9 @@ namespace EasyFramework.Localization.Edit
             var w = GetGroupColWidths();
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Key, Lc.Group, Lc.Name),
+            EditorGUILayout.LabelField(LC.Combine("Key", "Group", "Name"),
                 GUILayout.Width(w[0]));
-            EditorGUILayout.LabelField(LC.Combine(Lc.Use, Lc.Count),
+            EditorGUILayout.LabelField(LC.Combine("Use", "Count"),
                 GUILayout.Width(w[1]));
             EditorGUILayout.LabelField("", GUILayout.Width(COL_GROUP_ACTIONS + COL_TAIL_PAD));
             EditorGUILayout.EndHorizontal();
@@ -969,7 +969,7 @@ namespace EasyFramework.Localization.Edit
 
             var prevColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.New, Lc.Group)}"))
+            if (GUILayout.Button($"+ {LC.Combine("Add", "One", "New", "Group")}"))
                 AddGroup(_newGroupName);
             GUI.contentColor = prevColor;
 
@@ -978,7 +978,7 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.Space(SpaceGroup);
 
             // 种类：枚举代码级，不在此处增删
-            EditorGUILayout.LabelField(LC.Combine(Lc.Type), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Type"), EditorStyles.boldLabel);
             int dynamicCount = 0;
             foreach (var entry in _file.keys)
             {
@@ -992,8 +992,8 @@ namespace EasyFramework.Localization.Edit
             EditorGUILayout.Space(SpaceRow);
 
             // 其他设置
-            EditorGUILayout.LabelField(LC.Combine(Lc.Config), EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Text, Lc.File)}: {Path.GetFileName(LocalizationData.JsonPath)}",
+            EditorGUILayout.LabelField(LC.Combine("Config"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"{LC.Combine("Text", "File")}: {Path.GetFileName(LocalizationData.JsonPath)}",
                 EditorStyles.miniLabel);
             EditorGUILayout.Space(SpaceBlock);
         }
@@ -1009,8 +1009,8 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.meta.groups.Contains(name))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{name} {LC.Combine(Lc.Exist)}",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"), $"{name} {LC.Combine("Exist")}",
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -1035,7 +1035,7 @@ namespace EasyFramework.Localization.Edit
         // 语言登记表编辑
         private void DrawLanguagesSection()
         {
-            EditorGUILayout.LabelField(LC.Combine(Lc.Language, Lc.Settings), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Language", "Settings"), EditorStyles.boldLabel);
 
             _file.meta ??= new LocalizationKeyMeta();
             _file.meta.languages ??= new List<string>();
@@ -1066,7 +1066,7 @@ namespace EasyFramework.Localization.Edit
                 var prevColor = GUI.contentColor;
                 if (!exists) GUI.contentColor = ColorMissing;
                 EditorGUILayout.LabelField(
-                    exists ? Path.GetFileName(path) : $"{LC.Combine(Lc.Not, Lc.Exist)}",
+                    exists ? Path.GetFileName(path) : $"{LC.Combine("Not", "Exist")}",
                     EditorStyles.miniLabel, GUILayout.Width(200f));
                 GUI.contentColor = prevColor;
 
@@ -1080,7 +1080,7 @@ namespace EasyFramework.Localization.Edit
                 GUILayout.FlexibleSpace();
 
                 // 兜底语言不给删除按钮；登记表为空时（回落展示中）同样不给
-                if (!isDefault && !isFallback && GUILayout.Button(LC.Combine(Lc.Delete), EditorStyles.miniButton,
+                if (!isDefault && !isFallback && GUILayout.Button(LC.Combine("Delete"), EditorStyles.miniButton,
                         GUILayout.Width(MiniBtnWidth)))
                 {
                     _file.meta.languages.Remove(language);
@@ -1093,8 +1093,8 @@ namespace EasyFramework.Localization.Edit
 
             if (isDefault)
                 EditorGUILayout.HelpBox(
-                    $"{LC.Combine(Lc.Tips)}: meta.languages {LC.Combine(Lc.Is, Lc.Empty)}，" +
-                    $"{LC.Combine(Lc.Current, Lc.Use)}: {string.Join(", ", languages)}" +
+                    $"{LC.Combine("Tips")}: meta.languages {LC.Combine("Is", "Empty")}，" +
+                    $"{LC.Combine("Current", "Use")}: {string.Join(", ", languages)}" +
                     $"（{LC.Tr("保存后将写入登记表", "will be written to the registry on save")}）",
                     MessageType.None);
 
@@ -1105,7 +1105,7 @@ namespace EasyFramework.Localization.Edit
 
             var addColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            if (GUILayout.Button($"+ {LC.Combine(Lc.Add, Lc.One, Lc.Language)}"))
+            if (GUILayout.Button($"+ {LC.Combine("Add", "One", "Language")}"))
                 AddLanguage(_newLanguage);
             GUI.contentColor = addColor;
 
@@ -1113,7 +1113,7 @@ namespace EasyFramework.Localization.Edit
 
             EditorGUILayout.Space(SpaceGroup);
 
-            if (!GUILayout.Button(LC.Combine(Lc.Sync, Lc.Config), GUILayout.Width(AvailableWidth))) return;
+            if (!GUILayout.Button(LC.Combine("Sync", "Config"), GUILayout.Width(AvailableWidth))) return;
             SyncTablesToLuban();
         }
 
@@ -1213,13 +1213,13 @@ namespace EasyFramework.Localization.Edit
                 foreach (var table in staleTables) detail.AppendLine($"  - {table}");
 
                 if (EditorUtility.DisplayDialog(
-                        LC.Combine(Lc.Sync, Lc.Config),
+                        LC.Combine("Sync", "Config"),
                         LC.Tr(
                             "以下表定义在语言清单中已不存在，将被删除：\n\n{0}\n确认删除吗？",
                             "The following table definitions are no longer in the manifest and will be deleted:\n\n{0}\nDelete them?",
                             detail),
-                        LC.Combine(Lc.Confirm),
-                        LC.Combine(Lc.Cancel)))
+                        LC.Combine("Confirm"),
+                        LC.Combine("Cancel")))
                 {
                     foreach (var table in staleTables)
                     {
@@ -1266,9 +1266,9 @@ namespace EasyFramework.Localization.Edit
             if (added > 0 || removed > 0 || failed > 0 || removeFailed > 0)
             {
                 bool partial = failed > 0 || removeFailed > 0;
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Tips),
+                EditorUtility.DisplayDialog(LC.Combine("Tips"),
                     $"{(partial ? LC.Tr("[部分完成]", "[Partially done]") : LC.Tr("[完成]", "[Done]"))}\n\n{summary}\n\n{string.Join("\n", lines)}",
-                    LC.Combine(Lc.Confirm));
+                    LC.Combine("Confirm"));
             }
             else
             {
@@ -1303,9 +1303,9 @@ namespace EasyFramework.Localization.Edit
         // 导出操作区
         private void DrawExportSection()
         {
-            EditorGUILayout.LabelField(LC.Combine(Lc.Export, Lc.Data), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Export", "Data"), EditorStyles.boldLabel);
 
-            EditorGUILayout.LabelField($"{LC.Combine(Lc.Path)}: {LocalizationData.ValuesPath}",
+            EditorGUILayout.LabelField($"{LC.Combine("Path")}: {LocalizationData.ValuesPath}",
                 EditorStyles.miniLabel);
             EditorGUILayout.Space(SpaceRow);
 
@@ -1313,15 +1313,15 @@ namespace EasyFramework.Localization.Edit
 
             float third = Mathf.Floor(AvailableWidth / 3f);
 
-            if (GUILayout.Button($"{LC.Combine(Lc.Export, Lc.All, Lc.Data)}",
+            if (GUILayout.Button($"{LC.Combine("Export", "All", "Data")}",
                     GUILayout.Width(third), GUILayout.Height(ExportBtnHeight)))
                 ExportAllValues();
 
-            if (GUILayout.Button($"{LC.Combine(Lc.Open, Lc.Path)}",
+            if (GUILayout.Button($"{LC.Combine("Open", "Path")}",
                     GUILayout.Width(third), GUILayout.Height(ExportBtnHeight)))
                 OpenValuesFolder();
 
-            if (GUILayout.Button($"{LC.Combine(Lc.Refresh, Lc.All, Lc.Content)}",
+            if (GUILayout.Button($"{LC.Combine("Refresh", "All", "Content")}",
                     GUILayout.Width(AvailableWidth - third * 2f), GUILayout.Height(ExportBtnHeight)))
                 LoadOrCreate();
 
@@ -1355,8 +1355,8 @@ namespace EasyFramework.Localization.Edit
 
                 EditorGUILayout.LabelField(
                     total == 0
-                        ? $"{LC.Combine(Lc.Not, Lc.Export)}"
-                        : $"{LC.Combine(Lc.Total)} {total}",
+                        ? $"{LC.Combine("Not", "Export")}"
+                        : $"{LC.Combine("Total")} {total}",
                     EditorStyles.miniLabel, GUILayout.Width(100f));
 
                 EditorGUILayout.EndHorizontal();
@@ -1375,9 +1375,9 @@ namespace EasyFramework.Localization.Edit
             if (language.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0
                 || language.Contains("/") || language.Contains("\\"))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"{LC.Combine(Lc.Name, Lc.Is, Lc.Illegal, Lc.Character)}: {language}",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"),
+                    $"{LC.Combine("Name", "Is", "Illegal", "Character")}: {language}",
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -1386,8 +1386,8 @@ namespace EasyFramework.Localization.Edit
 
             if (_file.meta.languages.Contains(language))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"{language} {LC.Combine(Lc.Exist)}", LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"),
+                    $"{language} {LC.Combine("Exist")}", LC.Combine("Confirm"));
                 return;
             }
 
@@ -1401,19 +1401,19 @@ namespace EasyFramework.Localization.Edit
         {
             if (_dirty && !Save(silent: true))
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
-                    $"{LC.Combine(Lc.Save, Lc.Failed)}，{LC.Combine(Lc.Export, Lc.Cancel)}",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"),
+                    $"{LC.Combine("Save", "Failed")}，{LC.Combine("Export", "Cancel")}",
+                    LC.Combine("Confirm"));
                 return;
             }
 
             var issues = Validate();
             if (issues.Count > 0)
             {
-                bool goOn = EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
+                bool goOn = EditorUtility.DisplayDialog(LC.Combine("Warning"),
                     LC.Tr("{0} 个元素非法，仍要继续导出吗？", "{0} invalid element(s), continue exporting anyway?",
                         issues.Count),
-                    LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel));
+                    LC.Combine("Confirm"), LC.Combine("Cancel"));
 
                 if (!goOn) return;
             }
@@ -1429,14 +1429,14 @@ namespace EasyFramework.Localization.Edit
                 sb.AppendLine(report.Summary);
 
                 foreach (var removed in report.removedKeys)
-                    sb.AppendLine($"  - {LC.Combine(Lc.Delete)}: {removed}");
+                    sb.AppendLine($"  - {LC.Combine("Delete")}: {removed}");
             }
 
             D.Log(LC.Tr("[ Localization ] 导出数据\n{0}", "[ Localization ] Export data\n{0}", sb.ToString()));
 
             EditorUtility.DisplayDialog(
-                allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error), sb.ToString(),
-                LC.Combine(Lc.Confirm));
+                allOk ? LC.Combine("Success") : LC.Combine("Error"), sb.ToString(),
+                LC.Combine("Confirm"));
         }
 
         // 在系统文件管理器中打开 value 表目录本身（显示目录内容）
@@ -1446,11 +1446,11 @@ namespace EasyFramework.Localization.Edit
 
             if (!Directory.Exists(path))
             {
-                if (!EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
+                if (!EditorUtility.DisplayDialog(LC.Combine("Warning"),
                         LC.Tr("{0}\n{1}，是否创建该目录？",
                             "{0}\n{1}, create the directory?",
-                            path, LC.Combine(Lc.Not, Lc.Exist)),
-                        LC.Combine(Lc.Confirm), LC.Combine(Lc.Cancel)))
+                            path, LC.Combine("Not", "Exist")),
+                        LC.Combine("Confirm"), LC.Combine("Cancel")))
                     return;
 
                 Directory.CreateDirectory(path);
@@ -1506,16 +1506,16 @@ namespace EasyFramework.Localization.Edit
             foreach (var entry in _file.keys)
             {
                 if (string.IsNullOrEmpty(entry.name))
-                    issues.Add($"{LC.Combine(Lc.Name, Lc.Is, Lc.Empty)}");
+                    issues.Add($"{LC.Combine("Name", "Is", "Empty")}");
                 else if (IsDuplicated(entry))
-                    issues.Add($"{LC.Combine(Lc.Row)} {LC.Combine(Lc.Repetition)}: {entry.name}");
+                    issues.Add($"{LC.Combine("Row")} {LC.Combine("Repetition")}: {entry.name}");
 
                 if (!entry.IsValidName())
                     issues.Add(
-                        $"{LC.Combine(Lc.Row)} {LC.Combine(Lc.Name, Lc.Is, Lc.Illegal, Lc.Character)}: {entry.name}");
+                        $"{LC.Combine("Row")} {LC.Combine("Name", "Is", "Illegal", "Character")}: {entry.name}");
 
                 if (string.IsNullOrEmpty(entry.des))
-                    issues.Add($"des {LC.Combine(Lc.Is, Lc.Empty)}: {entry.name}");
+                    issues.Add($"des {LC.Combine("Is", "Empty")}: {entry.name}");
             }
 
             return issues;
@@ -1529,8 +1529,8 @@ namespace EasyFramework.Localization.Edit
             var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             if (file == null)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{KeysJsonFileName} not found.",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Error"), $"{KeysJsonFileName} not found.",
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -1539,15 +1539,15 @@ namespace EasyFramework.Localization.Edit
 
             if (issues.Count == 0)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Success),
+                EditorUtility.DisplayDialog(LC.Combine("Success"),
                     LC.Tr("共 {0} 条 key。", "{0} key(s) in total.", file.keys.Count),
-                    LC.Combine(Lc.Confirm));
+                    LC.Combine("Confirm"));
                 return;
             }
 
             var text = string.Join("\n", issues);
-            EditorUtility.DisplayDialog(LC.Combine(Lc.Error), $"{issues.Count} items:\n\n{text}",
-                LC.Combine(Lc.Confirm));
+            EditorUtility.DisplayDialog(LC.Combine("Error"), $"{issues.Count} items:\n\n{text}",
+                LC.Combine("Confirm"));
         }
 
         // 供菜单调用：按 Key 清单导出全部语言的 value 表（与面板里的导出按钮同一条逻辑，便于 CI 用 -executeMethod 调起。
@@ -1559,9 +1559,9 @@ namespace EasyFramework.Localization.Edit
             var file = LocalizationKeyFile.Load(LocalizationData.JsonPath);
             if (file == null)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Error),
+                EditorUtility.DisplayDialog(LC.Combine("Error"),
                     $"{KeysJsonFileName} not found.\n{LocalizationData.JsonPath}",
-                    LC.Combine(Lc.Confirm));
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -1570,9 +1570,9 @@ namespace EasyFramework.Localization.Edit
 
             if (reports.Count == 0)
             {
-                EditorUtility.DisplayDialog(LC.Combine(Lc.Warning),
-                    $"{LC.Combine(Lc.Language, Lc.Settings, Lc.Is, Lc.Empty)}",
-                    LC.Combine(Lc.Confirm));
+                EditorUtility.DisplayDialog(LC.Combine("Warning"),
+                    $"{LC.Combine("Language", "Settings", "Is", "Empty")}",
+                    LC.Combine("Confirm"));
                 return;
             }
 
@@ -1586,8 +1586,8 @@ namespace EasyFramework.Localization.Edit
 
             D.Log(LC.Tr("[ Localization ] 导出数据\n{0}", "[ Localization ] Export data\n{0}", sb.ToString()));
 
-            EditorUtility.DisplayDialog(allOk ? LC.Combine(Lc.Success) : LC.Combine(Lc.Error),
-                sb.ToString(), LC.Combine(Lc.Confirm));
+            EditorUtility.DisplayDialog(allOk ? LC.Combine("Success") : LC.Combine("Error"),
+                sb.ToString(), LC.Combine("Confirm"));
         }
 
         #endregion

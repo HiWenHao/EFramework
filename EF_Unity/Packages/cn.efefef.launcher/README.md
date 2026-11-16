@@ -10,15 +10,24 @@ Unity 热更的 **AOT 启动内核**（当前形态：**Core 留 AOT**）。负�
 |---|---|
 | `EF.Core`（含 `EFC` / `ISingleton` / `ProjectConfig` / UniTask） | **AOT**，不进热更列表 |
 | 其余 9 个 EF 运行时程序集 + `ExampleGameHotfix` | 热更 |
-| `EF.Launcher.Runtime` | AOT 启动内核，永远不进热更列表 |
+| `EF.Launcher` | AOT 启动内核，永远不进热更列表 |
 
 热更程序集**单向引用** AOT 程序集是 HybridCLR 的标准形态；反向引用（AOT → 热更）会在 il2cpp 阶段断。
 `EF.Core` 留在 AOT 还带来三个好处：`ProjectConfig.asset` 可正常反序列化、UniTask 的泛型实例化本就在 AOT 侧、
 Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 
-**铁律：`EF.Launcher.Runtime` 不得引用任何 `cn.efefef.*` 包。**
-`EF.Launcher.Runtime.asmdef` 只允许引用 `YooAsset`、`HybridCLR.Runtime`。
-启动段是零 EF 依赖的，否则打包时 HybridCLR 把热更程序集从包体剔除后，链接器会找不到引用。
+**铁律：`EF.Launcher` 不得引用任何会进入热更列表的程序集。**
+`EF.Launcher.asmdef` 允许引用 `YooAsset`、`HybridCLR.Runtime`，以及**唯一白名单** `EF.Core`（常驻 AOT 的框架底座）。
+`EF.Core.asmdef` 只依赖 `UniTask` 与 `YooAsset`，引用闭包里没有任何热更代码，因此不会触发剔除断链。
+
+> **注意「EF 包目录」≠「EF 程序集」。** UniTask 全家被 vendor 在 `cn.efefef.core/Plugins/Unitask/` 下，
+> 路径属于 EF 包，程序集名却是 `UniTask`，且随 Core 一起常驻 AOT。边界判定按**热更列表 + 程序集名**，
+> 不按 `Packages/cn.efefef.*` 路径前缀，否则 `EF.Launcher → EF.Core → UniTask` 会被误报成越界。
+
+> **白名单不代表可以随便用 Core。** Core 里的 `[Manager]` 单例按需注册，真正的资源系统实现由热更层注入；
+> 热更 DLL 加载前访问它们只会拿到未注入的默认实现。所有对 Core 的访问必须收口在
+> `Runtime/LauncherCoreBridge.cs`，且只读取语言、版本等静态展示信息；启动配置仍以 `LauncherConfig` 为唯一真源。
+> 这条由 `LauncherBoundaryValidator` 的源码静态检查强制保证。
 
 > **这条铁律只管 Runtime。** `EF.Launcher.Editor` 是编辑器程序集（不进包体），它引用了
 > `EF.Editor`（为了复用 `LC.Tr` 双语与 `MenuItemToolkit` 菜单规范）和 `HybridCLR.Editor`，
@@ -41,13 +50,16 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 
 **顺序不能换**：AOT 元数据必须在热更程序集之前加载，否则热更代码里出现 AOT 泛型实例化会踩空。
 
-**三条运行约束**
+**运行约束**
 
 - `AotMetadataDlls` 里出现引用丢失（`.dll.bytes` 重新导入后 `.meta` guid 变化）会**直接失败**并点名数量，
   不再静默跳过——补元数据没生效是隐形故障，只会在热更代码踩到泛型时以难定位的方式崩。
 - 资源句柄无论加载成功失败都会 `Release()`。
 - 已加载过的热更程序集在重试时跳过：`Assembly.Load(byte[])` 每次都会产生新程序集，
   重复加载同名 dll 会分裂出第二份类型身份（典型症状 `InvalidCastException`）。
+- 失败时 `Diagnose()` 一次打全现场：应用版本、状态、已加载热更程序集数、重试次数、耗时、Core 是否就绪。
+- `Retry()` 带次数上限与退避（`LauncherState.Retrying`），等待用 `WaitForSecondsRealtime`，
+  不受 `Time.timeScale` 影响；`MaxRetryCount` / `RetryDelaySeconds` 为 0 时走内置默认（3 次 / 2 秒）。
 
 ---
 
@@ -65,7 +77,7 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
    - `HotfixDlls`：**拓扑序**，被依赖的排前面。Core-AOT 形态下 **列表里不应出现 `EF.Core`**，
      它已在包体里，再 `Assembly.Load` 一份会导致类型身份分裂
    - `EntryType` / `EntryMethod`：热更入口，例如 `EFExample.HotfixTest` / `Init`
-5. `HybridCLRSettings` 里确认 `EF.Launcher.Runtime` / `EF.Launcher.Editor` **不在**热更列表。
+5. `HybridCLRSettings` 里确认 `EF.Launcher` / `EF.Launcher.Editor` **不在**热更列表。
 
 > 运行时 `AddComponent<Launcher>()` 后要立刻 `Configure(config)`；启动流程一旦开始就不再接受配置注入。
 
@@ -75,6 +87,11 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 
 `EF.UI` 在热更层，启动时它还不存在，用它必然 Missing Script。
 能用的只有 AOT 侧的 **UGUI / TextMeshPro**（`Launcher` 本身不依赖任何 UI 包，只暴露 `ILauncherView`）。
+
+**可选解耦：SO 事件通道。** 菜单 `Assets → Create → EF/Launcher/` 下可创建三个 ScriptableObject 资产
+（`LauncherStateEvent` / `LauncherProgressEvent` / `LauncherErrorEvent`），拖到 `Launcher` 的
+「事件通道」字段即可。状态、下载进度、失败会同时广播给通道订阅者与 `ILauncherView`，两者互不感知；
+通道只保存运行时订阅，不序列化任何场景对象引用。订阅务必在 `OnDisable` 里配对 `Unsubscribe`。
 
 ---
 
@@ -88,15 +105,23 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 | 打包前（`IPreprocessBuildWithReport`） | 违规 → `BuildFailedException`，直接中止出包 |
 | 手动 / CI（`EFTools/🎈 Utility/🔍 Validate AOT Boundary` 或 `-executeMethod`） | 违规 → 返回 false / 退出码 1 |
 
-检查四项：
+检查六项：
 
-1. **直接引用**：`EF.Launcher.Runtime.asmdef` 的 `references` / `precompiledReferences` 里不能有 EF 程序集
-2. **传递引用**：BFS 走完引用闭包，`Launcher → A → EF.Core` 这种也会被揪出来（Unity 会把闭包一起塞进编译引用）
+1. **直接引用**：`EF.Launcher.asmdef` 的 `references` / `precompiledReferences` 里不能有热更程序集
+2. **传递引用**：BFS 走完引用闭包，`Launcher → A → 热更程序集` 这种也会被揪出来（Unity 会把闭包一起塞进编译引用）
 3. **自举**：Launcher 自己的 asmdef 不能出现在 `HybridCLRSettings` 的 `hotUpdateAssemblyDefinitions` / `hotUpdateAssemblies` / `preserveHotUpdateAssemblies` 里
-4. **GUID 兜底**：asmdef 按 GUID 引用时，解析到 `Packages/cn.efefef.*` 路径也算违规
+4. **真源驱动**：违规判定以 `HybridCLRSettings` 的 `hotUpdateAssemblyDefinitions`（GUID → 路径）、`hotUpdateAssemblies` / `preserveHotUpdateAssemblies`（名字）为唯一真源，按路径 / 名字 / GUID 三重匹配；**不再按 `Packages/cn.efefef.*` 路径一刀切**
+5. **白名单前提**：`EF.Core` 必须真的不在热更列表里；被误加进去时门禁报错，避免放行变成断链
+6. **源码收口**：`Runtime/*.cs` 里只有 `LauncherCoreBridge.cs` 能出现 `EFC.`，全段禁止访问框架管理器单例
+
+`HotUpdateIndex.Build()` 按 YAML 段解析设置文件；若 `hotUpdateAssemblyDefinitions` 里出现无法解析的列表项
+（HybridCLR 改了格式），会打 Warning 提示门禁可能失效，不会静默放行。
 
 **白名单**：`EasyFrameworkTools.dll`（`cn.efefef.core/Plugins/`）名字像 EF，但只依赖 BCL + UnityEngine
 （里面是 `D` 日志门面与 `TStatic` 字符串工具），已在 `AllowedPluginDlls` 里放行，可以放心被 launcher 引用。
+另有一个**精确白名单** `EF.Core`，由 `AllowedAotBasePath` / `AllowedAotBaseName` 两个常量做路径 + 名字双重匹配，
+不是放开整个 `cn.efefef.*`。其余 EF 自有程序集按**程序集名**（`EF.` 前缀）识别，一律拒绝；
+`UniTask` / `YooAsset` / `HybridCLR.Runtime` 这类名字不含 `EF.` 的 AOT 第三方按名字放行。
 
 **盲区**：Plugins 下的 DLL 默认 `Auto Reference`，不会写进 asmdef，校验器只查显式声明的 `precompiledReferences`。
 如果将来新增一个**引用了 EF 程序集**的插件 DLL，这条闸门是看不见的 —— 需要人工确认，或把该 DLL 改成
@@ -161,7 +186,9 @@ Unity -batchmode -quit -projectPath <proj> \
 ## 七、已知边界
 
 - **不要用 `EFC.Projects` 取 CDN 地址**：虽然 Core 留 AOT 后它可读，但启动配置仍以 `LauncherConfig` 为唯一真源，
-  避免启动段依赖框架初始化顺序。
+  避免启动段依赖框架初始化顺序。`LauncherCoreBridge` 只暴露语言、版本等展示信息，不提供任何资源包参数。
+- **重试字段的默认值**：`MaxRetryCount` / `RetryDelaySeconds` 为 0 时走代码内置默认，
+  避免旧 `LauncherConfig.asset` 新增序列化字段后被反序列化成 0；`AutoRetryOnFailure` 默认关闭，由界面按钮触发。
 - **`YooAssets.Initialize()` 是幂等的**：重复调用只会打一条 warning，不会崩。
   但热更层的 `PatchManager` 建议改成 `if (!YooAssets.Initialized)`，省掉噪音日志。
 - **`EFC.Initialize()` 的时序**：Core 留 AOT 后 `[RuntimeInitializeOnLoadMethod(AfterAssembliesLoaded)]` 会生效，

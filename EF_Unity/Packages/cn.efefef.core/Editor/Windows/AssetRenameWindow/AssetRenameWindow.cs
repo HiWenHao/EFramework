@@ -68,7 +68,7 @@ namespace EasyFramework.Windows.AssetRename
         [MenuItem(MenuItemToolkit.Tools + "✏️ Assets Rename", false, MenuItemToolkit.ToolsPriority + 3)]
         private static void OpenWindow()
         {
-            var window = GetWindow<AssetRenameWindow>(false, LC.Combine(Lc.Assets, Lc.Rename, Lc.Tool));
+            var window = GetWindow<AssetRenameWindow>(false, LC.Combine("Assets", "Rename", "Tool"));
             window.minSize = new Vector2(560, 350);
             window.Show();
         }
@@ -95,18 +95,18 @@ namespace EasyFramework.Windows.AssetRename
         private void DrawToolbar()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            if (GUILayout.Button(LC.Combine(Lc.Refresh, Lc.Select), EditorStyles.toolbarButton, GUILayout.Width(180)))
+            if (GUILayout.Button(LC.Combine("Refresh", "Select"), EditorStyles.toolbarButton, GUILayout.Width(180)))
             {
                 RefreshAssetList();
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Clear), EditorStyles.toolbarButton, GUILayout.Width(80)))
+            if (GUILayout.Button(LC.Combine("Clear"), EditorStyles.toolbarButton, GUILayout.Width(80)))
             {
                 _assetList.Clear();
             }
 
             GUILayout.FlexibleSpace();
-            GUILayout.Label($"{LC.Combine(Lc.Select)} {LC.Combine(Lc.Count)}: {_assetList.Count}",
+            GUILayout.Label($"{LC.Combine("Select")} {LC.Combine("Count")}: {_assetList.Count}",
                 EditorStyles.miniLabel, GUILayout.Width(100));
             EditorGUILayout.EndHorizontal();
         }
@@ -119,15 +119,15 @@ namespace EasyFramework.Windows.AssetRename
         {
             EditorGUILayout.BeginVertical("HelpBox");
 
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Rename, Lc.Option }), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Rename", "Option"), EditorStyles.boldLabel);
 
-            var newMode = (RenameMode)EditorGUILayout.Popup(LC.Combine(Lc.Mode), (int)_mode,
-                new string[]
+            var newMode = (RenameMode)EditorGUILayout.Popup(LC.Combine("Mode"), (int)_mode,
+                new[]
                 {
-                    LC.Combine(Lc.Prefix),
-                    LC.Combine(Lc.Suffix),
-                    LC.Combine(Lc.Replace),
-                    LC.Combine(Lc.Sequence)
+                    LC.Combine("Prefix"),
+                    LC.Combine("Suffix"),
+                    LC.Combine("Replace"),
+                    LC.Combine("Sequence")
                 });
             if (newMode != _mode)
             {
@@ -140,25 +140,25 @@ namespace EasyFramework.Windows.AssetRename
                 case RenameMode.Prefix:
                 case RenameMode.Suffix:
                     EditorGUI.BeginChangeCheck();
-                    _addText = EditorGUILayout.TextField(LC.Combine(Lc.Text), _addText);
+                    _addText = EditorGUILayout.TextField(LC.Combine("Text"), _addText);
                     if (EditorGUI.EndChangeCheck())
                         UpdatePreviewNames();
                     break;
 
                 case RenameMode.Replace:
                     EditorGUI.BeginChangeCheck();
-                    _findText = EditorGUILayout.TextField(LC.Combine(Lc.Replace), _findText);
-                    _replaceText = EditorGUILayout.TextField(LC.Combine(Lc.Artw_ReplaceTo), _replaceText);
+                    _findText = EditorGUILayout.TextField(LC.Combine("Replace"), _findText);
+                    _replaceText = EditorGUILayout.TextField(LC.Combine("Artw_ReplaceTo"), _replaceText);
                     if (EditorGUI.EndChangeCheck())
                         UpdatePreviewNames();
                     break;
 
                 case RenameMode.Sequence:
                     EditorGUI.BeginChangeCheck();
-                    _addText = EditorGUILayout.TextField(LC.Combine(Lc.Prefix), _addText);
-                    _seqStart = EditorGUILayout.IntField(LC.Combine(Lc.Start), _seqStart);
-                    _seqStep = EditorGUILayout.IntField(LC.Combine(Lc.Step), _seqStep);
-                    _seqPadding = EditorGUILayout.IntField(LC.Combine(Lc.Padding), _seqPadding);
+                    _addText = EditorGUILayout.TextField(LC.Combine("Prefix"), _addText);
+                    _seqStart = EditorGUILayout.IntField(LC.Combine("Start"), _seqStart);
+                    _seqStep = EditorGUILayout.IntField(LC.Combine("Step"), _seqStep);
+                    _seqPadding = EditorGUILayout.IntField(LC.Combine("Padding"), _seqPadding);
                     if (EditorGUI.EndChangeCheck())
                     {
                         _seqPadding = Mathf.Max(1, _seqPadding);
@@ -179,7 +179,7 @@ namespace EasyFramework.Windows.AssetRename
         private void DrawAssetList()
         {
             EditorGUILayout.BeginVertical("HelpBox");
-            EditorGUILayout.LabelField(LC.Combine(new Lc[] { Lc.Asset, Lc.List }), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Asset", "List"), EditorStyles.boldLabel);
 
             float itemHeight = EditorGUIUtility.singleLineHeight + 6f;
             float viewHeight = Mathf.Min(_assetList.Count, 20) * itemHeight + 4f;
@@ -188,7 +188,7 @@ namespace EasyFramework.Windows.AssetRename
 
             if (_assetList.Count == 0)
             {
-                EditorGUILayout.HelpBox(LC.Combine(Lc.Artw_SelectAssetsHint), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("Artw_SelectAssetsHint"), MessageType.Info);
                 EditorGUILayout.EndVertical();
                 return;
             }
@@ -263,7 +263,7 @@ namespace EasyFramework.Windows.AssetRename
             if (type.IsSubclassOf(typeof(ScriptableObject)) || type == typeof(ScriptableObject))
                 return "ScriptObj";
             if (type == typeof(Shader))
-                return LC.Combine(Lc.Shader);
+                return LC.Combine("Shader");
             if (type == typeof(AnimationClip) || type.Name == "AnimatorController")
                 return "Anim";
             if (type.Name.EndsWith("Controller") || type.Name.EndsWith("Animator"))
@@ -298,13 +298,13 @@ namespace EasyFramework.Windows.AssetRename
         {
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Preview, Lc.Rename }), GUILayout.Height(28)))
+            if (GUILayout.Button(LC.Combine("Preview", "Rename"), GUILayout.Height(28)))
             {
                 UpdatePreviewNames();
             }
 
             EditorGUI.BeginDisabledGroup(_assetList.Count == 0);
-            if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Apply, Lc.Rename }), GUILayout.Height(28)))
+            if (GUILayout.Button(LC.Combine("Apply", "Rename"), GUILayout.Height(28)))
             {
                 ApplyRename();
             }
@@ -346,7 +346,7 @@ namespace EasyFramework.Windows.AssetRename
                 var key = (dir, item.PreviewName);
                 if (nameCounts.TryGetValue(key, out int count) && count > 1)
                 {
-                    Debug.LogWarning($"{LC.Combine(Lc.Artw_RenameConflictSkip)}: {item.Name} → {item.PreviewName}");
+                    Debug.LogWarning($"{LC.Combine("Artw_RenameConflictSkip")}: {item.Name} → {item.PreviewName}");
                     failed++;
                     continue;
                 }
@@ -360,7 +360,7 @@ namespace EasyFramework.Windows.AssetRename
                 }
                 else
                 {
-                    Debug.LogError($"{LC.Combine(Lc.Artw_RenameFailed)}: {item.Name} → {item.PreviewName}, {error}");
+                    Debug.LogError($"{LC.Combine("Artw_RenameFailed")}: {item.Name} → {item.PreviewName}, {error}");
                     failed++;
                 }
             }
@@ -371,11 +371,11 @@ namespace EasyFramework.Windows.AssetRename
             if (success > 0 || failed > 0)
             {
                 Debug.Log(
-                    $"{LC.Combine(Lc.Rename)} {LC.Combine(Lc.Complete)}: {LC.Combine(Lc.Success)} {success}, {LC.Combine(Lc.Failed)} {failed}");
+                    $"{LC.Combine("Rename")} {LC.Combine("Complete")}: {LC.Combine("Success")} {success}, {LC.Combine("Failed")} {failed}");
             }
             else
             {
-                Debug.Log(LC.Combine(Lc.Artw_NoNeedRename));
+                Debug.Log(LC.Combine("Artw_NoNeedRename"));
             }
 
             RefreshAssetList();

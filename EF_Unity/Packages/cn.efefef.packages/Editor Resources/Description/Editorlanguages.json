@@ -1,0 +1,404 @@
+﻿{
+  "LcList": [
+    {
+      "name": "All",
+      "desc": "全部",
+      "array": [
+        "All",
+        "全部"
+      ]
+    },
+    {
+      "name": "Assets",
+      "desc": "资源",
+      "array": [
+        "Assets",
+        "资源"
+      ]
+    },
+    {
+      "name": "Author",
+      "desc": "作者",
+      "array": [
+        "Author",
+        "作者"
+      ]
+    },
+    {
+      "name": "Catalogue",
+      "desc": "目录",
+      "array": [
+        "Catalogue",
+        "目录"
+      ]
+    },
+    {
+      "name": "Content",
+      "desc": "内容",
+      "array": [
+        "Content",
+        "内容"
+      ]
+    },
+    {
+      "name": "Create",
+      "desc": "创建",
+      "array": [
+        "Create",
+        "创建"
+      ]
+    },
+    {
+      "name": "Current",
+      "desc": "当前",
+      "array": [
+        "Current",
+        "当前"
+      ]
+    },
+    {
+      "name": "Description",
+      "desc": "描述",
+      "array": [
+        "Description",
+        "描述"
+      ]
+    },
+    {
+      "name": "Develop",
+      "desc": "开发",
+      "array": [
+        "Develop",
+        "开发"
+      ]
+    },
+    {
+      "name": "Download",
+      "desc": "下载",
+      "array": [
+        "Download",
+        "下载"
+      ]
+    },
+    {
+      "name": "Error",
+      "desc": "错误",
+      "array": [
+        "Error",
+        "错误"
+      ]
+    },
+    {
+      "name": "Exist",
+      "desc": "存在",
+      "array": [
+        "Exist",
+        "存在"
+      ]
+    },
+    {
+      "name": "Fold",
+      "desc": "折叠",
+      "array": [
+        "Fold",
+        "折叠"
+      ]
+    },
+    {
+      "name": "Folder",
+      "desc": "文件夹",
+      "array": [
+        "Folder",
+        "文件夹"
+      ]
+    },
+    {
+      "name": "Generate",
+      "desc": "生成",
+      "array": [
+        "Generate",
+        "生成"
+      ]
+    },
+    {
+      "name": "Git",
+      "desc": "Git",
+      "array": [
+        "Git",
+        "Git"
+      ]
+    },
+    {
+      "name": "Have",
+      "desc": "拥有、具备",
+      "array": [
+        "Have",
+        "拥有"
+      ]
+    },
+    {
+      "name": "Information",
+      "desc": "信息",
+      "array": [
+        "Information",
+        "信息"
+      ]
+    },
+    {
+      "name": "Install",
+      "desc": "安装",
+      "array": [
+        "Install",
+        "安装"
+      ]
+    },
+    {
+      "name": "Latest",
+      "desc": "最新",
+      "array": [
+        "Latest",
+        "最新"
+      ]
+    },
+    {
+      "name": "Local",
+      "desc": "本地",
+      "array": [
+        "Local",
+        "本地"
+      ]
+    },
+    {
+      "name": "Maintain",
+      "desc": "维护",
+      "array": [
+        "Maintain",
+        "维护"
+      ]
+    },
+    {
+      "name": "Name",
+      "desc": "名称",
+      "array": [
+        "Name",
+        "名称"
+      ]
+    },
+    {
+      "name": "Need",
+      "desc": "需要",
+      "array": [
+        "Need",
+        "需要"
+      ]
+    },
+    {
+      "name": "New",
+      "desc": "新",
+      "array": [
+        "New",
+        "新"
+      ]
+    },
+    {
+      "name": "No",
+      "desc": "没有",
+      "array": [
+        "No",
+        "没有"
+      ]
+    },
+    {
+      "name": "Non",
+      "desc": "非",
+      "array": [
+        "Non",
+        "非"
+      ]
+    },
+    {
+      "name": "Not",
+      "desc": "不",
+      "array": [
+        "Not",
+        "不"
+      ]
+    },
+    {
+      "name": "One",
+      "desc": "一个",
+      "array": [
+        "One",
+        "一个"
+      ]
+    },
+    {
+      "name": "Open",
+      "desc": "打开",
+      "array": [
+        "Open",
+        "打开"
+      ]
+    },
+    {
+      "name": "Operating",
+      "desc": "操作",
+      "array": [
+        "Operating",
+        "操作"
+      ]
+    },
+    {
+      "name": "Package",
+      "desc": "包",
+      "array": [
+        "Package",
+        "包"
+      ]
+    },
+    {
+      "name": "PleaseWaitMoment",
+      "desc": "请稍后",
+      "array": [
+        "Please wait a moment",
+        "请稍后"
+      ]
+    },
+    {
+      "name": "Record",
+      "desc": "记录",
+      "array": [
+        "Record",
+        "记录"
+      ]
+    },
+    {
+      "name": "Remote",
+      "desc": "远端",
+      "array": [
+        "Remote",
+        "远端"
+      ]
+    },
+    {
+      "name": "S",
+      "desc": "分隔符",
+      "array": [
+        " ",
+        ""
+      ]
+    },
+    {
+      "name": "Save",
+      "desc": "保存",
+      "array": [
+        "Save",
+        "保存"
+      ]
+    },
+    {
+      "name": "Server",
+      "desc": "服务器",
+      "array": [
+        "Server",
+        "服务器"
+      ]
+    },
+    {
+      "name": "Sync",
+      "desc": "同步",
+      "array": [
+        "Sync",
+        "同步"
+      ]
+    },
+    {
+      "name": "Task",
+      "desc": "任务",
+      "array": [
+        "Task",
+        "任务"
+      ]
+    },
+    {
+      "name": "To",
+      "desc": "到",
+      "array": [
+        "To",
+        "到"
+      ]
+    },
+    {
+      "name": "Total",
+      "desc": "总数",
+      "array": [
+        "Total",
+        "总数"
+      ]
+    },
+    {
+      "name": "TryAgain",
+      "desc": "再试试",
+      "array": [
+        "Try Again",
+        "再试试"
+      ]
+    },
+    {
+      "name": "Unfold",
+      "desc": "展开",
+      "array": [
+        "Unfold",
+        "展开"
+      ]
+    },
+    {
+      "name": "Unknown",
+      "desc": "未知",
+      "array": [
+        "Unknown",
+        "未知"
+      ]
+    },
+    {
+      "name": "Unload",
+      "desc": "卸载",
+      "array": [
+        "Unload",
+        "卸载"
+      ]
+    },
+    {
+      "name": "Update",
+      "desc": "更新",
+      "array": [
+        "Update",
+        "更新"
+      ]
+    },
+    {
+      "name": "Upload",
+      "desc": "上传",
+      "array": [
+        "Upload",
+        "上传"
+      ]
+    },
+    {
+      "name": "Use",
+      "desc": "使用",
+      "array": [
+        "Use",
+        "使用"
+      ]
+    },
+    {
+      "name": "Version",
+      "desc": "版本",
+      "array": [
+        "Version",
+        "版本"
+      ]
+    }
+  ]
+}

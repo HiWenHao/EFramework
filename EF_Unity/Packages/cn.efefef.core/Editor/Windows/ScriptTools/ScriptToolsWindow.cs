@@ -82,14 +82,14 @@ namespace EasyFramework.Windows.ScriptTools
             // Layout 与随后的 Repaint 看到同一份数据（详见 ApplyPendingWork 注释）
             ApplyPendingWork();
 
-            EditorGUILayout.LabelField(LC.Combine(Lc.Script, Lc.Tool), GUIUtils.BoldCenterTitle());
+            EditorGUILayout.LabelField(LC.Combine("Script", "Tool"), GUIUtils.BoldCenterTitle());
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            _typeIndex = EditorGUILayout.Popup(LC.Combine(Lc.Select, Lc.Find, Lc.Type),
+            _typeIndex = EditorGUILayout.Popup(LC.Combine("Select", "Find", "Type"),
                 _typeIndex,
                 new[]
                 {
-                    LC.Combine(Lc.Rely, Lc.This, Lc.Script, Lc.Of, Lc.Prefab),
-                    LC.Combine(Lc.Lost, Lc.Script, Lc.Of, Lc.Object),
+                    LC.Combine("Rely", "This", "Script", "Of", "Prefab"),
+                    LC.Combine("Lost", "Script", "Of", "Object"),
                 });
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
@@ -97,19 +97,19 @@ namespace EasyFramework.Windows.ScriptTools
             if (_typeIndex == 0)
             {
                 _targetComponent = (MonoScript)EditorGUILayout.ObjectField(
-                    LC.Combine(Lc.Select, Lc.Target, Lc.Script), _targetComponent, typeof(MonoScript),
+                    LC.Combine("Select", "Target", "Script"), _targetComponent, typeof(MonoScript),
                     false);
 
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine(Lc.Stw_RecurseDependencies), _shouldRecurse);
-                if (GUILayout.Button(LC.Combine(Lc.Find, Lc.Script, Lc.Rely)))
+                _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine("Stw_RecurseDependencies"), _shouldRecurse);
+                if (GUILayout.Button(LC.Combine("Find", "Script", "Rely")))
                 {
                     _pendingWork = PendingWork.DependencyScan;
                 }
 
                 if (_dependenciesMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine(Lc.Rely, Lc.Count)}:  [ {_dependenciesMaxCount} ] ");
+                        $"{LC.Combine("Rely", "Count")}:  [ {_dependenciesMaxCount} ] ");
 
                 DependenciesListInfoShow();
             }
@@ -117,15 +117,15 @@ namespace EasyFramework.Windows.ScriptTools
             else
             {
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(LC.Combine(Lc.Find)))
+                if (GUILayout.Button(LC.Combine("Find")))
                 {
                     _pendingWork = PendingWork.MissingScan;
                 }
 
                 _missingOpt = EditorGUILayout.Popup(_missingOpt, new[]
                 {
-                    LC.Combine(Lc.In, Lc.All, Lc.Activity, Lc.Scene),
-                    LC.Combine(Lc.In, Lc.All, Lc.Prefab)
+                    LC.Combine("In", "All", "Activity", "Scene"),
+                    LC.Combine("In", "All", "Prefab")
                 });
                 if (_missingOpt != _missingTempOpt)
                 {
@@ -136,7 +136,7 @@ namespace EasyFramework.Windows.ScriptTools
                 EditorGUILayout.EndHorizontal();
                 if (_missingMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine(Lc.Lost, Lc.Count)}:  [ {_missingMaxCount} ] ");
+                        $"{LC.Combine("Lost", "Count")}:  [ {_missingMaxCount} ] ");
                 EditorGUILayout.Space();
 
                 MissingListInfoShow();
@@ -187,7 +187,7 @@ namespace EasyFramework.Windows.ScriptTools
 
             if (_dependenciesMaxCount == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine(Lc.Not, Lc.Found, Lc.Match));
+                EditorGUILayout.LabelField(LC.Combine("Not", "Found", "Match"));
             }
             else
             {
@@ -207,7 +207,7 @@ namespace EasyFramework.Windows.ScriptTools
                 }
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", GUIUtils.CenteredEndLabel());
+                EditorGUILayout.LabelField($"----- {LC.Combine("End")} -----", GUIUtils.CenteredEndLabel());
                 EditorGUILayout.Space(18f);
 
                 EditorGUILayout.EndScrollView();
@@ -275,8 +275,8 @@ namespace EasyFramework.Windows.ScriptTools
 
                 bool isRoot = info.LayersCount == 0;
                 string prefix = isRoot
-                    ? $" [ {LC.Combine(Lc.Root)} ]  >>> "
-                    : $" {LC.Combine(Lc.Root, Lc.Target)} [ {info.ParentName} ]   {info.LayersCount} {LC.Combine(Lc.Layer)}  >>> ";
+                    ? $" [ {LC.Combine("Root")} ]  >>> "
+                    : $" {LC.Combine("Root", "Target")} [ {info.ParentName} ]   {info.LayersCount} {LC.Combine("Layer")}  >>> ";
 
                 EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
                 if (GUILayout.Button(prefix + info.DetailsPath,
@@ -297,7 +297,7 @@ namespace EasyFramework.Windows.ScriptTools
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"----- {LC.Combine(Lc.End)} -----", GUIUtils.CenteredEndLabel());
+            EditorGUILayout.LabelField($"----- {LC.Combine("End")} -----", GUIUtils.CenteredEndLabel());
             EditorGUILayout.Space(18f);
             EditorGUILayout.EndScrollView();
         }

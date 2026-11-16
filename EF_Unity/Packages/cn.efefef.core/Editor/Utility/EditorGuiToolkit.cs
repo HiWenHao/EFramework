@@ -74,7 +74,7 @@ namespace EasyFramework.Edit
                 }
             }
 
-            if (showCopy) CopyButton(LC.Combine(Lc.Copy), selectPath);
+            if (showCopy) CopyButton(LC.Combine("Copy"), selectPath);
             if (showOpen) OpenFolderButton(selectPath);
 
             EditorGUILayout.EndHorizontal();
@@ -103,7 +103,7 @@ namespace EasyFramework.Edit
                 selectPath = picked.Replace('\\', '/');
             }
 
-            if (showCopy) CopyButton(LC.Combine(Lc.Copy), selectPath);
+            if (showCopy) CopyButton(LC.Combine("Copy"), selectPath);
             if (showOpen) OpenFolderButton(selectPath);
 
             EditorGUILayout.EndHorizontal();
@@ -118,7 +118,7 @@ namespace EasyFramework.Edit
         /// <param name="width">按钮宽度 / Button width</param>
         public static void OpenFolderButton(string absolutePath, float width = OpenPathWidth)
         {
-            if (GUILayout.Button(LC.Combine(Lc.Open), GUILayout.Width(width)))
+            if (GUILayout.Button(LC.Combine("Open"), GUILayout.Width(width)))
             {
                 if (string.IsNullOrEmpty(absolutePath))
                 {
@@ -147,9 +147,9 @@ namespace EasyFramework.Edit
         /// <returns></returns>
         public static bool SelectPathButton(string folder, out string selectPath, float width)
         {
-            if (GUILayout.Button(LC.Combine(Lc.Path, Lc.Select), GUILayout.Width(width)))
+            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(width)))
             {
-                selectPath = EditorUtility.OpenFolderPanel(LC.Combine(Lc.Path, Lc.Select), folder, "");
+                selectPath = EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), folder, "");
                 return true;
             }
 

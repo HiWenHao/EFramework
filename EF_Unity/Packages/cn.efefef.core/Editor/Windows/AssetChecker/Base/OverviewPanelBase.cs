@@ -32,12 +32,12 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         /// <summary>
         /// 标签
         /// </summary>
-        protected string[] Tabs = new string[] { LC.Combine(Lc.Overview), LC.Combine(Lc.Settings), };
+        protected string[] Tabs = new[] { LC.Combine("Overview"), LC.Combine("Settings"), };
 
         /// <summary>
         /// 筛选器
         /// </summary>
-        protected string[] Filtrates = new string[] { "ALL" };
+        protected string[] Filtrates = new[] { "ALL" };
 
         /// <summary>
         /// 信息列表
@@ -98,10 +98,10 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             }
 
             EditorGUILayout.Separator();
-            GUILayout.Label(LC.Combine(new Lc[] { Lc.File, Lc.Details }));
+            GUILayout.Label(LC.Combine("File", "Details"));
             EditorGUILayout.BeginHorizontal();
             {
-                GUILayout.Label($"{LC.Combine(Lc.Filtrate)}: ");
+                GUILayout.Label($"{LC.Combine("Filtrate")}: ");
                 FiltrateIndex = EditorGUILayout.Popup(FiltrateIndex, Filtrates);
                 if (_oldFiltrateIndex != FiltrateIndex)
                 {
@@ -110,13 +110,13 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 }
 
                 if (0 != ListCount)
-                    GUILayout.Label($"{LC.Combine(Lc.Count)}: {ListCount}");
+                    GUILayout.Label($"{LC.Combine("Count")}: {ListCount}");
 
                 GUILayout.FlexibleSpace();
 
                 BeforeTheRefreshButton();
 
-                if (GUILayout.Button(LC.Combine(Lc.Refresh), GUILayout.Width(80)))
+                if (GUILayout.Button(LC.Combine("Refresh"), GUILayout.Width(80)))
                 {
                     _scrollPos = Vector2.zero;
                     Refresh();

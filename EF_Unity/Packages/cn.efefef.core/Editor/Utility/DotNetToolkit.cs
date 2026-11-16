@@ -43,7 +43,7 @@ namespace EasyFramework.Edit
                     (isEn
                         ? $"No usable dotnet CLI found. Please install .NET SDK {minMajor}.0 or later and retry.\n\n"
                         : $"未检测到可用的 dotnet CLI，请安装 .NET SDK {minMajor}.0 或更高版本后重试。\n"),
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Ok"));
                 return false;
             }
 
@@ -64,7 +64,7 @@ namespace EasyFramework.Edit
                         ? "Cannot parse the dotnet version output. Please check the dotnet installation.\n\n"
                         : "无法解析 dotnet 版本号，请检查 dotnet 安装是否完整。\n")
                     + result.Output.Trim(),
-                    LC.Combine(Lc.Ok));
+                    LC.Combine("Ok"));
                 return false;
             }
 
@@ -76,7 +76,7 @@ namespace EasyFramework.Edit
                 isEn
                     ? $"dotnet is too old: {version} found, but {minMajor}.0+ is required. Please upgrade the .NET SDK."
                     : $"dotnet 版本过低：当前 {version}，需要 {minMajor}.0 及以上，请升级 .NET SDK 后重试。\n",
-                LC.Combine(Lc.Ok));
+                LC.Combine("Ok"));
             return false;
         }
 

@@ -20,7 +20,7 @@ namespace EasyFramework.Systems.Archive.Editor
     [CustomEditor(typeof(ArchiveManager))]
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>
     {
-        protected override string Title => LC.Combine(Lc.Archive, Lc.Data, Lc.Monitor);
+        protected override string Title => LC.Combine("Archive", "Data", "Monitor");
 
         private bool _showSlots = true;     // 是否展开槽位折叠区
         private bool _showKeys;             // 是否展开 Key 折叠区
@@ -37,23 +37,23 @@ namespace EasyFramework.Systems.Archive.Editor
             if (null == Target.Settings)
             {
                 EditorGUILayout.HelpBox(
-                    LC.Combine(Lc.Archive, Lc.Config, Lc.No, Lc.Load, Lc.Success)
+                    LC.Combine("Archive", "Config", "No", "Load", "Success")
                     + "\n"
-                    + LC.Combine(Lc.Please, Lc.Check, Lc.Config, Lc.By, Lc.Path)
+                    + LC.Combine("Please", "Check", "Config", "By", "Path")
                     + ": Resources/Configs/ArchiveSettings.asset.",
                     MessageType.Warning);
                 return;
             }
 
-            EditorGUILayout.LabelField(LC.Combine(Lc.Provider),
+            EditorGUILayout.LabelField(LC.Combine("Provider"),
                 string.IsNullOrEmpty(Target.Settings.providerTypeName)
-                    ? LC.Combine(Lc.File, Lc.Archive, Lc.Provider, Lc.Default)
+                    ? LC.Combine("File", "Archive", "Provider", "Default")
                     : Target.Settings.providerTypeName);
-            EditorGUILayout.LabelField(LC.Combine(Lc.Auto, Lc.Save),
+            EditorGUILayout.LabelField(LC.Combine("Auto", "Save"),
                 $"{Target.Settings.autoSaveIntervalSeconds}s");
-            EditorGUILayout.LabelField(LC.Combine(Lc.Data, Lc.Version),
+            EditorGUILayout.LabelField(LC.Combine("Data", "Version"),
                 Target.Settings.dataVersion.ToString());
-            EditorGUILayout.LabelField(LC.Combine(Lc.Active, Lc.Slot),
+            EditorGUILayout.LabelField(LC.Combine("Active", "Slot"),
                 Target.ActiveSlot.ToString());
 
             EditorGUILayout.Space();
@@ -77,12 +77,12 @@ namespace EasyFramework.Systems.Archive.Editor
 
                         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                         EditorGUILayout.LabelField(
-                            $"{LC.Combine(Lc.Slot)} {slot.slotId}: {slot.slotName}",
+                            $"{LC.Combine("Slot")} {slot.slotId}: {slot.slotName}",
                             EditorStyles.boldLabel);
-                        EditorGUILayout.LabelField(LC.Combine(Lc.Progress), slot.progressDescription);
-                        EditorGUILayout.LabelField(LC.Combine(Lc.Play, Lc.Time), slot.PlayTimeFormatted);
-                        EditorGUILayout.LabelField(LC.Combine(Lc.Last, Lc.Modified), slot.LastModifiedFormatted);
-                        EditorGUILayout.LabelField(LC.Combine(Lc.Size), FormatBytes(slot.totalSizeBytes));
+                        EditorGUILayout.LabelField(LC.Combine("Progress"), slot.progressDescription);
+                        EditorGUILayout.LabelField(LC.Combine("Play", "Time"), slot.PlayTimeFormatted);
+                        EditorGUILayout.LabelField(LC.Combine("Last", "Modified"), slot.LastModifiedFormatted);
+                        EditorGUILayout.LabelField(LC.Combine("Size"), FormatBytes(slot.totalSizeBytes));
                         EditorGUILayout.EndVertical();
                     }
                 }
@@ -98,7 +98,7 @@ namespace EasyFramework.Systems.Archive.Editor
             var keys = _cachedKeys;
             if (keys == null || keys.Length == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine(Lc.Empty));
+                EditorGUILayout.LabelField(LC.Combine("Empty"));
             }
             else
             {
@@ -145,9 +145,9 @@ namespace EasyFramework.Systems.Archive.Editor
 
         #region Fallback Strings
 
-        private static readonly Lc[] ArmSlotList = { Lc.Slot, Lc.List };
-        private static readonly Lc[] ArmSlotEmpty = { Lc.No, Lc.Slot, Lc.Found };
-        private static readonly Lc[] ArmKeyList = { Lc.Active, Lc.Slot, Lc.In, Lc.Key, Lc.List };
+        private static readonly string[] ArmSlotList = { "Slot", "List" };
+        private static readonly string[] ArmSlotEmpty = { "No", "Slot", "Found" };
+        private static readonly string[] ArmKeyList = { "Active", "Slot", "In", "Key", "List" };
 
         #endregion
 

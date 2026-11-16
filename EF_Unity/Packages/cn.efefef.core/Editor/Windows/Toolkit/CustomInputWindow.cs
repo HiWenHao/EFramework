@@ -102,12 +102,12 @@ namespace EasyFramework.Edit
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button(LC.Combine(Lc.Confirm), GUILayout.Width(80)))
+            if (GUILayout.Button(LC.Combine("Confirm"), GUILayout.Width(80)))
             {
                 Confirm();
             }
 
-            if (GUILayout.Button(LC.Combine(Lc.Cancel), GUILayout.Width(80)))
+            if (GUILayout.Button(LC.Combine("Cancel"), GUILayout.Width(80)))
             {
                 Close();
             }

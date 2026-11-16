@@ -36,14 +36,14 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             _showEffectInfo = new List<EffectInformation>();
             _ruleView = new SettingView<ParticleEffectSetting>();
 
-            ObjectInfoList = new string[]
+            ObjectInfoList = new[]
             {
-                LC.Combine(new Lc[] { Lc.Effects, Lc.Name} ),
-                LC.Combine(new Lc[] { Lc.Resource, Lc.Type} ),
+                LC.Combine("Effects", "Name"),
+                LC.Combine("Resource", "Type"),
                 "DrawCall",
-                LC.Combine(new Lc[] { Lc.Texture, Lc.Count} ),
-                LC.Combine(new Lc[] { Lc.Particle, Lc.Count} ),
-                LC.Combine(Lc.Score),
+                LC.Combine("Texture", "Count"),
+                LC.Combine("Particle", "Count"),
+                LC.Combine("Score"),
             };
             base.Initialize();
         }
@@ -126,7 +126,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 for (int i = 0; i < childFiles.Length; i++)
                 {
                     curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), curFileIndex / _count);
+                    EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("BeingProcessed"), curFileIndex / _count);
                     EffectInformation _effect = ParseEffectAsset(childFiles[i]);
                     _effect.AssetDesc = msb.AssetDesc;
 

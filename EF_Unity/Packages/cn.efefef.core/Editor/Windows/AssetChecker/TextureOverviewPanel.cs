@@ -37,16 +37,16 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             _showTextureInfo = new List<TextureInformation>();
             _ruleView = new SettingView<TextureSetting>();
             _settingMap = new Dictionary<string, TextureSetting>();
-            ObjectInfoList = new string[]
+            ObjectInfoList = new[]
             {
-                LC.Combine(new Lc[]{ Lc.Texture, Lc.Name }),
-                LC.Combine(new Lc[]{ Lc.Resource, Lc.Type }),
-                LC.Combine(Lc.Width),
-                LC.Combine(Lc.Height),
+                LC.Combine("Texture", "Name"),
+                LC.Combine("Resource", "Type"),
+                LC.Combine("Width"),
+                LC.Combine("Height"),
                 "MipMaps",
-                LC.Combine(new Lc[]{ Lc.Max, Lc.Size }),
-                LC.Combine(Lc.Compression),
-                LC.Combine(Lc.Memory),
+                LC.Combine("Max", "Size"),
+                LC.Combine("Compression"),
+                LC.Combine("Memory"),
             };
 
             base.Initialize();
@@ -135,7 +135,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 for (int i = 0; i < childFiles.Length; i++)
                 {
                     curFileIndex++;
-                    EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.Holdon), curFileIndex / count);
+                    EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("Holdon"), curFileIndex / count);
                     TextureInformation asset = GetTextureInformation(childFiles[i]);
                     asset.AssetDesc = msb.AssetDesc;
                     _showTextureInfo.Add(asset);
@@ -196,7 +196,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         protected override void BeforeTheRefreshButton()
         {
-            if (GUILayout.Button(LC.Combine(Lc.AlignAt) + "MipMaps", GUILayout.Width(130)))
+            if (GUILayout.Button(LC.Combine("AlignAt") + "MipMaps", GUILayout.Width(130)))
             {
                 SwitchMipMaps();
             }
@@ -217,7 +217,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
             for (int i = 0; i < _textures.Count; i++)
             {
-                EditorUtility.DisplayProgressBar(LC.Combine(Lc.Holdon), LC.Combine(Lc.BeingProcessed), i / (float)_textures.Count);
+                EditorUtility.DisplayProgressBar(LC.Combine("Holdon"), LC.Combine("BeingProcessed"), i / (float)_textures.Count);
                 TextureImporter texImp = AssetImporter.GetAtPath(_textures[i].FilePath) as TextureImporter;
                 if (texImp == null) continue;
                 texImp.mipmapEnabled = _settingMap[_textures[i].AssetDesc].MipMaps;

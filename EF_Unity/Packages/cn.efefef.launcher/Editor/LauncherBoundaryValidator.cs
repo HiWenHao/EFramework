@@ -192,7 +192,7 @@ namespace EasyFramework.Launcher.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(LC.Format(Lc.Cs_LauncherBoundaryException, e.Message));
+                    Debug.LogWarning(LC.Format("Launcher.BoundaryException", e.Message));
                 }
             };
         }
@@ -233,7 +233,7 @@ namespace EasyFramework.Launcher.Editor
 
             if (!index.TryGetByPath(RuntimeAsmdefPath, out var runtime))
             {
-                Debug.LogWarning(LC.Format(Lc.Cs_LauncherSkipBoundaryCheck, RuntimeAsmdefPath));
+                Debug.LogWarning(LC.Format("Launcher.SkipBoundaryCheck", RuntimeAsmdefPath));
                 return true;
             }
 
@@ -247,17 +247,17 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (logWhenClean)
                 {
-                    Debug.Log(LC.Combine(Lc.Cs_LauncherBoundaryOk));
+                    Debug.Log(LC.Combine("Launcher.BoundaryOk"));
                 }
 
                 return true;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine(LC.Combine(Lc.Cs_LauncherBoundaryBroken));
+            sb.AppendLine(LC.Combine("Launcher.BoundaryBroken"));
             for (int i = 0; i < violations.Count; i++)
                 sb.AppendLine($"  {i + 1}. {violations[i]}");
-            sb.AppendLine(LC.Combine(Lc.Cs_LauncherBoundaryRule));
+            sb.AppendLine(LC.Combine("Launcher.BoundaryRule"));
 
             Debug.LogError(sb.ToString());
             return false;
@@ -276,7 +276,7 @@ namespace EasyFramework.Launcher.Editor
                 {
                     if (IsForbiddenReference(target, hot))
                     {
-                        violations.Add(LC.Format(Lc.Cs_LauncherDirectRef, target.Name, target.Path));
+                        violations.Add(LC.Format("Launcher.DirectRef", target.Name, target.Path));
                     }
 
                     continue;
@@ -285,7 +285,7 @@ namespace EasyFramework.Launcher.Editor
                 // 解析不到 asmdef 的（引用了不存在的程序集 / 外部包），按名字或 GUID 兜底
                 if (IsForbiddenUnresolvedReference(reference, hot))
                 {
-                    violations.Add(LC.Format(Lc.Cs_LauncherDirectRefByName, reference));
+                    violations.Add(LC.Format("Launcher.DirectRefByName", reference));
                 }
             }
 
@@ -293,7 +293,7 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (IsForbiddenUnresolvedReference(precompiled, hot))
                 {
-                    violations.Add(LC.Format(Lc.Cs_LauncherPrecompiledRef, precompiled));
+                    violations.Add(LC.Format("Launcher.PrecompiledRef", precompiled));
                 }
             }
         }
@@ -317,7 +317,7 @@ namespace EasyFramework.Launcher.Editor
 
                     if (IsForbiddenReference(target, hot))
                     {
-                        violations.Add(LC.Format(Lc.Cs_LauncherTransitiveRef, chain, target.Name, target.Path));
+                        violations.Add(LC.Format("Launcher.TransitiveRef", chain, target.Name, target.Path));
                         continue;
                     }
 
@@ -333,7 +333,7 @@ namespace EasyFramework.Launcher.Editor
                 string guid = AssetDatabase.AssetPathToGUID(asmdefPath);
                 if (!string.IsNullOrEmpty(guid) && hot.Guids.Contains(guid))
                 {
-                    violations.Add(LC.Format(Lc.Cs_LauncherSelfBootstrapPath, asmdefPath));
+                    violations.Add(LC.Format("Launcher.SelfBootstrapPath", asmdefPath));
                 }
             }
 
@@ -341,7 +341,7 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (name.StartsWith("EF.Launcher", StringComparison.Ordinal))
                 {
-                    violations.Add(LC.Format(Lc.Cs_LauncherSelfBootstrapName, "- " + name));
+                    violations.Add(LC.Format("Launcher.SelfBootstrapName", "- " + name));
                 }
             }
         }
@@ -489,7 +489,7 @@ namespace EasyFramework.Launcher.Editor
         {
             if (!LauncherBoundaryValidator.Validate(logWhenClean: false))
             {
-                throw new BuildFailedException(LC.Combine(Lc.Cs_LauncherBuildAborted));
+                throw new BuildFailedException(LC.Combine("Launcher.BuildAborted"));
             }
         }
     }

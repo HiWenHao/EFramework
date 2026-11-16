@@ -148,9 +148,9 @@ namespace EasyFramework.Edit
 
             string status;
             if (_hasRealProgress && _totalCount > 0)
-                status = $"  {LC.Combine(Lc.PleaseWaitMoment)}  {_currentCount} / {_totalCount} {AnimDots[dotIdx]}";
+                status = $"  {LC.Combine("PleaseWaitMoment")}  {_currentCount} / {_totalCount} {AnimDots[dotIdx]}";
             else
-                status = $"  {LC.Combine(Lc.PleaseWaitMoment)}  {AnimDots[dotIdx]}";
+                status = $"  {LC.Combine("PleaseWaitMoment")}  {AnimDots[dotIdx]}";
 
             EditorGUILayout.LabelField(status, GUIUtils.ProgressStatusLabel, GUILayout.Height(20));
         }
@@ -237,7 +237,7 @@ namespace EasyFramework.Edit
             {
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(LC.Combine(Lc.Cancel), GUILayout.Width(100), GUILayout.Height(24)))
+                if (GUILayout.Button(LC.Combine("Cancel"), GUILayout.Width(100), GUILayout.Height(24)))
                     CloseWindow();
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();

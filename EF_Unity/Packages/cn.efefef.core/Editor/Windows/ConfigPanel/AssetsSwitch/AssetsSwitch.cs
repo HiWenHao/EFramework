@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         Vector2 _allPostation;
         AssetsInformation _assets;
         
-        public override string Name => LC.Combine(new Lc[] { Lc.Assets, Lc.Config, Lc.Switch });
+        public override string Name => LC.Combine("Assets", "Config", "Switch");
 
         public override void OnEnable(string assetsPath)
         {
@@ -64,8 +64,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             #region Example
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.ToggleLeft(LC.Combine(new Lc[] { Lc.Example, Lc.Project }), _assets.ExampleSwitch);
-            if (GUILayout.Button(LC.Combine(_assets.ExampleSwitch ? Lc.Unload : Lc.Import), GUILayout.Width(160f)))
+            EditorGUILayout.ToggleLeft(LC.Combine("Example", "Project"), _assets.ExampleSwitch);
+            if (GUILayout.Button(LC.Combine(_assets.ExampleSwitch ? "Unload" : "Import"), GUILayout.Width(160f)))
             {
                 if (_assets.ExampleSwitch)
                 {
@@ -101,11 +101,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             GUILayout.FlexibleSpace();
             //EditorGUILayout.BeginHorizontal();
-            ////if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Reset, Lc.Current, Lc.Config })))
+            ////if (GUILayout.Button(LC.Combine(new string[] { "Reset", "Current", "Config" })))
             ////{
 
             ////}
-            //if (GUILayout.Button(LC.Combine(new Lc[] { Lc.Confirm, Lc.Config })))
+            //if (GUILayout.Button(LC.Combine(new string[] { "Confirm", "Config" })))
             //{
 
             //}
@@ -125,7 +125,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
         {
             mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch,
-                LC.Combine(new Lc[] { (managers == null) ? Lc.Plugins : Lc.Manager, Lc.Switch }));
+                LC.Combine((managers == null) ? "Plugins" : "Manager", "Switch"));
             if (mySwitch)
             {
                 EditorGUILayout.BeginHorizontal(GUIUtils.ScrollViewBackground());
@@ -216,7 +216,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             GUILayout.Box(GUIContent.none, GUILayout.Height(3.0f), GUILayout.ExpandWidth(true));
             bool isLoad = info.IsLoad;
-            if (GUILayout.Button(isLoad ? LC.Combine(Lc.Unload) : LC.Combine(Lc.Import), GUILayout.MinWidth(100f)))
+            if (GUILayout.Button(isLoad ? LC.Combine("Unload") : LC.Combine("Import"), GUILayout.MinWidth(100f)))
             {
                 string path = Path.Combine(
                     Application.dataPath,
