@@ -1792,7 +1792,7 @@
     {
       "key": "Cs_LauncherBoundaryOk",
       "desc": "[EF.Launcher] AOT ",
-      "text": "[EF.Launcher] AOT 边界校验通过：EF.Launcher 没有任何 cn.efefef.* 引用"
+      "text": "[EF.Launcher] AOT 边界校验通过：EF.Launcher 没有引用任何热更程序集（EF.Core 为白名单）"
     },
     {
       "key": "Cs_LauncherBoundaryBroken",
@@ -1987,7 +1987,7 @@
     {
       "key": "Cs_LauncherBoundaryRule",
       "desc": "规则：EF.Launcher.Run",
-      "text": "规则：EF.Launcher 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。"
+      "text": "规则：EF.Launcher 只能引用常驻 AOT 的程序集，绝不能引用热更程序集；EF.Core 为唯一白名单且访问收口在 LauncherCoreBridge。判定以 HybridCLR 热更列表为真源，EF 包内 vendor 的第三方（UniTask / YooAsset）按程序集名放行。"
     },
     {
       "key": "Cs_LauncherRemoveReferences",
@@ -2108,7 +2108,7 @@
     {
       "key": "Cs_LauncherPrecompiledRef",
       "desc": "precompiledReferen",
-      "text": "precompiledReferences 里出现 EF 程序集：{0}",
+      "text": "precompiledReferences 里出现受限 EF 程序集：{0}",
       "params": [
         "arg0"
       ]
@@ -2123,8 +2123,8 @@
     },
     {
       "key": "Cs_LauncherTransitiveRef",
-      "desc": "传递引用 EF 程序集：{0} → ",
-      "text": "传递引用 EF 程序集：{0} → {1}（{2}）",
+      "desc": "传递引用热更/未白名单程序集：{0} → ",
+      "text": "传递引用热更/未白名单 EF 程序集：{0} → {1}（{2}）",
       "params": [
         "arg0",
         "arg1",
@@ -2167,16 +2167,16 @@
     },
     {
       "key": "Cs_LauncherDirectRefByName",
-      "desc": "直接引用 EF 程序集：{0}（未找",
-      "text": "直接引用 EF 程序集：{0}（未找到对应 asmdef，按名字判定）",
+      "desc": "直接引用热更/未白名单程序集：{0}（未找",
+      "text": "直接引用热更/未白名单 EF 程序集：{0}（未找到对应 asmdef，按名字判定）",
       "params": [
         "arg0"
       ]
     },
     {
       "key": "Cs_LauncherDirectRef",
-      "desc": "直接引用 EF 程序集：{0}（{1",
-      "text": "直接引用 EF 程序集：{0}（{1}）",
+      "desc": "直接引用热更/未白名单程序集：{0}（{1",
+      "text": "直接引用热更/未白名单 EF 程序集：{0}（{1}）",
       "params": [
         "arg0",
         "arg1"

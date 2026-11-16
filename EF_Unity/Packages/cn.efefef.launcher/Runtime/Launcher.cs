@@ -24,9 +24,12 @@ namespace EasyFramework.Launcher
     /// <para>AOT boot kernel. Order matters: AOT metadata must be loaded before the hot update assemblies.</para>
     /// </summary>
     /// <remarks>
-    /// <b>铁律：本程序集不得引用任何 cn.efefef.* 包。</b>
+    /// <b>铁律：本程序集不得引用任何会进入热更列表的程序集。</b>
     /// HybridCLR 会把热更程序集从包体剔除，AOT 侧一旦引用它们，il2cpp 打包阶段就会断。
-    /// 当前形态下 EF.Core 留在 AOT，其余 EF 运行时程序集进热更层；无论哪种形态，启动段都必须零 EF 依赖。
+    /// EF.Core 常驻 AOT，是唯一被精确白名单放行的 EF 程序集；对它的访问收口在
+    /// <see cref="LauncherCoreBridge"/>，且启动段禁止触碰任何框架管理器单例。
+    /// <para>EF.Core stays in AOT and is the only allowlisted EF assembly; all access goes through
+    /// <see cref="LauncherCoreBridge"/>, and boot-stage code must not touch framework manager singletons.</para>
     /// </remarks>
     [DisallowMultipleComponent]
     public sealed class Launcher : MonoBehaviour
@@ -44,10 +47,23 @@ namespace EasyFramework.Launcher
         [SerializeField] private bool _dontDestroyOnLoad = true;
         [SerializeField] private bool _verbose = true;
 
+        [Header("事件通道 / Event channels（可选）")]
+        [SerializeField] private LauncherStateEvent _stateEvent;
+        [SerializeField] private LauncherProgressEvent _progressEvent;
+        [SerializeField] private LauncherErrorEvent _errorEvent;
+
+        private const int DefaultMaxRetryCount = 3;
+        private const float DefaultRetryDelaySeconds = 2f;
+        // 重试耗尽时给界面的空回调，避免界面拿到 null 后空引用
+        private static readonly Action NoopRetry = () => { };
+
         private ILauncherView _view;
         private ILauncherHook _hook;
         private ResourcePackage _package;
         private bool _running;
+        private int _retryCount;
+        private Coroutine _retryCoroutine;
+        private float _startTime;
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
         // Assembly.Load(byte[]) 每次都会创建新程序集；重试时重复加载同名 dll 会产生第二份类型身份
         private readonly HashSet<string> _loadedAssemblyNames = new HashSet<string>();
@@ -126,14 +142,48 @@ namespace EasyFramework.Launcher
         }
 
         /// <summary>
-        /// 失败后重试
-        /// <para>Retry after a failure.</para>
+        /// 失败后按退避重试，次数受 <see cref="LauncherConfig.MaxRetryCount"/> 限制
+        /// <para>Retry after a failure with backoff, bounded by <see cref="LauncherConfig.MaxRetryCount"/>.</para>
         /// </summary>
         public void Retry()
         {
-            if (_running)
+            if (_running || State == LauncherState.Completed || _retryCoroutine != null)
                 return;
 
+            int max = _config != null && _config.MaxRetryCount > 0
+                ? _config.MaxRetryCount
+                : DefaultMaxRetryCount;
+
+            if (_retryCount >= max)
+            {
+                State = LauncherState.Failed;
+                string message = $"重试次数已用尽（{_retryCount}/{max}）";
+                D.Error($"{LogTag} 启动失败 [{LauncherErrorCode.RetryExhausted}] {message}");
+                BroadcastError(LauncherErrorCode.RetryExhausted, message, NoopRetry);
+                return;
+            }
+
+            _retryCount++;
+            float delay = _config != null && _config.RetryDelaySeconds > 0f
+                ? _config.RetryDelaySeconds
+                : DefaultRetryDelaySeconds;
+
+            SetState(LauncherState.Retrying, "准备重试");
+            _retryCoroutine = StartCoroutine(RetryAfterDelay(delay));
+        }
+
+        #endregion
+
+        #region 重试实现
+
+        // 退避只作用于重试，首次启动不等待；用 realtime 避免 timeScale 为 0 时卡死
+        private IEnumerator RetryAfterDelay(float delay)
+        {
+            Log($"第 {_retryCount} 次重试将在 {delay:0.0}s 后开始");
+            if (delay > 0f)
+                yield return new WaitForSecondsRealtime(delay);
+
+            _retryCoroutine = null;
             State = LauncherState.Idle;
             Run();
         }
@@ -145,6 +195,8 @@ namespace EasyFramework.Launcher
         private IEnumerator RunPipeline()
         {
             _running = true;
+            _startTime = Time.realtimeSinceStartup;
+            Log($"启动开始 | 版本={LauncherCoreBridge.AppVersion} 语言={LauncherCoreBridge.DisplayLanguage}");
             // 不清空 _hotfixAssemblies：已加载的程序集无法卸载，重试时继续复用。
             // 重复 Assembly.Load 同名 dll 会产生第二份类型身份，是 InvalidCastException 的常见来源。
 
@@ -166,7 +218,7 @@ namespace EasyFramework.Launcher
                 }
                 catch (Exception e)
                 {
-                    Fail(LauncherErrorCode.ConfigInvalid, $"ILauncherHook.OnBoot 抛出异常：{e.Message}");
+                    Fail(LauncherErrorCode.HookFailed, $"ILauncherHook.OnBoot 抛出异常：{e.Message}");
                     yield break;
                 }
 
@@ -622,6 +674,9 @@ namespace EasyFramework.Launcher
             State = state;
             Log($"{state} | {tip}");
 
+            if (_stateEvent != null)
+                _stateEvent.Raise(new LauncherStatePayload(state, tip));
+
             if (_view == null)
                 return;
 
@@ -637,6 +692,9 @@ namespace EasyFramework.Launcher
 
         private void ReportProgress(long currentCount, long totalCount, long currentBytes, long totalBytes)
         {
+            if (_progressEvent != null)
+                _progressEvent.Raise(new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
+
             if (_view == null)
                 return;
 
@@ -655,18 +713,40 @@ namespace EasyFramework.Launcher
             _running = false;
             State = LauncherState.Failed;
             D.Error($"{LogTag} 启动失败 [{code}] {message}");
+            Diagnose();
+
+            BroadcastError(code, message, Retry);
+
+            if (_config != null && _config.AutoRetryOnFailure)
+                Retry();
+        }
+
+        // 事件通道与界面收到同一份错误，任一订阅者抛异常都不影响另一方
+        private void BroadcastError(LauncherErrorCode code, string message, Action retry)
+        {
+            if (_errorEvent != null)
+                _errorEvent.Raise(new LauncherErrorPayload(code, message, retry));
 
             if (_view == null)
                 return;
 
             try
             {
-                _view.OnError(code, message, Retry);
+                _view.OnError(code, message, retry);
             }
             catch (Exception e)
             {
                 D.Exception(e);
             }
+        }
+
+        // 失败现场一次打全，避免靠猜：版本、状态、已加载程序集、重试次数、耗时、Core 是否就绪
+        private void Diagnose()
+        {
+            float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - _startTime);
+            D.Log($"{LogTag} 诊断 | 版本={LauncherCoreBridge.AppVersion} 状态={State} " +
+                  $"已加载热更程序集={_hotfixAssemblies.Count} 重试={_retryCount} 耗时={elapsed:0.0}s " +
+                  $"CoreReady={LauncherCoreBridge.IsCoreReady}");
         }
 
         private void Log(string message)

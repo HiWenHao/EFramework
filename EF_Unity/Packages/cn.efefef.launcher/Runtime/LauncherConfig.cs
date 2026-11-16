@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 15:58:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-16 11:20:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -36,8 +36,11 @@ namespace EasyFramework.Launcher
     }
 
     /// <summary>
-    /// 启动配置：<b>唯一真源</b>，不再去读 <c>EFC.Projects</c>（那个在热更层）
-    /// <para>Launcher configuration. Single source of truth — do not read EFC.Projects here.</para>
+    /// 启动配置：<b>唯一真源</b>。框架侧 ProjectConfig 虽常驻 AOT，但不作为启动配置来源，
+    /// 以免启动段依赖框架初始化顺序；语言、版本等展示信息统一经 <see cref="LauncherCoreBridge"/> 读取。
+    /// <para>Launcher configuration. Single source of truth. The AOT-resident framework ProjectConfig is
+    /// deliberately not a boot config source; display data such as language and version is read via
+    /// <see cref="LauncherCoreBridge"/>.</para>
     /// </summary>
     [CreateAssetMenu(fileName = "LauncherConfig", menuName = "EF/Launcher Config", order = 201)]
     public sealed class LauncherConfig : ScriptableObject
@@ -58,6 +61,20 @@ namespace EasyFramework.Launcher
         [Min(1), Tooltip("同时下载的最大文件数")] public int DownloadingMaxNumber = 10;
 
         [Min(0), Tooltip("单个文件下载失败后的重试次数")] public int FailedTryAgain = 3;
+
+        #endregion
+
+        #region 重试 / Retry
+
+        [Header("重试 / Retry")]
+        [Min(0), Tooltip("启动流程最大重试次数；0 表示使用内置默认值，负数按 0 处理")]
+        public int MaxRetryCount = 0;
+
+        [Min(0), Tooltip("每次重试前的等待秒数；0 表示使用内置默认值。首次启动不等待")]
+        public float RetryDelaySeconds = 0f;
+
+        [Tooltip("失败后自动按退避重试；默认关闭，由界面按钮触发")]
+        public bool AutoRetryOnFailure = false;
 
         #endregion
 

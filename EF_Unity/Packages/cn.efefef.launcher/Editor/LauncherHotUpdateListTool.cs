@@ -24,8 +24,10 @@ namespace EasyFramework.Launcher.Editor
     /// <para>One-click toggle between Classic (EF stays AOT) and Full (EF goes hot update).</para>
     /// </summary>
     /// <remarks>
-    /// 加入前会检查「还有哪些 AOT 程序集在引用 EF」——那些程序集会让打包直接失败，
+    /// 加入前会检查「还有哪些 AOT 程序集在引用待加入的 EF 程序集」——那些引用会让打包直接失败，
     /// 所以在对话框里先列出来，避免用户点完按钮就炸。
+    /// <para>EF.Core 常驻 AOT 且被 Launcher 引用，默认不在候选列表里；由 LauncherBoundaryValidator
+    /// 单独校验它没有被误加进热更列表。</para>
     /// </remarks>
     public static class LauncherHotUpdateListTool
     {

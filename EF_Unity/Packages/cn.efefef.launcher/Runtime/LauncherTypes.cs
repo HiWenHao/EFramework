@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 15:58:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-16 11:20:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
@@ -46,6 +46,9 @@ namespace EasyFramework.Launcher
 
         /// <summary>启动失败，可通过 <see cref="Launcher.Retry"/> 重试</summary>
         Failed = 9,
+
+        /// <summary>失败后等待退避，即将重试</summary>
+        Retrying = 10,
     }
 
     /// <summary>
@@ -60,7 +63,7 @@ namespace EasyFramework.Launcher
         /// <summary>YooAsset 资源包创建 / 初始化失败</summary>
         PackageInitFailed = 1,
 
-        /// <summary>请求远端版本失败</summary>
+        /// <summary>请求资源版本失败</summary>
         VersionRequestFailed = 2,
 
         /// <summary>更新资源清单失败</summary>
@@ -80,5 +83,11 @@ namespace EasyFramework.Launcher
 
         /// <summary>热更入口执行时抛出异常</summary>
         EntryThrew = 8,
+
+        /// <summary>项目启动钩子抛出异常</summary>
+        HookFailed = 9,
+
+        /// <summary>重试次数已用尽</summary>
+        RetryExhausted = 10,
     }
 }

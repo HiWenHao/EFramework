@@ -1792,7 +1792,7 @@
     {
       "key": "Cs_LauncherBoundaryOk",
       "desc": "[EF.Launcher] AOT ",
-      "text": "[EF.Launcher] AOT boundary OK: EF.Launcher references no cn.efefef.* assembly."
+      "text": "[EF.Launcher] AOT boundary OK: EF.Launcher references no hot update assembly (EF.Core is allowlisted)."
     },
     {
       "key": "Cs_LauncherBoundaryBroken",
@@ -1987,7 +1987,7 @@
     {
       "key": "Cs_LauncherBoundaryRule",
       "desc": "规则：EF.Launcher.Run",
-      "text": "Rule: EF.Launcher may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list."
+      "text": "Rule: EF.Launcher may only reference AOT-resident assemblies, never any hot update assembly; EF.Core is the sole allowlisted EF assembly and its access is confined to LauncherCoreBridge. The HybridCLR hot update list is the authoritative source; third-party assemblies vendored inside EF packages (UniTask / YooAsset) are judged by assembly name."
     },
     {
       "key": "Cs_LauncherRemoveReferences",
@@ -2108,7 +2108,7 @@
     {
       "key": "Cs_LauncherPrecompiledRef",
       "desc": "precompiledReferen",
-      "text": "EF assembly found in precompiledReferences: {0}",
+      "text": "Forbidden EF assembly found in precompiledReferences: {0}",
       "params": [
         "arg0"
       ]
@@ -2123,8 +2123,8 @@
     },
     {
       "key": "Cs_LauncherTransitiveRef",
-      "desc": "传递引用 EF 程序集：{0} → ",
-      "text": "Transitive reference to an EF assembly: {0} -> {1} ({2})",
+      "desc": "传递引用热更/未白名单程序集：{0} → ",
+      "text": "Transitive reference to a hot update / non-allowlisted EF assembly: {0} -> {1} ({2})",
       "params": [
         "arg0",
         "arg1",
@@ -2167,16 +2167,16 @@
     },
     {
       "key": "Cs_LauncherDirectRefByName",
-      "desc": "直接引用 EF 程序集：{0}（未找",
-      "text": "Direct reference to an EF assembly: {0} (asmdef not found, judged by name)",
+      "desc": "直接引用热更/未白名单程序集：{0}（未找",
+      "text": "Direct reference to a hot update / non-allowlisted EF assembly: {0} (asmdef not found, judged by name)",
       "params": [
         "arg0"
       ]
     },
     {
       "key": "Cs_LauncherDirectRef",
-      "desc": "直接引用 EF 程序集：{0}（{1",
-      "text": "Direct reference to an EF assembly: {0} ({1})",
+      "desc": "直接引用热更/未白名单程序集：{0}（{1",
+      "text": "Direct reference to a hot update / non-allowlisted EF assembly: {0} ({1})",
       "params": [
         "arg0",
         "arg1"

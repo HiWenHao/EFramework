@@ -2836,8 +2836,8 @@
       "name": "Cs_LauncherBoundaryOk",
       "desc": "[EF.Launcher] AOT ",
       "array": [
-        "[EF.Launcher] AOT boundary OK: EF.Launcher references no cn.efefef.* assembly.",
-        "[EF.Launcher] AOT 边界校验通过：EF.Launcher 没有任何 cn.efefef.* 引用"
+        "[EF.Launcher] AOT boundary OK: EF.Launcher references no hot update assembly (EF.Core is allowlisted).",
+        "[EF.Launcher] AOT 边界校验通过：EF.Launcher 没有引用任何热更程序集（EF.Core 为白名单）"
       ]
     },
     {
@@ -3148,8 +3148,8 @@
       "name": "Cs_LauncherBoundaryRule",
       "desc": "规则：EF.Launcher.Run",
       "array": [
-        "Rule: EF.Launcher may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list.",
-        "规则：EF.Launcher 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。"
+        "Rule: EF.Launcher may only reference AOT-resident assemblies, never any hot update assembly; EF.Core is the sole allowlisted EF assembly and its access is confined to LauncherCoreBridge. The HybridCLR hot update list is the authoritative source; third-party assemblies vendored inside EF packages (UniTask / YooAsset) are judged by assembly name.",
+        "规则：EF.Launcher 只能引用常驻 AOT 的程序集，绝不能引用热更程序集；EF.Core 为唯一白名单且访问收口在 LauncherCoreBridge。判定以 HybridCLR 热更列表为真源，EF 包内 vendor 的第三方（UniTask / YooAsset）按程序集名放行。"
       ]
     },
     {
@@ -3292,8 +3292,8 @@
       "name": "Cs_LauncherPrecompiledRef",
       "desc": "precompiledReferen",
       "array": [
-        "EF assembly found in precompiledReferences: {0}",
-        "precompiledReferences 里出现 EF 程序集：{0}"
+        "Forbidden EF assembly found in precompiledReferences: {0}",
+        "precompiledReferences 里出现受限 EF 程序集：{0}"
       ]
     },
     {
@@ -3306,10 +3306,10 @@
     },
     {
       "name": "Cs_LauncherTransitiveRef",
-      "desc": "传递引用 EF 程序集：{0} → ",
+      "desc": "传递引用热更/未白名单程序集：{0} → ",
       "array": [
-        "Transitive reference to an EF assembly: {0} -> {1} ({2})",
-        "传递引用 EF 程序集：{0} → {1}（{2}）"
+        "Transitive reference to a hot update / non-allowlisted EF assembly: {0} -> {1} ({2})",
+        "传递引用热更/未白名单 EF 程序集：{0} → {1}（{2}）"
       ]
     },
     {
@@ -3346,18 +3346,18 @@
     },
     {
       "name": "Cs_LauncherDirectRefByName",
-      "desc": "直接引用 EF 程序集：{0}（未找",
+      "desc": "直接引用热更/未白名单程序集：{0}（未找",
       "array": [
-        "Direct reference to an EF assembly: {0} (asmdef not found, judged by name)",
-        "直接引用 EF 程序集：{0}（未找到对应 asmdef，按名字判定）"
+        "Direct reference to a hot update / non-allowlisted EF assembly: {0} (asmdef not found, judged by name)",
+        "直接引用热更/未白名单 EF 程序集：{0}（未找到对应 asmdef，按名字判定）"
       ]
     },
     {
       "name": "Cs_LauncherDirectRef",
-      "desc": "直接引用 EF 程序集：{0}（{1",
+      "desc": "直接引用热更/未白名单程序集：{0}（{1",
       "array": [
-        "Direct reference to an EF assembly: {0} ({1})",
-        "直接引用 EF 程序集：{0}（{1}）"
+        "Direct reference to a hot update / non-allowlisted EF assembly: {0} ({1})",
+        "直接引用热更/未白名单 EF 程序集：{0}（{1}）"
       ]
     },
     {

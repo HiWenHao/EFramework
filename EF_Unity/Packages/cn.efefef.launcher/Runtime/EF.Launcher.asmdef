@@ -3,7 +3,8 @@
     "rootNamespace": "EasyFramework.Launcher",
     "references": [
         "YooAsset",
-        "HybridCLR.Runtime"
+        "HybridCLR.Runtime",
+        "GUID:396fd9bc7a7442941a71f32479ef054d"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
