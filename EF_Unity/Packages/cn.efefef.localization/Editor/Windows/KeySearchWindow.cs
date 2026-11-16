@@ -212,7 +212,7 @@ namespace EasyFramework.Localization.Edit
 
             if (_visible.Count == 0)
             {
-                EditorGUILayout.HelpBox(LC.Combine("No", "Match"), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("Localization.NoMatch"), MessageType.Info);
 
                 // 新建入口：把当前过滤词登记为新 key 并立即选中——挂组件时发现 key 缺失，无需跳转多语言配置面板
                 var canCreate = !string.IsNullOrWhiteSpace(_filter) && IsLegalNewKey(_filter);
@@ -220,7 +220,7 @@ namespace EasyFramework.Localization.Edit
                 {
                     var prevColor = GUI.contentColor;
                     GUI.contentColor = GUIUtils.LightGreen;
-                    if (GUILayout.Button($"+ {LC.Combine("New", "Key")}: {EscapeRich(_filter)}"))
+                    if (GUILayout.Button($"+ {LC.Combine("Localization.NewKey")}: {EscapeRich(_filter)}"))
                     {
                         var created = CreateAndPick(_filter);
                         if (created != null) picked = created;
@@ -343,7 +343,7 @@ namespace EasyFramework.Localization.Edit
         public static void Show(List<LocalizationKeyEntry> keys, string currentKey, Action<string> onPicked)
         {
             var window = CreateInstance<KeySearchWindow>();
-            window.titleContent = new GUIContent(LC.Combine("Key", "Select", "Panel"));
+            window.titleContent = new GUIContent(LC.Combine("Localization.KeySelectPanel"));
             window.minSize = new Vector2(WINDOW_WIDTH, WINDOW_HEIGHT);
             window._onPicked = onPicked;
             window._currentKey = currentKey ?? string.Empty;

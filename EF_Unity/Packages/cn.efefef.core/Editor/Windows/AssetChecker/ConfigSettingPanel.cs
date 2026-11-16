@@ -34,25 +34,25 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         internal override void OnGUI()
         {
             base.OnGUI();
-            _openModel = EditorGUILayout.BeginFoldoutHeaderGroup(_openModel, LC.Combine("Model", "Information", "Settings"));
+            _openModel = EditorGUILayout.BeginFoldoutHeaderGroup(_openModel, LC.Combine("Core.ModelInfoSettings"));
             if (_openModel)
             {
-                AssetsCheckerConfig.ModelMaxBones = DrawIntInfo("      " + LC.Combine("Model", "Max", "Bone"), AssetsCheckerConfig.ModelMaxBones, 60);
-                AssetsCheckerConfig.ModelMaxTriangs = DrawIntInfo("      " + LC.Combine("Model", "Max", "Triangular"), AssetsCheckerConfig.ModelMaxTriangs, 50000);
+                AssetsCheckerConfig.ModelMaxBones = DrawIntInfo("      " + LC.Combine("Core.ModelMaxBone"), AssetsCheckerConfig.ModelMaxBones, 60);
+                AssetsCheckerConfig.ModelMaxTriangs = DrawIntInfo("      " + LC.Combine("Core.ModelMaxTriangular"), AssetsCheckerConfig.ModelMaxTriangs, 50000);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Separator();
 
-            _openEffect = EditorGUILayout.BeginFoldoutHeaderGroup(_openEffect, LC.Combine("Effects", "Information", "Settings"));
+            _openEffect = EditorGUILayout.BeginFoldoutHeaderGroup(_openEffect, LC.Combine("Core.EffectsInfoSettings"));
             if (_openEffect)
             {
-                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine("Effects", "Max", "Materials"), AssetsCheckerConfig.EffectMaxMatrials, 15);
-                AssetsCheckerConfig.EffectMaxParticles = DrawIntInfo("      " + LC.Combine("Effects", "Max", "Particle"), AssetsCheckerConfig.EffectMaxParticles, 1000);
+                AssetsCheckerConfig.EffectMaxMatrials = DrawIntInfo("      " + LC.Combine("Core.EffectsMaxMaterials"), AssetsCheckerConfig.EffectMaxMatrials, 15);
+                AssetsCheckerConfig.EffectMaxParticles = DrawIntInfo("      " + LC.Combine("Core.EffectsMaxParticle"), AssetsCheckerConfig.EffectMaxParticles, 1000);
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Separator();
 
-            _openColor = EditorGUILayout.BeginFoldoutHeaderGroup(_openColor, LC.Combine("Score", "Color", "Settings"));
+            _openColor = EditorGUILayout.BeginFoldoutHeaderGroup(_openColor, LC.Combine("Core.ScoreColorSettings"));
             if (_openColor)
             {
                 AssetsCheckerConfig.ScoreColors[0] = DrawColorInfo("      " + AssetsCheckerConfig.ScoreNames[0], AssetsCheckerConfig.ScoreColors[0], Color.green);
@@ -66,7 +66,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         protected override void BeforeTheRefreshButton()
         {
-            if (GUILayout.Button(LC.Combine("Save", "Config"), GUILayout.Width(80f)))
+            if (GUILayout.Button(LC.Combine("Core.SaveConfig"), GUILayout.Width(80f)))
             {
                 AssetsCheckerConfig.SaveConfig();
                 EditorApplication.delayCall += AssetDatabase.Refresh;

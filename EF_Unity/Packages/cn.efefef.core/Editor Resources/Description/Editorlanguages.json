@@ -17,14 +17,6 @@
       ]
     },
     {
-      "name": "Activity",
-      "desc": "活动的",
-      "array": [
-        "Activity",
-        "活动"
-      ]
-    },
-    {
       "name": "Add",
       "desc": "添加",
       "array": [
@@ -33,51 +25,27 @@
       ]
     },
     {
+      "name": "AddEditorPrefs",
+      "desc": "添加编辑器存档折叠标题",
+      "array": [
+        "Add Editor Pref",
+        "添加编辑器存档"
+      ]
+    },
+    {
+      "name": "AddPlayerPrefs",
+      "desc": "添加玩家存档折叠标题",
+      "array": [
+        "Add Player Pref",
+        "添加玩家存档"
+      ]
+    },
+    {
       "name": "AlignAt",
       "desc": "对齐",
       "array": [
-        "AlignAt",
+        "Align",
         "对齐"
-      ]
-    },
-    {
-      "name": "All",
-      "desc": "全部",
-      "array": [
-        "All",
-        "全部"
-      ]
-    },
-    {
-      "name": "Already",
-      "desc": "已经",
-      "array": [
-        "Already",
-        "已经"
-      ]
-    },
-    {
-      "name": "Animat",
-      "desc": "动画",
-      "array": [
-        "Animat",
-        "动画"
-      ]
-    },
-    {
-      "name": "Any",
-      "desc": "任何",
-      "array": [
-        "Any",
-        "任何"
-      ]
-    },
-    {
-      "name": "Apply",
-      "desc": "应用",
-      "array": [
-        "Apply",
-        "应用"
       ]
     },
     {
@@ -121,83 +89,19 @@
       ]
     },
     {
-      "name": "Asset",
-      "desc": "资源",
+      "name": "AutoRefreshInterval",
+      "desc": "自动刷新间隔",
       "array": [
-        "Asset",
-        "资源"
-      ]
-    },
-    {
-      "name": "Assets",
-      "desc": "资源",
-      "array": [
-        "Assets",
-        "资源"
-      ]
-    },
-    {
-      "name": "Async",
-      "desc": "异步",
-      "array": [
-        "Async",
-        "异步"
-      ]
-    },
-    {
-      "name": "Author",
-      "desc": "作者",
-      "array": [
-        "Author",
-        "作者"
-      ]
-    },
-    {
-      "name": "Auto",
-      "desc": "自动",
-      "array": [
-        "Auto",
-        "自动"
-      ]
-    },
-    {
-      "name": "Await",
-      "desc": "等待",
-      "array": [
-        "Await",
-        "等待"
+        "Auto Refresh Interval",
+        "自动刷新间隔"
       ]
     },
     {
       "name": "BeingProcessed",
       "desc": "正在处理中...",
       "array": [
-        "Being processed...",
+        "Processing...",
         "正在处理中..."
-      ]
-    },
-    {
-      "name": "Bone",
-      "desc": "骨骼",
-      "array": [
-        "Bone",
-        "骨骼"
-      ]
-    },
-    {
-      "name": "By",
-      "desc": "按照",
-      "array": [
-        "By",
-        "按"
-      ]
-    },
-    {
-      "name": "CPU",
-      "desc": "计算机处理器",
-      "array": [
-        "CPU",
-        "处理器"
       ]
     },
     {
@@ -209,54 +113,6 @@
       ]
     },
     {
-      "name": "Capacity",
-      "desc": "容量",
-      "array": [
-        "Capacity",
-        "容量"
-      ]
-    },
-    {
-      "name": "Catalogue",
-      "desc": "目录",
-      "array": [
-        "Catalogue",
-        "目录"
-      ]
-    },
-    {
-      "name": "Chain",
-      "desc": "链",
-      "array": [
-        "Chain",
-        "链"
-      ]
-    },
-    {
-      "name": "Character",
-      "desc": "字符",
-      "array": [
-        "Character",
-        "字符"
-      ]
-    },
-    {
-      "name": "Check",
-      "desc": "检查",
-      "array": [
-        "Check",
-        "检查"
-      ]
-    },
-    {
-      "name": "Class",
-      "desc": "类",
-      "array": [
-        "Class",
-        "类"
-      ]
-    },
-    {
       "name": "Clear",
       "desc": "清空",
       "array": [
@@ -265,19 +121,11 @@
       ]
     },
     {
-      "name": "Code",
-      "desc": "代码",
+      "name": "CollapseAll",
+      "desc": "折叠全部",
       "array": [
-        "Code",
-        "代码"
-      ]
-    },
-    {
-      "name": "Color",
-      "desc": "颜色",
-      "array": [
-        "Color",
-        "颜色"
+        "Collapse All",
+        "折叠全部"
       ]
     },
     {
@@ -290,7 +138,7 @@
     },
     {
       "name": "Compiling",
-      "desc": "编译中",
+      "desc": "窗口刷新遮罩状态",
       "array": [
         "Compiling",
         "编译中"
@@ -316,7 +164,7 @@
       "name": "Config",
       "desc": "配置",
       "array": [
-        "Config",
+        "Configuration",
         "配置"
       ]
     },
@@ -329,27 +177,1067 @@
       ]
     },
     {
-      "name": "Consistency",
-      "desc": "一致的",
-      "array": [
-        "Consistency",
-        "一致"
-      ]
-    },
-    {
-      "name": "Content",
-      "desc": "内容",
-      "array": [
-        "Content",
-        "内容"
-      ]
-    },
-    {
       "name": "Copy",
       "desc": "复制",
       "array": [
         "Copy",
         "复制"
+      ]
+    },
+    {
+      "name": "Core.ActiveKey",
+      "desc": "活跃键",
+      "array": [
+        "Active Key",
+        "活跃键"
+      ]
+    },
+    {
+      "name": "Core.ActiveProcedureTreeTotal",
+      "desc": "活动流程树总数：",
+      "array": [
+        "Active procedure tree total: ",
+        "活动流程树总数："
+      ]
+    },
+    {
+      "name": "Core.ActivityRate",
+      "desc": "活跃比率",
+      "array": [
+        "Activity Rate",
+        "活跃比率"
+      ]
+    },
+    {
+      "name": "Core.AddConfig",
+      "desc": "添加配置",
+      "array": [
+        "Add Config",
+        "添加配置"
+      ]
+    },
+    {
+      "name": "Core.AddTask",
+      "desc": "添加任务",
+      "array": [
+        "Add Task",
+        "添加任务"
+      ]
+    },
+    {
+      "name": "Core.AnimatExtractPath",
+      "desc": "动画提取路径",
+      "array": [
+        "Animation Extract Path",
+        "动画提取路径"
+      ]
+    },
+    {
+      "name": "Core.ApplyRename",
+      "desc": "应用重命名",
+      "array": [
+        "Apply Rename",
+        "应用重命名"
+      ]
+    },
+    {
+      "name": "Core.AssetList",
+      "desc": "资源列表",
+      "array": [
+        "Asset List",
+        "资源列表"
+      ]
+    },
+    {
+      "name": "Core.AssetsConfigSwitch",
+      "desc": "资源配置开关",
+      "array": [
+        "Asset Config Switch",
+        "资源配置开关"
+      ]
+    },
+    {
+      "name": "Core.AssetsDescription",
+      "desc": "资源描述",
+      "array": [
+        "Asset Description",
+        "资源描述"
+      ]
+    },
+    {
+      "name": "Core.AssetsRenameTool",
+      "desc": "资源重命名工具",
+      "array": [
+        "Asset Rename Tool",
+        "资源重命名工具"
+      ]
+    },
+    {
+      "name": "Core.AsyncCount",
+      "desc": "异步数量",
+      "array": [
+        "Async Count",
+        "异步数量"
+      ]
+    },
+    {
+      "name": "Core.AutoDecryption",
+      "desc": "自动解密",
+      "array": [
+        "Auto Decryption",
+        "自动解密"
+      ]
+    },
+    {
+      "name": "Core.AwaitExit",
+      "desc": "等待退出",
+      "array": [
+        "Awaiting Exit",
+        "等待退出"
+      ]
+    },
+    {
+      "name": "Core.BoneCount",
+      "desc": "骨骼数量",
+      "array": [
+        "Bone Count",
+        "骨骼数量"
+      ]
+    },
+    {
+      "name": "Core.CancelMark",
+      "desc": "取消标记",
+      "array": [
+        "Clear Mark",
+        "取消标记"
+      ]
+    },
+    {
+      "name": "Core.ChainRepetition",
+      "desc": "链重复",
+      "array": [
+        "Duplicate Chain",
+        "链重复"
+      ]
+    },
+    {
+      "name": "Core.ClearConfigFile",
+      "desc": "清空配置文件",
+      "array": [
+        "Clear Config File",
+        "清空配置文件"
+      ]
+    },
+    {
+      "name": "Core.ConfigQuerySettings",
+      "desc": "配置查询设置",
+      "array": [
+        "Config Query Settings",
+        "配置查询设置"
+      ]
+    },
+    {
+      "name": "Core.CpuCount",
+      "desc": "处理器数量",
+      "array": [
+        "CPU Count",
+        "处理器数量"
+      ]
+    },
+    {
+      "name": "Core.CpuName",
+      "desc": "处理器名称",
+      "array": [
+        "CPU Name",
+        "处理器名称"
+      ]
+    },
+    {
+      "name": "Core.CreateCustom",
+      "desc": "创建自定义",
+      "array": [
+        "Create Custom",
+        "创建自定义"
+      ]
+    },
+    {
+      "name": "Core.CurrentActiveProcedure",
+      "desc": "当前活跃流程",
+      "array": [
+        "Active Procedure",
+        "当前活跃流程"
+      ]
+    },
+    {
+      "name": "Core.CurrentDepth",
+      "desc": "当前深度",
+      "array": [
+        "Current Depth",
+        "当前深度"
+      ]
+    },
+    {
+      "name": "Core.CurrentHardwareInfo",
+      "desc": "当前硬件信息",
+      "array": [
+        "Current Hardware Info",
+        "当前硬件信息"
+      ]
+    },
+    {
+      "name": "Core.CurrentProjectInfo",
+      "desc": "当前项目信息",
+      "array": [
+        "Current Project Info",
+        "当前项目信息"
+      ]
+    },
+    {
+      "name": "Core.DeleteTask",
+      "desc": "删除任务",
+      "array": [
+        "Delete Task",
+        "删除任务"
+      ]
+    },
+    {
+      "name": "Core.DeviceId",
+      "desc": "设备标识",
+      "array": [
+        "Device ID",
+        "设备标识"
+      ]
+    },
+    {
+      "name": "Core.DeviceName",
+      "desc": "设备名称",
+      "array": [
+        "Device Name",
+        "设备名称"
+      ]
+    },
+    {
+      "name": "Core.DeviceType",
+      "desc": "设备类型",
+      "array": [
+        "Device Type",
+        "设备类型"
+      ]
+    },
+    {
+      "name": "Core.DeviceVersion",
+      "desc": "设备版本",
+      "array": [
+        "Device Version",
+        "设备版本"
+      ]
+    },
+    {
+      "name": "Core.DisplayConsistency",
+      "desc": "显示一致性",
+      "array": [
+        "Highlight Mismatches",
+        "显示一致性"
+      ]
+    },
+    {
+      "name": "Core.DisplayLanguage",
+      "desc": "显示语言",
+      "array": [
+        "Display Language",
+        "显示语言"
+      ]
+    },
+    {
+      "name": "Core.DisplayName",
+      "desc": "显示名称",
+      "array": [
+        "Display Name",
+        "显示名称"
+      ]
+    },
+    {
+      "name": "Core.DisplaySimplex",
+      "desc": "显示简化",
+      "array": [
+        "Show Simplified",
+        "显示简化"
+      ]
+    },
+    {
+      "name": "Core.EditorUser",
+      "desc": "编辑器用户",
+      "array": [
+        "Editor User",
+        "编辑器用户"
+      ]
+    },
+    {
+      "name": "Core.EffectsInfoSettings",
+      "desc": "特效信息设置",
+      "array": [
+        "Effects Info Settings",
+        "特效信息设置"
+      ]
+    },
+    {
+      "name": "Core.EffectsMaxMaterials",
+      "desc": "最大材质数",
+      "array": [
+        "Max Materials",
+        "最大材质数"
+      ]
+    },
+    {
+      "name": "Core.EffectsMaxMaterialsCount",
+      "desc": "最大材质数量",
+      "array": [
+        "Max Material Count",
+        "最大材质数量"
+      ]
+    },
+    {
+      "name": "Core.EffectsMaxParticle",
+      "desc": "最大粒子数",
+      "array": [
+        "Max Particles",
+        "最大粒子数"
+      ]
+    },
+    {
+      "name": "Core.EffectsMaxParticleCount",
+      "desc": "最大粒子数量",
+      "array": [
+        "Max Particle Count",
+        "最大粒子数量"
+      ]
+    },
+    {
+      "name": "Core.EffectsName",
+      "desc": "特效名称",
+      "array": [
+        "Effects Name",
+        "特效名称"
+      ]
+    },
+    {
+      "name": "Core.EnableAutoRefresh",
+      "desc": "启用自动刷新",
+      "array": [
+        "Enable Auto Refresh",
+        "启用自动刷新"
+      ]
+    },
+    {
+      "name": "Core.EnterTimeout",
+      "desc": "进入超时",
+      "array": [
+        "Enter Timeout",
+        "进入超时"
+      ]
+    },
+    {
+      "name": "Core.EventDataMonitor",
+      "desc": "事件数据监控",
+      "array": [
+        "Event Data Monitor",
+        "事件数据监控"
+      ]
+    },
+    {
+      "name": "Core.EventTotalIs",
+      "desc": "事件总数：",
+      "array": [
+        "Total events: ",
+        "事件总数："
+      ]
+    },
+    {
+      "name": "Core.EventType",
+      "desc": "事件类型",
+      "array": [
+        "Event Type",
+        "事件类型"
+      ]
+    },
+    {
+      "name": "Core.ExampleProject",
+      "desc": "示例项目",
+      "array": [
+        "Example Project",
+        "示例项目"
+      ]
+    },
+    {
+      "name": "Core.ExitTimeout",
+      "desc": "退出超时",
+      "array": [
+        "Exit Timeout",
+        "退出超时"
+      ]
+    },
+    {
+      "name": "Core.FileCatalog",
+      "desc": "文件目录",
+      "array": [
+        "File Catalog",
+        "文件目录"
+      ]
+    },
+    {
+      "name": "Core.FileDetails",
+      "desc": "文件详情",
+      "array": [
+        "File Details",
+        "文件详情"
+      ]
+    },
+    {
+      "name": "Core.FindScriptDependencies",
+      "desc": "查找脚本依赖",
+      "array": [
+        "Find Script Dependencies",
+        "查找脚本依赖"
+      ]
+    },
+    {
+      "name": "Core.ForceSave",
+      "desc": "强制保存",
+      "array": [
+        "Force Save",
+        "强制保存"
+      ]
+    },
+    {
+      "name": "Core.GpuId",
+      "desc": "显卡标识",
+      "array": [
+        "GPU ID",
+        "显卡标识"
+      ]
+    },
+    {
+      "name": "Core.GpuMemorySize",
+      "desc": "显存大小",
+      "array": [
+        "GPU Memory Size",
+        "显存大小"
+      ]
+    },
+    {
+      "name": "Core.GpuName",
+      "desc": "显卡名称",
+      "array": [
+        "GPU Name",
+        "显卡名称"
+      ]
+    },
+    {
+      "name": "Core.GpuType",
+      "desc": "显卡类型",
+      "array": [
+        "GPU Type",
+        "显卡类型"
+      ]
+    },
+    {
+      "name": "Core.GpuVendor",
+      "desc": "显卡供应商",
+      "array": [
+        "GPU Vendor",
+        "显卡供应商"
+      ]
+    },
+    {
+      "name": "Core.GpuVendorId",
+      "desc": "显卡供应商标识",
+      "array": [
+        "GPU Vendor ID",
+        "显卡供应商标识"
+      ]
+    },
+    {
+      "name": "Core.HighlightMark",
+      "desc": "强调标记",
+      "array": [
+        "Highlight Mark",
+        "强调标记"
+      ]
+    },
+    {
+      "name": "Core.IdleOccupancyRate",
+      "desc": "空闲占用比率",
+      "array": [
+        "Idle Occupancy Rate",
+        "空闲占用比率"
+      ]
+    },
+    {
+      "name": "Core.IdleTimeout",
+      "desc": "空闲超时",
+      "array": [
+        "Idle Timeout",
+        "空闲超时"
+      ]
+    },
+    {
+      "name": "Core.InAllActiveScenes",
+      "desc": "在所有活动场景中",
+      "array": [
+        "In all active scenes",
+        "在所有活动场景中"
+      ]
+    },
+    {
+      "name": "Core.InAllPrefabs",
+      "desc": "在所有预制件中",
+      "array": [
+        "In all prefabs",
+        "在所有预制件中"
+      ]
+    },
+    {
+      "name": "Core.InEnter",
+      "desc": "进入时",
+      "array": [
+        "On Enter",
+        "进入时"
+      ]
+    },
+    {
+      "name": "Core.InExit",
+      "desc": "退出时",
+      "array": [
+        "On Exit",
+        "退出时"
+      ]
+    },
+    {
+      "name": "Core.InProjectPath",
+      "desc": "在项目路径下",
+      "array": [
+        "Under the project path",
+        "在项目路径下"
+      ]
+    },
+    {
+      "name": "Core.LeftLostContent",
+      "desc": "左侧丢失内容",
+      "array": [
+        "Content lost on the left",
+        "左侧丢失内容"
+      ]
+    },
+    {
+      "name": "Core.LeftMissingObject",
+      "desc": "左侧缺失对象",
+      "array": [
+        "Missing object on the left",
+        "左侧缺失对象"
+      ]
+    },
+    {
+      "name": "Core.LoadConfigFile",
+      "desc": "加载配置文件",
+      "array": [
+        "Load Config File",
+        "加载配置文件"
+      ]
+    },
+    {
+      "name": "Core.LostCount",
+      "desc": "丢失数量",
+      "array": [
+        "Missing Count",
+        "丢失数量"
+      ]
+    },
+    {
+      "name": "Core.MaxCapacity",
+      "desc": "最大容量",
+      "array": [
+        "Max Capacity",
+        "最大容量"
+      ]
+    },
+    {
+      "name": "Core.MaxDepth",
+      "desc": "最大深度",
+      "array": [
+        "Max Depth",
+        "最大深度"
+      ]
+    },
+    {
+      "name": "Core.MaxIdleCount",
+      "desc": "最大空闲数量",
+      "array": [
+        "Max Idle Count",
+        "最大空闲数量"
+      ]
+    },
+    {
+      "name": "Core.MaxSize",
+      "desc": "最大尺寸",
+      "array": [
+        "Max Size",
+        "最大尺寸"
+      ]
+    },
+    {
+      "name": "Core.ModelInfoSettings",
+      "desc": "模型信息设置",
+      "array": [
+        "Model Info Settings",
+        "模型信息设置"
+      ]
+    },
+    {
+      "name": "Core.ModelMaxBone",
+      "desc": "最大骨骼数",
+      "array": [
+        "Max Bones",
+        "最大骨骼数"
+      ]
+    },
+    {
+      "name": "Core.ModelMaxBoneCount",
+      "desc": "最大骨骼数量",
+      "array": [
+        "Max Bone Count",
+        "最大骨骼数量"
+      ]
+    },
+    {
+      "name": "Core.ModelMaxTriangular",
+      "desc": "最大三角面数",
+      "array": [
+        "Max Triangles",
+        "最大三角面数"
+      ]
+    },
+    {
+      "name": "Core.ModelMaxTriangularCount",
+      "desc": "最大三角面数量",
+      "array": [
+        "Max Triangle Count",
+        "最大三角面数量"
+      ]
+    },
+    {
+      "name": "Core.ModelName",
+      "desc": "模型名称",
+      "array": [
+        "Model Name",
+        "模型名称"
+      ]
+    },
+    {
+      "name": "Core.ModelSize",
+      "desc": "模型尺寸",
+      "array": [
+        "Model Size",
+        "模型尺寸"
+      ]
+    },
+    {
+      "name": "Core.MoreOptions",
+      "desc": "更多选项",
+      "array": [
+        "More Options",
+        "更多选项"
+      ]
+    },
+    {
+      "name": "Core.NoActiveProcedure",
+      "desc": "当前没有活跃流程。",
+      "array": [
+        "No active procedures.",
+        "当前没有活跃流程。"
+      ]
+    },
+    {
+      "name": "Core.NoEventSubscriptions",
+      "desc": "当前没有任何事件订阅。",
+      "array": [
+        "No event subscriptions currently.",
+        "当前没有任何事件订阅。"
+      ]
+    },
+    {
+      "name": "Core.NoMatchesFound",
+      "desc": "未找到匹配项",
+      "array": [
+        "No matches found",
+        "未找到匹配项"
+      ]
+    },
+    {
+      "name": "Core.NoProcedureExist",
+      "desc": "没有流程存在。",
+      "array": [
+        "No procedure exists.",
+        "没有流程存在。"
+      ]
+    },
+    {
+      "name": "Core.NoSurvivingInstance",
+      "desc": "没有存活实例。",
+      "array": [
+        "No surviving instances.",
+        "没有存活实例。"
+      ]
+    },
+    {
+      "name": "Core.NonProjectPath",
+      "desc": "不在项目路径下",
+      "array": [
+        "Outside the project path",
+        "不在项目路径下"
+      ]
+    },
+    {
+      "name": "Core.ObjectsWithMissingScripts",
+      "desc": "丢失脚本的对象",
+      "array": [
+        "Objects with missing scripts",
+        "丢失脚本的对象"
+      ]
+    },
+    {
+      "name": "Core.OpenDebug",
+      "desc": "打开调试",
+      "array": [
+        "Open Debug",
+        "打开调试"
+      ]
+    },
+    {
+      "name": "Core.OperatingSystem",
+      "desc": "操作系统",
+      "array": [
+        "Operating System",
+        "操作系统"
+      ]
+    },
+    {
+      "name": "Core.OrPositionDifferent",
+      "desc": "或位置不同",
+      "array": [
+        "or at a different position",
+        "或位置不同"
+      ]
+    },
+    {
+      "name": "Core.ParticleCount",
+      "desc": "粒子数量",
+      "array": [
+        "Particle Count",
+        "粒子数量"
+      ]
+    },
+    {
+      "name": "Core.PathConfig",
+      "desc": "路径配置",
+      "array": [
+        "Path Config",
+        "路径配置"
+      ]
+    },
+    {
+      "name": "Core.PathSelectError",
+      "desc": "路径选择错误",
+      "array": [
+        "Path selection error",
+        "路径选择错误"
+      ]
+    },
+    {
+      "name": "Core.PoolDataMonitor",
+      "desc": "对象池数据监控",
+      "array": [
+        "Pool Data Monitor",
+        "对象池数据监控"
+      ]
+    },
+    {
+      "name": "Core.PrefabsDependingOnScript",
+      "desc": "依赖此脚本的预制件",
+      "array": [
+        "Prefabs depending on this script",
+        "依赖此脚本的预制件"
+      ]
+    },
+    {
+      "name": "Core.PreviewRename",
+      "desc": "预览重命名",
+      "array": [
+        "Preview Rename",
+        "预览重命名"
+      ]
+    },
+    {
+      "name": "Core.ProcedureAlreadyRegistered",
+      "desc": "流程已注册。",
+      "array": [
+        "Procedure already registered.",
+        "流程已注册。"
+      ]
+    },
+    {
+      "name": "Core.ProcedureRunningMonitor",
+      "desc": "流程运行时监控",
+      "array": [
+        "Procedure Runtime Monitor",
+        "流程运行时监控"
+      ]
+    },
+    {
+      "name": "Core.ProjectSettings",
+      "desc": "项目设置",
+      "array": [
+        "Project Settings",
+        "项目设置"
+      ]
+    },
+    {
+      "name": "Core.ReflectError",
+      "desc": "反射错误",
+      "array": [
+        "Reflection Error",
+        "反射错误"
+      ]
+    },
+    {
+      "name": "Core.ReflectErrorCheckCode",
+      "desc": "反射错误，请检查代码。",
+      "array": [
+        "Reflection error. Please check the code.",
+        "反射错误，请检查代码。"
+      ]
+    },
+    {
+      "name": "Core.RefreshSelect",
+      "desc": "刷新选择",
+      "array": [
+        "Refresh Selection",
+        "刷新选择"
+      ]
+    },
+    {
+      "name": "Core.RelyCount",
+      "desc": "依赖数量",
+      "array": [
+        "Dependency Count",
+        "依赖数量"
+      ]
+    },
+    {
+      "name": "Core.RemoveAll",
+      "desc": "删除全部",
+      "array": [
+        "Remove All",
+        "删除全部"
+      ]
+    },
+    {
+      "name": "Core.RemoveAllTasks",
+      "desc": "删除全部任务",
+      "array": [
+        "Remove All Tasks",
+        "删除全部任务"
+      ]
+    },
+    {
+      "name": "Core.RenameOption",
+      "desc": "重命名选项",
+      "array": [
+        "Rename Options",
+        "重命名选项"
+      ]
+    },
+    {
+      "name": "Core.ResetProjectSettings",
+      "desc": "重置项目设置",
+      "array": [
+        "Reset Project Settings",
+        "重置项目设置"
+      ]
+    },
+    {
+      "name": "Core.ResourceType",
+      "desc": "资源类型",
+      "array": [
+        "Resource Type",
+        "资源类型"
+      ]
+    },
+    {
+      "name": "Core.RightLostContent",
+      "desc": "右侧丢失内容",
+      "array": [
+        "Content lost on the right",
+        "右侧丢失内容"
+      ]
+    },
+    {
+      "name": "Core.RightMissingObject",
+      "desc": "右侧缺失对象",
+      "array": [
+        "Missing object on the right",
+        "右侧缺失对象"
+      ]
+    },
+    {
+      "name": "Core.RootTarget",
+      "desc": "根目标",
+      "array": [
+        "Root Object",
+        "根目标"
+      ]
+    },
+    {
+      "name": "Core.SaveConfig",
+      "desc": "保存配置",
+      "array": [
+        "Save Config",
+        "保存配置"
+      ]
+    },
+    {
+      "name": "Core.SaveConfigFile",
+      "desc": "保存配置文件",
+      "array": [
+        "Save Config File",
+        "保存配置文件"
+      ]
+    },
+    {
+      "name": "Core.ScoreColorSettings",
+      "desc": "分数颜色设置",
+      "array": [
+        "Score Color Settings",
+        "分数颜色设置"
+      ]
+    },
+    {
+      "name": "Core.ScreenCurrent",
+      "desc": "当前屏幕",
+      "array": [
+        "Current Screen",
+        "当前屏幕"
+      ]
+    },
+    {
+      "name": "Core.ScreenResolution",
+      "desc": "屏幕分辨率",
+      "array": [
+        "Screen Resolution",
+        "屏幕分辨率"
+      ]
+    },
+    {
+      "name": "Core.ScriptAuthor",
+      "desc": "脚本作者",
+      "array": [
+        "Script Author",
+        "脚本作者"
+      ]
+    },
+    {
+      "name": "Core.ScriptTool",
+      "desc": "脚本工具",
+      "array": [
+        "Script Tool",
+        "脚本工具"
+      ]
+    },
+    {
+      "name": "Core.ScriptVersion",
+      "desc": "脚本版本",
+      "array": [
+        "Script Version",
+        "脚本版本"
+      ]
+    },
+    {
+      "name": "Core.SelectFindType",
+      "desc": "选择查找类型",
+      "array": [
+        "Choose Search Type",
+        "选择查找类型"
+      ]
+    },
+    {
+      "name": "Core.SelectSystemLanguage",
+      "desc": "选择系统语言",
+      "array": [
+        "Select System Language",
+        "选择系统语言"
+      ]
+    },
+    {
+      "name": "Core.SelectTargetScript",
+      "desc": "选择目标脚本",
+      "array": [
+        "Select Target Script",
+        "选择目标脚本"
+      ]
+    },
+    {
+      "name": "Core.SyncCount",
+      "desc": "同步数量",
+      "array": [
+        "Sync Count",
+        "同步数量"
+      ]
+    },
+    {
+      "name": "Core.SystemMemorySize",
+      "desc": "系统内存大小",
+      "array": [
+        "System Memory",
+        "系统内存大小"
+      ]
+    },
+    {
+      "name": "Core.TaskDescription",
+      "desc": "任务描述",
+      "array": [
+        "Task Description",
+        "任务描述"
+      ]
+    },
+    {
+      "name": "Core.TaskList",
+      "desc": "任务列表",
+      "array": [
+        "Task List",
+        "任务列表"
+      ]
+    },
+    {
+      "name": "Core.TextureCount",
+      "desc": "贴图数量",
+      "array": [
+        "Texture Count",
+        "贴图数量"
+      ]
+    },
+    {
+      "name": "Core.TextureName",
+      "desc": "贴图名称",
+      "array": [
+        "Texture Name",
+        "贴图名称"
+      ]
+    },
+    {
+      "name": "Core.VertexCount",
+      "desc": "顶点数量",
+      "array": [
+        "Vertex Count",
+        "顶点数量"
       ]
     },
     {
@@ -369,27 +1257,11 @@
       ]
     },
     {
-      "name": "Current",
-      "desc": "当前",
+      "name": "CreateConfig",
+      "desc": "创建配置",
       "array": [
-        "Current",
-        "当前"
-      ]
-    },
-    {
-      "name": "Custom",
-      "desc": "自定义",
-      "array": [
-        "Custom",
-        "自定义"
-      ]
-    },
-    {
-      "name": "Data",
-      "desc": "数据",
-      "array": [
-        "Data",
-        "数据"
+        "Create Config",
+        "创建配置"
       ]
     },
     {
@@ -401,27 +1273,19 @@
       ]
     },
     {
-      "name": "Decryption",
-      "desc": "解密",
-      "array": [
-        "Decryption",
-        "解密"
-      ]
-    },
-    {
-      "name": "Default",
-      "desc": "默认",
-      "array": [
-        "Default",
-        "默认"
-      ]
-    },
-    {
       "name": "Delete",
       "desc": "删除",
       "array": [
         "Delete",
         "删除"
+      ]
+    },
+    {
+      "name": "DeleteAll",
+      "desc": "删除全部",
+      "array": [
+        "Delete All",
+        "删除全部"
       ]
     },
     {
@@ -441,30 +1305,6 @@
       ]
     },
     {
-      "name": "Details",
-      "desc": "详情",
-      "array": [
-        "Details",
-        "详情"
-      ]
-    },
-    {
-      "name": "Device",
-      "desc": "设备",
-      "array": [
-        "Device",
-        "设备"
-      ]
-    },
-    {
-      "name": "Different",
-      "desc": "不同、差异",
-      "array": [
-        "Different",
-        "不同"
-      ]
-    },
-    {
       "name": "Disable",
       "desc": "禁用",
       "array": [
@@ -473,18 +1313,10 @@
       ]
     },
     {
-      "name": "Display",
-      "desc": "显示",
-      "array": [
-        "Display",
-        "显示"
-      ]
-    },
-    {
       "name": "Doing",
       "desc": "正在做",
       "array": [
-        "Doing",
+        "Working...",
         "正在做"
       ]
     },
@@ -494,14 +1326,6 @@
       "array": [
         "Done",
         "完成"
-      ]
-    },
-    {
-      "name": "Editor",
-      "desc": "编辑器",
-      "array": [
-        "Editor",
-        "编辑器"
       ]
     },
     {
@@ -521,27 +1345,11 @@
       ]
     },
     {
-      "name": "Element",
-      "desc": "元素",
-      "array": [
-        "Element",
-        "元素"
-      ]
-    },
-    {
       "name": "Empty",
       "desc": "空的",
       "array": [
         "Empty",
         "空的"
-      ]
-    },
-    {
-      "name": "Enable",
-      "desc": "启动",
-      "array": [
-        "Enable",
-        "启动"
       ]
     },
     {
@@ -561,43 +1369,11 @@
       ]
     },
     {
-      "name": "Enter",
-      "desc": "进入",
-      "array": [
-        "Enter",
-        "进入"
-      ]
-    },
-    {
       "name": "Error",
       "desc": "错误",
       "array": [
         "Error",
         "错误"
-      ]
-    },
-    {
-      "name": "Event",
-      "desc": "事件",
-      "array": [
-        "Event",
-        "事件"
-      ]
-    },
-    {
-      "name": "Example",
-      "desc": "示例",
-      "array": [
-        "Example",
-        "示例"
-      ]
-    },
-    {
-      "name": "Excel",
-      "desc": "电子表格",
-      "array": [
-        "Excel",
-        "电子表格"
       ]
     },
     {
@@ -609,35 +1385,11 @@
       ]
     },
     {
-      "name": "Exist",
-      "desc": "存在",
+      "name": "ExpandAll",
+      "desc": "展开全部",
       "array": [
-        "Exist",
-        "存在"
-      ]
-    },
-    {
-      "name": "Exit",
-      "desc": "退出",
-      "array": [
-        "Exit",
-        "退出"
-      ]
-    },
-    {
-      "name": "Export",
-      "desc": "导出",
-      "array": [
-        "Export",
-        "导出"
-      ]
-    },
-    {
-      "name": "Extract",
-      "desc": "提取",
-      "array": [
-        "Extract",
-        "提取"
+        "Expand All",
+        "展开全部"
       ]
     },
     {
@@ -649,18 +1401,10 @@
       ]
     },
     {
-      "name": "File",
-      "desc": "文件",
-      "array": [
-        "File",
-        "文件"
-      ]
-    },
-    {
       "name": "Filtrate",
       "desc": "筛选",
       "array": [
-        "Filtrate",
+        "Filter",
         "筛选"
       ]
     },
@@ -673,70 +1417,6 @@
       ]
     },
     {
-      "name": "Fold",
-      "desc": "折叠",
-      "array": [
-        "Fold",
-        "折叠"
-      ]
-    },
-    {
-      "name": "Folder",
-      "desc": "文件夹",
-      "array": [
-        "Folder",
-        "文件夹"
-      ]
-    },
-    {
-      "name": "Force",
-      "desc": "强制",
-      "array": [
-        "Force",
-        "强制"
-      ]
-    },
-    {
-      "name": "Found",
-      "desc": "找到",
-      "array": [
-        "Found",
-        "找到"
-      ]
-    },
-    {
-      "name": "GPU",
-      "desc": "计算器显卡、图形处理器",
-      "array": [
-        "GPU",
-        "显卡"
-      ]
-    },
-    {
-      "name": "Generate",
-      "desc": "生成",
-      "array": [
-        "Generate",
-        "生成"
-      ]
-    },
-    {
-      "name": "Hardware",
-      "desc": "硬件",
-      "array": [
-        "Hardware",
-        "硬件"
-      ]
-    },
-    {
-      "name": "Have",
-      "desc": "拥有、具备",
-      "array": [
-        "Have",
-        "拥有"
-      ]
-    },
-    {
       "name": "Height",
       "desc": "高度",
       "array": [
@@ -745,27 +1425,11 @@
       ]
     },
     {
-      "name": "Highlight",
-      "desc": "强调",
-      "array": [
-        "Highlight",
-        "强调"
-      ]
-    },
-    {
       "name": "Holdon",
       "desc": "继续、等一等",
       "array": [
-        "Holdon",
+        "Hold On",
         "继续"
-      ]
-    },
-    {
-      "name": "Id",
-      "desc": "标识码",
-      "array": [
-        "Id",
-        "标识码"
       ]
     },
     {
@@ -777,59 +1441,11 @@
       ]
     },
     {
-      "name": "Illegal",
-      "desc": "非法",
-      "array": [
-        "Illegal",
-        "非法"
-      ]
-    },
-    {
       "name": "Import",
       "desc": "导入",
       "array": [
         "Import",
         "导入"
-      ]
-    },
-    {
-      "name": "In",
-      "desc": "在...里",
-      "array": [
-        "In",
-        "在"
-      ]
-    },
-    {
-      "name": "Information",
-      "desc": "信息",
-      "array": [
-        "Information",
-        "信息"
-      ]
-    },
-    {
-      "name": "Instance",
-      "desc": "实例",
-      "array": [
-        "Instance",
-        "实例"
-      ]
-    },
-    {
-      "name": "Interval",
-      "desc": "间隔",
-      "array": [
-        "Interval",
-        "间隔"
-      ]
-    },
-    {
-      "name": "Is",
-      "desc": "是",
-      "array": [
-        "Is",
-        "是"
       ]
     },
     {
@@ -841,14 +1457,6 @@
       ]
     },
     {
-      "name": "Language",
-      "desc": "语言",
-      "array": [
-        "Language",
-        "语言"
-      ]
-    },
-    {
       "name": "Layer",
       "desc": "层",
       "array": [
@@ -857,83 +1465,19 @@
       ]
     },
     {
-      "name": "Left",
-      "desc": "左边",
-      "array": [
-        "Left",
-        "左边"
-      ]
-    },
-    {
-      "name": "List",
-      "desc": "列表",
-      "array": [
-        "List",
-        "列表"
-      ]
-    },
-    {
-      "name": "Load",
-      "desc": "加载",
-      "array": [
-        "Load",
-        "加载"
-      ]
-    },
-    {
       "name": "Lost",
       "desc": "丢失",
       "array": [
-        "Lost",
+        "Missing",
         "丢失"
       ]
     },
     {
-      "name": "Manager",
-      "desc": "管理者",
+      "name": "ManagersSwitch",
+      "desc": "管理器折叠标题",
       "array": [
-        "Manager",
-        "管理者"
-      ]
-    },
-    {
-      "name": "Manually",
-      "desc": "手动",
-      "array": [
-        "Manually",
-        "手动"
-      ]
-    },
-    {
-      "name": "Mark",
-      "desc": "标记",
-      "array": [
-        "Mark",
-        "标记"
-      ]
-    },
-    {
-      "name": "Match",
-      "desc": "匹配项",
-      "array": [
-        "Match",
-        "匹配项"
-      ]
-    },
-    {
-      "name": "Materials",
-      "desc": "材质球",
-      "array": [
-        "Materials",
-        "材质"
-      ]
-    },
-    {
-      "name": "Max",
-      "desc": "最大",
-      "array": [
-        "Max",
-        "最大"
+        "Managers",
+        "管理器"
       ]
     },
     {
@@ -945,11 +1489,11 @@
       ]
     },
     {
-      "name": "Missing",
-      "desc": "缺失",
+      "name": "MipMaps",
+      "desc": "Mip 贴图",
       "array": [
-        "Missing",
-        "缺失"
+        "Mip Maps",
+        "Mip 贴图"
       ]
     },
     {
@@ -969,26 +1513,10 @@
       ]
     },
     {
-      "name": "Monitor",
-      "desc": "监控",
-      "array": [
-        "Monitor",
-        "监控"
-      ]
-    },
-    {
-      "name": "More",
-      "desc": "更多",
-      "array": [
-        "More",
-        "更多"
-      ]
-    },
-    {
       "name": "MoveDown",
       "desc": "下移",
       "array": [
-        "MoveDown",
+        "Move Down",
         "下移"
       ]
     },
@@ -996,104 +1524,48 @@
       "name": "MoveUp",
       "desc": "上移",
       "array": [
-        "MoveUp",
+        "Move Up",
         "上移"
       ]
     },
     {
-      "name": "Name",
-      "desc": "名称",
+      "name": "NameIllegalChars",
+      "desc": "名称包含非法字符。",
       "array": [
-        "Name",
-        "名称"
+        "The name contains illegal characters.",
+        "名称包含非法字符。"
       ]
     },
     {
-      "name": "Namespace",
-      "desc": "命名空间",
+      "name": "NameIsEmpty",
+      "desc": "名称为空。",
       "array": [
-        "Namespace",
-        "命名空间"
+        "The name is empty.",
+        "名称为空。"
       ]
     },
     {
-      "name": "Need",
-      "desc": "需要",
+      "name": "NoDataOutsidePlayMode",
+      "desc": "非运行时无数据。",
       "array": [
-        "Need",
-        "需要"
+        "No data available outside play mode.",
+        "非运行时无数据。"
       ]
     },
     {
-      "name": "New",
-      "desc": "新",
+      "name": "NotFound",
+      "desc": "不存在",
       "array": [
-        "New",
-        "新"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
-      "name": "Non",
-      "desc": "非",
-      "array": [
-        "Non",
-        "非"
-      ]
-    },
-    {
-      "name": "Not",
-      "desc": "不",
-      "array": [
-        "Not",
-        "不"
-      ]
-    },
-    {
-      "name": "Object",
-      "desc": "对象、物体",
-      "array": [
-        "Object",
-        "对象"
-      ]
-    },
-    {
-      "name": "Occupancy",
-      "desc": "占用",
-      "array": [
-        "Occupancy",
-        "占用"
-      ]
-    },
-    {
-      "name": "Of",
-      "desc": ".....的",
-      "array": [
-        "of",
-        "的"
+        "Not Found",
+        "不存在"
       ]
     },
     {
       "name": "Ok",
       "desc": "好的",
       "array": [
-        "Ok",
+        "OK",
         "好的"
-      ]
-    },
-    {
-      "name": "One",
-      "desc": "一个",
-      "array": [
-        "One",
-        "一个"
       ]
     },
     {
@@ -1102,38 +1574,6 @@
       "array": [
         "Open",
         "打开"
-      ]
-    },
-    {
-      "name": "Operating",
-      "desc": "操作",
-      "array": [
-        "Operating",
-        "操作"
-      ]
-    },
-    {
-      "name": "Option",
-      "desc": "选项",
-      "array": [
-        "Option",
-        "选项"
-      ]
-    },
-    {
-      "name": "Options",
-      "desc": "选项",
-      "array": [
-        "Options",
-        "选项"
-      ]
-    },
-    {
-      "name": "Or",
-      "desc": "或",
-      "array": [
-        "or",
-        "或"
       ]
     },
     {
@@ -1153,18 +1593,10 @@
       ]
     },
     {
-      "name": "Panel",
-      "desc": "面板",
-      "array": [
-        "Panel",
-        "面板"
-      ]
-    },
-    {
       "name": "Param",
       "desc": "参数",
       "array": [
-        "Param",
+        "Parameters",
         "参数"
       ]
     },
@@ -1174,14 +1606,6 @@
       "array": [
         "Parent",
         "父"
-      ]
-    },
-    {
-      "name": "Particle",
-      "desc": "粒子",
-      "array": [
-        "Particle",
-        "粒子"
       ]
     },
     {
@@ -1196,16 +1620,8 @@
       "name": "PlayerPrefs",
       "desc": "游戏存档",
       "array": [
-        "PlayerPrefs",
+        "Player Prefs",
         "游戏存档"
-      ]
-    },
-    {
-      "name": "Please",
-      "desc": "请",
-      "array": [
-        "Please",
-        "请"
       ]
     },
     {
@@ -1217,27 +1633,11 @@
       ]
     },
     {
-      "name": "Plugins",
-      "desc": "插件",
+      "name": "PluginsSwitch",
+      "desc": "插件折叠标题",
       "array": [
         "Plugins",
         "插件"
-      ]
-    },
-    {
-      "name": "Pool",
-      "desc": "池",
-      "array": [
-        "Pool",
-        "池"
-      ]
-    },
-    {
-      "name": "Position",
-      "desc": "位置",
-      "array": [
-        "Position",
-        "位置"
       ]
     },
     {
@@ -1265,14 +1665,6 @@
       ]
     },
     {
-      "name": "Prefab",
-      "desc": "预制件",
-      "array": [
-        "Prefab",
-        "预制件"
-      ]
-    },
-    {
       "name": "Preferences",
       "desc": "预设、偏好",
       "array": [
@@ -1289,59 +1681,11 @@
       ]
     },
     {
-      "name": "Preview",
-      "desc": "预览",
-      "array": [
-        "Preview",
-        "预览"
-      ]
-    },
-    {
-      "name": "Procedure",
-      "desc": "流程",
-      "array": [
-        "Procedure",
-        "流程"
-      ]
-    },
-    {
       "name": "Progress",
       "desc": "进度",
       "array": [
         "Progress",
         "进度"
-      ]
-    },
-    {
-      "name": "Project",
-      "desc": "项目",
-      "array": [
-        "Project",
-        "项目"
-      ]
-    },
-    {
-      "name": "Query",
-      "desc": "查询",
-      "array": [
-        "Query",
-        "查询"
-      ]
-    },
-    {
-      "name": "Rate",
-      "desc": "比率",
-      "array": [
-        "Rate",
-        "比率"
-      ]
-    },
-    {
-      "name": "Reflect",
-      "desc": "反射",
-      "array": [
-        "Reflect",
-        "反射"
       ]
     },
     {
@@ -1353,27 +1697,11 @@
       ]
     },
     {
-      "name": "Register",
-      "desc": "注册",
+      "name": "RefreshManually",
+      "desc": "手动刷新",
       "array": [
-        "Register",
-        "注册"
-      ]
-    },
-    {
-      "name": "Rely",
-      "desc": "依赖",
-      "array": [
-        "Rely",
-        "依赖"
-      ]
-    },
-    {
-      "name": "Remove",
-      "desc": "去除、解除",
-      "array": [
-        "Remove",
-        "删除"
+        "Refresh Manually",
+        "手动刷新"
       ]
     },
     {
@@ -1382,14 +1710,6 @@
       "array": [
         "Rename",
         "重命名"
-      ]
-    },
-    {
-      "name": "Repetition",
-      "desc": "重复",
-      "array": [
-        "Repetition",
-        "重复"
       ]
     },
     {
@@ -1409,30 +1729,6 @@
       ]
     },
     {
-      "name": "Resolution",
-      "desc": "分辨率",
-      "array": [
-        "Resolution",
-        "分辨率"
-      ]
-    },
-    {
-      "name": "Resource",
-      "desc": "资源",
-      "array": [
-        "Resource",
-        "资源"
-      ]
-    },
-    {
-      "name": "Right",
-      "desc": "右边",
-      "array": [
-        "Right",
-        "右边"
-      ]
-    },
-    {
       "name": "Root",
       "desc": "根",
       "array": [
@@ -1449,35 +1745,11 @@
       ]
     },
     {
-      "name": "Running",
-      "desc": "运行时",
-      "array": [
-        "Running",
-        "运行时"
-      ]
-    },
-    {
-      "name": "S",
-      "desc": "分隔符",
-      "array": [
-        " ",
-        ""
-      ]
-    },
-    {
       "name": "Save",
       "desc": "保存",
       "array": [
         "Save",
         "保存"
-      ]
-    },
-    {
-      "name": "Scene",
-      "desc": "场景",
-      "array": [
-        "Scene",
-        "场景"
       ]
     },
     {
@@ -1489,19 +1761,11 @@
       ]
     },
     {
-      "name": "Screen",
-      "desc": "屏幕",
+      "name": "ScriptNamespace",
+      "desc": "脚本命名空间",
       "array": [
-        "Screen",
-        "屏幕"
-      ]
-    },
-    {
-      "name": "Script",
-      "desc": "脚本",
-      "array": [
-        "Script",
-        "脚本"
+        "Script Namespace",
+        "脚本命名空间"
       ]
     },
     {
@@ -1521,6 +1785,14 @@
       ]
     },
     {
+      "name": "SelectPath",
+      "desc": "选择路径",
+      "array": [
+        "Select Path",
+        "选择路径"
+      ]
+    },
+    {
       "name": "Self",
       "desc": "自身",
       "array": [
@@ -1532,7 +1804,7 @@
       "name": "Sequence",
       "desc": "序号",
       "array": [
-        "Sequence",
+        "Index",
         "序号"
       ]
     },
@@ -1550,22 +1822,6 @@
       "array": [
         "Shader",
         "着色器"
-      ]
-    },
-    {
-      "name": "Simplex",
-      "desc": "单一的",
-      "array": [
-        "Simplex",
-        "单一的"
-      ]
-    },
-    {
-      "name": "Size",
-      "desc": "尺寸",
-      "array": [
-        "Size",
-        "尺寸"
       ]
     },
     {
@@ -1601,14 +1857,6 @@
       ]
     },
     {
-      "name": "Subscriptions",
-      "desc": "订阅",
-      "array": [
-        "Subscriptions",
-        "订阅"
-      ]
-    },
-    {
       "name": "Success",
       "desc": "成功",
       "array": [
@@ -1625,59 +1873,11 @@
       ]
     },
     {
-      "name": "Surviving",
-      "desc": "存活",
-      "array": [
-        "Surviving",
-        "存活"
-      ]
-    },
-    {
       "name": "Suspended",
       "desc": "挂起",
       "array": [
         "Suspended",
         "挂起"
-      ]
-    },
-    {
-      "name": "Switch",
-      "desc": "开关",
-      "array": [
-        "Switch",
-        "开关"
-      ]
-    },
-    {
-      "name": "Sync",
-      "desc": "同步",
-      "array": [
-        "Sync",
-        "同步"
-      ]
-    },
-    {
-      "name": "System",
-      "desc": "系统",
-      "array": [
-        "System",
-        "系统"
-      ]
-    },
-    {
-      "name": "Target",
-      "desc": "目标",
-      "array": [
-        "Target",
-        "目标"
-      ]
-    },
-    {
-      "name": "Task",
-      "desc": "任务",
-      "array": [
-        "Task",
-        "任务"
       ]
     },
     {
@@ -1697,22 +1897,6 @@
       ]
     },
     {
-      "name": "This",
-      "desc": "这个",
-      "array": [
-        "This",
-        "这个"
-      ]
-    },
-    {
-      "name": "Time",
-      "desc": "时间",
-      "array": [
-        "Time",
-        "时间"
-      ]
-    },
-    {
       "name": "Timeout",
       "desc": "超时",
       "array": [
@@ -1729,22 +1913,6 @@
       ]
     },
     {
-      "name": "To",
-      "desc": "到",
-      "array": [
-        "To",
-        "到"
-      ]
-    },
-    {
-      "name": "Tool",
-      "desc": "工具",
-      "array": [
-        "Tool",
-        "工具"
-      ]
-    },
-    {
       "name": "Total",
       "desc": "总数",
       "array": [
@@ -1753,18 +1921,10 @@
       ]
     },
     {
-      "name": "Tree",
-      "desc": "树",
-      "array": [
-        "Tree",
-        "树"
-      ]
-    },
-    {
       "name": "Triangular",
       "desc": "三角面",
       "array": [
-        "Triangular",
+        "Triangles",
         "三角面"
       ]
     },
@@ -1777,43 +1937,11 @@
       ]
     },
     {
-      "name": "Under",
-      "desc": "之下",
-      "array": [
-        "Under",
-        "之下"
-      ]
-    },
-    {
-      "name": "Unfold",
-      "desc": "展开",
-      "array": [
-        "Unfold",
-        "展开"
-      ]
-    },
-    {
       "name": "Unload",
       "desc": "卸载",
       "array": [
         "Unload",
         "卸载"
-      ]
-    },
-    {
-      "name": "Use",
-      "desc": "使用",
-      "array": [
-        "Use",
-        "使用"
-      ]
-    },
-    {
-      "name": "User",
-      "desc": "用户",
-      "array": [
-        "User",
-        "用户"
       ]
     },
     {
@@ -1825,27 +1953,11 @@
       ]
     },
     {
-      "name": "Vendor",
-      "desc": "供应商",
-      "array": [
-        "Vendor",
-        "供应商"
-      ]
-    },
-    {
       "name": "Version",
       "desc": "版本",
       "array": [
         "Version",
         "版本"
-      ]
-    },
-    {
-      "name": "Vertex",
-      "desc": "顶点",
-      "array": [
-        "Vertex",
-        "顶点"
       ]
     },
     {

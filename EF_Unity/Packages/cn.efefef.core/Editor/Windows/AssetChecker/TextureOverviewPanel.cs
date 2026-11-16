@@ -39,12 +39,12 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             _settingMap = new Dictionary<string, TextureSetting>();
             ObjectInfoList = new[]
             {
-                LC.Combine("Texture", "Name"),
-                LC.Combine("Resource", "Type"),
+                LC.Combine("Core.TextureName"),
+                LC.Combine("Core.ResourceType"),
                 LC.Combine("Width"),
                 LC.Combine("Height"),
                 "MipMaps",
-                LC.Combine("Max", "Size"),
+                LC.Combine("Core.MaxSize"),
                 LC.Combine("Compression"),
                 LC.Combine("Memory"),
             };
@@ -196,7 +196,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
         protected override void BeforeTheRefreshButton()
         {
-            if (GUILayout.Button(LC.Combine("AlignAt") + "MipMaps", GUILayout.Width(130)))
+            if (GUILayout.Button(LC.Combine("AlignAt") + LC.Combine("MipMaps"), GUILayout.Width(130)))
             {
                 SwitchMipMaps();
             }

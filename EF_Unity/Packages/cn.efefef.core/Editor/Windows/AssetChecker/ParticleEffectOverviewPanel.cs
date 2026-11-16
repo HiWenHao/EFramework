@@ -38,11 +38,11 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
             ObjectInfoList = new[]
             {
-                LC.Combine("Effects", "Name"),
-                LC.Combine("Resource", "Type"),
+                LC.Combine("Core.EffectsName"),
+                LC.Combine("Core.ResourceType"),
                 "DrawCall",
-                LC.Combine("Texture", "Count"),
-                LC.Combine("Particle", "Count"),
+                LC.Combine("Core.TextureCount"),
+                LC.Combine("Core.ParticleCount"),
                 LC.Combine("Score"),
             };
             base.Initialize();

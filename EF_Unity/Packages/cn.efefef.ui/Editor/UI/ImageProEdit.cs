@@ -60,7 +60,7 @@ namespace EasyFramework.Edit
                 _roundSize = 0;
             }
 
-            _materialTypes.enumValueIndex = (int)(ImageProMaterialType)EditorGUILayout.EnumPopup(LC.Combine("Select", "Materials"), _imageProMaterialType);
+            _materialTypes.enumValueIndex = (int)(ImageProMaterialType)EditorGUILayout.EnumPopup(LC.Combine("Ui.SelectMaterials"), _imageProMaterialType);
 
             switch ((ImageProMaterialType)_materialTypes.enumValueIndex)
             {
@@ -69,7 +69,7 @@ namespace EasyFramework.Edit
                         m_Material.objectReferenceValue = null;
                     break;
                 case ImageProMaterialType.Round:
-                    _cornerSize.floatValue = EditorGUILayout.FloatField(LC.Combine("Radius", "Size"), _cornerSize.floatValue);
+                    _cornerSize.floatValue = EditorGUILayout.FloatField(LC.Combine("Ui.RadiusSize"), _cornerSize.floatValue);
                     float newWidth = _graphic.rectTransform.rect.width * _graphic.rectTransform.lossyScale.x;
                     float newHeight = _graphic.rectTransform.rect.height * _graphic.rectTransform.lossyScale.y;
                     if (((ImageProMaterialType)_materialTypes.enumValueFlag != _imageProMaterialType) ||

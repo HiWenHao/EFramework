@@ -88,7 +88,7 @@ namespace EasyFramework.Edit
 
             if (!EditorApplication.isPlaying)
             {
-                EditorGUILayout.HelpBox(LC.Combine("Non", "Running", "No", "Data"), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("NoDataOutsidePlayMode"), MessageType.Info);
                 return;
             }
 
@@ -102,9 +102,9 @@ namespace EasyFramework.Edit
 
             EditorGUILayout.BeginVertical();
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Manually", "Refresh"), GUILayout.MaxWidth(150f)))
+            if (GUILayout.Button(LC.Combine("RefreshManually"), GUILayout.MaxWidth(150f)))
                 Refresh();
-            AutoRefresh = EditorGUILayout.ToggleLeft(LC.Combine("Enable", "Auto", "Refresh"), AutoRefresh,
+            AutoRefresh = EditorGUILayout.ToggleLeft(LC.Combine("Core.EnableAutoRefresh"), AutoRefresh,
                 GUILayout.Width(150f));
             if (AutoRefresh)
             {
@@ -116,7 +116,7 @@ namespace EasyFramework.Edit
 
             EditorGUILayout.EndHorizontal();
             if (AutoRefresh)
-                EditorGUILayout.LabelField(LC.Combine("Auto", "Refresh", "Interval") + $": {RefreshInterval:F2} s",
+                EditorGUILayout.LabelField(LC.Combine("AutoRefreshInterval") + $": {RefreshInterval:F2} s",
                     GUIUtils.SmallNote());
             EditorGUILayout.EndVertical();
 

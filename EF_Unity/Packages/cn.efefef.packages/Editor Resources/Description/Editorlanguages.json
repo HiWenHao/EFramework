@@ -1,118 +1,6 @@
 ﻿{
   "LcList": [
     {
-      "name": "All",
-      "desc": "全部",
-      "array": [
-        "All",
-        "全部"
-      ]
-    },
-    {
-      "name": "Assets",
-      "desc": "资源",
-      "array": [
-        "Assets",
-        "资源"
-      ]
-    },
-    {
-      "name": "Author",
-      "desc": "作者",
-      "array": [
-        "Author",
-        "作者"
-      ]
-    },
-    {
-      "name": "Catalogue",
-      "desc": "目录",
-      "array": [
-        "Catalogue",
-        "目录"
-      ]
-    },
-    {
-      "name": "Content",
-      "desc": "内容",
-      "array": [
-        "Content",
-        "内容"
-      ]
-    },
-    {
-      "name": "Create",
-      "desc": "创建",
-      "array": [
-        "Create",
-        "创建"
-      ]
-    },
-    {
-      "name": "Current",
-      "desc": "当前",
-      "array": [
-        "Current",
-        "当前"
-      ]
-    },
-    {
-      "name": "Description",
-      "desc": "描述",
-      "array": [
-        "Description",
-        "描述"
-      ]
-    },
-    {
-      "name": "Develop",
-      "desc": "开发",
-      "array": [
-        "Develop",
-        "开发"
-      ]
-    },
-    {
-      "name": "Download",
-      "desc": "下载",
-      "array": [
-        "Download",
-        "下载"
-      ]
-    },
-    {
-      "name": "Error",
-      "desc": "错误",
-      "array": [
-        "Error",
-        "错误"
-      ]
-    },
-    {
-      "name": "Exist",
-      "desc": "存在",
-      "array": [
-        "Exist",
-        "存在"
-      ]
-    },
-    {
-      "name": "Fold",
-      "desc": "折叠",
-      "array": [
-        "Fold",
-        "折叠"
-      ]
-    },
-    {
-      "name": "Folder",
-      "desc": "文件夹",
-      "array": [
-        "Folder",
-        "文件夹"
-      ]
-    },
-    {
       "name": "Generate",
       "desc": "生成",
       "array": [
@@ -126,30 +14,6 @@
       "array": [
         "Git",
         "Git"
-      ]
-    },
-    {
-      "name": "Have",
-      "desc": "拥有、具备",
-      "array": [
-        "Have",
-        "拥有"
-      ]
-    },
-    {
-      "name": "Information",
-      "desc": "信息",
-      "array": [
-        "Information",
-        "信息"
-      ]
-    },
-    {
-      "name": "Install",
-      "desc": "安装",
-      "array": [
-        "Install",
-        "安装"
       ]
     },
     {
@@ -169,99 +33,227 @@
       ]
     },
     {
-      "name": "Maintain",
-      "desc": "维护",
-      "array": [
-        "Maintain",
-        "维护"
-      ]
-    },
-    {
-      "name": "Name",
-      "desc": "名称",
-      "array": [
-        "Name",
-        "名称"
-      ]
-    },
-    {
-      "name": "Need",
-      "desc": "需要",
-      "array": [
-        "Need",
-        "需要"
-      ]
-    },
-    {
-      "name": "New",
-      "desc": "新",
-      "array": [
-        "New",
-        "新"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
       "name": "Non",
       "desc": "非",
       "array": [
-        "Non",
+        "Non-",
         "非"
       ]
     },
     {
-      "name": "Not",
-      "desc": "不",
+      "name": "Packages.AllContent",
+      "desc": "全部内容",
       "array": [
-        "Not",
-        "不"
+        "All Content",
+        "全部内容"
       ]
     },
     {
-      "name": "One",
-      "desc": "一个",
+      "name": "Packages.AuthorName",
+      "desc": "作者名称",
       "array": [
-        "One",
-        "一个"
+        "Author Name",
+        "作者名称"
       ]
     },
     {
-      "name": "Open",
-      "desc": "打开",
+      "name": "Packages.CreateNewPackage",
+      "desc": "创建新包",
       "array": [
-        "Open",
-        "打开"
+        "Create New Package",
+        "创建新包"
       ]
     },
     {
-      "name": "Operating",
-      "desc": "操作",
+      "name": "Packages.CurrentVersion",
+      "desc": "当前版本",
       "array": [
-        "Operating",
-        "操作"
+        "Current Version",
+        "当前版本"
       ]
     },
     {
-      "name": "Package",
-      "desc": "包",
+      "name": "Packages.DevelopOperating",
+      "desc": "开发操作",
       "array": [
-        "Package",
-        "包"
+        "Development",
+        "开发操作"
       ]
     },
     {
-      "name": "PleaseWaitMoment",
-      "desc": "请稍后",
+      "name": "Packages.DownloadInstall",
+      "desc": "下载安装",
       "array": [
-        "Please wait a moment",
-        "请稍后"
+        "Download & Install",
+        "下载安装"
+      ]
+    },
+    {
+      "name": "Packages.InstallError",
+      "desc": "安装错误",
+      "array": [
+        "Install Error",
+        "安装错误"
+      ]
+    },
+    {
+      "name": "Packages.InstallingPackageAssets",
+      "desc": "正在安装包资源，请稍候。",
+      "array": [
+        "Installing package assets. Please wait a moment.",
+        "正在安装包资源，请稍候。"
+      ]
+    },
+    {
+      "name": "Packages.MaintainOperating",
+      "desc": "维护操作",
+      "array": [
+        "Maintenance",
+        "维护操作"
+      ]
+    },
+    {
+      "name": "Packages.NeedUpdate",
+      "desc": "需要更新",
+      "array": [
+        "Update Available",
+        "需要更新"
+      ]
+    },
+    {
+      "name": "Packages.NotInstall",
+      "desc": "不安装",
+      "array": [
+        "Don't Install",
+        "不安装"
+      ]
+    },
+    {
+      "name": "Packages.NotInstalled",
+      "desc": "未安装",
+      "array": [
+        "Not Installed",
+        "未安装"
+      ]
+    },
+    {
+      "name": "Packages.OpenFolder",
+      "desc": "打开文件夹",
+      "array": [
+        "Open Folder",
+        "打开文件夹"
+      ]
+    },
+    {
+      "name": "Packages.PackageAssets",
+      "desc": "包资源",
+      "array": [
+        "Package Assets",
+        "包资源"
+      ]
+    },
+    {
+      "name": "Packages.PackageDescription",
+      "desc": "包描述",
+      "array": [
+        "Package Description",
+        "包描述"
+      ]
+    },
+    {
+      "name": "Packages.PackageName",
+      "desc": "包名",
+      "array": [
+        "Package Name",
+        "包名"
+      ]
+    },
+    {
+      "name": "Packages.RemoteSync",
+      "desc": "远端同步",
+      "array": [
+        "Remote Sync",
+        "远端同步"
+      ]
+    },
+    {
+      "name": "Packages.SaveCatalog",
+      "desc": "保存目录",
+      "array": [
+        "Save Folder",
+        "保存目录"
+      ]
+    },
+    {
+      "name": "Packages.ServerVersion",
+      "desc": "服务器版本",
+      "array": [
+        "Server Version",
+        "服务器版本"
+      ]
+    },
+    {
+      "name": "Packages.SyncUpdate",
+      "desc": "同步更新",
+      "array": [
+        "Sync & Update",
+        "同步更新"
+      ]
+    },
+    {
+      "name": "Packages.TaskInProgressRetry",
+      "desc": "当前有一个任务正在进行，请稍后再试。",
+      "array": [
+        "One task is in progress. Please wait a moment and try again.",
+        "当前有一个任务正在进行，请稍后再试。"
+      ]
+    },
+    {
+      "name": "Packages.ToGit",
+      "desc": "到 Git",
+      "array": [
+        "To Git",
+        "到 Git"
+      ]
+    },
+    {
+      "name": "Packages.UnloadError",
+      "desc": "卸载错误",
+      "array": [
+        "Uninstall Error",
+        "卸载错误"
+      ]
+    },
+    {
+      "name": "Packages.UpdateAllInformation",
+      "desc": "更新全部信息",
+      "array": [
+        "Update All Information",
+        "更新全部信息"
+      ]
+    },
+    {
+      "name": "Packages.UpdateError",
+      "desc": "更新错误",
+      "array": [
+        "Update Error",
+        "更新错误"
+      ]
+    },
+    {
+      "name": "Packages.UpdateVersion",
+      "desc": "更新版本",
+      "array": [
+        "Update Version",
+        "更新版本"
+      ]
+    },
+    {
+      "name": "Packages.UploadVersion",
+      "desc": "上传版本",
+      "array": [
+        "Publish Version",
+        "上传版本"
       ]
     },
     {
@@ -273,99 +265,11 @@
       ]
     },
     {
-      "name": "Remote",
-      "desc": "远端",
-      "array": [
-        "Remote",
-        "远端"
-      ]
-    },
-    {
-      "name": "S",
-      "desc": "分隔符",
-      "array": [
-        " ",
-        ""
-      ]
-    },
-    {
-      "name": "Save",
-      "desc": "保存",
-      "array": [
-        "Save",
-        "保存"
-      ]
-    },
-    {
-      "name": "Server",
-      "desc": "服务器",
-      "array": [
-        "Server",
-        "服务器"
-      ]
-    },
-    {
-      "name": "Sync",
-      "desc": "同步",
-      "array": [
-        "Sync",
-        "同步"
-      ]
-    },
-    {
-      "name": "Task",
-      "desc": "任务",
-      "array": [
-        "Task",
-        "任务"
-      ]
-    },
-    {
-      "name": "To",
-      "desc": "到",
-      "array": [
-        "To",
-        "到"
-      ]
-    },
-    {
-      "name": "Total",
-      "desc": "总数",
-      "array": [
-        "Total",
-        "总数"
-      ]
-    },
-    {
-      "name": "TryAgain",
-      "desc": "再试试",
-      "array": [
-        "Try Again",
-        "再试试"
-      ]
-    },
-    {
-      "name": "Unfold",
-      "desc": "展开",
-      "array": [
-        "Unfold",
-        "展开"
-      ]
-    },
-    {
       "name": "Unknown",
       "desc": "未知",
       "array": [
         "Unknown",
         "未知"
-      ]
-    },
-    {
-      "name": "Unload",
-      "desc": "卸载",
-      "array": [
-        "Unload",
-        "卸载"
       ]
     },
     {
@@ -377,27 +281,11 @@
       ]
     },
     {
-      "name": "Upload",
-      "desc": "上传",
-      "array": [
-        "Upload",
-        "上传"
-      ]
-    },
-    {
       "name": "Use",
       "desc": "使用",
       "array": [
         "Use",
         "使用"
-      ]
-    },
-    {
-      "name": "Version",
-      "desc": "版本",
-      "array": [
-        "Version",
-        "版本"
       ]
     }
   ]

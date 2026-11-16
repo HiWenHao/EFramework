@@ -98,7 +98,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
             }
 
             EditorGUILayout.Separator();
-            GUILayout.Label(LC.Combine("File", "Details"));
+            GUILayout.Label(LC.Combine("Core.FileDetails"));
             EditorGUILayout.BeginHorizontal();
             {
                 GUILayout.Label($"{LC.Combine("Filtrate")}: ");

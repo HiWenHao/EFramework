@@ -20,7 +20,7 @@ namespace EasyFramework.Systems.Archive.Editor
     [CustomEditor(typeof(ArchiveManager))]
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>
     {
-        protected override string Title => LC.Combine("Archive", "Data", "Monitor");
+        protected override string Title => LC.Combine("Archive.ArchiveDataMonitor");
 
         private bool _showSlots = true;     // 是否展开槽位折叠区
         private bool _showKeys;             // 是否展开 Key 折叠区
@@ -37,9 +37,9 @@ namespace EasyFramework.Systems.Archive.Editor
             if (null == Target.Settings)
             {
                 EditorGUILayout.HelpBox(
-                    LC.Combine("Archive", "Config", "No", "Load", "Success")
+                    LC.Combine("Archive.ArchiveConfigLoadFailed")
                     + "\n"
-                    + LC.Combine("Please", "Check", "Config", "By", "Path")
+                    + LC.Combine("Archive.PleaseCheckConfigByPath")
                     + ": Resources/Configs/ArchiveSettings.asset.",
                     MessageType.Warning);
                 return;
@@ -47,13 +47,13 @@ namespace EasyFramework.Systems.Archive.Editor
 
             EditorGUILayout.LabelField(LC.Combine("Provider"),
                 string.IsNullOrEmpty(Target.Settings.providerTypeName)
-                    ? LC.Combine("File", "Archive", "Provider", "Default")
+                    ? LC.Combine("Archive.FileArchiveProviderDefault")
                     : Target.Settings.providerTypeName);
-            EditorGUILayout.LabelField(LC.Combine("Auto", "Save"),
+            EditorGUILayout.LabelField(LC.Combine("Archive.AutoSave"),
                 $"{Target.Settings.autoSaveIntervalSeconds}s");
-            EditorGUILayout.LabelField(LC.Combine("Data", "Version"),
+            EditorGUILayout.LabelField(LC.Combine("Archive.DataVersion"),
                 Target.Settings.dataVersion.ToString());
-            EditorGUILayout.LabelField(LC.Combine("Active", "Slot"),
+            EditorGUILayout.LabelField(LC.Combine("Archive.ActiveSlot"),
                 Target.ActiveSlot.ToString());
 
             EditorGUILayout.Space();
@@ -80,8 +80,8 @@ namespace EasyFramework.Systems.Archive.Editor
                             $"{LC.Combine("Slot")} {slot.slotId}: {slot.slotName}",
                             EditorStyles.boldLabel);
                         EditorGUILayout.LabelField(LC.Combine("Progress"), slot.progressDescription);
-                        EditorGUILayout.LabelField(LC.Combine("Play", "Time"), slot.PlayTimeFormatted);
-                        EditorGUILayout.LabelField(LC.Combine("Last", "Modified"), slot.LastModifiedFormatted);
+                        EditorGUILayout.LabelField(LC.Combine("Archive.PlayTime"), slot.PlayTimeFormatted);
+                        EditorGUILayout.LabelField(LC.Combine("Archive.LastModified"), slot.LastModifiedFormatted);
                         EditorGUILayout.LabelField(LC.Combine("Size"), FormatBytes(slot.totalSizeBytes));
                         EditorGUILayout.EndVertical();
                     }

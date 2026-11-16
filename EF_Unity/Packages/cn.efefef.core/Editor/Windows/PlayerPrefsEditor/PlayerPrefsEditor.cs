@@ -890,7 +890,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.Space();
 
             // Heading
-            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, LC.Combine("Add", _showEditorPrefs ? "EditorPrefs" : "PlayerPrefs"));
+            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, _showEditorPrefs ? LC.Combine("AddEditorPrefs") : LC.Combine("AddPlayerPrefs"));
             if (DisplayAddPref)
             {
                 // UI for whether the new PlayerPref is encrypted and what type it is
@@ -1032,13 +1032,13 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void DrawBottomMenu()
         {
             EditorGUILayout.Space();
-            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, LC.Combine("More", "Options"));
+            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, LC.Combine("Core.MoreOptions"));
 
             if (DisplayMoreOptions)
             {
                 EditorGUILayout.BeginHorizontal();
                 // UI for toggling automatic decryption on and off
-                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine("Auto", "Decryption"), _automaticDecryption);
+                _automaticDecryption = EditorGUILayout.Toggle(LC.Combine("Core.AutoDecryption"), _automaticDecryption);
 
                 if (this.position.width < 390)
                 {
@@ -1046,10 +1046,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                     EditorGUILayout.BeginHorizontal();
                 }
 
-                GUILayout.Label(LC.Combine("Active", "Key"), EditorStyles.boldLabel);
+                GUILayout.Label(LC.Combine("Core.ActiveKey"), EditorStyles.boldLabel);
                 if (!SimpleEncryption.IsCustomKeyApplied)
                 {
-                    if (GUILayout.Button(new GUIContent(LC.Combine("Create", "Custom"), LC.Combine("Ppe_CreateCustomHint"))))
+                    if (GUILayout.Button(new GUIContent(LC.Combine("Core.CreateCustom"), LC.Combine("Ppe_CreateCustomHint"))))
                     {
                         // Get the contents of the template file
                         string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
@@ -1088,9 +1088,9 @@ namespace Sabresaurus.PlayerPrefsEditor
                 EditorGUILayout.BeginHorizontal();
                 float buttonWidth = (EditorGUIUtility.currentViewWidth - 10) / 2f;
                 // Delete all PlayerPrefs
-                if (GUILayout.Button(LC.Combine("Delete", "All") + LC.Combine("Preferences"), GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button(LC.Combine("DeleteAll") + LC.Combine("Preferences"), GUILayout.Width(buttonWidth)))
                 {
-                    if (EditorUtility.DisplayDialog(LC.Combine("Delete", "All"), LC.Combine("Ppe_DeleteAllHint"), LC.Combine("Yes"), LC.Combine("Cancel")))
+                    if (EditorUtility.DisplayDialog(LC.Combine("DeleteAll"), LC.Combine("Ppe_DeleteAllHint"), LC.Combine("Yes"), LC.Combine("Cancel")))
                     {
                         DeleteAll();
                         Save();
@@ -1103,7 +1103,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 GUILayout.FlexibleSpace();
 
                 // Mainly needed for OSX, this will encourage PlayerPrefs to save to file (but still may take a few seconds)
-                if (GUILayout.Button(LC.Combine("Force", "Save"), GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button(LC.Combine("Core.ForceSave"), GUILayout.Width(buttonWidth)))
                 {
                     Save();
                 }

@@ -38,12 +38,12 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
             ObjectInfoList = new[]
             {
-                LC.Combine("Model", "Name"),
-                LC.Combine("Resource", "Type"),
-                LC.Combine("Vertex", "Count"),
+                LC.Combine("Core.ModelName"),
+                LC.Combine("Core.ResourceType"),
+                LC.Combine("Core.VertexCount"),
                 LC.Combine("Triangular"),
-                LC.Combine("Bone", "Count"),
-                LC.Combine("Model", "Size"),
+                LC.Combine("Core.BoneCount"),
+                LC.Combine("Core.ModelSize"),
                 LC.Combine("Score")
             };
             base.Initialize();

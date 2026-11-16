@@ -374,16 +374,12 @@ namespace EasyFramework.Launcher.Editor
                 if (source.IndexOf("EasyFramework.Managers", StringComparison.Ordinal) >= 0
                     || source.IndexOf("Singleton<", StringComparison.Ordinal) >= 0)
                 {
-                    violations.Add(LC.Tr(
-                        "启动段禁止访问框架管理器单例：" + name + "（热更 DLL 尚未加载，Init 会拿到未注入的门面）。",
-                        "Boot-stage code must not touch framework manager singletons: " + name + " (hot update DLLs are not loaded yet)."));
+                    violations.Add(LC.Format("Launcher.BootManagerSingleton", name));
                 }
 
                 if (!isBridge && source.IndexOf("EFC.", StringComparison.Ordinal) >= 0)
                 {
-                    violations.Add(LC.Tr(
-                        "启动段对 EFC 的访问必须收口到 LauncherCoreBridge.cs：" + name,
-                        "All EFC access in boot-stage code must be confined to LauncherCoreBridge.cs: " + name));
+                    violations.Add(LC.Format("Launcher.BootEfcAccess", name));
                 }
             }
         }

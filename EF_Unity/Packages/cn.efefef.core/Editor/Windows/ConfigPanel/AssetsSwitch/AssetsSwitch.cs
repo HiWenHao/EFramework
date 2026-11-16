@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         Vector2 _allPostation;
         AssetsInformation _assets;
         
-        public override string Name => LC.Combine("Assets", "Config", "Switch");
+        public override string Name => LC.Combine("Core.AssetsConfigSwitch");
 
         public override void OnEnable(string assetsPath)
         {
@@ -64,7 +64,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             #region Example
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.ToggleLeft(LC.Combine("Example", "Project"), _assets.ExampleSwitch);
+            EditorGUILayout.ToggleLeft(LC.Combine("Core.ExampleProject"), _assets.ExampleSwitch);
             if (GUILayout.Button(LC.Combine(_assets.ExampleSwitch ? "Unload" : "Import"), GUILayout.Width(160f)))
             {
                 if (_assets.ExampleSwitch)
@@ -125,7 +125,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             List<ManagerInfo> managers = null, List<PluginsInfo> plugins = null)
         {
             mySwitch = EditorGUILayout.BeginFoldoutHeaderGroup(mySwitch,
-                LC.Combine((managers == null) ? "Plugins" : "Manager", "Switch"));
+                managers == null ? LC.Combine("PluginsSwitch") : LC.Combine("ManagersSwitch"));
             if (mySwitch)
             {
                 EditorGUILayout.BeginHorizontal(GUIUtils.ScrollViewBackground());

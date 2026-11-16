@@ -52,7 +52,7 @@ namespace EasyFramework.Managers.Procedure.Editor
 
         private Dictionary<Type, Func<IProcedure>> _cachedFactories;
 
-        protected override string Title => LC.Combine("Procedure", "Running", "Monitor");
+        protected override string Title => LC.Combine("Core.ProcedureRunningMonitor");
 
         protected override void OnEditorEnable()
         {
@@ -108,7 +108,7 @@ namespace EasyFramework.Managers.Procedure.Editor
         {
             if (!_reflectionReady)
             {
-                EditorGUILayout.HelpBox(LC.Combine("Reflect", "Error", "Please", "Check", "Code"),
+                EditorGUILayout.HelpBox(LC.Combine("Core.ReflectErrorCheckCode"),
                     MessageType.Error);
                 return;
             }
@@ -141,14 +141,14 @@ namespace EasyFramework.Managers.Procedure.Editor
 
             if (activeTop != null)
             {
-                EditorGUILayout.LabelField($"{LC.Combine("Current", "Depth")}: {stackDepth}", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField($"{LC.Combine("Core.CurrentDepth")}: {stackDepth}", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(
-                    $"● {LC.Combine("Current", "Active", "Procedure")}   {GetProcedureType(activeTop)?.Name}   UID [ {GetUid(activeTop)} ]",
+                    $"● {LC.Combine("Core.CurrentActiveProcedure")}   {GetProcedureType(activeTop)?.Name}   UID [ {GetUid(activeTop)} ]",
                     GUIUtils.ColorText(textColor: Color.green));
             }
             else
             {
-                EditorGUILayout.LabelField(LC.Combine("Current", "No", "Active", "Procedure"),
+                EditorGUILayout.LabelField(LC.Combine("Core.NoActiveProcedure"),
                     EditorStyles.miniLabel);
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(5);
@@ -171,7 +171,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             float leaveTimeout = leaveTimeoutField != null ? (float)leaveTimeoutField.GetValue(sys) : 0;
 
             EditorGUILayout.LabelField(
-                $"{LC.Combine("Config")}: {LC.Combine("Max", "Depth")}={maxDepth}, {LC.Combine("Chain", "Repetition")}={maxChain}, {LC.Combine("Enter", "Timeout")}={enterTimeout}s, {LC.Combine("Exit", "Timeout")}={leaveTimeout}s",
+                $"{LC.Combine("Config")}: {LC.Combine("Core.MaxDepth")}={maxDepth}, {LC.Combine("Core.ChainRepetition")}={maxChain}, {LC.Combine("Core.EnterTimeout")}={enterTimeout}s, {LC.Combine("Core.ExitTimeout")}={leaveTimeout}s",
                 GUIUtils.SmallNote());
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(5);
@@ -187,7 +187,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             CleanupFoldoutStates(activeInstances);
             var rootInstances = BuildTree(activeInstances);
             _showActivityTree = EditorGUILayout.Foldout(_showActivityTree,
-                LC.Combine("Activity", "Procedure", "Tree", "Total", "Is") + $": {activeInstances.Count}",
+                LC.Combine("Core.ActiveProcedureTreeTotal") + $": {activeInstances.Count}",
                 true);
             if (_showActivityTree)
             {
@@ -196,7 +196,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                     GUILayout.ExpandWidth(true));
 
                 if (rootInstances.Count == 0)
-                    EditorGUILayout.LabelField(LC.Combine("No", "Procedure", "Exist"),
+                    EditorGUILayout.LabelField(LC.Combine("Core.NoProcedureExist"),
                         EditorStyles.centeredGreyMiniLabel);
                 else
                 {
@@ -222,7 +222,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             EditorGUILayout.Space();
             EditorGUILayout.BeginVertical("box");
             _showRegisteredProcedures = EditorGUILayout.Foldout(_showRegisteredProcedures,
-                LC.Combine("Already", "Register", "Procedure") + $" ({_cachedFactories.Count})", true);
+                LC.Combine("Core.ProcedureAlreadyRegistered") + $" ({_cachedFactories.Count})", true);
             if (!_showRegisteredProcedures)
             {
                 EditorGUILayout.EndVertical();
@@ -259,7 +259,7 @@ namespace EasyFramework.Managers.Procedure.Editor
                 }
                 else
                 {
-                    EditorGUILayout.LabelField($"  ({LC.Combine("No", "Surviving", "Instance")})",
+                    EditorGUILayout.LabelField($"  ({LC.Combine("Core.NoSurvivingInstance")})",
                         EditorStyles.miniLabel);
                 }
 
@@ -380,7 +380,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             string contents = LC.Combine("Depth") + $": {GetDepth(inst)} | " +
                               LC.Combine("Version") + $": {GetRuntimeVersion(inst)} | " +
                               LC.Combine("Parent") + $"UID: {GetParentUid(inst)} | " +
-                              LC.Combine("Await", "Exit") + $": {(GetExitQueued(inst) == 1 ? "√" : "X")}";
+                              LC.Combine("Core.AwaitExit") + $": {(GetExitQueued(inst) == 1 ? "√" : "X")}";
             EditorGUILayout.LabelField(contents, EditorStyles.miniLabel);
             GUILayout.EndHorizontal();
 
@@ -429,9 +429,9 @@ namespace EasyFramework.Managers.Procedure.Editor
             return state switch
             {
                 ProcedureState.Active => LC.Combine("Active"),
-                ProcedureState.Entering => LC.Combine("In", "Enter"),
+                ProcedureState.Entering => LC.Combine("Core.InEnter"),
                 ProcedureState.Suspended => LC.Combine("Suspended"),
-                ProcedureState.Exiting => LC.Combine("In", "Exit"),
+                ProcedureState.Exiting => LC.Combine("Core.InExit"),
                 _ => LC.Combine("Exception")
             };
         }

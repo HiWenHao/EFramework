@@ -32,7 +32,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private SerializedProperty _appConstConfig;
         private SerializedProperty _scriptNamespace;
 
-        public override string Name => LC.Combine("Project", "Settings");
+        public override string Name => LC.Combine("Core.ProjectSettings");
 
         public override void OnEnable(string assetsPath)
         {
@@ -68,22 +68,22 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             using var changeCheckScope = new EditorGUI.ChangeCheckScope();
 
-            EditorGUILayout.LabelField(LC.Combine("Current", "Project", "Information"));
+            EditorGUILayout.LabelField(LC.Combine("Core.CurrentProjectInfo"));
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUIUtils.ScrollViewBackground());
 
-            EditorGUILayout.LabelField(LC.Combine("Editor", "User"), _editorUser);
-            _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Author"),
+            EditorGUILayout.LabelField(LC.Combine("Core.EditorUser"), _editorUser);
+            _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptAuthor"),
                 _scriptAuthor.stringValue);
-            _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Version"),
+            _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptVersion"),
                 _scriptVersion.stringValue);
-            _scriptNamespace.stringValue = EditorGUILayout.TextField(LC.Combine("Script", "Namespace"),
+            _scriptNamespace.stringValue = EditorGUILayout.TextField(LC.Combine("ScriptNamespace"),
                 _scriptNamespace.stringValue);
 
             EditorGUILayout.PropertyField(_appConstConfig);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Reset", "Project", "Settings")))
+            if (GUILayout.Button(LC.Combine("Core.ResetProjectSettings")))
             {
                 string appName = Application.productName;
                 _appConstConfig.FindPropertyRelative("_appName").stringValue = appName;
@@ -123,7 +123,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.BeginHorizontal();
             int previousIndex = LC.GetSelectedIndex();
             int selectedIndex = EditorGUILayout.Popup(
-                LC.Combine("Display", "Language"), previousIndex, displayNames);
+                LC.Combine("Core.DisplayLanguage"), previousIndex, displayNames);
             if (GUILayout.Button("+", EditorStyles.miniButton, GUILayout.Width(22f)))
                 EFEditorLanguageCreateWindow.OpenWindow();
             if (GUILayout.Button("↻", EditorStyles.miniButton, GUILayout.Width(22f)))
@@ -140,30 +140,30 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void SystemInfos()
         {
             _systemInfoSwitch = EditorGUILayout.BeginFoldoutHeaderGroup(_systemInfoSwitch,
-                LC.Combine("Current", "Hardware", "Information"));
+                LC.Combine("Core.CurrentHardwareInfo"));
             if (_systemInfoSwitch)
             {
                 string contents =
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Operating", "System")}: {SystemInfo.operatingSystem}\n" +
-                    $"{LC.Combine("System", "Memory", "Size")}: {SystemInfo.systemMemorySize} MB\n" +
-                    $"{LC.Combine("CPU", "Name")}: {SystemInfo.processorType}\n" +
-                    $"{LC.Combine("CPU", "Count")}: {SystemInfo.processorCount}\n" +
+                    $"{LC.Combine("Core.OperatingSystem")}: {SystemInfo.operatingSystem}\n" +
+                    $"{LC.Combine("Core.SystemMemorySize")}: {SystemInfo.systemMemorySize} MB\n" +
+                    $"{LC.Combine("Core.CpuName")}: {SystemInfo.processorType}\n" +
+                    $"{LC.Combine("Core.CpuCount")}: {SystemInfo.processorCount}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("GPU", "Name")}: {SystemInfo.graphicsDeviceName}\n" +
-                    $"{LC.Combine("GPU", "Type")}: {SystemInfo.graphicsDeviceType}\n" +
-                    $"{LC.Combine("GPU", "Memory", "Size")}: {SystemInfo.graphicsMemorySize} MB\n" +
-                    $"{LC.Combine("GPU", "Id")}: {SystemInfo.graphicsDeviceID}\n" +
-                    $"{LC.Combine("GPU", "Vendor")}: {SystemInfo.graphicsDeviceVendor}\n" +
-                    $"{LC.Combine("GPU", "Vendor", "Id")}: {SystemInfo.graphicsDeviceVendorID}\n" +
+                    $"{LC.Combine("Core.GpuName")}: {SystemInfo.graphicsDeviceName}\n" +
+                    $"{LC.Combine("Core.GpuType")}: {SystemInfo.graphicsDeviceType}\n" +
+                    $"{LC.Combine("Core.GpuMemorySize")}: {SystemInfo.graphicsMemorySize} MB\n" +
+                    $"{LC.Combine("Core.GpuId")}: {SystemInfo.graphicsDeviceID}\n" +
+                    $"{LC.Combine("Core.GpuVendor")}: {SystemInfo.graphicsDeviceVendor}\n" +
+                    $"{LC.Combine("Core.GpuVendorId")}: {SystemInfo.graphicsDeviceVendorID}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Device", "Version")}: {SystemInfo.deviceModel}\n" +
-                    $"{LC.Combine("Device", "Name")}: {SystemInfo.deviceName}\n" +
-                    $"{LC.Combine("Device", "Type")}: {SystemInfo.deviceType}\n" +
-                    $"{LC.Combine("Device", "Id")}: {SystemInfo.deviceUniqueIdentifier}\n" +
+                    $"{LC.Combine("Core.DeviceVersion")}: {SystemInfo.deviceModel}\n" +
+                    $"{LC.Combine("Core.DeviceName")}: {SystemInfo.deviceName}\n" +
+                    $"{LC.Combine("Core.DeviceType")}: {SystemInfo.deviceType}\n" +
+                    $"{LC.Combine("Core.DeviceId")}: {SystemInfo.deviceUniqueIdentifier}\n" +
                     "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Screen", "Current")} Dpi: {Screen.dpi}\n" +
-                    $"{LC.Combine("Screen", "Resolution")}: {Screen.currentResolution}\n" +
+                    $"{LC.Combine("Core.ScreenCurrent")} Dpi: {Screen.dpi}\n" +
+                    $"{LC.Combine("Core.ScreenResolution")}: {Screen.currentResolution}\n" +
                     "--------------------------------------------------------------------------------";
 
                 GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));

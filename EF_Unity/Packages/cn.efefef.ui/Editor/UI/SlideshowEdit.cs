@@ -46,29 +46,29 @@ namespace EasyFramework.Edit.UI
 
         public override void OnInspectorGUI()
         {
-            _elementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine("Element", "Size"), _elementSize.vector2Value);
+            _elementSize.vector2Value = EditorGUILayout.Vector2Field(LC.Combine("Ui.ElementSize"), _elementSize.vector2Value);
             _spacing.vector2Value = EditorGUILayout.Vector2Field(LC.Combine("Spacing"), _spacing.vector2Value);
             EditorGUILayout.Space();
             _moveAxis.enumValueIndex =
-                (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine("Loop", "Axis"),
+                (int)(AxisType)EditorGUILayout.EnumPopup(LC.Combine("Ui.LoopAxis"),
                     (AxisType)_moveAxis.enumValueIndex);
 
             EditorGUILayout.Space();
-            _autoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Loop"), _autoLoop.boolValue);
+            _autoLoop.boolValue = EditorGUILayout.Toggle(LC.Combine("Ui.AutoLoop"), _autoLoop.boolValue);
             if (_autoLoop.boolValue)
             {
                 _loopDirection.enumValueIndex = (int)(LoopDirectionType)EditorGUILayout.EnumPopup(
-                    LC.Combine("Loop", "Direction"), (LoopDirectionType)_loopDirection.enumValueIndex);
+                    LC.Combine("Ui.LoopDirection"), (LoopDirectionType)_loopDirection.enumValueIndex);
                 _loopSpaceTime.floatValue =
                     Mathf.Clamp(
-                        EditorGUILayout.FloatField(LC.Combine("Loop", "Spacing", "Time"),
+                        EditorGUILayout.FloatField(LC.Combine("Ui.LoopSpacingTime"),
                             _loopSpaceTime.floatValue), 0f, float.MaxValue);
-                _spacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine("Spacing", "Time"),
+                _spacingTime.intValue = EditorGUILayout.IntSlider(LC.Combine("Ui.SpacingTime"),
                     _spacingTime.intValue, 0, 60000);
             }
 
             EditorGUILayout.Space();
-            _canDrag.boolValue = EditorGUILayout.Toggle(LC.Combine("Can", "Drag"), _canDrag.boolValue);
+            _canDrag.boolValue = EditorGUILayout.Toggle(LC.Combine("Ui.CanDrag"), _canDrag.boolValue);
 
             if (GUI.changed)
             {

@@ -68,7 +68,7 @@ namespace EasyFramework.Windows.AssetRename
         [MenuItem(MenuItemToolkit.Tools + "✏️ Assets Rename", false, MenuItemToolkit.ToolsPriority + 3)]
         private static void OpenWindow()
         {
-            var window = GetWindow<AssetRenameWindow>(false, LC.Combine("Assets", "Rename", "Tool"));
+            var window = GetWindow<AssetRenameWindow>(false, LC.Combine("Core.AssetsRenameTool"));
             window.minSize = new Vector2(560, 350);
             window.Show();
         }
@@ -95,7 +95,7 @@ namespace EasyFramework.Windows.AssetRename
         private void DrawToolbar()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            if (GUILayout.Button(LC.Combine("Refresh", "Select"), EditorStyles.toolbarButton, GUILayout.Width(180)))
+            if (GUILayout.Button(LC.Combine("Core.RefreshSelect"), EditorStyles.toolbarButton, GUILayout.Width(180)))
             {
                 RefreshAssetList();
             }
@@ -119,7 +119,7 @@ namespace EasyFramework.Windows.AssetRename
         {
             EditorGUILayout.BeginVertical("HelpBox");
 
-            EditorGUILayout.LabelField(LC.Combine("Rename", "Option"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Core.RenameOption"), EditorStyles.boldLabel);
 
             var newMode = (RenameMode)EditorGUILayout.Popup(LC.Combine("Mode"), (int)_mode,
                 new[]
@@ -179,7 +179,7 @@ namespace EasyFramework.Windows.AssetRename
         private void DrawAssetList()
         {
             EditorGUILayout.BeginVertical("HelpBox");
-            EditorGUILayout.LabelField(LC.Combine("Asset", "List"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LC.Combine("Core.AssetList"), EditorStyles.boldLabel);
 
             float itemHeight = EditorGUIUtility.singleLineHeight + 6f;
             float viewHeight = Mathf.Min(_assetList.Count, 20) * itemHeight + 4f;
@@ -298,13 +298,13 @@ namespace EasyFramework.Windows.AssetRename
         {
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(LC.Combine("Preview", "Rename"), GUILayout.Height(28)))
+            if (GUILayout.Button(LC.Combine("Core.PreviewRename"), GUILayout.Height(28)))
             {
                 UpdatePreviewNames();
             }
 
             EditorGUI.BeginDisabledGroup(_assetList.Count == 0);
-            if (GUILayout.Button(LC.Combine("Apply", "Rename"), GUILayout.Height(28)))
+            if (GUILayout.Button(LC.Combine("Core.ApplyRename"), GUILayout.Height(28)))
             {
                 ApplyRename();
             }

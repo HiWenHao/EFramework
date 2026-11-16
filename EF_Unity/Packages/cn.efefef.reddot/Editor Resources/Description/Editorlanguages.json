@@ -1,147 +1,43 @@
 ﻿{
   "LcList": [
     {
-      "name": "Auto",
-      "desc": "自动",
+      "name": "Reddot.NodeDisplayType",
+      "desc": "节点显示类型",
       "array": [
-        "Auto",
-        "自动"
+        "Node Display Type",
+        "节点显示类型"
       ]
     },
     {
-      "name": "Data",
-      "desc": "数据",
+      "name": "Reddot.NodeKey",
+      "desc": "节点键",
       "array": [
-        "Data",
-        "数据"
+        "Node Key",
+        "节点键"
       ]
     },
     {
-      "name": "Display",
-      "desc": "显示",
+      "name": "Reddot.NodeValue",
+      "desc": "节点值",
       "array": [
-        "Display",
-        "显示"
+        "Node Value",
+        "节点值"
       ]
     },
     {
-      "name": "Dot",
-      "desc": "点",
+      "name": "Reddot.NotRegistered",
+      "desc": "未注册",
       "array": [
-        "Dot",
-        "点"
+        "Not Registered",
+        "未注册"
       ]
     },
     {
-      "name": "Interval",
-      "desc": "间隔",
+      "name": "Reddot.RedDotMonitor",
+      "desc": "红点监控",
       "array": [
-        "Interval",
-        "间隔"
-      ]
-    },
-    {
-      "name": "Key",
-      "desc": "键",
-      "array": [
-        "Key",
-        "键"
-      ]
-    },
-    {
-      "name": "Manually",
-      "desc": "手动",
-      "array": [
-        "Manually",
-        "手动"
-      ]
-    },
-    {
-      "name": "Monitor",
-      "desc": "监控",
-      "array": [
-        "Monitor",
-        "监控"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
-      "name": "Node",
-      "desc": "节点",
-      "array": [
-        "Node",
-        "节点"
-      ]
-    },
-    {
-      "name": "Non",
-      "desc": "非",
-      "array": [
-        "Non",
-        "非"
-      ]
-    },
-    {
-      "name": "Not",
-      "desc": "不",
-      "array": [
-        "Not",
-        "不"
-      ]
-    },
-    {
-      "name": "Red",
-      "desc": "红",
-      "array": [
-        "Red",
-        "红"
-      ]
-    },
-    {
-      "name": "Refresh",
-      "desc": "刷新",
-      "array": [
-        "Refresh",
-        "刷新"
-      ]
-    },
-    {
-      "name": "Register",
-      "desc": "注册",
-      "array": [
-        "Register",
-        "注册"
-      ]
-    },
-    {
-      "name": "Running",
-      "desc": "运行时",
-      "array": [
-        "Running",
-        "运行时"
-      ]
-    },
-    {
-      "name": "Type",
-      "desc": "类型",
-      "array": [
-        "Type",
-        "类型"
-      ]
-    },
-    {
-      "name": "Value",
-      "desc": "值",
-      "array": [
-        "Value",
-        "值"
+        "Red Dot Monitor",
+        "红点监控"
       ]
     }
   ]

@@ -1,211 +1,91 @@
 ﻿{
   "LcList": [
     {
-      "name": "Active",
-      "desc": "活跃",
+      "name": "Archive.ActiveSlot",
+      "desc": "活跃槽位",
       "array": [
-        "Active",
-        "活跃"
+        "Active Slot",
+        "活跃槽位"
       ]
     },
     {
-      "name": "Archive",
-      "desc": "存档",
+      "name": "Archive.ArchiveConfigLoadFailed",
+      "desc": "存档配置加载失败。",
       "array": [
-        "Archive",
-        "存档"
+        "Failed to load archive config.",
+        "存档配置加载失败。"
       ]
     },
     {
-      "name": "Auto",
-      "desc": "自动",
+      "name": "Archive.ArchiveConfigNotExist",
+      "desc": "存档配置不存在。",
       "array": [
-        "Auto",
-        "自动"
+        "Archive config does not exist.",
+        "存档配置不存在。"
       ]
     },
     {
-      "name": "By",
-      "desc": "按照",
+      "name": "Archive.ArchiveDataConfig",
+      "desc": "存档数据配置",
       "array": [
-        "By",
-        "按"
+        "Archive Data Config",
+        "存档数据配置"
       ]
     },
     {
-      "name": "Check",
-      "desc": "检查",
+      "name": "Archive.ArchiveDataMonitor",
+      "desc": "存档数据监控",
       "array": [
-        "Check",
-        "检查"
+        "Archive Data Monitor",
+        "存档数据监控"
       ]
     },
     {
-      "name": "Config",
-      "desc": "配置",
+      "name": "Archive.AutoSave",
+      "desc": "自动保存",
       "array": [
-        "Config",
-        "配置"
+        "Auto Save",
+        "自动保存"
       ]
     },
     {
-      "name": "Create",
-      "desc": "创建",
+      "name": "Archive.DataVersion",
+      "desc": "数据版本",
       "array": [
-        "Create",
-        "创建"
+        "Data Version",
+        "数据版本"
       ]
     },
     {
-      "name": "Data",
-      "desc": "数据",
+      "name": "Archive.FileArchiveProviderDefault",
+      "desc": "默认文件存档提供者",
       "array": [
-        "Data",
-        "数据"
+        "Default File Archive Provider",
+        "默认文件存档提供者"
       ]
     },
     {
-      "name": "Default",
-      "desc": "默认",
+      "name": "Archive.LastModified",
+      "desc": "上次修改",
       "array": [
-        "Default",
-        "默认"
+        "Last Modified",
+        "上次修改"
       ]
     },
     {
-      "name": "Empty",
-      "desc": "空的",
+      "name": "Archive.PlayTime",
+      "desc": "游玩时间",
       "array": [
-        "Empty",
-        "空的"
+        "Play Time",
+        "游玩时间"
       ]
     },
     {
-      "name": "Exist",
-      "desc": "存在",
+      "name": "Archive.PleaseCheckConfigByPath",
+      "desc": "请按路径检查配置。",
       "array": [
-        "Exist",
-        "存在"
-      ]
-    },
-    {
-      "name": "File",
-      "desc": "文件",
-      "array": [
-        "File",
-        "文件"
-      ]
-    },
-    {
-      "name": "Found",
-      "desc": "找到",
-      "array": [
-        "Found",
-        "找到"
-      ]
-    },
-    {
-      "name": "In",
-      "desc": "在...里",
-      "array": [
-        "In",
-        "在"
-      ]
-    },
-    {
-      "name": "Key",
-      "desc": "键",
-      "array": [
-        "Key",
-        "键"
-      ]
-    },
-    {
-      "name": "Last",
-      "desc": "上次",
-      "array": [
-        "Last",
-        "上次"
-      ]
-    },
-    {
-      "name": "List",
-      "desc": "列表",
-      "array": [
-        "List",
-        "列表"
-      ]
-    },
-    {
-      "name": "Load",
-      "desc": "加载",
-      "array": [
-        "Load",
-        "加载"
-      ]
-    },
-    {
-      "name": "Modified",
-      "desc": "修改",
-      "array": [
-        "Modified",
-        "修改"
-      ]
-    },
-    {
-      "name": "Monitor",
-      "desc": "监控",
-      "array": [
-        "Monitor",
-        "监控"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
-      "name": "Not",
-      "desc": "不",
-      "array": [
-        "Not",
-        "不"
-      ]
-    },
-    {
-      "name": "Path",
-      "desc": "路径",
-      "array": [
-        "Path",
-        "路径"
-      ]
-    },
-    {
-      "name": "Play",
-      "desc": "游玩",
-      "array": [
-        "Play",
-        "游玩"
-      ]
-    },
-    {
-      "name": "Please",
-      "desc": "请",
-      "array": [
-        "Please",
-        "请"
-      ]
-    },
-    {
-      "name": "Progress",
-      "desc": "进度",
-      "array": [
-        "Progress",
-        "进度"
+        "Please check the config at the specified path.",
+        "请按路径检查配置。"
       ]
     },
     {
@@ -214,14 +94,6 @@
       "array": [
         "Provider",
         "提供者"
-      ]
-    },
-    {
-      "name": "Save",
-      "desc": "保存",
-      "array": [
-        "Save",
-        "保存"
       ]
     },
     {
@@ -238,30 +110,6 @@
       "array": [
         "Slot",
         "槽位"
-      ]
-    },
-    {
-      "name": "Success",
-      "desc": "成功",
-      "array": [
-        "Success",
-        "成功"
-      ]
-    },
-    {
-      "name": "Time",
-      "desc": "时间",
-      "array": [
-        "Time",
-        "时间"
-      ]
-    },
-    {
-      "name": "Version",
-      "desc": "版本",
-      "array": [
-        "Version",
-        "版本"
       ]
     }
   ]

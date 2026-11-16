@@ -44,14 +44,14 @@ namespace EasyFramework.Edit.UI
             //base.OnInspectorGUI();
             EditorGUILayout.Space();
 
-            _minDistance.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Min", "Distance", "Limit"), _minDistance.floatValue), 0f, _maxDistance.floatValue);
+            _minDistance.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Ui.MinDistanceLimit"), _minDistance.floatValue), 0f, _maxDistance.floatValue);
             EditorGUILayout.Space();
 
-            _vertexCount.intValue = Mathf.Clamp(EditorGUILayout.IntField(LC.Combine("RadarMap", "Vertex", "Count"), _vertexCount.intValue), 3, int.MaxValue);
+            _vertexCount.intValue = Mathf.Clamp(EditorGUILayout.IntField(LC.Combine("Ui.RadarMapVertexCount"), _vertexCount.intValue), 3, int.MaxValue);
             EditorGUILayout.Space();
 
-            //EditorGUILayout.PropertyField(m_eachPercent, new GUIContent(LC.Combine("Vertex" ,"To" ,"Center" ,"Of" ,"Distance")), true);
-            EditorGUILayout.PropertyField(_eachPercent, new GUIContent(LC.Combine("Vertex", "To", "Center", "Of", "Distance")), true);
+            //EditorGUILayout.PropertyField(m_eachPercent, new GUIContent(LC.Combine("Ui.VertexToCenterDistance")), true);
+            EditorGUILayout.PropertyField(_eachPercent, new GUIContent(LC.Combine("Ui.VertexToCenterDistance")), true);
             EditorGUILayout.Space();
 
             _initialRadian.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Radian"), _initialRadian.floatValue), 0f, 6.2832f);

@@ -62,20 +62,20 @@ namespace EasyFramework.Edit.UI
             serializedObject.Update();
 
             EditorGUILayout.Separator();
-            EditorGUILayout.PropertyField(_content, new GUIContent(LC.Combine("Scroll", "Content")));
-            EditorGUILayout.PropertyField(_direction, new GUIContent(LC.Combine("Scroll", "Direction")));
-            _lines.intValue = EditorGUILayout.IntField(LC.Combine((AxisType)_direction.enumValueIndex == AxisType.Vertical ? "Column" : "Row", "Count"), _lines.intValue);
-            _maxCount.intValue = EditorGUILayout.IntField(LC.Combine("Max", "Element", "Count"), _maxCount.intValue);
+            EditorGUILayout.PropertyField(_content, new GUIContent(LC.Combine("Ui.ScrollContent")));
+            EditorGUILayout.PropertyField(_direction, new GUIContent(LC.Combine("Ui.ScrollDirection")));
+            _lines.intValue = EditorGUILayout.IntField((AxisType)_direction.enumValueIndex == AxisType.Vertical ? LC.Combine("ColumnCount") : LC.Combine("RowCount"), _lines.intValue);
+            _maxCount.intValue = EditorGUILayout.IntField(LC.Combine("Ui.MaxElementCount"), _maxCount.intValue);
             EditorGUILayout.Separator();
              
-            EditorGUILayout.PropertyField(_movementType, new GUIContent(LC.Combine("Move", "Type")));
+            EditorGUILayout.PropertyField(_movementType, new GUIContent(LC.Combine("Ui.MoveType")));
             _elasticity.floatValue = EditorGUILayout.FloatField(LC.Combine("Elasticity"), _elasticity.floatValue);
             EditorGUILayout.Separator();
 
-            _lnertia.boolValue = EditorGUILayout.Toggle(LC.Combine("Enable", "Inertia"), _lnertia.boolValue);
+            _lnertia.boolValue = EditorGUILayout.Toggle(LC.Combine("Ui.EnableInertia"), _lnertia.boolValue);
             if (_lnertia.boolValue)
             {
-                _decelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine("Deceleration", "Rate"), _decelerationRate.floatValue);
+                _decelerationRate.floatValue = EditorGUILayout.FloatField(LC.Combine("Ui.DecelerationRate"), _decelerationRate.floatValue);
             }
             EditorGUILayout.Separator();
 
@@ -83,14 +83,14 @@ namespace EasyFramework.Edit.UI
             EditorGUILayout.PropertyField(_elemental, new GUIContent(LC.Combine("Element")));
             EditorGUILayout.Separator();
 
-            _autoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Auto", "Dock"), _autoDocking.boolValue);
+            _autoDocking.boolValue = EditorGUILayout.Toggle(LC.Combine("Ui.AutoDock"), _autoDocking.boolValue);
             if (_autoDocking.boolValue)
             {
-                _dockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Dock", "Speed"), _dockSpeed.floatValue), 0.1f, float.MaxValue);
+                _dockSpeed.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Ui.DockSpeed"), _dockSpeed.floatValue), 0.1f, float.MaxValue);
             }
             EditorGUILayout.Separator();
 
-            _hasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine("Have", "Scrollbar"), _hasScrollbar.boolValue);
+            _hasScrollbar.boolValue = EditorGUILayout.Toggle(LC.Combine("Ui.HasScrollbar"), _hasScrollbar.boolValue);
             if (_hasScrollbar.boolValue)
             {
                 _scrollbar.objectReferenceValue = EditorGUILayout.ObjectField(LC.Combine("Scrollbar"), _scrollbar.objectReferenceValue, typeof(ScrollbarPro), true);

@@ -107,25 +107,25 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             EditorGUILayout.BeginHorizontal();
             _builder.Namespace =
-                EditorGUILayout.TextField(LC.Combine("Script", "Namespace"), _builder.Namespace);
-            if (GUILayout.Button(LC.Combine("Default", "Settings")))
+                EditorGUILayout.TextField(LC.Combine("ScriptNamespace"), _builder.Namespace);
+            if (GUILayout.Button(LC.Combine("Ui.DefaultSettings")))
                 _builder.Namespace = ConfigManager.Project.ScriptNamespace;
             EditorGUILayout.EndHorizontal();
 
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(LC.Combine("Script", "Class", "Name"), _builder.gameObject.name);
+            EditorGUILayout.TextField(LC.Combine("Ui.ScriptClassName"), _builder.gameObject.name);
             EditorGUI.EndDisabledGroup();
 
             _builder.Describe =
-                EditorGUILayout.TextField(LC.Combine("Script", "Description"), _builder.Describe);
+                EditorGUILayout.TextField(LC.Combine("Ui.ScriptDescription"), _builder.Describe);
             EditorGUILayout.Space(6f, true);
 
             _builder.AutoDestroy =
-                EditorGUILayout.Toggle(LC.Combine("Auto", "Destroy"), _builder.AutoDestroy);
+                EditorGUILayout.Toggle(LC.Combine("Ui.AutoDestroy"), _builder.AutoDestroy);
             if (_builder.AutoDestroy)
             {
                 _builder.AutoDestroyCountdown =
-                    EditorGUILayout.FloatField(LC.Combine("Destroy", "Countdown"),
+                    EditorGUILayout.FloatField(LC.Combine("Ui.DestroyCountdown"),
                         _builder.AutoDestroyCountdown);
                 EditorGUILayout.Space(6f, true);
             }
@@ -136,17 +136,17 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             // UI类型下方的两个动画相关字段：动画类型 + 关闭时是否重播动画
             _builder.ViewAnimationType = (UiViewAnimationType)EditorGUILayout.EnumPopup(
-                LC.Combine("Animat", "Type"), _builder.ViewAnimationType);
+                LC.Combine("Ui.AnimatType"), _builder.ViewAnimationType);
             _builder.CloseViewReverseAnimation = EditorGUILayout.ToggleLeft(
-                "  " + LC.Combine("When", "Close","View") + ", " + LC.Combine("Reverse", "Play1", "Animat"), _builder.CloseViewReverseAnimation);
+                "  " + LC.Combine("Ui.WhenCloseView") + ", " + LC.Combine("Ui.ReversePlayAnimat"), _builder.CloseViewReverseAnimation);
 
             EditorGUILayout.Space(12f, true);
 
             EditorGUI.BeginChangeCheck();
             _builder.CreatePrefab = EditorGUILayout.Toggle(
                 _builder.CreatePrefab
-                    ? LC.Combine("Prefab", "Save", "Path")
-                    : LC.Combine("Create", "Prefab"),
+                    ? LC.Combine("Ui.PrefabSavePath")
+                    : LC.Combine("Ui.CreatePrefab"),
                 _builder.CreatePrefab);
             if (EditorGUI.EndChangeCheck())
             {
@@ -174,7 +174,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.Space(12f, true);
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine("Code", "Save", "Path"));
+            EditorGUILayout.LabelField(LC.Combine("Ui.CodeSavePath"));
             DrawSettingSelectPath(true);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.LabelField(_builder.ScriptPath);
@@ -182,12 +182,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         private void DrawSettingSelectPath(bool isCodePath)
         {
-            if (GUILayout.Button(LC.Combine("Select", "Path"), GUILayout.Width(100)))
+            if (GUILayout.Button(LC.Combine("SelectPath"), GUILayout.Width(100)))
             {
                 string folder = Path.Combine(Application.dataPath,
                     isCodePath ? _builder.ScriptPath : _builder.PrefabPath);
                 if (!Directory.Exists(folder)) folder = Application.dataPath;
-                string path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), folder, "");
+                string path = EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), folder, "");
                 if (!string.IsNullOrEmpty(path))
                 {
                     string assetPath = AbsoluteToAssetPath(path);
@@ -211,7 +211,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 Repaint();
             }
 
-            if (!GUILayout.Button(LC.Combine("Default", "Settings"), GUILayout.Width(100))) return;
+            if (!GUILayout.Button(LC.Combine("Ui.DefaultSettings"), GUILayout.Width(100))) return;
             if (isCodePath)
                 _builder.ScriptPath = UiBindingConfig.Instance.UICodePath;
             else
@@ -225,13 +225,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.Space(12f);
             EditorGUILayout.BeginHorizontal();
             _builder.SortByType =
-                EditorGUILayout.Toggle(LC.Combine("By", "Type", "Sort"), _builder.SortByType);
+                EditorGUILayout.Toggle(LC.Combine("Ui.SortByType"), _builder.SortByType);
             _builder.SortByNameLength =
-                EditorGUILayout.Toggle(LC.Combine("By", "Name", "Length", "Sort"),
+                EditorGUILayout.Toggle(LC.Combine("Ui.SortByNameLength"),
                     _builder.SortByNameLength);
             EditorGUILayout.EndHorizontal();
 
-            if (GUILayout.Button(LC.Combine("Auto", "Bind", "Component")))
+            if (GUILayout.Button(LC.Combine("Ui.AutoBindComponent")))
             {
                 AutoBindComponent();
             }
@@ -240,7 +240,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawKvData()
         {
             _builder.PackUpBindList = EditorGUILayout.BeginFoldoutHeaderGroup(_builder.PackUpBindList,
-                _builder.PackUpBindList ? LC.Combine("Close", "List") : LC.Combine("Open", "List"));
+                _builder.PackUpBindList ? LC.Combine("Ui.CloseList") : LC.Combine("Ui.OpenList"));
 
             if (_builder.PackUpBindList)
             {
@@ -316,7 +316,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (nameIssues.Count > 0)
                     EditorGUILayout.HelpBox(string.Join("\n", nameIssues), MessageType.Warning);
 
-                if (GUILayout.Button("+ " + LC.Combine("Add", "One", "Empty", "Element"), GUILayout.Height(24)))
+                if (GUILayout.Button("+ " + LC.Combine("Ui.AddEmptyElement"), GUILayout.Height(24)))
                 {
                     Undo.RecordObject(_builder, "Add empty BindData");
                     _builder.BindDatas.Add(new UiBinding.BindData());
@@ -468,15 +468,15 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 string name = datas[idx].ScriptName;
                 if (string.IsNullOrEmpty(name))
                 {
-                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Name", "Is", "Empty")}, {LC.Combine("Generate", "Code", "Will", "Compile", "Error")}");
+                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("NameIsEmpty")}, {LC.Combine("Ui.GeneratedCodeCompileError")}");
                     continue;
                 }
                 if (CsharpKeywords.Contains(name))
-                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Name", "Is")} C# {LC.Combine("Keyword", "Generate", "Code", "Will", "Compile", "Error")}");
+                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Ui.NameIs")} C# {LC.Combine("Ui.KeywordCompileError")}");
                 if (!IsValidIdentifier(name))
-                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Name", "Is", "Illegal", "Character")}, {LC.Combine("First", "Character", "Must", "Be", "Letter", "Or", "Underscore")}");
+                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("NameIllegalChars")}, {LC.Combine("Ui.FirstCharLetterOrUnderscore")}");
                 if (seen.TryGetValue(name, out int first))
-                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Name", "And")} {first} {LC.Combine("Row", "Repetition", "Generate", "Code", "Will", "Compile", "Error")}");
+                    issues.Add($"{idx} {LC.Combine("Row")}: {LC.Combine("Ui.NameAnd")} {first} {LC.Combine("Ui.DuplicateRowCompileError")}");
                 else
                     seen[name] = idx;
             }
@@ -539,7 +539,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             var originalColor = GUI.contentColor;
             GUI.contentColor = GUIUtils.LightGreen;
-            bool createClicked = GUILayout.Button(LC.Combine("Bind", "Create"), GUILayout.Height(25.0f));
+            bool createClicked = GUILayout.Button(LC.Combine("Ui.BindCreate"), GUILayout.Height(25.0f));
             GUI.contentColor = originalColor;
 
             if (!createClicked) return;

@@ -1,51 +1,11 @@
 ﻿{
   "LcList": [
     {
-      "name": "Add",
-      "desc": "添加",
-      "array": [
-        "Add",
-        "添加"
-      ]
-    },
-    {
-      "name": "All",
-      "desc": "全部",
-      "array": [
-        "All",
-        "全部"
-      ]
-    },
-    {
       "name": "Apply",
       "desc": "应用",
       "array": [
         "Apply",
         "应用"
-      ]
-    },
-    {
-      "name": "Auto",
-      "desc": "自动",
-      "array": [
-        "Auto",
-        "自动"
-      ]
-    },
-    {
-      "name": "Cancel",
-      "desc": "取消",
-      "array": [
-        "Cancel",
-        "取消"
-      ]
-    },
-    {
-      "name": "Character",
-      "desc": "字符",
-      "array": [
-        "Character",
-        "字符"
       ]
     },
     {
@@ -57,171 +17,11 @@
       ]
     },
     {
-      "name": "Clear",
-      "desc": "清空",
-      "array": [
-        "Clear",
-        "清空"
-      ]
-    },
-    {
-      "name": "Config",
-      "desc": "配置",
-      "array": [
-        "Config",
-        "配置"
-      ]
-    },
-    {
-      "name": "Confirm",
-      "desc": "确认",
-      "array": [
-        "Confirm",
-        "确认"
-      ]
-    },
-    {
-      "name": "Content",
-      "desc": "内容",
-      "array": [
-        "Content",
-        "内容"
-      ]
-    },
-    {
-      "name": "Count",
-      "desc": "数量",
-      "array": [
-        "Count",
-        "数量"
-      ]
-    },
-    {
-      "name": "Create",
-      "desc": "创建",
-      "array": [
-        "Create",
-        "创建"
-      ]
-    },
-    {
-      "name": "Current",
-      "desc": "当前",
-      "array": [
-        "Current",
-        "当前"
-      ]
-    },
-    {
-      "name": "Data",
-      "desc": "数据",
-      "array": [
-        "Data",
-        "数据"
-      ]
-    },
-    {
-      "name": "Delete",
-      "desc": "删除",
-      "array": [
-        "Delete",
-        "删除"
-      ]
-    },
-    {
-      "name": "Description",
-      "desc": "描述",
-      "array": [
-        "Description",
-        "描述"
-      ]
-    },
-    {
-      "name": "Display",
-      "desc": "显示",
-      "array": [
-        "Display",
-        "显示"
-      ]
-    },
-    {
-      "name": "Element",
-      "desc": "元素",
-      "array": [
-        "Element",
-        "元素"
-      ]
-    },
-    {
-      "name": "Empty",
-      "desc": "空的",
-      "array": [
-        "Empty",
-        "空的"
-      ]
-    },
-    {
-      "name": "Error",
-      "desc": "错误",
-      "array": [
-        "Error",
-        "错误"
-      ]
-    },
-    {
-      "name": "Excel",
-      "desc": "电子表格",
-      "array": [
-        "Excel",
-        "电子表格"
-      ]
-    },
-    {
       "name": "Exist",
       "desc": "存在",
       "array": [
         "Exist",
         "存在"
-      ]
-    },
-    {
-      "name": "Export",
-      "desc": "导出",
-      "array": [
-        "Export",
-        "导出"
-      ]
-    },
-    {
-      "name": "Failed",
-      "desc": "失败",
-      "array": [
-        "Failed",
-        "失败"
-      ]
-    },
-    {
-      "name": "File",
-      "desc": "文件",
-      "array": [
-        "File",
-        "文件"
-      ]
-    },
-    {
-      "name": "Find",
-      "desc": "查找",
-      "array": [
-        "Find",
-        "查找"
-      ]
-    },
-    {
-      "name": "Fold",
-      "desc": "折叠",
-      "array": [
-        "Fold",
-        "折叠"
       ]
     },
     {
@@ -233,59 +33,347 @@
       ]
     },
     {
-      "name": "Illegal",
-      "desc": "非法",
+      "name": "Localization.AddNewGroup",
+      "desc": "添加一个新组",
       "array": [
-        "Illegal",
-        "非法"
+        "Add a New Group",
+        "添加一个新组"
       ]
     },
     {
-      "name": "In",
-      "desc": "在...里",
+      "name": "Localization.AddOneElement",
+      "desc": "添加一个元素",
       "array": [
-        "In",
-        "在"
+        "Add an Element",
+        "添加一个元素"
       ]
     },
     {
-      "name": "Is",
-      "desc": "是",
+      "name": "Localization.AddOneLanguage",
+      "desc": "添加语言",
       "array": [
-        "Is",
-        "是"
+        "Add a Language",
+        "添加语言"
       ]
     },
     {
-      "name": "Key",
-      "desc": "键",
+      "name": "Localization.AutoApply",
+      "desc": "自动应用",
       "array": [
-        "Key",
-        "键"
+        "Auto Apply",
+        "自动应用"
       ]
     },
     {
-      "name": "Language",
-      "desc": "语言",
+      "name": "Localization.ClassIsEmpty",
+      "desc": "类为空。",
       "array": [
-        "Language",
-        "语言"
+        "The class is empty.",
+        "类为空。"
       ]
     },
     {
-      "name": "List",
-      "desc": "列表",
+      "name": "Localization.ConfirmDeleteAllKeys",
+      "desc": "确认删除全部键？",
       "array": [
-        "List",
-        "列表"
+        "Confirm deletion of all keys?",
+        "确认删除全部键？"
       ]
     },
     {
-      "name": "Match",
-      "desc": "匹配项",
+      "name": "Localization.CurrentCountIs",
+      "desc": "当前数量：",
       "array": [
-        "Match",
-        "匹配项"
+        "Current count: ",
+        "当前数量："
+      ]
+    },
+    {
+      "name": "Localization.CurrentUse",
+      "desc": "当前使用",
+      "array": [
+        "Currently Used",
+        "当前使用"
+      ]
+    },
+    {
+      "name": "Localization.DeleteClass",
+      "desc": "删除类",
+      "array": [
+        "Delete Class",
+        "删除类"
+      ]
+    },
+    {
+      "name": "Localization.DisplayType",
+      "desc": "显示类型",
+      "array": [
+        "Display Type",
+        "显示类型"
+      ]
+    },
+    {
+      "name": "Localization.ExportAllData",
+      "desc": "导出全部数据",
+      "array": [
+        "Export All Data",
+        "导出全部数据"
+      ]
+    },
+    {
+      "name": "Localization.ExportCancel",
+      "desc": "导出取消",
+      "array": [
+        "Export Canceled",
+        "导出取消"
+      ]
+    },
+    {
+      "name": "Localization.ExportData",
+      "desc": "导出数据",
+      "array": [
+        "Export Data",
+        "导出数据"
+      ]
+    },
+    {
+      "name": "Localization.FileMissing",
+      "desc": "文件缺失",
+      "array": [
+        "File Missing",
+        "文件缺失"
+      ]
+    },
+    {
+      "name": "Localization.GroupName",
+      "desc": "组名",
+      "array": [
+        "Group Name",
+        "组名"
+      ]
+    },
+    {
+      "name": "Localization.IllegalElementCount",
+      "desc": "非法元素数量",
+      "array": [
+        "Illegal Element Count",
+        "非法元素数量"
+      ]
+    },
+    {
+      "name": "Localization.IsEmpty",
+      "desc": "为空",
+      "array": [
+        "Empty",
+        "为空"
+      ]
+    },
+    {
+      "name": "Localization.KeyGroupName",
+      "desc": "键组名",
+      "array": [
+        "Key Group Name",
+        "键组名"
+      ]
+    },
+    {
+      "name": "Localization.KeyName",
+      "desc": "键名",
+      "array": [
+        "Key Name",
+        "键名"
+      ]
+    },
+    {
+      "name": "Localization.KeyNameList",
+      "desc": "键名列表",
+      "array": [
+        "Key Name List",
+        "键名列表"
+      ]
+    },
+    {
+      "name": "Localization.KeySelectPanel",
+      "desc": "键选择面板",
+      "array": [
+        "Key Selection Panel",
+        "键选择面板"
+      ]
+    },
+    {
+      "name": "Localization.LanguageSettings",
+      "desc": "语言设置",
+      "array": [
+        "Language Settings",
+        "语言设置"
+      ]
+    },
+    {
+      "name": "Localization.LanguageSettingsEmpty",
+      "desc": "语言设置为空。",
+      "array": [
+        "Language settings are empty.",
+        "语言设置为空。"
+      ]
+    },
+    {
+      "name": "Localization.MultilingualConfig",
+      "desc": "多语言配置",
+      "array": [
+        "Localization Config",
+        "多语言配置"
+      ]
+    },
+    {
+      "name": "Localization.MultilingualConfigNotExist",
+      "desc": "多语言配置不存在。",
+      "array": [
+        "Localization config does not exist.",
+        "多语言配置不存在。"
+      ]
+    },
+    {
+      "name": "Localization.MultilingualConfigSettings",
+      "desc": "多语言配置设置",
+      "array": [
+        "Localization Settings",
+        "多语言配置设置"
+      ]
+    },
+    {
+      "name": "Localization.NeedSaveText",
+      "desc": "需要保存文本。",
+      "array": [
+        "Please save the text.",
+        "需要保存文本。"
+      ]
+    },
+    {
+      "name": "Localization.NewKey",
+      "desc": "新键",
+      "array": [
+        "New Key",
+        "新键"
+      ]
+    },
+    {
+      "name": "Localization.NoMatch",
+      "desc": "无匹配项",
+      "array": [
+        "No Matches",
+        "无匹配项"
+      ]
+    },
+    {
+      "name": "Localization.NotExport",
+      "desc": "不导出",
+      "array": [
+        "Don't Export",
+        "不导出"
+      ]
+    },
+    {
+      "name": "Localization.OnlyDisplay",
+      "desc": "仅显示",
+      "array": [
+        "Display Only",
+        "仅显示"
+      ]
+    },
+    {
+      "name": "Localization.OpenPath",
+      "desc": "打开路径",
+      "array": [
+        "Open Path",
+        "打开路径"
+      ]
+    },
+    {
+      "name": "Localization.PleaseCreateInPanel",
+      "desc": "请在面板中创建。",
+      "array": [
+        "Please create it in the panel.",
+        "请在面板中创建。"
+      ]
+    },
+    {
+      "name": "Localization.RefreshAllContent",
+      "desc": "刷新全部内容",
+      "array": [
+        "Refresh All Content",
+        "刷新全部内容"
+      ]
+    },
+    {
+      "name": "Localization.RefreshText",
+      "desc": "刷新文本",
+      "array": [
+        "Refresh Text",
+        "刷新文本"
+      ]
+    },
+    {
+      "name": "Localization.RegenerateHint",
+      "desc": "重新生成提示",
+      "array": [
+        " Run 'Generate All Excel Data' to take effect.",
+        "。新登记后执行「生成全部Excel数据」即可生效"
+      ]
+    },
+    {
+      "name": "Localization.RowRepetition",
+      "desc": "行重复",
+      "array": [
+        "Duplicate Row",
+        "行重复"
+      ]
+    },
+    {
+      "name": "Localization.SaveContent",
+      "desc": "保存内容",
+      "array": [
+        "Save Content",
+        "保存内容"
+      ]
+    },
+    {
+      "name": "Localization.SaveFailed",
+      "desc": "保存失败。",
+      "array": [
+        "Failed to save.",
+        "保存失败。"
+      ]
+    },
+    {
+      "name": "Localization.SyncConfig",
+      "desc": "同步配置",
+      "array": [
+        "Sync Config",
+        "同步配置"
+      ]
+    },
+    {
+      "name": "Localization.TextFile",
+      "desc": "文本文件",
+      "array": [
+        "Text File",
+        "文本文件"
+      ]
+    },
+    {
+      "name": "Localization.UseCount",
+      "desc": "使用数量",
+      "array": [
+        "Usage Count",
+        "使用数量"
+      ]
+    },
+    {
+      "name": "Localization.ValueDataExcel",
+      "desc": "值数据（电子表格）",
+      "array": [
+        "Value Data (Excel)",
+        "值数据（电子表格）"
       ]
     },
     {
@@ -297,203 +385,19 @@
       ]
     },
     {
-      "name": "Multilingual",
-      "desc": "多语言",
-      "array": [
-        "Multilingual",
-        "多语言"
-      ]
-    },
-    {
-      "name": "Name",
-      "desc": "名称",
-      "array": [
-        "Name",
-        "名称"
-      ]
-    },
-    {
-      "name": "Need",
-      "desc": "需要",
-      "array": [
-        "Need",
-        "需要"
-      ]
-    },
-    {
-      "name": "New",
-      "desc": "新",
-      "array": [
-        "New",
-        "新"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
-      "name": "Not",
-      "desc": "不",
-      "array": [
-        "Not",
-        "不"
-      ]
-    },
-    {
-      "name": "One",
-      "desc": "一个",
-      "array": [
-        "One",
-        "一个"
-      ]
-    },
-    {
-      "name": "Only",
-      "desc": "仅仅、只",
-      "array": [
-        "Only",
-        "只"
-      ]
-    },
-    {
-      "name": "Open",
-      "desc": "打开",
-      "array": [
-        "Open",
-        "打开"
-      ]
-    },
-    {
-      "name": "Panel",
-      "desc": "面板",
-      "array": [
-        "Panel",
-        "面板"
-      ]
-    },
-    {
-      "name": "Param",
-      "desc": "参数",
-      "array": [
-        "Param",
-        "参数"
-      ]
-    },
-    {
-      "name": "Path",
-      "desc": "路径",
-      "array": [
-        "Path",
-        "路径"
-      ]
-    },
-    {
-      "name": "Please",
-      "desc": "请",
-      "array": [
-        "Please",
-        "请"
-      ]
-    },
-    {
-      "name": "Refresh",
-      "desc": "刷新",
-      "array": [
-        "Refresh",
-        "刷新"
-      ]
-    },
-    {
       "name": "Remark",
       "desc": "备注",
       "array": [
-        "Remark",
+        "Notes",
         "备注"
-      ]
-    },
-    {
-      "name": "Rename",
-      "desc": "重命名",
-      "array": [
-        "Rename",
-        "重命名"
       ]
     },
     {
       "name": "Repetition",
       "desc": "重复",
       "array": [
-        "Repetition",
+        "Duplicates",
         "重复"
-      ]
-    },
-    {
-      "name": "Row",
-      "desc": "行",
-      "array": [
-        "Row",
-        "行"
-      ]
-    },
-    {
-      "name": "Save",
-      "desc": "保存",
-      "array": [
-        "Save",
-        "保存"
-      ]
-    },
-    {
-      "name": "Search",
-      "desc": "搜索",
-      "array": [
-        "Search",
-        "搜索"
-      ]
-    },
-    {
-      "name": "Select",
-      "desc": "选择",
-      "array": [
-        "Select",
-        "选择"
-      ]
-    },
-    {
-      "name": "Settings",
-      "desc": "设置",
-      "array": [
-        "Settings",
-        "设置"
-      ]
-    },
-    {
-      "name": "Success",
-      "desc": "成功",
-      "array": [
-        "Success",
-        "成功"
-      ]
-    },
-    {
-      "name": "Sync",
-      "desc": "同步",
-      "array": [
-        "Sync",
-        "同步"
-      ]
-    },
-    {
-      "name": "Text",
-      "desc": "文本",
-      "array": [
-        "Text",
-        "文本"
       ]
     },
     {
@@ -502,46 +406,6 @@
       "array": [
         "Tips",
         "便签"
-      ]
-    },
-    {
-      "name": "Total",
-      "desc": "总数",
-      "array": [
-        "Total",
-        "总数"
-      ]
-    },
-    {
-      "name": "Type",
-      "desc": "类型",
-      "array": [
-        "Type",
-        "类型"
-      ]
-    },
-    {
-      "name": "Unfold",
-      "desc": "展开",
-      "array": [
-        "Unfold",
-        "展开"
-      ]
-    },
-    {
-      "name": "Use",
-      "desc": "使用",
-      "array": [
-        "Use",
-        "使用"
-      ]
-    },
-    {
-      "name": "Value",
-      "desc": "值",
-      "array": [
-        "Value",
-        "值"
       ]
     },
     {

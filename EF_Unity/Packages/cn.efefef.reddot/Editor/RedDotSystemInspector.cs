@@ -54,17 +54,17 @@ namespace EasyFramework.Systems.RedDot.Editor
             EditorGUILayout.Space(10);
             var titleRect = GUILayoutUtility.GetRect(GUIContent.none, GUIUtils.InspectorTitle());
             EditorGUI.DrawRect(titleRect, new Color(0.2f, 0.2f, 0.2f, 0.3f));
-            EditorGUI.LabelField(titleRect, LC.Combine("Red", "Dot", "Monitor"), GUIUtils.InspectorTitle());
+            EditorGUI.LabelField(titleRect, LC.Combine("Reddot.RedDotMonitor"), GUIUtils.InspectorTitle());
 
             if (!EditorApplication.isPlaying)
             {
-                EditorGUILayout.HelpBox(LC.Combine("Non", "Running", "Not", "Data"), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("NoDataOutsidePlayMode"), MessageType.Info);
                 return;
             }
 
             if (_target.Nodes == null)
             {
-                EditorGUILayout.HelpBox(LC.Combine("Non", "Running", "Not", "Data"), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("NoDataOutsidePlayMode"), MessageType.Info);
                 return;
             }
 
@@ -76,9 +76,9 @@ namespace EasyFramework.Systems.RedDot.Editor
             DrawTree();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Manually", "Refresh"), GUILayout.Width(80)))
+            if (GUILayout.Button(LC.Combine("RefreshManually"), GUILayout.Width(80)))
                 Repaint();
-            EditorGUILayout.LabelField(LC.Combine("Auto", "Refresh", "Interval") + $": {RepaintInterval:F1} s",
+            EditorGUILayout.LabelField(LC.Combine("AutoRefreshInterval") + $": {RepaintInterval:F1} s",
                 GUIUtils.SmallNote());
             EditorGUILayout.EndHorizontal();
         }
@@ -109,7 +109,7 @@ namespace EasyFramework.Systems.RedDot.Editor
         {
             if (_rootNodes.Count == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine("No", "Register"), EditorStyles.centeredGreyMiniLabel);
+                EditorGUILayout.LabelField(LC.Combine("Reddot.NotRegistered"), EditorStyles.centeredGreyMiniLabel);
                 return;
             }
 
@@ -120,10 +120,10 @@ namespace EasyFramework.Systems.RedDot.Editor
             
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(20);
-            EditorGUILayout.LabelField(LC.Combine("Node", "Key"), EditorStyles.boldLabel, GUILayout.MinWidth(150));
+            EditorGUILayout.LabelField(LC.Combine("Reddot.NodeKey"), EditorStyles.boldLabel, GUILayout.MinWidth(150));
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(LC.Combine("Node", "Display", "Type"), labelStyle, GUILayout.Width(120));
-            EditorGUILayout.LabelField(LC.Combine("Node", "Value"), labelStyle, GUILayout.Width(100));
+            EditorGUILayout.LabelField(LC.Combine("Reddot.NodeDisplayType"), labelStyle, GUILayout.Width(120));
+            EditorGUILayout.LabelField(LC.Combine("Reddot.NodeValue"), labelStyle, GUILayout.Width(100));
             GUILayout.Space(20);
             EditorGUILayout.EndHorizontal();
 

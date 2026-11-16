@@ -82,14 +82,14 @@ namespace EasyFramework.Windows.ScriptTools
             // Layout 与随后的 Repaint 看到同一份数据（详见 ApplyPendingWork 注释）
             ApplyPendingWork();
 
-            EditorGUILayout.LabelField(LC.Combine("Script", "Tool"), GUIUtils.BoldCenterTitle());
+            EditorGUILayout.LabelField(LC.Combine("Core.ScriptTool"), GUIUtils.BoldCenterTitle());
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-            _typeIndex = EditorGUILayout.Popup(LC.Combine("Select", "Find", "Type"),
+            _typeIndex = EditorGUILayout.Popup(LC.Combine("Core.SelectFindType"),
                 _typeIndex,
                 new[]
                 {
-                    LC.Combine("Rely", "This", "Script", "Of", "Prefab"),
-                    LC.Combine("Lost", "Script", "Of", "Object"),
+                    LC.Combine("Core.PrefabsDependingOnScript"),
+                    LC.Combine("Core.ObjectsWithMissingScripts"),
                 });
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
 
@@ -97,19 +97,19 @@ namespace EasyFramework.Windows.ScriptTools
             if (_typeIndex == 0)
             {
                 _targetComponent = (MonoScript)EditorGUILayout.ObjectField(
-                    LC.Combine("Select", "Target", "Script"), _targetComponent, typeof(MonoScript),
+                    LC.Combine("Core.SelectTargetScript"), _targetComponent, typeof(MonoScript),
                     false);
 
                 EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
                 _shouldRecurse = EditorGUILayout.ToggleLeft(LC.Combine("Stw_RecurseDependencies"), _shouldRecurse);
-                if (GUILayout.Button(LC.Combine("Find", "Script", "Rely")))
+                if (GUILayout.Button(LC.Combine("Core.FindScriptDependencies")))
                 {
                     _pendingWork = PendingWork.DependencyScan;
                 }
 
                 if (_dependenciesMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine("Rely", "Count")}:  [ {_dependenciesMaxCount} ] ");
+                        $"{LC.Combine("Core.RelyCount")}:  [ {_dependenciesMaxCount} ] ");
 
                 DependenciesListInfoShow();
             }
@@ -124,8 +124,8 @@ namespace EasyFramework.Windows.ScriptTools
 
                 _missingOpt = EditorGUILayout.Popup(_missingOpt, new[]
                 {
-                    LC.Combine("In", "All", "Activity", "Scene"),
-                    LC.Combine("In", "All", "Prefab")
+                    LC.Combine("Core.InAllActiveScenes"),
+                    LC.Combine("Core.InAllPrefabs")
                 });
                 if (_missingOpt != _missingTempOpt)
                 {
@@ -136,7 +136,7 @@ namespace EasyFramework.Windows.ScriptTools
                 EditorGUILayout.EndHorizontal();
                 if (_missingMaxCount != 0)
                     EditorGUILayout.LabelField(
-                        $"{LC.Combine("Lost", "Count")}:  [ {_missingMaxCount} ] ");
+                        $"{LC.Combine("Core.LostCount")}:  [ {_missingMaxCount} ] ");
                 EditorGUILayout.Space();
 
                 MissingListInfoShow();
@@ -187,7 +187,7 @@ namespace EasyFramework.Windows.ScriptTools
 
             if (_dependenciesMaxCount == 0)
             {
-                EditorGUILayout.LabelField(LC.Combine("Not", "Found", "Match"));
+                EditorGUILayout.LabelField(LC.Combine("Core.NoMatchesFound"));
             }
             else
             {
@@ -276,7 +276,7 @@ namespace EasyFramework.Windows.ScriptTools
                 bool isRoot = info.LayersCount == 0;
                 string prefix = isRoot
                     ? $" [ {LC.Combine("Root")} ]  >>> "
-                    : $" {LC.Combine("Root", "Target")} [ {info.ParentName} ]   {info.LayersCount} {LC.Combine("Layer")}  >>> ";
+                    : $" {LC.Combine("Core.RootTarget")} [ {info.ParentName} ]   {info.LayersCount} {LC.Combine("Layer")}  >>> ";
 
                 EditorGUILayout.BeginHorizontal(EditorStyles.boldLabel);
                 if (GUILayout.Button(prefix + info.DetailsPath,

@@ -64,7 +64,7 @@ namespace EasyFramework.Edit
         {
             var selected =
                 (SystemLanguage)EditorGUILayout.EnumPopup(
-                    LC.Combine("Select", "System", "Language"), _systemLanguage);
+                    LC.Combine("Core.SelectSystemLanguage"), _systemLanguage);
             if (selected != _systemLanguage)
             {
                 _systemLanguage = selected;
@@ -78,7 +78,7 @@ namespace EasyFramework.Edit
                 }
             }
 
-            _displayName = EditorGUILayout.TextField(LC.Combine("Display", "Name"), _displayName);
+            _displayName = EditorGUILayout.TextField(LC.Combine("Core.DisplayName"), _displayName);
 
             EditorGUILayout.Space(6f);
             if (GUILayout.Button(LC.Combine("Create"), GUILayout.Height(26f)))

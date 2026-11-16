@@ -1,283 +1,139 @@
 ﻿{
   "LcList": [
     {
-      "name": "All",
-      "desc": "全部",
+      "name": "Datable.CodeGeneratePath",
+      "desc": "代码生成路径",
       "array": [
-        "All",
-        "全部"
+        "Code Generation Path",
+        "代码生成路径"
       ]
     },
     {
-      "name": "Any",
-      "desc": "任何",
+      "name": "Datable.ConfigNotExist",
+      "desc": "配置不存在。",
       "array": [
-        "Any",
-        "任何"
+        "Config does not exist.",
+        "配置不存在。"
       ]
     },
     {
-      "name": "Cancel",
-      "desc": "取消",
+      "name": "Datable.DataGeneratePath",
+      "desc": "数据生成路径",
       "array": [
-        "Cancel",
-        "取消"
+        "Data Generation Path",
+        "数据生成路径"
       ]
     },
     {
-      "name": "Code",
-      "desc": "代码",
+      "name": "Datable.DataType",
+      "desc": "数据类型",
       "array": [
-        "Code",
-        "代码"
+        "Data Type",
+        "数据类型"
       ]
     },
     {
-      "name": "Config",
-      "desc": "配置",
+      "name": "Datable.ExcelDataConfig",
+      "desc": "电子表格数据配置",
       "array": [
-        "Config",
-        "配置"
+        "Excel Data Config",
+        "电子表格数据配置"
       ]
     },
     {
-      "name": "Confirm",
-      "desc": "确认",
+      "name": "Datable.ExcelListCount",
+      "desc": "电子表格列表数量",
       "array": [
-        "Confirm",
-        "确认"
+        "Spreadsheet Count",
+        "电子表格列表数量"
       ]
     },
     {
-      "name": "Copy",
-      "desc": "复制",
+      "name": "Datable.ExcelPath",
+      "desc": "电子表格路径",
       "array": [
-        "Copy",
-        "复制"
+        "Spreadsheet Path",
+        "电子表格路径"
       ]
     },
     {
-      "name": "Count",
-      "desc": "数量",
+      "name": "Datable.GenerateAllExcelData",
+      "desc": "生成全部电子表格数据",
       "array": [
-        "Count",
-        "数量"
+        "Generate All Spreadsheet Data",
+        "生成全部电子表格数据"
       ]
     },
     {
-      "name": "Create",
-      "desc": "创建",
+      "name": "Datable.GeneratePlatform",
+      "desc": "生成平台",
       "array": [
-        "Create",
-        "创建"
+        "Generate for Platform",
+        "生成平台"
       ]
     },
     {
-      "name": "Data",
-      "desc": "数据",
+      "name": "Datable.GeneratedManagerScriptName",
+      "desc": "生成的管理器脚本名称",
       "array": [
-        "Data",
-        "数据"
+        "Generated Manager Script Name",
+        "生成的管理器脚本名称"
       ]
     },
     {
-      "name": "Excel",
-      "desc": "电子表格",
+      "name": "Datable.GeneratedNamespace",
+      "desc": "生成的命名空间",
       "array": [
-        "Excel",
-        "电子表格"
+        "Generated Namespace",
+        "生成的命名空间"
       ]
     },
     {
-      "name": "Exist",
-      "desc": "存在",
+      "name": "Datable.NoExcelInFolder",
+      "desc": "此文件夹下未找到任何电子表格。",
       "array": [
-        "Exist",
-        "存在"
+        "No Excel files found in this folder.",
+        "此文件夹下未找到任何电子表格。"
       ]
     },
     {
-      "name": "File",
-      "desc": "文件",
+      "name": "Datable.PathNotExist",
+      "desc": "路径不存在。",
       "array": [
-        "File",
-        "文件"
+        "Path does not exist.",
+        "路径不存在。"
       ]
     },
     {
-      "name": "Folder",
-      "desc": "文件夹",
+      "name": "Datable.PleaseSetExcelPath",
+      "desc": "请设置电子表格路径。",
       "array": [
-        "Folder",
-        "文件夹"
+        "Please set the Excel path.",
+        "请设置电子表格路径。"
       ]
     },
     {
-      "name": "Found",
-      "desc": "找到",
+      "name": "Datable.RefreshExcelList",
+      "desc": "刷新电子表格列表",
       "array": [
-        "Found",
-        "找到"
+        "Refresh Excel List",
+        "刷新电子表格列表"
       ]
     },
     {
-      "name": "Generate",
-      "desc": "生成",
+      "name": "Datable.ResetConfig",
+      "desc": "重置配置",
       "array": [
-        "Generate",
-        "生成"
+        "Reset Config",
+        "重置配置"
       ]
     },
     {
-      "name": "In",
-      "desc": "在...里",
+      "name": "Datable.ResetConfigFile",
+      "desc": "重置配置文件",
       "array": [
-        "In",
-        "在"
-      ]
-    },
-    {
-      "name": "List",
-      "desc": "列表",
-      "array": [
-        "List",
-        "列表"
-      ]
-    },
-    {
-      "name": "Manager",
-      "desc": "管理者",
-      "array": [
-        "Manager",
-        "管理者"
-      ]
-    },
-    {
-      "name": "Name",
-      "desc": "名称",
-      "array": [
-        "Name",
-        "名称"
-      ]
-    },
-    {
-      "name": "Namespace",
-      "desc": "命名空间",
-      "array": [
-        "Namespace",
-        "命名空间"
-      ]
-    },
-    {
-      "name": "No",
-      "desc": "没有",
-      "array": [
-        "No",
-        "没有"
-      ]
-    },
-    {
-      "name": "Not",
-      "desc": "不",
-      "array": [
-        "Not",
-        "不"
-      ]
-    },
-    {
-      "name": "Of",
-      "desc": ".....的",
-      "array": [
-        "of",
-        "的"
-      ]
-    },
-    {
-      "name": "Open",
-      "desc": "打开",
-      "array": [
-        "Open",
-        "打开"
-      ]
-    },
-    {
-      "name": "Path",
-      "desc": "路径",
-      "array": [
-        "Path",
-        "路径"
-      ]
-    },
-    {
-      "name": "Platform",
-      "desc": "平台",
-      "array": [
-        "Platform",
-        "平台"
-      ]
-    },
-    {
-      "name": "Please",
-      "desc": "请",
-      "array": [
-        "Please",
-        "请"
-      ]
-    },
-    {
-      "name": "Refresh",
-      "desc": "刷新",
-      "array": [
-        "Refresh",
-        "刷新"
-      ]
-    },
-    {
-      "name": "Reset",
-      "desc": "重置",
-      "array": [
-        "Reset",
-        "重置"
-      ]
-    },
-    {
-      "name": "Script",
-      "desc": "脚本",
-      "array": [
-        "Script",
-        "脚本"
-      ]
-    },
-    {
-      "name": "Settings",
-      "desc": "设置",
-      "array": [
-        "Settings",
-        "设置"
-      ]
-    },
-    {
-      "name": "This",
-      "desc": "这个",
-      "array": [
-        "This",
-        "这个"
-      ]
-    },
-    {
-      "name": "Type",
-      "desc": "类型",
-      "array": [
-        "Type",
-        "类型"
-      ]
-    },
-    {
-      "name": "Under",
-      "desc": "之下",
-      "array": [
-        "Under",
-        "之下"
+        "Reset Config File",
+        "重置配置文件"
       ]
     }
   ]

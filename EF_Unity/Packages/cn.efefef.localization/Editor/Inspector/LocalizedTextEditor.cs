@@ -279,8 +279,8 @@ namespace EasyFramework.Localization.Edit
             {
                 EditorGUILayout.Space(4f);
                 EditorGUILayout.HelpBox(
-                    $"LocalizationKeys.json {LC.Combine("File", "Missing")}" +
-                    $"\n{LC.Combine("Please", "Create", "In", "Panel")}: EFTools/Settings/{LC.Combine("Multilingual", "Config")}",
+                    $"LocalizationKeys.json {LC.Combine("Localization.FileMissing")}" +
+                    $"\n{LC.Combine("Localization.PleaseCreateInPanel")}: EFTools/Settings/{LC.Combine("Localization.MultilingualConfig")}",
                     MessageType.Warning);
                 return;
             }

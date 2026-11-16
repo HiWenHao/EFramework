@@ -37,7 +37,7 @@ namespace EasyFramework.Edit.Windows.Dataable
         private List<string> _excelFiles; // 正在显示的表格列表
         private Vector2 _excelScroll;
 
-        public override string Name => LC.Combine("Excel", "Data", "Config");
+        public override string Name => LC.Combine("Datable.ExcelDataConfig");
 
         public override void OnEnable(string assetsPath)
         {
@@ -65,9 +65,9 @@ namespace EasyFramework.Edit.Windows.Dataable
             if (!_config)
             {
                 EditorGUILayout.Space(12f);
-                EditorGUILayout.HelpBox(LC.Combine("Config", "Not", "Exist"), MessageType.Warning);
+                EditorGUILayout.HelpBox(LC.Combine("Datable.ConfigNotExist"), MessageType.Warning);
                 EditorGUILayout.Space(12f);
-                if (!GUILayout.Button(LC.Combine("Create", "Config"))) return;
+                if (!GUILayout.Button(LC.Combine("CreateConfig"))) return;
                 _config = Create.CreateSettings.Instance<DatableConfig>(true, ConfigManager.ConfigEditPath);
                 InitConfig();
                 RefreshExcelList();
@@ -89,7 +89,7 @@ namespace EasyFramework.Edit.Windows.Dataable
             float width = 111.5f;
             // 入库值是工程根相对路径；界面展示、复制与打开统一换算成本机绝对路径
             string sourceDir = _config.ResolveSourcePath();
-            EditorGUILayout.LabelField(LC.Combine("Excel", "Path"), GUIUtils.ColorText(textColor: Color.white));
+            EditorGUILayout.LabelField(LC.Combine("Datable.ExcelPath"), GUIUtils.ColorText(textColor: Color.white));
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(sourceDir);
             if (GUILayout.Button(LC.Combine("Copy"), GUILayout.Width(width)))
@@ -102,11 +102,11 @@ namespace EasyFramework.Edit.Windows.Dataable
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
-            if (EditorGuiToolkit.SelectionFolderPathInAssets(LC.Combine("Data", "Generate", "Path"),
+            if (EditorGuiToolkit.SelectionFolderPathInAssets(LC.Combine("Datable.DataGeneratePath"),
                     ref _config.LubanDataPath))
                 checkCount++;
             EditorGUILayout.Space();
-            if (EditorGuiToolkit.SelectionFolderPathInAssets(LC.Combine("Code", "Generate", "Path"),
+            if (EditorGuiToolkit.SelectionFolderPathInAssets(LC.Combine("Datable.CodeGeneratePath"),
                     ref _config.LubanCodePath))
                 checkCount++;
 
@@ -120,21 +120,21 @@ namespace EasyFramework.Edit.Windows.Dataable
         private void DrawConfigSelect()
         {
             EditorGUILayout.BeginHorizontal();
-            _config.LubanNamespace = EditorGUILayout.TextField(LC.Combine("Generate", "Of", "Namespace"),
+            _config.LubanNamespace = EditorGUILayout.TextField(LC.Combine("Datable.GeneratedNamespace"),
                 _config.LubanNamespace);
             _config.LubanManagerName = EditorGUILayout.TextField(
-                LC.Combine("Generate", "Of", "Manager", "Script", "Name"),
+                LC.Combine("Datable.GeneratedManagerScriptName"),
                 _config.LubanManagerName);
             EditorGUILayout.EndHorizontal();
 
-            if (GUILayout.Button(LC.Combine("Reset", "Config", "File")))
+            if (GUILayout.Button(LC.Combine("Datable.ResetConfigFile")))
                 ResetUserConfig();
 
             EditorGUILayout.Space(12);
             EditorGUILayout.BeginHorizontal();
 
             EditorGUI.BeginChangeCheck();
-            var newDataType = (DataType)EditorGUILayout.EnumPopup(LC.Combine("Data", "Type"), _config.LubanDataType);
+            var newDataType = (DataType)EditorGUILayout.EnumPopup(LC.Combine("Datable.DataType"), _config.LubanDataType);
             if (EditorGUI.EndChangeCheck())
             {
                 _config.LubanDataType = newDataType;
@@ -146,7 +146,7 @@ namespace EasyFramework.Edit.Windows.Dataable
 
             EditorGUI.BeginChangeCheck();
             var newTargetType =
-                (DataTargetType)EditorGUILayout.EnumPopup(LC.Combine("Generate", "Platform"),
+                (DataTargetType)EditorGUILayout.EnumPopup(LC.Combine("Datable.GeneratePlatform"),
                     _config.LubanDataTargetType);
             if (EditorGUI.EndChangeCheck())
             {
@@ -159,10 +159,10 @@ namespace EasyFramework.Edit.Windows.Dataable
 
             EditorGUILayout.Space();
             EditorGUILayout.BeginHorizontal();
-            if (_excelFiles.Count != 0 && GUILayout.Button(LC.Combine("Generate", "All", "Excel", "Data"),
+            if (_excelFiles.Count != 0 && GUILayout.Button(LC.Combine("Datable.GenerateAllExcelData"),
                     GUIUtils.Button(color: Color.green)))
                 StartDatable();
-            if (GUILayout.Button(LC.Combine("Refresh", "Excel", "List")))
+            if (GUILayout.Button(LC.Combine("Datable.RefreshExcelList")))
                 RefreshExcelList();
             EditorGUILayout.EndHorizontal();
         }
@@ -174,25 +174,25 @@ namespace EasyFramework.Edit.Windows.Dataable
             string root = _config.ResolveSourcePath();
             if (string.IsNullOrWhiteSpace(_config.LubanSourcePath))
             {
-                EditorGUILayout.HelpBox(LC.Combine("Please", "Settings", "Excel", "Path"), MessageType.Info);
+                EditorGUILayout.HelpBox(LC.Combine("Datable.PleaseSetExcelPath"), MessageType.Info);
                 return;
             }
 
             if (!Directory.Exists(root))
             {
-                EditorGUILayout.HelpBox(LC.Combine("Path", "Not", "Exist") + $"：{root}", MessageType.Warning);
+                EditorGUILayout.HelpBox(LC.Combine("Datable.PathNotExist") + $"：{root}", MessageType.Warning);
                 return;
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(LC.Combine("Excel", "List", "Count") + $"（{_excelFiles.Count}）",
+            EditorGUILayout.LabelField(LC.Combine("Datable.ExcelListCount") + $"（{_excelFiles.Count}）",
                 EditorStyles.boldLabel);
             EditorGUILayout.Space(4);
 
             if (_excelFiles.Count == 0)
             {
                 EditorGUILayout.HelpBox(
-                    LC.Combine("In", "This", "Folder", "Under", "No", "Found", "Any", "Excel"),
+                    LC.Combine("Datable.NoExcelInFolder"),
                     MessageType.Info);
                 return;
             }
@@ -400,7 +400,7 @@ namespace EasyFramework.Edit.Windows.Dataable
         // <para>Reset restores framework defaults without deleting user tables or value CSVs.</para>
         private void ResetUserConfig()
         {
-            if (!EditorUtility.DisplayDialog(LC.Combine("Reset", "Config"),
+            if (!EditorUtility.DisplayDialog(LC.Combine("Datable.ResetConfig"),
                     "将重建 luban.conf 并覆盖包内默认表（__tables__ 等）。\n" +
                     "你的自定义配表与多语言 value 表（L10n_*.csv）会保留。\n\n" +
                     "luban.conf will be rebuilt and package default tables overwritten.\n" +

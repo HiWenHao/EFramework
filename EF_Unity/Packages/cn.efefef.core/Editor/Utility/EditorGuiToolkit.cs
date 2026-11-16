@@ -147,9 +147,9 @@ namespace EasyFramework.Edit
         /// <returns></returns>
         public static bool SelectPathButton(string folder, out string selectPath, float width)
         {
-            if (GUILayout.Button(LC.Combine("Path", "Select"), GUILayout.Width(width)))
+            if (GUILayout.Button(LC.Combine("SelectPath"), GUILayout.Width(width)))
             {
-                selectPath = EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), folder, "");
+                selectPath = EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), folder, "");
                 return true;
             }
 

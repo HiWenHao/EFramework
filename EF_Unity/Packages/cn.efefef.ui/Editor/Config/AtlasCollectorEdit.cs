@@ -49,7 +49,7 @@ namespace EasyFramework.Edit.SpriteTools
 
             ShowObjectsAndAtlas();
 
-            if (GUILayout.Button(LC.Combine("Create", "Atlas") + " (Repack)", GUILayout.Width(130f)))
+            if (GUILayout.Button(LC.Combine("Ui.CreateAtlas") + " (Repack)", GUILayout.Width(130f)))
             {
                 Pack();
             }
@@ -71,15 +71,15 @@ namespace EasyFramework.Edit.SpriteTools
         void SelectPath()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(LC.Combine("Atlas", "Path"), GUILayout.Width(130f));
+            EditorGUILayout.LabelField(LC.Combine("Ui.AtlasPath"), GUILayout.Width(130f));
             EditorGUILayout.LabelField(new GUIContent(_atlasFolder.stringValue));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button(LC.Combine("Select", "Path")))
+                if (GUILayout.Button(LC.Combine("SelectPath")))
                 {
-                    string path = EditorUtility.OpenFolderPanel(LC.Combine("Select", "Path"), Application.dataPath, "");
+                    string path = EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), Application.dataPath, "");
                     if (string.IsNullOrEmpty(path))
                     {
                         if (string.IsNullOrEmpty(_atlasFolder.stringValue))
@@ -88,7 +88,7 @@ namespace EasyFramework.Edit.SpriteTools
                     else
                         _atlasFolder.stringValue = Utility.Path.GetPathInAssetsFolder(path) + "/";
                 }
-                if (GUILayout.Button(LC.Combine("Default", "Path")))
+                if (GUILayout.Button(LC.Combine("Ui.DefaultPath")))
                 {
                     _atlasFolder.stringValue = _frameworkAtlasFolder;
                 }
@@ -114,7 +114,7 @@ namespace EasyFramework.Edit.SpriteTools
 
                         if (GUILayout.Button("X"))
                         {
-                            if (EditorUtility.DisplayDialog(LC.Combine("Delete"), LC.Combine("Confirm", "Delete") + _target.Atlas[i].name + LC.Combine("Atlas"), LC.Combine("Ok")))
+                            if (EditorUtility.DisplayDialog(LC.Combine("Delete"), LC.Format("Ui.ConfirmDeleteAtlas", _target.Atlas[i].name), LC.Combine("Ok")))
                             {
                                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
                                 ClearAtlasWithIndex(i);
@@ -129,7 +129,7 @@ namespace EasyFramework.Edit.SpriteTools
             }
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Clear", "All")))
+            if (GUILayout.Button(LC.Combine("Ui.ClearAll")))
             {
                 ClearAllAtlas();
                 EditorUtility.SetDirty(_target);
@@ -137,7 +137,7 @@ namespace EasyFramework.Edit.SpriteTools
                 EditorApplication.delayCall += AssetDatabase.Refresh;
             }
 
-            if (GUILayout.Button(LC.Combine("Delete", "All")))
+            if (GUILayout.Button(LC.Combine("DeleteAll")))
             {
                 for (int i = _target.Atlas.Count - 1; i >= 0; i--)
                     AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(_target.Atlas[i]));
@@ -155,7 +155,7 @@ namespace EasyFramework.Edit.SpriteTools
         {
             EditorGUILayout.BeginHorizontal();
             _allOverwrite = EditorGUILayout.ToggleLeft(LC.Combine("Overwrite"), _allOverwrite, GUILayout.MaxWidth(100f));
-            if (GUILayout.Button(LC.Combine("Create", "Atlas")))
+            if (GUILayout.Button(LC.Combine("Ui.CreateAtlas")))
             {
                 CreateAtlas();
             }
@@ -166,7 +166,7 @@ namespace EasyFramework.Edit.SpriteTools
             ClearAllAtlas();
             if (string.IsNullOrEmpty(_atlasFolder.stringValue))
             {
-                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("Select", "Atlas", "Folder"), LC.Combine("Ok"));
+                EditorUtility.DisplayDialog(LC.Combine("Hints"), LC.Combine("Ui.SelectAtlasFolder"), LC.Combine("Ok"));
                 return;
             }
 

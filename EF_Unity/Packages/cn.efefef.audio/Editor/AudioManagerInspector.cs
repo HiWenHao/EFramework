@@ -61,7 +61,7 @@ namespace EasyFramework.Managers.Audio.Editor
             EditorGUILayout.Space(10);
             var titleRect = GUILayoutUtility.GetRect(GUIContent.none, GUIUtils.InspectorTitle());
             EditorGUI.DrawRect(titleRect, new Color(0.2f, 0.2f, 0.2f, 0.3f));
-            EditorGUI.LabelField(titleRect, LC.Combine("Audio", "Data", "Panel"), GUIUtils.InspectorTitle());
+            EditorGUI.LabelField(titleRect, LC.Combine("Audio.AudioDataPanel"), GUIUtils.InspectorTitle());
 
 
             var sys = (AudioManager)target;

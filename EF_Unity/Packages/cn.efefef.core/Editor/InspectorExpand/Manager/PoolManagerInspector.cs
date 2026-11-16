@@ -65,7 +65,7 @@ namespace EasyFramework.Managers.Pool.Editor
         private GUIStyle _cardStyle;
         private GUIStyle _sectionHeaderStyle;
 
-        protected override string Title => LC.Combine("Pool", "Data", "Monitor");
+        protected override string Title => LC.Combine("Core.PoolDataMonitor");
 
         protected override void OnEditorEnable()
         {
@@ -172,12 +172,12 @@ namespace EasyFramework.Managers.Pool.Editor
         {
             if (_gameObjectPoolsField == null || _objectPoolsField == null)
             {
-                EditorGUILayout.HelpBox(LC.Combine("Reflect", "Error", "Please", "Check", "Code"),
+                EditorGUILayout.HelpBox(LC.Combine("Core.ReflectErrorCheckCode"),
                     MessageType.Error);
                 return;
             }
 
-            _openDebug = EditorGUILayout.ToggleLeft(LC.Combine("Open", "Debug"), _openDebug);
+            _openDebug = EditorGUILayout.ToggleLeft(LC.Combine("Core.OpenDebug"), _openDebug);
             Target.SetOpenDebug(_openDebug);
             if (_openDebug && GUILayout.Button("Dump Leaks"))
             {
@@ -274,15 +274,15 @@ namespace EasyFramework.Managers.Pool.Editor
             EditorGUILayout.EndHorizontal();
 
             float activePercent = info.TotalCount > 0 ? (float)info.ActiveCount / info.TotalCount : 0f;
-            DrawProgressBar(activePercent, new Color(0.4f, 0.7f, 1f), LC.Combine("Activity", "Rate"));
+            DrawProgressBar(activePercent, new Color(0.4f, 0.7f, 1f), LC.Combine("Core.ActivityRate"));
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
             EditorGUILayout.LabelField(
-                LC.Combine("Max", "Idle", "Count") + $": {(info.MaxSize == -1 ? "∞" : info.MaxSize.ToString())}",
+                LC.Combine("Core.MaxIdleCount") + $": {(info.MaxSize == -1 ? "∞" : info.MaxSize.ToString())}",
                 GUILayout.Width(120));
             EditorGUILayout.LabelField(
-                LC.Combine("Idle", "Timeout") +
+                LC.Combine("Core.IdleTimeout") +
                 $": {(info.IdleTimeout > 0 ? info.IdleTimeout + "s" : LC.Combine("Disable"))}", GUILayout.Width(120));
             EditorGUILayout.LabelField(LC.Combine("Debug") + $": {(info.OpenDebug ? "√" : "X")}", GUILayout.Width(80));
             EditorGUILayout.EndHorizontal();
@@ -300,12 +300,12 @@ namespace EasyFramework.Managers.Pool.Editor
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
             EditorGUILayout.LabelField(LC.Combine("Idle") + $": {info.Count}", GUILayout.Width(100));
-            EditorGUILayout.LabelField(LC.Combine("Max", "Capacity") + (info.MaxSize == -1 ? "∞" : $"{info.MaxSize}"),
+            EditorGUILayout.LabelField(LC.Combine("Core.MaxCapacity") + (info.MaxSize == -1 ? "∞" : $"{info.MaxSize}"),
                 GUILayout.Width(120));
             EditorGUILayout.EndHorizontal();
 
             float idlePercent = info.MaxSize > 0 ? (float)info.Count / info.MaxSize : 0f;
-            DrawProgressBar(idlePercent, new Color(0.6f, 0.9f, 0.4f), LC.Combine("Idle", "Occupancy", "Rate"));
+            DrawProgressBar(idlePercent, new Color(0.6f, 0.9f, 0.4f), LC.Combine("Core.IdleOccupancyRate"));
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(5);

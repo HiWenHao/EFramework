@@ -55,7 +55,7 @@ namespace EasyFramework.Edit
     {
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
 
-        public override string Name => "EF" + LC.Combine("S", "Package", "Assets");
+        public override string Name => "EF" + LC.Combine("Packages.PackageAssets");
 
         private bool _allUnfold;
         private bool _hasProcess;
@@ -95,9 +95,9 @@ namespace EasyFramework.Edit
 
             _createPackageTips = new[]
             {
-                LC.Combine("Package", "Name") + "cn.efefef.{0}",
-                LC.Combine("Package", "Description"),
-                LC.Combine("Author", "Name"),
+                LC.Combine("Packages.PackageName") + "cn.efefef.{0}",
+                LC.Combine("Packages.PackageDescription"),
+                LC.Combine("Packages.AuthorName"),
             };
 
             _allUnfold = true;
@@ -141,9 +141,9 @@ namespace EasyFramework.Edit
             DrawSummaryItem(LC.Combine("Total"), _config.totalCount, Color.white);
             DrawSummaryItem(LC.Combine("Local"), _config.localCount, Color.cyan);
             DrawSummaryItem(LC.Combine("Git"), _config.gitCount, Color.yellow);
-            DrawSummaryItem(LC.Combine("No", "Install"), _config.notInstalledCount, GUIUtils.LightRed);
+            DrawSummaryItem(LC.Combine("Packages.NotInstalled"), _config.notInstalledCount, GUIUtils.LightRed);
             if (_config.needUpdateCount > 0)
-                DrawSummaryItem(LC.Combine("Need", "Update"), _config.needUpdateCount, Color.gray);
+                DrawSummaryItem(LC.Combine("Packages.NeedUpdate"), _config.needUpdateCount, Color.gray);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(12.0f);
 
@@ -155,9 +155,9 @@ namespace EasyFramework.Edit
             
             if (isMaintainer)
             {
-                EditorGUILayout.LabelField(LC.Combine("Maintain", "Operating") + "（" + LC.Combine("To", "Git") + "）", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(LC.Combine("Packages.MaintainOperating") + "（" + LC.Combine("Packages.ToGit") + "）", EditorStyles.boldLabel);
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(LC.Combine("Generate") + " & " + LC.Combine("Save", "Catalogue"), GUIUtils.Button(Color.cyan), GUILayout.Width(220)))
+                if (GUILayout.Button(LC.Combine("Generate") + " & " + LC.Combine("Packages.SaveCatalog"), GUIUtils.Button(Color.cyan), GUILayout.Width(220)))
                 {
                     var catalog = ServerToolkit.GenerateCatalogFromLocalPackages();
                     ServerToolkit.SaveCatalog(catalog);
@@ -169,15 +169,15 @@ namespace EasyFramework.Edit
                 EditorGUILayout.Space(8f);
             }
 
-            EditorGUILayout.LabelField($"{LC.Combine("Develop", "Operating")}（{LC.Combine("Remote", "Sync")}）", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"{LC.Combine("Packages.DevelopOperating")}（{LC.Combine("Packages.RemoteSync")}）", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Update", "All", "Information"), GUIUtils.Button(Color.green)))
+            if (GUILayout.Button(LC.Combine("Packages.UpdateAllInformation"), GUIUtils.Button(Color.green)))
             {
                 GetLocalPackages();
                 UpdateAllFromGitOrGitee().Forget();
             }
 
-            string created = LC.Combine("Create", "New", "Package");
+            string created = LC.Combine("Packages.CreateNewPackage");
             if (GUILayout.Button(created, GUIUtils.Button(Color.cyan)))
                 CustomInputWindow.ShowWindow(created, _createPackageTips, CreatePackage);
 
@@ -188,7 +188,7 @@ namespace EasyFramework.Edit
 
             #region Draw PackInfo
 
-            if (GUILayout.Button(LC.Combine("All", "Content", _allUnfold ? "Fold" : "Unfold")))
+            if (GUILayout.Button(LC.Combine("Packages.AllContent") + " " + (_allUnfold ? LC.Combine("CollapseAll") : LC.Combine("ExpandAll"))))
                 FoldAll();
 
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUIUtils.ScrollViewBackground());
@@ -287,17 +287,17 @@ namespace EasyFramework.Edit
                     ? LC.Combine("Non")
                     : packageInfo.CurrentVersion;
                 string serverText = string.IsNullOrEmpty(packageInfo.ServerVersion)
-                    ? LC.Combine("Not", "Exist")
+                    ? LC.Combine("NotFound")
                     : packageInfo.ServerVersion;
                 
                 Color currentColor = packageInfo.SourceType == EFPackageSource.Local
                     ? Color.green : Color.white;
                 
                 EditorGUILayout.LabelField(
-                    $"{LC.Combine("Current", "Version")}:  {currentText}", 
+                    $"{LC.Combine("Packages.CurrentVersion")}:  {currentText}", 
                     GUILayout.Width(160));
                 EditorGUILayout.LabelField(
-                    $"{LC.Combine("Server", "Version")}:  {serverText}", 
+                    $"{LC.Combine("Packages.ServerVersion")}:  {serverText}", 
                     GUILayout.Width(160));
                 
                 EditorGUILayout.EndHorizontal();
@@ -322,7 +322,7 @@ namespace EasyFramework.Edit
             {
                 EFPackageSource.Local => LC.Combine("Local"),
                 EFPackageSource.Git => LC.Combine("Git"),
-                EFPackageSource.NotInstalled => LC.Combine("Not", "Install"),
+                EFPackageSource.NotInstalled => LC.Combine("Packages.NotInstall"),
                 _ => LC.Combine("Unknown"),
             };
         }
@@ -360,14 +360,14 @@ namespace EasyFramework.Edit
         private void DrawLocalButtons(EFPackageInfo packageInfo, PackageVersionState versionType)
         {
             // 按钮1：打开本地目录
-            if (GUILayout.Button(LC.Combine("Open", "Folder"), GUILayout.Width(120)))
+            if (GUILayout.Button(LC.Combine("Packages.OpenFolder"), GUILayout.Width(120)))
                 OpenPackageDirectory(packageInfo.Name);
 
             // 按钮2：根据版本差显示不同动作
             string actionLabel = versionType switch
             {
-                PackageVersionState.Update => LC.Combine("Sync", "Update"),      // 服务端更新 → 同步更新
-                PackageVersionState.Upload => LC.Combine("Upload", "Version"),   // 本地更新 → 发布版本
+                PackageVersionState.Update => LC.Combine("Packages.SyncUpdate"),      // 服务端更新 → 同步更新
+                PackageVersionState.Upload => LC.Combine("Packages.UploadVersion"),   // 本地更新 → 发布版本
                 _ => LC.Combine("Latest"),                                     // 一致 → 已最新
             };
 
@@ -403,7 +403,7 @@ namespace EasyFramework.Edit
             // 按钮1：更新 / 已最新
             Color updateColor = canUpdate ? Color.green : Color.gray;
             string updateLabel = canUpdate
-                ? LC.Combine("Update", "Version")
+                ? LC.Combine("Packages.UpdateVersion")
                 : LC.Combine("Latest");
 
             EditorGUI.BeginDisabledGroup(!canUpdate);
@@ -421,7 +421,7 @@ namespace EasyFramework.Edit
         /// </summary>
         private void DrawNotInstalledButtons(EFPackageInfo packageInfo)
         {
-            if (GUILayout.Button(LC.Combine("Download", "Install"),
+            if (GUILayout.Button(LC.Combine("Packages.DownloadInstall"),
                     GUIUtils.Button(Color.green), GUILayout.Width(140)))
                 TryAddOrUpdatePackage(packageInfo);
         }
@@ -442,12 +442,12 @@ namespace EasyFramework.Edit
         {
             if (_hasProcess)
             {
-                D.Warning(LC.Combine("Current", "Have", "One", "Task", "PleaseWaitMoment", "TryAgain"));
+                D.Warning(LC.Combine("Packages.TaskInProgressRetry"));
                 return;
             }
 
             CustomProgressWindow.ShowWindow(
-                LC.Combine("Install", "Package", "Assets", "PleaseWaitMoment"), null);
+                LC.Combine("Packages.InstallingPackageAssets"), null);
 
             string path = ServerToolkit.GetFrameworkPath(_config.serverType) + PackageFolderPath;
             _addRequest = Client.Add($"{path}{packageInfo.Name}");
@@ -465,7 +465,7 @@ namespace EasyFramework.Edit
         {
             if (_hasProcess)
             {
-                D.Warning(LC.Combine("Current", "Have", "One", "Task", "PleaseWaitMoment", "TryAgain"));
+                D.Warning(LC.Combine("Packages.TaskInProgressRetry"));
                 return;
             }
 
@@ -526,7 +526,7 @@ namespace EasyFramework.Edit
                 return;
 
             if (_addRequest.Status != StatusCode.Success)
-                D.Error($"{LC.Combine("Install", "Error")}: {_addRequest.Error.message}");
+                D.Error($"{LC.Combine("Packages.InstallError")}: {_addRequest.Error.message}");
 
             CustomProgressWindow.CloseWindow();
             EditorApplication.update -= AddPackageProgress;
@@ -541,7 +541,7 @@ namespace EasyFramework.Edit
                 return;
 
             if (_removeRequest.Status != StatusCode.Success)
-                D.Error($"{LC.Combine("Unload", "Error")}{_removeRequest.Error.message}");
+                D.Error($"{LC.Combine("Packages.UnloadError")}{_removeRequest.Error.message}");
 
             EditorApplication.update -= RemovePackageProgress;
             _removeRequest = null;
@@ -698,7 +698,7 @@ namespace EasyFramework.Edit
             if (request.result == UnityWebRequest.Result.Success) 
                 return request.downloadHandler.text;
             
-            D.Error(LC.Combine("Update", "Error"));
+            D.Error(LC.Combine("Packages.UpdateError"));
             return null;
         }
 

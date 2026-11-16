@@ -37,11 +37,11 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         internal void OnGUI()
         {
             EditorGUILayout.Separator();
-            GUILayout.Label(LC.Combine("Config", "Query", "Settings"));
+            GUILayout.Label(LC.Combine("Core.ConfigQuerySettings"));
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(LC.Combine("Clear", "Config", "File"), "ButtonLeft", GUILayout.Width(120)))
+            if (GUILayout.Button(LC.Combine("Core.ClearConfigFile"), "ButtonLeft", GUILayout.Width(120)))
             {
                 if (File.Exists(_filePath))
                 {
@@ -50,7 +50,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                     EditorApplication.delayCall += AssetDatabase.Refresh;
                 }
             }
-            if (GUILayout.Button(LC.Combine("Load", "Config", "File"), "ButtonRight", GUILayout.Width(120)))
+            if (GUILayout.Button(LC.Combine("Core.LoadConfigFile"), "ButtonRight", GUILayout.Width(120)))
             {
                 _filePath = EditorUtility.OpenFilePanel(LC.Combine("Open"), Application.dataPath, "xml");
                 if (File.Exists(_filePath))
@@ -89,7 +89,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
 
             EditorGUILayout.Separator();
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Save", "Config", "File")))
+            if (GUILayout.Button(LC.Combine("Core.SaveConfigFile")))
             {
                 if (string.IsNullOrEmpty(_filePath))
                 {
@@ -100,7 +100,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                     SaveSettingRule(_filePath);
                 EditorApplication.delayCall += AssetDatabase.Refresh;
             }
-            if (GUILayout.Button(LC.Combine("Add", "Config")))
+            if (GUILayout.Button(LC.Combine("Core.AddConfig")))
             {
                 T msb = new T();
                 msb.Folder.Add("Assets");
@@ -149,14 +149,14 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Space(30);
-                    GUILayout.Label(LC.Combine("Assets", "Description"), GUILayout.Width(120F));
+                    GUILayout.Label(LC.Combine("Core.AssetsDescription"), GUILayout.Width(120F));
                     modelSetting.AssetDesc = GUILayout.TextField(modelSetting.AssetDesc);
                     GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(30);
-                        if (GUILayout.Button(LC.Combine("File", "Catalogue"), GUILayout.Width(120F)))
+                        if (GUILayout.Button(LC.Combine("Core.FileCatalog"), GUILayout.Width(120F)))
                             modelSetting.Folder.Add(string.Empty);
 
                         GUILayout.BeginVertical();
@@ -166,7 +166,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
                             modelSetting.Folder[i] = GUILayout.TextField(modelSetting.Folder[i]);
                             if (GUILayout.Button("...", GUILayout.Width(30f)))
                             {
-                                string path = EditorUtility.OpenFolderPanel(LC.Combine("Path", "Select"), Application.dataPath, "");
+                                string path = EditorUtility.OpenFolderPanel(LC.Combine("SelectPath"), Application.dataPath, "");
                                 string rep = path.Replace(Application.dataPath, "Assets");
                                 if (!modelSetting.Folder.Contains(rep))
                                     modelSetting.Folder[i] = rep;

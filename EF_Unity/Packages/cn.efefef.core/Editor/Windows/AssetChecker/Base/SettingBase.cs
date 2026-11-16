@@ -22,7 +22,7 @@ namespace EasyFramework.Edit.Windows.AssetChecker
     /// </summary>
     internal abstract class SettingBase
     {
-        internal string AssetDesc = LC.Combine("Assets", "Description");
+        internal string AssetDesc = LC.Combine("Core.AssetsDescription");
 
         /// <summary>
         /// 目录
@@ -131,9 +131,9 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(30);
-            MaxTriangs = EditorGUILayout.IntSlider(LC.Combine("Model", "Max", "Triangular", "Count"), MaxTriangs, 1, AssetsCheckerConfig.ModelMaxTriangs);
+            MaxTriangs = EditorGUILayout.IntSlider(LC.Combine("Core.ModelMaxTriangularCount"), MaxTriangs, 1, AssetsCheckerConfig.ModelMaxTriangs);
             GUILayout.FlexibleSpace();
-            MaxBones = EditorGUILayout.IntSlider(LC.Combine("Model", "Max", "Bone", "Count"), MaxBones, 1, AssetsCheckerConfig.ModelMaxBones);
+            MaxBones = EditorGUILayout.IntSlider(LC.Combine("Core.ModelMaxBoneCount"), MaxBones, 1, AssetsCheckerConfig.ModelMaxBones);
             GUILayout.EndHorizontal();
         }
 
@@ -174,9 +174,9 @@ namespace EasyFramework.Edit.Windows.AssetChecker
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(30);
-            MaxMatrials = EditorGUILayout.IntSlider(LC.Combine("Effects", "Max", "Materials", "Count"), MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
+            MaxMatrials = EditorGUILayout.IntSlider(LC.Combine("Core.EffectsMaxMaterialsCount"), MaxMatrials, 1, AssetsCheckerConfig.EffectMaxMatrials);
             GUILayout.FlexibleSpace();
-            MaxParticels = EditorGUILayout.IntSlider(LC.Combine("Effects", "Max", "Particle", "Count"), MaxParticels, 1, AssetsCheckerConfig.EffectMaxParticles);
+            MaxParticels = EditorGUILayout.IntSlider(LC.Combine("Core.EffectsMaxParticleCount"), MaxParticels, 1, AssetsCheckerConfig.EffectMaxParticles);
             GUILayout.EndHorizontal();
         }
 

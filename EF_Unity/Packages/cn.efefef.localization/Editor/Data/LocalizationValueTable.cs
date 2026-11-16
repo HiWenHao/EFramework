@@ -611,14 +611,14 @@ namespace EasyFramework.Localization.Edit
 
                 if (!entry.IsValidName())
                 {
-                    report.skippedKeys.Add($"{name} → {LC.Combine("Name", "Is", "Illegal", "Character")}");
+                    report.skippedKeys.Add($"{name} → {LC.Combine("NameIllegalChars")}");
                     continue;
                 }
 
                 // 重名会让 Luban 主键冲突，保留首条并报告
                 if (!written.Add(name))
                 {
-                    report.skippedKeys.Add($"{name} → {LC.Combine("Row", "Repetition")}");
+                    report.skippedKeys.Add($"{name} → {LC.Combine("Localization.RowRepetition")}");
                     continue;
                 }
 
