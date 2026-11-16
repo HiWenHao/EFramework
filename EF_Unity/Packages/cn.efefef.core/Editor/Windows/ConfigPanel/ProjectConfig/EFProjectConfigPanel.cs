@@ -84,11 +84,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (GUILayout.Button(LC.Combine("Core.ResetProjectSettings")))
             {
                 string appName = Application.productName;
-                _appConstConfig.FindPropertyRelative("_appName").stringValue = appName;
                 _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = appName + "_";
                 _appConstConfig.FindPropertyRelative("_appVersion").stringValue = "1.0";
-                _appConstConfig.FindPropertyRelative("m_UIPath").stringValue = "Prefabs/UI/";
-                _appConstConfig.FindPropertyRelative("m_AudioPath").stringValue = "Sources/";
+                _appConstConfig.FindPropertyRelative("_uiPath").stringValue = "Prefabs/UI/";
+                _appConstConfig.FindPropertyRelative("_audioPath").stringValue = "Sources/";
             }
 
             EditorGUILayout.EndHorizontal();
