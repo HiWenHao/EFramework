@@ -83,6 +83,10 @@ namespace EasyFramework.Launcher.Editor
     public sealed class HotfixBindResult
     {
         public readonly List<HotfixBindRow> Rows = new List<HotfixBindRow>();
+
+        /// <summary>条目名匹配不到热更列表 asmdef 的旧条目（不改动，只点名）</summary>
+        public readonly List<string> Stale = new List<string>();
+
         public int Added;
         public int LocationBound;
         public int FallbackBound;
@@ -144,7 +148,7 @@ namespace EasyFramework.Launcher.Editor
             for (int i = 0; i < names.Count; i++)
                 entries[i] = new HotUpdateDllEntry { Name = names[i], Enabled = true };
 
-            var sorted = LauncherHotfixDllSortTool.Sort(entries, out _, out _);
+            var sorted = LauncherHotfixDllSortTool.Sort(entries, out _);
             foreach (var entry in sorted)
             {
                 string name = LauncherHotfixDllSortTool.ResolveAssemblyName(entry);
@@ -191,6 +195,8 @@ namespace EasyFramework.Launcher.Editor
                         existing[name] = entry;
                 }
             }
+
+            CollectStale(entries, names, result);
 
             foreach (string name in names)
             {
@@ -254,7 +260,7 @@ namespace EasyFramework.Launcher.Editor
 
             if (apply)
             {
-                config.HotfixDlls = LauncherHotfixDllSortTool.Sort(entries.ToArray(), out _, out _);
+                config.HotfixDlls = LauncherHotfixDllSortTool.Sort(entries.ToArray(), out _);
                 EditorUtility.SetDirty(config);
                 AssetDatabase.SaveAssets();
             }
@@ -262,7 +268,25 @@ namespace EasyFramework.Launcher.Editor
             return result;
         }
 
-        private static string FindAssetPath(string assemblyName, HotfixBindOptions options)
+        // 旧条目（改名 / 拼错 / 已移出热更列表）不会被删除，但必须点名，否则配置会一直带着死条目
+        private static void CollectStale(List<HotUpdateDllEntry> entries, List<string> names, HotfixBindResult result)
+        {
+            var canonical = new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
+            var reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var entry in entries)
+            {
+                string name = LauncherHotfixDllSortTool.ResolveAssemblyName(entry);
+                if (string.IsNullOrEmpty(name))
+                    name = LC.Combine("Launcher.UnnamedEntry");
+
+                if (!canonical.Contains(name) && reported.Add(name))
+                    result.Stale.Add(name);
+            }
+        }
+
+        // 按 <程序集名>.dll.bytes 找资产：先查配置目录，再退到全工程
+        internal static string FindAssetPath(string assemblyName, HotfixBindOptions options)
         {
             string fileName = assemblyName + BytesSuffix;
 

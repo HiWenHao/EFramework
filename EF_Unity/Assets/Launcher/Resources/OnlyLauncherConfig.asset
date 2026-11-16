@@ -19,10 +19,13 @@ MonoBehaviour:
   TimeoutSeconds: 60
   DownloadingMaxNumber: 10
   FailedTryAgain: 3
+  MaxRetryCount: 0
+  RetryDelaySeconds: 0
+  AutoRetryOnFailure: 0
   AotMetadataDlls:
-  - {fileID: 4900000, guid: 4e30fea4a85e7d843a73e2e64ee21b78, type: 3}
-  - {fileID: 4900000, guid: 6781597c3a2f9404ab7963d4135c5ad0, type: 3}
-  - {fileID: 4900000, guid: c1ebfb1a940f4564584633478785598b, type: 3}
+  - {fileID: 4900000, guid: 40acbf272f38e914b87aceff2d446e20, type: 3}
+  - {fileID: 4900000, guid: 76c270fc21ca1fc48a79abf597222943, type: 3}
+  - {fileID: 4900000, guid: dbb046c3fb051b34193eb7341e0dccc7, type: 3}
   HotfixDlls:
   - Name: ExampleGameHotfix.dll
     Location: Assets/AssetsHotfix/OnlyHotfixCode/ExampleGameHotfix.dll

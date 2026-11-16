@@ -278,51 +278,5 @@ namespace EasyFramework.Launcher.Editor
         }
 
         #endregion
-
-        #region 菜单
-
-        [MenuItem(MenuItemToolkit.Launcher + "🔗 Auto Bind Hotfix Dll Entries", false, MenuItemToolkit.LauncherPriority + 55)]
-        public static void AutoBindFromMenu()
-        {
-            var options = HotfixBindOptions.Load();
-            var config = ResolveConfig(options);
-
-            if (config == null)
-            {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.SelectConfigMenu"),
-                    LC.Combine("Launcher.OkConfirm"));
-                return;
-            }
-
-            var result = LauncherHotfixEntryBinder.Build(config, options, apply: true);
-            string message = Describe(result, applied: true);
-            Debug.Log("[EF.Launcher] " + message + LC.Format("Launcher.ConfigLabel", config.name));
-            EditorUtility.DisplayDialog(DialogTitle, message + LC.Format("Launcher.ConfigLabel2", config.name),
-                LC.Combine("Launcher.Ok"));
-        }
-
-        private static LauncherConfig ResolveConfig(HotfixBindOptions options)
-        {
-            if (!string.IsNullOrEmpty(options.LastConfigGuid))
-            {
-                string path = AssetDatabase.GUIDToAssetPath(options.LastConfigGuid);
-                if (!string.IsNullOrEmpty(path))
-                {
-                    var remembered = AssetDatabase.LoadAssetAtPath<LauncherConfig>(path);
-                    if (remembered != null)
-                        return remembered;
-                }
-            }
-
-            if (Selection.activeObject is LauncherConfig selected)
-                return selected;
-
-            string[] guids = AssetDatabase.FindAssets("t:LauncherConfig");
-            return guids.Length == 1
-                ? AssetDatabase.LoadAssetAtPath<LauncherConfig>(AssetDatabase.GUIDToAssetPath(guids[0]))
-                : null;
-        }
-
-        #endregion
     }
 }

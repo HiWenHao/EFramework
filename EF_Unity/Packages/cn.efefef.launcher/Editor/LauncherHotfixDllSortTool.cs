@@ -4,14 +4,13 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 22:30:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-14 22:30:00
- * ScriptVersion:   0.1
+ * ModifyTime:      2026-11-16 18:36:00
+ * ScriptVersion:   0.2
  * ================================================
  */
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
@@ -19,79 +18,26 @@ using UnityEngine;
 namespace EasyFramework.Launcher.Editor
 {
     /// <summary>
-    /// 按 asmdef 依赖图对 <see cref="LauncherConfig.HotfixDlls"/> 做拓扑排序：被依赖的排前面。
-    /// <para>Topologically sorts LauncherConfig.HotfixDlls using the asmdef graph, so nobody has to order it by hand.</para>
+    /// 按 asmdef 依赖图排序：被依赖的排前面。由 <see cref="LauncherHotfixDllFillTool"/> 在写回配置时调用，
+    /// 不单独占菜单——「只排序」与「补齐 + 绑定」是同一条管线的不同深度，拆两个入口只会让人猜。
+    /// <para>Topologically sorts hot update entries using the asmdef graph. Invoked by the sync tool; no standalone menu.</para>
     /// </summary>
     /// <remarks>
     /// 依赖关系的唯一可靠来源是 asmdef 之间的引用（热更 dll 就是从这些 asmdef 编译出来的），
     /// 所以这里不去解析 dll 元数据，而是按「条目名 → asmdef 名」匹配后拓扑排序。
-    /// 匹配不到的条目（业务 dll、名字写错）会原样排到末尾，并在日志里点名，方便自查拼写。
+    /// 匹配不到的条目（业务 dll、名字写错）会原样排到末尾，由调用方点名。
     /// </remarks>
     public static class LauncherHotfixDllSortTool
     {
-        private const string MenuRoot = MenuItemToolkit.Launcher;
-        private const string DialogTitle = "EF.Launcher";
-
-        [MenuItem(MenuRoot + "🔀 Sort Hotfix Dlls By Dependency", false, MenuItemToolkit.LauncherPriority + 53)]
-        public static void SortSelectedConfig()
-        {
-            var config = ResolveTargetConfig(createIfMissing: false);
-            if (config == null)
-            {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.SortNoConfig"), LC.Combine("Launcher.OkConfirm"));
-                return;
-            }
-
-            var entries = config.HotfixDlls;
-            if (entries == null || entries.Length == 0)
-            {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.NoEntries", config.name), LC.Combine("Launcher.OkConfirm"));
-                return;
-            }
-
-            var result = Sort(entries, out var unknown, out var changed);
-            if (!changed)
-            {
-                EditorUtility.DisplayDialog(DialogTitle, LC.Combine("Launcher.OrderAlreadyOk"), LC.Combine("Launcher.OkConfirm"));
-                return;
-            }
-
-            config.HotfixDlls = result;
-            EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-
-            var sb = new StringBuilder();
-            sb.AppendLine(LC.Combine("Launcher.Reordered"));
-            for (int i = 0; i < result.Length; i++)
-            {
-                string name = string.IsNullOrEmpty(result[i].Name) ? "(未命名)" : result[i].Name;
-                string mark = result[i].Enabled ? string.Empty : LC.Combine("Launcher.Disabled");
-                sb.AppendLine($"  {i + 1}. {name}{mark}");
-            }
-
-            if (unknown.Count > 0)
-            {
-                sb.AppendLine();
-                sb.AppendLine(LC.Combine("Launcher.UnknownAsmdef"));
-                foreach (string name in unknown)
-                    sb.AppendLine("  - " + name);
-            }
-
-            Debug.Log("[EF.Launcher] " + sb.ToString().Replace("\n", "\n[EF.Launcher] "));
-            EditorUtility.DisplayDialog(DialogTitle, sb.ToString(), LC.Combine("Launcher.Ok"));
-        }
-
         #region 排序
 
         /// <summary>
         /// 拓扑排序：被依赖的排前面；无法识别的条目原序追加到末尾
         /// </summary>
-        internal static HotUpdateDllEntry[] Sort(
-            HotUpdateDllEntry[] entries,
-            out List<string> unknown,
-            out bool changed)
+        /// <param name="entries">待排序的条目<para>Entries to sort</para></param>
+        /// <param name="changed">顺序是否发生变化<para>Whether the order changed</para></param>
+        internal static HotUpdateDllEntry[] Sort(HotUpdateDllEntry[] entries, out bool changed)
         {
-            unknown = new List<string>();
             var database = AsmdefDatabase.Build();
 
             // 条目程序集名 -> 条目下标（同名条目只排序第一个，其余原样跟随）
@@ -162,13 +108,9 @@ namespace EasyFramework.Launcher.Editor
             foreach (string name in orderedNames)
                 result.Add(entries[buckets[name].Dequeue()]);
 
+            // 认不出 asmdef 的条目原样排到末尾，由调用方（同步结果）点名
             foreach (int index in unknownIndexes)
-            {
                 result.Add(entries[index]);
-
-                string name = entryNames[index];
-                unknown.Add(string.IsNullOrEmpty(name) ? LC.Combine("Launcher.UnnamedEntry") : name);
-            }
 
             changed = !SameOrder(result, entries);
             return result.ToArray();

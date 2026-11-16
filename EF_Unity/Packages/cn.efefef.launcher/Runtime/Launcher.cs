@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-15 17:10:00
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-11-16 18:40:00
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using HybridCLR;
 using UnityEngine;
 using YooAsset;
@@ -119,7 +120,8 @@ namespace EasyFramework.Launcher
         [ContextMenu("Run Launcher")]
         public void Run()
         {
-            if (_running || State == LauncherState.Completed)
+            // 退避等待期间 _running 已是 false，不拦 _retryCoroutine 会并发跑起第二条管线
+            if (_running || _retryCoroutine != null || State == LauncherState.Completed)
                 return;
 
             StartCoroutine(RunPipeline());
@@ -156,9 +158,9 @@ namespace EasyFramework.Launcher
 
             if (_retryCount >= max)
             {
-                State = LauncherState.Failed;
                 string message = $"重试次数已用尽（{_retryCount}/{max}）";
                 D.Error($"{LogTag} 启动失败 [{LauncherErrorCode.RetryExhausted}] {message}");
+                SetState(LauncherState.Failed, message);
                 BroadcastError(LauncherErrorCode.RetryExhausted, message, NoopRetry);
                 return;
             }
@@ -184,7 +186,7 @@ namespace EasyFramework.Launcher
                 yield return new WaitForSecondsRealtime(delay);
 
             _retryCoroutine = null;
-            State = LauncherState.Idle;
+            SetState(LauncherState.Idle, "重试");
             Run();
         }
 
@@ -195,6 +197,21 @@ namespace EasyFramework.Launcher
         private IEnumerator RunPipeline()
         {
             _running = true;
+            try
+            {
+                yield return RunPipelineInternal();
+            }
+            finally
+            {
+                // 任意未捕获异常（YooAsset API、事件订阅者）都会终止协程；
+                // 没有 finally 兜底时 _running 会永久为 true，Retry()/Run() 从此静默失效
+                _running = false;
+            }
+        }
+
+        // 八个阶段的主体：异常一律向上抛给 RunPipeline 的 finally
+        private IEnumerator RunPipelineInternal()
+        {
             _startTime = Time.realtimeSinceStartup;
             Log($"启动开始 | 版本={LauncherCoreBridge.AppVersion} 语言={LauncherCoreBridge.DisplayLanguage}");
             // 不清空 _hotfixAssemblies：已加载的程序集无法卸载，重试时继续复用。
@@ -341,6 +358,26 @@ namespace EasyFramework.Launcher
                         continue;
                     }
 
+#if UNITY_EDITOR
+                    // 编辑器模拟模式：热更 asmdef 本来就跟着工程编译进 ScriptAssemblies，
+                    // 再从 bytes 加载一份会分裂出第二套类型身份（热更代码里 as/强转即 InvalidCastException）
+                    if (_config.PlayMode == EPlayMode.EditorSimulateMode && assemblyName != null)
+                    {
+                        var compiled = FindLoadedAssembly(assemblyName);
+                        if (compiled != null)
+                        {
+                            _hotfixAssemblies.Add(compiled);
+                            _loadedAssemblyNames.Add(compiled.GetName().Name);
+                            _loadedAssemblyNames.Add(assemblyName);
+                            Log($"复用已编译程序集（编辑器模拟模式）：{compiled.GetName().Name}");
+                            continue;
+                        }
+
+                        // 编辑器里没有同名编译产物（例如只随包发布的外部业务 dll）→ 退回 bytes 加载
+                        Log($"编辑器里没有 {assemblyName} 的编译产物，改为从 bytes 加载");
+                    }
+#endif
+
                     byte[] dllBytes = null;
 
                     if (!string.IsNullOrEmpty(entry.Location))
@@ -405,9 +442,11 @@ namespace EasyFramework.Launcher
             #region 7. 调热更入口
 
             SetState(LauncherState.Invoking, "启动游戏");
-            if (!TryInvokeEntry(out LauncherErrorCode entryCode, out string entryError))
+            var entryResult = new StepResult();
+            yield return InvokeEntryStep(entryResult);
+            if (entryResult.Failed)
             {
-                Fail(entryCode, entryError);
+                Fail(entryResult.Code, entryResult.Error);
                 yield break;
             }
 
@@ -416,7 +455,6 @@ namespace EasyFramework.Launcher
             #region 8. 完成
 
             SetState(LauncherState.Completed, "进入游戏");
-            _running = false;
 
             #endregion
         }
@@ -583,47 +621,105 @@ namespace EasyFramework.Launcher
             return true;
         }
 
-        private bool TryInvokeEntry(out LauncherErrorCode code, out string error)
+        // 反射调用热更入口。入口返回 IEnumerator / Task 时等它跑完再标 Completed，
+        // 否则异步初始化的热更层（例如 OpenView().Forget()）会在启动界面还没退场时就被判为“已完成”。
+        private IEnumerator InvokeEntryStep(StepResult result)
         {
-            code = LauncherErrorCode.EntryNotFound;
-            error = null;
-
             Type type = FindType(_config.EntryType);
             if (type == null)
             {
-                error = $"找不到热更入口类型：{_config.EntryType}（需要命名空间全名，且对应程序集已加载）";
-                return false;
+                MarkFailed(result, LauncherErrorCode.EntryNotFound,
+                    $"找不到热更入口类型：{_config.EntryType}（需要命名空间全名，且对应程序集已加载）");
+                yield break;
             }
 
+            // 显式指定 Type.EmptyTypes：不指定时同名重载会抛 AmbiguousMatchException，
+            // 被下面的 catch 吞成“调用失败”，真实原因（有重载）反而丢失
             var method = type.GetMethod(
                 _config.EntryMethod,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
+                null,
+                Type.EmptyTypes,
+                null);
 
             if (method == null)
             {
-                error = $"找不到入口方法：{_config.EntryType}.{_config.EntryMethod}()，必须是 static 无参方法";
-                return false;
+                MarkFailed(result, LauncherErrorCode.EntryNotFound,
+                    $"找不到无参入口方法：{_config.EntryType}.{_config.EntryMethod}()，必须是无参 static 方法");
+                yield break;
             }
 
+            object returned;
             try
             {
-                method.Invoke(null, null);
-                Log($"热更入口已执行：{_config.EntryType}.{_config.EntryMethod}()");
-                return true;
+                returned = method.Invoke(null, null);
             }
             catch (TargetInvocationException e)
             {
-                code = LauncherErrorCode.EntryThrew;
-                error = $"热更入口抛出异常：{e.InnerException ?? e}";
-                return false;
+                MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口抛出异常：{e.InnerException ?? e}");
+                yield break;
             }
             catch (Exception e)
             {
-                code = LauncherErrorCode.EntryThrew;
-                error = $"热更入口调用失败：{e.Message}";
-                return false;
+                MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口调用失败：{e.Message}");
+                yield break;
+            }
+
+            Log($"热更入口已执行：{_config.EntryType}.{_config.EntryMethod}()");
+
+            if (returned is IEnumerator routine)
+            {
+                yield return routine;
+                yield break;
+            }
+
+            if (returned is Task task)
+            {
+                while (!task.IsCompleted)
+                    yield return null;
+
+                if (task.IsFaulted)
+                {
+                    Exception inner = task.Exception?.GetBaseException();
+                    MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口异步任务失败：{inner?.Message}");
+                }
+                else if (task.IsCanceled)
+                {
+                    MarkFailed(result, LauncherErrorCode.EntryThrew, "热更入口异步任务被取消");
+                }
+
+                yield break;
+            }
+
+            if (returned != null)
+            {
+                // 启动器是 AOT 程序集，拿不到 UniTask 类型；只能提示，不能替它等
+                Warn($"热更入口返回 {returned.GetType().Name}，启动器不会等待该类型。" +
+                     "需要「初始化完成后再标启动完成」请返回 IEnumerator 或 Task。");
             }
         }
+
+        private static void MarkFailed(StepResult result, LauncherErrorCode code, string message)
+        {
+            result.Failed = true;
+            result.Code = code;
+            result.Error = message;
+        }
+
+#if UNITY_EDITOR
+        // 编辑器模拟模式按程序集名在当前域里找已编译版本
+        private static Assembly FindLoadedAssembly(string assemblyName)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                if (string.Equals(assemblies[i].GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                    return assemblies[i];
+            }
+
+            return null;
+        }
+#endif
 
         private Type FindType(string fullName)
         {
@@ -675,7 +771,17 @@ namespace EasyFramework.Launcher
             Log($"{state} | {tip}");
 
             if (_stateEvent != null)
-                _stateEvent.Raise(new LauncherStatePayload(state, tip));
+            {
+                // 事件通道与界面彼此隔离：任一订阅者抛异常都不能打断启动流程
+                try
+                {
+                    _stateEvent.Raise(new LauncherStatePayload(state, tip));
+                }
+                catch (Exception e)
+                {
+                    D.Exception(e);
+                }
+            }
 
             if (_view == null)
                 return;
@@ -693,7 +799,16 @@ namespace EasyFramework.Launcher
         private void ReportProgress(long currentCount, long totalCount, long currentBytes, long totalBytes)
         {
             if (_progressEvent != null)
-                _progressEvent.Raise(new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
+            {
+                try
+                {
+                    _progressEvent.Raise(new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
+                }
+                catch (Exception e)
+                {
+                    D.Exception(e);
+                }
+            }
 
             if (_view == null)
                 return;
@@ -711,8 +826,9 @@ namespace EasyFramework.Launcher
         private void Fail(LauncherErrorCode code, string message)
         {
             _running = false;
-            State = LauncherState.Failed;
             D.Error($"{LogTag} 启动失败 [{code}] {message}");
+            // 状态必须走 SetState：直接赋属性会让事件通道永远收不到 Failed，埋点与独立加载屏会停在上一阶段
+            SetState(LauncherState.Failed, message);
             Diagnose();
 
             BroadcastError(code, message, Retry);
@@ -725,7 +841,16 @@ namespace EasyFramework.Launcher
         private void BroadcastError(LauncherErrorCode code, string message, Action retry)
         {
             if (_errorEvent != null)
-                _errorEvent.Raise(new LauncherErrorPayload(code, message, retry));
+            {
+                try
+                {
+                    _errorEvent.Raise(new LauncherErrorPayload(code, message, retry));
+                }
+                catch (Exception e)
+                {
+                    D.Exception(e);
+                }
+            }
 
             if (_view == null)
                 return;
@@ -770,6 +895,18 @@ namespace EasyFramework.Launcher
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region 辅助类型
+
+        // 协程方法不能带 out 参数，用一个小载体把失败原因带回主流程
+        private sealed class StepResult
+        {
+            public bool Failed;
+            public LauncherErrorCode Code;
+            public string Error;
         }
 
         #endregion

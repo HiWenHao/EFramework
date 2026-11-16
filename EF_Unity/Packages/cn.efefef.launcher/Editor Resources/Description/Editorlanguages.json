@@ -97,6 +97,22 @@
       ]
     },
     {
+      "name": "Launcher.AotMissingHeader",
+      "desc": "缺失的 AOT 元数据清单头",
+      "array": [
+        "Missing AOT metadata (run HybridCLR/Generate/All first):",
+        "缺失的 AOT 元数据（需先执行 HybridCLR/Generate/All）："
+      ]
+    },
+    {
+      "name": "Launcher.AotSummary",
+      "desc": "AOT 元数据绑定结果（绑定条数 / 缺失条数）",
+      "array": [
+        "AOT metadata: {0} bound, {1} missing.",
+        "AOT 元数据：绑定 {0} 条，缺失 {1} 条。"
+      ]
+    },
+    {
       "name": "Launcher.ApplyToConfig",
       "desc": "✅ 应用到配置",
       "array": [
@@ -206,22 +222,6 @@
       "array": [
         ".bytes folder",
         ".bytes 目录"
-      ]
-    },
-    {
-      "name": "Launcher.ConfigLabel",
-      "desc": " 目标配置：{0}",
-      "array": [
-        "\nConfig: {0}",
-        "\n目标配置：{0}"
-      ]
-    },
-    {
-      "name": "Launcher.ConfigLabel2",
-      "desc": "  目标配置：{0}",
-      "array": [
-        "\n\nConfig: {0}",
-        "\n\n目标配置：{0}"
       ]
     },
     {
@@ -401,14 +401,6 @@
       ]
     },
     {
-      "name": "Launcher.NoEntries",
-      "desc": "「{0}」里还没有热更程序集条目。",
-      "array": [
-        "\"{0}\" has no hotfix dll entries yet.",
-        "「{0}」里还没有热更程序集条目。"
-      ]
-    },
-    {
       "name": "Launcher.NoHybridClrSettings",
       "desc": "读不到 HybridCLRSetti",
       "array": [
@@ -430,14 +422,6 @@
       "array": [
         "OK",
         "确定"
-      ]
-    },
-    {
-      "name": "Launcher.OrderAlreadyOk",
-      "desc": "当前顺序已经是依赖序，不需要调整。",
-      "array": [
-        "The current order already matches the dependency order.",
-        "当前顺序已经是依赖序，不需要调整。"
       ]
     },
     {
@@ -577,14 +561,6 @@
       ]
     },
     {
-      "name": "Launcher.SelectConfigMenu",
-      "desc": "没找到唯一的 LauncherCon",
-      "array": [
-        "No single LauncherConfig found.\n\nSelect one in the Project window, or pick one in the EF config panel.",
-        "没找到唯一的 LauncherConfig。\n\n请在 Project 窗口选中配置，或在「EF 配置面板 → 热更程序集」里选一个。"
-      ]
-    },
-    {
       "name": "Launcher.SelectConfigToFill",
       "desc": "没找到唯一的 LauncherCon",
       "array": [
@@ -614,14 +590,6 @@
       "array": [
         "[EF.Launcher] {0} not found, skipping the AOT boundary check.",
         "[EF.Launcher] 找不到 {0}，跳过 AOT 边界校验"
-      ]
-    },
-    {
-      "name": "Launcher.SortNoConfig",
-      "desc": "没找到 LauncherConfig",
-      "array": [
-        "No LauncherConfig found.\n\nSelect one in the Project window first; when several exist the tool cannot guess which one to use.",
-        "没找到 LauncherConfig。\n\n请先在 Project 窗口选中一个 LauncherConfig 资产再执行；工程里有多个时无法自动判断用哪个。"
       ]
     },
     {

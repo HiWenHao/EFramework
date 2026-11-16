@@ -232,6 +232,9 @@ MonoBehaviour:
   _runOnStart: 1
   _dontDestroyOnLoad: 1
   _verbose: 1
+  _stateEvent: {fileID: 0}
+  _progressEvent: {fileID: 0}
+  _errorEvent: {fileID: 0}
 --- !u!4 &132837564
 Transform:
   m_ObjectHideFlags: 0

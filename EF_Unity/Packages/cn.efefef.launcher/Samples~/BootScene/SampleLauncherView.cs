@@ -29,6 +29,7 @@ namespace EFLauncherSample
         private Text _progressText;
         private RectTransform _fillRect;
         private GameObject _retryRoot;
+        private GameObject _canvasGo;
         private Action _retryAction;
 
         private void Awake()
@@ -45,6 +46,12 @@ namespace EFLauncherSample
 
             if (_retryRoot != null && state != LauncherState.Failed)
                 _retryRoot.SetActive(false);
+
+            // 每帧都在刷的启动界面在 Completed 之后就该收场。
+            // 只关 Canvas 子物体，不要 SetActive(false) 本物体 —— Launcher 可能挂在同一个物体上，
+            // 关掉会把它的协程一起停掉。
+            if (state == LauncherState.Completed && _canvasGo != null)
+                _canvasGo.SetActive(false);
         }
 
         public void OnProgress(long currentCount, long totalCount, long currentBytes, long totalBytes)
@@ -85,6 +92,7 @@ namespace EFLauncherSample
             var canvasGo = new GameObject("LauncherCanvas",
                 typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasGo.transform.SetParent(transform, false);
+            _canvasGo = canvasGo;
 
             var canvas = canvasGo.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
