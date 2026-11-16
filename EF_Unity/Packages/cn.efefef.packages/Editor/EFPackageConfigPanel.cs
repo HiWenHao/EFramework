@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Edit.Packages;
@@ -54,6 +55,11 @@ namespace EasyFramework.Edit
     public class EFPackageConfigPanel : EFConfigPanelBase
     {
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
+
+        // 新建包程序集依赖的固定 GUID（core Runtime / core Editor / UniTask；与 EF.RedDot 等现有包一致）
+        private const string CoreRuntimeAssemblyGuid = "396fd9bc7a7442941a71f32479ef054d";
+        private const string CoreEditorAssemblyGuid = "a4a7eea321f5a024bb7118f90940975f";
+        private const string UniTaskAssemblyGuid = "f51ebe6a0ceec4240a699833d6309b23";
 
         public override string Name => "EF" + LC.Combine("Packages.PackageAssets");
 
@@ -719,7 +725,7 @@ namespace EasyFramework.Edit
             try
             {
                 CreatePackageJson(packageName, packageDes, author, packagePath);
-                CreateAssemblyReference(packageName, packagePath);
+                CreatePackageStructure(packageName, packagePath);
             }
             catch (Exception e)
             {
@@ -776,20 +782,103 @@ namespace EasyFramework.Edit
             File.WriteAllText(packageJson, JsonConvert.SerializeObject(config, Formatting.Indented));
         }
 
-        private void CreateAssemblyReference(string packageName, string rootPath)
+        /// <summary>
+        /// 为新包创建独立的运行时/编辑器程序集与多语言目录（自有 asmdef，非 asmref 挂靠 core）
+        /// <para>Create standalone runtime/editor assemblies and a localization folder for the new
+        /// package (own asmdefs, not asmrefs attached to core).</para>
+        /// </summary>
+        /// <param name="packageName">包名（首字母大写的短名，如 UI）<para>Package short name.</para></param>
+        /// <param name="rootPath">包根目录绝对路径<para>Absolute path of the package root.</para></param>
+        private void CreatePackageStructure(string packageName, string rootPath)
         {
-            // TODO [wwh] 新建包时处理程序集和对应的语言包裹
-            string editorGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Editor.asmdef");
-            string runtimeGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Runtime/EF.Runtime.asmdef");
-            string packageEditorPath = $"{rootPath}/Editor";
-            string packageRuntimePath = $"{rootPath}/Runtime";
-
+            string packageEditorPath = Path.Combine(rootPath, "Editor");
+            string packageRuntimePath = Path.Combine(rootPath, "Runtime");
+            string langPath = Path.Combine(rootPath, "Editor Resources", "Description");
             Directory.CreateDirectory(packageEditorPath);
             Directory.CreateDirectory(packageRuntimePath);
-            File.WriteAllText($"{packageEditorPath}/EF.{packageName}.Editor.asmref",
-                $"{{\"reference\": \"GUID:{editorGuid}\"}}");
-            File.WriteAllText($"{packageRuntimePath}/EF.{packageName}.Runtime.asmref",
-                $"{{\"reference\": \"GUID:{runtimeGuid}\"}}");
+            Directory.CreateDirectory(langPath);
+
+            // 自身 Runtime 程序集 GUID：Editor asmdef 引用它（每个新包唯一）
+            string runtimeGuid = Guid.NewGuid().ToString("N");
+
+            // 1) Runtime asmdef：引用 core Runtime + UniTask（与 EF.RedDot 等现有包一致）
+            string runtimeAsmdefName = $"EF.{packageName}";
+            WriteTextWithMeta(Path.Combine(packageRuntimePath, runtimeAsmdefName + ".asmdef"),
+                BuildAssemblyDefinition(runtimeAsmdefName, new[]
+                {
+                    UniTaskAssemblyGuid,
+                    CoreRuntimeAssemblyGuid,
+                }, false), runtimeGuid);
+
+            // 2) Editor asmdef：Editor 平台，引用 core Editor + 自身 Runtime + core Runtime
+            string editorAsmdefName = $"EF.{packageName}.Editor";
+            WriteTextWithMeta(Path.Combine(packageEditorPath, editorAsmdefName + ".asmdef"),
+                BuildAssemblyDefinition(editorAsmdefName, new[]
+                {
+                    CoreEditorAssemblyGuid,
+                    runtimeGuid,
+                    CoreRuntimeAssemblyGuid,
+                }, true));
+
+            // 3) 多语言：Editor Resources/Description/Editorlanguages.json（空键清单）
+            WriteTextWithMeta(Path.Combine(langPath, "Editorlanguages.json"),
+                "{\n  \"LcList\": []\n}");
+        }
+
+        /// <summary>
+        /// 构建 asmdef JSON 内容（格式与现有包一致：4 空格缩进）
+        /// <para>Build asmdef JSON content (4-space indent, consistent with existing packages).</para>
+        /// </summary>
+        /// <param name="name">程序集名<para>Assembly name.</para></param>
+        /// <param name="referenceGuids">依赖的 GUID 列表<para>Referenced assembly GUIDs.</para></param>
+        /// <param name="editorOnly">是否仅 Editor 平台<para>Whether it is Editor-only.</para></param>
+        /// <returns>asmdef JSON 文本<para>The asmdef JSON text.</para></returns>
+        private static string BuildAssemblyDefinition(string name, string[] referenceGuids, bool editorOnly)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("{");
+            builder.AppendLine($"    \"name\": \"{name}\",");
+            builder.AppendLine("    \"rootNamespace\": \"\",");
+            builder.AppendLine("    \"references\": [");
+            for (int i = 0; i < referenceGuids.Length; i++)
+            {
+                string comma = i < referenceGuids.Length - 1 ? "," : string.Empty;
+                builder.AppendLine($"        \"GUID:{referenceGuids[i]}\"{comma}");
+            }
+            builder.AppendLine("    ],");
+            if (editorOnly)
+                builder.AppendLine("    \"includePlatforms\": [\n        \"Editor\"\n    ],");
+            else
+                builder.AppendLine("    \"includePlatforms\": [],");
+            builder.AppendLine("    \"excludePlatforms\": [],");
+            builder.AppendLine("    \"allowUnsafeCode\": false,");
+            builder.AppendLine("    \"overrideReferences\": false,");
+            builder.AppendLine("    \"precompiledReferences\": [],");
+            builder.AppendLine("    \"autoReferenced\": true,");
+            builder.AppendLine("    \"defineConstraints\": [],");
+            builder.AppendLine("    \"versionDefines\": [],");
+            builder.AppendLine("    \"noEngineReferences\": false");
+            builder.AppendLine("}");
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 写入文本文件并生成配套 .meta（GUID 用新生成的；可指定以便其他文件引用）
+        /// <para>Write a text file with a companion .meta (fresh GUID; an explicit one may be supplied
+        /// so other files can reference it).</para>
+        /// </summary>
+        /// <param name="path">文件绝对路径<para>Absolute file path.</para></param>
+        /// <param name="content">文件内容<para>File content.</para></param>
+        /// <param name="guid">指定 GUID（默认新建）<para>Explicit GUID (fresh one by default).</para></param>
+        private static void WriteTextWithMeta(string path, string content, string guid = null)
+        {
+            File.WriteAllText(path, content);
+            string metaGuid = string.IsNullOrEmpty(guid) ? Guid.NewGuid().ToString("N") : guid;
+            string importer = Path.GetExtension(path) == ".asmdef"
+                ? "AssemblyDefinitionImporter"
+                : "TextScriptImporter";
+            string metaContent = $"fileFormatVersion: 2\nguid: {metaGuid}\n{importer}:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n";
+            File.WriteAllText(path + ".meta", metaContent);
         }
 
         #endregion
