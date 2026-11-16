@@ -759,6 +759,7 @@ namespace EasyFramework.Edit
 
         private void CreateAssemblyReference(string packageName, string rootPath)
         {
+            // TODO [wwh] 新建包时处理程序集和对应的语言包裹
             string editorGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Editor/EF.Editor.asmdef");
             string runtimeGuid = AssetDatabase.AssetPathToGUID("Packages/cn.efefef.core/Runtime/EF.Runtime.asmdef");
             string packageEditorPath = $"{rootPath}/Editor";

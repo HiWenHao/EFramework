@@ -22,7 +22,7 @@ using UnityEngine;
 namespace EasyFramework.Launcher.Editor
 {
     /// <summary>
-    /// AOT 边界校验：保证 <c>EF.Launcher.Runtime</c> 永远不会（直接或传递）引用任何 <c>cn.efefef.*</c> 程序集。
+    /// AOT 边界校验：保证 <c>EF.Launcher</c> 永远不会（直接或传递）引用任何 <c>cn.efefef.*</c> 程序集。
     /// <para>Boundary guard: the launcher runtime must never reference any cn.efefef.* assembly, directly or transitively.</para>
     /// </summary>
     /// <remarks>
@@ -34,7 +34,7 @@ namespace EasyFramework.Launcher.Editor
     public static class LauncherBoundaryValidator
     {
         private const string LauncherPackageRoot = "Packages/cn.efefef.launcher";
-        private const string RuntimeAsmdefPath = LauncherPackageRoot + "/Runtime/EF.Launcher.Runtime.asmdef";
+        private const string RuntimeAsmdefPath = LauncherPackageRoot + "/Runtime/EF.Launcher.asmdef";
         private const string EditorAsmdefPath = LauncherPackageRoot + "/Editor/EF.Launcher.Editor.asmdef";
         private const string HybridClrSettingsPath = "ProjectSettings/HybridCLRSettings.asset";
         private const string MenuPath = MenuItemToolkit.Launcher + "🔍 Validate AOT Boundary";

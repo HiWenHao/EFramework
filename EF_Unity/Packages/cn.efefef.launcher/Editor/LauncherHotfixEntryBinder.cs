@@ -20,13 +20,13 @@ namespace EasyFramework.Launcher.Editor
     /// <summary>Location 生成规则，需与 YooAsset 收集器的 AddressRule 一致</summary>
     public enum HotfixLocationRule
     {
-        /// <summary>Path.GetFileNameWithoutExtension：EF.UI.Runtime.dll（对应 AddressByFileName）</summary>
+        /// <summary>Path.GetFileNameWithoutExtension：EF.UI.dll（对应 AddressByFileName）</summary>
         FileName = 0,
 
-        /// <summary>资产路径去掉 .bytes：Assets/AssetsHotfix/FullCode/EF.UI.Runtime.dll</summary>
+        /// <summary>资产路径去掉 .bytes：Assets/AssetsHotfix/FullCode/EF.UI.dll</summary>
         AssetPathWithoutBytes = 1,
 
-        /// <summary>自定义前缀 + 程序集名：HotfixDlls/EF.UI.Runtime.dll</summary>
+        /// <summary>自定义前缀 + 程序集名：HotfixDlls/EF.UI.dll</summary>
         CustomPrefix = 2,
     }
 

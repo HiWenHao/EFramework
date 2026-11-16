@@ -24,44 +24,44 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 6781597c3a2f9404ab7963d4135c5ad0, type: 3}
   - {fileID: 4900000, guid: c1ebfb1a940f4564584633478785598b, type: 3}
   HotfixDlls:
-  - Name: EF.Archive.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.Archive.Runtime.dll
+  - Name: EF.Archive
+    Location: Assets/AssetsHotfix/FullCode/EF.Archive.dll
     FallbackAsset: {fileID: 4900000, guid: ea480e710e6eaae4abeaa6b1d7252512, type: 3}
     Enabled: 1
-  - Name: EF.Preference.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.Preference.Runtime.dll
+  - Name: EF.Preference
+    Location: Assets/AssetsHotfix/FullCode/EF.Preference.dll
     FallbackAsset: {fileID: 4900000, guid: 95e92bdb7e525c64db9c01d5347d771d, type: 3}
     Enabled: 1
-  - Name: EF.Audio.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.Audio.Runtime.dll
+  - Name: EF.Audio
+    Location: Assets/AssetsHotfix/FullCode/EF.Audio.dll
     FallbackAsset: {fileID: 4900000, guid: c8622c773492220469d724a4a62d9785, type: 3}
     Enabled: 1
-  - Name: EF.Http.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.Http.Runtime.dll
+  - Name: EF.Http
+    Location: Assets/AssetsHotfix/FullCode/EF.Http.dll
     FallbackAsset: {fileID: 4900000, guid: 4056feff81d0ddb459eb0e002af7ef90, type: 3}
     Enabled: 1
-  - Name: EF.Localization.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.Localization.Runtime.dll
+  - Name: EF.Localization
+    Location: Assets/AssetsHotfix/FullCode/EF.Localization.dll
     FallbackAsset: {fileID: 4900000, guid: a616783aa0f75f444aa5f50360e67d81, type: 3}
     Enabled: 1
   - Name: EF.Net
     Location: Assets/AssetsHotfix/FullCode/EF.Net.dll
     FallbackAsset: {fileID: 4900000, guid: ff876e938f69eef4ebf25c92a863b842, type: 3}
     Enabled: 1
-  - Name: EF.RedDot.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.RedDot.Runtime.dll
+  - Name: EF.RedDot
+    Location: Assets/AssetsHotfix/FullCode/EF.RedDot.dll
     FallbackAsset: {fileID: 4900000, guid: d931f47ace881a4469eb839288aa7536, type: 3}
     Enabled: 1
-  - Name: EF.UI.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.UI.Runtime.dll
+  - Name: EF.UI
+    Location: Assets/AssetsHotfix/FullCode/EF.UI.dll
     FallbackAsset: {fileID: 4900000, guid: 07a53c769f979e5439ba4d9a58f84ed2, type: 3}
     Enabled: 1
-  - Name: EF.YooAsset.Runtime
-    Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.Runtime.dll
+  - Name: EF.YooAsset
+    Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.dll
     FallbackAsset: {fileID: 4900000, guid: 2a17e02500402804da2f66af00db2fb2, type: 3}
     Enabled: 1
   - Name: ExampleGameHotfix
-    Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.Runtime.dll
+    Location: Assets/AssetsHotfix/FullCode/ExampleGameHotfix.dll
     FallbackAsset: {fileID: 4900000, guid: e4a6b174eb4f30c47acc130456b443cc, type: 3}
     Enabled: 1
   EntryType: EFExample.HotfixTest

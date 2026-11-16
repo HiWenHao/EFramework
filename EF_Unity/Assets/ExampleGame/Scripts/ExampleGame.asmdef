@@ -2,7 +2,7 @@
     "name": "ExampleGame",
     "rootNamespace": "",
     "references": [
-        "EF.Launcher.Runtime",
+        "EF.Launcher",
         "UnityEngine.UI"
     ],
     "includePlatforms": [],

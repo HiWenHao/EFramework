@@ -2,7 +2,7 @@
     "name": "EF.LauncherSample",
     "rootNamespace": "EFLauncherSample",
     "references": [
-        "EF.Launcher.Runtime",
+        "EF.Launcher",
         "UnityEngine.UI"
     ],
     "includePlatforms": [],

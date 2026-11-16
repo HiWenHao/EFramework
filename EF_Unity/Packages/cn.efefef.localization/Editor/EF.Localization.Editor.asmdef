@@ -5,7 +5,7 @@
         "EF.Editor",
         "EF.Core",
         "Unity.TextMeshPro",
-        "EF.Localization.Runtime",
+        "EF.Localization",
         "Unity.TextMeshPro.Editor",
         "GUID:f51ebe6a0ceec4240a699833d6309b23"
     ],

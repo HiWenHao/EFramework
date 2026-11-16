@@ -1792,7 +1792,7 @@
     {
       "key": "Cs_LauncherBoundaryOk",
       "desc": "[EF.Launcher] AOT ",
-      "text": "[EF.Launcher] AOT boundary OK: EF.Launcher.Runtime references no cn.efefef.* assembly."
+      "text": "[EF.Launcher] AOT boundary OK: EF.Launcher references no cn.efefef.* assembly."
     },
     {
       "key": "Cs_LauncherBoundaryBroken",
@@ -1987,7 +1987,7 @@
     {
       "key": "Cs_LauncherBoundaryRule",
       "desc": "规则：EF.Launcher.Run",
-      "text": "Rule: EF.Launcher.Runtime may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list."
+      "text": "Rule: EF.Launcher may only reference YooAsset / HybridCLR.Runtime, and must never be in the hot update list."
     },
     {
       "key": "Cs_LauncherRemoveReferences",
@@ -2195,7 +2195,7 @@
     {
       "key": "Cs_LauncherAddressRuleHint",
       "desc": "当前工程收集器为 AddressBy",
-      "text": "This project's collector uses AddressByFileName, so Location should be a bare file name (e.g. EF.UI.Runtime.dll). To fix hand-written full paths, pick the file-name rule and enable overwrite."
+      "text": "This project's collector uses AddressByFileName, so Location should be a bare file name (e.g. EF.UI.dll). To fix hand-written full paths, pick the file-name rule and enable overwrite."
     },
     {
       "key": "Cs_LauncherPreviewSummary",

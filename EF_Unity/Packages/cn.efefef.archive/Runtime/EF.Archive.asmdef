@@ -1,9 +1,10 @@
 {
-    "name": "EF.Launcher.Runtime",
-    "rootNamespace": "EasyFramework.Launcher",
+    "name": "EF.Archive",
+    "rootNamespace": "EasyFramework.Systems.Archive",
     "references": [
-        "YooAsset",
-        "HybridCLR.Runtime"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:e34a5702dd353724aa315fb8011f08c3"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

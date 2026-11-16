@@ -1792,7 +1792,7 @@
     {
       "key": "Cs_LauncherBoundaryOk",
       "desc": "[EF.Launcher] AOT ",
-      "text": "[EF.Launcher] AOT 边界校验通过：EF.Launcher.Runtime 没有任何 cn.efefef.* 引用"
+      "text": "[EF.Launcher] AOT 边界校验通过：EF.Launcher 没有任何 cn.efefef.* 引用"
     },
     {
       "key": "Cs_LauncherBoundaryBroken",
@@ -1987,7 +1987,7 @@
     {
       "key": "Cs_LauncherBoundaryRule",
       "desc": "规则：EF.Launcher.Run",
-      "text": "规则：EF.Launcher.Runtime 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。"
+      "text": "规则：EF.Launcher 只能引用 YooAsset / HybridCLR.Runtime，且自身不能进热更列表。"
     },
     {
       "key": "Cs_LauncherRemoveReferences",
@@ -2195,7 +2195,7 @@
     {
       "key": "Cs_LauncherAddressRuleHint",
       "desc": "当前工程收集器为 AddressBy",
-      "text": "当前工程收集器为 AddressByFileName，Location 应为纯文件名（如 EF.UI.Runtime.dll）。若手工填的是 Assets/... 全路径，可切到「按文件名」并勾选覆盖来批量修正。"
+      "text": "当前工程收集器为 AddressByFileName，Location 应为纯文件名（如 EF.UI.dll）。若手工填的是 Assets/... 全路径，可切到「按文件名」并勾选覆盖来批量修正。"
     },
     {
       "key": "Cs_LauncherPreviewSummary",
