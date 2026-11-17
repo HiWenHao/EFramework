@@ -1975,6 +1975,78 @@
         "Yes",
         "是的"
       ]
+    },
+    {
+      "name": "Core.MascotName",
+      "desc": "素材名称",
+      "array": [
+        "Mascot Name",
+        "素材名称"
+      ]
+    },
+    {
+      "name": "Core.MascotCreate",
+      "desc": "生成",
+      "array": [
+        "Generate",
+        "生成"
+      ]
+    },
+    {
+      "name": "Core.MascotCreateWindow",
+      "desc": "自定义吉祥物素材",
+      "array": [
+        "Custom Mascot",
+        "自定义吉祥物素材"
+      ]
+    },
+    {
+      "name": "Core.MascotNameEmpty",
+      "desc": "素材名称不能为空。",
+      "array": [
+        "The mascot name cannot be empty.",
+        "素材名称不能为空。"
+      ]
+    },
+    {
+      "name": "Core.MascotNameInvalid",
+      "desc": "素材名称包含非法字符：{0}",
+      "array": [
+        "The mascot name contains invalid characters: {0}",
+        "素材名称包含非法字符：{0}"
+      ]
+    },
+    {
+      "name": "Core.MascotFolderExists",
+      "desc": "目录已存在：{0}",
+      "array": [
+        "The folder already exists: {0}",
+        "目录已存在：{0}"
+      ]
+    },
+    {
+      "name": "Core.MascotCreateFailed",
+      "desc": "生成素材目录失败：{0}",
+      "array": [
+        "Failed to create the mascot folder: {0}",
+        "生成素材目录失败：{0}"
+      ]
+    },
+    {
+      "name": "Core.MascotBuiltin",
+      "desc": "内置素材",
+      "array": [
+        "Builtin",
+        "内置素材"
+      ]
+    },
+    {
+      "name": "Core.MascotNewCustom",
+      "desc": "新建自定义素材...",
+      "array": [
+        "New Custom...",
+        "新建自定义素材..."
+      ]
     }
   ]
 }

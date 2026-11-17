@@ -107,6 +107,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             #endregion
 
             EditorGUILayout.EndHorizontal();
+
+            // 由宿主窗口统一驱动重绘：当前面板声明需要动画时才请求下一帧，窗口不可见时 IMGUI 不绘制故无开销
+            if (_settings[_panelIndex].NeedsContinuousRepaint)
+                Repaint();
         }
 
         private void OnDestroy()

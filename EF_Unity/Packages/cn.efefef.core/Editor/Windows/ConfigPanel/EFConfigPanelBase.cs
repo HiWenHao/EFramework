@@ -30,6 +30,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public abstract string Name { get; }
 
         /// <summary>
+        /// 是否需要宿主窗口持续重绘（用于驱动面板内的即时动画，如跑马灯）
+        /// <para>Whether the host window must keep repainting (drives live animations such as a marquee).</para>
+        /// </summary>
+        public virtual bool NeedsContinuousRepaint => false;
+
+        /// <summary>
         /// 当首次进入（默认保存路径并加载数据；有额外初始化需求的子类可重写）
         /// <para>On enable (default: save the path and load data; override for extra initialization).</para>
         /// </summary>
