@@ -80,18 +80,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             EditorGUILayout.PropertyField(_appConstConfig);
 
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button(LC.Combine("Core.ResetProjectSettings")))
-            {
-                string appName = Application.productName;
-                _appConstConfig.FindPropertyRelative("_appPrefix").stringValue = appName + "_";
-                _appConstConfig.FindPropertyRelative("_appVersion").stringValue = "1.0";
-                _appConstConfig.FindPropertyRelative("_uiPath").stringValue = "Prefabs/UI/";
-                _appConstConfig.FindPropertyRelative("_audioPath").stringValue = "Sources/";
-            }
-
-            EditorGUILayout.EndHorizontal();
-
             EditorGUILayout.Space(6);
             EditorGUILayout.PropertyField(_resourcesArea);
             EditorGUILayout.Space(20);
@@ -160,7 +148,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     "--------------------------------------------------------------------------------";
 
                 GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));
-                //GUILayout.Box(GUIContent.none, GUILayout.Height(4.0f), GUILayout.ExpandWidth(true));
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();

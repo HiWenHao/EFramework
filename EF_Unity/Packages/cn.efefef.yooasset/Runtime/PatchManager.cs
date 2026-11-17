@@ -208,6 +208,13 @@ namespace EasyFramework.Managers.Assets
             }
 
             await InitializeSubPackage(pkg, cfg);
+            if (pkg.InitializeStatus != EOperationStatus.Succeed)
+            {
+                info.Checked = true;
+                info.NeedUpdate = false;
+                return false;
+            }
+
             var versionOp = pkg.RequestPackageVersionAsync(appendTimeTicks: true);
             await versionOp.ToUniTask();
 
@@ -245,13 +252,22 @@ namespace EasyFramework.Managers.Assets
         {
             InitializeParameters initParams = null;
 
-            // 解析远程地址：优先子包配置，否则回落 ProjectConfig 全局地址
+            // 解析远程地址：子包配置优先，否则用 ProjectConfig.ResourcesArea（地址唯一真源，
+            // 随包常驻 AOT，启动器与热更层读的是同一份，不依赖是否装了 EF.Launcher）
             string mainUrl = string.IsNullOrEmpty(cfg.RemoteMainUrl)
-                ? EFC.Projects.ResourcesArea.InnerUrl
+                ? ProjectRemoteMainUrl
                 : cfg.RemoteMainUrl;
             string fallbackUrl = string.IsNullOrEmpty(cfg.RemoteFallbackUrl)
-                ? EFC.Projects.ResourcesArea.StandbyUrl
+                ? ProjectRemoteFallbackUrl
                 : cfg.RemoteFallbackUrl;
+
+            // 模拟模式不走网络，只有联机模式才强制要求地址
+            if (CurrentPlayMode != EPlayMode.EditorSimulateMode && string.IsNullOrEmpty(mainUrl))
+            {
+                Error($"[{cfg.PackageName}] 没有可用的资源地址：SubPackageConfig.RemoteMainUrl 为空，" +
+                      "ProjectConfig.ResourcesArea 也没填。");
+                return;
+            }
 
             switch (CurrentPlayMode)
             {
@@ -303,8 +319,23 @@ namespace EasyFramework.Managers.Assets
             await initOp.ToUniTask();
 
             if (initOp.Status != EOperationStatus.Succeed)
+            {
                 Error($"[{cfg.PackageName}] 初始化失败: {initOp.Error}");
+                return;
+            }
         }
+
+        // 地址真源：ProjectConfig.ResourcesArea。配置资产缺失或没填时返回空串，由调用方给明确报错，
+        // 而不是在这里抛 NullReference（EF.YooAsset 必须能脱离 EF.Launcher 独立使用）
+        private static string ProjectRemoteMainUrl =>
+            EFC.Projects != null && EFC.Projects.ResourcesArea != null
+                ? EFC.Projects.ResourcesArea.InnerUrl
+                : string.Empty;
+
+        private static string ProjectRemoteFallbackUrl =>
+            EFC.Projects != null && EFC.Projects.ResourcesArea != null
+                ? EFC.Projects.ResourcesArea.StandbyUrl
+                : string.Empty;
 
         #endregion
 
@@ -573,6 +604,14 @@ namespace EasyFramework.Managers.Assets
             // 优先使用传入的 package，否则回退到单包 _package
             var pkg = targetPackage ?? _package;
             InitializeParameters initParameters = null;
+
+            // 联机模式必须有地址；真源是 ProjectConfig.ResourcesArea（不依赖是否装了 EF.Launcher）
+            if (CurrentPlayMode == EPlayMode.HostPlayMode && string.IsNullOrEmpty(ProjectRemoteMainUrl))
+            {
+                Error("[ Patch ] HostPlayMode 需要资源地址：请在 ProjectConfig.ResourcesArea 里填内网地址。");
+                return;
+            }
+
             switch (CurrentPlayMode)
             {
                 // 编辑器模拟模式
@@ -600,8 +639,8 @@ namespace EasyFramework.Managers.Assets
                         CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters
                         (
                             new RemoteServices(
-                                EFC.Projects.ResourcesArea.InnerUrl,
-                                EFC.Projects.ResourcesArea.StandbyUrl
+                                ProjectRemoteMainUrl,
+                                ProjectRemoteFallbackUrl
                             )
                         )
                     };
@@ -614,8 +653,8 @@ namespace EasyFramework.Managers.Assets
                         WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(
                             $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE", 
                             new RemoteServices(
-                                EFC.Projects.ResourcesArea.InnerUrl,
-                                EFC.Projects.ResourcesArea.StandbyUrl
+                                ProjectRemoteMainUrl,
+                                ProjectRemoteFallbackUrl
                             )
                         );
 #else

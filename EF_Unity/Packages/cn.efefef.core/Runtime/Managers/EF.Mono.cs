@@ -117,6 +117,14 @@ public sealed class EFC : MonoBehaviour
 
         Projects = Resources.Load<ProjectConfig>("Configs/ProjectConfig");
 
+        // 缺了它，UiSystemLogic / DefaultAudioClipLoader 会直接解引用空对象；这里必须点名，
+        // 否则症状只会是业务层的裸 NullReferenceException，与真正原因隔了一层
+        if (Projects == null)
+        {
+            D.Error("[ EFC ] 找不到 Resources/Configs/ProjectConfig，语言默认值与内置资源路径将不可用。" +
+                    "请确认 ProjectConfig 资产存在于某个 Resources 目录下。");
+        }
+
         Application.lowMemory += _monoEFC.OnLowMemory;
 
         _inRunning = true;

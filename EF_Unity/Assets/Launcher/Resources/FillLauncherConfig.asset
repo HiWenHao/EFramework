@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayMode: 0
   PackageName: DefaultPackage
-  MainUrl: http://127.0.0.1:8080
-  FallbackUrl: http://127.0.0.1:8080
   TimeoutSeconds: 60
   DownloadingMaxNumber: 10
   FailedTryAgain: 3
@@ -65,7 +63,7 @@ MonoBehaviour:
     Enabled: 1
   - Name: ExampleGameHotfix
     Location: Assets/AssetsHotfix/FullCode/ExampleGameHotfix.dll
-    FallbackAsset: {fileID: 4900000, guid: 54667b5a8aad8cc4daca67bdbfdb7fc5, type: 3}
+    FallbackAsset: {fileID: 0}
     Enabled: 1
   EntryType: EFExample.HotfixTest
   EntryMethod: Init

@@ -56,7 +56,8 @@ namespace EasyFramework
         [SerializeField, HeaderPro("脚本命名空间", "The script namespace")]
         private string _scriptNamespace = "PleaseModifyTheNamespace.";
 
-        [SerializeField, HeaderPro("出包资源存放地", "Where the out packet resource is stored")]
+        [SerializeField, HeaderPro("出包资源存放地（全工程唯一的 CDN 配置）",
+            "Resource location; the single CDN configuration for the whole project")]
         private ResourcesArea _resourcesArea;
 
         public ResourcesArea ResourcesArea => _resourcesArea;
@@ -68,7 +69,10 @@ namespace EasyFramework
     }
 
     /// <summary>
-    /// 资源存放地
+    /// 资源存放地。<b>资源地址的唯一真源</b>：启动器（EF.Launcher）与热更层（EF.YooAsset 分包）
+    /// 都读这里，因此工程装不装启动器都能用，也不存在两份 CDN 配置互相漂移。
+    /// <para>Resource location. The single source of truth for the CDN address: both the launcher and the
+    /// hot update layer read it, so EF.YooAsset works with or without EF.Launcher and no second copy can drift.</para>
     /// </summary>
     [Serializable]
     public class ResourcesArea
@@ -99,14 +103,6 @@ namespace EasyFramework
         /// 保存内容时的前缀
         /// </summary>
         public string AppPrefix => _appPrefix;
-
-        [SerializeField, HeaderPro("项目当前应用版本", "Current application version of the project")]
-        private string _appVersion = "1.0";
-
-        /// <summary>
-        /// 应用版本
-        /// </summary>
-        public string AppVersion => _appVersion;
 
         [SerializeField, HeaderPro("Resources文件夹下存放 UI面板预制件 的路径", "UI prefabs path in the resource folder")]
         private string _uiPath = "Prefabs/UI/";

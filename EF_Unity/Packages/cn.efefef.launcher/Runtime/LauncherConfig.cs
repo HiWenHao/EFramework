@@ -52,10 +52,6 @@ namespace EasyFramework.Launcher
 
         [Tooltip("YooAsset 包名，需与资源构建配置一致")] public string PackageName = "DefaultPackage";
 
-        [Tooltip("主 CDN 地址（HostPlayMode 必填）")] public string MainUrl = string.Empty;
-
-        [Tooltip("备用 CDN 地址，主地址失败时回落")] public string FallbackUrl = string.Empty;
-
         [Min(1), Tooltip("单次网络请求超时（秒）")] public int TimeoutSeconds = 60;
 
         [Min(1), Tooltip("同时下载的最大文件数")] public int DownloadingMaxNumber = 10;
@@ -115,9 +111,6 @@ namespace EasyFramework.Launcher
         // Inspector 里就把能查的查掉：这些错要到运行时才暴露，表现是"启动卡住"或"出包必崩"
         private void OnValidate()
         {
-            if (PlayMode == EPlayMode.HostPlayMode && string.IsNullOrWhiteSpace(MainUrl))
-                D.Warning($"[ LauncherConfig ] {name}: HostPlayMode 下 MainUrl 不能为空。");
-
             if (HotfixDlls != null)
             {
                 for (int i = 0; i < HotfixDlls.Length; i++)
@@ -142,17 +135,16 @@ namespace EasyFramework.Launcher
                 }
             }
 
-            if (AotMetadataDlls != null)
-            {
-                for (int i = 0; i < AotMetadataDlls.Length; i++)
-                {
-                    if (AotMetadataDlls[i] != null)
-                        continue;
+            if (AotMetadataDlls == null) return;
 
-                    D.Warning(
-                        $"[ LauncherConfig ] {name}: AotMetadataDlls[{i}] 引用丢失（重新 Generate 后 .meta GUID 会变），" +
-                        "跑一次 🔄 Sync Hotfix Dll Entries 重绑。");
-                }
+            for (int i = 0; i < AotMetadataDlls.Length; i++)
+            {
+                if (AotMetadataDlls[i] != null)
+                    continue;
+
+                D.Warning(
+                    $"[ LauncherConfig ] {name}: AotMetadataDlls[{i}] 引用丢失（重新 Generate 后 .meta GUID 会变），" +
+                    "跑一次 🔄 Sync Hotfix Dll Entries 重绑。");
             }
         }
 

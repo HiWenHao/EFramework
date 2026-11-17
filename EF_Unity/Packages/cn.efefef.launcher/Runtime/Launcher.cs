@@ -50,15 +50,19 @@ namespace EasyFramework.Launcher
         [SerializeField] private bool _dontDestroyOnLoad = true;
         [SerializeField] private bool _verbose = true;
 
-        [Header("事件通道 / Event channels（可选）")]
-        [SerializeField] private LauncherStateEvent _stateEvent;
+        [Header("事件通道 / Event channels（可选）")] [SerializeField]
+        private LauncherStateEvent _stateEvent;
+
         [SerializeField] private LauncherProgressEvent _progressEvent;
         [SerializeField] private LauncherErrorEvent _errorEvent;
 
         private const int DefaultMaxRetryCount = 3;
+
         private const float DefaultRetryDelaySeconds = 2f;
+
         // 进度按 10Hz 广播：界面每帧拼字符串的代价远大于肉眼可见差异
         private const float ProgressIntervalSeconds = 0.1f;
+
         // 重试耗尽时给界面的空回调，避免界面拿到 null 后空引用
         private static readonly Action NoopRetry = () => { };
 
@@ -66,13 +70,18 @@ namespace EasyFramework.Launcher
         private ILauncherHook _hook;
         private ResourcePackage _package;
         private bool _running;
+
         private int _retryCount;
+
         // 退避等待是否已排上；UniTask 没有 Coroutine 句柄，用标记位防止重复排程
         private bool _retryScheduled;
+
         // 随 GameObject 销毁自动取消，异步流程不会在已销毁的对象上继续跑
         private CancellationToken _destroyToken;
         private float _startTime;
+
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
+
         // Assembly.Load(byte[]) 每次都会创建新程序集；重试时重复加载同名 dll 会产生第二份类型身份
         private readonly HashSet<string> _loadedAssemblyNames = new HashSet<string>();
 
@@ -252,8 +261,10 @@ namespace EasyFramework.Launcher
         // 八个阶段的主体：取消与异常一律向上抛给 RunPipelineAsync
         private async UniTask RunPipelineInternalAsync(CancellationToken token)
         {
+            ProjectConfig config = EFC.Projects;
             _startTime = Time.realtimeSinceStartup;
-            Log($"启动开始 | 版本={LauncherCoreBridge.AppVersion} 语言={LauncherCoreBridge.DisplayLanguage}");
+            Log(
+                $"启动开始 | 版本={Application.version} 语言={(config.AutoLanguage ? Application.systemLanguage : config.DisplayLanguage)}");
             // 不清空 _hotfixAssemblies：已加载的程序集无法卸载，重试时继续复用。
             // 重复 Assembly.Load 同名 dll 会产生第二份类型身份，是 InvalidCastException 的常见来源。
 
@@ -288,6 +299,7 @@ namespace EasyFramework.Launcher
             #region 2. 资源系统
 
             SetState(LauncherState.Initializing, "初始化资源系统");
+
             if (!TryCreatePackage(out string packageError))
             {
                 Fail(LauncherErrorCode.PackageInitFailed, packageError);
@@ -548,9 +560,11 @@ namespace EasyFramework.Launcher
                 return false;
             }
 
-            if (_config.PlayMode == EPlayMode.HostPlayMode && string.IsNullOrWhiteSpace(_config.MainUrl))
+            if (_config.PlayMode == EPlayMode.HostPlayMode &&
+                string.IsNullOrWhiteSpace(EFC.Projects.ResourcesArea.InnerUrl))
             {
-                error = "HostPlayMode 下 MainUrl 不能为空";
+                error = "HostPlayMode 需要资源地址：请在 ProjectConfig.ResourcesArea 里填内网地址" +
+                        "（该配置随包常驻 AOT，EFC 会在 AfterAssembliesLoaded 阶段加载它）";
                 return false;
             }
 
@@ -616,7 +630,8 @@ namespace EasyFramework.Launcher
                     {
                         BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters(),
                         CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters(
-                            new LauncherRemoteServices(_config.MainUrl, _config.FallbackUrl))
+                            new LauncherRemoteServices(EFC.Projects.ResourcesArea.InnerUrl,
+                                EFC.Projects.ResourcesArea.StandbyUrl))
                     };
 
                 case EPlayMode.WebPlayMode:
@@ -769,10 +784,10 @@ namespace EasyFramework.Launcher
         private static Assembly FindLoadedAssembly(string assemblyName)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
+            foreach (var assembly in assemblies)
             {
-                if (string.Equals(assemblies[i].GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
-                    return assemblies[i];
+                if (string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                    return assembly;
             }
 
             return null;
@@ -860,7 +875,8 @@ namespace EasyFramework.Launcher
             {
                 try
                 {
-                    _progressEvent.Raise(new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
+                    _progressEvent.Raise(
+                        new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
                 }
                 catch (Exception e)
                 {
@@ -927,9 +943,9 @@ namespace EasyFramework.Launcher
         private void Diagnose()
         {
             float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - _startTime);
-            D.Log($"{LogTag} 诊断 | 版本={LauncherCoreBridge.AppVersion} 状态={State} " +
+            D.Log($"{LogTag} 诊断 | 版本={Application.version} 状态={State} " +
                   $"已加载热更程序集={_hotfixAssemblies.Count} 重试={_retryCount} 耗时={elapsed:0.0}s " +
-                  $"CoreReady={LauncherCoreBridge.IsCoreReady}");
+                  $"CoreReady={EFC.Projects != null}");
         }
 
         private void Log(string message)
