@@ -194,7 +194,7 @@ namespace EasyFramework.Launcher.Editor
             if (!createIfMissing || guids.Length > 1)
                 return null;
 
-            const string folder = "Assets/Launcher";
+            const string folder = "Assets/ExampleGame/Resources";
             const string assetPath = folder + "/LauncherConfig.asset";
 
             if (!AssetDatabase.IsValidFolder(folder))
