@@ -30,8 +30,12 @@ namespace EasyFramework.Edit.Windows
         /// <summary> 浅绿色 </summary>
         public static Color LightGreen = new Color(0.3f, 0.8f, 0.3f);
 
-        /// <summary> 选中态背景色 </summary>
-        public static Color SelectedButtonColor => new Color(0.0f, 0.45f, 1.0f);
+        /// <summary> 选中态背景色（冷蓝灰，取自配置面板中「热更程序集」按钮实测色 #46607C）。
+        /// <para>GUI.backgroundColor 是乘法 tint，显示色随编辑器主题变化。
+        /// 深色主题系数 k≈87.8：tint (1.08,1.71,1.71)→显示 (95,150,150)，
+        /// 反推目标 (70,96,124) 得此值。换主题需重标定。</para>
+        /// </summary>
+        public static Color SelectedButtonColor => new Color(0.80f, 1.09f, 1.41f, 1f);
         #endregion
 
         #region Text
