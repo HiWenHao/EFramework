@@ -47,6 +47,13 @@ namespace EasyFramework.Edit
         private static readonly object _lock = new object();   // 加载线程锁
 
         private static List<LanguageRuntime> _languages;       // 语言注册表：内置 zh/en 在前 + 外部按 code 排序
+        private static List<LanguageOption> _optionsCache;     // 语言选项缓存（持续重绘时避免每帧重建）
+        private static bool _optionsCacheIsChinese;            // 缓存构建时是否为中文（语言切换需失效）
+        private static int _languageVersion;                   // 语言状态版本号：列表或当前语言变化时自增（供调用方零分配地判断变更）
+        private static int _selectedIndexCache = -1;           // 选中下标缓存（持续重绘下零分配返回）
+        private static int _selectedIndexCacheVersion;         // 缓存时的语言状态版本
+        private static bool _selectedIndexCacheAuto;            // 缓存时是否为自动模式
+        private static SystemLanguage _selectedIndexCacheLanguage; // 缓存时的显示语言枚举（无分配比较）
         private static bool _loaded;                            // 注册表是否已加载
         private static bool _loading;                           // 加载中标志（防 Tr→IsEnglish→EnsureLoaded 同线程重入递归）
 
@@ -172,6 +179,7 @@ namespace EasyFramework.Edit
                     project.AutoLanguage = true;
                 }
                 EditorUtility.SetDirty(project);
+                _languageVersion++; // 当前语言变更，状态版本自增
             }
         }
 
@@ -213,6 +221,7 @@ namespace EasyFramework.Edit
                     SortLanguages();
                     EnsureFallbackLanguages();
                     _loaded = true;
+                    _languageVersion++; // 语言列表就绪，状态版本自增
                 }
                 finally
                 {
@@ -607,6 +616,16 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
+        /// 语言状态版本号：语言列表或当前语言发生变化时自增。
+        /// 调用方可用它零分配地判断是否需要重建与语言相关的缓存
+        /// （直接读 EditorLanguageCode 会在每帧产生枚举转字符串的分配）。
+        /// <para>Language state version, bumped when the language list or the current
+        /// language changes. Callers use it to rebuild language-dependent caches without
+        /// allocating (reading EditorLanguageCode allocates an enum-to-string each call).</para>
+        /// </summary>
+        public static int LanguageVersion => _languageVersion;
+
+        /// <summary>
         /// 语言选项快照：[Auto, 中文, English] + 扩展语言（按 code 字母序）
         /// <para>Language option snapshot: [Auto, Chinese, English] + external languages (by code).</para>
         /// </summary>
@@ -614,10 +633,16 @@ namespace EasyFramework.Edit
         public static IReadOnlyList<LanguageOption> GetLanguageOptions()
         {
             EnsureLoaded();
+            // 面板可能处于持续重绘状态（吉祥物动画），此处按语言缓存，避免每次调用都重建列表
+            if (_optionsCache != null && _optionsCacheIsChinese == IsChinese)
+                return _optionsCache;
+
             var options = new List<LanguageOption> { new LanguageOption(AutoCode, IsChinese ? "自动" : "Auto") };
             foreach (var language in _languages)
                 options.Add(new LanguageOption(language.Code, language.DisplayName));
-            return options;
+            _optionsCache = options;
+            _optionsCacheIsChinese = IsChinese;
+            return _optionsCache;
         }
 
         /// <summary>
@@ -633,6 +658,25 @@ namespace EasyFramework.Edit
         /// </summary>
         /// <returns>选项下标<para>Option index.</para></returns>
         public static int GetSelectedIndex()
+        {
+            // 持续重绘场景下每帧都会调用：用无分配的枚举比较做缓存判据，命中则零分配返回
+            var project = ConfigManager.Project;
+            bool auto = project == null || project.AutoLanguage;
+            SystemLanguage language = project == null ? default : project.DisplayLanguage;
+            if (_selectedIndexCache >= 0 && _selectedIndexCacheVersion == _languageVersion &&
+                _selectedIndexCacheAuto == auto && _selectedIndexCacheLanguage == language)
+                return _selectedIndexCache;
+
+            int index = ComputeSelectedIndex();
+            _selectedIndexCache = index;
+            _selectedIndexCacheVersion = _languageVersion;
+            _selectedIndexCacheAuto = auto;
+            _selectedIndexCacheLanguage = language;
+            return index;
+        }
+
+        // 计算选中下标（慢路径，允许一次字符串分配）
+        private static int ComputeSelectedIndex()
         {
             var options = GetLanguageOptions();
             string code = EditorLanguageCode;
@@ -666,6 +710,8 @@ namespace EasyFramework.Edit
             {
                 _loaded = false;
                 _languages = null;
+                _optionsCache = null; // 语言列表变化，选项缓存失效
+                _languageVersion++;    // 语言状态变更，版本号自增
             }
             EnsureLoaded();
         }

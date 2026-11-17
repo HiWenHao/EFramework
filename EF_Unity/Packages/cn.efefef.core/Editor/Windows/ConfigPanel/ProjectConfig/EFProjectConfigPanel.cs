@@ -79,6 +79,14 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         bool _systemInfoSwitch;
         string _editorUser;
+        private string _systemInfoText; // 缓存的系统信息文本（持续重绘下避免每帧重建）
+
+        private int _systemInfoTextVersion; // 构建缓存时的语言状态版本（语言变更需重建）
+
+        private string[] _languageDisplayNames; // 缓存的语言下拉显示名（持续重绘下避免每帧分配）
+
+        private int _languageDisplayNamesVersion; // 构建缓存时的语言状态版本
+
         // 署名是逐用户设置（EFTools/Local/EditorUser.txt），不是 ProjectConfig 的字段
         string _authorInput;
 
@@ -133,7 +141,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight * 0.5f);
             DrawLanguageSelector();
 
-            // 逐用户信息必须放在「配置改动检查」之外：改名字只该写本机 EditorPrefs，
+            // 全部内容（脚本作者以下 + 硬件信息）统一放进同一个滚动视窗
+            ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, GUIUtils.ScrollViewBackground());
+
+            // 逐用户信息必须放在「配置改动检查」之外：改名字只该写本机偏好，
             // 不能把 ProjectConfig 变脏——否则 A、B 两台机器各自改名，都会让同一个资产进提交
             EditorGUILayout.LabelField(LC.Combine("Core.EditorUser"), _editorUser);
 
@@ -142,12 +153,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (!string.Equals(_authorInput, LocalUserSettings.Author, System.StringComparison.Ordinal))
                 LocalUserSettings.SaveAuthor(_authorInput);
 
+            bool configChanged;
             using (var changeCheckScope = new EditorGUI.ChangeCheckScope())
             {
-                EditorGUILayout.LabelField(LC.Combine("Core.CurrentProjectInfo"));
-
-                ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, GUIUtils.ScrollViewBackground());
-
                 _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptVersion"),
                     _scriptVersion.stringValue);
                 _scriptNamespace.stringValue = EditorGUILayout.TextField(LC.Combine("ScriptNamespace"),
@@ -159,13 +167,16 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 EditorGUILayout.PropertyField(_resourcesArea);
                 EditorGUILayout.Space(20);
 
-                EditorGUILayout.EndScrollView();
-
-                EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
-                ApplyConfigIfChanged(changeCheckScope.changed, withoutUndo: true);
+                configChanged = changeCheckScope.changed;
             }
 
+            // 硬件信息并入同一滚动视窗：折叠时标题仍留在视窗内，不再掉到最下方
             SystemInfos();
+
+            EditorGUILayout.EndScrollView();
+
+            EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
+            ApplyConfigIfChanged(configChanged, withoutUndo: true);
         }
 
         /// <summary>
@@ -175,14 +186,19 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         private void DrawLanguageSelector()
         {
             var options = LC.GetLanguageOptions();
-            var displayNames = new string[options.Count];
-            for (int i = 0; i < options.Count; i++)
-                displayNames[i] = options[i].DisplayName;
+            // 下拉显示名数组按语言状态版本缓存，避免持续重绘下每帧分配
+            if (_languageDisplayNames == null || _languageDisplayNamesVersion != LC.LanguageVersion)
+            {
+                _languageDisplayNames = new string[options.Count];
+                for (int i = 0; i < options.Count; i++)
+                    _languageDisplayNames[i] = options[i].DisplayName;
+                _languageDisplayNamesVersion = LC.LanguageVersion;
+            }
 
             EditorGUILayout.BeginHorizontal();
             int previousIndex = LC.GetSelectedIndex();
             int selectedIndex = EditorGUILayout.Popup(
-                LC.Combine("Core.DisplayLanguage"), previousIndex, displayNames);
+                LC.Combine("Core.DisplayLanguage"), previousIndex, _languageDisplayNames);
             if (GUILayout.Button("+", EditorStyles.miniButton, GUILayout.Width(22f)))
                 EFEditorLanguageCreateWindow.OpenWindow();
             if (GUILayout.Button("↻", EditorStyles.miniButton, GUILayout.Width(22f)))
@@ -289,6 +305,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     pixels[y * size + x] = color;
                 }
             }
+
             tex.SetPixels(pixels);
             tex.Apply();
             tex.hideFlags = HideFlags.HideAndDontSave;
@@ -325,7 +342,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             glowColor.a = MarkGlowAlpha;
             GUI.color = glowColor;
             GUI.DrawTexture(new Rect(markRect.x - GlowSpread, markRect.y - GlowSpread,
-                markRect.width + GlowSpread * 2f, markRect.height + GlowSpread * 2f), _markTexture,
+                    markRect.width + GlowSpread * 2f, markRect.height + GlowSpread * 2f), _markTexture,
                 ScaleMode.StretchToFill, true);
             GUI.color = previous;
 
@@ -418,34 +435,46 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 LC.Combine("Core.CurrentHardwareInfo"));
             if (_systemInfoSwitch)
             {
-                string contents =
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Core.OperatingSystem")}: {SystemInfo.operatingSystem}\n" +
-                    $"{LC.Combine("Core.SystemMemorySize")}: {SystemInfo.systemMemorySize} MB\n" +
-                    $"{LC.Combine("Core.CpuName")}: {SystemInfo.processorType}\n" +
-                    $"{LC.Combine("Core.CpuCount")}: {SystemInfo.processorCount}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Core.GpuName")}: {SystemInfo.graphicsDeviceName}\n" +
-                    $"{LC.Combine("Core.GpuType")}: {SystemInfo.graphicsDeviceType}\n" +
-                    $"{LC.Combine("Core.GpuMemorySize")}: {SystemInfo.graphicsMemorySize} MB\n" +
-                    $"{LC.Combine("Core.GpuId")}: {SystemInfo.graphicsDeviceID}\n" +
-                    $"{LC.Combine("Core.GpuVendor")}: {SystemInfo.graphicsDeviceVendor}\n" +
-                    $"{LC.Combine("Core.GpuVendorId")}: {SystemInfo.graphicsDeviceVendorID}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Core.DeviceVersion")}: {SystemInfo.deviceModel}\n" +
-                    $"{LC.Combine("Core.DeviceName")}: {SystemInfo.deviceName}\n" +
-                    $"{LC.Combine("Core.DeviceType")}: {SystemInfo.deviceType}\n" +
-                    $"{LC.Combine("Core.DeviceId")}: {SystemInfo.deviceUniqueIdentifier}\n" +
-                    "--------------------------------------------------------------------------------\n" +
-                    $"{LC.Combine("Core.ScreenCurrent")} Dpi: {Screen.dpi}\n" +
-                    $"{LC.Combine("Core.ScreenResolution")}: {Screen.currentResolution}\n" +
-                    "--------------------------------------------------------------------------------";
+                // 面板处于持续重绘状态（吉祥物动画），此处文本按需重建而非每帧重建，避免每帧产生大字符串分配
+                // 失效判据用 LC.LanguageVersion（int），直接读 EditorLanguageCode 会产生枚举转字符串的每帧分配
+                if (_systemInfoText == null || _systemInfoTextVersion != LC.LanguageVersion)
+                {
+                    _systemInfoText = BuildSystemInfoText();
+                    _systemInfoTextVersion = LC.LanguageVersion;
+                }
 
-                GUILayout.Box(contents, "FrameBox", GUILayout.MinWidth(360f));
+                GUILayout.Box(_systemInfoText, "FrameBox", GUILayout.MinWidth(360f));
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight);
+        }
+
+        // 构建系统信息文本（仅在语言切换时重建）
+        private static string BuildSystemInfoText()
+        {
+            return
+                "--------------------------------------------------------------------------------\n" +
+                $"{LC.Combine("Core.OperatingSystem")}: {SystemInfo.operatingSystem}\n" +
+                $"{LC.Combine("Core.SystemMemorySize")}: {SystemInfo.systemMemorySize} MB\n" +
+                $"{LC.Combine("Core.CpuName")}: {SystemInfo.processorType}\n" +
+                $"{LC.Combine("Core.CpuCount")}: {SystemInfo.processorCount}\n" +
+                "--------------------------------------------------------------------------------\n" +
+                $"{LC.Combine("Core.GpuName")}: {SystemInfo.graphicsDeviceName}\n" +
+                $"{LC.Combine("Core.GpuType")}: {SystemInfo.graphicsDeviceType}\n" +
+                $"{LC.Combine("Core.GpuMemorySize")}: {SystemInfo.graphicsMemorySize} MB\n" +
+                $"{LC.Combine("Core.GpuId")}: {SystemInfo.graphicsDeviceID}\n" +
+                $"{LC.Combine("Core.GpuVendor")}: {SystemInfo.graphicsDeviceVendor}\n" +
+                $"{LC.Combine("Core.GpuVendorId")}: {SystemInfo.graphicsDeviceVendorID}\n" +
+                "--------------------------------------------------------------------------------\n" +
+                $"{LC.Combine("Core.DeviceVersion")}: {SystemInfo.deviceModel}\n" +
+                $"{LC.Combine("Core.DeviceName")}: {SystemInfo.deviceName}\n" +
+                $"{LC.Combine("Core.DeviceType")}: {SystemInfo.deviceType}\n" +
+                $"{LC.Combine("Core.DeviceId")}: {SystemInfo.deviceUniqueIdentifier}\n" +
+                "--------------------------------------------------------------------------------\n" +
+                $"{LC.Combine("Core.ScreenCurrent")} Dpi: {Screen.dpi}\n" +
+                $"{LC.Combine("Core.ScreenResolution")}: {Screen.currentResolution}\n" +
+                "--------------------------------------------------------------------------------";
         }
     }
 }
