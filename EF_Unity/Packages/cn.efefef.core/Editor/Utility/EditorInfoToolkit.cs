@@ -4,13 +4,12 @@
  * Author:        Alvin8412
  * CreationTime:  2026-05-28 16:22:11
  * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-06-01 14:50:00
- * ScriptVersion: 0.2
+ * ModifyTime:    2026-11-17 18:50:00
+ * ScriptVersion: 0.3
  * ================================================
  */
 
 using System;
-using UnityEditor;
 
 namespace EasyFramework.Edit
 {
@@ -44,14 +43,13 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 获取当前编辑器的用户名，或是已经修改过的字段名
-        /// <para>Get the username of the current editor, or the name of the field that has already been modified</para>
+        /// 获取当前用户的署名。来源是逐用户本地文件（<c>EFTools/Local/EditorUser.txt</c>），
+        /// 不读 <c>ProjectConfig</c>——那会让一个人的署名覆盖全组，且每次提交都冲突。
+        /// <para>Gets the current user's display name from the per-user local file, not from ProjectConfig.</para>
         /// </summary>
         public static string GetAuthorName()
         {
-            string configName = ConfigManager.Project?.ScriptAuthor;
-            string authorName = EditorPrefs.GetString($"{ConfigManager.Project?.AppConst?.AppPrefix}EditorUser");
-            return string.IsNullOrEmpty(configName) || configName.Equals("Default") ? authorName : configName;
+            return LocalUserSettings.Author;
         }
     }
 }

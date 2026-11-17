@@ -40,11 +40,6 @@ namespace EasyFramework
         /// </summary>
         public SystemLanguage DisplayLanguage { get => _displayLanguage; set => _displayLanguage = value; }
 
-        [SerializeField, HeaderPro("脚本作者名", "The script author")]
-        private string _scriptAuthor = "Default";
-
-        public string ScriptAuthor => _scriptAuthor;
-
         [SerializeField, HeaderPro("脚本版本号", "The script version")]
         private string _scriptVersion = "0.1";
 
@@ -96,8 +91,14 @@ namespace EasyFramework
     [Serializable]
     public class AppConstConfig
     {
+        /// <summary>
+        /// 默认前缀。除做本地化键前缀外，也用作 <c>EditorPrefs</c> 的分区前缀（逐用户设置靠它隔离工程）。
+        /// <para>Default prefix. Also partitions EditorPrefs so per-user settings do not leak across projects.</para>
+        /// </summary>
+        public const string DefaultAppPrefix = "EF_";
+
         [SerializeField, HeaderPro("项目本地化保存内容时的前缀", "The prefix when the project localizes the content")]
-        private string _appPrefix = "EF_";
+        private string _appPrefix = DefaultAppPrefix;
 
         /// <summary>
         /// 保存内容时的前缀

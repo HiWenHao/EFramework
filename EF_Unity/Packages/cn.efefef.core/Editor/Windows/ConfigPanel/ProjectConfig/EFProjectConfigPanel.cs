@@ -79,8 +79,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         bool _systemInfoSwitch;
         string _editorUser;
+        // 署名是逐用户设置（EFTools/Local/EditorUser.txt），不是 ProjectConfig 的字段
+        string _authorInput;
 
-        private SerializedProperty _scriptAuthor;
         private SerializedProperty _scriptVersion;
         private SerializedProperty _resourcesArea;
         private SerializedProperty _appConstConfig;
@@ -109,10 +110,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             BindConfig(ConfigManager.Project);
             _appConstConfig = FindConfigProperty("_appConst");
-            _scriptAuthor = FindConfigProperty("_scriptAuthor");
             _scriptVersion = FindConfigProperty("_scriptVersion");
             _resourcesArea = FindConfigProperty("_resourcesArea");
             _scriptNamespace = FindConfigProperty("_scriptNamespace");
+            _authorInput = LocalUserSettings.Author;
 
             var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
             MethodInfo methodInfo = type.GetMethod("GetUserInfo");
@@ -132,15 +133,21 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             EditorGUILayout.Space(EditorGUIUtility.singleLineHeight * 0.5f);
             DrawLanguageSelector();
 
+            // 逐用户信息必须放在「配置改动检查」之外：改名字只该写本机 EditorPrefs，
+            // 不能把 ProjectConfig 变脏——否则 A、B 两台机器各自改名，都会让同一个资产进提交
+            EditorGUILayout.LabelField(LC.Combine("Core.EditorUser"), _editorUser);
+
+            // DelayedTextField：只在回车/失焦时提交，避免每敲一个字符写一次偏好
+            _authorInput = EditorGUILayout.DelayedTextField(LC.Combine("Core.ScriptAuthor"), _authorInput);
+            if (!string.Equals(_authorInput, LocalUserSettings.Author, System.StringComparison.Ordinal))
+                LocalUserSettings.SaveAuthor(_authorInput);
+
             using (var changeCheckScope = new EditorGUI.ChangeCheckScope())
             {
                 EditorGUILayout.LabelField(LC.Combine("Core.CurrentProjectInfo"));
 
                 ScrollPosition = EditorGUILayout.BeginScrollView(ScrollPosition, GUIUtils.ScrollViewBackground());
 
-                EditorGUILayout.LabelField(LC.Combine("Core.EditorUser"), _editorUser);
-                _scriptAuthor.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptAuthor"),
-                    _scriptAuthor.stringValue);
                 _scriptVersion.stringValue = EditorGUILayout.TextField(LC.Combine("Core.ScriptVersion"),
                     _scriptVersion.stringValue);
                 _scriptNamespace.stringValue = EditorGUILayout.TextField(LC.Combine("ScriptNamespace"),

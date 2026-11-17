@@ -83,13 +83,8 @@ namespace EasyFramework.Edit.MenuToolkit
 
                     if (contents.Length < 10) continue;
 
-                    string configName = ConfigManager.Project?.ScriptAuthor;
-                    string authorName =
-                        EditorPrefs.GetString($"{ConfigManager.Project?.AppConst?.AppPrefix}EditorUser");
-                    authorName = string.IsNullOrEmpty(configName) ||
-                                 string.Equals(configName, "Default", StringComparison.Ordinal)
-                        ? authorName
-                        : configName;
+                    // 署名来自逐用户本地文件，不读 ProjectConfig：那是团队资产，写个人名字会互相覆盖
+                    string authorName = LocalUserSettings.Author;
 
                     string modifyTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     string scriptVersion = ConfigManager.Project?.ScriptVersion ?? "0.1";
