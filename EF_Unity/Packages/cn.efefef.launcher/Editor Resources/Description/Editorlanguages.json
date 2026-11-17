@@ -146,10 +146,10 @@
     },
     {
       "name": "Launcher.BootEfcAccess",
-      "desc": "启动段 EFC 访问收口（带文件名）",
+      "desc": "启动段只允许读取静态配置（EFC.Projects），禁止访问 Core 的管理器单例",
       "array": [
-        "All EFC access in boot-stage code must be confined to LauncherCoreBridge.cs: {0}",
-        "启动段对 EFC 的访问必须收口到 LauncherCoreBridge.cs：{0}"
+        "Boot-stage code may read static config (EFC.Projects) but must not touch Core manager singletons: {0}",
+        "启动段只能读静态配置（EFC.Projects），禁止访问 Core 的管理器单例：{0}"
       ]
     },
     {

@@ -36,11 +36,8 @@ namespace EasyFramework.Launcher
     }
 
     /// <summary>
-    /// 启动配置：<b>唯一真源</b>。框架侧 ProjectConfig 虽常驻 AOT，但不作为启动配置来源，
-    /// 以免启动段依赖框架初始化顺序；语言、版本等展示信息统一经 <see cref="LauncherCoreBridge"/> 读取。
-    /// <para>Launcher configuration. Single source of truth. The AOT-resident framework ProjectConfig is
-    /// deliberately not a boot config source; display data such as language and version is read via
-    /// <see cref="LauncherCoreBridge"/>.</para>
+    /// 启动配置
+    /// <para>Launcher configuration.</para>
     /// </summary>
     [CreateAssetMenu(fileName = "LauncherConfig", menuName = "EF/Launcher Config", order = 201)]
     public sealed class LauncherConfig : ScriptableObject
@@ -96,16 +93,6 @@ namespace EasyFramework.Launcher
 
         #endregion
 
-        #region 只读查询
-
-        /// <summary>
-        /// 是否处于编辑器模拟模式。编辑器程序集引用不到 YooAsset，靠这个属性判断。
-        /// <para>Whether the config uses editor simulate mode; readable without a YooAsset reference.</para>
-        /// </summary>
-        public bool IsEditorSimulateMode => PlayMode == EPlayMode.EditorSimulateMode;
-
-        #endregion
-
         #region 配置自检
 
         // Inspector 里就把能查的查掉：这些错要到运行时才暴露，表现是"启动卡住"或"出包必崩"
@@ -116,7 +103,7 @@ namespace EasyFramework.Launcher
                 for (int i = 0; i < HotfixDlls.Length; i++)
                 {
                     var entry = HotfixDlls[i];
-                    if (entry == null || !entry.Enabled)
+                    if (entry is not { Enabled: true })
                         continue;
 
                     if (string.IsNullOrWhiteSpace(entry.Name))

@@ -26,14 +26,6 @@ namespace EasyFramework.Launcher
     /// AOT 启动内核：YooAsset 初始化 → 版本检查 → 更新清单 → 下载 → 补 AOT 元数据 → 加载热更程序集 → 调热更入口。
     /// <para>AOT boot kernel. Order matters: AOT metadata must be loaded before the hot update assemblies.</para>
     /// </summary>
-    /// <remarks>
-    /// <b>铁律：本程序集不得引用任何会进入热更列表的程序集。</b>
-    /// HybridCLR 会把热更程序集从包体剔除，AOT 侧一旦引用它们，il2cpp 打包阶段就会断。
-    /// EF.Core 常驻 AOT，是唯一被精确白名单放行的 EF 程序集；对它的访问收口在
-    /// <see cref="LauncherCoreBridge"/>，且启动段禁止触碰任何框架管理器单例。
-    /// <para>EF.Core stays in AOT and is the only allowlisted EF assembly; all access goes through
-    /// <see cref="LauncherCoreBridge"/>, and boot-stage code must not touch framework manager singletons.</para>
-    /// </remarks>
     [DisallowMultipleComponent]
     public sealed class Launcher : MonoBehaviour
     {
@@ -261,12 +253,8 @@ namespace EasyFramework.Launcher
         // 八个阶段的主体：取消与异常一律向上抛给 RunPipelineAsync
         private async UniTask RunPipelineInternalAsync(CancellationToken token)
         {
-            ProjectConfig config = EFC.Projects;
             _startTime = Time.realtimeSinceStartup;
-            Log(
-                $"启动开始 | 版本={Application.version} 语言={(config.AutoLanguage ? Application.systemLanguage : config.DisplayLanguage)}");
-            // 不清空 _hotfixAssemblies：已加载的程序集无法卸载，重试时继续复用。
-            // 重复 Assembly.Load 同名 dll 会产生第二份类型身份，是 InvalidCastException 的常见来源。
+            Log($"启动开始 | 版本={Application.version} 语言={DescribeLanguage(EFC.Projects)}");
 
             if (!ValidateConfig(out string configError))
             {
@@ -946,6 +934,17 @@ namespace EasyFramework.Launcher
             D.Log($"{LogTag} 诊断 | 版本={Application.version} 状态={State} " +
                   $"已加载热更程序集={_hotfixAssemblies.Count} 重试={_retryCount} 耗时={elapsed:0.0}s " +
                   $"CoreReady={EFC.Projects != null}");
+        }
+
+
+
+        // 仅用于启动日志：配置缺失时不要因为一句日志把整条流程炸掉
+        private static string DescribeLanguage(ProjectConfig project)
+        {
+            if (project == null)
+                return "未知（ProjectConfig 未加载）";
+
+            return project.AutoLanguage ? Application.systemLanguage.ToString() : project.DisplayLanguage.ToString();
         }
 
         private void Log(string message)

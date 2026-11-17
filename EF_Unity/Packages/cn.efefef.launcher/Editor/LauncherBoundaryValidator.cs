@@ -17,6 +17,7 @@ using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using YooAsset;
 
 namespace EasyFramework.Launcher.Editor
 {
@@ -48,7 +49,6 @@ namespace EasyFramework.Launcher.Editor
         private const string AllowedAotBasePath = "Packages/cn.efefef.core/Runtime/EF.Core.asmdef";
         private const string AllowedAotBaseGuid = "396fd9bc7a7442941a71f32479ef054d";
         private const string RuntimeSourceDir = LauncherPackageRoot + "/Runtime";
-        private const string CoreBridgeFileName = "LauncherCoreBridge.cs";
 
         private const string DefinitionsSection = "hotUpdateAssemblyDefinitions";
         private const string AssembliesSection = "hotUpdateAssemblies";
@@ -371,7 +371,6 @@ namespace EasyFramework.Launcher.Editor
                 string name = Path.GetFileName(str);
                 // 先剥注释：文档里必然会写 "不要用 EFC. / Singleton<"，不剥就是自伤
                 string source = StripComments(File.ReadAllText(str));
-                bool isBridge = string.Equals(name, CoreBridgeFileName, StringComparison.OrdinalIgnoreCase);
 
                 if (source.IndexOf("EasyFramework.Managers", StringComparison.Ordinal) >= 0
                     || source.IndexOf("Singleton<", StringComparison.Ordinal) >= 0)
@@ -379,7 +378,8 @@ namespace EasyFramework.Launcher.Editor
                     violations.Add(LC.Format("Launcher.BootManagerSingleton", name));
                 }
 
-                if (!isBridge && source.IndexOf("EFC.", StringComparison.Ordinal) >= 0)
+                string withoutStaticConfig = source.Replace("EFC.Projects", string.Empty);
+                if (withoutStaticConfig.IndexOf("EFC.", StringComparison.Ordinal) >= 0)
                 {
                     violations.Add(LC.Format("Launcher.BootEfcAccess", name));
                 }
@@ -595,7 +595,7 @@ namespace EasyFramework.Launcher.Editor
                         continue;
 
                     var config = AssetDatabase.LoadAssetAtPath<LauncherConfig>(path);
-                    if (config != null && config.IsEditorSimulateMode)
+                    if (config != null && config.PlayMode == EPlayMode.EditorSimulateMode)
                         offenders.Add(path);
                 }
             }
