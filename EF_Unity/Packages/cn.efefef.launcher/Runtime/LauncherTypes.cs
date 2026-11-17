@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-16 11:20:00
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-11-17 11:20:00
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -89,5 +89,8 @@ namespace EasyFramework.Launcher
 
         /// <summary>重试次数已用尽</summary>
         RetryExhausted = 10,
+
+        /// <summary>启动流程抛出未预期的异常（协程时代会被 Unity 吞掉）</summary>
+        Unexpected = 11,
     }
 }

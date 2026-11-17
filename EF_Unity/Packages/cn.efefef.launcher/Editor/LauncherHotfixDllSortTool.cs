@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to sort hotfix dlls by asmdef dependency.
  * Author:          Alvin8412
@@ -207,7 +207,7 @@ namespace EasyFramework.Launcher.Editor
             AssetDatabase.CreateAsset(config, assetPath);
             AssetDatabase.SaveAssets();
 
-            Debug.Log(LC.Format("Launcher.CreatedConfig", assetPath));
+            D.Log(LC.Format("Launcher.CreatedConfig", assetPath));
 
             Selection.activeObject = config;
             return config;

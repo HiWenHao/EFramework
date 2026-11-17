@@ -585,6 +585,14 @@
       ]
     },
     {
+      "name": "Launcher.SimulateBuildBlocked",
+      "desc": "构建门禁：仍有配置使用编辑器模拟模式",
+      "array": [
+        "These LauncherConfig assets still use EditorSimulateMode, whose branch is stripped from player builds; booting will throw. Switch them to HostPlayMode / OfflinePlayMode before building:",
+        "以下 LauncherConfig 仍是 EditorSimulateMode，包体里该分支已被剔除，出包后启动会直接抛异常。请改成 HostPlayMode / OfflinePlayMode 再出包："
+      ]
+    },
+    {
       "name": "Launcher.SkipBoundaryCheck",
       "desc": "[EF.Launcher] 找不到 ",
       "array": [

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to validate the AOT boundary of EF.Launcher.
  * Author:          Alvin8412
@@ -17,7 +17,6 @@ using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEngine;
 
 namespace EasyFramework.Launcher.Editor
 {
@@ -192,7 +191,7 @@ namespace EasyFramework.Launcher.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(LC.Format("Launcher.BoundaryException", e.Message));
+                    D.Warning(LC.Format("Launcher.BoundaryException", e.Message));
                 }
             };
         }
@@ -226,14 +225,14 @@ namespace EasyFramework.Launcher.Editor
 
             if (hot.HasUnparsedDefinitionItems)
             {
-                Debug.LogWarning(LC.Tr(
+                D.Warning(LC.Tr(
                     "HybridCLRSettings.hotUpdateAssemblyDefinitions 里有无法解析的列表项，边界门禁可能失效，请检查 YAML 格式。",
                     "Unparsable items in HybridCLRSettings.hotUpdateAssemblyDefinitions; the boundary guard may be ineffective, please check the YAML."));
             }
 
             if (!index.TryGetByPath(RuntimeAsmdefPath, out var runtime))
             {
-                Debug.LogWarning(LC.Format("Launcher.SkipBoundaryCheck", RuntimeAsmdefPath));
+                D.Warning(LC.Format("Launcher.SkipBoundaryCheck", RuntimeAsmdefPath));
                 return true;
             }
 
@@ -247,7 +246,7 @@ namespace EasyFramework.Launcher.Editor
             {
                 if (logWhenClean)
                 {
-                    Debug.Log(LC.Combine("Launcher.BoundaryOk"));
+                    D.Log(LC.Combine("Launcher.BoundaryOk"));
                 }
 
                 return true;
@@ -259,7 +258,7 @@ namespace EasyFramework.Launcher.Editor
                 sb.AppendLine($"  {i + 1}. {violations[i]}");
             sb.AppendLine(LC.Combine("Launcher.BoundaryRule"));
 
-            Debug.LogError(sb.ToString());
+            D.Error(sb.ToString());
             return false;
         }
 
@@ -365,10 +364,13 @@ namespace EasyFramework.Launcher.Editor
             if (!Directory.Exists(RuntimeSourceDir))
                 return;
 
-            foreach (string file in Directory.GetFiles(RuntimeSourceDir, "*.cs", SearchOption.TopDirectoryOnly))
+            // 递归：按 SRP 拆到 Runtime/Steps/ 之类的子目录后，只扫顶层会让门禁静默失效
+            string[] files = Directory.GetFiles(RuntimeSourceDir, "*.cs", SearchOption.AllDirectories);
+            foreach (var str in files)
             {
-                string source = File.ReadAllText(file);
-                string name = Path.GetFileName(file);
+                string name = Path.GetFileName(str);
+                // 先剥注释：文档里必然会写 "不要用 EFC. / Singleton<"，不剥就是自伤
+                string source = StripComments(File.ReadAllText(str));
                 bool isBridge = string.Equals(name, CoreBridgeFileName, StringComparison.OrdinalIgnoreCase);
 
                 if (source.IndexOf("EasyFramework.Managers", StringComparison.Ordinal) >= 0
@@ -382,6 +384,87 @@ namespace EasyFramework.Launcher.Editor
                     violations.Add(LC.Format("Launcher.BootEfcAccess", name));
                 }
             }
+        }
+
+        // 去掉 // 与 /* */ 注释，保留字符串字面量内容（字符串里出现关键字同样算真引用）
+        private static string StripComments(string source)
+        {
+            var sb = new StringBuilder(source.Length);
+            bool inLine = false;
+            bool inBlock = false;
+            bool inString = false;
+            bool inChar = false;
+
+            for (int i = 0; i < source.Length; i++)
+            {
+                char c = source[i];
+                char next = i + 1 < source.Length ? source[i + 1] : '\0';
+
+                if (inLine)
+                {
+                    if (c == '\n')
+                    {
+                        inLine = false;
+                        sb.Append(c);
+                    }
+
+                    continue;
+                }
+
+                if (inBlock)
+                {
+                    if (c == '*' && next == '/')
+                    {
+                        inBlock = false;
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                if (inString || inChar)
+                {
+                    sb.Append(c);
+                    char quote = inString ? '"' : '\'';
+
+                    if (c == '\\' && next != '\0')
+                    {
+                        sb.Append(next);
+                        i++;
+                    }
+                    else if (c == quote)
+                    {
+                        if (inString)
+                            inString = false;
+                        else
+                            inChar = false;
+                    }
+
+                    continue;
+                }
+
+                switch (c)
+                {
+                    case '/' when next == '/':
+                        inLine = true;
+                        i++;
+                        continue;
+                    case '/' when next == '*':
+                        inBlock = true;
+                        i++;
+                        continue;
+                    case '"':
+                        inString = true;
+                        break;
+                    case '\'':
+                        inChar = true;
+                        break;
+                }
+
+                sb.Append(c);
+            }
+
+            return sb.ToString();
         }
 
         #endregion
@@ -474,8 +557,8 @@ namespace EasyFramework.Launcher.Editor
     }
 
     /// <summary>
-    /// 打包前硬门禁：边界破了就别出包
-    /// <para>Build-time gate: abort the build when the AOT boundary is broken.</para>
+    /// 打包前硬门禁：边界破了、或配置还停在编辑器模拟模式，就别出包
+    /// <para>Build-time gate: abort when the AOT boundary is broken or a config still uses EditorSimulateMode.</para>
     /// </summary>
     internal sealed class LauncherBoundaryBuildGate : IPreprocessBuildWithReport
     {
@@ -487,6 +570,45 @@ namespace EasyFramework.Launcher.Editor
             {
                 throw new BuildFailedException(LC.Combine("Launcher.BuildAborted"));
             }
+
+            EnsureNoSimulateConfig();
+        }
+
+        // 模拟模式只在编辑器有意义：包体内该分支被 #if UNITY_EDITOR 剔掉，
+        // CreateInitializeParameters 会掉进 default 直接抛 NotSupportedException，等于出包即崩。
+        // 只看「构建场景真正依赖到的」配置：工程里留一份没被引用的调试配置不该拦住出包。
+        private static void EnsureNoSimulateConfig()
+        {
+            var scenes = EditorBuildSettings.scenes;
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var offenders = new List<string>();
+
+            foreach (var editorBuildSettings in scenes)
+            {
+                if (!editorBuildSettings.enabled)
+                    continue;
+
+                string[] dependencies = AssetDatabase.GetDependencies(editorBuildSettings.path, true);
+                foreach (var path in dependencies)
+                {
+                    if (!path.EndsWith(".asset", StringComparison.OrdinalIgnoreCase) || !visited.Add(path))
+                        continue;
+
+                    var config = AssetDatabase.LoadAssetAtPath<LauncherConfig>(path);
+                    if (config != null && config.IsEditorSimulateMode)
+                        offenders.Add(path);
+                }
+            }
+
+            if (offenders.Count == 0)
+                return;
+
+            var sb = new StringBuilder();
+            sb.AppendLine(LC.Combine("Launcher.SimulateBuildBlocked"));
+            foreach (var t in offenders)
+                sb.AppendLine("  - " + t);
+
+            throw new BuildFailedException(sb.ToString());
         }
     }
 }

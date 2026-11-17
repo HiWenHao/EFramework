@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to store the launcher settings.
  * Author:          Alvin8412
@@ -97,6 +97,64 @@ namespace EasyFramework.Launcher
 
         [Tooltip("入口方法名，必须是 public/private static 无参方法")]
         public string EntryMethod = "Init";
+
+        #endregion
+
+        #region 只读查询
+
+        /// <summary>
+        /// 是否处于编辑器模拟模式。编辑器程序集引用不到 YooAsset，靠这个属性判断。
+        /// <para>Whether the config uses editor simulate mode; readable without a YooAsset reference.</para>
+        /// </summary>
+        public bool IsEditorSimulateMode => PlayMode == EPlayMode.EditorSimulateMode;
+
+        #endregion
+
+        #region 配置自检
+
+        // Inspector 里就把能查的查掉：这些错要到运行时才暴露，表现是"启动卡住"或"出包必崩"
+        private void OnValidate()
+        {
+            if (PlayMode == EPlayMode.HostPlayMode && string.IsNullOrWhiteSpace(MainUrl))
+                D.Warning($"[ LauncherConfig ] {name}: HostPlayMode 下 MainUrl 不能为空。");
+
+            if (HotfixDlls != null)
+            {
+                for (int i = 0; i < HotfixDlls.Length; i++)
+                {
+                    var entry = HotfixDlls[i];
+                    if (entry == null || !entry.Enabled)
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(entry.Name))
+                    {
+                        D.Warning(
+                            $"[ LauncherConfig ] {name}: HotfixDlls[{i}] 的 Name 为空，" +
+                            "重试去重、拓扑排序、失效条目检测都会认错它。");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(entry.Location) && entry.FallbackAsset == null)
+                    {
+                        D.Warning(
+                            $"[ LauncherConfig ] {name}: HotfixDlls[{i}]（{entry.Name}）既没有 Location " +
+                            "也没有 FallbackAsset，启动时必然加载不到。");
+                    }
+                }
+            }
+
+            if (AotMetadataDlls != null)
+            {
+                for (int i = 0; i < AotMetadataDlls.Length; i++)
+                {
+                    if (AotMetadataDlls[i] != null)
+                        continue;
+
+                    D.Warning(
+                        $"[ LauncherConfig ] {name}: AotMetadataDlls[{i}] 引用丢失（重新 Generate 后 .meta GUID 会变），" +
+                        "跑一次 🔄 Sync Hotfix Dll Entries 重绑。");
+                }
+            }
+        }
 
         #endregion
     }

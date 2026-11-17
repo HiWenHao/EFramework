@@ -53,7 +53,8 @@
       "dependencies": {
         "cn.efefef.core": "0.1.0",
         "com.tuyoogame.yooasset": "2.3.19",
-        "com.code-philosophy.hybridclr": "8.11.0"
+        "com.code-philosophy.hybridclr": "8.11.0",
+        "com.cysharp.unitask": "2.5.10"
       }
     },
     "cn.efefef.localization": {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        EF config panel for auto-binding hotfix dll entries.
  * Author:          Alvin8412
@@ -191,7 +191,7 @@ namespace EasyFramework.Launcher.Editor
                     _options.Save();
                     _preview = LauncherHotfixEntryBinder.Build(config, _options, apply: true);
                     _status = Describe(_preview, applied: true);
-                    Debug.Log("[EF.Launcher] " + _status.Replace("\n", " | "));
+                    D.Log("[EF.Launcher] " + _status.Replace("\n", " | "));
                 }
             }
 

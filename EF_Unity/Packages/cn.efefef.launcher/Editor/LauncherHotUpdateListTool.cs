@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to toggle EF assemblies in the hot update list.
  * Author:          Alvin8412
@@ -113,7 +113,7 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Format("Launcher.AddedLog", added, string.Join("\n  ", addedPaths)));
+            D.Log(LC.Format("Launcher.AddedLog", added, string.Join("\n  ", addedPaths)));
 
             // 顺手把 LauncherConfig.HotfixDlls 的骨架也铺好（按依赖序）
             int filled = LauncherHotfixDllFillTool.FillExistingConfig(out int total);
@@ -199,7 +199,7 @@ namespace EasyFramework.Launcher.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             HybridCLRSettings.Save();
 
-            Debug.Log(LC.Format("Launcher.RemovedCount", toRemove.Count));
+            D.Log(LC.Format("Launcher.RemovedCount", toRemove.Count));
 
             EditorUtility.DisplayDialog(DialogTitle, LC.Format("Launcher.RemovedNext", toRemove.Count),
                 LC.Combine("Launcher.Ok"));

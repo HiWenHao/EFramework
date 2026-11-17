@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to draw a minimal launcher view with UGUI.
  * Author:          Alvin8412
@@ -10,6 +10,7 @@
  */
 
 using System;
+using EasyFramework;
 using EasyFramework.Launcher;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,8 +49,8 @@ namespace EFLauncherSample
                 _retryRoot.SetActive(false);
 
             // 每帧都在刷的启动界面在 Completed 之后就该收场。
-            // 只关 Canvas 子物体，不要 SetActive(false) 本物体 —— Launcher 可能挂在同一个物体上，
-            // 关掉会把它的协程一起停掉。
+            // 只关 Canvas 子物体，不要 SetActive(false) 本物体 —— Launcher 可能挂在同一个物体上；
+            // 流程不会因此中断（UniTask 只受销毁取消），但界面会失活，后续状态没人显示。
             if (state == LauncherState.Completed && _canvasGo != null)
                 _canvasGo.SetActive(false);
         }
@@ -80,7 +81,7 @@ namespace EFLauncherSample
             if (_retryRoot != null)
                 _retryRoot.SetActive(true);
 
-            Debug.LogError($"[LauncherSample] {code}: {message}");
+            D.Error($"[LauncherSample] {code}: {message}");
         }
 
         #endregion

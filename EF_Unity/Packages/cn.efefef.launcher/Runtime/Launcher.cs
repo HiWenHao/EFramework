@@ -1,11 +1,11 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to run the AOT boot kernel.
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-16 18:40:00
- * ScriptVersion:   0.3
+ * ModifyTime:      2026-11-17 11:20:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
@@ -13,7 +13,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using HybridCLR;
 using UnityEngine;
 using YooAsset;
@@ -55,6 +57,8 @@ namespace EasyFramework.Launcher
 
         private const int DefaultMaxRetryCount = 3;
         private const float DefaultRetryDelaySeconds = 2f;
+        // 进度按 10Hz 广播：界面每帧拼字符串的代价远大于肉眼可见差异
+        private const float ProgressIntervalSeconds = 0.1f;
         // 重试耗尽时给界面的空回调，避免界面拿到 null 后空引用
         private static readonly Action NoopRetry = () => { };
 
@@ -63,7 +67,10 @@ namespace EasyFramework.Launcher
         private ResourcePackage _package;
         private bool _running;
         private int _retryCount;
-        private Coroutine _retryCoroutine;
+        // 退避等待是否已排上；UniTask 没有 Coroutine 句柄，用标记位防止重复排程
+        private bool _retryScheduled;
+        // 随 GameObject 销毁自动取消，异步流程不会在已销毁的对象上继续跑
+        private CancellationToken _destroyToken;
         private float _startTime;
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
         // Assembly.Load(byte[]) 每次都会创建新程序集；重试时重复加载同名 dll 会产生第二份类型身份
@@ -82,6 +89,18 @@ namespace EasyFramework.Launcher
         /// <summary>已加载的热更程序集（按配置顺序）</summary>
         public IReadOnlyList<Assembly> HotfixAssemblies => _hotfixAssemblies;
 
+        /// <summary>
+        /// 详细日志开关。只挡 <see cref="LauncherState"/> 流转这类信息日志，
+        /// <b>警告与错误永远输出</b>；失败时的 <c>Diagnose</c> 现场也不受它控制。
+        /// 运行时（例如 <c>AddComponent</c> 之后）可直接赋值，替代只在 Inspector 上能改的序列化字段。
+        /// <para>Verbose switch for lifecycle logs. Warnings, errors and the failure diagnostic are never suppressed.</para>
+        /// </summary>
+        public bool Verbose
+        {
+            get => _verbose;
+            set => _verbose = value;
+        }
+
         #endregion
 
         #region Unity 生命周期
@@ -95,6 +114,7 @@ namespace EasyFramework.Launcher
         {
             _view = FindComponent<ILauncherView>();
             _hook = FindComponent<ILauncherHook>();
+            _destroyToken = this.GetCancellationTokenOnDestroy();
 
             if (_view == null)
                 Warn("未找到 ILauncherView 实现，启动过程将没有界面反馈。");
@@ -120,11 +140,11 @@ namespace EasyFramework.Launcher
         [ContextMenu("Run Launcher")]
         public void Run()
         {
-            // 退避等待期间 _running 已是 false，不拦 _retryCoroutine 会并发跑起第二条管线
-            if (_running || _retryCoroutine != null || State == LauncherState.Completed)
+            // 退避等待期间 _running 已是 false，不拦 _retryScheduled 会并发跑起第二条管线
+            if (_running || _retryScheduled || State == LauncherState.Completed)
                 return;
 
-            StartCoroutine(RunPipeline());
+            RunPipelineAsync(_destroyToken).Forget();
         }
 
         /// <summary>
@@ -149,7 +169,7 @@ namespace EasyFramework.Launcher
         /// </summary>
         public void Retry()
         {
-            if (_running || State == LauncherState.Completed || _retryCoroutine != null)
+            if (_running || State == LauncherState.Completed || _retryScheduled)
                 return;
 
             int max = _config != null && _config.MaxRetryCount > 0
@@ -171,7 +191,8 @@ namespace EasyFramework.Launcher
                 : DefaultRetryDelaySeconds;
 
             SetState(LauncherState.Retrying, "准备重试");
-            _retryCoroutine = StartCoroutine(RetryAfterDelay(delay));
+            _retryScheduled = true;
+            RetryAfterDelayAsync(delay, _destroyToken).Forget();
         }
 
         #endregion
@@ -179,13 +200,23 @@ namespace EasyFramework.Launcher
         #region 重试实现
 
         // 退避只作用于重试，首次启动不等待；用 realtime 避免 timeScale 为 0 时卡死
-        private IEnumerator RetryAfterDelay(float delay)
+        private async UniTask RetryAfterDelayAsync(float delay, CancellationToken token)
         {
             Log($"第 {_retryCount} 次重试将在 {delay:0.0}s 后开始");
-            if (delay > 0f)
-                yield return new WaitForSecondsRealtime(delay);
 
-            _retryCoroutine = null;
+            if (delay > 0f)
+            {
+                bool canceled = await UniTask.Delay(TimeSpan.FromSeconds(delay), DelayType.Realtime,
+                    cancellationToken: token).SuppressCancellationThrow();
+
+                if (canceled)
+                {
+                    _retryScheduled = false;
+                    return;
+                }
+            }
+
+            _retryScheduled = false;
             SetState(LauncherState.Idle, "重试");
             Run();
         }
@@ -194,23 +225,32 @@ namespace EasyFramework.Launcher
 
         #region 主流程
 
-        private IEnumerator RunPipeline()
+        private async UniTask RunPipelineAsync(CancellationToken token)
         {
             _running = true;
             try
             {
-                yield return RunPipelineInternal();
+                await RunPipelineInternalAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+                // GameObject 已销毁：静默收场，不再触碰已失效的 view / 事件通道
+            }
+            catch (Exception e)
+            {
+                // 协程时代这里会被 Unity 吞掉（表现为流程静默中断）；UniTask 下必须自己收口
+                D.Exception(e);
+                Fail(LauncherErrorCode.Unexpected, $"启动流程异常：{e.Message}");
             }
             finally
             {
-                // 任意未捕获异常（YooAsset API、事件订阅者）都会终止协程；
-                // 没有 finally 兜底时 _running 会永久为 true，Retry()/Run() 从此静默失效
+                // 正常结束、失败、异常、取消都必须复位，否则 Retry()/Run() 会永久失效
                 _running = false;
             }
         }
 
-        // 八个阶段的主体：异常一律向上抛给 RunPipeline 的 finally
-        private IEnumerator RunPipelineInternal()
+        // 八个阶段的主体：取消与异常一律向上抛给 RunPipelineAsync
+        private async UniTask RunPipelineInternalAsync(CancellationToken token)
         {
             _startTime = Time.realtimeSinceStartup;
             Log($"启动开始 | 版本={LauncherCoreBridge.AppVersion} 语言={LauncherCoreBridge.DisplayLanguage}");
@@ -220,7 +260,7 @@ namespace EasyFramework.Launcher
             if (!ValidateConfig(out string configError))
             {
                 Fail(LauncherErrorCode.ConfigInvalid, configError);
-                yield break;
+                return;
             }
 
             #region 1. 项目钩子：隐私协议 / 渠道 SDK / 登录
@@ -236,11 +276,11 @@ namespace EasyFramework.Launcher
                 catch (Exception e)
                 {
                     Fail(LauncherErrorCode.HookFailed, $"ILauncherHook.OnBoot 抛出异常：{e.Message}");
-                    yield break;
+                    return;
                 }
 
                 while (!finished)
-                    yield return null;
+                    await UniTask.NextFrame(token);
             }
 
             #endregion
@@ -251,7 +291,7 @@ namespace EasyFramework.Launcher
             if (!TryCreatePackage(out string packageError))
             {
                 Fail(LauncherErrorCode.PackageInitFailed, packageError);
-                yield break;
+                return;
             }
 
             if (_package.InitializeStatus != EOperationStatus.Succeed)
@@ -264,15 +304,16 @@ namespace EasyFramework.Launcher
                 catch (Exception e)
                 {
                     Fail(LauncherErrorCode.PackageInitFailed, e.Message);
-                    yield break;
+                    return;
                 }
 
                 var initOp = _package.InitializeAsync(parameters);
-                yield return initOp;
+                await initOp.Task;
+                token.ThrowIfCancellationRequested();
                 if (initOp.Status != EOperationStatus.Succeed)
                 {
                     Fail(LauncherErrorCode.PackageInitFailed, $"资源包初始化失败：{initOp.Error}");
-                    yield break;
+                    return;
                 }
             }
 
@@ -282,19 +323,21 @@ namespace EasyFramework.Launcher
 
             SetState(LauncherState.CheckingVersion, "检查资源版本");
             var versionOp = _package.RequestPackageVersionAsync(timeout: _config.TimeoutSeconds);
-            yield return versionOp;
+            await versionOp.Task;
+            token.ThrowIfCancellationRequested();
             if (versionOp.Status != EOperationStatus.Succeed)
             {
                 Fail(LauncherErrorCode.VersionRequestFailed, $"获取资源版本失败：{versionOp.Error}");
-                yield break;
+                return;
             }
 
             var manifestOp = _package.UpdatePackageManifestAsync(versionOp.PackageVersion, _config.TimeoutSeconds);
-            yield return manifestOp;
+            await manifestOp.Task;
+            token.ThrowIfCancellationRequested();
             if (manifestOp.Status != EOperationStatus.Succeed)
             {
                 Fail(LauncherErrorCode.ManifestUpdateFailed, $"更新资源清单失败：{manifestOp.Error}");
-                yield break;
+                return;
             }
 
             #endregion
@@ -307,11 +350,18 @@ namespace EasyFramework.Launcher
             if (downloader.TotalDownloadCount > 0)
             {
                 downloader.BeginDownload();
+                float nextReport = 0f;
                 while (!downloader.IsDone)
                 {
-                    ReportProgress(downloader.CurrentDownloadCount, downloader.TotalDownloadCount,
-                        downloader.CurrentDownloadBytes, downloader.TotalDownloadBytes);
-                    yield return null;
+                    // 节流：下载可能跑几分钟，每帧广播会让界面每帧拼一次字符串（数十 KB/s 的 GC）
+                    if (Time.unscaledTime >= nextReport)
+                    {
+                        ReportProgress(downloader.CurrentDownloadCount, downloader.TotalDownloadCount,
+                            downloader.CurrentDownloadBytes, downloader.TotalDownloadBytes);
+                        nextReport = Time.unscaledTime + ProgressIntervalSeconds;
+                    }
+
+                    await UniTask.NextFrame(token);
                 }
 
                 ReportProgress(downloader.CurrentDownloadCount, downloader.TotalDownloadCount,
@@ -320,7 +370,7 @@ namespace EasyFramework.Launcher
                 if (downloader.Status != EOperationStatus.Succeed)
                 {
                     Fail(LauncherErrorCode.DownloadFailed, $"资源下载失败：{downloader.Error}");
-                    yield break;
+                    return;
                 }
             }
 
@@ -332,7 +382,7 @@ namespace EasyFramework.Launcher
             if (!TryLoadAotMetadata(out string metadataError))
             {
                 Fail(LauncherErrorCode.MetadataLoadFailed, metadataError);
-                yield break;
+                return;
             }
 
             #endregion
@@ -383,7 +433,13 @@ namespace EasyFramework.Launcher
                     if (!string.IsNullOrEmpty(entry.Location))
                     {
                         var handle = _package.LoadAssetAsync(entry.Location, typeof(TextAsset));
-                        yield return handle;
+                        // 直接 await Provider 的 Task（完成即续，零帧延迟）；句柄失效时它返回 null，用轮询兜底
+                        if (handle.Task is { } loadTask)
+                            await loadTask;
+                        else
+                            await UniTask.WaitUntil(() => handle.IsDone, cancellationToken: token);
+
+                        token.ThrowIfCancellationRequested();
 
                         EOperationStatus status = handle.Status;
                         string lastError = handle.LastError;
@@ -400,7 +456,7 @@ namespace EasyFramework.Launcher
                         {
                             Fail(LauncherErrorCode.AssemblyLoadFailed,
                                 $"热更程序集加载失败：{entryName}（{lastError}）");
-                            yield break;
+                            return;
                         }
                     }
                     else if (entry.FallbackAsset != null)
@@ -411,7 +467,7 @@ namespace EasyFramework.Launcher
                     if (dllBytes == null || dllBytes.Length == 0)
                     {
                         Fail(LauncherErrorCode.AssemblyLoadFailed, $"热更程序集内容为空：{entryName}");
-                        yield break;
+                        return;
                     }
 
                     try
@@ -426,7 +482,7 @@ namespace EasyFramework.Launcher
                     catch (Exception e)
                     {
                         Fail(LauncherErrorCode.AssemblyLoadFailed, $"热更程序集加载异常：{entryName} -> {e.Message}");
-                        yield break;
+                        return;
                     }
                 }
             }
@@ -434,7 +490,7 @@ namespace EasyFramework.Launcher
             if (_hotfixAssemblies.Count == 0 && entries is { Length: > 0 })
             {
                 Fail(LauncherErrorCode.AssemblyLoadFailed, "没有任何热更程序集被加载，请检查配置");
-                yield break;
+                return;
             }
 
             #endregion
@@ -443,11 +499,12 @@ namespace EasyFramework.Launcher
 
             SetState(LauncherState.Invoking, "启动游戏");
             var entryResult = new StepResult();
-            yield return InvokeEntryStep(entryResult);
+            await InvokeEntryStepAsync(entryResult);
+            token.ThrowIfCancellationRequested();
             if (entryResult.Failed)
             {
                 Fail(entryResult.Code, entryResult.Error);
-                yield break;
+                return;
             }
 
             #endregion
@@ -623,14 +680,14 @@ namespace EasyFramework.Launcher
 
         // 反射调用热更入口。入口返回 IEnumerator / Task 时等它跑完再标 Completed，
         // 否则异步初始化的热更层（例如 OpenView().Forget()）会在启动界面还没退场时就被判为“已完成”。
-        private IEnumerator InvokeEntryStep(StepResult result)
+        private async UniTask InvokeEntryStepAsync(StepResult result)
         {
             Type type = FindType(_config.EntryType);
             if (type == null)
             {
                 MarkFailed(result, LauncherErrorCode.EntryNotFound,
                     $"找不到热更入口类型：{_config.EntryType}（需要命名空间全名，且对应程序集已加载）");
-                yield break;
+                return;
             }
 
             // 显式指定 Type.EmptyTypes：不指定时同名重载会抛 AmbiguousMatchException，
@@ -646,7 +703,7 @@ namespace EasyFramework.Launcher
             {
                 MarkFailed(result, LauncherErrorCode.EntryNotFound,
                     $"找不到无参入口方法：{_config.EntryType}.{_config.EntryMethod}()，必须是无参 static 方法");
-                yield break;
+                return;
             }
 
             object returned;
@@ -657,38 +714,39 @@ namespace EasyFramework.Launcher
             catch (TargetInvocationException e)
             {
                 MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口抛出异常：{e.InnerException ?? e}");
-                yield break;
+                return;
             }
             catch (Exception e)
             {
                 MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口调用失败：{e.Message}");
-                yield break;
+                return;
             }
 
             Log($"热更入口已执行：{_config.EntryType}.{_config.EntryMethod}()");
 
             if (returned is IEnumerator routine)
             {
-                yield return routine;
-                yield break;
+                // 交给 Unity 跑（保留 WaitForSeconds 等自定义 yield 的语义）；对象销毁时协程自然停止
+                await routine.ToUniTask(this);
+                return;
             }
 
             if (returned is Task task)
             {
-                while (!task.IsCompleted)
-                    yield return null;
-
-                if (task.IsFaulted)
+                try
                 {
-                    Exception inner = task.Exception?.GetBaseException();
-                    MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口异步任务失败：{inner?.Message}");
+                    await task;
                 }
-                else if (task.IsCanceled)
+                catch (OperationCanceledException)
                 {
                     MarkFailed(result, LauncherErrorCode.EntryThrew, "热更入口异步任务被取消");
                 }
+                catch (Exception e)
+                {
+                    MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口异步任务失败：{e.Message}");
+                }
 
-                yield break;
+                return;
             }
 
             if (returned != null)
@@ -751,12 +809,12 @@ namespace EasyFramework.Launcher
 
             int slash = raw.LastIndexOfAny(new[] { '/', '\\' });
             if (slash >= 0 && slash + 1 < raw.Length)
-                raw = raw.Substring(slash + 1);
+                raw = raw[(slash + 1)..];
 
             if (raw.EndsWith(".bytes", StringComparison.OrdinalIgnoreCase))
-                raw = raw.Substring(0, raw.Length - 6);
+                raw = raw[..^6];
             if (raw.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                raw = raw.Substring(0, raw.Length - 4);
+                raw = raw[..^4];
 
             return raw.Trim();
         }

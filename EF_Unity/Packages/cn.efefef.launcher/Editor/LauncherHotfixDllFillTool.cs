@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ================================================
  * Describe:        This script is used to sync LauncherConfig hotfix dll entries.
  * Author:          Alvin8412
@@ -12,7 +12,6 @@
 using System.Collections.Generic;
 using EasyFramework.Edit;
 using UnityEditor;
-using UnityEngine;
 
 namespace EasyFramework.Launcher.Editor
 {
@@ -45,7 +44,7 @@ namespace EasyFramework.Launcher.Editor
             var aot = LauncherAotMetadataBinder.Bind(config, options, apply: true);
             string message = Describe(config, result, aot);
 
-            Debug.Log("[EF.Launcher] " + message.Replace("\n", "\n[EF.Launcher] "));
+            D.Log("[EF.Launcher] " + message.Replace("\n", "\n[EF.Launcher] "));
             EditorUtility.DisplayDialog(DialogTitle, message, LC.Combine("Launcher.Ok"));
         }
 
