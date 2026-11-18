@@ -24,6 +24,15 @@
 *.tiff filter=lfs diff=lfs merge=lfs -text
 *.webp filter=lfs diff=lfs merge=lfs -text
 *.bmp  filter=lfs diff=lfs merge=lfs -text
+# —— 例外：包内小图不进 LFS（2026-11-18）——
+# 原因：UPM 从 git URL 装包只取 git tree、不做 git lfs smudge，LFS 文件在消费工程的
+# PackageCache 里只剩指针文本，Unity 无法导入为纹理 → 编辑器 Gizmo 图标 / 吉祥物猫帧全失效。
+# 仅迁小二进制（图标 / 猫帧 / 极小贴图）；大文件（PSD / 文档图 / Luban.exe）保留 LFS。
+# 注意：路径含空格不能用 \ 转义（git 会拆成属性名报错）；用 ? 匹配单个空格字符。
+# 规则须位于 blanket *.png 之后以覆盖之。
+EF_Unity/Packages/cn.efefef.core/Editor?Resources/Gizmos/*.png           -filter -diff -merge -text
+EF_Unity/Packages/cn.efefef.core/Editor?Resources/Mascots/*.png   -filter -diff -merge -text
+EF_Unity/Packages/cn.efefef.core/Resources/CommonTexture/CommonSquare.png -filter -diff -merge -text
 # —— 音频 ——
 *.mp3  filter=lfs diff=lfs merge=lfs -text
 *.ogg  filter=lfs diff=lfs merge=lfs -text

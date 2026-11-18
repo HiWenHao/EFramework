@@ -35,7 +35,7 @@ namespace EasyFramework.Edit.Windows
         public const int RecommendedSize = 32;
 
         /// <summary>素材命名示例（{0} 为帧序号，从 0 开始；实际前缀可自定）</summary>
-        public const string FileNameFormat = "RunCat_{0}.png";
+        public const string FileNameFormat = "Mascot_{0}.png";
 
         /// <summary>素材文件扩展名</summary>
         public const string FileExtension = ".png";
