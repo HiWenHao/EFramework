@@ -73,12 +73,6 @@ public static class EF
     /// </summary>
     public static EventManager Events => EventManager.Instance;
 
-    /// <summary>
-    /// 场景管理器
-    /// <para>Scene manager</para>
-    /// </summary>
-    public static ScenesManager Scenes => ScenesManager.Instance;
-
     /// <summary>音频管理器<para>Audio manager</para></summary>
     public static AudioManager Audio => AudioManager.Instance;
 
