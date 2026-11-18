@@ -60,15 +60,18 @@ namespace EasyFramework
 
         private Material _dynamicMaterial; // 动态创建的材质，OnDestroy 时释放
         private CancellationTokenSource _loadCts; // HTTP 下载取消令牌
+        private IDisposable _assetHandle; // 当前资源加载句柄，换图/销毁时释放
 
-        private static Func<string, CancellationToken, UniTask<Texture2D>> _defaultTextureDownloader = DefaultLoadTextureAsync;
+        private static Func<string, CancellationToken, UniTask<Texture2D>> _defaultTextureDownloader =
+            DefaultLoadTextureAsync;
 
         /// <summary>
         /// 默认纹理下载器 —— 所有 ImagePro 实例共享。通过 SetTextureDownloader() 替换为自己的实现
         /// <para>Default Texture Downloader - Shared among all ImagePro instances.
         /// Replace via SetTextureDownloader() with your own implementation</para>
         /// </summary>
-        public static Func<string, CancellationToken, UniTask<Texture2D>> DefaultTextureDownloader => _defaultTextureDownloader;
+        public static Func<string, CancellationToken, UniTask<Texture2D>> DefaultTextureDownloader =>
+            _defaultTextureDownloader;
 
         /// <summary> 圆角弧度 </summary>
         public float CornerArc
@@ -170,6 +173,13 @@ namespace EasyFramework
             _loadCts = null;
         }
 
+        // 释放当前资源句柄（幂等，Dispose 内部已保证）
+        private void ReleaseAssetHandle()
+        {
+            _assetHandle?.Dispose();
+            _assetHandle = null;
+        }
+
         // 卸载图片
         private void UnloadInternal()
         {
@@ -182,7 +192,7 @@ namespace EasyFramework
             else
             {
                 sprite = null;
-                // OnDestroy 时不能走异步 Release，已由 AssetsSystem 统一管理
+                ReleaseAssetHandle();
             }
 
             address = null;
@@ -193,6 +203,7 @@ namespace EasyFramework
         {
             if (string.IsNullOrEmpty(address)) return;
 
+            await UniTask.CompletedTask;
             if (address.StartsWith("http"))
             {
                 DestroyHttpSprite();
@@ -200,7 +211,7 @@ namespace EasyFramework
             else
             {
                 sprite = null;
-                await AssetsManager.Instance.Release(address);
+                ReleaseAssetHandle();
             }
 
             address = null;
@@ -283,20 +294,26 @@ namespace EasyFramework
         public async UniTask<Sprite> SetSprite(string uiAtlasName, string spriteName)
         {
             string atlasName = type.ToString();
-            SpriteAtlas atlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
-            if (atlas == null)
+            AssetHandle<SpriteAtlas> atlasHandle = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
+            if (atlasHandle is not { IsValid: true })
             {
+                atlasHandle?.Dispose();
                 D.Warning($"[ UiSystem ] [ ImagePro ] Atlas '{atlasName}' not found for UIAtlasType.{type}");
                 return null;
             }
 
-            Sprite sp = atlas.GetSprite(spriteName);
+            Sprite sp = atlasHandle.Asset.GetSprite(spriteName);
             if (sp == null)
             {
+                // Sprite 取不到，句柄不再需要
+                atlasHandle.Dispose();
                 D.Warning($"[ UiSystem ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{atlasName}'.");
                 return null;
             }
 
+            // 换图：释放旧句柄，保留新句柄直到本组件销毁
+            ReleaseAssetHandle();
+            _assetHandle = atlasHandle;
             sprite = sp;
             return sp;
         }
@@ -330,7 +347,7 @@ namespace EasyFramework
                 else
                 {
                     sprite = null;
-                    AssetsManager.Instance.Release(oldAddress).Forget();
+                    ReleaseAssetHandle();
                 }
             }
 
@@ -360,34 +377,59 @@ namespace EasyFramework
 
             Sprite newSprite;
             var hasAtlas = false;
+            IDisposable newHandle;
             var index = url.LastIndexOf('?');
             if (index > 0)
             {
                 string atlasName = url[..index];
                 string spriteName = url[(index + 1)..];
-                SpriteAtlas spriteAtlas = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
-                if (null == spriteAtlas)
+                var atlasHandle = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
+                if (atlasHandle == null || !atlasHandle.IsValid)
                 {
+                    atlasHandle?.Dispose();
                     D.Warning($"[ UiSystem ] [ ImagePro ] Not found {atlasName} atlas..");
                     return null;
                 }
 
                 hasAtlas = true;
-                newSprite = spriteAtlas.GetSprite(spriteName);
+                newHandle = atlasHandle;
+                newSprite = atlasHandle.Asset.GetSprite(spriteName);
                 if (newSprite == null)
+                {
                     D.Warning($"[ UiSystem ] [ ImagePro ] {spriteName} not found in {atlasName} atlas.");
+                    atlasHandle.Dispose();
+                    return null;
+                }
             }
             else
-                newSprite = await AssetsManager.Instance.LoadAsync<Sprite>(url);
+            {
+                var spriteHandle = await AssetsManager.Instance.LoadAsync<Sprite>(url);
+                if (spriteHandle == null)
+                {
+                    D.Warning($"[ UiSystem ] [ ImagePro ] Not found {url} sprite.");
+                    return null;
+                }
+
+                newHandle = spriteHandle;
+                newSprite = spriteHandle.Asset;
+            }
 
             if (null == newSprite)
             {
+                newHandle?.Dispose();
                 if (!hasAtlas) D.Warning($"[ UiSystem ] [ ImagePro ] Not found {url} sprite.");
                 return null;
             }
 
             if (address == url && this)
+            {
+                ReleaseAssetHandle();
+                _assetHandle = newHandle;
                 sprite = newSprite;
+            }
+            else
+                newHandle?.Dispose();
+
             return newSprite;
         }
     }

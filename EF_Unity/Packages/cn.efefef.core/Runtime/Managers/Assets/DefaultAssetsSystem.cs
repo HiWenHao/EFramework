@@ -4,12 +4,13 @@
  * Author:        Alvin8412
  * CreationTime:  2026-05-01 21:26:21
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-30 17:34:00
- * ScriptVersion: 0.3
- * ================================================
+ * ModifyTime:    2026-11-18 15:32:00
+ * ScriptVersion: 0.4
+ * ===============================================
  */
 
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -28,8 +29,8 @@ namespace EasyFramework.Managers.Assets
         private Dictionary<string, Object> _assetsDictionary;
 
         /// <summary>
-        /// 初始化管理器，创建资源缓存字典
-        /// <para>Initialise the manager and create the asset cache dictionary</para>
+        /// 初始化管理器
+        /// <para>Initialize the asset system</para>
         /// </summary>
         public async UniTask Initialize()
         {
@@ -79,9 +80,10 @@ namespace EasyFramework.Managers.Assets
         /// <para>Asynchronously load an asset from Resources (returns cached instance if available)</para>
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
-        /// <param name="path">Resources 路径（不含后缀）<para>Resources path (without extension)</para></param>
+        /// <param name="path">Resources 路径<para>Resources path</para></param>
+        /// <param name="token">取消令牌<para>Cancellation token</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        public async UniTask<T> LoadAsync<T>(string path) where T : Object
+        public async UniTask<T> LoadAsync<T>(string path, CancellationToken token = default) where T : Object
         {
             if (_assetsDictionary.TryGetValue(path, out var existing))
                 return existing as T;
@@ -95,6 +97,10 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
+            // 二次检查：await 期间可能已被并发调用填充，复用已有结果避免覆盖与句柄泄漏
+            if (_assetsDictionary.TryGetValue(path, out var concurrent))
+                return concurrent as T;
+
             _assetsDictionary[path] = asyncOp.asset;
             Log($"Loaded async: {path}");
             return asyncOp.asset as T;
@@ -106,27 +112,29 @@ namespace EasyFramework.Managers.Assets
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
         /// <param name="packageName">包名（忽略）<para>Package name (ignored)</para></param>
-        /// <param name="path">Resources 路径<para>Resources path</para></param>
+        /// <param name="path">资源路径<para>Asset path</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public T LoadFromPackage<T>(string packageName, string path) where T : Object => Load<T>(path);
 
         /// <summary>
-        /// 从指定包异步加载 —— Resources 不支持分包概念，直接转发到 <see cref="LoadAsync{T}"/>
-        /// <para>Load async from a named package — Resources has no sub-package concept, delegates to <see cref="LoadAsync{T}"/></para>
+        /// 从指定包异步加载 —— 转发到 <see cref="LoadAsync{T}"/>
+        /// <para>Load async from a named package — delegates to <see cref="LoadAsync{T}"/></para>
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
         /// <param name="packageName">包名（忽略）<para>Package name (ignored)</para></param>
-        /// <param name="path">Resources 路径<para>Resources path</para></param>
+        /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <param name="token">取消令牌<para>Cancellation token</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        public async UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path) where T : Object =>
-            await LoadAsync<T>(path);
+        public async UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path,
+            CancellationToken token = default) where T : Object => await LoadAsync<T>(path, token);
 
         /// <summary>
         /// 释放指定路径的资源（GameObject / Component 不调用 UnloadAsset，避免误删实例）
-        /// <para>Release the asset at the given path (GameObject / Component are NOT passed to UnloadAsset to avoid destroying instances)</para>
+        /// <para>Release the asset at the given path</para>
         /// </summary>
+        /// <param name="packageName">包名（忽略）<para>Package name (ignored)</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
-        public async UniTask Release(string path)
+        public async UniTask Release(string packageName, string path)
         {
             await UniTask.CompletedTask;
             ReleaseHelper(path);
@@ -145,9 +153,7 @@ namespace EasyFramework.Managers.Assets
                 return;
 
             foreach (var kvp in _assetsDictionary)
-            {
                 ReleaseHelper(kvp.Key);
-            }
 
             _assetsDictionary.Clear();
             Log("All assets released.");
@@ -163,11 +169,7 @@ namespace EasyFramework.Managers.Assets
             Log("Unused assets cleaned up.");
         }
 
-        /// <summary>
-        /// 释放助手：跳过 GameObject 和 Component（避免销毁场景中的实例），其余调用 Resources.UnloadAsset
-        /// <para>Release helper: skips GameObject and Component to avoid destroying scene instances; calls Resources.UnloadAsset for everything else</para>
-        /// </summary>
-        /// <param name="path">资源路径<para>Asset path</para></param>
+        // 释放助手：跳过 GameObject 和 Component（避免销毁场景中的实例），其余调用 Resources.UnloadAsset
         private void ReleaseHelper(string path)
         {
             if (!_assetsDictionary.TryGetValue(path, out var assetsObject))

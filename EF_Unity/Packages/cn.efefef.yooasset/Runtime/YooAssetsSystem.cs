@@ -10,6 +10,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
@@ -71,11 +72,11 @@ namespace EasyFramework.Managers.Assets
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
         /// <param name="path">资源路径<para>Asset path</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        public async UniTask<T> LoadAsync<T>(string path) where T : Object
+        public async UniTask<T> LoadAsync<T>(string path, CancellationToken token = default) where T : Object
         {
             var pkg = GetDefaultPackage();
             if (pkg == null) return null;
-            return await LoadAsyncInternal<T>(pkg, path);
+            return await LoadAsyncInternal<T>(pkg, path, token);
         }
 
         /// <summary>
@@ -106,7 +107,8 @@ namespace EasyFramework.Managers.Assets
         /// <param name="packageName">包名（需已通过 PatchManager.RegisterSubPackages 注册）<para>Package name (must be registered via PatchManager.RegisterSubPackages)</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        public async UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path) where T : Object
+        public async UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path,
+            CancellationToken token = default) where T : Object
         {
             var pkg = PatchManager.Instance.GetPackage(packageName);
             if (pkg == null)
@@ -115,15 +117,16 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
-            return await LoadAsyncInternal<T>(pkg, path);
+            return await LoadAsyncInternal<T>(pkg, path, token);
         }
 
         /// <summary>
         /// 释放指定路径的资源句柄
         /// <para>Release the asset handle at the given path</para>
         /// </summary>
+        /// <param name="packageName">包名（未使用，句柄按 path 缓存）<para>Package name (unused, handles cached by path)</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
-        public async UniTask Release(string path)
+        public async UniTask Release(string packageName, string path)
         {
             await UniTask.CompletedTask;
             if (_assetHandles.TryGetValue(path, out var handle))
@@ -251,13 +254,14 @@ namespace EasyFramework.Managers.Assets
         /// 从指定 ResourcePackage 异步加载资源（命中缓存则直接返回）
         /// <para>Asynchronously load an asset from a specific ResourcePackage (returns cached handle if available)</para>
         /// </summary>
-        private async UniTask<T> LoadAsyncInternal<T>(ResourcePackage pkg, string path) where T : Object
+        private async UniTask<T> LoadAsyncInternal<T>(ResourcePackage pkg, string path, CancellationToken token)
+            where T : Object
         {
             if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
                 return handle.AssetObject as T;
 
             var newHandle = pkg.LoadAssetAsync<T>(path);
-            await newHandle.ToUniTask();
+            await newHandle.ToUniTask(cancellationToken: token);
 
             if (!newHandle.IsValid || newHandle.AssetObject == null)
             {

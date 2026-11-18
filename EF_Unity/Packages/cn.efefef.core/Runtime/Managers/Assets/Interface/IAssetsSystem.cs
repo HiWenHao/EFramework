@@ -4,11 +4,12 @@
  * Author:        Alvin8412
  * CreationTime:  2026-05-01 21:03:43
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-30 17:34:00
- * ScriptVersion: 0.2
- * ================================================
+ * ModifyTime:    2026-11-18 15:32:00
+ * ScriptVersion: 0.3
+ * ===============================================
  */
 
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -33,8 +34,8 @@ namespace EasyFramework.Managers.Assets
         AssetsSystemType SystemType { get; }
 
         /// <summary>
-        /// 初始化管理器，准备加载资源
-        /// <para>Initialize the asset system so it is ready to load assets</para>
+        /// 初始化管理器
+        /// <para>Initialize the asset system</para>
         /// </summary>
         UniTask Initialize();
 
@@ -59,45 +60,49 @@ namespace EasyFramework.Managers.Assets
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
         /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <param name="token">取消令牌<para>Cancellation token</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        UniTask<T> LoadAsync<T>(string path) where T : Object;
+        UniTask<T> LoadAsync<T>(string path, CancellationToken token = default) where T : Object;
 
         /// <summary>
         /// 从指定资源包同步加载资源
-        /// <para>Synchronously load an asset from a named resource package</para>
+        /// <para>Synchronously load an asset from a named package</para>
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
-        /// <param name="packageName">包名（对应 SubPackageConfig.PackageName）<para>Package name (matches SubPackageConfig.PackageName)</para></param>
+        /// <param name="packageName">包名<para>Package name</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         T LoadFromPackage<T>(string packageName, string path) where T : Object;
 
         /// <summary>
         /// 从指定资源包异步加载资源
-        /// <para>Asynchronously load an asset from a named resource package</para>
+        /// <para>Asynchronously load an asset from a named package</para>
         /// </summary>
         /// <typeparam name="T">资源类型<para>Asset type</para></typeparam>
-        /// <param name="packageName">包名（对应 SubPackageConfig.PackageName）<para>Package name (matches SubPackageConfig.PackageName)</para></param>
+        /// <param name="packageName">包名<para>Package name</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
+        /// <param name="token">取消令牌<para>Cancellation token</para></param>
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
-        UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path) where T : Object;
+        UniTask<T> LoadAsyncFromPackage<T>(string packageName, string path, CancellationToken token = default)
+            where T : Object;
 
         /// <summary>
-        /// 释放指定路径的资源
-        /// <para>Release the asset at the given path</para>
+        /// 释放指定资源（引用归零时由门面调用）
+        /// <para>Release an asset (called by the facade when ref-count reaches zero)</para>
         /// </summary>
+        /// <param name="packageName">包名，null 表示默认包<para>Package name, null for default</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
-        UniTask Release(string path);
+        UniTask Release(string packageName, string path);
 
         /// <summary>
         /// 释放所有已加载资源
-        /// <para>Release all loaded assets at once</para>
+        /// <para>Release all loaded assets</para>
         /// </summary>
         UniTask ReleaseAll();
 
         /// <summary>
-        /// 主动清理未使用的资源（GameObject / Component 等无法被 UnloadAsset 回收的对象也会被清理）
-        /// <para>Proactively unload unused assets (including GameObjects and Components that cannot be freed by UnloadAsset alone)</para>
+        /// 主动清理未使用的资源
+        /// <para>Proactively unload unused assets</para>
         /// </summary>
         UniTask CleanupUnusedAssets();
     }

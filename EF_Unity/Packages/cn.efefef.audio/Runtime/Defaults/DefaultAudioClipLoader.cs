@@ -9,6 +9,7 @@
  * ================================================
  */
 
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Managers.Assets;
@@ -25,6 +26,8 @@ namespace EasyFramework.Managers.Audio
     {
         // 共享运行时上下文，仅用于输出加载警告
         private AudioContext _context;
+        // 托管的资源句柄：clip 由上层 cache 长期持有，句柄随本 loader 生命周期统一释放
+        private readonly Dictionary<string, System.IDisposable> _handles = new();
 
         /// <summary>
         /// 绑定共享上下文
@@ -34,10 +37,16 @@ namespace EasyFramework.Managers.Audio
         public void Initialize(AudioContext context) => _context = context;
 
         /// <summary>
-        /// 解绑上下文
-        /// <para>Release the context reference.</para>
+        /// 解绑上下文，并释放所有托管的资源句柄
+        /// <para>Release the context and all held asset handles.</para>
         /// </summary>
-        public void Dispose() => _context = null;
+        public void Dispose()
+        {
+            _context = null;
+            foreach (var handle in _handles.Values)
+                handle.Dispose();
+            _handles.Clear();
+        }
 
         /// <summary>
         /// 按资源名加载音频
@@ -46,12 +55,22 @@ namespace EasyFramework.Managers.Audio
         /// <param name="key">资源键 <para>Asset key</para></param>
         /// <param name="token">取消令牌 <para>Cancellation token</para></param>
         /// <returns>可播放的 AudioClip；失败为 null <para>Playable AudioClip, or null on failure</para></returns>
-        public UniTask<AudioClip> LoadAsync(string key, CancellationToken token)
+        public async UniTask<AudioClip> LoadAsync(string key, CancellationToken token)
         {
             string path = AssetsManager.Instance.CurrentSystemType == AssetsSystemType.Default
                 ? $"{EFC.Projects.AppConst.AudioPath}{key}"
                 : key;
-            return UniTask.FromResult(AssetsManager.Instance.Load<AudioClip>(path));
+
+            // 同一 path 重复加载时先释放旧句柄，避免引用计数叠加
+            if (_handles.TryGetValue(path, out var oldHandle))
+                oldHandle.Dispose();
+
+            var handle = await AssetsManager.Instance.LoadAsync<AudioClip>(path, token);
+            if (handle == null)
+                return null;
+
+            _handles[path] = handle;
+            return handle.Asset;
         }
 
         /// <summary>

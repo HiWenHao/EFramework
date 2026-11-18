@@ -97,6 +97,9 @@ namespace EasyFramework.Localization
         // 当前语言的译文表（仅当前语言驻留内存；切换时整体替换，旧表交给 GC）
         private Dictionary<string, string> _table;
 
+        // 当前语言表对应的资源句柄（切换/退出时释放）
+        private System.IDisposable _tableHandle;
+
         // 装载请求代数（每次发起装载递增；异步完成后比对，不一致说明结果已过期）
         private int _loadGeneration;
 
@@ -149,24 +152,27 @@ namespace EasyFramework.Localization
         // 应用指定语言的表（装载管线的终点：成功则替换内存表并广播事件，失败不动任何状态）
         private async UniTask<bool> TryApplyAsync(int generation, string language)
         {
-            var table = await LoadTableAsync(language);
-            if (generation != _loadGeneration) return false; // 已被更新的请求抢占
-            if (table == null || table.Count == 0) return false;
+            var handle = await AssetsManager.Instance.LoadAsync<TextAsset>(
+                string.Format(TableAssetPathFormat, language));
+            var table = handle != null && handle.IsValid
+                ? L10nTableParser.Parse(handle.Asset.bytes, handle.Asset.name)
+                : null;
 
+            if (generation != _loadGeneration || table == null || table.Count == 0)
+            {
+                // 请求已被抢占或加载失败：句柄不再需要，立即释放
+                handle?.Dispose();
+                return false;
+            }
+
+            // 替换当前表与句柄：释放旧句柄，保留新句柄直到下次切换/退出
+            _tableHandle?.Dispose();
+            _tableHandle = handle;
             _table = table;
             _currentLanguage = language;
             D.Log($"[ Localization ] 语言表装载完成：{language}（{table.Count} 条）");
             NotifyLanguageChanged(language);
             return true;
-        }
-
-        // 经 AssetsManager 加载并解析指定语言的表（资源缺失返回 null；格式无关：json / Luban bytes 等由解析层按内容分发）
-        private async UniTask<Dictionary<string, string>> LoadTableAsync(string language)
-        {
-            var asset = await AssetsManager.Instance.LoadAsync<TextAsset>(
-                string.Format(TableAssetPathFormat, language));
-
-            return asset != null ? L10nTableParser.Parse(asset.bytes, asset.name) : null;
         }
 
         // 确定初始语言：玩家偏好优先，否则兜底语言（是否真的可用由装载阶段校验）
@@ -220,6 +226,8 @@ namespace EasyFramework.Localization
         public void Quit()
         {
             _table = null;
+            _tableHandle?.Dispose();
+            _tableHandle = null;
             _currentLanguage = string.Empty;
         }
 
@@ -281,11 +289,7 @@ namespace EasyFramework.Localization
             var previous = _currentLanguage;
             _currentLanguage = language;
 
-            // 释放旧语言资源（引用计数减一；解析后的表由新表整体替换，旧字典交给 GC）
-            if (_table != null && !string.IsNullOrEmpty(previous) && previous != language)
-            {
-                await AssetsManager.Instance.Release(string.Format(TableAssetPathFormat, previous));
-            }
+            // 旧语言表的资源句柄由 TryApplyAsync 在成功替换时释放；加载失败时旧表继续生效。
 
             if (!await TryApplyAsync(generation, language))
             {

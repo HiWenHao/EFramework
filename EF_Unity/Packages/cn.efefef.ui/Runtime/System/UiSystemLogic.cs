@@ -315,14 +315,16 @@ namespace EasyFramework.Managers.Ui
 
             string viewName = uiView.GetType().Name;
 
-            GameObject prefab = AssetsManager.Instance.Load<GameObject>(GetAssetPath(viewName));
-            if (!prefab)
+            AssetHandle<GameObject> prefabHandle = AssetsManager.Instance.Load<GameObject>(GetAssetPath(viewName));
+            if (prefabHandle is not { IsValid: true })
             {
+                prefabHandle?.Dispose();
                 D.Exception($"[ UiSystem ] UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
                 return null;
             }
 
-            GameObject uiObj = Object.Instantiate(prefab);
+            GameObject uiObj = Instantiate(prefabHandle.Asset);
+            prefabHandle.Dispose();
             UiBinding prefabBinding = uiObj.GetComponent<UiBinding>();
             if (prefabBinding == null)
             {
@@ -355,8 +357,6 @@ namespace EasyFramework.Managers.Ui
             uiView.Quit();
             uiView.Dispose();
             DestroyObj(uiView.View.gameObject);
-
-            AssetsManager.Instance.Release(GetAssetPath(uiView.View.name)).Forget();
         }
 
         /// <summary>
