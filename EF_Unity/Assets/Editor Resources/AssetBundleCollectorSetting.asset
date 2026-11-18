@@ -30,16 +30,8 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ExampleGame/Resources/Texture/Freeui
-        CollectorGUID: 24dd9c859be3bd64bbe73026414a471a
-        CollectorType: 0
-        AddressRuleName: AddressByFileName
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
-      - CollectPath: Assets/ExampleGame/Resources/Texture/Game
-        CollectorGUID: 05074d4bbefd4e344b0aaa4abe171500
+      - CollectPath: Assets/ExampleGame/Arts/Texture
+        CollectorGUID: 359769c90cefe624c99bf64642fe3c18
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
@@ -51,7 +43,7 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ExampleGame/Resources/Sources
+      - CollectPath: Assets/ExampleGame/Arts/Sources
         CollectorGUID: 97adeb34d337f4a40967cd3f992053b7
         CollectorType: 0
         AddressRuleName: AddressByFileName
@@ -77,16 +69,8 @@ MonoBehaviour:
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/ExampleGame/Resources/Prefabs/UI
+      - CollectPath: Assets/ExampleGame/Arts/Prefabs/UI
         CollectorGUID: 09b33bafaca989445a79b96c761a410b
-        CollectorType: 0
-        AddressRuleName: AddressByFileName
-        PackRuleName: PackSeparately
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
-      - CollectPath: Packages/cn.efefef.core/Resources/Prefabs/UI
-        CollectorGUID: 
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackSeparately

@@ -1,23 +1,24 @@
 /*
  * ================================================
- * Describe:      This script is used to .
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2024-10-09 09:18:34
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-10-09 09:18:34
- * ScriptVersion: 0.1
+ * Describe:        This script is used to .
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2024-10-09 09:18:34
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-11-18 21:17:38
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
-using System;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
+using EasyFramework.Managers.Assets;
 using EasyFramework.Managers.Audio;
 using EasyFramework.Managers.Ui;
 using EFExample.UI.Tips;
 using Luban;
 using SimpleJSON;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace EFExample
 {
@@ -50,13 +51,17 @@ namespace EFExample
 
         public static void Init()
         {
-            //EnsureFrameworkInitialized();
+            EnsureFrameworkInitialized();
 
             D.Emphasize("Hello Game and HybridCLR");
+            DontDestroyOnLoad(Camera.main);
+            SceneManager.LoadScene("Empty");
+            Run().Forget();
+        }
 
-
-            //FPS展示
-            //FPSOnGUI.Instance.AllowDrag = true;
+        private static async UniTaskVoid Run()
+        {
+            await EF.Assets.ConfirmAssetsManagerType(AssetsSystemType.YooAsset);
 
             //UI进入
             UiSystem.Instance.OpenView<UiAView>().Forget();
