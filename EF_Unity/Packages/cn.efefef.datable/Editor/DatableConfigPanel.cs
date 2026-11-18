@@ -9,6 +9,7 @@
  * ================================================
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -30,6 +31,17 @@ namespace EasyFramework.Edit.Windows.Dataable
         // 包内 Luban 工具根目录
         private static string ToolSourceDir =>
             Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Packages", "cn.efefef.datable", "LubanTools~"));
+
+        // Luban 支持的表格扩展名（依据 Luban.Schema.Builtin.ExcelSchemaLoader / IsExcelFile）
+        private static readonly string[] LubanTableExtensions = { ".xlsx", ".xls", ".xlsm", ".csv" };
+
+        // 表格列表单行高度（略高于默认，保证文件名完整显示）
+        private const float ExcelRowHeight = 24f;
+
+        // Luban 相关文件名
+        private const string TablesFileName = "__tables__.xlsx";
+        private const string LubanConfFileName = "luban.conf";
+        private const string LubanDllFileName = "Luban.dll";
 
         private static DatableConfig _config;
 
@@ -210,10 +222,22 @@ namespace EasyFramework.Edit.Windows.Dataable
         // 绘制单一表格
         private void DrawSingleExcel(int index, string path)
         {
-            EditorGUILayout.BeginHorizontal(index % 2 == 0 ? EditorStyles.helpBox : GUI.skin.box);
+            EditorGUILayout.BeginHorizontal(index % 2 == 0 ? EditorStyles.helpBox : GUI.skin.box,
+                GUILayout.Height(ExcelRowHeight));
             EditorGUILayout.LabelField(Path.GetFileNameWithoutExtension(path),
-                GUIUtils.ColorText(14, textColor: Color.white), GUILayout.ExpandWidth(true));
-            if (GUILayout.Button(LC.Combine("Open"), GUILayout.Width(80)))
+                GUIUtils.ColorText(14, textColor: Color.white),
+                GUILayout.ExpandWidth(true), GUILayout.Height(ExcelRowHeight));
+
+            // 单表生成：只生成该 Excel 对应的表定义，不触碰其它表
+            if (GUILayout.Button(LC.Combine("Datable.GenerateOne"),
+                    GUILayout.Width(80), GUILayout.Height(ExcelRowHeight - 4)))
+                GenerateSingleExcel(path);
+
+            // 与「打开」拉开间距，避免误点
+            GUILayout.Space(20f);
+
+            if (GUILayout.Button(LC.Combine("Open"),
+                    GUILayout.Width(80), GUILayout.Height(ExcelRowHeight - 4)))
             {
                 if (File.Exists(path))
                     EditorUtility.OpenWithDefaultApp(path);
@@ -222,6 +246,29 @@ namespace EasyFramework.Edit.Windows.Dataable
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        // 生成单个 Excel 对应的表：按 input 相对路径从 __tables__.xlsx 查表全名，再走 Luban -o 过滤
+        private static void GenerateSingleExcel(string absolutePath)
+        {
+            string root = _config?.ResolveSourcePath();
+            if (string.IsNullOrEmpty(root) || !File.Exists(absolutePath))
+            {
+                D.Warning($"[ DatableConfigPanel ] 无法生成：文件不存在或未配置源路径：{absolutePath}");
+                return;
+            }
+
+            // 转成相对 Datas 的路径（与 __tables__.xlsx E列一致），Windows 分隔符统一为 /
+            string relative = Path.GetRelativePath(root, absolutePath).Replace('\\', '/');
+            var tableNames = EasyFramework.Edit.XlsxRowAppender.GetTableNamesByInput(relative);
+            if (tableNames.Count == 0)
+            {
+                D.Warning($"[ DatableConfigPanel ] 未在 __tables__.xlsx 中找到「{relative}」对应的表定义，无法单表生成。请检查 E列 input 配置。");
+                return;
+            }
+
+            D.Log($"[ DatableConfigPanel ] 单表生成：{relative} → {string.Join(", ", tableNames)}");
+            GenerateTables(tableNames);
         }
 
         // 初始化配置
@@ -277,10 +324,27 @@ namespace EasyFramework.Edit.Windows.Dataable
                 return;
             foreach (string path in Directory.GetFiles(root, "*.*", SearchOption.AllDirectories))
             {
-                if (!path.EndsWith(".xls") && !path.EndsWith(".xlsx")) continue;
-                if (Path.GetFileName(path).StartsWith("~") || Path.GetFileName(path).StartsWith("__")) continue;
+                if (!IsLubanTableFile(path)) continue;
+                string name = Path.GetFileName(path);
+                if (name.StartsWith("~") || name.StartsWith("__")) continue;
                 _excelFiles.Add(path);
             }
+
+            // 按文件名排序（Ordinal 保证跨平台一致、大小写确定），避免文件系统返回顺序不稳定
+            _excelFiles.Sort((a, b) => string.Compare(Path.GetFileName(a), Path.GetFileName(b),
+                System.StringComparison.OrdinalIgnoreCase));
+        }
+
+        // 是否为 Luban 可接受的表格文件（扩展名匹配，忽略大小写）
+        private static bool IsLubanTableFile(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            foreach (var ext in LubanTableExtensions)
+            {
+                if (path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         // 确保用户可编辑配置副本存在：luban.conf 直接创建；Datas/Defines 缺失时才从包内补齐
@@ -483,8 +547,15 @@ namespace EasyFramework.Edit.Windows.Dataable
         [MenuItem(MenuItemToolkit.Utility + "📊 Start Datable (Luban)", false, MenuItemToolkit.UtilityPriority + 2)]
         private static void StartDatable()
         {
+            GenerateTables(null);
+        }
+
+        // 通用生成入口：传表全名列表执行导表；null/空 = 全量生成。返回是否成功。
+        // 任何模块都可调用；单表生成走临时精简表定义 + 临时 conf，原 __tables__.xlsx 不被修改。
+        public static bool GenerateTables(IReadOnlyList<string> tableFullNames)
+        {
             if (!DotNetToolkit.EnsureDotNetVersion(8, ToolSourceDir))
-                return;
+                return false;
 
             if (_config is null)
             {
@@ -495,7 +566,7 @@ namespace EasyFramework.Edit.Windows.Dataable
                     D.Warning(LC.Tr(
                         "[ DatableConfig ] 配置未生成, 请先生成相关配置。",
                         "[ DatableConfig ] Configuration not generated. Please generate the relevant configuration first."));
-                    return;
+                    return false;
                 }
             }
 
@@ -503,43 +574,135 @@ namespace EasyFramework.Edit.Windows.Dataable
             if (!Directory.Exists(sourcePath))
             {
                 D.Warning($"[ DatableConfigPanel ] Excel 源路径无效或未设置：{sourcePath}");
-                return;
+                return false;
             }
 
             string toolDir = ToolSourceDir;
-            string userConf = Path.Combine(ExcelFolderPath, "luban.conf");
+            string userConf = Path.Combine(ExcelFolderPath, LubanConfFileName);
             if (!File.Exists(userConf))
             {
                 D.Warning($"[ DatableConfigPanel ] 未找到用户配置副本：{userConf}，请重新打开面板以自动创建默认配置。");
-                return;
+                return false;
             }
 
-            string lubanDll = Path.Combine(toolDir, "Luban", "Luban.dll");
+            string lubanDll = Path.Combine(toolDir, "Luban", LubanDllFileName);
             string dataDir = ResolveOutputDir(_config.LubanDataPath);
             string codeDir = ResolveOutputDir(_config.LubanCodePath);
-            string[] args =
+
+            bool isFull = tableFullNames == null || tableFullNames.Count == 0;
+
+            // 单表生成：Luban 会清空 outputDataDir，且 schema 阶段会读 __tables__ 全部定义。
+            // 方案：精简表定义写到临时目录 + 生成指向它的临时 conf（绝对路径），原 __tables__.xlsx 全程不碰。
+            string tempRoot = isFull ? null : Path.Combine(Path.GetTempPath(), "EF_Datable_" + Guid.NewGuid().ToString("N"));
+            string outDataDir = isFull ? dataDir : Path.Combine(tempRoot, "data");
+            string outCodeDir = isFull ? codeDir : Path.Combine(tempRoot, "code");
+            string confForRun = userConf;
+
+            var args = new List<string>
             {
                 lubanDll,
                 "-t", ToTarget(_config.LubanDataTargetType),
                 "-c", "cs-bin",
                 "-d", ToDataType(_config.LubanDataType),
-                "--conf", userConf,
-                "-x", $"outputCodeDir={codeDir}",
-                "-x", $"outputDataDir={dataDir}",
+                "--conf", confForRun,
+                "-x", $"outputCodeDir={outCodeDir}",
+                "-x", $"outputDataDir={outDataDir}",
                 "-x", "lineEnding=CRLF"
             };
 
-            ClearOutputDirectory(dataDir);
-
-            var result = ProcessToolkit.RunCaptured("dotnet", toolDir, args);
-            if (result.ExitCode != 0)
+            try
             {
-                D.Error($"[ DatableConfigPanel ] Luban 执行失败，退出码 {result.ExitCode}。\n{result.Error}\n{result.Output}");
-                return;
-            }
+                string tablesPath = Path.Combine(sourcePath, TablesFileName);
+                if (!isFull)
+                {
+                    if (!File.Exists(tablesPath))
+                    {
+                        D.Warning($"[ DatableConfigPanel ] 未找到表定义文件：{tablesPath}");
+                        return false;
+                    }
 
-            EditorCommands.SaveAssets();
-            EditorCommands.Refresh();
+                    // -o 参数照常带上（过滤输出）
+                    foreach (var table in tableFullNames)
+                    {
+                        args.Add("-o");
+                        args.Add(table);
+                    }
+
+                    // 精简表定义 → 临时文件（原文件不动）
+                    string tempTables = Path.Combine(tempRoot, TablesFileName);
+                    if (!EasyFramework.Edit.XlsxRowAppender.CreateFilteredTablesWorkbook(tableFullNames, tempTables))
+                    {
+                        D.Warning("[ DatableConfigPanel ] 精简表定义失败，本次不生成。");
+                        return false;
+                    }
+
+                    // 临时 conf：所有路径转绝对路径，table 指向精简表
+                    confForRun = Path.Combine(tempRoot, LubanConfFileName);
+                    CreateTempConfig(userConf, sourcePath, tempTables, confForRun);
+                    int confIndex = args.IndexOf("--conf");
+                    if (confIndex >= 0 && confIndex + 1 < args.Count)
+                        args[confIndex + 1] = confForRun;
+                }
+                else
+                {
+                    // 全量生成：直接输出到正式目录，先清空
+                    ClearOutputDirectory(dataDir);
+                }
+
+                var result = ProcessToolkit.RunCaptured("dotnet", toolDir, args.ToArray());
+                if (result.ExitCode != 0)
+                {
+                    D.Error($"[ DatableConfigPanel ] Luban 执行失败，退出码 {result.ExitCode}。\n{result.Error}\n{result.Output}");
+                    return false;
+                }
+
+                // 单表生成成功：只把临时数据目录的产物合并回正式目录（覆盖同名，不删除其它表）
+                // 代码目录【不合并】：-o 生成的代码只含单表（DatableMgr 也只注册单表），
+                // 合并回去会破坏全量生成的代码注册表。单表改的是数据内容，表结构没变，代码保持全量时的版本即可。
+                if (!isFull)
+                    MergeOutput(outDataDir, dataDir);
+
+                EditorCommands.SaveAssets();
+                EditorCommands.Refresh();
+                return true;
+            }
+            finally
+            {
+                // 清理临时输出目录（含精简表定义与临时 conf）；原始 __tables__.xlsx 全程未被修改
+                if (!string.IsNullOrEmpty(tempRoot) && Directory.Exists(tempRoot))
+                    Directory.Delete(tempRoot, true);
+            }
+        }
+
+        // 把源目录的文件合并到目标目录：覆盖同名、保留目标中已有的其它文件；跳过 .meta
+        private static void MergeOutput(string sourceDir, string targetDir)
+        {
+            if (!Directory.Exists(sourceDir)) return;
+            Directory.CreateDirectory(targetDir);
+            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                if (file.EndsWith(".meta")) continue;
+                string relative = Path.GetRelativePath(sourceDir, file);
+                string dest = Path.Combine(targetDir, relative);
+                var destDir = Path.GetDirectoryName(dest);
+                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+                File.Copy(file, dest, true);
+            }
+        }
+
+        // 生成临时 luban.conf：基于用户配置，把所有 schema/data 路径改成绝对路径，table 指向精简表定义。
+        // 这样临时 conf 放任意目录都能正确定位，且原配置文件不动。
+        private static void CreateTempConfig(string sourceConf, string sourceRoot, string tempTables, string targetConf)
+        {
+            string text = File.ReadAllText(sourceConf);
+            // Defines / __tables__ / __beans__ / __enums__ 都是相对 sourceRoot 的路径
+            text = text.Replace("\"Defines\"", $"\"{Path.Combine(sourceRoot, "Defines").Replace('\\', '/')}\"");
+            text = text.Replace("\"Datas/__tables__.xlsx\"", $"\"{tempTables.Replace('\\', '/')}\"");
+            text = text.Replace("\"Datas/__beans__.xlsx\"", $"\"{Path.Combine(sourceRoot, "Datas", "__beans__.xlsx").Replace('\\', '/')}\"");
+            text = text.Replace("\"Datas/__enums__.xlsx\"", $"\"{Path.Combine(sourceRoot, "Datas", "__enums__.xlsx").Replace('\\', '/')}\"");
+            text = text.Replace("\"dataDir\": \"Datas\"", $"\"dataDir\": \"{Path.Combine(sourceRoot, "Datas").Replace('\\', '/')}\"");
+            File.WriteAllText(targetConf, text);
         }
     }
 }

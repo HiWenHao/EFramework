@@ -33,6 +33,31 @@ namespace EasyFramework.Edit
         // Luban bean 定义工作簿文件名（与表定义同目录、同生命周期）
         private const string BeansFileName = "__beans__.xlsx";
 
+        // Luban 枚举定义工作簿文件名
+        private const string EnumsFileName = "__enums__.xlsx";
+
+        /// <summary>
+        /// Luban 三配置文件标识：表定义 / bean 定义 / 枚举定义
+        /// <para>Luban config workbooks: table / bean / enum definitions.</para>
+        /// </summary>
+        public enum LubanConfigFile
+        {
+            /// <summary>表定义 __tables__.xlsx</summary>
+            Tables,
+            /// <summary>bean 定义 __beans__.xlsx</summary>
+            Beans,
+            /// <summary>枚举定义 __enums__.xlsx</summary>
+            Enums
+        }
+
+        // 配置文件标识 → 文件名
+        private static string ResolveFileName(LubanConfigFile file) => file switch
+        {
+            LubanConfigFile.Beans => BeansFileName,
+            LubanConfigFile.Enums => EnumsFileName,
+            _ => TablesFileName
+        };
+
         // __beans__.xlsx 字段区列位（字段区从 J 列开始，与 B 列的 bean 全名并存于同一工作簿）
         private const int ColBeanFieldName = 10;  // J：字段名
         private const int ColBeanFieldType = 12;  // L：字段类型
@@ -303,6 +328,123 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
+        /// 按数据源文件查找对应的表全名（读 __tables__.xlsx 的 E列 input 与 B列 full_name 配对）。
+        /// <para>Find table full names by data source file (pairs column E input with column B full_name).</para>
+        /// </summary>
+        /// <param name="inputFile">数据源：相对路径或纯文件名均可<para>Data source: relative path or bare file name.</para></param>
+        /// <returns>匹配的表全名列表（一个文件可对应多表）<para>Matched table full names (one file may map to several tables).</para></returns>
+        public static List<string> GetTableNamesByInput(string inputFile)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(inputFile)) return result;
+            if (!LoadWorkbook(TablesFileName, out var context)) return result;
+
+            var sheetData = context?.Sheet?.Root?.Element(context.SheetNs + "sheetData");
+            if (sheetData == null) return result;
+
+            var fullCol = ToColumnName(ColFullName);
+            var inputCol = ToColumnName(ColInput);
+            var normalizedFile = inputFile.Replace('\\', '/');
+            var fileName = Path.GetFileName(normalizedFile);
+
+            foreach (var row in sheetData.Elements(context.SheetNs + "row"))
+            {
+                if (GetRowNumber(row) <= HeaderRowCount) continue;
+
+                string fullName = null;
+                string input = null;
+                foreach (var cell in row.Elements(context.SheetNs + "c"))
+                {
+                    var col = CellColumn((string)cell.Attribute("r"));
+                    if (col != fullCol && col != inputCol) continue;
+                    var text = CellText(cell, context.SharedTexts);
+                    if (string.IsNullOrEmpty(text)) continue;
+                    if (col == fullCol) fullName = text;
+                    else input = text;
+                }
+
+                if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(input)) continue;
+
+                // E 列允许多个文件以逗号分隔，逐项比对完整路径或文件名
+                var sources = input.Split(',');
+                bool matched = false;
+                foreach (var source in sources)
+                {
+                    var trimmed = source.Trim().Replace('\\', '/');
+                    if (string.Equals(trimmed, normalizedFile, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(Path.GetFileName(trimmed), fileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (matched && !result.Contains(fullName))
+                    result.Add(fullName);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 生成只保留指定表定义的 __tables__.xlsx 副本（原文件不动）。
+        /// 删除所有表全名不在 keepFullNames 中的数据行，表头行保留；用于单表生成时绕过其它坏表定义。
+        /// <para>Create a filtered copy of __tables__.xlsx keeping only the given tables (original untouched).</para>
+        /// </summary>
+        /// <param name="keepFullNames">要保留的表全名列表<para>Table full names to keep</para></param>
+        /// <param name="targetPath">副本输出路径<para>Output path for the filtered copy</para></param>
+        /// <returns>true = 生成成功<para>true on success</para></returns>
+        public static bool CreateFilteredTablesWorkbook(IReadOnlyList<string> keepFullNames, string targetPath)
+        {
+            if (keepFullNames == null || keepFullNames.Count == 0)
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 精简失败：没有指定要保留的表",
+                    "[ XlsxRowAppender ] Filter failed: no tables specified to keep"));
+                return false;
+            }
+
+            if (!LoadWorkbook(TablesFileName, out var context)) return false;
+
+            try
+            {
+                var sheetData = context.Sheet.Root.Element(context.SheetNs + "sheetData");
+                if (sheetData == null) return false;
+
+                var fullCol = ToColumnName(ColFullName);
+                var rows = sheetData.Elements(context.SheetNs + "row").ToList();
+                int removed = 0;
+                foreach (var row in rows)
+                {
+                    if (GetRowNumber(row) <= HeaderRowCount) continue;
+
+                    string fullName = null;
+                    foreach (var cell in row.Elements(context.SheetNs + "c"))
+                    {
+                        if (CellColumn((string)cell.Attribute("r")) != fullCol) continue;
+                        fullName = CellText(cell, context.SharedTexts);
+                        break;
+                    }
+
+                    // 无表全名的行（空壳/注释）保留，避免误删结构行；有名字但不在保留集的删除
+                    if (string.IsNullOrEmpty(fullName)) continue;
+                    if (keepFullNames.Contains(fullName)) continue;
+
+                    row.Remove();
+                    removed++;
+                }
+
+                //D.Log($"[ XlsxRowAppender ] 精简表定义：移除 {removed} 行，保留 {keepFullNames.Count} 张表 → {targetPath}");
+                return WriteWorkbook(context, targetPath);
+            }
+            catch (Exception e)
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 精简表定义失败：{0}",
+                    "[ XlsxRowAppender ] Failed to filter table definitions: {0}", e.Message));
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 登记 Luban bean 定义（写入 __beans__.xlsx）
         /// <para>Registers a Luban bean definition into __beans__.xlsx.</para>
         /// <para>幂等（Ensure 语义）：bean 全名已存在时跳过并返回 true。字段按 Luban 约定分行：
@@ -378,6 +520,131 @@ namespace EasyFramework.Edit
                 return false;
             }
         }
+
+        #region 三文件通用 CRUD（Tables / Beans / Enums）
+
+        /// <summary>
+        ///  Luban 配置文件是否存在
+        /// <para>Whether the given Luban config workbook exists.</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        public static bool Exists(LubanConfigFile file)
+            => File.Exists(Path.Combine(Path.GetDirectoryName(ResolveTablesPath()) ?? ".", ResolveFileName(file)));
+
+        /// <summary>
+        /// 在指定配置文件中查找某列是否包含某值（表头行不参与）
+        /// <para>Check whether a column in the given workbook contains a value (header rows excluded).</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        /// <param name="columnIndex">列号（1-based）<para>Column index (1-based)</para></param>
+        /// <param name="value">匹配值<para>Value to match</para></param>
+        public static bool ContainsValue(LubanConfigFile file, int columnIndex, string value)
+        {
+            if (columnIndex < 1 || string.IsNullOrEmpty(value)) return false;
+            if (!LoadWorkbook(ResolveFileName(file), out var context)) return false;
+            return ColumnContains(context, columnIndex, value);
+        }
+
+        /// <summary>
+        /// 读取指定配置文件某列的所有非空值（去重、保序、跳过表头）
+        /// <para>Read all non-empty values of a column (deduplicated, ordered, header skipped).</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        /// <param name="columnIndex">列号（1-based）<para>Column index (1-based)</para></param>
+        public static List<string> ReadColumn(LubanConfigFile file, int columnIndex)
+        {
+            var result = new List<string>();
+            if (columnIndex < 1 || !LoadWorkbook(ResolveFileName(file), out var context)) return result;
+
+            var sheetData = context?.Sheet?.Root?.Element(context.SheetNs + "sheetData");
+            if (sheetData == null) return result;
+
+            var target = ToColumnName(columnIndex);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var row in sheetData.Elements(context.SheetNs + "row"))
+            {
+                if (GetRowNumber(row) <= HeaderRowCount) continue;
+                foreach (var cell in row.Elements(context.SheetNs + "c"))
+                {
+                    if (CellColumn((string)cell.Attribute("r")) != target) continue;
+                    var text = CellText(cell, context.SharedTexts);
+                    if (string.IsNullOrEmpty(text) || !seen.Add(text)) continue;
+                    result.Add(text);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 在指定配置文件追加一行（列号→值；uniqueColumn 用于查重，rowNumber=0 自动定位末行）
+        /// <para>Append a row to the given workbook.</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        /// <param name="cells">列号→值<para>Column index to value</para></param>
+        /// <param name="uniqueColumn">查重列<para>Uniqueness column</para></param>
+        /// <param name="rowNumber">目标行号，0=自动<para>Target row, 0 = auto</para></param>
+        public static bool AppendRow(LubanConfigFile file, IReadOnlyDictionary<int, object> cells,
+            int uniqueColumn, int rowNumber = 0)
+        {
+            if (cells == null || cells.Count == 0) return false;
+            if (uniqueColumn < 1 || !cells.ContainsKey(uniqueColumn)) return false;
+            foreach (var pair in cells)
+                if (pair.Value == null || !(pair.Value is int or string)) return false;
+
+            if (!LoadWorkbook(ResolveFileName(file), out var context)) return false;
+            if (ColumnContains(context, uniqueColumn, cells[uniqueColumn].ToString()))
+            {
+                D.Warning(LC.Tr("[ XlsxRowAppender ] 追加失败：第 {0} 列已存在「{1}」",
+                    "[ XlsxRowAppender ] Append failed: column {0} already contains '{1}'",
+                    uniqueColumn, cells[uniqueColumn]));
+                return false;
+            }
+            return WriteAppend(context, cells, rowNumber);
+        }
+
+        /// <summary>
+        /// 删除指定配置文件中「某列值等于给定值」的所有数据行（表头不参与）
+        /// <para>Delete rows whose column value matches, in the given workbook (header excluded).</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        /// <param name="columnIndex">列号（1-based）<para>Column index (1-based)</para></param>
+        /// <param name="value">匹配值<para>Value to match</para></param>
+        /// <returns>删除行数<para>Number of rows removed</para></returns>
+        public static int RemoveRows(LubanConfigFile file, int columnIndex, string value)
+        {
+            if (columnIndex < 1 || string.IsNullOrEmpty(value)) return 0;
+            if (!LoadWorkbook(ResolveFileName(file), out var context)) return 0;
+            try
+            {
+                int removed = RemoveRowsFromContext(context, columnIndex, value);
+                return removed > 0 && WriteWorkbook(context) ? removed : 0;
+            }
+            catch (Exception e)
+            {
+                D.Error(LC.Tr("[ XlsxRowAppender ] 删除失败：{0}", "[ XlsxRowAppender ] Remove failed: {0}", e.Message));
+                var tmp = context.Path + ".tmp";
+                if (File.Exists(tmp)) File.Delete(tmp);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 统计指定配置文件的数据行数（跳过表头）
+        /// <para>Count data rows in the given workbook (header excluded).</para>
+        /// </summary>
+        /// <param name="file">配置文件类型<para>Config file kind</para></param>
+        public static int CountDataRows(LubanConfigFile file)
+        {
+            if (!LoadWorkbook(ResolveFileName(file), out var context)) return 0;
+            var sheetData = context?.Sheet?.Root?.Element(context.SheetNs + "sheetData");
+            if (sheetData == null) return 0;
+            int count = 0;
+            foreach (var row in sheetData.Elements(context.SheetNs + "row"))
+                if (GetRowNumber(row) > HeaderRowCount && RowHasContent(row, context.SheetNs)) count++;
+            return count;
+        }
+
+        #endregion
 
         // 解析 Luban 表定义工作簿绝对路径：统一走 DatableConfig.ResolveSourcePath()（相对值按工程根归一化、目录必须存在），否则回落默认数据源目录
         private static string ResolveTablesPath()
@@ -660,9 +927,11 @@ namespace EasyFramework.Edit
                    || c.Element(ns + "is") != null);
 
         // 更新共享字符串计数并写回工作簿（临时文件 → 原子替换，不做备份）
-        private static bool WriteWorkbook(WorkbookContext context)
+        // targetPath 为空时写回 context.Path；否则写到指定路径（用于生成精简副本，不动原文件）
+        private static bool WriteWorkbook(WorkbookContext context, string targetPath = null)
         {
-            var tmpPath = context.Path + ".tmp";
+            string dest = string.IsNullOrEmpty(targetPath) ? context.Path : targetPath;
+            var tmpPath = dest + ".tmp";
             try
             {
                 // 共享字符串计数：uniqueCount = si 总数（必须准确），count = 全簿 t="s" 引用总数（重算，多行追加天然正确）
@@ -686,7 +955,11 @@ namespace EasyFramework.Edit
                     }
                 }
 
-                File.Replace(tmpPath, context.Path, null);
+                // 目标文件不存在时（生成精简副本）不能用 File.Replace，改用直接移动
+                if (File.Exists(dest))
+                    File.Replace(tmpPath, dest, null);
+                else
+                    File.Move(tmpPath, dest);
 
                 if (File.Exists(tmpPath)) File.Delete(tmpPath);
                 return true;

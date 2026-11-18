@@ -65,6 +65,14 @@
       ]
     },
     {
+      "name": "Datable.GenerateOne",
+      "desc": "只生成本表格的数据",
+      "array": [
+        "Generate",
+        "生成"
+      ]
+    },
+    {
       "name": "Datable.GeneratePlatform",
       "desc": "生成平台",
       "array": [
