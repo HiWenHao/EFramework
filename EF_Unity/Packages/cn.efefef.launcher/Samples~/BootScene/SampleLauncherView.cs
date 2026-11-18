@@ -40,10 +40,11 @@ namespace EFLauncherSample
 
         #region ILauncherView
 
-        public void OnStateChanged(LauncherState state, string tip)
+        public void OnStateChanged(LauncherState state)
         {
+            // Launcher 只给状态，展示文案由 View 解析（中英双语示例）
             if (_stateText != null)
-                _stateText.text = $"{state} · {tip}";
+                _stateText.text = $"{state} · {ResolveTip(state)}";
 
             if (_retryRoot != null && state != LauncherState.Failed)
                 _retryRoot.SetActive(false);
@@ -71,17 +72,17 @@ namespace EFLauncherSample
             }
         }
 
-        public void OnError(LauncherErrorCode code, string message, Action retry)
+        public void OnError(LauncherErrorCode code, Action retry)
         {
             _retryAction = retry;
 
             if (_stateText != null)
-                _stateText.text = $"启动失败 [{code}]\n{message}";
+                _stateText.text = $"启动失败 [{code}]\n{ResolveError(code)}";
 
             if (_retryRoot != null)
                 _retryRoot.SetActive(true);
 
-            D.Error($"[LauncherSample] {code}: {message}");
+            D.Error($"[LauncherSample] {code}: {ResolveError(code)}");
         }
 
         #endregion
@@ -162,6 +163,51 @@ namespace EFLauncherSample
                 _retryRoot.SetActive(false);
 
             retry?.Invoke();
+        }
+
+        #endregion
+
+        #region 文案解析
+
+        private static string ResolveTip(LauncherState state)
+        {
+            return state switch
+            {
+                LauncherState.Idle => "准备中 / Ready",
+                LauncherState.Booting => "初始化 / Initializing",
+                LauncherState.Initializing => "初始化资源系统 / Init assets",
+                LauncherState.CheckingVersion => "检查资源版本 / Check version",
+                LauncherState.Downloading => "更新资源 / Downloading",
+                LauncherState.LoadingMetadata => "加载 AOT 元数据 / AOT metadata",
+                LauncherState.LoadingHotfix => "加载热更程序集 / Hotfix assemblies",
+                LauncherState.Invoking => "启动游戏 / Starting",
+                LauncherState.Completed => "进入游戏 / Enter game",
+                LauncherState.Failed => "启动失败 / Failed",
+                LauncherState.Retrying => "准备重试 / Retrying",
+                LauncherState.WaitingForConfirm => "等待进入游戏 / Awaiting confirm",
+                _ => state.ToString(),
+            };
+        }
+
+        private static string ResolveError(LauncherErrorCode code)
+        {
+            return code switch
+            {
+                LauncherErrorCode.ConfigInvalid => "配置缺失或不合法 / Invalid config",
+                LauncherErrorCode.PackageInitFailed => "资源包初始化失败 / Package init failed",
+                LauncherErrorCode.VersionRequestFailed => "获取资源版本失败 / Version request failed",
+                LauncherErrorCode.ManifestUpdateFailed => "更新资源清单失败 / Manifest update failed",
+                LauncherErrorCode.DownloadFailed => "资源下载失败 / Download failed",
+                LauncherErrorCode.MetadataLoadFailed => "AOT 元数据加载失败 / Metadata load failed",
+                LauncherErrorCode.AssemblyLoadFailed => "热更程序集加载失败 / Assembly load failed",
+                LauncherErrorCode.EntryNotFound => "找不到热更入口 / Entry not found",
+                LauncherErrorCode.EntryThrew => "热更入口执行异常 / Entry threw",
+                LauncherErrorCode.HookFailed => "启动钩子执行异常 / Boot hook failed",
+                LauncherErrorCode.RetryExhausted => "重试次数已用尽 / Retries exhausted",
+                LauncherErrorCode.Unexpected => "启动流程出现未知异常 / Unexpected error",
+                LauncherErrorCode.ConfirmFailed => "进入确认钩子异常 / Confirm hook failed",
+                _ => code.ToString(),
+            };
         }
 
         #endregion

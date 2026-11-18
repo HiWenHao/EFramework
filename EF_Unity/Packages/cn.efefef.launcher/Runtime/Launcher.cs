@@ -36,6 +36,18 @@ namespace EasyFramework.Launcher
         [Header("配置 / Config")] [SerializeField]
         private LauncherConfig _config;
 
+        // 接口无法被 Unity 序列化，这里用 MonoBehaviour 暴露在 Inspector；Awake 里转型成接口。
+        // 留空时回退到 FindComponent 自动查找，行为与旧版一致。
+        [Header("界面与钩子 / View & hooks（留空则自动查找）")]
+        [SerializeField] [Tooltip("实现 ILauncherView 的组件；启动界面的状态/进度/失败反馈")]
+        private MonoBehaviour _viewRef;
+
+        [SerializeField] [Tooltip("实现 ILauncherHook 的组件；隐私协议/渠道 SDK/登录")]
+        private MonoBehaviour _hookRef;
+
+        [SerializeField] [Tooltip("实现 ILauncherEnterConfirm 的组件；留空则不启用进入游戏前确认闸门")]
+        private MonoBehaviour _enterConfirmRef;
+
         [Header("运行 / Runtime")] [SerializeField]
         private bool _runOnStart = true;
 
@@ -60,6 +72,7 @@ namespace EasyFramework.Launcher
 
         private ILauncherView _view;
         private ILauncherHook _hook;
+        private ILauncherEnterConfirm _enterConfirm;
         private ResourcePackage _package;
         private bool _running;
 
@@ -113,8 +126,9 @@ namespace EasyFramework.Launcher
 
         private void Awake()
         {
-            _view = FindComponent<ILauncherView>();
-            _hook = FindComponent<ILauncherHook>();
+            _view = ResolveRef<ILauncherView>(_viewRef, nameof(_viewRef));
+            _hook = ResolveRef<ILauncherHook>(_hookRef, nameof(_hookRef));
+            _enterConfirm = ResolveRef<ILauncherEnterConfirm>(_enterConfirmRef, nameof(_enterConfirmRef));
             _destroyToken = this.GetCancellationTokenOnDestroy();
 
             if (_view == null)
@@ -182,7 +196,7 @@ namespace EasyFramework.Launcher
                 string message = $"重试次数已用尽（{_retryCount}/{max}）";
                 D.Error($"{LogTag} 启动失败 [{LauncherErrorCode.RetryExhausted}] {message}");
                 SetState(LauncherState.Failed, message);
-                BroadcastError(LauncherErrorCode.RetryExhausted, message, NoopRetry);
+                BroadcastError(LauncherErrorCode.RetryExhausted, NoopRetry);
                 return;
             }
 
@@ -491,6 +505,29 @@ namespace EasyFramework.Launcher
             {
                 Fail(LauncherErrorCode.AssemblyLoadFailed, "没有任何热更程序集被加载，请检查配置");
                 return;
+            }
+
+            #endregion
+
+            #region 6.5 进入游戏前确认（可选）
+
+            if (_enterConfirm != null)
+            {
+                SetState(LauncherState.WaitingForConfirm, "等待进入游戏");
+                bool confirmed = false;
+                try
+                {
+                    _enterConfirm.OnReadyToEnter(() => confirmed = true);
+                }
+                catch (Exception e)
+                {
+                    Fail(LauncherErrorCode.ConfirmFailed, $"ILauncherEnterConfirm.OnReadyToEnter 抛出异常：{e.Message}");
+                    return;
+                }
+
+                // 与第 1 步 OnBoot 同一套轮询模式；token 随 GameObject 销毁自动取消，不会卡死
+                while (!confirmed)
+                    await UniTask.NextFrame(token);
             }
 
             #endregion
@@ -826,6 +863,8 @@ namespace EasyFramework.Launcher
 
         #region 状态与反馈
 
+        // tip 只写进日志：Launcher 是通用包，不把展示文案下发给界面或事件通道。
+        // 订阅方按 state / code 自行解析本地化文本，换包不换文案。
         private void SetState(LauncherState state, string tip)
         {
             State = state;
@@ -836,7 +875,7 @@ namespace EasyFramework.Launcher
                 // 事件通道与界面彼此隔离：任一订阅者抛异常都不能打断启动流程
                 try
                 {
-                    _stateEvent.Raise(new LauncherStatePayload(state, tip));
+                    _stateEvent.Raise(new LauncherStatePayload(state));
                 }
                 catch (Exception e)
                 {
@@ -849,7 +888,7 @@ namespace EasyFramework.Launcher
 
             try
             {
-                _view.OnStateChanged(state, tip);
+                _view.OnStateChanged(state);
             }
             catch (Exception e)
             {
@@ -893,20 +932,21 @@ namespace EasyFramework.Launcher
             SetState(LauncherState.Failed, message);
             Diagnose();
 
-            BroadcastError(code, message, Retry);
+            BroadcastError(code, Retry);
 
             if (_config != null && _config.AutoRetryOnFailure)
                 Retry();
         }
 
-        // 事件通道与界面收到同一份错误，任一订阅者抛异常都不影响另一方
-        private void BroadcastError(LauncherErrorCode code, string message, Action retry)
+        // 事件通道与界面收到同一份错误码，任一订阅者抛异常都不影响另一方。
+        // 诊断详情只在 D.Error 里输出，不下发给界面（界面按 code 自行解析展示文案）。
+        private void BroadcastError(LauncherErrorCode code, Action retry)
         {
             if (_errorEvent != null)
             {
                 try
                 {
-                    _errorEvent.Raise(new LauncherErrorPayload(code, message, retry));
+                    _errorEvent.Raise(new LauncherErrorPayload(code, retry));
                 }
                 catch (Exception e)
                 {
@@ -919,7 +959,7 @@ namespace EasyFramework.Launcher
 
             try
             {
-                _view.OnError(code, message, retry);
+                _view.OnError(code, retry);
             }
             catch (Exception e)
             {
@@ -956,6 +996,23 @@ namespace EasyFramework.Launcher
         private void Warn(string message)
         {
             D.Warning($"{LogTag} {message}");
+        }
+
+        /// <summary>
+        /// 解析契约实现：Inspector 显式引用优先，未指定时回退到自身/子物体自动查找。
+        /// 接口无法被 Unity 序列化，字段用 MonoBehaviour 承载，这里转型成接口。
+        /// </summary>
+        private T ResolveRef<T>(MonoBehaviour explicitRef, string fieldName) where T : class
+        {
+            if (explicitRef != null)
+            {
+                if (explicitRef is T typed)
+                    return typed;
+
+                Warn($"{fieldName} 引用的组件 [{explicitRef.GetType().Name}] 未实现 {typeof(T).Name}，已忽略，改用自动查找。");
+            }
+
+            return FindComponent<T>();
         }
 
         private T FindComponent<T>() where T : class

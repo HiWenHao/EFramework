@@ -23,20 +23,17 @@ namespace EasyFramework.Launcher
         /// <summary>失败原因<para>Failure reason.</para></summary>
         public LauncherErrorCode Code { get; }
 
-        /// <summary>诊断信息<para>Diagnostic message.</para></summary>
-        public string Message { get; }
-
         /// <summary>重试回调，可为空<para>Retry callback, may be null.</para></summary>
         public Action Retry { get; }
 
-        /// <summary>构造一次失败通知<para>Create a failure payload.</para></summary>
+        /// <summary>构造一次失败通知。只承载错误码，展示文案由订阅方按 Code 自行解析。
+        /// <para>Create a failure payload. Carries the error code only; subscribers resolve display text themselves.</para>
+        /// </summary>
         /// <param name="code">失败原因<para>Failure reason.</para></param>
-        /// <param name="message">诊断信息<para>Diagnostic message.</para></param>
-        /// <param name="retry">重试回调<para>Retry callback.</para></param>
-        public LauncherErrorPayload(LauncherErrorCode code, string message, Action retry)
+        /// <param name="retry">重试回调<para>Retry callback, may be null.</para></param>
+        public LauncherErrorPayload(LauncherErrorCode code, Action retry)
         {
             Code = code;
-            Message = message;
             Retry = retry;
         }
     }

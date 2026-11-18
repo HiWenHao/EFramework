@@ -2,9 +2,48 @@
 
 这个工程是 EFramework 的**能力展示实例**：用尽可能少的代码，演示框架各模块「解决什么问题、怎么调用」。
 
-融合后启动链收口为**单一入口场景** `Scenes/Launcher.unity`（Build Settings 索引 0），启动更新 → 补 AOT 元数据 → 加载热更程序集 → 调用 `EFExample.HotfixTest.Init()` → `UiSystem.OpenView<UiAView>()`。
+融合后启动链收口为**单一入口场景** `Scenes/Launcher.unity`（Build Settings 索引 0），启动更新 → 补 AOT 元数据 → 加载热更程序集 → **（可选）用户点击确认** → 调用 `EFExample.HotfixTest.Init()` → `UiSystem.OpenView<UiAView>()`。
 
 > 工程里带 `_Test`、`CahtView`、`Haoheng` 音效、`127.0.0.1` 地址等内容都是演示数据，不代表生产配置。
+
+### 进入游戏前确认闸门（可选）
+
+launcher 支持在**热更程序集加载完毕后、调用入口之前**插入一道用户确认：所有更新都已就绪，但直到用户点击才真正进入游戏。实现方式是场景里挂一个 `ILauncherEnterConfirm` 组件——**挂了才生效，不挂行为不变**。
+
+本工程的 [`LaunchViewTips.cs`](Scripts/LaunchViewTips.cs) 同时实现 `ILauncherView` + `ILauncherEnterConfirm`，闸门由它自带。接入步骤：
+
+1. 选中 `GameLauncher` → `LaunchViewTips` 组件 →「进入游戏确认」组
+2. 把一个 UGUI `Button` 拖到 **`GameStart`**（可选：`StartTip` 放"点击开始"提示物体）
+3. Play：更新完成后按钮才出现，点击后进入游戏（`LauncherState.WaitingForConfirm`）
+
+> **`GameStart` 留空时闸门自动放行**（日志给警告），不会卡住启动——先跑通流程再补 UI 也行。
+> 另有 [`EnterConfirmGate.cs`](Scripts/EnterConfirmGate.cs) 是独立闸门实现，未挂到场景，可作为"一个契约多种实现"的备选示例。
+
+`LaunchViewTips` 的全部 Inspector 字段均 null 安全，可按需逐项补齐：
+
+| 分组 | 字段 | 作用 |
+|---|---|---|
+| 状态/进度 | `Contents`、`Progress` | 已在场景绑定：状态文案、文件数 `3/12` |
+| 状态/进度 | `Bytes`、`ProgressBar` | 可选：字节进度 `1.2/4.0 MB`、进度条（场景已有 Slider 可直接拖） |
+| Logo | `LogoImage`、`LogoFadeDuration` | 可选：淡出图片与时长（默认 2s），留空跳过 |
+| 确认 | `GameStart`、`StartTip` | 可选：进入按钮与提示物体，留空自动放行 |
+| 失败 | `ErrorText`、`RetryButton` | 可选：错误文案与重试按钮，留空则只在 Console 报错 |
+
+> 闸门在 `Invoking` 之前，此时 `EFC` / `UiSystem` 尚未初始化，按钮只能用 AOT 侧 UGUI，不能用 EF.UI。
+
+### Launcher Inspector：显式指定契约实现
+
+`Launcher` 组件的 Inspector 上有一组 **View & hooks** 字段，可直接把实现拖进去：
+
+| 字段 | 对应契约 | 不填时 |
+|---|---|---|
+| `_viewRef` | `ILauncherView` | 自动在自身/子物体查找；都没有则无界面反馈 |
+| `_hookRef` | `ILauncherHook` | 自动查找；都没有则跳过项目钩子 |
+| `_enterConfirmRef` | `ILauncherEnterConfirm` | 自动查找；都没有则跳过确认闸门 |
+
+Unity 无法序列化接口，所以字段类型是 `MonoBehaviour`，`Awake` 里转型成接口。优先级：**显式引用 > 自动查找**；拖入的组件若未实现对应接口，会告警并回退到自动查找。
+
+当前场景这三个字段都留空，靠自动查找命中 `LaunchViewTips`（View + 确认闸门）/ `PermissionShow`（Hook）。你可以手动拖一次，直观看到绑定关系。
 
 ---
 
@@ -57,7 +96,8 @@ EF.QuitGame();     // 清内存 → 关管理器 → 退出
 **整个启动场景就是演示**：[`Scenes/Launcher.unity`](Scenes/Launcher.unity) 上 `GameLauncher` 挂 `Launcher` 组件，配置引用 [`FillLauncherConfig.asset`](Resources/FillLauncherConfig.asset)。
 
 - 更新进度 UI：[`LaunchViewTips.cs`](Scripts/LaunchViewTips.cs)
-- 权限/隐私 Hook：[`PermissionShow.cs`](Scripts/PermissionShow.cs)（`ILauncherView` / `ILauncherHook` 实现）
+- 权限/隐私 Hook：[`PermissionShow.cs`](Scripts/PermissionShow.cs)（`ILauncherHook` 实现）
+- 启动界面：[`LaunchViewTips.cs`](Scripts/LaunchViewTips.cs)（`ILauncherView` + `ILauncherEnterConfirm` 实现，状态/错误文案在此按码解析，Launcher 包本身不含展示文本）
 
 启动 8 阶段：`Booting → Initializing → CheckingVersion → Downloading → LoadingMetadata → LoadingHotfix → Invoking → Completed`。顺序不能换——AOT 元数据必须先于热更程序集加载。
 

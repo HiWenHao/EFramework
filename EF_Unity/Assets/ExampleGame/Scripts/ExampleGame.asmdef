@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "EF.Launcher",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

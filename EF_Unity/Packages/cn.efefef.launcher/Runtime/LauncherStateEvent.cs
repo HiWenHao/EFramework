@@ -22,16 +22,13 @@ namespace EasyFramework.Launcher
         /// <summary>当前状态<para>Current state.</para></summary>
         public LauncherState State { get; }
 
-        /// <summary>给玩家看的文案<para>Player-facing tip.</para></summary>
-        public string Tip { get; }
-
-        /// <summary>构造一次状态变更<para>Create a state change payload.</para></summary>
+        /// <summary>构造一次状态变更。只承载状态，展示文案由订阅方按 State 自行解析。
+        /// <para>Create a state change payload. Carries the state only; subscribers resolve display text themselves.</para>
+        /// </summary>
         /// <param name="state">当前状态<para>Current state.</para></param>
-        /// <param name="tip">给玩家看的文案<para>Player-facing tip.</para></param>
-        public LauncherStatePayload(LauncherState state, string tip)
+        public LauncherStatePayload(LauncherState state)
         {
             State = state;
-            Tip = tip;
         }
     }
 

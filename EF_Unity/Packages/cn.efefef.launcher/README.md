@@ -111,6 +111,18 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 `EF.UI` 在热更层，启动时它还不存在，用它必然 Missing Script。
 能用的只有 AOT 侧的 **UGUI / TextMeshPro**（`Launcher` 本身不依赖任何 UI 包，只暴露 `ILauncherView`）。
 
+**契约不传文案。** `Launcher` 是通用包，只下发结构化数据（状态 / 错误码 / 进度），界面文案由 `ILauncherView` 实现方自行解析：
+
+```csharp
+void OnStateChanged(LauncherState state);                    // 按 state 查表显示文案
+void OnProgress(long current, long total, long curBytes, long totalBytes);
+void OnError(LauncherErrorCode code, Action retry);          // 按 code 查表显示文案
+```
+
+`LauncherState` / `LauncherErrorCode` 的每个值都带中英双语注释，可直接作为文案表的基准。
+诊断详情（异常信息、资源名等）只写日志，不下发给界面——避免把内部实现暴露给玩家。
+`Samples~/BootScene/SampleLauncherView.cs` 里有一份现成的双语解析表可复制。
+
 **启动界面的收场**：`LauncherState.Completed` 就是收尾信号，收到后把 Canvas 关掉/淡出即可
 （`Samples~/BootScene` 里演示了这个做法）。注意别 `SetActive(false)` 整个物体——`Launcher`
 可能挂在同一个物体上；流程本身不会因此中断（UniTask 不受激活状态影响，只有销毁才取消），
