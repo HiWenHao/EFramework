@@ -29,7 +29,7 @@ namespace EasyFramework.Managers.Event
         /// 订阅令牌，用于取消订阅
         /// <para>Subscription token for unsubscription</para>
         /// </summary>
-        public IDisposable Token;
+        public EventSubscriptionToken Token;
 
         /// <summary>
         /// 分组名称，用于批量取消

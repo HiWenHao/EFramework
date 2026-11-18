@@ -19,14 +19,8 @@ namespace EasyFramework.Managers.Event
     /// </summary>
     internal class EventSubscriptions
     {
-        public readonly List<EventHandler> SyncHandlers;
-        public readonly List<EventAsyncHandler> AsyncHandlers;
-
-        public EventSubscriptions()
-        {
-            SyncHandlers = new List<EventHandler>();
-            AsyncHandlers = new List<EventAsyncHandler>();
-        }
+        public readonly List<EventHandler> SyncHandlers = new();
+        public readonly List<EventAsyncHandler> AsyncHandlers = new();
 
         /// <summary>
         /// 是否没有处理器
@@ -42,6 +36,22 @@ namespace EasyFramework.Managers.Event
         {
             SyncHandlers.Clear();
             AsyncHandlers.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 处理器快照：锁内拷贝、锁外执行，避免迭代中集合被修改
+    /// <para>Handler snapshot: copied under lock and executed outside, avoiding in-iteration collection mutation</para>
+    /// </summary>
+    internal sealed class EventHandlersSnapshot
+    {
+        public readonly EventHandler[] Sync;
+        public readonly EventAsyncHandler[] Async;
+
+        public EventHandlersSnapshot(EventHandler[] sync, EventAsyncHandler[] asyncHandlers)
+        {
+            Sync = sync;
+            Async = asyncHandlers;
         }
     }
 }

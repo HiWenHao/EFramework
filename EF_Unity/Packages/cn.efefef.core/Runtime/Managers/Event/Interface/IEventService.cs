@@ -44,6 +44,9 @@ namespace EasyFramework.Managers.Event
         /// <summary>取消指定分组的所有订阅（不论事件类型）</summary>
         void UnsubscribeGroup(string group);
 
+        /// <summary>取消指定事件类型下指定分组的订阅（同步+异步），返回移除数量</summary>
+        int UnsubscribeGroup<T>(string group) where T : struct;
+
         /// <summary>清空延迟队列（不发布）</summary>
         void ClearDelayedEvents();
     }

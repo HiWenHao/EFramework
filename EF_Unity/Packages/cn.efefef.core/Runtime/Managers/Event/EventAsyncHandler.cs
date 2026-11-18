@@ -30,7 +30,7 @@ namespace EasyFramework.Managers.Event
         /// 订阅令牌
         /// <para>Subscription token</para>
         /// </summary>
-        public IDisposable Token;
+        public EventSubscriptionToken Token;
 
         /// <summary>
         /// 分组名称

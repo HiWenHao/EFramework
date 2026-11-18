@@ -44,12 +44,22 @@ namespace EasyFramework.Managers.Event
         /// </summary>
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
             _disposed = true;
             if (_handler != null)
                 EventManager.Instance.RemoveHandler(_eventType, _handler);
             else if (_asyncHandler != null)
                 EventManager.Instance.RemoveAsyncHandler(_eventType, _asyncHandler);
+        }
+
+        /// <summary>
+        /// 使令牌失效，此后 Dispose 不再回查管理器（供批量取消与 Quit 调用）
+        /// <para>Invalidate the token so subsequent Dispose will not query the manager (used by bulk cancellation and Quit)</para>
+        /// </summary>
+        internal void Invalidate()
+        {
+            _disposed = true;
         }
     }
 }
