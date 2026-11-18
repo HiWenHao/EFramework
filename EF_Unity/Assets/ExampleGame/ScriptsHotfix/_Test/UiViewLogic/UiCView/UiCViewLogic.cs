@@ -10,6 +10,7 @@
  */
 
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Ui;
@@ -22,7 +23,8 @@ namespace EFExample
     public partial class UiCView : IUiEnable<int>
     {
         private int _viewId;
-        private int _timeEventId;
+        private float _elapsedTime;
+        private CancellationTokenSource _timerCts;
 
         private Action<bool> _timeEvent;
 
@@ -38,12 +40,24 @@ namespace EFExample
 
         void IUiView.Update(float elapse, float realElapse)
         {
-            Txt_TotalTime.text = $"当前游戏已运行 {EF.Timer.TotalTime} s\t 当前游戏已运行 {realElapse} s";
+            _elapsedTime += elapse;
+            Txt_TotalTime.text = $"当前游戏已运行 {_elapsedTime} s\t 当前游戏已运行 {realElapse} s";
         }
 
         void IUiView.Quit()
         {
+            CancelTimer();
             D.Warning("C quit");
+        }
+
+        // 取消当前计时器
+        private void CancelTimer()
+        {
+            if (_timerCts == null)
+                return;
+            _timerCts.Cancel();
+            _timerCts.Dispose();
+            _timerCts = null;
         }
 
         #region Button invoke event. Do not change here.不要更改这行 -- Auto
@@ -59,13 +73,30 @@ namespace EFExample
         private void OnClickBtn_AddTimeEvent()
         {
             D.Warning("Add timerEvent with 10.0f");
-            _timeEventId = EF.Timer.AddOnce(10f, _timeEvent);
+            CancelTimer();
+            var callback = _timeEvent;
+            _timerCts = new CancellationTokenSource();
+            DelayThenInvokeAsync(callback, _timerCts.Token).Forget();
+        }
+
+        // 延时 10 秒后触发回调，支持取消
+        private static async UniTaskVoid DelayThenInvokeAsync(Action<bool> callback, CancellationToken token)
+        {
+            try
+            {
+                await UniTask.Delay(10000, cancellationToken: token);
+                callback?.Invoke(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消是正常行为，静默完成
+            }
         }
 
         private void OnClickBtn_RemoveTimeEvent()
         {
             D.Log("OnClick:  Btn_RemoveTimeEvent");
-            EF.Timer.RemoveAt(_timeEventId);
+            CancelTimer();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

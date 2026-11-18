@@ -11,6 +11,7 @@
 
 using EasyFramework;
 using EasyFramework.Managers.Ui;
+using Cysharp.Threading.Tasks;
 
 namespace EFExample
 {
@@ -23,10 +24,14 @@ namespace EFExample
         {
             D.Log("TestBottomViewOne Awake");
 
-            EF.Timer.AddOnce(10.0f, delegate
-            {
-                UiSystem.Instance.OpenView<TestBottomViewTwo>();
-            });
+            OpenOtherAfterDelayAsync().Forget();
+        }
+
+        // 延时 10 秒后打开另一个视图
+        private static async UniTaskVoid OpenOtherAfterDelayAsync()
+        {
+            await UniTask.Delay(10000);
+            await UiSystem.Instance.OpenView<TestBottomViewTwo>();
         }
 
         void IUiView.Quit()

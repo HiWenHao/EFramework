@@ -63,12 +63,6 @@ public static class EF
     public static ToolManager Tool => ToolManager.Instance;
 
     /// <summary>
-    /// 时间管理器
-    /// <para>Time manager</para>
-    /// </summary>
-    public static TimeManager Timer => TimeManager.Instance;
-
-    /// <summary>
     /// 系统级事件管理器
     /// <para>System-level event manager</para>
     /// </summary>
