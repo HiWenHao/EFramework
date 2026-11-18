@@ -1,11 +1,11 @@
 /*
  * ================================================
- * Describe:      可Dispose的订阅令牌，Dispose时移除自身
+ * Describe:      可Dispose的泛型订阅令牌，Dispose时移除自身
  * Author:        Alvin5100
  * CreationTime:  2026-05-07 17:15:01
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-07 17:15:01
- * ScriptVersion: 0.1
+ * ModifyTime:    2026-11-18 14:02:00
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -14,24 +14,25 @@ using System;
 namespace EasyFramework.Managers.Event
 {
     /// <summary>
-    /// 可Dispose的订阅令牌，Dispose时移除自身
-    /// <para>Disposable subscription token that removes itself upon disposal</para>
+    /// 可Dispose的泛型订阅令牌，Dispose时移除自身
+    /// <para>Disposable generic subscription token that removes itself upon disposal</para>
     /// </summary>
-    internal class EventSubscriptionToken : IDisposable
+    /// <typeparam name="T">事件类型<para>Event type</para></typeparam>
+    internal sealed class EventSubscriptionToken<T> : IDisposable where T : struct
     {
         private readonly Type _eventType;
-        private readonly EventHandler _handler;
-        private readonly EventAsyncHandler _asyncHandler;
+        private readonly EventHandler<T> _handler;
+        private readonly EventAsyncHandler<T> _asyncHandler;
         private bool _disposed;
 
-        public EventSubscriptionToken(Type eventType, EventHandler handler)
+        public EventSubscriptionToken(Type eventType, EventHandler<T> handler)
         {
             _eventType = eventType;
             _handler = handler;
             _asyncHandler = null;
         }
 
-        public EventSubscriptionToken(Type eventType, EventAsyncHandler asyncHandler)
+        public EventSubscriptionToken(Type eventType, EventAsyncHandler<T> asyncHandler)
         {
             _eventType = eventType;
             _handler = null;
@@ -48,9 +49,9 @@ namespace EasyFramework.Managers.Event
                 return;
             _disposed = true;
             if (_handler != null)
-                EventManager.Instance.RemoveHandler(_eventType, _handler);
+                EventManager.Instance.RemoveHandler<T>(_eventType, _handler);
             else if (_asyncHandler != null)
-                EventManager.Instance.RemoveAsyncHandler(_eventType, _asyncHandler);
+                EventManager.Instance.RemoveAsyncHandler<T>(_eventType, _asyncHandler);
         }
 
         /// <summary>
