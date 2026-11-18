@@ -110,10 +110,21 @@ namespace EasyFramework.Edit
         /// <summary>单个包的键清单整合结果<para>Merged key list of one package.</para></summary>
         private sealed class PackageKeyList
         {
-            // 包目录（"Packages/cn.efefef.launcher" 形式的工程相对路径）
+            // 包目录绝对路径（键清单所在包根，用于报告定位）
             public string PackageDir;
+            // 逻辑包名（去 @hash，供检视窗口分组显示）
+            public string PackageName;
             // 键条目（name 需通过作用域键校验）
             public List<LegacyItemModel> Items;
+        }
+
+        /// <summary>包扫描目录信息<para>Package scan directory info.</para></summary>
+        private sealed class PackageDirInfo
+        {
+            // 磁盘绝对路径
+            public string Dir;
+            // 逻辑包名（无 @hash）
+            public string Name;
         }
 
         /// <summary>加载后的语言运行时数据<para>Loaded runtime language data.</para></summary>
@@ -218,8 +229,9 @@ namespace EasyFramework.Edit
                     _languages = new List<LanguageRuntime>();
                     LoadPackageLanguages();
                     LoadExternal();
-                    SortLanguages();
+                    // 兜底语言先建空表（缺失时）再排序，保证 zh/en 始终置前
                     EnsureFallbackLanguages();
+                    SortLanguages();
                     _loaded = true;
                     _languageVersion++; // 语言列表就绪，状态版本自增
                 }
@@ -243,7 +255,11 @@ namespace EasyFramework.Edit
         /// </remarks>
         private static void LoadPackageLanguages()
         {
-            var packageLists = CollectPackageKeyLists(new List<string>());
+            var warnings = new List<string>();
+            var packageLists = CollectPackageKeyLists(warnings);
+            // 零命中/坏文件告警必须可见：否则上层只看到「兜底语言缺失」而看不到扫描路径
+            foreach (string warning in warnings)
+                D.Warning("[ LC ] " + warning);
             foreach (var package in packageLists)
             {
                 foreach (var item in package.Items)
@@ -285,23 +301,34 @@ namespace EasyFramework.Edit
         /// <param name="text">文本<para>Text.</para></param>
         private static void AddPackageText(string code, string key, string text)
         {
-            var language = FindLanguage(code);
-            if (language == null)
-            {
-                // 显示名与系统语言标识与原内置语言文件一致（下拉显示与 Auto 推导依赖）
-                string displayName = code;
-                string systemLanguage = code;
-                if (string.Equals(code, nameof(SystemLanguage.Chinese), StringComparison.OrdinalIgnoreCase))
-                {
-                    displayName = "中文";
-                    systemLanguage = nameof(SystemLanguage.ChineseSimplified);
-                }
-                language = new LanguageRuntime { Code = code, DisplayName = displayName, SystemLanguage = systemLanguage };
-                _languages.Add(language);
-            }
+            var language = GetOrCreateLanguage(code);
             if (language.Texts.ContainsKey(key))
                 return; // CollectPackageKeyLists 已过滤跨包同名键，此处为防御
             language.Texts.Add(key, text);
+        }
+
+        /// <summary>
+        /// 查找或按内置元数据创建语言（中文显示名/系统标识与旧内置语言文件一致）
+        /// <para>Find a language or create it with builtin metadata (Chinese display name /
+        /// system identifier kept identical to the former builtin language files).</para>
+        /// </summary>
+        /// <param name="code">语言 code<para>Language code.</para></param>
+        /// <returns>已存在或新建的语言运行时数据<para>Existing or newly created language runtime.</para></returns>
+        private static LanguageRuntime GetOrCreateLanguage(string code)
+        {
+            var language = FindLanguage(code);
+            if (language != null)
+                return language;
+            string displayName = code;
+            string systemLanguage = code;
+            if (string.Equals(code, nameof(SystemLanguage.Chinese), StringComparison.OrdinalIgnoreCase))
+            {
+                displayName = "中文";
+                systemLanguage = nameof(SystemLanguage.ChineseSimplified);
+            }
+            language = new LanguageRuntime { Code = code, DisplayName = displayName, SystemLanguage = systemLanguage };
+            _languages.Add(language);
+            return language;
         }
 
         /// <summary>
@@ -351,12 +378,26 @@ namespace EasyFramework.Edit
         {
             string repairHint = Tr("请在任一包的 Editorlanguages.json 补回双语词条，并跑菜单 \"✍️ Update Edit Language\" 刷新。",
                 "Restore bilingual entries in any package's Editorlanguages.json, then run the menu \"✍️ Update Edit Language\" to refresh.");
-            if (FindLanguage(nameof(SystemLanguage.Chinese)) == null)
-                D.Error(Tr($"兜底语言 '{nameof(SystemLanguage.Chinese)}' 缺失：中文文案不可用。",
-                    $"Fallback language '{nameof(SystemLanguage.Chinese)}' is missing: Chinese texts are unavailable.") + " " + repairHint);
-            if (FindLanguage(nameof(SystemLanguage.English)) == null)
-                D.Error(Tr($"兜底语言 '{nameof(SystemLanguage.English)}' 缺失：未翻译词条无法回落英文。",
-                    $"Fallback language '{nameof(SystemLanguage.English)}' is missing: untranslated entries cannot fall back to English.") + " " + repairHint);
+            EnsureOneFallback(nameof(SystemLanguage.Chinese), "中文文案不可用。", "Chinese texts are unavailable.", repairHint);
+            EnsureOneFallback(nameof(SystemLanguage.English), "未翻译词条无法回落英文。", "untranslated entries cannot fall back to English.", repairHint);
+        }
+
+        /// <summary>
+        /// 兜底单个语言：缺失时建空表保证查询链/下拉结构完整，同时保留明确错误与修复指引
+        /// <para>Ensure one fallback language: create an empty table when missing so the query
+        /// chain and option list stay structurally complete, while keeping an explicit error.</para>
+        /// </summary>
+        /// <param name="code">语言 code<para>Language code.</para></param>
+        /// <param name="zhEffect">缺失后果（中文）<para>Missing consequence (Chinese).</para></param>
+        /// <param name="enEffect">缺失后果（英文）<para>Missing consequence (English).</para></param>
+        /// <param name="repairHint">修复指引<para>Repair hint.</para></param>
+        private static void EnsureOneFallback(string code, string zhEffect, string enEffect, string repairHint)
+        {
+            if (FindLanguage(code) != null)
+                return;
+            // 兜底空表：保证下拉与查询链不因整语言缺失而异常；仍报错提示源数据待修
+            GetOrCreateLanguage(code);
+            D.Error(Tr($"兜底语言 '{code}' 缺失：{zhEffect}", $"Fallback language '{code}' is missing: {enEffect}") + " " + repairHint);
         }
 
         /// <summary>
@@ -727,7 +768,7 @@ namespace EasyFramework.Edit
             var result = new List<LanguageEntryInfo>();
             foreach (var package in CollectPackageKeyLists(new List<string>()))
             {
-                string packageName = Path.GetFileName(package.PackageDir);
+                string packageName = package.PackageName ?? Path.GetFileName(package.PackageDir);
                 foreach (var item in package.Items)
                 {
                     TryGetListItemText(item, 1, out string chinese);
@@ -1000,9 +1041,78 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 扫描并整合全部包的双语键清单（Packages/*/Editor Resources/Description/Editorlanguages.json）
-        /// <para>Collect and merge every package's bilingual key list
-        /// (Packages/*/Editor Resources/Description/Editorlanguages.json).</para>
+        /// 收集所有可作为键清单来源的包目录（嵌入式 + Git UPM/PackageCache + registry + 本地 file:）
+        /// <para>Collect every package directory that may host a key list (embedded, Git UPM /
+        /// PackageCache, registry, local file:).</para>
+        /// </summary>
+        /// <remarks>
+        /// 主来源走 Unity 已注册包的 resolvedPath：Git/registry 包落在 Library/PackageCache，
+        /// 物理 Packages/ 下并不存在，旧扫描因此漏包并误报兜底语言缺失。物理 Packages/* 作为兜底
+        /// 保留（应对 PackageInfo 迟滞或手工放置），按绝对路径去重，不与已注册包重复。
+        /// <para>Registered packages' resolvedPath is the primary source — Git/registry packages
+        /// live under Library/PackageCache and are invisible to a physical Packages/ scan. Physical
+        /// Packages/* stays as a fallback and is deduped by absolute path.</para>
+        /// </remarks>
+        /// <param name="warnings">枚举过程中的告警<para>Warnings during enumeration.</para></param>
+        /// <returns>包目录信息列表（按绝对路径字母序）<para>Package dirs ordered by absolute path.</para></returns>
+        private static List<PackageDirInfo> CollectPackageDirs(List<string> warnings)
+        {
+            var dirs = new List<PackageDirInfo>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // 1) 主来源：Unity 已注册包（覆盖 embedded / Git UPM / registry / local file:）
+            try
+            {
+                foreach (var info in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
+                {
+                    string resolved = info?.resolvedPath;
+                    if (string.IsNullOrEmpty(resolved) || !Directory.Exists(resolved))
+                        continue;
+                    string full;
+                    try { full = Path.GetFullPath(resolved); }
+                    catch { continue; }
+                    if (!seen.Add(full))
+                        continue;
+                    dirs.Add(new PackageDirInfo { Dir = full, Name = info.name });
+                }
+            }
+            catch (Exception ex)
+            {
+                warnings.Add(Tr($"[ LC ] 枚举已注册包失败，回退物理 Packages 扫描：{ex.Message}",
+                    $"[ LC ] Failed to enumerate registered packages, falling back to physical Packages scan: {ex.Message}"));
+            }
+
+            // 2) 兜底：物理 Packages/*（PackageInfo 迟滞或手工放置时仍能发现）
+            string packagesRoot = GetPackagesRoot();
+            if (Directory.Exists(packagesRoot))
+            {
+                foreach (string dir in Directory.GetDirectories(packagesRoot))
+                {
+                    string full;
+                    try { full = Path.GetFullPath(dir); }
+                    catch { continue; }
+                    if (!seen.Add(full))
+                        continue;
+                    string name = Path.GetFileName(dir);
+                    int at = name.IndexOf('@');
+                    if (at > 0)
+                        name = name.Substring(0, at); // 去 UPM 缓存目录的 @hash 后缀
+                    dirs.Add(new PackageDirInfo { Dir = full, Name = name });
+                }
+            }
+            else
+            {
+                warnings.Add(Tr($"Packages 目录不存在：{packagesRoot}", $"Packages directory not found: {packagesRoot}"));
+            }
+
+            dirs.Sort((a, b) => string.Compare(a.Dir, b.Dir, StringComparison.Ordinal));
+            return dirs;
+        }
+
+        /// <summary>
+        /// 扫描并整合全部已注册包的双语键清单（嵌入式 + Git UPM/PackageCache + registry）
+        /// <para>Collect and merge every registered package's bilingual key list
+        /// (embedded + Git UPM/PackageCache + registry).</para>
         /// </summary>
         /// <param name="warnings">整合过程中的告警（坏文件 / 非法键 / 跨包同名键）<para>Warnings (broken files, invalid keys, cross-package duplicates).</para></param>
         /// <returns>按包分组的键清单（包路径字母序）<para>Key lists grouped by package (ordered by package path).</para></returns>
@@ -1015,18 +1125,11 @@ namespace EasyFramework.Edit
         {
             var results = new List<PackageKeyList>();
             var seenKeys = new Dictionary<string, LegacyItemModel>(StringComparer.Ordinal);   // 键 -> 首个条目（跨包去重/内容对比）
-            string packagesRoot = GetPackagesRoot();
-            if (!Directory.Exists(packagesRoot))
-            {
-                warnings.Add(Tr($"Packages 目录不存在：{packagesRoot}", $"Packages directory not found: {packagesRoot}"));
-                return results;
-            }
-
-            var packageDirs = new List<string>(Directory.GetDirectories(packagesRoot));
-            packageDirs.Sort((a, b) => string.Compare(a, b, StringComparison.Ordinal));
+            var packageDirs = CollectPackageDirs(warnings);
             int keyListCount = 0;
-            foreach (string packageDir in packageDirs)
+            foreach (var dirInfo in packageDirs)
             {
+                string packageDir = dirInfo.Dir;
                 string listPath = Path.Combine(packageDir, KeyListDir, KeyListFileName);
                 if (!File.Exists(listPath))
                     continue;
@@ -1071,12 +1174,17 @@ namespace EasyFramework.Edit
                 if (validItems.Count > 0)
                 {
                     keyListCount++;
-                    results.Add(new PackageKeyList { PackageDir = packageDir, Items = validItems });
+                    results.Add(new PackageKeyList
+                    {
+                        PackageDir = packageDir,
+                        PackageName = dirInfo.Name,
+                        Items = validItems,
+                    });
                 }
             }
             if (keyListCount == 0)
-                warnings.Add(Tr($"没有在任何包中找到键清单（{KeyListFileName}）——扫描根：{packagesRoot}。",
-                    $"No key list ({KeyListFileName}) found in any package — scan root: {packagesRoot}."));
+                warnings.Add(Tr($"没有在任何包中找到键清单（{KeyListFileName}）——已扫描 {packageDirs.Count} 个已注册包目录（含 PackageCache）。若 EF 以 Git URL 安装，请确认包内含 Editor Resources/Description/{KeyListFileName}。",
+                    $"No key list ({KeyListFileName}) found — scanned {packageDirs.Count} registered package dirs (incl. PackageCache). If EF was installed via Git URL, make sure the package ships Editor Resources/Description/{KeyListFileName}."));
             return results;
         }
 
