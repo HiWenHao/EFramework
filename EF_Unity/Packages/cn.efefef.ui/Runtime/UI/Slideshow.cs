@@ -26,27 +26,38 @@ namespace EasyFramework.Managers.Ui
     {
         private Slideshow() { }
 
+        [HeaderPro("行为", "Behavior", HeaderProType.Title)]
+        [HeaderPro("移动轴", "Move Axis", HeaderProType.Note)]
         [SerializeField]
         private AxisType _moveAxis;
 
+        [HeaderPro("循环方向", "Loop Direction", HeaderProType.Note)]
         [SerializeField]
         private LoopDirectionType _loopDirection = LoopDirectionType.LeftOrDown;
 
+        [HeaderPro("允许拖拽", "Can Drag", HeaderProType.Note)]
         [SerializeField]
         private bool _canDrag = false;
 
+        [HeaderPro("自动循环", "Auto Loop", HeaderProType.Note)]
         [SerializeField]
         private bool _autoLoop = true;
 
+        [HeaderPro("时序", "Timing", HeaderProType.Title)]
+        [HeaderPro("切换间隔（毫秒）", "Spacing Time (ms)", HeaderProType.Note)]
         [SerializeField]
         private int _spacingTime = 150;
 
+        [HeaderPro("循环间隔（秒）", "Loop Space Time (s)", HeaderProType.Note)]
         [SerializeField]
         private float _loopSpaceTime = 1;
 
+        [HeaderPro("布局", "Layout", HeaderProType.Title)]
+        [HeaderPro("元素间距", "Spacing", HeaderProType.Note)]
         [SerializeField]
         private Vector2 _spacing = new Vector2(10, 10);
 
+        [HeaderPro("元素尺寸", "Element Size", HeaderProType.Note)]
         [SerializeField]
         private Vector2 _elementSize = new Vector2(100, 100);
         public UnityEvent<int> OnIndexChanged { get; set; }

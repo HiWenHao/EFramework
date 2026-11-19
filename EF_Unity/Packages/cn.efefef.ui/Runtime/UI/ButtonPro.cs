@@ -28,18 +28,38 @@ namespace EasyFramework
     {
         protected ButtonPro() { }
         
-        [HeaderPro("事件", "Events"), Space] 
-        [SerializeField] private UnityEvent onClick;                        //  "单击"
-        [SerializeField] private UnityEvent onDoubleClick;                  //  "双击"
-        [SerializeField] private UnityEvent onLongPress;                    //  "长按（按住达到时间后触发一次）"
-        [SerializeField] private UnityEvent onKeepPress;                    //  "持续按压（按住期间按间隔触发）"
-        [SerializeField] private UnityEvent<MoveDirection> onDragging;      //  "朝某一方向拖拽"
-        
-        [HeaderPro("设置", "Settings"), Space] 
-        [Tooltip("双击最大间隔（秒）")] public float doubleClickInterval = 0.17f;
-        [Tooltip("长按触发时间（秒）")] public float longPressDuration = 0.5f;
-        [Tooltip("持续按压触发间隔（秒），0 表示每帧触发")] public float keepPressInterval = 0.1f;
-        [Tooltip("拖拽最小移动距离（像素），小于此值不触发拖拽")] public float dragThresholdPixels = 10f;
+        [HeaderPro("事件", "Events", HeaderProType.Title)]
+        [HeaderPro("单击", "Click", HeaderProType.Note)]
+        [SerializeField] private UnityEvent onClick;
+
+        [HeaderPro("双击", "Double Click", HeaderProType.Note)]
+        [SerializeField] private UnityEvent onDoubleClick;
+
+        [HeaderPro("长按", "Long Press", HeaderProType.Note)]
+        [SerializeField] private UnityEvent onLongPress;
+
+        [HeaderPro("持续按压", "Keep Press", HeaderProType.Note)]
+        [SerializeField] private UnityEvent onKeepPress;
+
+        [HeaderPro("拖拽", "Dragging", HeaderProType.Note)]
+        [SerializeField] private UnityEvent<MoveDirection> onDragging;
+
+        [HeaderPro("设置", "Settings", HeaderProType.Title)]
+        [HeaderPro("双击间隔（秒）", "Double Click Interval (s)", HeaderProType.Note)]
+        [Tooltip("双击最大间隔（秒）")]
+        public float doubleClickInterval = 0.17f;
+
+        [HeaderPro("长按时长（秒）", "Long Press Duration (s)", HeaderProType.Note)]
+        [Tooltip("长按触发时间（秒）")]
+        public float longPressDuration = 0.5f;
+
+        [HeaderPro("连按间隔（秒）", "Keep Press Interval (s)", HeaderProType.Note)]
+        [Tooltip("持续按压触发间隔（秒），0 表示每帧触发")]
+        public float keepPressInterval = 0.1f;
+
+        [HeaderPro("拖拽阈值（像素）", "Drag Threshold (px)", HeaderProType.Note)]
+        [Tooltip("拖拽最小移动距离（像素），小于此值不触发拖拽")]
+        public float dragThresholdPixels = 10f;
 
 
         private Coroutine _longPressCoroutine;      //  用于检测长按

@@ -28,61 +28,81 @@ namespace EasyFramework.Managers.Ui
     {
         #region Inspector - 序列化字段
 
-        [HeaderPro("======基础配置======", "======Base Config======")]
+        [HeaderPro("基础配置", "Base Config", HeaderProType.Title)]
+        [HeaderPro("滚动区域", "Scroll Rect", HeaderProType.Note)]
         [SerializeField, Tooltip("ScrollRect 组件（自动获取）")]
         private ScrollRect _scrollRect;
 
+        [HeaderPro("内容节点", "Content", HeaderProType.Note)]
         [SerializeField, Tooltip("Content 节点（自动获取）")]
         private RectTransform _content;
 
+        [HeaderPro("元素预制体", "Item Prefab", HeaderProType.Note)]
         [SerializeField, Tooltip("列表项 Prefab，需挂载 CircularScrollItem 或其子类")]
         private GameObject _itemPrefab;
 
+        [HeaderPro("元素尺寸", "Item Size", HeaderProType.Note)]
         [SerializeField, Tooltip("单个 Item 的高度（垂直模式）或宽度（水平模式）")]
         private float _itemSize = 100f;
 
-        [SerializeField, Tooltip("数据总条数")] private int _totalCount;
+        [HeaderPro("数据总数", "Total Count", HeaderProType.Note)]
+        [SerializeField, Tooltip("数据总条数")]
+        private int _totalCount;
 
+        [HeaderPro("缓冲数量", "Buffer Count", HeaderProType.Note)]
         [SerializeField, Tooltip("额外缓冲的 Item 数量（视口外预创建，减少闪烁）")]
         private int _bufferCount = 2;
 
-        [HeaderPro("======方向======", "======Direction======")]
+        [HeaderPro("方向", "Direction", HeaderProType.Title)]
+        [HeaderPro("滚动方向", "Scroll Direction", HeaderProType.Note)]
         [SerializeField, Tooltip("滚动方向，选择后自动配置 ScrollRect")]
         private Direction _direction = Direction.Vertical;
 
-        [HeaderPro("======循环模式======", "======Loop Mode======")]
+        [HeaderPro("循环模式", "Loop Mode", HeaderProType.Title)]
+        [HeaderPro("启用循环", "Enable Loop", HeaderProType.Note)]
         [SerializeField, Tooltip("是否开启循环滚动")]
         private bool _enableLoop = true;
 
-        [HeaderPro("======吸附配置======", "======Snap Config======")]
+        [HeaderPro("吸附配置", "Snap Config", HeaderProType.Title)]
+        [HeaderPro("吸附模式", "Snap Mode", HeaderProType.Note)]
         [SerializeField, Tooltip("吸附模式")]
         private SnapAlignment _snapMode = SnapAlignment.None;
 
-        [SerializeField, Tooltip("吸附动画时长（秒）")] private float _snapDuration = 0.25f;
+        [HeaderPro("吸附时长（秒）", "Snap Duration (s)", HeaderProType.Note)]
+        [SerializeField, Tooltip("吸附动画时长（秒）")]
+        private float _snapDuration = 0.25f;
 
+        [HeaderPro("吸附曲线", "Snap Curve", HeaderProType.Note)]
         [SerializeField, Tooltip("吸附缓动曲线")]
         private AnimationCurve _snapCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+        [HeaderPro("吸附速度阈值", "Snap Velocity Threshold", HeaderProType.Note)]
         [SerializeField, Tooltip("ScrollRect 惯性速度低于此值（像素/秒）时触发自动吸附，让滑动先自然减速再贴靠")]
         private float _snapVelocityThreshold = 50f;
 
-        [HeaderPro("======滚动动画======", "======Scroll Animation======")]
+        [HeaderPro("滚动动画", "Scroll Animation", HeaderProType.Title)]
+        [HeaderPro("默认滚动时长（秒）", "Default Scroll Duration (s)", HeaderProType.Note)]
         [SerializeField, Tooltip("ScrollToIndex 默认动画时长（秒）")]
         private float _defaultScrollDuration = 0.4f;
 
+        [HeaderPro("默认滚动曲线", "Default Scroll Curve", HeaderProType.Note)]
         [SerializeField, Tooltip("ScrollToIndex 默认缓动曲线")]
         private AnimationCurve _defaultScrollCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-        [HeaderPro("======事件======", "======Events======")]
+        [HeaderPro("事件", "Events", HeaderProType.Title)]
+        [HeaderPro("开始滚动", "Scroll Started", HeaderProType.Note)]
         [SerializeField, Tooltip("开始拖拽/滚动时触发")]
         private UnityEvent _onScrollStarted = new UnityEvent();
 
+        [HeaderPro("滚动结束", "Scroll Ended", HeaderProType.Note)]
         [SerializeField, Tooltip("滚动停止（含吸附完成）时触发，参数为当前选中索引")]
         private UnityEvent<int> _onScrollEnded = new UnityEvent<int>();
 
+        [HeaderPro("元素创建", "Item Created", HeaderProType.Note)]
         [SerializeField, Tooltip("Item 被创建/复用时触发，参数：Item GameObject、数据索引")]
         private UnityEvent<GameObject, int> _onItemCreated = new UnityEvent<GameObject, int>();
 
+        [HeaderPro("元素回收", "Item Recycled", HeaderProType.Note)]
         [SerializeField, Tooltip("Item 被回收时触发，参数：Item GameObject、数据索引")]
         private UnityEvent<GameObject, int> _onItemRecycled = new UnityEvent<GameObject, int>();
 

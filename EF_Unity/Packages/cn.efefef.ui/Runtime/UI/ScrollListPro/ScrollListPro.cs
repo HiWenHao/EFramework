@@ -50,44 +50,67 @@ namespace EasyFramework.Managers.Ui
 
         #region 序列化字段
 
-        [HeaderPro("引用", "quote")] [SerializeField]
+        [HeaderPro("引用", "References", HeaderProType.Title)]
+        [HeaderPro("滚动区域", "Scroll Rect", HeaderProType.Note)]
+        [SerializeField]
         private ScrollRect scrollRect;
 
+        [HeaderPro("元素预制体", "Item Prefab", HeaderProType.Note)]
         [SerializeField] private GameObject itemPrefab;
 
-        [HeaderPro("布局", "Layout")] [SerializeField]
+        [HeaderPro("布局", "Layout", HeaderProType.Title)]
+        [HeaderPro("滚动方向", "Direction", HeaderProType.Note)]
+        [SerializeField]
         private Direction direction = Direction.Vertical;
 
+        [HeaderPro("元素间距", "Item Spacing", HeaderProType.Note)]
         [SerializeField] [Min(0)] private float itemSpacing = 20f;
+        [HeaderPro("预分配数量", "Pool Pre-Alloc", HeaderProType.Note)]
         [SerializeField] [Min(1)] private int poolPreAlloc = 3;
+        [HeaderPro("视口缓冲数量", "Buffer Count", HeaderProType.Note)]
         [SerializeField] [Min(0)] private int bufferCount = 2;
 
-        [HeaderPro("预创建", "Pre-creation")]
+        [HeaderPro("预创建", "Pre-creation", HeaderProType.Title)]
+        [HeaderPro("预创建缓冲数量", "Pre-Create Buffer", HeaderProType.Note)]
         [Tooltip("在可视缓冲外提前创建并测量 item 的数量。\nitem 在进入视口之前就已布局锁定，避免滑动时卡顿。")]
         [SerializeField]
         [Min(0)]
         private int preCreateBuffer = 3;
 
-        [HeaderPro("自适应测量", "Auto Measure")]
+        [HeaderPro("自适应测量", "Auto Measure", HeaderProType.Title)]
+        [HeaderPro("自动重建布局", "Auto Rebuild Layout", HeaderProType.Note)]
         [Tooltip(
             "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField]
         private bool autoRebuildLayout;
 
-        [HeaderPro("动画", "Animation")] [Tooltip("item 尺寸变更时的过渡动画时长（秒）。0 = 无动画，直接瞬变。")] [SerializeField] [Range(0f, 1f)]
+        [HeaderPro("动画", "Animation", HeaderProType.Title)]
+        [HeaderPro("布局动画时长（秒）", "Layout Animation Duration (s)", HeaderProType.Note)]
+        [Tooltip("item 尺寸变更时的过渡动画时长（秒）。0 = 无动画，直接瞬变。")]
+        [SerializeField] [Range(0f, 1f)]
         private float layoutAnimationDuration = 0.15f;
 
-        [HeaderPro("吸附", "Adsorb")] [Tooltip("滚动停止时自动吸附到最近 item 的顶部/中间/底部。None = 不吸附。")] [SerializeField]
+        [HeaderPro("吸附", "Snap", HeaderProType.Title)]
+        [HeaderPro("吸附模式", "Snap Alignment", HeaderProType.Note)]
+        [Tooltip("滚动停止时自动吸附到最近 item 的顶部/中间/底部。None = 不吸附。")]
+        [SerializeField]
         private SnapAlignment snapAlignment = SnapAlignment.None;
 
+        [HeaderPro("吸附速度阈值", "Snap Velocity Threshold", HeaderProType.Note)]
         [SerializeField] [Range(0.5f, 50f)] private float snapVelocityThreshold = 5f;
 
+        [HeaderPro("吸附时长（秒）", "Snap Duration (s)", HeaderProType.Note)]
         [SerializeField] [Range(0.05f, 0.5f)] private float snapDuration = 0.15f;
 
-        [HeaderPro("对象池", "Object Pool")] [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")] [SerializeField]
+        [HeaderPro("对象池", "Object Pool", HeaderProType.Title)]
+        [HeaderPro("最大空闲数量", "Max Pool Size", HeaderProType.Note)]
+        [Tooltip("最大空闲对象数（超过则直接销毁）。≤0 = 无上限。")]
+        [SerializeField]
         private int poolMaxSize = 20;
 
-        [Tooltip("空闲超时销毁（秒）。≤0 = 永不销毁。PoolManager 每 5 秒自动清理一次。")] [SerializeField]
+        [HeaderPro("空闲超时（秒）", "Idle Timeout (s)", HeaderProType.Note)]
+        [Tooltip("空闲超时销毁（秒）。≤0 = 永不销毁。PoolManager 每 5 秒自动清理一次。")]
+        [SerializeField]
         private float poolIdleTimeout = 30f;
 
         #endregion

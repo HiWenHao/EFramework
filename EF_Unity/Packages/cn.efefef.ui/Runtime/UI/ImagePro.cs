@@ -46,8 +46,14 @@ namespace EasyFramework
     /// </summary>
     public class ImagePro : Image
     {
+        [HeaderPro("设置", "Settings", HeaderProType.Title)]
+        [HeaderPro("资源地址", "Address", HeaderProType.Note)]
         [SerializeField] private string address;
+
+        [HeaderPro("圆角弧度", "Corner Arc", HeaderProType.Note)]
         [SerializeField] [Range(0, 200)] private float cornerArc = 10;
+
+        [HeaderPro("材质类型", "Material Type", HeaderProType.Note)]
         [SerializeField] private ImageProMaterialType imageProMaterialType;
 
         private static readonly int Width = Shader.PropertyToID("_Width");

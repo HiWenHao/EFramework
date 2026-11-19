@@ -31,51 +31,74 @@ namespace EasyFramework.Managers.Ui
         {
 #if UNITY_EDITOR
             /// <summary> 是否禁用该绑定 </summary>
-            [SerializeField] public bool Disabled;
+            [HeaderPro("禁用", "Disabled", HeaderProType.Note)] [SerializeField]
+            public bool Disabled;
 #endif
             /// <summary> 组件全称 </summary>
-            [SerializeField] public string RealName;
+            [HeaderPro("组件全称", "Real Name", HeaderProType.Note)] [SerializeField]
+            public string RealName;
 
             /// <summary> 脚本名 - Resolve 的查找 key </summary>
-            [SerializeField] public string ScriptName;
+            [HeaderPro("脚本名", "Script Name", HeaderProType.Note)] [SerializeField]
+            public string ScriptName;
 
             /// <summary> 组件 </summary>
-            [SerializeField] public Component BindCom;
+            [HeaderPro("组件", "Component", HeaderProType.Note)] [SerializeField]
+            public Component BindCom;
         }
 
         /// <summary> 待绑定列表 </summary>
-        [SerializeField] public List<BindData> BindDatas = new List<BindData>();
+        [HeaderPro("绑定", "Binding", HeaderProType.Title)]
+        [HeaderPro("待绑定列表", "Bind Data List", HeaderProType.Note)]
+        [SerializeField]
+        public List<BindData> BindDatas = new List<BindData>();
 
         /// <summary> 页面自动销毁 </summary>
-        [SerializeField] public bool AutoDestroy = true;
+        [HeaderPro("生命周期", "Lifecycle", HeaderProType.Title)]
+        [HeaderPro("自动销毁", "Auto Destroy", HeaderProType.Note)]
+        [SerializeField]
+        public bool AutoDestroy = true;
 
         /// <summary> 自动销毁时间 </summary>
-        [SerializeField] public float AutoDestroyCountdown = 10.0f;
+        [HeaderPro("销毁倒计时（秒）", "Destroy Countdown (s)", HeaderProType.Note)] [SerializeField]
+        public float AutoDestroyCountdown = 10.0f;
 
         /// <summary> 页面类型 </summary>
-        [SerializeField] public UIViewType ViewType = UIViewType.Page;
+        [HeaderPro("视图", "View", HeaderProType.Title)]
+        [HeaderPro("页面类型", "View Type", HeaderProType.Note)]
+        [SerializeField]
+        public UIViewType ViewType = UIViewType.Page;
 
         /// <summary> 页面关闭时反播打开动画 </summary>
-        [SerializeField] public bool CloseViewReverseAnimation;
+        [HeaderPro("关闭反播动画", "Close Reverse Animation", HeaderProType.Note)] [SerializeField]
+        public bool CloseViewReverseAnimation;
 
         /// <summary> 页面打开时的动画类型 </summary>
-        [SerializeField] public UiViewAnimationType ViewAnimationType = UiViewAnimationType.Scale;
+        [HeaderPro("打开动画类型", "Open Animation Type", HeaderProType.Note)] [SerializeField]
+        public UiViewAnimationType ViewAnimationType = UiViewAnimationType.Scale;
 
 #if UNITY_EDITOR
         /// <summary> 命名空间 </summary>
-        [SerializeField] public string Namespace;
+        [HeaderPro("代码生成", "Code Generation", HeaderProType.Title)]
+        [HeaderPro("命名空间", "Namespace", HeaderProType.Note)]
+        [SerializeField]
+        public string Namespace;
 
         /// <summary> 脚本说明 </summary>
-        [SerializeField] public string Describe = "Please modify the description.";
+        [HeaderPro("脚本说明", "Description", HeaderProType.Note)] [SerializeField]
+        public string Describe = "Please modify the description.";
 
         /// <summary> 预制件路径 </summary>
-        [SerializeField] public string PrefabPath;
+        [HeaderPro("预制件路径", "Prefab Path", HeaderProType.Note)] [SerializeField]
+        public string PrefabPath;
 
         /// <summary> 脚本路径 </summary>
-        [SerializeField] public string ScriptPath;
+        [HeaderPro("脚本路径", "Script Path", HeaderProType.Note)] [SerializeField]
+        public string ScriptPath;
 
         /// <summary> 是否创建预制件 </summary>
-        [SerializeField] public bool CreatePrefab;
+        [HeaderPro("创建预制件", "Create Prefab", HeaderProType.Note)] [SerializeField]
+        public bool CreatePrefab;
 
         /// <summary> 绑定列表是否收起（编辑器 UI 状态，不序列化） </summary>
         [NonSerialized] public bool PackUpBindList = true;
