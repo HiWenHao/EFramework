@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: 132837564}
   - component: {fileID: 132837563}
   - component: {fileID: 132837566}
-  - component: {fileID: 132837565}
   m_Layer: 0
   m_Name: GameLauncher
   m_TagString: Untagged
@@ -155,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _config: {fileID: 11400000, guid: 6bd960c49f3204c458a6a70d58219faa, type: 2}
   _viewRef: {fileID: 132837566}
-  _hookRef: {fileID: 132837565}
+  _hookRef: {fileID: 0}
   _enterConfirmRef: {fileID: 132837566}
   _runOnStart: 1
   _dontDestroyOnLoad: 1
@@ -178,18 +177,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &132837565
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 132837562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2af206b0837df3b4a83292afe07ecaef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &132837566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,10 +513,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4438092637401446263, guid: 096c606d6097406478f6fd16b5505f33, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5784310513494297039, guid: 096c606d6097406478f6fd16b5505f33, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -540,10 +523,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5784310513494297039, guid: 096c606d6097406478f6fd16b5505f33, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6313312065843448036, guid: 096c606d6097406478f6fd16b5505f33, type: 3}
-      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
