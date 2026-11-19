@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root Version="v2025.8.28">
-  <Common ShowPackageView="False" ShowEditorAlias="False" UniqueBundleName="False" />
+  <Common ShowPackageView="False" ShowEditorAlias="True" UniqueBundleName="False" />
   <Package PackageName="DefaultPackage" PackageDesc="Test" AutoAddressable="True" SupportExtensionless="True" LocationToLower="False" IncludeAssetGUID="False" IgnoreRuleName="NormalIgnoreRule">
     <Group GroupActiveRule="EnableGroup" GroupName="Texture" GroupDesc="" AssetTags="">
-      <Collector CollectPath="Assets/ExampleGame/Resources/Texture/Freeui" CollectGUID="24dd9c859be3bd64bbe73026414a471a" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
-      <Collector CollectPath="Assets/ExampleGame/Resources/Texture/Game" CollectGUID="05074d4bbefd4e344b0aaa4abe171500" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+      <Collector CollectPath="Assets/ExampleGame/Arts/Texture" CollectGUID="359769c90cefe624c99bf64642fe3c18" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
     </Group>
     <Group GroupActiveRule="EnableGroup" GroupName="Audio" GroupDesc="" AssetTags="">
-      <Collector CollectPath="Assets/ExampleGame/Resources/Sources" CollectGUID="97adeb34d337f4a40967cd3f992053b7" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+      <Collector CollectPath="Assets/ExampleGame/Arts/Sources" CollectGUID="97adeb34d337f4a40967cd3f992053b7" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
     </Group>
     <Group GroupActiveRule="EnableGroup" GroupName="Code" GroupDesc="" AssetTags="">
-      <Collector CollectPath="Assets/AssetsHotfix" CollectGUID="937b0593a409953408bd4efba83fba28" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+      <Collector CollectPath="Assets/AssetsHotfix/FullCode" CollectGUID="e3aec4aabb9e6474f9d9e238365400e1" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
     </Group>
     <Group GroupActiveRule="EnableGroup" GroupName="UI" GroupDesc="" AssetTags="">
-      <Collector CollectPath="Assets/ExampleGame/Resources/Prefabs/UI" CollectGUID="09b33bafaca989445a79b96c761a410b" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackDirectory" FilterRule="CollectAll" UserData="" AssetTags="" />
+      <Collector CollectPath="Assets/ExampleGame/Arts/Prefabs/UI" CollectGUID="09b33bafaca989445a79b96c761a410b" CollectType="MainAssetCollector" AddressRule="AddressByFileName" PackRule="PackSeparately" FilterRule="CollectAll" UserData="" AssetTags="" />
     </Group>
   </Package>
 </root>
