@@ -84,62 +84,6 @@ namespace EasyFramework.Edit.Create
             SetUIObjectSize(img.transform, Vector2.zero, true);
         }
 
-        [MenuItem("GameObject/UI/EF/Scroll View Pro", false, 43)]
-        static void CreateUIScrollViewPro(MenuCommand menuCommand)
-        {
-            Transform tran = CreateUIObject(menuCommand, "Scroll View Pro", new[] { typeof(Image), typeof(ScrollRectPro)}).transform;
-            RectTransform scrollbar = CreateUIObject(menuCommand, "Scrollbar Pro", new[] { typeof(Image), typeof(ScrollbarPro)}, false).transform as RectTransform;
-
-            #region Content
-            RectTransform content = new GameObject("Content").AddComponent<RectTransform>();
-            Image element = new GameObject("Element").AddComponent<Image>();
-            Text text = new GameObject("Text").AddComponent<Text>();
-            content.transform.SetParent(tran);
-            element.transform.SetParent(content);
-            text.transform.SetParent(element.transform);
-
-            tran.GetComponent<ScrollRectPro>().Elemental = element.gameObject;
-            SetUIObjectSize(tran, Vector2.one * 220.0f);
-            SetUIObjectSize(content.transform, Vector2.right * -20.0f, true);
-            SetUIObjectSize(element.transform, new Vector2(200.0f, 50.0f));
-            SetUIObjectSize(text.transform, Vector2.zero, true);
-            SetTextDefault(text, "Scroll View Pro Item");
-            content.anchoredPosition = Vector2.right * -10.0f;
-            element.rectTransform.pivot = Vector2.up;
-            element.rectTransform.anchorMin = Vector2.up;
-            element.rectTransform.anchorMax = Vector2.up;
-            element.color = new Color(1.0f, 0.75f, 0.75f, 1.0f);
-            #endregion
-
-            #region Scrollbar
-            RectTransform sliding = new GameObject("Sliding Area").AddComponent<RectTransform>();
-            RectTransform handle = new GameObject("Handle").AddComponent<Image>().rectTransform;
-            scrollbar.SetParent(tran);
-            sliding.SetParent(scrollbar);
-            handle.SetParent(sliding);
-            
-            scrollbar.sizeDelta = Vector2.right * 20.0f;
-            scrollbar.anchorMin = Vector2.right;
-            scrollbar.anchorMax = Vector2.one;
-            scrollbar.pivot = new Vector2(1.0f, 0.5f);
-            scrollbar.anchoredPosition = Vector2.zero;
-
-            ScrollbarPro scroPro = scrollbar.gameObject.GetComponent<ScrollbarPro>();
-            scroPro.handleRect = handle;
-            scroPro.direction = ScrollbarPro.Direction.TopToBottom;
-            scrollbar.gameObject.GetComponent<Image>().color = Color.gray;
-            
-            sliding.anchorMin = Vector2.zero;
-            sliding.anchorMax = Vector2.one;
-            sliding.anchoredPosition = Vector2.zero;
-            sliding.sizeDelta = Vector2.one * -20.0f;
-
-            handle.anchorMin = Vector2.zero;
-            handle.anchorMax = Vector2.zero;
-            handle.sizeDelta = Vector2.one * 20.0f;
-            #endregion
-        }
-
         [MenuItem("GameObject/UI/EF/Slideshow", false, 44)]
         static void CreateUISlideshow(MenuCommand menuCommand)
         {

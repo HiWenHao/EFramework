@@ -90,29 +90,50 @@ namespace EasyFramework.Managers.Ui
 
         #region Event - 订阅事件
 
-        /// <summary>开始滚动</summary>
+        /// <summary>
+        /// 开始滚动
+        /// <para>Invoked when scrolling starts</para>
+        /// </summary>
         public UnityEvent OnScrollStarted => _onScrollStarted;
 
-        /// <summary>滚动结束 [int selectedIndex]</summary>
+        /// <summary>
+        /// 滚动结束 [int selectedIndex]
+        /// <para>Invoked when scrolling ends [int selectedIndex]</para>
+        /// </summary>
         public UnityEvent<int> OnScrollEnded => _onScrollEnded;
 
-        /// <summary>Item 创建/复用</summary>
+        /// <summary>
+        /// Item 创建/复用
+        /// <para>Invoked when an item is created or reused</para>
+        /// </summary>
         public UnityEvent<GameObject, int> OnItemCreated => _onItemCreated;
 
-        /// <summary>Item 回收</summary>
+        /// <summary>
+        /// Item 回收
+        /// <para>Invoked when an item is recycled</para>
+        /// </summary>
         public UnityEvent<GameObject, int> OnItemRecycled => _onItemRecycled;
 
         #endregion
 
         #region 公开属性
 
-        /// <summary>当前选中的数据索引</summary>
+        /// <summary>
+        /// 当前选中的数据索引
+        /// <para>Currently selected data index</para>
+        /// </summary>
         public int SelectedIndex { get; private set; }
 
-        /// <summary>当前数据总量</summary>
+        /// <summary>
+        /// 当前数据总量
+        /// <para>Current total data count</para>
+        /// </summary>
         public int TotalCount => _totalCount;
 
-        /// <summary>开启循环</summary>
+        /// <summary>
+        /// 开启循环
+        /// <para>Enable circular scrolling</para>
+        /// </summary>
         public bool EnableLoop
         {
             get => _enableLoop;
@@ -125,7 +146,10 @@ namespace EasyFramework.Managers.Ui
             }
         }
 
-        /// <summary>滚动方向</summary>
+        /// <summary>
+        /// 滚动方向
+        /// <para>Scroll direction</para>
+        /// </summary>
         public Direction ScrollDirection
         {
             get => _direction;
@@ -138,20 +162,32 @@ namespace EasyFramework.Managers.Ui
             }
         }
 
-        /// <summary>当前吸附模式</summary>
+        /// <summary>
+        /// 当前吸附模式
+        /// <para>Current snap alignment mode</para>
+        /// </summary>
         public SnapAlignment CurrentSnapMode
         {
             get => _snapMode;
             set => _snapMode = value;
         }
 
-        /// <summary>是否正在吸附动画中</summary>
+        /// <summary>
+        /// 是否正在吸附动画中
+        /// <para>Whether a snap animation is in progress</para>
+        /// </summary>
         public bool IsSnapping { get; private set; }
 
-        /// <summary>是否正在滚动动画中</summary>
+        /// <summary>
+        /// 是否正在滚动动画中
+        /// <para>Whether a scroll-to-target animation is in progress</para>
+        /// </summary>
         public bool IsScrollingToTarget { get; private set; }
 
-        /// <summary>当前活跃的 Item 数量</summary>
+        /// <summary>
+        /// 当前活跃的 Item 数量
+        /// <para>Number of currently active items</para>
+        /// </summary>
         public int ActiveItemCount => _activeSlots.Count;
 
         #endregion
@@ -252,8 +288,9 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 初始化列表
+        /// <para>Initialize the list.</para>
         /// </summary>
-        /// <param name="totalCount">数据总条数</param>
+        /// <param name="totalCount">数据总条数<para>Total data count</para></param>
         public void Initialize(int totalCount)
         {
             _totalCount = Mathf.Max(0, totalCount);
@@ -267,8 +304,9 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 重新初始化列表（数据条目数变更时调用）
+        /// <para>Reinitialize the list (call when the data count changes).</para>
         /// </summary>
-        /// <param name="totalCount">新的数据总条数</param>
+        /// <param name="totalCount">新的数据总条数<para>New total data count</para></param>
         public void Reinitialize(int totalCount)
         {
             int oldSelected = SelectedIndex;
@@ -284,8 +322,9 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 瞬间跳转到指定索引（无动画）
+        /// <para>Instantly jump to the specified index (no animation).</para>
         /// </summary>
-        /// <param name="index">目标数据索引</param>
+        /// <param name="index">目标数据索引<para>Target data index</para></param>
         public void JumpToIndex(int index)
         {
             if (_totalCount <= 0) return;
@@ -304,10 +343,11 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 动画滚动到指定索引
+        /// <para>Animate scrolling to the specified index.</para>
         /// </summary>
-        /// <param name="index">目标数据索引</param>
-        /// <param name="duration">动画时长（秒），-1 使用默认值</param>
-        /// <param name="curve">缓动曲线，null 使用默认曲线</param>
+        /// <param name="index">目标数据索引<para>Target data index</para></param>
+        /// <param name="duration">动画时长（秒），-1 使用默认值<para>Duration in seconds; -1 uses the default</para></param>
+        /// <param name="curve">缓动曲线，null 使用默认曲线<para>Easing curve; null uses the default</para></param>
         public void ScrollToIndex(int index, float duration = -1f, AnimationCurve curve = null)
         {
             if (_totalCount <= 0) return;
@@ -335,6 +375,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 获取指定数据索引的 Item（可能为 null，如果不在当前可见范围内）
+        /// <para>Get the item at the specified data index (may be null if not currently visible).</para>
         /// </summary>
         public CircularScrollItem GetItemAtDataIndex(int dataIndex)
         {
@@ -349,6 +390,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 刷新全部可见 Item（重新走 OnSetup）
+        /// <para>Refresh all visible items (re-runs OnSetup).</para>
         /// </summary>
         public void RefreshAllItems()
         {
@@ -360,6 +402,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 刷新指定索引的 Item
+        /// <para>Refresh the item at the specified data index.</para>
         /// </summary>
         public void RefreshItem(int dataIndex)
         {
@@ -372,6 +415,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 滚动到目标位置（像素），可用于微调
+        /// <para>Scroll to the target position in pixels; useful for fine-tuning.</para>
         /// </summary>
         public void ScrollToPosition(float position)
         {
@@ -450,9 +494,8 @@ namespace EasyFramework.Managers.Ui
             {
                 if (!_enableLoop && (vi < 0 || vi >= _totalCount)) continue;
 
-                int dataIdx = _enableLoop ? ModPositive(vi, _totalCount) : vi;
-                if (dataIdx >= 0 && dataIdx < _totalCount || _enableLoop)
-                    _neededIndices.Add(vi);
+                // 非循环模式已在上方过滤越界，循环模式本就允许任意虚拟索引 → 此处恒需创建
+                _neededIndices.Add(vi);
             }
 
             // 回收不再需要的 Item
@@ -871,6 +914,10 @@ namespace EasyFramework.Managers.Ui
             {
                 _scrollRect.horizontal = _direction == Direction.Horizontal;
                 _scrollRect.vertical = _direction == Direction.Vertical;
+
+                // 运行时自动获取 Content：打包后 OnValidate/Reset 不执行，此处是唯一的运行时兜底
+                if (_content == null)
+                    _content = _scrollRect.content;
             }
 
             if (_content == null) return;
