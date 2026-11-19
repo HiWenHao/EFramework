@@ -41,7 +41,7 @@ namespace Launch
     {
         #region Inspector 字段
 
-        [Header("状态 / 进度（Contents、Progress 已在场景中绑定，请勿改名）")] [SerializeField]
+        [Header("状态 / 进度")] [SerializeField]
         private Text Contents;
 
         [SerializeField] private Text Progress;

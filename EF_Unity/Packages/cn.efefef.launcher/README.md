@@ -76,10 +76,16 @@ Core 内 4 个 Mono 单例与 3 个 Inspector 不需要迁移。
 - **异常一律 `Fail(Unexpected, ...)`**：协程时代未捕获异常会被 Unity 吞掉、流程静默中断；
   改成 async 后由 `RunPipelineAsync` 统一捕获（`D.Exception` + `LauncherErrorCode.Unexpected`），
   `finally` 里复位 `_running`，重试按钮不会失效。
-- **日志开关分三层，别搞混**：
+- **只保留必要日志，且全部双语**：警告 / 错误 / 失败诊断（`D.Warning` / `D.Error` / `D.Exception` / `Diagnose`）按
+  `EFC.Projects.AutoLanguage / DisplayLanguage` 在 `L(zh, en)` 间择一输出（与 `PreferenceManager` 同口径）；
+  生命周期 info 日志（状态流转、已加载程序集、重试倒计时等）已删除，不再需要逐条开关。
+  ```csharp
+  private static bool IsZh() { /* AutoLanguage 时跟随 Application.systemLanguage */ }
+  private static string L(string zh, string en) => IsZh() ? zh : en;
+  ```
+- **日志开关两层，别搞混**：
   | 开关 | 作用范围 | 关掉后 |
   |---|---|---|
-  | `Launcher.Verbose`（Inspector 上叫 `_verbose`，默认 `true`） | 只有生命周期 info 日志（`Booting → Completed`、已加载程序集、重试倒计时） | 警告 / 错误 / 失败诊断照样输出 |
   | `D.Init(openLog)` | `D` 门面的**全局**总闸（本工程没调用过，走默认开启） | 全工程所有 `D.*` 静默 |
   | `EFC.EnableDebug` | ⚠️ 目前是**死属性**：声明了但没人读，不影响 `D` | — |
 
@@ -128,10 +134,9 @@ void OnError(LauncherErrorCode code, Action retry);          // 按 code 查表�
 可能挂在同一个物体上；流程本身不会因此中断（UniTask 不受激活状态影响，只有销毁才取消），
 但界面会一起失活，后续状态就没人显示了。
 
-**可选解耦：SO 事件通道。** 菜单 `Assets → Create → EF/Launcher/` 下可创建三个 ScriptableObject 资产
-（`LauncherStateEvent` / `LauncherProgressEvent` / `LauncherErrorEvent`），拖到 `Launcher` 的
-「事件通道」字段即可。状态、下载进度、失败会同时广播给通道订阅者与 `ILauncherView`，两者互不感知；
-通道只保存运行时订阅，不序列化任何场景对象引用。订阅务必在 `OnDisable` 里配对 `Unsubscribe`。
+**没有 SO 事件通道。** 启动是一次性流程，状态 / 进度 / 失败只走 `ILauncherView`，不再广播给额外的
+ScriptableObject 通道——少一层间接，也少一处订阅泄漏风险。需要跨系统监听启动时，直接实现
+`ILauncherView` 并由 `Launcher` 的 Inspector 注入（或留空自动查找）即可。
 
 ---
 

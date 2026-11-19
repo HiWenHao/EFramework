@@ -132,7 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 132837564}
   - component: {fileID: 132837563}
-  - component: {fileID: 132837566}
+  - component: {fileID: 132837565}
   m_Layer: 0
   m_Name: GameLauncher
   m_TagString: Untagged
@@ -153,15 +153,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _config: {fileID: 11400000, guid: 6bd960c49f3204c458a6a70d58219faa, type: 2}
-  _viewRef: {fileID: 132837566}
+  _viewRef: {fileID: 132837565}
   _hookRef: {fileID: 0}
-  _enterConfirmRef: {fileID: 132837566}
+  _enterConfirmRef: {fileID: 132837565}
   _runOnStart: 1
-  _dontDestroyOnLoad: 1
-  _verbose: 1
-  _stateEvent: {fileID: 0}
-  _progressEvent: {fileID: 0}
-  _errorEvent: {fileID: 0}
+  _dontDestroyOnLoad: 0
 --- !u!4 &132837564
 Transform:
   m_ObjectHideFlags: 0
@@ -177,7 +173,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &132837566
+--- !u!114 &132837565
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

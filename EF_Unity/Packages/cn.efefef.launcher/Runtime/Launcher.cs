@@ -31,33 +31,49 @@ namespace EasyFramework.Launcher
     {
         private const string LogTag = "[ Launcher ]";
 
+        #region 辅助类型
+
+        // 协程方法不能带 out 参数，用一个小载体把失败原因带回主流程
+        private sealed class StepResult
+        {
+            public bool Failed;
+            public LauncherErrorCode Code;
+            public string Error;
+        }
+
+        #endregion
+
         #region 字段
 
-        [Header("配置 / Config")] [SerializeField]
+        [HeaderPro("★ 配置 ★", "★ Config ★", HeaderProType.Title)] [SerializeField]
         private LauncherConfig _config;
 
-        // 接口无法被 Unity 序列化，这里用 MonoBehaviour 暴露在 Inspector；Awake 里转型成接口。
-        // 留空时回退到 FindComponent 自动查找，行为与旧版一致。
-        [Header("界面与钩子 / View & hooks（留空则自动查找）")]
-        [SerializeField] [Tooltip("实现 ILauncherView 的组件；启动界面的状态/进度/失败反馈")]
+        [HeaderPro("", "", HeaderProType.Separator), Space]
+        [HeaderPro("以 < ILauncher > 开头的接口注入（可选）",
+            "Interface injection starting with < ILauncher > (optional)", HeaderProType.Title)]
+        [HeaderPro("展示界面状态的 < ILauncherView >",
+            "The < ILauncherView > that displays the interface status")]
+        [SerializeField]
         private MonoBehaviour _viewRef;
 
-        [SerializeField] [Tooltip("实现 ILauncherHook 的组件；隐私协议/渠道 SDK/登录")]
+        [HeaderPro("架构启动前的 < ILauncherHook >",
+            "Before the architecture is activated, < ILauncherHook >")]
+        [SerializeField]
         private MonoBehaviour _hookRef;
 
-        [SerializeField] [Tooltip("实现 ILauncherEnterConfirm 的组件；留空则不启用进入游戏前确认闸门")]
+        [HeaderPro("进入热更前的 < ILauncherEnterConfirm >",
+            "Before enter the hotfix logic conduction, < ILauncherEnterConfirm >")]
+        [SerializeField]
         private MonoBehaviour _enterConfirmRef;
 
-        [Header("运行 / Runtime")] [SerializeField]
+        [HeaderPro("", "", HeaderProType.Separator), Space]
+        [HeaderPro("启动后的设置", "Settings after startup", HeaderProType.Title)]
+        [HeaderPro("立刻运行，也可以通过调用 Run() 运行", "Run immediately, can also by calling the Run()")]
+        [SerializeField]
         private bool _runOnStart = true;
 
-        [SerializeField] private bool _dontDestroyOnLoad = true;
-
-        [Header("事件通道 / Event channels（可选）")] [SerializeField]
-        private LauncherStateEvent _stateEvent;
-
-        [SerializeField] private LauncherProgressEvent _progressEvent;
-        [SerializeField] private LauncherErrorEvent _errorEvent;
+        [HeaderPro("加载后跨场景常驻", "Keep alive across scenes")] [SerializeField]
+        private bool _dontDestroyOnLoad = true;
 
         private const int DefaultMaxRetryCount = 3;
 
@@ -84,23 +100,13 @@ namespace EasyFramework.Launcher
         private CancellationToken _destroyToken;
         private float _startTime;
 
+        // 当前状态
+        private LauncherState _currentState = LauncherState.Idle;
+
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
 
         // Assembly.Load(byte[]) 每次都会创建新程序集；重试时重复加载同名 dll 会产生第二份类型身份
         private readonly HashSet<string> _loadedAssemblyNames = new HashSet<string>();
-
-        #endregion
-
-        #region 属性
-
-        /// <summary>当前状态</summary>
-        public LauncherState State { get; private set; } = LauncherState.Idle;
-
-        /// <summary>启动配置</summary>
-        public LauncherConfig Config => _config;
-
-        /// <summary>已加载的热更程序集（按配置顺序）</summary>
-        public IReadOnlyList<Assembly> HotfixAssemblies => _hotfixAssemblies;
 
         #endregion
 
@@ -144,7 +150,7 @@ namespace EasyFramework.Launcher
         public void Run()
         {
             // 退避等待期间 _running 已是 false，不拦 _retryScheduled 会并发跑起第二条管线
-            if (_running || _retryScheduled || State == LauncherState.Completed)
+            if (_running || _retryScheduled || _currentState == LauncherState.Completed)
                 return;
 
             RunPipelineAsync(_destroyToken).Forget();
@@ -173,7 +179,7 @@ namespace EasyFramework.Launcher
         /// </summary>
         public void Retry()
         {
-            if (_running || State == LauncherState.Completed || _retryScheduled)
+            if (_running || _currentState == LauncherState.Completed || _retryScheduled)
                 return;
 
             int max = _config != null && _config.MaxRetryCount > 0
@@ -237,7 +243,7 @@ namespace EasyFramework.Launcher
             }
             catch (OperationCanceledException)
             {
-                // GameObject 已销毁：静默收场，不再触碰已失效的 view / 事件通道
+                // GameObject 已销毁：静默收场，不再触碰已失效的 view
             }
             catch (Exception e)
             {
@@ -581,7 +587,7 @@ namespace EasyFramework.Launcher
             }
 
             if (_config.PlayMode != EPlayMode.HostPlayMode ||
-                !string.IsNullOrWhiteSpace(EFC.Projects.ResourcesArea.InnerUrl)) 
+                !string.IsNullOrWhiteSpace(EFC.Projects.ResourcesArea.InnerUrl))
                 return true;
 
             error = L("HostPlayMode 需要资源地址：请在 ProjectConfig.ResourcesArea 里填内网地址" +
@@ -709,7 +715,6 @@ namespace EasyFramework.Launcher
                 $"(often after .dll.bytes re-import changes the .meta guid). {loaded} loaded. " +
                 "Rebind them in LauncherConfig, or clear AotMetadataDlls to skip explicitly.");
             return false;
-
         }
 
         // 反射调用热更入口。入口返回 IEnumerator / Task 时等它跑完再标 Completed，
@@ -863,24 +868,11 @@ namespace EasyFramework.Launcher
 
         #region 状态与反馈
 
-        // Launcher 是通用包，不把展示文案下发给界面或事件通道；
-        // 订阅方按 state / code 自行解析本地化文本，换包不换文案。
+        // Launcher 是通用包，不把展示文案下发给界面；
+        // 订阅方按 state 自行解析本地化文本，换包不换文案。
         private void SetState(LauncherState state)
         {
-            State = state;
-
-            if (_stateEvent != null)
-            {
-                // 事件通道与界面彼此隔离：任一订阅者抛异常都不能打断启动流程
-                try
-                {
-                    _stateEvent.Raise(new LauncherStatePayload(state));
-                }
-                catch (Exception e)
-                {
-                    D.Exception(e);
-                }
-            }
+            _currentState = state;
 
             if (_view == null)
                 return;
@@ -897,19 +889,6 @@ namespace EasyFramework.Launcher
 
         private void ReportProgress(long currentCount, long totalCount, long currentBytes, long totalBytes)
         {
-            if (_progressEvent != null)
-            {
-                try
-                {
-                    _progressEvent.Raise(
-                        new LauncherProgressPayload(currentCount, totalCount, currentBytes, totalBytes));
-                }
-                catch (Exception e)
-                {
-                    D.Exception(e);
-                }
-            }
-
             if (_view == null)
                 return;
 
@@ -927,7 +906,7 @@ namespace EasyFramework.Launcher
         {
             _running = false;
             D.Error($"{LogTag} {L("启动失败", "Boot failed")} [{code}] {message}");
-            // 状态必须走 SetState：直接赋属性会让事件通道永远收不到 Failed，埋点与独立加载屏会停在上一阶段
+            // 状态必须走 SetState：直接赋属性会让界面收不到 Failed，独立加载屏会停在上一阶段
             SetState(LauncherState.Failed);
             Diagnose();
 
@@ -937,22 +916,10 @@ namespace EasyFramework.Launcher
                 Retry();
         }
 
-        // 事件通道与界面收到同一份错误码，任一订阅者抛异常都不影响另一方。
+        // 错误码只下发给 ILauncherView，界面抛异常不影响启动流程。
         // 诊断详情只在 D.Error 里输出，不下发给界面（界面按 code 自行解析展示文案）。
         private void BroadcastError(LauncherErrorCode code, Action retry)
         {
-            if (_errorEvent != null)
-            {
-                try
-                {
-                    _errorEvent.Raise(new LauncherErrorPayload(code, retry));
-                }
-                catch (Exception e)
-                {
-                    D.Exception(e);
-                }
-            }
-
             if (_view == null)
                 return;
 
@@ -971,7 +938,7 @@ namespace EasyFramework.Launcher
         {
             float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - _startTime);
             D.Log($"{LogTag} {L("诊断", "Diagnose")} | {L("版本", "Version")}={Application.version} " +
-                  $"{L("状态", "State")}={State} " +
+                  $"{L("状态", "State")}={_currentState} " +
                   $"{L("已加载热更程序集", "Hotfix assemblies")}={_hotfixAssemblies.Count} " +
                   $"{L("重试", "Retries")}={_retryCount} {L("耗时", "Elapsed")}={elapsed:0.0}s " +
                   $"CoreReady={EFC.Projects}");
@@ -1025,18 +992,6 @@ namespace EasyFramework.Launcher
             }
 
             return null;
-        }
-
-        #endregion
-
-        #region 辅助类型
-
-        // 协程方法不能带 out 参数，用一个小载体把失败原因带回主流程
-        private sealed class StepResult
-        {
-            public bool Failed;
-            public LauncherErrorCode Code;
-            public string Error;
         }
 
         #endregion
