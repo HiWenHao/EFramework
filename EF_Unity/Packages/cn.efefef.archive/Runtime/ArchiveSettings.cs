@@ -13,9 +13,7 @@
 
 // HeaderProAttribute 虽命名空间为 EasyFramework.Edit，但实际定义在
 // cn.efefef.core/Runtime 程序集中（PropertyAttribute 子类），Runtime 安全。
-#if UNITY_EDITOR
-using EasyFramework.Edit;
-#endif
+
 using UnityEngine;
 
 namespace EasyFramework.Systems.Archive

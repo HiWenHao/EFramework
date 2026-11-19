@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;

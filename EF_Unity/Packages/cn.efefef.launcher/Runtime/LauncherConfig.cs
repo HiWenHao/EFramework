@@ -3,14 +3,13 @@
  * Describe:        This script is used to store the launcher settings.
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
- * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-18 22:12:00
- * ScriptVersion:   0.3
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-11-19 11:42:00
+ * ScriptVersion:   0.4
  * ================================================
  */
 
 using System;
-using EasyFramework.Edit;
 using UnityEngine;
 using YooAsset;
 
@@ -23,16 +22,16 @@ namespace EasyFramework.Launcher
     [Serializable]
     public sealed class HotUpdateDllEntry
     {
-        [HeaderPro("名称（建议与 dll 同名）", "Name (match the dll name)")]
+        [HeaderPro("名称（建议与 dll 同名）", "Name (match the dll name)", HeaderProType.Note)]
         public string Name = string.Empty;
 
-        [HeaderPro("定位地址（空则用兜底资源）", "Location (empty uses fallback)")]
+        [HeaderPro("定位地址（空则用兜底资源）", "Location (empty uses fallback)", HeaderProType.Note)]
         public string Location = string.Empty;
 
-        [HeaderPro("随包兜底资源（编辑器模拟 / 离线包）", "Bundled fallback (simulate / offline)")]
+        [HeaderPro("随包兜底资源（编辑器模拟 / 离线包）", "Bundled fallback (simulate / offline)", HeaderProType.Note)]
         public TextAsset FallbackAsset;
 
-        [HeaderPro("启用", "Enabled")] public bool Enabled = true;
+        [HeaderPro("启用", "Enabled", HeaderProType.Note)] public bool Enabled = true;
     }
 
     /// <summary>
@@ -44,52 +43,57 @@ namespace EasyFramework.Launcher
     {
         #region 资源包 / Package
 
-        [HeaderPro("资源包 · 运行模式（编辑器模拟 / 出包主机）", "Package · play mode (simulate / host)")]
+        // 每个分组起点：横线 + 加粗暖黄标题；组内说明用 Note，关键约束用 BoldNote
+        [HeaderPro("", "", HeaderProType.Separator)]
+        [HeaderPro("资源包 · 运行模式（编辑器模拟 / 出包主机）", "Package · play mode (simulate / host)", HeaderProType.Title)]
         public EPlayMode PlayMode = EPlayMode.HostPlayMode;
 
-        [HeaderPro("资源包名（与构建配置一致）", "Package name (match build config)")]
+        [HeaderPro("资源包名（与构建配置一致）", "Package name (match build config)", HeaderProType.Note)]
         public string PackageName = "DefaultPackage";
 
-        [Min(1), HeaderPro("请求超时（秒）", "Request timeout (s)")]
+        [HeaderPro("请求超时（秒）", "Request timeout (s)", HeaderProType.Note)]
         public int TimeoutSeconds = 60;
 
-        [Min(1), HeaderPro("最大并发下载数", "Max concurrent downloads")]
+        [HeaderPro("最大并发下载数", "Max concurrent downloads", HeaderProType.Note)]
         public int DownloadingMaxNumber = 10;
 
-        [Min(0), HeaderPro("单文件下载重试次数", "Per-file retry count")]
+        [HeaderPro("单文件下载重试次数", "Per-file retry count", HeaderProType.Note)]
         public int FailedTryAgain = 3;
 
         #endregion
 
         #region 重试 / Retry
 
-        [Min(0), HeaderPro("重试 · 最大次数（0 = 默认）", "Retry · max count (0 = default)")]
+        [HeaderPro("", "", HeaderProType.Separator)]
+        [HeaderPro("重试 · 最大次数（0 = 默认）", "Retry · max count (0 = default)", HeaderProType.Title)]
         public int MaxRetryCount = 0;
 
-        [Min(0), HeaderPro("重试间隔（秒，0 = 默认；首次不等待）", "Retry delay (s, 0 = default; no wait on first)")]
+        [HeaderPro("重试间隔（秒，0 = 默认；首次不等待）", "Retry delay (s, 0 = default; no wait on first)", HeaderProType.Note)]
         public float RetryDelaySeconds = 0f;
 
-        [HeaderPro("失败后自动退避重试（默认关，通常由界面触发）", "Auto retry with backoff (off by default, UI-triggered)")]
+        [HeaderPro("失败后自动退避重试（默认关，通常由界面触发）", "Auto retry with backoff (off by default, UI-triggered)", HeaderProType.BoldNote)]
         public bool AutoRetryOnFailure = false;
 
         #endregion
 
         #region 程序集 / Assemblies
 
-        [HeaderPro("AOT 元数据（与 HybridCLR patchAOTAssemblies 一致）", "AOT metadata (match HybridCLR patchAOTAssemblies)")]
+        [HeaderPro("", "", HeaderProType.Separator)]
+        [HeaderPro("AOT 元数据（与 HybridCLR patchAOTAssemblies 一致）", "AOT metadata (match HybridCLR patchAOTAssemblies)", HeaderProType.Title)]
         public TextAsset[] AotMetadataDlls = Array.Empty<TextAsset>();
 
-        [HeaderPro("热更程序集（顺序 = 拓扑加载序，被依赖者在前）", "Hotfix assemblies (topological load order)")]
+        [HeaderPro("热更程序集（顺序 = 拓扑加载序，被依赖者在前）", "Hotfix assemblies (topological load order)", HeaderProType.BoldNote)]
         public HotUpdateDllEntry[] HotfixDlls = Array.Empty<HotUpdateDllEntry>();
 
         #endregion
 
         #region 入口 / Entry
 
-        [HeaderPro("热更入口 · 类型全名（如 EFExample.HotfixTest）", "Entry · type full name (e.g. EFExample.HotfixTest)")]
+        [HeaderPro("", "", HeaderProType.Separator)]
+        [HeaderPro("热更入口 · 类型全名（如 EFExample.HotfixTest）", "Entry · type full name (e.g. EFExample.HotfixTest)", HeaderProType.Title)]
         public string EntryType = string.Empty;
 
-        [HeaderPro("入口方法（public/private static 无参）", "Entry method (public/private static, no args)")]
+        [HeaderPro("入口方法（public/private static 无参）", "Entry method (public/private static, no args)", HeaderProType.BoldNote)]
         public string EntryMethod = "Init";
 
         #endregion

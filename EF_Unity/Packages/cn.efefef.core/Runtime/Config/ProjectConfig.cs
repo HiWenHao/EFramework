@@ -10,7 +10,6 @@
  */
 
 using System;
-using EasyFramework.Edit;
 using UnityEngine;
 
 namespace EasyFramework

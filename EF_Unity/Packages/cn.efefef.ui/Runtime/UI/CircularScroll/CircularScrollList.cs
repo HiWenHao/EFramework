@@ -12,7 +12,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using EasyFramework.Edit;
 using EasyFramework.Managers.Pool;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;

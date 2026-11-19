@@ -11,7 +11,6 @@
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Edit;
 using UnityEngine;
 
 namespace EasyFramework.Systems.RedDot

@@ -4,8 +4,8 @@
  * Author:          Alvin8412
  * CreationTime:    2026-11-14 15:58:00
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-17 11:20:00
- * ScriptVersion:   0.4
+ * ModifyTime:      2026-11-19 10:50:00
+ * ScriptVersion:   0.5
  * ================================================
  */
 
@@ -52,7 +52,6 @@ namespace EasyFramework.Launcher
         private bool _runOnStart = true;
 
         [SerializeField] private bool _dontDestroyOnLoad = true;
-        [SerializeField] private bool _verbose = true;
 
         [Header("事件通道 / Event channels（可选）")] [SerializeField]
         private LauncherStateEvent _stateEvent;
@@ -103,18 +102,6 @@ namespace EasyFramework.Launcher
         /// <summary>已加载的热更程序集（按配置顺序）</summary>
         public IReadOnlyList<Assembly> HotfixAssemblies => _hotfixAssemblies;
 
-        /// <summary>
-        /// 详细日志开关。只挡 <see cref="LauncherState"/> 流转这类信息日志，
-        /// <b>警告与错误永远输出</b>；失败时的 <c>Diagnose</c> 现场也不受它控制。
-        /// 运行时（例如 <c>AddComponent</c> 之后）可直接赋值，替代只在 Inspector 上能改的序列化字段。
-        /// <para>Verbose switch for lifecycle logs. Warnings, errors and the failure diagnostic are never suppressed.</para>
-        /// </summary>
-        public bool Verbose
-        {
-            get => _verbose;
-            set => _verbose = value;
-        }
-
         #endregion
 
         #region Unity 生命周期
@@ -132,7 +119,8 @@ namespace EasyFramework.Launcher
             _destroyToken = this.GetCancellationTokenOnDestroy();
 
             if (_view == null)
-                Warn("未找到 ILauncherView 实现，启动过程将没有界面反馈。");
+                Warn("未找到 ILauncherView 实现，启动过程将没有界面反馈。",
+                    "No ILauncherView found; the boot sequence will have no UI feedback.");
 
             if (_dontDestroyOnLoad && transform.parent == null)
                 DontDestroyOnLoad(gameObject);
@@ -170,7 +158,8 @@ namespace EasyFramework.Launcher
         {
             if (_running)
             {
-                Warn("启动流程运行中，忽略 Configure（配置只可在启动前注入）。");
+                Warn("启动流程运行中，忽略 Configure（配置只可在启动前注入）。",
+                    "Boot is running; Configure ignored (inject config before boot only).");
                 return;
             }
 
@@ -193,9 +182,10 @@ namespace EasyFramework.Launcher
 
             if (_retryCount >= max)
             {
-                string message = $"重试次数已用尽（{_retryCount}/{max}）";
-                D.Error($"{LogTag} 启动失败 [{LauncherErrorCode.RetryExhausted}] {message}");
-                SetState(LauncherState.Failed, message);
+                string message = L($"重试次数已用尽（{_retryCount}/{max}）",
+                    $"Retry attempts exhausted ({_retryCount}/{max})");
+                D.Error($"{LogTag} {L("启动失败", "Boot failed")} [{LauncherErrorCode.RetryExhausted}] {message}");
+                SetState(LauncherState.Failed);
                 BroadcastError(LauncherErrorCode.RetryExhausted, NoopRetry);
                 return;
             }
@@ -205,7 +195,7 @@ namespace EasyFramework.Launcher
                 ? _config.RetryDelaySeconds
                 : DefaultRetryDelaySeconds;
 
-            SetState(LauncherState.Retrying, "准备重试");
+            SetState(LauncherState.Retrying);
             _retryScheduled = true;
             RetryAfterDelayAsync(delay, _destroyToken).Forget();
         }
@@ -217,8 +207,6 @@ namespace EasyFramework.Launcher
         // 退避只作用于重试，首次启动不等待；用 realtime 避免 timeScale 为 0 时卡死
         private async UniTask RetryAfterDelayAsync(float delay, CancellationToken token)
         {
-            Log($"第 {_retryCount} 次重试将在 {delay:0.0}s 后开始");
-
             if (delay > 0f)
             {
                 bool canceled = await UniTask.Delay(TimeSpan.FromSeconds(delay), DelayType.Realtime,
@@ -232,7 +220,7 @@ namespace EasyFramework.Launcher
             }
 
             _retryScheduled = false;
-            SetState(LauncherState.Idle, "重试");
+            SetState(LauncherState.Idle);
             Run();
         }
 
@@ -255,7 +243,7 @@ namespace EasyFramework.Launcher
             {
                 // 协程时代这里会被 Unity 吞掉（表现为流程静默中断）；UniTask 下必须自己收口
                 D.Exception(e);
-                Fail(LauncherErrorCode.Unexpected, $"启动流程异常：{e.Message}");
+                Fail(LauncherErrorCode.Unexpected, L($"启动流程异常：{e.Message}", $"Unexpected boot error: {e.Message}"));
             }
             finally
             {
@@ -268,7 +256,6 @@ namespace EasyFramework.Launcher
         private async UniTask RunPipelineInternalAsync(CancellationToken token)
         {
             _startTime = Time.realtimeSinceStartup;
-            Log($"启动开始 | 版本={Application.version} 语言={DescribeLanguage(EFC.Projects)}");
 
             if (!ValidateConfig(out string configError))
             {
@@ -278,7 +265,7 @@ namespace EasyFramework.Launcher
 
             #region 1. 项目钩子：隐私协议 / 渠道 SDK / 登录
 
-            SetState(LauncherState.Booting, "初始化");
+            SetState(LauncherState.Booting);
             if (_hook != null)
             {
                 bool finished = false;
@@ -288,7 +275,8 @@ namespace EasyFramework.Launcher
                 }
                 catch (Exception e)
                 {
-                    Fail(LauncherErrorCode.HookFailed, $"ILauncherHook.OnBoot 抛出异常：{e.Message}");
+                    Fail(LauncherErrorCode.HookFailed,
+                        L($"ILauncherHook.OnBoot 抛出异常：{e.Message}", $"ILauncherHook.OnBoot threw: {e.Message}"));
                     return;
                 }
 
@@ -300,7 +288,7 @@ namespace EasyFramework.Launcher
 
             #region 2. 资源系统
 
-            SetState(LauncherState.Initializing, "初始化资源系统");
+            SetState(LauncherState.Initializing);
 
             if (!TryCreatePackage(out string packageError))
             {
@@ -326,7 +314,8 @@ namespace EasyFramework.Launcher
                 token.ThrowIfCancellationRequested();
                 if (initOp.Status != EOperationStatus.Succeed)
                 {
-                    Fail(LauncherErrorCode.PackageInitFailed, $"资源包初始化失败：{initOp.Error}");
+                    Fail(LauncherErrorCode.PackageInitFailed,
+                        L($"资源包初始化失败：{initOp.Error}", $"Package init failed: {initOp.Error}"));
                     return;
                 }
             }
@@ -335,13 +324,14 @@ namespace EasyFramework.Launcher
 
             #region 3. 版本 + 清单
 
-            SetState(LauncherState.CheckingVersion, "检查资源版本");
+            SetState(LauncherState.CheckingVersion);
             var versionOp = _package.RequestPackageVersionAsync(timeout: _config.TimeoutSeconds);
             await versionOp.Task;
             token.ThrowIfCancellationRequested();
             if (versionOp.Status != EOperationStatus.Succeed)
             {
-                Fail(LauncherErrorCode.VersionRequestFailed, $"获取资源版本失败：{versionOp.Error}");
+                Fail(LauncherErrorCode.VersionRequestFailed,
+                    L($"获取资源版本失败：{versionOp.Error}", $"Failed to request package version: {versionOp.Error}"));
                 return;
             }
 
@@ -350,7 +340,8 @@ namespace EasyFramework.Launcher
             token.ThrowIfCancellationRequested();
             if (manifestOp.Status != EOperationStatus.Succeed)
             {
-                Fail(LauncherErrorCode.ManifestUpdateFailed, $"更新资源清单失败：{manifestOp.Error}");
+                Fail(LauncherErrorCode.ManifestUpdateFailed,
+                    L($"更新资源清单失败：{manifestOp.Error}", $"Failed to update manifest: {manifestOp.Error}"));
                 return;
             }
 
@@ -358,7 +349,7 @@ namespace EasyFramework.Launcher
 
             #region 4. 下载
 
-            SetState(LauncherState.Downloading, "更新资源");
+            SetState(LauncherState.Downloading);
             ReportProgress(0, 0, 0, 0);
             var downloader = _package.CreateResourceDownloader(_config.DownloadingMaxNumber, _config.FailedTryAgain);
             if (downloader.TotalDownloadCount > 0)
@@ -383,7 +374,8 @@ namespace EasyFramework.Launcher
 
                 if (downloader.Status != EOperationStatus.Succeed)
                 {
-                    Fail(LauncherErrorCode.DownloadFailed, $"资源下载失败：{downloader.Error}");
+                    Fail(LauncherErrorCode.DownloadFailed,
+                        L($"资源下载失败：{downloader.Error}", $"Resource download failed: {downloader.Error}"));
                     return;
                 }
             }
@@ -392,7 +384,7 @@ namespace EasyFramework.Launcher
 
             #region 5. AOT 补充元数据（必须在热更程序集之前）
 
-            SetState(LauncherState.LoadingMetadata, "加载 AOT 元数据");
+            SetState(LauncherState.LoadingMetadata);
             if (!TryLoadAotMetadata(out string metadataError))
             {
                 Fail(LauncherErrorCode.MetadataLoadFailed, metadataError);
@@ -403,7 +395,7 @@ namespace EasyFramework.Launcher
 
             #region 6. 热更程序集（按配置顺序，即拓扑序）
 
-            SetState(LauncherState.LoadingHotfix, "加载热更程序集");
+            SetState(LauncherState.LoadingHotfix);
             var entries = _config.HotfixDlls;
             if (entries != null)
             {
@@ -417,10 +409,7 @@ namespace EasyFramework.Launcher
                     string assemblyName = ResolveAssemblyName(entry, entryName);
 
                     if (assemblyName != null && _loadedAssemblyNames.Contains(assemblyName))
-                    {
-                        Log($"跳过已加载的热更程序集：{assemblyName}");
                         continue;
-                    }
 
 #if UNITY_EDITOR
                     // 编辑器模拟模式：热更 asmdef 本来就跟着工程编译进 ScriptAssemblies，
@@ -433,12 +422,10 @@ namespace EasyFramework.Launcher
                             _hotfixAssemblies.Add(compiled);
                             _loadedAssemblyNames.Add(compiled.GetName().Name);
                             _loadedAssemblyNames.Add(assemblyName);
-                            Log($"复用已编译程序集（编辑器模拟模式）：{compiled.GetName().Name}");
                             continue;
                         }
 
                         // 编辑器里没有同名编译产物（例如只随包发布的外部业务 dll）→ 退回 bytes 加载
-                        Log($"编辑器里没有 {assemblyName} 的编译产物，改为从 bytes 加载");
                     }
 #endif
 
@@ -469,7 +456,8 @@ namespace EasyFramework.Launcher
                         if (status != EOperationStatus.Succeed)
                         {
                             Fail(LauncherErrorCode.AssemblyLoadFailed,
-                                $"热更程序集加载失败：{entryName}（{lastError}）");
+                                L($"热更程序集加载失败：{entryName}（{lastError}）",
+                                    $"Hotfix assembly load failed: {entryName} ({lastError})"));
                             return;
                         }
                     }
@@ -480,7 +468,8 @@ namespace EasyFramework.Launcher
 
                     if (dllBytes == null || dllBytes.Length == 0)
                     {
-                        Fail(LauncherErrorCode.AssemblyLoadFailed, $"热更程序集内容为空：{entryName}");
+                        Fail(LauncherErrorCode.AssemblyLoadFailed,
+                            L($"热更程序集内容为空：{entryName}", $"Hotfix assembly is empty: {entryName}"));
                         return;
                     }
 
@@ -491,11 +480,12 @@ namespace EasyFramework.Launcher
                         _loadedAssemblyNames.Add(assembly.GetName().Name);
                         if (assemblyName != null)
                             _loadedAssemblyNames.Add(assemblyName);
-                        Log($"已加载热更程序集：{entryName}（{assembly.GetName().Name}）");
                     }
                     catch (Exception e)
                     {
-                        Fail(LauncherErrorCode.AssemblyLoadFailed, $"热更程序集加载异常：{entryName} -> {e.Message}");
+                        Fail(LauncherErrorCode.AssemblyLoadFailed,
+                            L($"热更程序集加载异常：{entryName} -> {e.Message}",
+                                $"Hotfix assembly load threw: {entryName} -> {e.Message}"));
                         return;
                     }
                 }
@@ -503,7 +493,9 @@ namespace EasyFramework.Launcher
 
             if (_hotfixAssemblies.Count == 0 && entries is { Length: > 0 })
             {
-                Fail(LauncherErrorCode.AssemblyLoadFailed, "没有任何热更程序集被加载，请检查配置");
+                Fail(LauncherErrorCode.AssemblyLoadFailed,
+                    L("没有任何热更程序集被加载，请检查配置",
+                        "No hotfix assembly was loaded; check the configuration"));
                 return;
             }
 
@@ -513,7 +505,7 @@ namespace EasyFramework.Launcher
 
             if (_enterConfirm != null)
             {
-                SetState(LauncherState.WaitingForConfirm, "等待进入游戏");
+                SetState(LauncherState.WaitingForConfirm);
                 bool confirmed = false;
                 try
                 {
@@ -521,7 +513,9 @@ namespace EasyFramework.Launcher
                 }
                 catch (Exception e)
                 {
-                    Fail(LauncherErrorCode.ConfirmFailed, $"ILauncherEnterConfirm.OnReadyToEnter 抛出异常：{e.Message}");
+                    Fail(LauncherErrorCode.ConfirmFailed,
+                        L($"ILauncherEnterConfirm.OnReadyToEnter 抛出异常：{e.Message}",
+                            $"ILauncherEnterConfirm.OnReadyToEnter threw: {e.Message}"));
                     return;
                 }
 
@@ -534,7 +528,7 @@ namespace EasyFramework.Launcher
 
             #region 7. 调热更入口
 
-            SetState(LauncherState.Invoking, "启动游戏");
+            SetState(LauncherState.Invoking);
             var entryResult = new StepResult();
             await InvokeEntryStepAsync(entryResult);
             token.ThrowIfCancellationRequested();
@@ -548,7 +542,7 @@ namespace EasyFramework.Launcher
 
             #region 8. 完成
 
-            SetState(LauncherState.Completed, "进入游戏");
+            SetState(LauncherState.Completed);
 
             #endregion
         }
@@ -563,37 +557,38 @@ namespace EasyFramework.Launcher
 
             if (_config == null)
             {
-                error = "LauncherConfig 未指定";
+                error = L("LauncherConfig 未指定", "LauncherConfig not assigned");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(_config.PackageName))
             {
-                error = "PackageName 为空";
+                error = L("PackageName 为空", "PackageName is empty");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(_config.EntryType))
             {
-                error = "EntryType 为空（需要热更入口类型的全名）";
+                error = L("EntryType 为空（需要热更入口类型的全名）",
+                    "EntryType is empty (full type name of the hotfix entry required)");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(_config.EntryMethod))
             {
-                error = "EntryMethod 为空";
+                error = L("EntryMethod 为空", "EntryMethod is empty");
                 return false;
             }
 
-            if (_config.PlayMode == EPlayMode.HostPlayMode &&
-                string.IsNullOrWhiteSpace(EFC.Projects.ResourcesArea.InnerUrl))
-            {
-                error = "HostPlayMode 需要资源地址：请在 ProjectConfig.ResourcesArea 里填内网地址" +
-                        "（该配置随包常驻 AOT，EFC 会在 AfterAssembliesLoaded 阶段加载它）";
-                return false;
-            }
+            if (_config.PlayMode != EPlayMode.HostPlayMode ||
+                !string.IsNullOrWhiteSpace(EFC.Projects.ResourcesArea.InnerUrl)) 
+                return true;
 
-            return true;
+            error = L("HostPlayMode 需要资源地址：请在 ProjectConfig.ResourcesArea 里填内网地址" +
+                      "（该配置随包常驻 AOT，EFC 会在 AfterAssembliesLoaded 阶段加载它）",
+                "HostPlayMode needs a resource address: set the intranet URL in ProjectConfig.ResourcesArea " +
+                "(the config stays in AOT and is loaded by EFC at AfterAssembliesLoaded)");
+            return false;
         }
 
         private bool TryCreatePackage(out string error)
@@ -608,7 +603,7 @@ namespace EasyFramework.Launcher
                 }
                 catch (Exception e)
                 {
-                    error = $"YooAssets 初始化失败：{e.Message}";
+                    error = L($"YooAssets 初始化失败：{e.Message}", $"YooAssets init failed: {e.Message}");
                     return false;
                 }
             }
@@ -620,7 +615,7 @@ namespace EasyFramework.Launcher
             _package = YooAssets.CreatePackage(_config.PackageName);
             if (_package == null)
             {
-                error = $"创建资源包失败：{_config.PackageName}";
+                error = L($"创建资源包失败：{_config.PackageName}", $"Failed to create package: {_config.PackageName}");
                 return false;
             }
 
@@ -669,7 +664,8 @@ namespace EasyFramework.Launcher
                 case EPlayMode.CustomPlayMode:
                 default:
                     throw new NotSupportedException(
-                        $"当前构建不支持运行模式 {_config.PlayMode}，请检查 LauncherConfig");
+                        L($"当前构建不支持运行模式 {_config.PlayMode}，请检查 LauncherConfig",
+                            $"Play mode {_config.PlayMode} is not supported in this build; check LauncherConfig"));
             }
         }
 
@@ -679,10 +675,7 @@ namespace EasyFramework.Launcher
 
             var assets = _config.AotMetadataDlls;
             if (assets == null || assets.Length == 0)
-            {
-                Log("未配置 AOT 元数据，跳过补元数据（热更代码里出现 AOT 泛型实例化时会踩空）");
                 return true;
-            }
 
             int missing = 0;
             int loaded = 0;
@@ -698,24 +691,25 @@ namespace EasyFramework.Launcher
                 var code = RuntimeApi.LoadMetadataForAOTAssembly(asset.bytes, HomologousImageMode.SuperSet);
                 if (code != LoadImageErrorCode.OK)
                 {
-                    error = $"补充元数据失败：{asset.name}（{code}）";
+                    error = L($"补充元数据失败：{asset.name}（{code}）",
+                        $"Failed to load AOT metadata: {asset.name} ({code})");
                     return false;
                 }
 
                 loaded++;
-                Log($"已补充 AOT 元数据：{asset.name}");
             }
+
+            if (missing <= 0) return true;
 
             // 配置了却引用丢失 = 配置错误。静默跳过会让「补元数据从未生效」变成隐形故障，
             // 后续只在热更代码踩到 AOT 泛型时以难以定位的方式崩掉。
-            if (missing > 0)
-            {
-                error = $"AOT 元数据配置了 {assets.Length} 项，其中 {missing} 项引用丢失（常见于 .dll.bytes 重新导入后 .meta guid 变化）。" +
-                        $"成功补充 {loaded} 项。请在 LauncherConfig 里重新绑定，或清空 AotMetadataDlls 以显式跳过。";
-                return false;
-            }
+            error = L($"AOT 元数据配置了 {assets.Length} 项，其中 {missing} 项引用丢失（常见于 .dll.bytes 重新导入后 .meta guid 变化）。" +
+                      $"成功补充 {loaded} 项。请在 LauncherConfig 里重新绑定，或清空 AotMetadataDlls 以显式跳过。",
+                $"AOT metadata has {assets.Length} entries, {missing} with a lost reference " +
+                $"(often after .dll.bytes re-import changes the .meta guid). {loaded} loaded. " +
+                "Rebind them in LauncherConfig, or clear AotMetadataDlls to skip explicitly.");
+            return false;
 
-            return true;
         }
 
         // 反射调用热更入口。入口返回 IEnumerator / Task 时等它跑完再标 Completed，
@@ -726,7 +720,8 @@ namespace EasyFramework.Launcher
             if (type == null)
             {
                 MarkFailed(result, LauncherErrorCode.EntryNotFound,
-                    $"找不到热更入口类型：{_config.EntryType}（需要命名空间全名，且对应程序集已加载）");
+                    L($"找不到热更入口类型：{_config.EntryType}（需要命名空间全名，且对应程序集已加载）",
+                        $"Hotfix entry type not found: {_config.EntryType} (needs a full namespace-qualified name, and its assembly loaded)"));
                 return;
             }
 
@@ -742,7 +737,8 @@ namespace EasyFramework.Launcher
             if (method == null)
             {
                 MarkFailed(result, LauncherErrorCode.EntryNotFound,
-                    $"找不到无参入口方法：{_config.EntryType}.{_config.EntryMethod}()，必须是无参 static 方法");
+                    L($"找不到无参入口方法：{_config.EntryType}.{_config.EntryMethod}()，必须是无参 static 方法",
+                        $"Parameterless entry method not found: {_config.EntryType}.{_config.EntryMethod}() (must be a parameterless static method)"));
                 return;
             }
 
@@ -753,16 +749,16 @@ namespace EasyFramework.Launcher
             }
             catch (TargetInvocationException e)
             {
-                MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口抛出异常：{e.InnerException ?? e}");
+                MarkFailed(result, LauncherErrorCode.EntryThrew,
+                    L($"热更入口抛出异常：{e.InnerException ?? e}", $"Hotfix entry threw: {e.InnerException ?? e}"));
                 return;
             }
             catch (Exception e)
             {
-                MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口调用失败：{e.Message}");
+                MarkFailed(result, LauncherErrorCode.EntryThrew,
+                    L($"热更入口调用失败：{e.Message}", $"Failed to invoke hotfix entry: {e.Message}"));
                 return;
             }
-
-            Log($"热更入口已执行：{_config.EntryType}.{_config.EntryMethod}()");
 
             if (returned is IEnumerator routine)
             {
@@ -779,11 +775,13 @@ namespace EasyFramework.Launcher
                 }
                 catch (OperationCanceledException)
                 {
-                    MarkFailed(result, LauncherErrorCode.EntryThrew, "热更入口异步任务被取消");
+                    MarkFailed(result, LauncherErrorCode.EntryThrew,
+                        L("热更入口异步任务被取消", "Hotfix entry async task was canceled"));
                 }
                 catch (Exception e)
                 {
-                    MarkFailed(result, LauncherErrorCode.EntryThrew, $"热更入口异步任务失败：{e.Message}");
+                    MarkFailed(result, LauncherErrorCode.EntryThrew,
+                        L($"热更入口异步任务失败：{e.Message}", $"Hotfix entry async task failed: {e.Message}"));
                 }
 
                 return;
@@ -793,7 +791,9 @@ namespace EasyFramework.Launcher
             {
                 // 启动器是 AOT 程序集，拿不到 UniTask 类型；只能提示，不能替它等
                 Warn($"热更入口返回 {returned.GetType().Name}，启动器不会等待该类型。" +
-                     "需要「初始化完成后再标启动完成」请返回 IEnumerator 或 Task。");
+                     "需要「初始化完成后再标启动完成」请返回 IEnumerator 或 Task。",
+                    $"Hotfix entry returned {returned.GetType().Name}; the launcher will not await it. " +
+                    "Return IEnumerator or Task to defer the Completed state until initialization finishes.");
             }
         }
 
@@ -863,12 +863,11 @@ namespace EasyFramework.Launcher
 
         #region 状态与反馈
 
-        // tip 只写进日志：Launcher 是通用包，不把展示文案下发给界面或事件通道。
+        // Launcher 是通用包，不把展示文案下发给界面或事件通道；
         // 订阅方按 state / code 自行解析本地化文本，换包不换文案。
-        private void SetState(LauncherState state, string tip)
+        private void SetState(LauncherState state)
         {
             State = state;
-            Log($"{state} | {tip}");
 
             if (_stateEvent != null)
             {
@@ -927,9 +926,9 @@ namespace EasyFramework.Launcher
         private void Fail(LauncherErrorCode code, string message)
         {
             _running = false;
-            D.Error($"{LogTag} 启动失败 [{code}] {message}");
+            D.Error($"{LogTag} {L("启动失败", "Boot failed")} [{code}] {message}");
             // 状态必须走 SetState：直接赋属性会让事件通道永远收不到 Failed，埋点与独立加载屏会停在上一阶段
-            SetState(LauncherState.Failed, message);
+            SetState(LauncherState.Failed);
             Diagnose();
 
             BroadcastError(code, Retry);
@@ -971,31 +970,31 @@ namespace EasyFramework.Launcher
         private void Diagnose()
         {
             float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - _startTime);
-            D.Log($"{LogTag} 诊断 | 版本={Application.version} 状态={State} " +
-                  $"已加载热更程序集={_hotfixAssemblies.Count} 重试={_retryCount} 耗时={elapsed:0.0}s " +
-                  $"CoreReady={EFC.Projects != null}");
+            D.Log($"{LogTag} {L("诊断", "Diagnose")} | {L("版本", "Version")}={Application.version} " +
+                  $"{L("状态", "State")}={State} " +
+                  $"{L("已加载热更程序集", "Hotfix assemblies")}={_hotfixAssemblies.Count} " +
+                  $"{L("重试", "Retries")}={_retryCount} {L("耗时", "Elapsed")}={elapsed:0.0}s " +
+                  $"CoreReady={EFC.Projects}");
         }
 
-
-
-        // 仅用于启动日志：配置缺失时不要因为一句日志把整条流程炸掉
-        private static string DescribeLanguage(ProjectConfig project)
+        // 按 EFC.Projects 的语言配置择一：AutoLanguage 开启时跟随系统语言（与 PreferenceManager.IsZh 同口径）。
+        // 仅用于日志文案；配置缺失时不当作中文，回落英文，避免因为一句日志把启动流程炸掉。
+        private static bool IsZh()
         {
-            if (project == null)
-                return "未知（ProjectConfig 未加载）";
-
-            return project.AutoLanguage ? Application.systemLanguage.ToString() : project.DisplayLanguage.ToString();
+            var language = EFC.Projects != null && !EFC.Projects.AutoLanguage
+                ? EFC.Projects.DisplayLanguage
+                : Application.systemLanguage;
+            return language is SystemLanguage.Chinese
+                or SystemLanguage.ChineseSimplified
+                or SystemLanguage.ChineseTraditional;
         }
 
-        private void Log(string message)
-        {
-            if (_verbose)
-                D.Log($"{LogTag} {message}");
-        }
+        // 中英双语文案择一输出。
+        private static string L(string zh, string en) => IsZh() ? zh : en;
 
-        private void Warn(string message)
+        private void Warn(string zh, string en)
         {
-            D.Warning($"{LogTag} {message}");
+            D.Warning($"{LogTag} {L(zh, en)}");
         }
 
         /// <summary>
@@ -1009,7 +1008,8 @@ namespace EasyFramework.Launcher
                 if (explicitRef is T typed)
                     return typed;
 
-                Warn($"{fieldName} 引用的组件 [{explicitRef.GetType().Name}] 未实现 {typeof(T).Name}，已忽略，改用自动查找。");
+                Warn($"{fieldName} 引用的组件 [{explicitRef.GetType().Name}] 未实现 {typeof(T).Name}，已忽略，改用自动查找。",
+                    $"{fieldName} references component [{explicitRef.GetType().Name}] that does not implement {typeof(T).Name}; ignored, falling back to auto-discovery.");
             }
 
             return FindComponent<T>();

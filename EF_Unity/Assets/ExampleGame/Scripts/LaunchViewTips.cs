@@ -72,7 +72,7 @@ namespace Launch
         {
             SetActive(GameStart, false);
             SetActive(RetryButton, false);
-            SetText(ErrorText, string.Empty);
+            SetText(ErrorText, string.Empty, true);
 
             if (GameStart != null)
                 GameStart.onClick.AddListener(OnGameStartClicked);
@@ -136,7 +136,7 @@ namespace Launch
             // Failed 的文案由 OnError 单独展示；其余状态清掉上一次的错误
             if (state != LauncherState.Failed)
             {
-                SetText(ErrorText, string.Empty);
+                SetText(ErrorText, string.Empty, true);
                 SetActive(RetryButton, false);
             }
 
@@ -175,7 +175,7 @@ namespace Launch
         public void OnError(LauncherErrorCode code, Action retry)
         {
             _retry = retry;
-            SetText(ErrorText, $"启动失败 [{code}] {ResolveError(code)}");
+            SetText(ErrorText, $"启动失败 [{code}] {ResolveError(code)}", true);
             SetActive(RetryButton, retry != null);
 
             // 失败时确认按钮必须收起，避免误点放行
@@ -285,10 +285,19 @@ namespace Launch
 
         #region 工具
 
-        private static void SetText(Text label, string value)
+        private static void SetText(Text label, string value, bool failed = false)
         {
             if (label != null)
                 label.text = value;
+            switch (failed)
+            {
+                case true when !string.IsNullOrEmpty(value):
+                    D.Error(value);
+                    break;
+                case false when !string.IsNullOrEmpty(value):
+                    D.Log(value);
+                    break;
+            }
         }
 
         private static void SetActive(Component component, bool active)
