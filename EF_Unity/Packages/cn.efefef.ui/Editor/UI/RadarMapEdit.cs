@@ -1,13 +1,13 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to  . 
- * Author:        Xiaohei.Wang(Wenhao)
- * CreationTime:  2023-02-06 16:18:25
- * ModifyAuthor:  Xiaohei.Wang(Wenhao)
- * ModifyTime:    2024-07-03 15:45:25
- * ScriptVersion: 0.1
- * ===============================================
-*/
+ * Describe:        This script is used to create radar map inspector.
+ * Author:          Xiaohei.Wang(Wenhao)
+ * CreationTime:    2023-02-06 16:18:25
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-11-19 19:06:59
+ * ScriptVersion:   0.1
+ * ================================================
+ */
 
 using EasyFramework.Managers.Ui;
 using UnityEditor;
@@ -16,58 +16,44 @@ using UnityEngine;
 namespace EasyFramework.Edit.UI
 {
     /// <summary>
-    /// Custom inspector for RadarMap component. Provides vertex count, radian, and per-vertex distance editing.
-    /// RadarMap 组件自定义 Inspector，支持顶点数、弧度、逐顶点距离编辑。
+    /// RadarMap 组件自定义 Inspector，支持顶点数、弧度与逐顶点占比编辑。
+    /// <para>Custom inspector for RadarMap: vertex count, radian and per-vertex percentage editing.</para>
     /// </summary>
+    /// <remarks>
+    /// 数值的合法性钳制统一由 RadarMap.OnValidate 负责，此处只负责呈现字段，避免规则分裂在两处。
+    /// <para>Value clamping is centralized in RadarMap.OnValidate; this editor only presents fields.</para>
+    /// </remarks>
     [CustomEditor(typeof(RadarMap), true)]
     [CanEditMultipleObjects]
     public class RadarMapEdit : UnityEditor.UI.ImageEditor
     {
-        SerializedProperty _vertexCount;
-        SerializedProperty _minDistance;
-        SerializedProperty _maxDistance;
-        SerializedProperty _eachPercent;
-        SerializedProperty _initialRadian;
+        private SerializedProperty _vertexCount;
+        private SerializedProperty _minDistance;
+        private SerializedProperty _eachPercent;
+        private SerializedProperty _initialRadian;
 
         protected override void OnEnable()
         {
             base.OnEnable();
             _vertexCount = serializedObject.FindProperty("_vertexCount");
             _minDistance = serializedObject.FindProperty("_minDistance");
-            _maxDistance = serializedObject.FindProperty("_maxDistance");
             _eachPercent = serializedObject.FindProperty("_eachPercent");
             _initialRadian = serializedObject.FindProperty("_initialRadian");
         }
 
         public override void OnInspectorGUI()
         {
-            //base.OnInspectorGUI();
-            EditorGUILayout.Space();
+            base.OnInspectorGUI();
+            serializedObject.Update();
 
-            _minDistance.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Ui.MinDistanceLimit"), _minDistance.floatValue), 0f, _maxDistance.floatValue);
-            EditorGUILayout.Space();
-
-            _vertexCount.intValue = Mathf.Clamp(EditorGUILayout.IntField(LC.Combine("Ui.RadarMapVertexCount"), _vertexCount.intValue), 3, int.MaxValue);
-            EditorGUILayout.Space();
-
-            //EditorGUILayout.PropertyField(m_eachPercent, new GUIContent(LC.Combine("Ui.VertexToCenterDistance")), true);
+            // 字段上的 HeaderPro 会绘制分组标题，顺序与 RadarMap.cs 字段声明一致
+            EditorGUILayout.PropertyField(_vertexCount, new GUIContent(LC.Combine("Ui.RadarMapVertexCount")));
+            EditorGUILayout.PropertyField(_minDistance, new GUIContent(LC.Combine("Ui.MinDistanceLimit")));
             EditorGUILayout.PropertyField(_eachPercent, new GUIContent(LC.Combine("Ui.VertexToCenterDistance")), true);
-            EditorGUILayout.Space();
+            EditorGUILayout.PropertyField(_initialRadian, new GUIContent(LC.Combine("Radian")));
 
-            _initialRadian.floatValue = Mathf.Clamp(EditorGUILayout.FloatField(LC.Combine("Radian"), _initialRadian.floatValue), 0f, 6.2832f);
-
-            if (GUI.changed)
-            {
-                for (int i = _eachPercent.arraySize - 1; i >= 0; i--)
-                {
-                    float floatValue = _eachPercent.GetArrayElementAtIndex(i).floatValue;
-                    _eachPercent.GetArrayElementAtIndex(i).floatValue = Mathf.Clamp01(floatValue);
-                }
-                if (_eachPercent.arraySize != _vertexCount.intValue)
-                    _eachPercent.arraySize = _vertexCount.intValue;
-
-                serializedObject.ApplyModifiedProperties();
-            }
+            if (serializedObject.ApplyModifiedProperties())
+                serializedObject.Update();
         }
     }
 }

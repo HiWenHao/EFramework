@@ -19,7 +19,7 @@ namespace EasyFramework.Localization.Edit
 {
     public class CreateUITemplatePrefab
     {
-        [MenuItem("GameObject/UI/EF/TextMeshPro - LocalizedText", false, 41)]
+        [MenuItem("GameObject/UI/EF/TextMeshPro - LocalizedText", false, 43)]
         static void CreateUIButtonProTmp(MenuCommand menuCommand)
         {
             Transform tran = CreateUIObject(menuCommand, "LocalizedText(TMP)", new[] { typeof(LocalizedText) }).transform;

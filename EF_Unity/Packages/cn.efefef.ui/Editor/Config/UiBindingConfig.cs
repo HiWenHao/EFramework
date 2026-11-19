@@ -66,7 +66,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             new RulePrefixes("Group", "CanvasGroup"),
             new RulePrefixes("GGroup", "GridLayoutGroup"),
             new RulePrefixes("HGroup", "HorizontalLayoutGroup"),
-            new RulePrefixes("VGroup", "VerticalLayoutGroup"),
             new RulePrefixes("Img", "Image"),
             new RulePrefixes("ImgP", "ImagePro"),
             new RulePrefixes("Ipt", "InputField"),
@@ -81,13 +80,15 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             new RulePrefixes("Sld", "Slider"),
             new RulePrefixes("Sbar", "Scrollbar"),
             new RulePrefixes("SRct", "ScrollRect"),
-            new RulePrefixes("SRctP", "ScrollRectPro"),
             new RulePrefixes("Tran", "Transform"),
             new RulePrefixes("Txt", "Text"),
             new RulePrefixes("Tmp", "TextMeshProUGUI"),
             new RulePrefixes("Tog", "Toggle"),
             new RulePrefixes("TGroup", "ToggleGroup"),
-            new RulePrefixes("Tr", "LocalizedText"),
+            new RulePrefixes("VGroup", "VerticalLayoutGroup"),
+            new RulePrefixes("SldShow", "Slideshow"),
+            new RulePrefixes("CSList", "CircularScrollList"),
+            new RulePrefixes("SListPro", "ScrollListPro"),
         };
 
         /// <summary> 组件的缩略名字映射 </summary>
