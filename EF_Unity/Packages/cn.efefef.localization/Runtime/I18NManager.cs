@@ -231,6 +231,7 @@ namespace EasyFramework.Localization
         /// </summary>
         public void Quit()
         {
+            _loadGeneration++;
             _table = null;
             _tableHandle?.Dispose();
             _tableHandle = null;
