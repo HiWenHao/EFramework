@@ -34,8 +34,8 @@ namespace EasyFramework.Localization.Edit
         // 未发现语言表时的兜底语言集合（与清单默认语言一致，保证全新工程下拉框也有可选项）
         private static readonly string[] FallbackLanguages = { LanguageCode.Zh, LanguageCode.En };
 
-        // Luban 导表产物文件名前缀（与运行时 I18NManager 的资源命名约定一致）
-        private const string TableFilePrefix = "l10n_tbtext_";
+        // Luban 导表产物文件名前缀：直接引用运行时单一真源，避免两处约定漂移
+        private const string TableFilePrefix = L10nTableStore.TableFilePrefix;
 
         // 缓存的配置资产（Unity fake-null：资产被删除时自动视为 null 并触发重探测）
         private static DatableConfig _config;

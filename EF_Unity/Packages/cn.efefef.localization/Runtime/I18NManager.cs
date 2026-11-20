@@ -114,7 +114,7 @@ namespace EasyFramework.Localization
         /// <para>Asset path template of language tables ({0} = language code).
         /// Override in bootstrapping when the project uses a different path.</para>
         /// </summary>
-        public static string TableAssetPathFormat = "l10n_tbtext_{0}";
+        public static string TableAssetPathFormat = L10nTableStore.TableFilePrefix + "{0}";
 
         #endregion
 

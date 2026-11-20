@@ -48,7 +48,7 @@ namespace EasyFramework.Localization
         /// 语言表文件名前缀，语言代码紧跟其后；新增语言只需多导一张表
         /// <para>Table file name prefix; the language code follows it. One more table per new language.</para>
         /// </summary>
-        internal const string TableFilePrefix = "l10n_tbtext_";
+        public const string TableFilePrefix = "l10n_tbtext_";
 
         #endregion
 
