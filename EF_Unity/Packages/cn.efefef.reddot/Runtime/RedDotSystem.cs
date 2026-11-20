@@ -1,10 +1,10 @@
 /*
  * ================================================
  * Describe:      This script is used to manage red dot nodes, including registration, unregistration, dirty flushing, and batching.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 11:35:35
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 11:35:35
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.1
  * ================================================
  */
@@ -20,7 +20,7 @@ namespace EasyFramework.Systems.RedDot
     /// 红点管理器（单例）
     /// <para>Red dot manager (singleton)</para>
     /// </summary>
-    public class RedDotSystem : MonoSingleton<RedDotSystem>, ISingleton
+    public class RedDotSystem : MonoSingleton<RedDotSystem>, ISingleton, IRedDotContext
     {
         /// <summary>
         /// 脏系统，负责收集和刷新被标记为脏的红点节点。
@@ -65,11 +65,17 @@ namespace EasyFramework.Systems.RedDot
         {
             _nodes = new Dictionary<string, RedDotNode>();
             LoadSpriteAsync = DefaultLoadSpriteAsync;
+            // 强制干净默认值：域重载/反复 Init 时不继承上一次的残留状态
+            DirtySystem = null;
+            BatchSystem = null;
+            EventSystem = null;
+            _subsystemsSet = false;
+            _spriteCache.Clear();
         }
 
         private void LateUpdate()
         {
-            if (_subsystemsSet && !BatchSystem.IsBatching)
+            if (_subsystemsSet && _nodes != null && !BatchSystem.IsBatching)
             {
                 DirtySystem.Flush();
             }
@@ -77,12 +83,20 @@ namespace EasyFramework.Systems.RedDot
 
         void ISingleton.Quit()
         {
+            // 逆序对称清理：先断开节点关系，再清脏队列，最后置空子系统引用
             foreach (var node in _nodes.Values)
             {
                 node.Dispose();
             }
 
             _nodes.Clear();
+            DirtySystem?.Clear();
+            DirtySystem = null;
+            BatchSystem = null;
+            EventSystem = null;
+            // 不置 null：可能有在途的异步加载回调，保留默认实现避免 NRE
+            LoadSpriteAsync = DefaultLoadSpriteAsync;
+            _subsystemsSet = false;
             _spriteCache.Clear();
         }
 
@@ -130,7 +144,7 @@ namespace EasyFramework.Systems.RedDot
             _subsystemsSet = true;
 
             DirtySystem = dirtySystem ?? new RedDotDirtySystem();
-            BatchSystem = batchSystem ?? new RedDotBatchSystem();
+            BatchSystem = batchSystem ?? new RedDotBatchSystem(this);
             EventSystem = eventSystem ?? new RedDotEventSystem();
         }
 
@@ -180,7 +194,7 @@ namespace EasyFramework.Systems.RedDot
                 return null;
             }
 
-            var node = new RedDotNode(key, displayType, imagePath);
+            var node = new RedDotNode(key, displayType, imagePath, this);
             _nodes.Add(key, node);
 
             if (!string.IsNullOrEmpty(parentKey))
@@ -189,6 +203,69 @@ namespace EasyFramework.Systems.RedDot
             }
 
             return node;
+        }
+
+        /// <summary>
+        /// 按拓扑序批量注册红点树（数据驱动友好，不要求调用方保证父先于子）
+        /// <para>Register a red dot tree in topological order (data-driven friendly; callers need not
+        /// register parents before children).</para>
+        /// <para>规则：定义中引用但既未定义、也未注册过的父键，会自动创建 Dot 类型占位父节点。</para>
+        /// <para>Rule: a parent key referenced but neither defined nor registered gets an auto-created Dot placeholder.</para>
+        /// </summary>
+        /// <param name="defs">节点定义列表 <para>Node definition list</para></param>
+        /// <returns>成功注册的节点数；存在环时剩余节点跳过并告警 <para>Number registered; cyclic nodes are skipped with warnings</para></returns>
+        public int RegisterTree(IReadOnlyList<RedDotTreeNodeDef> defs)
+        {
+            if (!EnsureSubsystemsReady() || defs == null || defs.Count == 0)
+                return 0;
+
+            // 建索引：跳过空键与重复键
+            var defMap = new Dictionary<string, RedDotTreeNodeDef>();
+            for (int i = 0; i < defs.Count; i++)
+            {
+                var def = defs[i];
+                if (def == null || string.IsNullOrEmpty(def.Key) || defMap.ContainsKey(def.Key))
+                    continue;
+                defMap.Add(def.Key, def);
+            }
+
+            // 为"被引用但未定义、也未注册"的父键创建占位节点
+            foreach (var def in defMap.Values)
+            {
+                string parentKey = def.ParentKey;
+                if (string.IsNullOrEmpty(parentKey) || defMap.ContainsKey(parentKey) || _nodes.ContainsKey(parentKey))
+                    continue;
+                RegisterNode(parentKey);
+            }
+
+            // 拓扑注册：每轮把所有"父已就绪"的定义注册掉，直到无进展（剩下的是环）
+            var pending = new List<RedDotTreeNodeDef>(defMap.Values);
+            int registered = 0;
+            while (pending.Count > 0)
+            {
+                bool progressed = false;
+                for (int i = pending.Count - 1; i >= 0; i--)
+                {
+                    var def = pending[i];
+                    if (!string.IsNullOrEmpty(def.ParentKey) && !_nodes.ContainsKey(def.ParentKey))
+                        continue;
+
+                    RegisterNode(def.Key, def.ParentKey, def.DisplayType, def.ImagePath);
+                    pending.RemoveAt(i);
+                    registered++;
+                    progressed = true;
+                }
+
+                if (progressed)
+                    continue;
+
+                // 无进展 = 环或缺失父，逐个告警后退出
+                for (int i = 0; i < pending.Count; i++)
+                    D.Error($"[ RedDotManager ] RegisterNode cycle detected at: {pending[i].Key}");
+                break;
+            }
+
+            return registered;
         }
 
         /// <summary>
@@ -251,6 +328,31 @@ namespace EasyFramework.Systems.RedDot
                 collected[i].Dispose();
                 _nodes.Remove(collected[i].Key);
             }
+        }
+
+        /// <summary>
+        /// 批量设置多个节点的数值（内部自动 Begin/End 批处理，一次刷新）
+        /// <para>Set numbers for multiple nodes in one batch (auto Begin/End, single flush).</para>
+        /// </summary>
+        /// <param name="values">键与数值的键值对列表 <para>Key-value pairs of node keys and numbers</para></param>
+        /// <returns>成功设置的节点数 <para>Number of nodes successfully set</para></returns>
+        public int SetNumbers(IReadOnlyList<KeyValuePair<string, int>> values)
+        {
+            if (!EnsureSubsystemsReady() || values == null)
+                return 0;
+
+            int applied = 0;
+            BeginBatch();
+            for (int i = 0; i < values.Count; i++)
+            {
+                var node = GetNode(values[i].Key);
+                if (node == null)
+                    continue;
+                node.SetNumber(values[i].Value);
+                applied++;
+            }
+            EndBatch();
+            return applied;
         }
 
         /// <summary>

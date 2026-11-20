@@ -1,10 +1,10 @@
 /*
  * ================================================
  * Describe:      This script is used to renderer for Image type.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 15:13:47
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 15:13:47
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -46,7 +46,7 @@ namespace EasyFramework.Systems.RedDot
             if (!active) return;
             if (string.IsNullOrEmpty(node.ImagePath)) return;
 
-            var sprite = await RedDotSystem.Instance.LoadSpriteAsync(node.ImagePath);
+            var sprite = await node.LoadSpriteAsync(node.ImagePath);
             if (currentVersion != _renderVersion) return; // 旧的请求被丢弃
             image.sprite = sprite;
         }

@@ -95,7 +95,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.1.0"
+        "cn.efefef.core": "0.1.0",
+        "com.unity.textmeshpro": "3.0.9"
       }
     },
     "cn.efefef.ui": {

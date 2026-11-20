@@ -1,10 +1,10 @@
 /*
  * ================================================
  * Describe:      This script is used to manages nodes that need refresh.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 15:12:02
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 15:12:02
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -31,6 +31,16 @@ namespace EasyFramework.Systems.RedDot
             if (node == null)
                 return;
             _dirtyNodes.Add(node);
+        }
+
+        /// <summary>
+        /// 清空所有脏节点（生命周期退出时调用，避免残留已释放节点的引用）
+        /// <para>Clear all dirty nodes (called on teardown to avoid retaining disposed nodes).</para>
+        /// </summary>
+        public void Clear()
+        {
+            _dirtyNodes.Clear();
+            _processingBuffer.Clear();
         }
 
         /// <summary>

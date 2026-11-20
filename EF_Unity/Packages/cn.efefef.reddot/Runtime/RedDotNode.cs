@@ -1,16 +1,18 @@
 /*
  * ================================================
  * Describe:      This script is used to define the red dot tree node.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 15:11:19
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 15:11:19
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.1
  * ===============================================
  */
 
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace EasyFramework.Systems.RedDot
 {
@@ -71,7 +73,9 @@ namespace EasyFramework.Systems.RedDot
         private bool _disposed;             // 是否已释放
         private int _pendingNumber;         // 暂存的待应用数值
         private bool _hasPendingNumber;     // 是否有待应用的数值
+        private bool _hasOverride;          // 是否被显式设值（压制子节点聚合）
         private readonly List<RedDotNode> _children;    // 子节点列表
+        private readonly IRedDotContext _context;       // 子系统上下文（可注入，默认回退门面单例）
 
         /// <summary>
         /// 红点树节点
@@ -80,13 +84,25 @@ namespace EasyFramework.Systems.RedDot
         /// <param name="key">节点唯一标识 <para>Unique key of the node</para></param>
         /// <param name="displayType">显示类型 <para>Display type</para></param>
         /// <param name="imagePath">图片路径（可选，仅 Image/ImageNumber 使用） <para>Image path (optional, used only for Image/ImageNumber display type)</para></param>
-        public RedDotNode(string key, RedDotDisplayType displayType, string imagePath = null)
+        /// <param name="context">子系统上下文（null 则回退门面单例，便于测试注入） <para>Subsystem context (null falls back to the facade singleton, for test injection)</para></param>
+        public RedDotNode(string key, RedDotDisplayType displayType, string imagePath = null,
+            IRedDotContext context = null)
         {
             Key = key;
             DisplayType = displayType;
             ImagePath = imagePath;
             _children = new List<RedDotNode>();
+            _context = context;
         }
+
+        // 延迟解析上下文：构造时未注入则首次访问时取门面单例
+        private IRedDotContext Context => _context ?? RedDotSystem.Instance;
+
+        /// <summary>
+        /// 精灵异步加载委托（透传自上下文，供渲染器使用）
+        /// <para>Async sprite loader forwarded from context, for renderers.</para>
+        /// </summary>
+        public Func<string, UniTask<Sprite>> LoadSpriteAsync => Context.LoadSpriteAsync;
 
         /// <summary>
         /// 设置节点数值（实际生效在本帧的 LateUpdate 或手动 Flush 时）
@@ -106,7 +122,34 @@ namespace EasyFramework.Systems.RedDot
 
             _pendingNumber = number;
             _hasPendingNumber = true;
-            RedDotSystem.Instance.DirtySystem.MarkDirty(this);
+            Context.DirtySystem.MarkDirty(this);
+        }
+
+        /// <summary>
+        /// 强制设置数值并压制子节点聚合（用于表达"父节点强制态"，如强制关闭/强制常亮）
+        /// <para>Force a number and suppress child aggregation (for a forced parent state, e.g. force-off/force-on).</para>
+        /// <para>与 SetNumber 不同：此值不会被子节点变化覆盖，直到调用 ClearOverride。</para>
+        /// <para>Unlike SetNumber, this value is not overwritten by child changes until ClearOverride is called.</para>
+        /// </summary>
+        /// <param name="number">要强制设置的数值 <para>Number to force</para></param>
+        public void SetOverride(int number)
+        {
+            SetNumber(number);
+            _hasOverride = true;
+        }
+
+        /// <summary>
+        /// 清除显式设值覆盖，使节点恢复为聚合子节点数值
+        /// <para>Clear the explicit-value override so the node resumes aggregating its children.</para>
+        /// </summary>
+        public void ClearOverride()
+        {
+            if (!_hasOverride)
+                return;
+
+            _hasOverride = false;
+            // 用当前聚合目标重算：标记自身为脏，下一帧 Flush 时走聚合分支
+            Context.DirtySystem.MarkDirty(this);
         }
 
         // 刷新节点：应用 pending 数值 或 聚合子节点数值
@@ -122,7 +165,7 @@ namespace EasyFramework.Systems.RedDot
                 changed = true;
                 NotifyValueChanged();
             }
-            else if (_children.Count > 0)
+            else if (!_hasOverride && _children.Count > 0)
             {
                 int total = 0;
                 foreach (var child in _children)
@@ -146,7 +189,7 @@ namespace EasyFramework.Systems.RedDot
 
             // 只有值真正变化时才标记父节点为脏，避免不必要的级联刷新
             if (changed && Parent != null)
-                RedDotSystem.Instance.DirtySystem.MarkDirty(Parent);
+                Context.DirtySystem.MarkDirty(Parent);
         }
 
         /// <summary>
@@ -179,9 +222,9 @@ namespace EasyFramework.Systems.RedDot
 
             // 标记旧父和新父为脏，使下次 Flush 时重新聚合子节点数值
             if (oldParent != null)
-                RedDotSystem.Instance.DirtySystem.MarkDirty(oldParent);
+                Context.DirtySystem.MarkDirty(oldParent);
             if (parent != null)
-                RedDotSystem.Instance.DirtySystem.MarkDirty(parent);
+                Context.DirtySystem.MarkDirty(parent);
         }
 
         // 递归更新自身及所有子节点的深度缓存（仅在 SetParent 时调用）
@@ -226,7 +269,7 @@ namespace EasyFramework.Systems.RedDot
         private void NotifyValueChanged()
         {
             OnValueChanged?.Invoke(this);
-            RedDotSystem.Instance.EventSystem.SendNodeChanged(this);
+            Context.EventSystem.SendNodeChanged(this);
         }
 
         /// <summary>
@@ -255,6 +298,7 @@ namespace EasyFramework.Systems.RedDot
             OnValueChanged = null;
             _pendingNumber = 0;
             _hasPendingNumber = false;
+            _hasOverride = false;
         }
     }
 }

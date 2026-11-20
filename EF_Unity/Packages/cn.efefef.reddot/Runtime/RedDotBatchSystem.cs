@@ -1,10 +1,10 @@
 /*
  * ================================================
  * Describe:      This script is used to supports batch modifications and unified refresh.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 15:12:19
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-05-13 15:12:19
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.1
  * ===============================================
  */
@@ -18,6 +18,20 @@ namespace EasyFramework.Systems.RedDot
     public class RedDotBatchSystem
     {
         private int _batchDepth; // 批处理嵌套深度
+        private readonly IRedDotContext _context; // 子系统上下文（可注入）
+
+        /// <summary>
+        /// 构造批处理系统
+        /// <para>Construct the batch system.</para>
+        /// </summary>
+        /// <param name="context">子系统上下文（null 则回退门面单例） <para>Context (null falls back to the facade singleton)</para></param>
+        public RedDotBatchSystem(IRedDotContext context = null)
+        {
+            _context = context;
+        }
+
+        // 延迟解析上下文
+        private IRedDotContext Context => _context ?? RedDotSystem.Instance;
 
         /// <summary>
         /// 是否处于批处理模式
@@ -45,7 +59,7 @@ namespace EasyFramework.Systems.RedDot
                 _batchDepth = 0;
             if (_batchDepth == 0)
             {
-                RedDotSystem.Instance.DirtySystem.Flush();
+                Context.DirtySystem.Flush();
             }
         }
     }

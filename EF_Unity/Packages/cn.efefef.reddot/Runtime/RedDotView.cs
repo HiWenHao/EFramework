@@ -1,10 +1,10 @@
 /*
  * ================================================
  * Describe:      This script is used to attach to UI element to bind and render red dot node.
- * Author:        Alvin5100
+ * Author:        Alvin5100, AI
  * CreationTime:  2026-05-13 15:14:18
- * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-06-23 23:16:00
+ * ModifyAuthor:  Alvin5100, AI
+ * ModifyTime:    2026-11-20
  * ScriptVersion: 0.2
  * ===============================================
  */
@@ -29,9 +29,28 @@ namespace EasyFramework.Systems.RedDot
 
         private RedDotNode _node; // 绑定的红点节点
         private readonly List<RedDotRendererBase> _activeRenderers = new(); // 运行时生效的渲染器列表
+        private IRedDotContext _context; // 可注入的上下文（默认回退门面单例，便于测试）
+        private string _pendingKey;      // Start 之前 SetKey 记录的目标 key
+        private bool _initialized;       // Initialize 是否已执行（区分"未启动"与"已启动但无节点"）
+
+        // 延迟解析上下文
+        private IRedDotContext Context => _context ?? RedDotSystem.Instance;
+
+        /// <summary>
+        /// 注入子系统上下文（用于测试或自定义门面；null 恢复默认单例）
+        /// <para>Inject the subsystem context (for tests/custom facade; null restores the default singleton).</para>
+        /// </summary>
+        /// <param name="context">上下文实例 <para>Context instance</para></param>
+        public void SetContext(IRedDotContext context) => _context = context;
 
         private void Start()
         {
+            // 若 SetKey 在 Start 之前调用过，用记录的 key 覆盖序列化值
+            if (!string.IsNullOrEmpty(_pendingKey))
+            {
+                key = _pendingKey;
+                _pendingKey = null;
+            }
             Initialize().Forget();
         }
 
@@ -46,8 +65,9 @@ namespace EasyFramework.Systems.RedDot
         // 异步初始化
         private async UniTaskVoid Initialize()
         {
+            _initialized = true;
             await UniTask.Yield();
-            _node = RedDotSystem.Instance.GetNode(key);
+            _node = Context.GetNode(key);
             if (_node == null)
             {
                 D.Error($"RedDot Node Not Found : {key}");
@@ -104,8 +124,15 @@ namespace EasyFramework.Systems.RedDot
 
             key = newKey;
 
+            // Start 之前调用：记录 key，Start 里统一绑定（原实现此时直接 return 导致失效）
+            if (!_initialized)
+            {
+                _pendingKey = newKey;
+                return;
+            }
+
             if (_activeRenderers.Count <= 0) return;
-            _node = RedDotSystem.Instance.GetNode(key);
+            _node = Context.GetNode(key);
             if (_node == null)
             {
                 D.Error($"RedDot Node Not Found : {key}");
