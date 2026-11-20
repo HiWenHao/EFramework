@@ -66,6 +66,9 @@ namespace EasyFramework.Managers.Assets
         // 是否已成功初始化过某个实现
         private bool _isInitialized;
 
+        // 正在退出标记：置位后异步切换流程会放弃提交结果，避免 Quit 后新实现又被装载
+        private volatile bool _quitting;
+
         // 当前生效的资源管理器实现
         private IAssetsSystem _assetsManager;
 
@@ -122,32 +125,52 @@ namespace EasyFramework.Managers.Assets
         void ISingleton.Init()
         {
             OpenDebug = DefaultOpenDebug;
+            _quitting = false;
             _refCounts = new Dictionary<AssetKey, int>();
             InitDefaultAsync().Forget();
         }
 
         void ISingleton.Quit()
         {
-            _switchLock.Wait();
-            try
-            {
-                if (_assetsManager != null)
-                {
-                    _assetsManager.Destroy().Forget();
-                    _assetsManager = null;
-                }
-            }
-            finally
-            {
-                _switchLock.Release();
-            }
+            // 置位退出标记：让在途的 ConfirmAssetsManagerType 放弃后续提交，防止 Quit 后新实现又被装载。
+            _quitting = true;
+            _isInitialized = false;
 
             lock (_refGate)
+            {
                 _refCounts?.Clear();
-            _refCounts = null;
-            _isInitialized = false;
-            // 不 Dispose _switchLock：未访问 AvailableWaitHandle、不持有非托管资源；
-            // InitDefaultAsync 是 fire-and-forget，Quit 时若有切换在 WaitAsync，Dispose 会导致假故障。随单例对象 GC。
+                _refCounts = null;
+            }
+
+            // 不再用 _switchLock.Wait() 同步阻塞主线程：持锁方 ConfirmAssetsManagerType 在 await Initialize()
+            // 时若需主线程续帧（可替换 IAssetsSystem 可能真异步），同步等待会造成死锁。
+            // 改为 fire-and-forget 异步销毁，通过 WaitAsync 与在途切换串行化。
+            DestroyCurrentAsync().Forget();
+            // 不 Dispose _switchLock：InitDefaultAsync / 在途切换仍可能持有或等待它，随单例对象 GC。
+        }
+
+        // 异步销毁当前实现：等待在途切换结束后再销毁，全程不阻塞主线程
+        private async UniTask DestroyCurrentAsync()
+        {
+            try
+            {
+                await _switchLock.WaitAsync();
+                try
+                {
+                    var manager = _assetsManager;
+                    _assetsManager = null;
+                    if (manager != null)
+                        await manager.Destroy();
+                }
+                finally
+                {
+                    _switchLock.Release();
+                }
+            }
+            catch (Exception e)
+            {
+                Error($"Failed to destroy asset system on quit: {e}");
+            }
         }
 
         // 初始化默认实现，捕获异常避免 fire-and-forget 静默失败
@@ -206,6 +229,10 @@ namespace EasyFramework.Managers.Assets
             await _switchLock.WaitAsync();
             try
             {
+                // 拿锁后先检查退出标记：Quit 已排队销毁，此时不再装载新实现
+                if (_quitting)
+                    return;
+
                 if (_isInitialized && CurrentSystemType == systemType && _assetsManager != null)
                 {
                     Warning($"Already using [{CurrentSystemType}], no switch needed.");
@@ -227,6 +254,14 @@ namespace EasyFramework.Managers.Assets
 
                 newManager.OpenDebug = OpenDebug;
                 await newManager.Initialize();
+
+                // await 期间可能发生 Quit：新实现已初始化但不能提交，立即销毁避免泄漏。
+                // 旧实现由 DestroyCurrentAsync 负责销毁，此处不重复处理。
+                if (_quitting)
+                {
+                    await newManager.Destroy();
+                    return;
+                }
 
                 var oldManager = _assetsManager;
                 if (oldManager != null)
@@ -359,6 +394,9 @@ namespace EasyFramework.Managers.Assets
             var key = new AssetKey(packageName, path);
             lock (_refGate)
             {
+                // 加载与 Quit 竞态：退出已摘走引用计数表时不再登记，句柄退化为不计数（其 Dispose 也会因 _quitting 安全返回）
+                if (_refCounts == null)
+                    return new AssetHandle<T>(this, packageName, path, obj);
                 _refCounts.TryGetValue(key, out var count);
                 _refCounts[key] = count + 1;
             }
@@ -370,14 +408,15 @@ namespace EasyFramework.Managers.Assets
         // 供句柄 Dispose 调用：引用计数减一，归零时释放底层资源
         internal void ReleaseInternal(string packageName, string path)
         {
-            if (_assetsManager == null)
+            // 退出流程可能已把实现与引用计数表摘走：句柄在此时 Dispose 属于正常竞态，静默忽略即可
+            if (_quitting || _assetsManager == null)
                 return;
 
             var key = new AssetKey(packageName, path);
             bool shouldRelease;
             lock (_refGate)
             {
-                if (!_refCounts.TryGetValue(key, out var count))
+                if (_refCounts == null || !_refCounts.TryGetValue(key, out var count))
                     return;
                 shouldRelease = count <= 1;
                 if (shouldRelease)

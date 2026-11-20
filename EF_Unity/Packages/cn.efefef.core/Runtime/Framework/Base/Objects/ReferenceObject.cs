@@ -20,7 +20,7 @@ namespace EasyFramework
         /// 对象目前还存在引用
         /// <para>The object still has a reference at present.</para>
         /// </summary>
-        public bool HasReference => ReferenceCount <= 0;
+        public bool HasReference => ReferenceCount > 0;
 
         /// <summary>
         /// 当前被引用数量

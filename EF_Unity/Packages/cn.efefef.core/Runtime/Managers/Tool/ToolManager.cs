@@ -1,18 +1,19 @@
-/* 
+/*
  * ================================================
- * Describe:      This script is used to help other managers. 
+ * Describe:      This script is used to help other managers.
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2022-07-15 10:43:32
  * ModifyAuthor:  Xiaohei.Wang(Wenhao)
  * ModifyTime:    2022-07-15 10:43:32
  * Version:       0.1
  * ===============================================
-*/
+ */
 
 using System;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers
 {
@@ -24,6 +25,7 @@ namespace EasyFramework.Managers
     public class ToolManager : Singleton<ToolManager>, ISingleton
     {
         Vector3 _screenHalf;
+
         void ISingleton.Init()
         {
             _screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
@@ -31,10 +33,10 @@ namespace EasyFramework.Managers
 
         void ISingleton.Quit()
         {
-
         }
 
         #region Related to find.  查找相关
+
         /// <summary>
         /// Recursive search transform with name. 
         /// <para>根据名字递归查找</para>
@@ -94,12 +96,14 @@ namespace EasyFramework.Managers
                         return component;
                 }
             }
+
             if (target && !component)
                 D.Error($"The object of name:{name} has been found, but the type of {typeof(T)} component not found. ");
             else if (!target)
                 D.Error($"The object of name:{name} has been not found.");
             return component;
         }
+
         #endregion
 
         #region Related to audio. 音频相关
@@ -130,6 +134,7 @@ namespace EasyFramework.Managers
                 byteArr = BitConverter.GetBytes(intData[i]);
                 byteArr.CopyTo(bytesData, i * 2);
             }
+
             return bytesData;
         }
 
@@ -166,6 +171,7 @@ namespace EasyFramework.Managers
             clip.SetData(data, 0);
             return clip;
         }
+
         private float byteFileToFloat(byte first, byte second)
         {
             short sot;
@@ -177,8 +183,10 @@ namespace EasyFramework.Managers
         }
 
         #region WAV
+
         // Force save as 16-bit .wav
         const int BlockSize_16Bit = 2;
+
         /// <summary>
         /// Load the audio clip with unity data path.
         /// <para>通过路径加载音频文件</para>
@@ -191,9 +199,11 @@ namespace EasyFramework.Managers
         {
             if (!filePath.StartsWith(Application.persistentDataPath) && !filePath.StartsWith(Application.dataPath))
             {
-                D.Warning("This only supports files that are stored using Unity's Application data path. \nTo load bundled resources use 'Resources.Load(\"filename\") typeof(AudioClip)' method. \nhttps://docs.unity3d.com/ScriptReference/Resources.Load.html");
+                D.Warning(
+                    "This only supports files that are stored using Unity's Application data path. \nTo load bundled resources use 'Resources.Load(\"filename\") typeof(AudioClip)' method. \nhttps://docs.unity3d.com/ScriptReference/Resources.Load.html");
                 return null;
             }
+
             byte[] fileBytes = File.ReadAllBytes(filePath + "/" + name);
             return ByteArrayToAudioClip(fileBytes, name);
         }
@@ -214,7 +224,9 @@ namespace EasyFramework.Managers
             ushort audioFormat = BitConverter.ToUInt16(fileBytes, 20);
             // NB: Only uncompressed PCM wav files are supported.
             string formatCode = FormatCode(audioFormat);
-            Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
+            Debug.AssertFormat(audioFormat == 1 || audioFormat == 65534,
+                "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.",
+                audioFormat, formatCode);
             ushort channels = BitConverter.ToUInt16(fileBytes, 22);
             int sampleRate = BitConverter.ToInt32(fileBytes, 24);
             ushort bitDepth = BitConverter.ToUInt16(fileBytes, 34);
@@ -234,11 +246,14 @@ namespace EasyFramework.Managers
         }
 
         #region wav file bytes to Unity AudioClip conversion methods wav文件字节到Unity AudioClip的转换方法
+
         private float[] Convert8BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
             int wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize,
+                "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize,
+                headerOffset);
             float[] data = new float[wavSize];
             sbyte maxValue = sbyte.MaxValue;
             int idx = 0;
@@ -247,13 +262,17 @@ namespace EasyFramework.Managers
                 data[idx] = (float)source[idx] / maxValue;
                 ++idx;
             }
+
             return data;
         }
+
         private float[] Convert16BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
             int wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize,
+                "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize,
+                headerOffset);
             int x = sizeof(Int16); // block size = 2
             int convertedSize = wavSize / x;
             float[] data = new float[convertedSize];
@@ -266,19 +285,25 @@ namespace EasyFramework.Managers
                 data[idx] = (float)BitConverter.ToInt16(source, offset) / maxValue;
                 ++idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+
+            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}",
+                data.Length, convertedSize);
             return data;
         }
+
         private float[] Convert24BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
             int wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize,
+                "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize,
+                headerOffset);
             int x = 3; // block size = 3
             int convertedSize = wavSize / x;
             int maxValue = Int32.MaxValue;
             float[] data = new float[convertedSize];
-            byte[] block = new byte[sizeof(int)]; // using a 4 byte block for copying 3 bytes, then copy bytes with 1 offset
+            byte[]
+                block = new byte[sizeof(int)]; // using a 4 byte block for copying 3 bytes, then copy bytes with 1 offset
             int offset = 0;
             int idx = 0;
             while (idx < convertedSize)
@@ -288,14 +313,19 @@ namespace EasyFramework.Managers
                 data[idx] = (float)BitConverter.ToInt32(block, 0) / maxValue;
                 ++idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+
+            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}",
+                data.Length, convertedSize);
             return data;
         }
+
         private float[] Convert32BitByteArrayToAudioClipData(byte[] source, int headerOffset, int dataSize)
         {
             int wavSize = BitConverter.ToInt32(source, headerOffset);
             headerOffset += sizeof(int);
-            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize, "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+            Debug.AssertFormat(wavSize > 0 && wavSize == dataSize,
+                "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize,
+                headerOffset);
             int x = sizeof(float); // block size = 4
             int convertedSize = wavSize / x;
             Int32 maxValue = Int32.MaxValue;
@@ -308,9 +338,12 @@ namespace EasyFramework.Managers
                 data[idx] = (float)BitConverter.ToInt32(source, offset) / maxValue;
                 ++idx;
             }
-            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+
+            Debug.AssertFormat(data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}",
+                data.Length, convertedSize);
             return data;
         }
+
         #endregion
 
         /// <summary>
@@ -325,11 +358,11 @@ namespace EasyFramework.Managers
             const int headerSize = 44;
             // get bit depth
             ushort bitDepth = 16; //BitDepth (audioClip);
-                                  // NB: Only supports 16 bit
-                                  //Debug.AssertFormat (bitDepth == 16, "Only converting 16 bit is currently supported. The audio clip data is {0} bit.", bitDepth);
-                                  // total file size = 44 bytes for header format and audioClip.samples * factor due to float to Int16 / sbyte conversion
+            // NB: Only supports 16 bit
+            //Debug.AssertFormat (bitDepth == 16, "Only converting 16 bit is currently supported. The audio clip data is {0} bit.", bitDepth);
+            // total file size = 44 bytes for header format and audioClip.samples * factor due to float to Int16 / sbyte conversion
             int fileSize = audioClip.samples * BlockSize_16Bit + headerSize; // BlockSize (bitDepth)
-                                                                             // chunk descriptor (riff)
+            // chunk descriptor (riff)
             WriteFileHeader(ref stream, fileSize);
             // file header (fmt)
             WriteFileFormat(ref stream, audioClip.channels, audioClip.frequency, bitDepth);
@@ -344,6 +377,7 @@ namespace EasyFramework.Managers
         }
 
         #region write .wav file functions
+
         private int WriteFileHeader(ref MemoryStream stream, int fileSize)
         {
             int count = 0;
@@ -360,6 +394,7 @@ namespace EasyFramework.Managers
             Debug.AssertFormat(count == total, "Unexpected wav descriptor byte count: {0} == {1}", count, total);
             return count;
         }
+
         private int WriteFileFormat(ref MemoryStream stream, int channels, int sampleRate, ushort bitDepth)
         {
             int count = 0;
@@ -382,6 +417,7 @@ namespace EasyFramework.Managers
             Debug.AssertFormat(count == total, "Unexpected wav fmt byte count: {0} == {1}", count, total);
             return count;
         }
+
         private int WriteFileData(ref MemoryStream stream, AudioClip audioClip, ushort bitDepth)
         {
             int count = 0;
@@ -402,6 +438,7 @@ namespace EasyFramework.Managers
             //Debug.AssertFormat(bytes.Length == subchunk2Size, "Unexpected AudioClip to wav subchunk2 size: {0} == {1}", bytes.Length, subchunk2Size);
             return count;
         }
+
         private byte[] ConvertAudioClipDataToInt16ByteArray(float[] data)
         {
             MemoryStream dataStream = new MemoryStream();
@@ -413,12 +450,15 @@ namespace EasyFramework.Managers
                 dataStream.Write(BitConverter.GetBytes(Convert.ToInt16(data[i] * maxValue)), 0, x);
                 ++i;
             }
+
             byte[] bytes = dataStream.ToArray();
             // Validate converted bytes
-            Debug.AssertFormat(data.Length * x == bytes.Length, "Unexpected float[] to Int16 to byte[] size: {0} == {1}", data.Length * x, bytes.Length);
+            Debug.AssertFormat(data.Length * x == bytes.Length,
+                "Unexpected float[] to Int16 to byte[] size: {0} == {1}", data.Length * x, bytes.Length);
             dataStream.Dispose();
             return bytes;
         }
+
         private int WriteBytesToMemoryStream(ref MemoryStream stream, byte[] bytes, string tag = "")
         {
             int count = bytes.Length;
@@ -426,6 +466,7 @@ namespace EasyFramework.Managers
             //Debug.LogFormat ("WAV:{0} wrote {1} bytes.", tag, count);
             return count;
         }
+
         #endregion
 
         /// <summary>
@@ -437,14 +478,18 @@ namespace EasyFramework.Managers
         /// <param name="audioClip">Audio clip.<para>音频文件</para></param>
         public ushort BitDepth(AudioClip audioClip)
         {
-            ushort bitDepth = Convert.ToUInt16(audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
-            Debug.AssertFormat(bitDepth == 8 || bitDepth == 16 || bitDepth == 32, "Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth);
+            ushort bitDepth =
+                Convert.ToUInt16(audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
+            Debug.AssertFormat(bitDepth == 8 || bitDepth == 16 || bitDepth == 32,
+                "Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth);
             return bitDepth;
         }
+
         private int BytesPerSample(ushort bitDepth)
         {
             return bitDepth / 8;
         }
+
         private string FormatCode(ushort code)
         {
             switch (code)
@@ -464,11 +509,13 @@ namespace EasyFramework.Managers
                     return "";
             }
         }
+
         #endregion
 
         #endregion
 
         #region Related to screen.屏幕相关
+
         /// <summary>
         /// Set screen orientation.   
         /// <para>设置屏幕朝向</para>
@@ -553,6 +600,7 @@ namespace EasyFramework.Managers
 
             return PositionOrientationType.None;
         }
+
         #endregion
 
 
@@ -575,11 +623,12 @@ namespace EasyFramework.Managers
             {
                 return true;
             }
+
             return false;
         }
 
         /// <summary>
-        /// Uesr the camera shot a texture2d.
+        /// Uesr the camera shot a textrue2d.
         /// <para>通过摄像机截取一张图片</para>
         /// </summary>
         /// <param name="camera">截图片的相机</param>
@@ -588,14 +637,28 @@ namespace EasyFramework.Managers
         /// <returns>Texture2D</returns>
         public Texture2D Screenshots(Camera camera, int width, int height)
         {
+            // 保存原有状态：截图结束后必须恢复，否则该相机后续渲染会持续指向临时 RT，且泄漏 GPU 资源
+            RenderTexture prevTarget = camera.targetTexture;
+            RenderTexture prevActive = RenderTexture.active;
+
             RenderTexture rt = new RenderTexture(width, height, 16);
-            camera.targetTexture = rt;
-            camera.Render();
-            RenderTexture.active = rt;
-            Texture2D tex2D = new Texture2D(width, height);
-            tex2D.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            tex2D.Apply();
-            return tex2D;
+            try
+            {
+                camera.targetTexture = rt;
+                camera.Render();
+                RenderTexture.active = rt;
+                Texture2D tex2D = new Texture2D(width, height);
+                tex2D.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                tex2D.Apply();
+                return tex2D;
+            }
+            finally
+            {
+                camera.targetTexture = prevTarget;
+                RenderTexture.active = prevActive;
+                rt.Release();
+                Object.Destroy(rt);
+            }
         }
     }
 
@@ -609,14 +672,17 @@ namespace EasyFramework.Managers
         /// 竖屏
         /// </summary>
         Portrait = 0,
+
         /// <summary>
         /// 竖屏反转
         /// </summary>
         PortraitUpsideDown,
+
         /// <summary>
         /// 左横屏
         /// </summary>
         LandscapeLeft,
+
         /// <summary>
         /// 右横屏
         /// </summary>
@@ -631,14 +697,19 @@ namespace EasyFramework.Managers
     {
         /// <summary> 非屏幕坐标 </summary>
         None,
+
         /// <summary> 中心 </summary>
         Center,
+
         /// <summary> 左上 </summary>
         UpperLeft,
+
         /// <summary> 右上 </summary>
         UpperRight,
+
         /// <summary> 右下 </summary>
         LowRight,
+
         /// <summary> 左下 </summary>
         LeftLower,
     }
