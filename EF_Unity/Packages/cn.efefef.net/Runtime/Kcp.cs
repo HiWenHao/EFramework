@@ -101,8 +101,8 @@ namespace EasyFramework.Systems.Net
             // 数据长度
             public int Len;
 
-            // 下次重传的时间点
-            public int ResendTs;
+            // 下次重传的时间点（32 位时间戳，与 KCP 官方 IUINT32 一致，支持自然回绕）
+            public uint ResendTs;
 
             // 该段当前的重传超时
             public int Rto;
@@ -538,14 +538,14 @@ namespace EasyFramework.Systems.Net
                     needsend = true;
                     seg.Xmit++;
                     seg.Rto = _rxRto;
-                    seg.ResendTs = (int)(current + seg.Rto + Math.Min(seg.Rto, _interval));
+                    seg.ResendTs = (uint)current + (uint)(seg.Rto + Math.Min(seg.Rto, _interval));
                 }
-                else if (current - seg.ResendTs >= 0)
+                else if (Itimediff((uint)current, seg.ResendTs) >= 0)
                 {
                     needsend = true;
                     seg.Xmit++;
                     seg.Rto += Math.Max(seg.Rto >> 3, RtoMin);
-                    seg.ResendTs = (int)(current + seg.Rto);
+                    seg.ResendTs = (uint)current + (uint)seg.Rto;
                     if (seg.Xmit >= _deadLink) _dead = true;
                 }
                 else if (_fastresend > 0 && seg.FastAck >= _fastresend)
@@ -553,7 +553,7 @@ namespace EasyFramework.Systems.Net
                     needsend = true;
                     seg.Xmit++;
                     seg.FastAck = 0;
-                    seg.ResendTs = (int)(current + seg.Rto);
+                    seg.ResendTs = (uint)current + (uint)seg.Rto;
                 }
 
                 if (!needsend) continue;

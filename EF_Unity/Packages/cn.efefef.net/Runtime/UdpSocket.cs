@@ -73,14 +73,36 @@ namespace EasyFramework.Systems.Net
 
             try
             {
-                _remote = new IPEndPoint(Dns.GetHostAddresses(host)[0], port);
-                _client = new UdpClient();
+                // 不盲目取 [0]：DNS 可能先返回 IPv6，而默认 UdpClient 为 IPv4，导致协议族不匹配。
+                // 优先选第一个 IPv4，无 IPv4 时再退回首个地址（保留纯 IPv6 环境可用性）。
+                IPAddress[] addresses = Dns.GetHostAddresses(host);
+                if (addresses == null || addresses.Length == 0)
+                {
+                    LastError = $"DNS 解析无结果: {host}";
+                    Close();
+                    return false;
+                }
+
+                IPAddress remoteAddress = addresses[0];
+                for (int i = 0; i < addresses.Length; i++)
+                {
+                    if (addresses[i].AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        remoteAddress = addresses[i];
+                        break;
+                    }
+                }
+
+                _remote = new IPEndPoint(remoteAddress, port);
+                _client = new UdpClient(remoteAddress.AddressFamily);
                 _client.Connect(_remote);
                 RemoteEndPoint = _remote.ToString();
+                LastError = null;
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                LastError = e.Message;
                 Close();
                 return false;
             }
