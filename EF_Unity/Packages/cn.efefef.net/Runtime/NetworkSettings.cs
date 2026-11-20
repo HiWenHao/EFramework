@@ -27,7 +27,9 @@ namespace EasyFramework.Systems.Net
         #region Fields
 
         // 退避抖动用的随机源（纯 C#，避免依赖 UnityEngine.Random）
+        // Random 非线程安全：重连退避可能被多线程调用，用锁保护nextDouble
         private static readonly Random JitterRandom = new Random();
+        private static readonly object JitterLock = new();
 
         #endregion
 
@@ -188,7 +190,10 @@ namespace EasyFramework.Systems.Net
             // 抖动：delay *= (1 ± jitter)，避免惊群
             if (ReconnectJitter > 0f)
             {
-                float offset = ((float)JitterRandom.NextDouble() * 2f - 1f) * ReconnectJitter;
+                double jitterValue;
+                lock (JitterLock)
+                    jitterValue = JitterRandom.NextDouble();
+                float offset = ((float)jitterValue * 2f - 1f) * ReconnectJitter;
                 delay *= 1f + offset;
                 if (delay < 0.1f) delay = 0.1f;
             }

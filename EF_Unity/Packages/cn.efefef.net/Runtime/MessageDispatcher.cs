@@ -348,7 +348,26 @@ namespace EasyFramework.Systems.Net
         public void Clear()
         {
             _handlers.Clear();
-            _pendingCalls.Clear();
+
+            // 先通知所有等待方再清空，否则挂起的 RPC 永远等不到响应/失败，直到超时（或永不超时时永久挂起）。
+            // 与 CancelPendingCalls/CheckTimeouts 一致：先快照 key 再逐个 Remove，避免回调内增删集合导致枚举失效；
+            // 单个回调抛异常做隔离，保证其余等待方也能被通知、字典一定被清空。
+            if (_pendingCalls.Count > 0)
+            {
+                var rpcIds = new List<int>(_pendingCalls.Keys);
+                foreach (int rpcId in rpcIds)
+                {
+                    if (!_pendingCalls.Remove(rpcId, out var pending)) continue;
+                    try
+                    {
+                        pending.OnFailure?.Invoke(NetRpcFailure.SessionClosed);
+                    }
+                    catch (Exception e)
+                    {
+                        D.Error($"[ MessageDispatcher ] Clear 通知等待方失败 (rpcId={rpcId}): {e}");
+                    }
+                }
+            }
         }
 
         // 注册或覆盖一个处理器
