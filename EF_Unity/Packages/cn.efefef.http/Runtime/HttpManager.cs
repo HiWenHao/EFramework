@@ -5,7 +5,7 @@
  * Author:          Alvin8412
  * CreationTime:    2026-04-02 21:36:59
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-11-13 15:38:54
+ * ModifyTime:      2026-11-20 23:44:42
  * ScriptVersion:   0.1
  * ================================================
  */
@@ -569,6 +569,10 @@ namespace EasyFramework.Systems.Http
                 }
 
                 return await PostMultipartAsync(url, formData, headers, timeout, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw; // 取消是调用方主动行为，必须透传，不能被当成失败吞成空字符串
             }
             catch (Exception ex)
             {

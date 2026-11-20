@@ -1,16 +1,15 @@
 /*
  * ================================================
- * Describe:      默认 HTTP 发送器：基于 UnityWebRequest 执行请求，按上下文应用默认值并套用重试策略。
- *                只认识 HttpContext，不认识缓存与设置，替换实现不影响其它服务。
- * Author:        Alvin8412
- * CreationTime:  2026-11-13 14:40
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-11-13 14:40
- * ScriptVersion: 1.0
+ * Describe:        默认 HTTP 发送器：基于 UnityWebRequest 执行请求，按上下文应用默认值并套用重试策略。
+ *                  只认识 HttpContext，不认识缓存与设置，替换实现不影响其它服务。
+ * Author:          Alvin8412
+ * CreationTime:    2026-11-13 14:40
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-11-20 23:43:38
+ * ScriptVersion:   0.1
  * ================================================
  */
 
-using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
@@ -46,13 +45,26 @@ namespace EasyFramework.Systems.Http
 
                 attempt++;
                 var response = await SendOnceAsync(request, token);
-                if (response.IsSuccess || attempt > max)
+                if (response.IsSuccess || attempt > max || !IsRetriable(response))
                     return response;
 
                 int delay = policy?.DelayMs(attempt) ?? 0;
                 if (delay > 0)
                     await UniTask.Delay(delay, cancellationToken: token);
             }
+        }
+
+        // 仅对可恢复失败重试：网络错误（无 HTTP 状态）/5xx 服务端错误/408 超时/429 限流。
+        // 4xx 客户端错误（401/403/404 等）重试无意义，只会制造重试风暴
+        private static bool IsRetriable(HttpResponse response)
+        {
+            long code = response.StatusCode;
+
+            return code switch
+            {
+                <= 0 or >= 500 and <= 599 => true,
+                _ => code is 408 or 429
+            };
         }
 
         // 单次发送：构建请求 → 应用默认值 → 发送 → 收敛为 HttpResponse
@@ -75,7 +87,7 @@ namespace EasyFramework.Systems.Http
             }
             catch (UnityWebRequestException e)
             {
-                return new HttpResponse { IsSuccess = false, Error = e.Message };
+                return new HttpResponse { IsSuccess = false, Error = e.Message, StatusCode = e.ResponseCode };
             }
         }
 
@@ -135,8 +147,11 @@ namespace EasyFramework.Systems.Http
 
             uwr.timeout = request.TimeoutOverride ?? _context.DefaultTimeout;
 
-            if (_context.CertificateHandler != null)
-                uwr.certificateHandler = _context.CertificateHandler;
+            if (_context.CertificateHandler == null) return;
+            uwr.certificateHandler = _context.CertificateHandler;
+            // 共享的 CertificateHandler 不能随单个请求 Dispose 被销毁，
+            // 否则第一个请求结束后，所有并发/后续请求都拿到已释放的 handler
+            uwr.disposeCertificateHandlerOnDispose = false;
         }
 
         // 把各类 DownloadHandler 的结果收敛到统一响应

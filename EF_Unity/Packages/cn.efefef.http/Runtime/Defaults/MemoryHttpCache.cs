@@ -1,12 +1,12 @@
 /*
  * ================================================
- * Describe:      可选的内存缓存示例（非默认）。业务可注入它，也可自行实现磁盘/持久化缓存。门面默认不缓存。
- *                注意：仅对 Result == Text 的响应生效（纹理/资源包/文件不进缓存）。
- * Author:        Alvin8412
- * CreationTime:  2026-11-13 14:40
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-11-13 14:40
- * ScriptVersion: 1.0
+ * Describe:        可选的内存缓存示例（非默认）。业务可注入它，也可自行实现磁盘/持久化缓存。门面默认不缓存。
+ *                  注意：仅对 Result == Text 的响应生效（纹理/资源包/文件不进缓存）。
+ * Author:          Alvin8412
+ * CreationTime:    2026-11-13 14:40
+ * ModifyAuthor:    Alvin8412
+ * ModifyTime:      2026-11-20 23:44:42
+ * ScriptVersion:   0.1
  * ================================================
  */
 
@@ -32,6 +32,12 @@ namespace EasyFramework.Systems.Http
 
         #endregion
 
+        /// <summary>
+        /// 缓存条目上限（≤0 表示不限制）。请在 Initialize 前设置。
+        /// <para>Max cached entries (≤0 = unlimited). Set before Initialize.</para>
+        /// </summary>
+        public int MaxEntries { get; set; } = 128;
+
         #region 方法 / Methods
 
         /// <summary>
@@ -52,7 +58,6 @@ namespace EasyFramework.Systems.Http
         public void Dispose()
         {
             _context = null;
-            Clear();
             _store = null;
         }
 
@@ -68,12 +73,30 @@ namespace EasyFramework.Systems.Http
         public async UniTask<HttpResponse> GetOrLoadAsync(string key, IHttpSender sender,
             HttpRequest request, CancellationToken token)
         {
-            if (_store.TryGetValue(key, out var cached))
+            // 捕获局部引用：Dispose 在 await 期间可能置空字段，写入时用局部引用避免 NRE
+            var store = _store;
+            if (store == null)
+                return await sender.SendAsync(request, token); // 未初始化/已释放 → 直通，不缓存
+
+            if (store.TryGetValue(key, out var cached))
                 return cached;
 
             var fresh = await sender.SendAsync(request, token);
-            if (fresh.IsSuccess)
-                _store[key] = fresh;
+            if (!fresh.IsSuccess) return fresh;
+
+            store[key] = fresh;
+
+            // 简单容量淘汰：超出上限时移除最早插入的一项（Dictionary 保序在 .NET/Core 稳定，
+            // 作为示例实现足够；如需严格 LRU 业务可自行实现 IHttpCache）
+            if (MaxEntries > 0 && store.Count > MaxEntries)
+            {
+                foreach (var old in store.Keys)
+                {
+                    if (old == key) continue;
+                    store.Remove(old);
+                    break;
+                }
+            }
 
             return fresh;
         }
@@ -82,7 +105,10 @@ namespace EasyFramework.Systems.Http
         /// 清空缓存（显式删除）
         /// <para>Clear the cache (explicit delete)</para>
         /// </summary>
-        public void Clear() => _store.Clear();
+        public void Clear()
+        {
+            _store?.Clear();
+        }
 
         #endregion
     }
