@@ -106,7 +106,7 @@ namespace EasyFramework.Systems.RedDot
         private bool EnsureSubsystemsReady()
         {
             if (_subsystemsSet) return true;
-            D.Error("[ RedDotManager ] Subsystems not set. Call SetupNewSystem before using red dot features. Operation ignored.");
+            D.Error("[ RedDotSystem ] Subsystems not set. Call InitSubsystem before using red dot features. Operation ignored.");
             return false;
         }
 
@@ -263,7 +263,7 @@ namespace EasyFramework.Systems.RedDot
                 // 无进展 = 环或缺失父，逐个告警后退出
                 foreach (var nodeDef in pending)
                 {
-                    D.Error($"[ RedDotManager ] RegisterNode cycle detected at: {nodeDef.Key}");
+                    D.Error($"[ RedDotSystem ] RegisterNode cycle detected at: {nodeDef.Key}");
                 }
 
                 break;

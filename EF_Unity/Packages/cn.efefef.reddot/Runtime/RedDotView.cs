@@ -32,6 +32,7 @@ namespace EasyFramework.Systems.RedDot
         private IRedDotContext _context; // 可注入的上下文（默认回退门面单例，便于测试）
         private string _pendingKey;      // Start 之前 SetKey 记录的目标 key
         private bool _initialized;       // Initialize 是否已执行（区分"未启动"与"已启动但无节点"）
+        private bool _destroyed;         // 是否已销毁：Initialize/SetKey/Refresh 在异步挂起点后据此放弃订阅与渲染
 
         // 延迟解析上下文
         private IRedDotContext Context => _context ?? RedDotSystem.Instance;
@@ -51,15 +52,16 @@ namespace EasyFramework.Systems.RedDot
                 key = _pendingKey;
                 _pendingKey = null;
             }
+
             Initialize().Forget();
         }
 
         private void OnDestroy()
         {
-            if (_node != null)
-            {
-                _node.OnValueChanged -= Refresh;
-            }
+            _destroyed = true;
+            if (_node == null) return;
+            _node.OnValueChanged -= Refresh;
+            _node = null;
         }
 
         // 异步初始化
@@ -67,6 +69,7 @@ namespace EasyFramework.Systems.RedDot
         {
             _initialized = true;
             await UniTask.Yield();
+            if (_destroyed) return;
             _node = Context.GetNode(key);
             if (_node == null)
             {
@@ -99,8 +102,15 @@ namespace EasyFramework.Systems.RedDot
         {
             foreach (var render in _activeRenderers)
             {
-                try { await render.Render(node); }
-                catch (System.Exception e) { D.Error($"[RedDotView] {render} Render failed: {e.Message}"); }
+                if (_destroyed) return;
+                try
+                {
+                    await render.Render(node);
+                }
+                catch (System.Exception e)
+                {
+                    D.Error($"[RedDotView] {render} Render failed: {e.Message}");
+                }
             }
         }
 
@@ -113,7 +123,7 @@ namespace EasyFramework.Systems.RedDot
         /// <param name="newKey">新的节点键 <para>New node key</para></param>
         public void SetKey(string newKey)
         {
-            if (key == newKey) return;
+            if (_destroyed || key == newKey) return;
 
             // 若已绑定节点，先取消旧订阅
             if (_node != null)

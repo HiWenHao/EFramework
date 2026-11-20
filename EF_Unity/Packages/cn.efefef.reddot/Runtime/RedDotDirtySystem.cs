@@ -34,6 +34,17 @@ namespace EasyFramework.Systems.RedDot
         }
 
         /// <summary>
+        /// 从脏集合中移除节点（节点被注销/释放时调用，避免 Flush 访问已释放节点）
+        /// <para>Unmark a node (called when the node is unregistered/disposed, so Flush never touches a disposed node).</para>
+        /// </summary>
+        public void UnmarkDirty(RedDotNode node)
+        {
+            if (node == null)
+                return;
+            _dirtyNodes.Remove(node);
+        }
+
+        /// <summary>
         /// 清空所有脏节点（生命周期退出时调用，避免残留已释放节点的引用）
         /// <para>Clear all dirty nodes (called on teardown to avoid retaining disposed nodes).</para>
         /// </summary>
@@ -62,7 +73,10 @@ namespace EasyFramework.Systems.RedDot
 
             for (int i = 0; i < _processingBuffer.Count; i++)
             {
-                _processingBuffer[i].Refresh();
+                // 快照期间节点可能已被注销：跳过已释放节点，避免访问其清空后的子节点/父节点状态
+                var node = _processingBuffer[i];
+                if (!node.IsDisposed)
+                    node.Refresh();
             }
 
             _processingBuffer.Clear();

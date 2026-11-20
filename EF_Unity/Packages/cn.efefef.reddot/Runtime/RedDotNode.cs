@@ -70,10 +70,10 @@ namespace EasyFramework.Systems.RedDot
         /// </summary>
         public int Depth { get; private set; }
 
-        private bool _disposed;             // 是否已释放
-        private int _pendingNumber;         // 暂存的待应用数值
-        private bool _hasPendingNumber;     // 是否有待应用的数值
-        private bool _hasOverride;          // 是否被显式设值（压制子节点聚合）
+        internal bool IsDisposed { get; private set; }  // 是否已释放 供脏系统在 Flush 时跳过已释放节点
+        private int _pendingNumber;                     // 暂存的待应用数值
+        private bool _hasPendingNumber;                 // 是否有待应用的数值
+        private bool _hasOverride;                      // 是否被显式设值（压制子节点聚合）
         private readonly List<RedDotNode> _children;    // 子节点列表
         private readonly IRedDotContext _context;       // 子系统上下文（可注入，默认回退门面单例）
 
@@ -278,10 +278,17 @@ namespace EasyFramework.Systems.RedDot
         /// </summary>
         public void Dispose()
         {
-            if (_disposed)
+            if (IsDisposed)
                 return;
 
-            _disposed = true;
+            IsDisposed = true;
+
+            // 从脏集合移除自身：否则已释放节点会残留在 DirtySystem 中，下次 Flush 仍持有其引用（即使 Flush 有 IsDisposed 防御，
+            // 也不应长期持有）。Quit 流程中 Context 仍指向有效门面，安全。
+            var dirty = Context?.DirtySystem;
+            if (dirty != null)
+                dirty.UnmarkDirty(this);
+
             RemoveFromParent();
             if (_children != null)
             {
