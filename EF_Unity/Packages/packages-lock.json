@@ -13,7 +13,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1",
+        "cn.efefef.core": "0.1.0",
         "cn.efefef.preference": "0.0.1"
       }
     },
@@ -33,7 +33,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1"
+        "cn.efefef.core": "0.1.0"
       }
     },
     "cn.efefef.http": {
@@ -41,7 +41,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1",
+        "cn.efefef.core": "0.1.0",
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },
@@ -61,7 +61,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1",
+        "cn.efefef.core": "0.1.0",
         "cn.efefef.datable": "0.0.1",
         "cn.efefef.preference": "0.0.1"
       }
@@ -71,7 +71,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1"
+        "cn.efefef.core": "0.1.0"
       }
     },
     "cn.efefef.packages": {
@@ -79,7 +79,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1"
+        "cn.efefef.core": "0.1.0"
       }
     },
     "cn.efefef.preference": {
@@ -95,7 +95,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1"
+        "cn.efefef.core": "0.1.0"
       }
     },
     "cn.efefef.ui": {
@@ -103,7 +103,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1",
+        "cn.efefef.core": "0.1.0",
         "com.unity.ugui": "1.0.0",
         "com.unity.render-pipelines.universal": "14.0.9"
       }
@@ -113,7 +113,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "cn.efefef.core": "0.0.1",
+        "cn.efefef.core": "0.1.0",
         "com.tuyoogame.yooasset": "2.3.19"
       }
     },

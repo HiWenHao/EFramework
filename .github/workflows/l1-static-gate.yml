@@ -1,0 +1,25 @@
+name: L1 Static Gate
+
+# 纯静态检查：不依赖 Unity，不需要许可证，几秒跑完。
+# 检查项：JSON 合法性/包名一致、core 依赖版本一致、[Manager] 命名铁律、Runtime 零 Linq。
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  static-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run L1 static gate
+        run: python tools/l1_static_gate.py
