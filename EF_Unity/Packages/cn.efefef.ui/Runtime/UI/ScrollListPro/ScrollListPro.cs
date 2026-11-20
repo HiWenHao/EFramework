@@ -1313,7 +1313,13 @@ namespace EasyFramework.Managers.Ui
                     : new Vector2(offScreenY, 0);
             }
 
-            _activeItems[_activeItems.FindIndex(a => a.Index == index)] = FillAndMeasureNew(ai);
+            // FindIndex 找不到时返回 -1，直接索引会抛异常：已存在则原地替换，不存在则追加（保证项被追踪）
+            int slot = _activeItems.FindIndex(a => a.Index == index);
+            var measured = FillAndMeasureNew(ai);
+            if (slot >= 0)
+                _activeItems[slot] = measured;
+            else
+                _activeItems.Add(measured);
             RebuildCumulativePositions();
             RefreshVisibleItems(true);
         }
