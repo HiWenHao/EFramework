@@ -456,24 +456,30 @@ namespace EasyFramework.Launcher
                     if (!string.IsNullOrEmpty(entry.Location))
                     {
                         var handle = _package.LoadAssetAsync(entry.Location, typeof(TextAsset));
-                        // 直接 await Provider 的 Task（完成即续，零帧延迟）；句柄失效时它返回 null，用轮询兜底
-                        if (handle.Task is { } loadTask)
-                            await loadTask;
-                        else
-                            await UniTask.WaitUntil(() => handle.IsDone, cancellationToken: token);
-
-                        token.ThrowIfCancellationRequested();
-
-                        EOperationStatus status = handle.Status;
-                        string lastError = handle.LastError;
-                        if (status == EOperationStatus.Succeed)
+                        EOperationStatus status;
+                        string lastError;
+                        try
                         {
-                            var textAsset = handle.GetAssetObject<TextAsset>();
-                            dllBytes = textAsset != null ? textAsset.bytes : null;
-                        }
+                            // 直接 await Provider 的 Task（完成即续，零帧延迟）；句柄失效时它返回 null，用轮询兜底
+                            if (handle.Task is { } loadTask)
+                                await loadTask;
+                            else
+                                await UniTask.WaitUntil(() => handle.IsDone, cancellationToken: token);
 
-                        // 无论成功失败都释放句柄，失败分支不能泄漏
-                        handle.Release();
+                            token.ThrowIfCancellationRequested();
+
+                            status = handle.Status;
+                            lastError = handle.LastError;
+                            if (status == EOperationStatus.Succeed)
+                            {
+                                var textAsset = handle.GetAssetObject<TextAsset>();
+                                dllBytes = textAsset != null ? textAsset.bytes : null;
+                            }
+                        }
+                        finally
+                        {
+                            handle.Release();
+                        }
 
                         if (status != EOperationStatus.Succeed)
                         {

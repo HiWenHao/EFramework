@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7dca90a5ae2fc64e8b54a6eb9565560, type: 3}
   m_Name: FillLauncherConfig
   m_EditorClassIdentifier: 
-  PlayMode: 2
+  PlayMode: 0
   PackageName: DefaultPackage
   TimeoutSeconds: 60
   DownloadingMaxNumber: 10
