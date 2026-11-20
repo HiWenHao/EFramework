@@ -61,14 +61,14 @@ namespace EasyFramework.Managers.Audio
                 ? $"{EFC.Projects.AppConst.AudioPath}{key}"
                 : key;
 
-            // 同一 path 重复加载时先释放旧句柄，避免引用计数叠加
-            if (_handles.TryGetValue(path, out var oldHandle))
-                oldHandle.Dispose();
-
             var handle = await AssetsManager.Instance.LoadAsync<AudioClip>(path, token);
             if (handle == null)
                 return null;
 
+            // 必须在 await 成功返回后才释放旧句柄：若在 await 前释放，两个并发同 path 请求会各自释放同一个旧句柄，
+            // 而先恢复者写入的新句柄会被后恢复者直接覆盖、泄漏引用计数。失败/取消不写缓存，也不影响在飞请求。
+            if (_handles.TryGetValue(path, out var oldHandle) && !ReferenceEquals(oldHandle, handle))
+                oldHandle.Dispose();
             _handles[path] = handle;
             return handle.Asset;
         }
