@@ -10,7 +10,6 @@
  */
 
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace EasyFramework.Edit.Packages
 {
