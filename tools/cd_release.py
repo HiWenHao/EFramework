@@ -75,11 +75,55 @@ def latest_tag(root, name):
     return tags[0] if tags else None
 
 
+# commit scope tag -> owning package. Subsystem tags of core (Procedure/Pool/
+# Assets/Event) map to core; historical typos (Archve) are kept for coverage.
+TAG_TO_PACKAGE = {
+    "core": "cn.efefef.core",
+    "procedure": "cn.efefef.core",
+    "pool": "cn.efefef.core",
+    "assets": "cn.efefef.core",
+    "event": "cn.efefef.core",
+    "ui": "cn.efefef.ui",
+    "l10n": "cn.efefef.localization",
+    "localization": "cn.efefef.localization",
+    "datable": "cn.efefef.datable",
+    "launcher": "cn.efefef.launcher",
+    "packages": "cn.efefef.packages",
+    "package": "cn.efefef.packages",
+    "reddot": "cn.efefef.reddot",
+    "audio": "cn.efefef.audio",
+    "archive": "cn.efefef.archive",
+    "archve": "cn.efefef.archive",
+    "preference": "cn.efefef.preference",
+    "net": "cn.efefef.net",
+    "yooasset": "cn.efefef.yooasset",
+    "http": "cn.efefef.http",
+    "https": "cn.efefef.http",
+}
+
+
 def commits_since(root, name, since_ref):
+    """Return only commits explicitly scoped to this package via [ Tag ].
+
+    Strict rule: a commit is included iff its subject carries at least one scope
+    tag whose mapped package equals `name`. Untagged commits and cross-cutting
+    maintenance commits ([ Build ], 【大更新】, etc.) are excluded entirely.
+    """
     path = "%s/%s" % (PKG_REL.replace(os.sep, "/"), name)
     rng = "%s..HEAD" % since_ref if since_ref else "HEAD"
     out = git("log", "--no-merges", "--pretty=format:%s", rng, "--", path, check=False)
-    return [l.strip() for l in out.splitlines() if l.strip()]
+
+    result = []
+    seen = set()
+    for line in out.splitlines():
+        subject = line.strip()
+        if not subject or subject in seen:
+            continue
+        tags = {t.strip().lower() for t in re.findall(r"[\[【]([^\]】]+)[\]】]", subject)}
+        if any(TAG_TO_PACKAGE.get(t) == name for t in tags):
+            seen.add(subject)
+            result.append(subject)
+    return result
 
 
 def build_notes(name, version, previous_tag, commits):
@@ -154,8 +198,11 @@ def suggest(root):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["detect", "suggest"])
+    parser.add_argument("command", choices=["detect", "suggest", "notes"])
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--package", help="package name for the notes command")
+    parser.add_argument("--from-start", action="store_true",
+                        help="notes: include full history instead of since last tag")
     args = parser.parse_args()
 
     root = os.path.abspath(args.repo_root or repo_root())
@@ -168,6 +215,17 @@ def main():
             print("\n".join(lines))
         else:
             print("No unreleased commits detected.")
+    elif args.command == "notes":
+        name = args.package
+        if name not in package_dirs(root):
+            print("Unknown package: %s" % name, file=sys.stderr)
+            return 1
+        cur = read_version(root, name)
+        prev_tag = latest_tag(root, name)
+        # --from-start regenerates the full history (useful for fixing an initial release)
+        since = None if args.from_start else prev_tag
+        print(build_notes(name, cur, prev_tag if not args.from_start else None,
+                          commits_since(root, name, since)))
     return 0
 
 

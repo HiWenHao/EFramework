@@ -5,6 +5,15 @@ name: CD Release
 # 版本号不变 = 维护者没确认发布 = 不发版（这就是人工确认闸门）。
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'release = 发新版本；refresh-notes = 用当前脚本重写所有已存在 release 的说明'
+        required: false
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - refresh-notes
 
 permissions:
   contents: write
@@ -24,9 +33,11 @@ jobs:
           python-version: '3.x'
 
       - name: Detect version bumps
+        if: ${{ github.event.inputs.mode != 'refresh-notes' }}
         run: python tools/cd_release.py detect > releases.json
 
       - name: Show detected releases
+        if: ${{ github.event.inputs.mode != 'refresh-notes' }}
         run: |
           python - <<'PY'
           import json
@@ -38,7 +49,43 @@ jobs:
             print(f"{r['tag']}: {r['previous_version']} -> {r['version']}")
           PY
 
+      - name: Refresh notes on existing releases
+        if: ${{ github.event.inputs.mode == 'refresh-notes' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          python tools/cd_release.py detect > /dev/null
+          git fetch --tags
+          python - <<'PY'
+          import sys, os
+          sys.path.insert(0, 'tools')
+          import cd_release as c
+          root = c.repo_root()
+          os.makedirs('notes', exist_ok=True)
+          tags = []
+          for name in c.package_dirs(root):
+            ver = c.read_version(root, name)
+            tag = '%s-v%s' % (name, ver)
+            commits = c.commits_since(root, name, None)
+            with open('notes/%s.md' % tag, 'w', encoding='utf-8') as f:
+              f.write(c.build_notes(name, ver, None, commits))
+            tags.append(tag)
+          with open('tags.txt', 'w') as f:
+            f.write('\n'.join(tags))
+          PY
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if gh release view "$tag" >/dev/null 2>&1; then
+              gh release edit "$tag" --notes-file "notes/$tag.md"
+              echo "Refreshed notes: $tag"
+            else
+              echo "Skip (no release): $tag"
+            fi
+          done < tags.txt
+
       - name: Create GitHub releases
+        if: ${{ github.event.inputs.mode != 'refresh-notes' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
