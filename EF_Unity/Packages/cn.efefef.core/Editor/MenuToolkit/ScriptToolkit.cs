@@ -169,14 +169,16 @@ namespace EasyFramework.Edit.MenuToolkit
                 case >= 3 when bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF:
                     hasBom = true;
                     return Utf8NoBom; // UTF-8 BOM
-                case >= 2 when bom[0] == 0xFF && bom[1] == 0xFE:
-                    return Encoding.Unicode; // UTF-16 LE
-                case >= 2 when bom[0] == 0xFE && bom[1] == 0xFF:
-                    return Encoding.BigEndianUnicode; // UTF-16 BE
+                // 4 字节 BOM 必须先于 2 字节判断：UTF-32 LE(FF FE 00 00) 与 UTF-16 LE(FF FE) 前缀相同，
+                // 若先匹配 UTF-16 LE 会把 UTF-32 文件按错误编码解码，格式化后损坏源码
                 case >= 4 when bom[0] == 0x00 && bom[1] == 0x00 && bom[2] == 0xFE && bom[3] == 0xFF:
                     return Utf32Be; // UTF-32 BE
                 case >= 4 when bom[0] == 0xFF && bom[1] == 0xFE && bom[2] == 0x00 && bom[3] == 0x00:
                     return Utf32Le; // UTF-32 LE
+                case >= 2 when bom[0] == 0xFF && bom[1] == 0xFE:
+                    return Encoding.Unicode; // UTF-16 LE
+                case >= 2 when bom[0] == 0xFE && bom[1] == 0xFF:
+                    return Encoding.BigEndianUnicode; // UTF-16 BE
             }
 
             return Utf8NoBom;

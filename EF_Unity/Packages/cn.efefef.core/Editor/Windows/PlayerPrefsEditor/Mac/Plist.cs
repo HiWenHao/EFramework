@@ -240,6 +240,10 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             List<byte> bList = new List<byte>(data);
 
+            // 损坏/截断的 plist 可能不足 32 字节 trailer，GetRange 会抛异常
+            if (bList.Count < 32)
+                throw new InvalidDataException("Binary plist is too short to contain a trailer.");
+
             List<byte> trailer = bList.GetRange(bList.Count - 32, 32);
 
             parseTrailer(trailer);
@@ -350,7 +354,10 @@ namespace Sabresaurus.PlayerPrefsEditor
             }
             else if (value is int || value is long)
             {
-                writer.WriteElementString("integer", ((int)value).ToString(System.Globalization.NumberFormatInfo.InvariantInfo));
+                // 分支接受 long，直接 (int)value 对装箱 long 是无效拆箱；用 IConvertible 走值转换并保留 long 范围
+                writer.WriteElementString("integer",
+                    Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture)
+                        .ToString(System.Globalization.NumberFormatInfo.InvariantInfo));
             }
             else if (value is System.Collections.Generic.Dictionary<string, object> ||
               value.GetType().ToString().StartsWith("System.Collections.Generic.Dictionary`2[System.String"))
@@ -378,7 +385,10 @@ namespace Sabresaurus.PlayerPrefsEditor
             }
             else if (value is float || value is double)
             {
-                writer.WriteElementString("real", ((double)value).ToString(System.Globalization.NumberFormatInfo.InvariantInfo));
+                // (double)value 对装箱 float 是无效拆箱，会抛 InvalidCastException；用 IConvertible 转换
+                writer.WriteElementString("real",
+                    Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture)
+                        .ToString(System.Globalization.NumberFormatInfo.InvariantInfo));
             }
             else if (value is DateTime)
             {

@@ -31,6 +31,9 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// </summary>
         public static string DecryptKey(string encryptedKey)
         {
+            if (encryptedKey == null)
+                throw new InvalidOperationException("Cannot decrypt a null key.");
+
             if (encryptedKey.StartsWith(KEY_PREFIX))
             {
                 // Remove the key prefix from the encrypted key

@@ -82,15 +82,29 @@ namespace EasyFramework.Edit.EditorExpand
                 if (_editorInstanceSingleTarget == null && target != null)
                 {
                     // HACK: Unity has this magic field m_AllowMultiObjectAccess that suppresses usage of SerializedObject or targets in some rare cases like OnSceneGUI.
+                    // 反射内部字段在 Unity 版本升级后可能消失，需判空并降级；用 try/finally 保证字段一定恢复，
+                    // 否则 CreateEditor 抛异常会污染全局编辑器状态
                     var editorType = typeof(Editor);
                     var allowField = editorType.GetField("m_AllowMultiObjectAccess",
                         BindingFlags.Static | BindingFlags.NonPublic);
-                    var prevValue = allowField.GetValue(null);
-                    allowField.SetValue(null, true);
-
-                    _editorInstanceSingleTarget = Editor.CreateEditor(target, _decoratedEditorType);
-
-                    allowField.SetValue(null, prevValue);
+                    if (allowField == null)
+                    {
+                        // 字段不存在时跳过该 hack，直接创建编辑器
+                        _editorInstanceSingleTarget = Editor.CreateEditor(target, _decoratedEditorType);
+                    }
+                    else
+                    {
+                        var prevValue = allowField.GetValue(null);
+                        try
+                        {
+                            allowField.SetValue(null, true);
+                            _editorInstanceSingleTarget = Editor.CreateEditor(target, _decoratedEditorType);
+                        }
+                        finally
+                        {
+                            allowField.SetValue(null, prevValue);
+                        }
+                    }
                 }
 
                 if (_editorInstanceSingleTarget == null)

@@ -277,7 +277,15 @@ namespace EasyFramework.Managers.Pool
 
             if (_root == null)
                 return;
-            
+
+            for (int i = _root.childCount - 1; i >= 0; i--)
+            {
+                var child = _root.GetChild(i);
+                var pooled = child.GetComponent<PooledObject>();
+                if (pooled != null && !pooled.IsInPool)
+                    child.SetParent(null, true);
+            }
+
             Object.Destroy(_root.gameObject);
             _root = null;
         }

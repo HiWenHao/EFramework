@@ -1137,7 +1137,14 @@ namespace EasyFramework.Edit
                 LegacyLanguageModel model;
                 try
                 {
-                    model = JsonConvert.DeserializeObject<LegacyLanguageModel>(ReadFileSafe(listPath));
+                    string json = ReadFileSafe(listPath);
+                    if (string.IsNullOrEmpty(json))
+                    {
+                        warnings.Add(Tr($"键清单 '{listPath}' 为空或读取失败，跳过",
+                            $"Key list '{listPath}' is empty or unreadable, skipped"));
+                        continue;
+                    }
+                    model = JsonConvert.DeserializeObject<LegacyLanguageModel>(json);
                 }
                 catch (Exception ex)
                 {
@@ -1269,9 +1276,17 @@ namespace EasyFramework.Edit
                 }
                 if (added > 0)
                 {
-                    WriteLanguageFile(file, model);
-                    totalAdded += added;
-                    lines.Add($"{fileName} +{added}");
+                    // 单个文件只读/被占用/磁盘满时不应中断整个外部同步流程
+                    try
+                    {
+                        WriteLanguageFile(file, model);
+                        totalAdded += added;
+                        lines.Add($"{fileName} +{added}");
+                    }
+                    catch (Exception ex)
+                    {
+                        lines.Add($"{fileName}: write failed - {ex.Message}");
+                    }
                 }
             }
             return totalAdded;

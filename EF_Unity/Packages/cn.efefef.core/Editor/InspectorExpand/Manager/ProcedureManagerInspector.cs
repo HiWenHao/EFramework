@@ -230,8 +230,12 @@ namespace EasyFramework.Managers.Procedure.Editor
             }
 
             var allInstances = GetActiveInstancesFromStack(); // 所有存活实例
-            // 按类型分组实例
-            var instancesByType = allInstances.GroupBy(GetProcedureType).ToDictionary(g => g.Key, g => g.ToList());
+            // 按类型分组实例；GetProcedureType 可能返回 null（实例尚未设置类型），
+            // ToDictionary 遇 null key 会抛异常，先过滤
+            var instancesByType = allInstances
+                .Where(inst => GetProcedureType(inst) != null)
+                .GroupBy(GetProcedureType)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             foreach (var kv in _cachedFactories)
@@ -361,7 +365,7 @@ namespace EasyFramework.Managers.Procedure.Editor
             long uid = GetUid(inst);
             var children = childMap.TryGetValue(uid, out var childList) ? childList : new List<object>();
 
-            string displayName = $"{GetProcedureType(inst).Name} - [ UID:{uid} ]";
+            string displayName = $"{GetProcedureType(inst)?.Name ?? "<unknown>"} - [ UID:{uid} ]";
 
             if (children.Count > 0)
             {

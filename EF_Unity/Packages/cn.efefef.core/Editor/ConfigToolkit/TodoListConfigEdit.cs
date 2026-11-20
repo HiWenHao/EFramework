@@ -198,7 +198,7 @@ namespace EasyFramework.Edit.TodoList
                         _title.DeleteArrayElementAtIndex(i);
                         _description.DeleteArrayElementAtIndex(i);
                         _taskCount.intValue--;
-                        continue;
+                        i--;
                     }
                     EditorGUILayout.EndHorizontal();
 

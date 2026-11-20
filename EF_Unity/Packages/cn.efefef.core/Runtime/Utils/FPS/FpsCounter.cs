@@ -30,8 +30,8 @@ namespace EasyFramework
         {
             if (updateInterval <= 0f)
             {
-                D.Error("Update interval is invalid.");
-                return;
+                D.Error("Update interval is invalid, using default 0.5s.");
+                updateInterval = 0.5f; // 不能只报错就 return：否则 _updateInterval=0，每帧都进入计算分支
             }
 
             _updateInterval = updateInterval;

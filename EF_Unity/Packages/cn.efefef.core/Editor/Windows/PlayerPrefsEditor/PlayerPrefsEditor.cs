@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using EasyFramework;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -336,16 +337,19 @@ namespace Sabresaurus.PlayerPrefsEditor
                 // Parse the registry if the specified registryKey exists
                 if (registryKey != null)
                 {
-                    // Get an array of what keys (registry value names) are stored
-                    string[] valueNames = registryKey.GetValueNames();
-
-                    // Create the array of the right size to take the saved PlayerPrefs
-                    PlayerPrefPair[] tempPlayerPrefs = new PlayerPrefPair[valueNames.Length];
-
-                    // Parse and convert the registry saved PlayerPrefs into our array
-                    int i = 0;
-                    foreach (string valueName in valueNames)
+                    // 用 try/finally 保证句柄一定释放（本方法每 500ms 轮询调用，异常路径泄漏会累积）
+                    try
                     {
+                        // Get an array of what keys (registry value names) are stored
+                        string[] valueNames = registryKey.GetValueNames();
+
+                        // 用 List 动态收集：原实现预分配定长数组，continue 跳过的值会留下 Key=null 的占位项，
+                        // 导致显示计数偏大且下游需额外空判断
+                        var tempPlayerPrefs = new List<PlayerPrefPair>(valueNames.Length);
+
+                        // Parse and convert the registry saved PlayerPrefs into our array
+                        foreach (string valueName in valueNames)
+                        {
                         string key = valueName;
 
                         // Remove the _h193410979 style suffix used on PlayerPref keys in Windows registry
@@ -381,13 +385,17 @@ namespace Sabresaurus.PlayerPrefsEditor
                             ambiguousValue = _encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
                         }
 
-                        // Assign the key and value into the respective record in our output array
-                        tempPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = ambiguousValue };
-                        i++;
+                        // Assign the key and value into the respective record in our output list
+                        tempPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = ambiguousValue });
                     }
 
                     // Return the results
-                    return tempPlayerPrefs;
+                    return tempPlayerPrefs.ToArray();
+                    }
+                    finally
+                    {
+                        registryKey.Dispose(); // 异常路径也保证释放句柄
+                    }
                 }
                 else
                 {
@@ -1051,23 +1059,38 @@ namespace Sabresaurus.PlayerPrefsEditor
                 {
                     if (GUILayout.Button(new GUIContent(LC.Combine("Core.CreateCustom"), LC.Combine("Ppe_CreateCustomHint"))))
                     {
-                        // Get the contents of the template file
-                        string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
-                        string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-                        string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
-
-                        // Replace the key in the template with a unique key
-                        byte[] key = new byte[32];
-                        for (int i = 0; i < 32; i++)
+                        try
                         {
-                            key[i] = (byte)Random.Range(0, 256);
+                            // Get the contents of the template file
+                            string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
+                            if (guids == null || guids.Length == 0)
+                            {
+                                D.Error("[PlayerPrefsEditor] BaseEncryptionKeyInitializer template not found.");
+                                return;
+                            }
+
+                            string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                            string templateText = File.ReadAllText(
+                                Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
+
+                            // 密钥必须用密码学安全随机源；Random.Range 是伪随机且种子可预测，达不到 256 位强度
+                            byte[] key = new byte[32];
+                            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                                rng.GetBytes(key);
+
+                            templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
+
+                            // 用绝对工程路径写文件，避免依赖编辑器当前工作目录
+                            string absPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName,
+                                "Assets", "GameEncryptionKeyInitializer.cs");
+                            File.WriteAllText(absPath, templateText);
+                            AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs",
+                                ImportAssetOptions.ForceUpdate);
                         }
-
-                        templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
-
-                        // Write the game encryption script to Assets/ and import it
-                        File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);
-                        AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs", ImportAssetOptions.ForceUpdate);
+                        catch (Exception e)
+                        {
+                            D.Error($"[PlayerPrefsEditor] Create custom key failed: {e.Message}");
+                        }
                     }
                 }
                 else

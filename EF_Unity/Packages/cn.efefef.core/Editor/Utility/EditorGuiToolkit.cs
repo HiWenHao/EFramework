@@ -100,8 +100,14 @@ namespace EasyFramework.Edit
         {
             EditorGUILayout.LabelField(label, GUIUtils.ColorText(textColor: Color.white));
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.DelayedTextField(property.stringValue);
+            // DelayedTextField 原返回值被丢弃，手动键入的内容无法写回字段
+            string edited = EditorGUILayout.DelayedTextField(property.stringValue);
             bool changed = false;
+            if (edited != property.stringValue)
+            {
+                property.stringValue = edited;
+                changed = true;
+            }
             if (GUILayout.Button(LC.Combine("SelectPath"), GUILayout.Width(PathSelectWidth)))
             {
                 string folder = Path.Combine(Application.dataPath, property.stringValue);
@@ -114,7 +120,10 @@ namespace EasyFramework.Edit
                     string dataPath = Application.dataPath.Replace('\\', '/');
                     string normalized = picked.Replace('\\', '/');
                     if (normalized.Equals(dataPath, System.StringComparison.OrdinalIgnoreCase))
+                    {
                         property.stringValue = AssetsRoot + "/";
+                        changed = true;
+                    }
                     else if (normalized.StartsWith(dataPath, System.StringComparison.OrdinalIgnoreCase))
                     {
                         property.stringValue = AssetsRoot + normalized[dataPath.Length..].TrimEnd('/') + "/";

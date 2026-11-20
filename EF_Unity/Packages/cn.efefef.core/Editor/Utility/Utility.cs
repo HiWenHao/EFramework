@@ -142,14 +142,18 @@ namespace EasyFramework.Edit
             {
                 string endPath = Application.dataPath;
                 if (string.IsNullOrEmpty(path)) return endPath;
-                int index = path.IndexOf("/Assets", System.StringComparison.Ordinal);
+                // 传入可能是 Windows 反斜杠绝对路径，先统一为正斜杠再匹配
+                string normalizedPath = path.Replace('\\', '/');
+                int index = normalizedPath.IndexOf("/Assets", System.StringComparison.Ordinal);
                 if (index == -1)
                 {
                     EditorUtility.DisplayDialog("提示", $"必须在Assets目录下", "确定");
                     return endPath;
                 }
 
-                endPath = path[(index + 1)..];
+                // 必须从规范化后的字符串切片：若输入是 Windows 反斜杠路径而返回仍带反斜杠，
+                // Unity AssetDatabase 无法识别（如 "Assets\Atlas"）。index 在两串中位置一致（等长替换）
+                endPath = normalizedPath[(index + 1)..];
                 return endPath;
             }
         }

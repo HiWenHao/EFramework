@@ -412,6 +412,10 @@ namespace EasyFramework.Managers.Assets
             if (_quitting || _assetsManager == null)
                 return;
 
+            // 捕获当前实现引用：异步释放期间若 ConfirmAssetsManagerType/Quit 改写了 _assetsManager，
+            // 必须向持有资源的那个实现释放，而非新实现（否则释放错对象/NRE，引用计数已扣无法回滚）
+            var manager = _assetsManager;
+
             var key = new AssetKey(packageName, path);
             bool shouldRelease;
             lock (_refGate)
@@ -426,15 +430,15 @@ namespace EasyFramework.Managers.Assets
             }
 
             if (shouldRelease)
-                ReleaseUnderlyingAsync(packageName, path).Forget();
+                ReleaseUnderlyingAsync(manager, packageName, path).Forget();
         }
 
         // 真正释放底层资源，隔离异常避免句柄 Dispose 抛出
-        private async UniTaskVoid ReleaseUnderlyingAsync(string packageName, string path)
+        private async UniTaskVoid ReleaseUnderlyingAsync(IAssetsSystem manager, string packageName, string path)
         {
             try
             {
-                await _assetsManager.Release(packageName, path);
+                await manager.Release(packageName, path);
                 Log($"Released: {packageName ?? "default"}:{path}");
             }
             catch (Exception e)

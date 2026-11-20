@@ -189,7 +189,9 @@ namespace EasyFramework.Managers.Procedure
                 CleanupZombiesAtTop();
             }
 
-            await StartProcedureInternal(typeof(T), parameters, 0, false, null);
+            bool started = await StartProcedureInternal(typeof(T), parameters, 0, false, null);
+            if (!started)
+                Error($"Switch to {typeof(T).Name} failed: procedure not registered or depth/chains limit exceeded. Stack is now empty.");
         }
         
         #endregion
@@ -687,7 +689,7 @@ namespace EasyFramework.Managers.Procedure
         }
         private void Exception(object message)
         {
-            D.Exception($"[ProcedureSystem] {message}]");
+            D.Exception($"[ProcedureSystem] {message}");
         }
         
         #endregion

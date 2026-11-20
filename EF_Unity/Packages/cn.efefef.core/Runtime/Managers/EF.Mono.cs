@@ -458,7 +458,7 @@ public sealed class EFC : MonoBehaviour
 
         lock (LockObj)
         {
-            if (!_singletonMap.ContainsKey(type))
+            if (!_singletonMap.TryGetValue(type, out var registered) || !ReferenceEquals(registered, item))
                 return;
 
             item.Quit();

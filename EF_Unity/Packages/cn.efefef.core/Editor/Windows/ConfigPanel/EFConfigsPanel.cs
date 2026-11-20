@@ -12,6 +12,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -43,6 +44,13 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             if (null != _settings)
                 return;
 
+            // 初始化配置根路径，避免传给子面板的 _assetsPath 恒为 null
+            // （子面板如 AssetsSwitch 会 Path.Combine(_assetsPath, "Description/AssetsInfo.json")）
+            var projectRoot = Directory.GetParent(Application.dataPath);
+            _assetsPath = projectRoot != null
+                ? Path.Combine(projectRoot.FullName, "Packages", "cn.efefef.core", "Editor Resources")
+                : Path.Combine("Packages", "cn.efefef.core", "Editor Resources");
+
             _settings = new List<EFConfigPanelBase>();
             _priorityCache = new Dictionary<Type, int>();
             var allTypesWithAttr = TypeCache.GetTypesWithAttribute<EFConfigPanelAttribute>();
@@ -61,7 +69,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 Insert(_settings, Activator.CreateInstance(oneType) as EFConfigPanelBase);
             }
 
-            _panelIndex = _panelIndex == -1 ? 0 : _panelIndex;
+            if (_settings.Count == 0)
+                return; // 工程中没有任何 [EFConfigPanel] 子类时不索引访问
+
+            _panelIndex = _panelIndex == -1 ? 0 : Mathf.Clamp(_panelIndex, 0, _settings.Count - 1);
             _settings[_panelIndex].LoadWindowData();
         }
 
@@ -69,6 +80,9 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             if (IsRefreshing)
                 return;
+
+            if (_settings == null || _settings.Count == 0)
+                return; // 无可用面板时避免下面按 _panelIndex 索引越界
 
             EditorGUILayout.BeginHorizontal();
 
@@ -190,6 +204,10 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 _window.Show();
                 _window.Focus();
             }
+
+            // Show() 触发 OnEnable 后，若因刷新状态未完成加载则 _settings 仍为 null
+            if (_window._settings == null)
+                return;
 
             Type type = typeof(T);
             foreach (var configPanel in _window._settings)

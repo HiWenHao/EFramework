@@ -107,8 +107,13 @@ namespace EasyFramework.Edit.Windows
                 _autoRefresh = GUILayout.Toggle(_autoRefresh, LC.Tr("自动", "Auto"),
                     EditorStyles.toolbarButton, GUILayout.Width(50f));
 
-                _showNonPublic = GUILayout.Toggle(_showNonPublic, LC.Tr("含私有", "Non-public"),
+                bool showNonPublic = GUILayout.Toggle(_showNonPublic, LC.Tr("含私有", "Non-public"),
                     EditorStyles.toolbarButton, GUILayout.Width(70f));
+                if (showNonPublic != _showNonPublic)
+                {
+                    _showNonPublic = showNonPublic;
+                    _fieldCache.Clear(); // 字段列表受该开关影响，切换时必须让缓存失效
+                }
 
                 GUILayout.FlexibleSpace();
                 GUILayout.Label(LC.Tr($"共 {_snapshot.Count} 个", $"{_snapshot.Count} total"),

@@ -9,9 +9,11 @@
  * ===============================================
  */
 
+using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Edit.Windows.ConfigPanel
 {
@@ -123,13 +125,30 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             _scriptNamespace = FindConfigProperty("_scriptNamespace");
             _authorInput = LocalUserSettings.Author;
 
-            var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
-            MethodInfo methodInfo = type.GetMethod("GetUserInfo");
-            PropertyInfo instance = type.GetProperty("instance");
-            var userInfo = methodInfo.Invoke(instance.GetValue(null), null);
-            var userInfoType = userInfo.GetType();
-            PropertyInfo propertyInfo = userInfoType.GetProperty("displayName");
-            _editorUser = (string)propertyInfo.GetValue(userInfo);
+            // Unity 未公开 API 逐级判空：版本升级后类型/方法/属性任一改名即静默降级，
+            // 不让整个项目设置面板因反射 NRE 进入错误覆盖层
+            _editorUser = null;
+            try
+            {
+                var type = typeof(UnityEditor.Connect.UnityOAuth).Assembly.GetType("UnityEditor.Connect.UnityConnect");
+                var methodInfo = type?.GetMethod("GetUserInfo");
+                var instance = type?.GetProperty("instance");
+                var instanceValue = instance?.GetValue(null);
+                if (methodInfo != null && instanceValue != null)
+                {
+                    var userInfo = methodInfo.Invoke(instanceValue, null);
+                    var propertyInfo = userInfo?.GetType().GetProperty("displayName");
+                    _editorUser = propertyInfo?.GetValue(userInfo) as string;
+                }
+            }
+            catch (Exception)
+            {
+                _editorUser = null; // 反射失败走下面的降级
+            }
+
+            if (string.IsNullOrEmpty(_editorUser))
+                _editorUser = Environment.UserName;
+
             EditorPrefs.SetString($"{ConfigManager.Project.AppConst.AppPrefix}EditorUser", _editorUser);
 
             _systemInfoSwitch = true;

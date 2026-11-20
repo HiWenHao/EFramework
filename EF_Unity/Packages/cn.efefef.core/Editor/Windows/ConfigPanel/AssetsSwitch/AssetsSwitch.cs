@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -42,15 +43,44 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         public override void OnEnable(string assetsPath)
         {
             _assetsPath = assetsPath;
-            string configPath = Path.Combine(_assetsPath, ASSETSINFO);
-            _assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(configPath));
+            if (string.IsNullOrEmpty(_assetsPath))
+            {
+                D.Error("[AssetsSwitch] assetsPath is null or empty, panel cannot load config.");
+                return;
+            }
 
-            _pluginsCount = _assets.Plugins.Count;
-            _managerCount = _assets.Managers.Count;
+            string configPath = Path.Combine(_assetsPath, ASSETSINFO);
+            try
+            {
+                if (!File.Exists(configPath))
+                {
+                    D.Error($"[AssetsSwitch] Config not found: {configPath}");
+                    return;
+                }
+
+                _assets = JsonUtility.FromJson<AssetsInformation>(File.ReadAllText(configPath));
+                _pluginsCount = _assets?.Plugins?.Count ?? 0;
+                _managerCount = _assets?.Managers?.Count ?? 0;
+            }
+            catch (Exception e)
+            {
+                D.Error($"[AssetsSwitch] Load config failed: {e.Message}");
+                _assets = null;
+                _pluginsCount = 0;
+                _managerCount = 0;
+            }
         }
 
         protected override void OnPanelGUI()
         {
+            // OnEnable 加载失败时 _assets 为 null，绘制端必须早退，否则解引用崩溃
+            if (_assets == null)
+            {
+                EditorGUILayout.HelpBox("AssetsInfo.json 加载失败，面板不可用。请检查配置路径与文件内容。",
+                    MessageType.Warning);
+                return;
+            }
+
             //  ScrollView
             _allPostation = EditorGUILayout.BeginScrollView(_allPostation);
             // Managers
@@ -143,12 +173,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
                 EditorGUILayout.EndScrollView();
 
-                //Right Contents
-                if (null != managers)
-                    ItemShowPanel(managers[index], true);
+                //Right Contents：列表为空时 index=0 会越界
+                if (managers != null && managers.Count > 0)
+                    ItemShowPanel(managers[Mathf.Clamp(index, 0, managers.Count - 1)], true);
 
-                if (null != plugins)
-                    ItemShowPanel(plugins[index], false);
+                if (plugins != null && plugins.Count > 0)
+                    ItemShowPanel(plugins[Mathf.Clamp(index, 0, plugins.Count - 1)], false);
 
 
                 EditorGUILayout.EndHorizontal();
@@ -241,14 +271,29 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 {
                     string monoPath = Path.Combine(Application.dataPath,
                         "EasyFramework/Scripts/Runtime/EF.Start.cs");
-                    string[] lines = File.ReadAllLines(monoPath);
                     ManagerInfo _manager = (ManagerInfo)info;
-                    if (isLoad)
-                        lines[_manager.MonoIndex] = "//" + lines[_manager.MonoIndex];
-                    else
-                        lines[_manager.MonoIndex] = lines[_manager.MonoIndex][2..];
+                    if (File.Exists(monoPath))
+                    {
+                        string[] lines = File.ReadAllLines(monoPath);
+                        // MonoIndex 可能因源码改动而失效；load/unload 前校验索引与行前缀，
+                        // 避免注释掉错误行或误删正常代码的前两个字符
+                        if (_manager.MonoIndex >= 0 && _manager.MonoIndex < lines.Length)
+                        {
+                            string line = lines[_manager.MonoIndex];
+                            if (isLoad && !line.TrimStart().StartsWith("//"))
+                                lines[_manager.MonoIndex] = "//" + line;
+                            else if (!isLoad && line.TrimStart().StartsWith("//"))
+                            {
+                                int commentAt = line.IndexOf("//");
+                                lines[_manager.MonoIndex] = commentAt >= 0
+                                    ? line.Remove(commentAt, 2) : line;
+                            }
 
-                    File.WriteAllLines(monoPath, lines);
+                            File.WriteAllLines(monoPath, lines);
+                        }
+                        else
+                            D.Error($"[AssetsSwitch] MonoIndex {_manager.MonoIndex} out of range in {monoPath}");
+                    }
                 }
 
                 info.IsLoad = !isLoad;
@@ -263,11 +308,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
         void SaveAssetsInfo()
         {
-            if (string.IsNullOrEmpty(_assetsPath))
-                return;
+            if (string.IsNullOrEmpty(_assetsPath) || _assets == null)
+                return; // 配置未成功加载时不得用 null 覆盖写回
 
             string configPath = Path.Combine(_assetsPath, ASSETSINFO);
-            File.WriteAllText(configPath, JsonUtility.ToJson(_assets), System.Text.Encoding.UTF8);
+            // 与项目其它语言/配置文件一致，写无 BOM 的 UTF-8
+            File.WriteAllText(configPath, JsonUtility.ToJson(_assets), new System.Text.UTF8Encoding(false));
             AssetDatabase.Refresh();
         }
     }

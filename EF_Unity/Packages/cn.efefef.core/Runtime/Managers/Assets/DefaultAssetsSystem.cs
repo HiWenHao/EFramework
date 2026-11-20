@@ -60,6 +60,13 @@ namespace EasyFramework.Managers.Assets
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public T Load<T>(string path) where T : Object
         {
+            // 初始化未完成或已 Destroy 时字典为 null，直接访问会 NRE
+            if (_assetsDictionary == null)
+            {
+                Error($"Load called before initialization or after destroy: {path}");
+                return null;
+            }
+
             if (_assetsDictionary.TryGetValue(path, out var assetsObject))
                 return assetsObject as T;
 
@@ -85,11 +92,19 @@ namespace EasyFramework.Managers.Assets
         /// <returns>加载成功返回资源对象，失败返回 null<para>The loaded asset, or null on failure</para></returns>
         public async UniTask<T> LoadAsync<T>(string path, CancellationToken token = default) where T : Object
         {
+            if (_assetsDictionary == null)
+            {
+                Error($"LoadAsync called before initialization or after destroy: {path}");
+                return null;
+            }
+
             if (_assetsDictionary.TryGetValue(path, out var existing))
                 return existing as T;
 
             var asyncOp = Resources.LoadAsync<T>(path);
-            await asyncOp;
+            // 尊重调用方取消，避免取消后仍继续加载并写入缓存
+            await asyncOp.ToUniTask(cancellationToken: token);
+            token.ThrowIfCancellationRequested();
 
             if (asyncOp.asset == null)
             {

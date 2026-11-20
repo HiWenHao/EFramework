@@ -10,6 +10,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 
 namespace EasyFramework
 {
@@ -29,7 +30,8 @@ namespace EasyFramework
             get => _value;
             set
             {
-                if (value.Equals(_value))
+                // value 可能为 null（T 为引用类型时），直接 value.Equals 会 NRE
+                if (EqualityComparer<T>.Default.Equals(value, _value))
                     return;
                 _value = value;
                 OnValueChanged?.Invoke(_value);

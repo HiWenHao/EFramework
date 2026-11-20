@@ -130,9 +130,8 @@ namespace EasyFramework.Managers
             for (int i = 0; i < samples.Length; i++)
             {
                 intData[i] = (short)(samples[i] * rescaleFactor);
-                byte[] byteArr = new byte[2];
-                byteArr = BitConverter.GetBytes(intData[i]);
-                byteArr.CopyTo(bytesData, i * 2);
+                // 原实现先 new byte[2] 再被覆盖，每采样点制造一个丢弃数组；直接写入目标缓冲
+                BitConverter.GetBytes(intData[i]).CopyTo(bytesData, i * 2);
             }
 
             return bytesData;
@@ -204,8 +203,16 @@ namespace EasyFramework.Managers
                 return null;
             }
 
-            byte[] fileBytes = File.ReadAllBytes(filePath + "/" + name);
-            return ByteArrayToAudioClip(fileBytes, name);
+            try
+            {
+                byte[] fileBytes = File.ReadAllBytes(Path.Combine(filePath, name));
+                return ByteArrayToAudioClip(fileBytes, name);
+            }
+            catch (Exception e)
+            {
+                D.Error($"[ToolManager] Load audio '{name}' failed: {e.Message}");
+                return null;
+            }
         }
 
         /// <summary>

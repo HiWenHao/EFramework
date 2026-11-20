@@ -5,6 +5,12 @@ using System.Text;
 
 namespace Sabresaurus.PlayerPrefsUtilities
 {
+    /// <summary>
+    /// 轻量 PlayerPrefs 混淆工具。<b>注意：使用 ECB 模式 + 源码内默认密钥，仅防止明文直接可见，
+    /// 不构成安全边界</b>（相同明文产生相同密文、无认证、密钥随包分发）。
+    /// 若需保护敏感数据，请改用带随机 IV 与 HMAC 的方案并提供独立密钥，同时迁移已有存档。
+    /// <para>Lightweight PlayerPrefs obfuscation. ECB + bundled default key hides plain text only; NOT a security boundary.</para>
+    /// </summary>
     public static class SimpleEncryption
     {
         // IMPORTANT: Make sure to change this key for each project you use this encryption in to help secure your
@@ -66,14 +72,16 @@ namespace Sabresaurus.PlayerPrefsUtilities
                 SetupProvider();
             }
 
-            // Create an encryptor to encrypt the bytes
-            ICryptoTransform encryptor = _provider.CreateEncryptor();
+            // ICryptoTransform 实现 IDisposable，用 using 释放其持有的非托管资源
+            byte[] outputBytes;
+            using (ICryptoTransform encryptor = _provider.CreateEncryptor())
+            {
+                // Convert the source string into bytes to be encrypted
+                byte[] sourceBytes = Encoding.UTF8.GetBytes(sourceString);
 
-            // Convert the source string into bytes to be encrypted
-            byte[] sourceBytes = Encoding.UTF8.GetBytes(sourceString);
-
-            // Encrypt the bytes using the encryptor we just created
-            byte[] outputBytes = encryptor.TransformFinalBlock(sourceBytes, 0, sourceBytes.Length);
+                // Encrypt the bytes using the encryptor we just created
+                outputBytes = encryptor.TransformFinalBlock(sourceBytes, 0, sourceBytes.Length);
+            }
 
             // Convert the encrypted bytes into a Base 64 string, so we can safely represent them as a string and return
             // that string
@@ -92,14 +100,15 @@ namespace Sabresaurus.PlayerPrefsUtilities
                 SetupProvider();
             }
 
-            // Create a decryptor to decrypt the encrypted bytes
-            ICryptoTransform decryptor = _provider.CreateDecryptor();
+            byte[] outputBytes;
+            using (ICryptoTransform decryptor = _provider.CreateDecryptor())
+            {
+                // Convert the base 64 string representing the encrypted bytes back into an array of encrypted bytes
+                byte[] sourceBytes = Convert.FromBase64String(sourceString);
 
-            // Convert the base 64 string representing the encrypted bytes back into an array of encrypted bytes
-            byte[] sourceBytes = Convert.FromBase64String(sourceString);
-
-            // Use the decryptor we just created to decrypt those bytes
-            byte[] outputBytes = decryptor.TransformFinalBlock(sourceBytes, 0, sourceBytes.Length);
+                // Use the decryptor we just created to decrypt those bytes
+                outputBytes = decryptor.TransformFinalBlock(sourceBytes, 0, sourceBytes.Length);
+            }
 
             // Turn the decrypted bytes back into the decrypted string and return it
             return Encoding.UTF8.GetString(outputBytes);
