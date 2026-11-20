@@ -22,6 +22,10 @@ namespace EasyFramework.Systems.Http
     /// </summary>
     public sealed class HttpRequest
     {
+        // 允许缓存的幂等 HTTP 方法：只有 GET / HEAD 的响应可被安全复用
+        private const string MethodGet = "GET";
+        private const string MethodHead = "HEAD";
+
         #region 枚举 / Enums
 
         /// <summary>
@@ -124,6 +128,17 @@ namespace EasyFramework.Systems.Http
         /// <para>Whether the request may be cached (facade routes to cache only when Result == Text and this is true)</para>
         /// </summary>
         public bool Cacheable = true;
+
+        /// <summary>
+        /// 是否允许本请求参与缓存：文本结果 + 显式允许 + 幂等方法（GET/HEAD）三者同时满足。
+        /// POST/PUT/DELETE 等写请求即使 Cacheable 为 true 也不得缓存，否则写操作会被缓存命中而从未发送到服务端。
+        /// <para>Whether this request may be cached: text result + explicitly allowed + idempotent method (GET/HEAD).
+        /// Write requests (POST/PUT/DELETE) must never be cached even if Cacheable is true, otherwise the write would be
+        /// served from cache and never reach the server.</para>
+        /// </summary>
+        public bool CanCache => Cacheable && Result == ResultKind.Text &&
+                                (string.Equals(Method, MethodGet, StringComparison.Ordinal) ||
+                                 string.Equals(Method, MethodHead, StringComparison.Ordinal));
 
         /// <summary>
         /// 缓存键：方法 + 地址 + 有序请求头 + 请求体哈希，稳定且唯一

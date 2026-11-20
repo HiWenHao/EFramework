@@ -335,8 +335,8 @@ namespace EasyFramework.Systems.Http
             if (_sender == null)
                 return UniTask.FromResult(new HttpResponse { IsSuccess = false, Error = "HttpManager 尚未初始化" });
 
-            // 仅文本结果参与缓存；纹理 / 资源包 / 文件不进缓存
-            if (_cache != null && request.Result == HttpRequest.ResultKind.Text && request.Cacheable)
+            // 仅幂等（GET/HEAD）的文本请求参与缓存；写请求与非文本结果一律直发
+            if (_cache != null && request.CanCache)
                 return _cache.GetOrLoadAsync(request.CacheKey, _sender, request, token);
 
             return _sender.SendAsync(request, token);

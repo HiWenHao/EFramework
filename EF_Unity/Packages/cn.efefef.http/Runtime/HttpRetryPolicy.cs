@@ -29,24 +29,31 @@ namespace EasyFramework.Systems.Http
         /// 基础延迟
         /// <para>Base delay in milliseconds.</para>
         /// </summary>
-        public int BaseDelayMs = 200;
+        public int BaseDelayMs { get; set; } = 200;
 
         /// <summary>
         /// 是否使用指数退避（延迟 = BaseDelayMs * 2^(attempt-1)）
         /// <para>Use exponential backoff (delay = BaseDelayMs * 2^(attempt-1)).</para>
         /// </summary>
-        public bool ExponentialBackoff = true;
+        public bool ExponentialBackoff { get; set; } = true;
 
         /// <summary>
         /// 第 attempt 次重试（从 1 开始）对应的延迟毫秒数
         /// <para>Delay (ms) for the given retry attempt (1-based).</para>
         /// </summary>
+        // 指数退避的移位上限：1L << 30 已远超 30s 延迟上限，再大只会在 long 上溢出反转
+        private const int MaxBackoffShift = 30;
+
+        // 单次延迟上限（毫秒）
+        private const int MaxDelayMs = 30_000;
+
         public int DelayMs(int attempt)
         {
             if (!ExponentialBackoff) return BaseDelayMs;
-            // 防止指数爆炸：限制单次延迟上限 30s
-            long delay = BaseDelayMs * (1L << (attempt - 1));
-            return (int)Math.Min(delay, 30_000L);
+            // 钳制指数再移位：attempt 异常大时避免 long 移位回绕导致延迟骤降
+            int shift = Math.Min(Math.Max(attempt - 1, 0), MaxBackoffShift);
+            long delay = BaseDelayMs * (1L << shift);
+            return (int)Math.Min(delay, MaxDelayMs);
         }
     }
 }

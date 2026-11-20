@@ -11,12 +11,8 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace EasyFramework.Systems.Http
@@ -45,6 +41,9 @@ namespace EasyFramework.Systems.Http
 
             while (true)
             {
+                // 取消即退出：不在取消态下发起（或重试）任何请求
+                token.ThrowIfCancellationRequested();
+
                 attempt++;
                 var response = await SendOnceAsync(request, token);
                 if (response.IsSuccess || attempt > max)
@@ -73,10 +72,6 @@ namespace EasyFramework.Systems.Http
                     await uwr.SendWebRequest().ToUniTask(cancellationToken: token);
 
                 return BuildResponse(uwr, request);
-            }
-            catch (OperationCanceledException)
-            {
-                return new HttpResponse { IsSuccess = false, Error = "Cancelled" };
             }
             catch (UnityWebRequestException e)
             {
