@@ -23,7 +23,7 @@ namespace EasyFramework.Edit.Packages
         [SerializeField] public string name;
         [SerializeField] public string displayName;
         [SerializeField] public string description;
-        [SerializeField] public string version;       // 官方版本号
+        [SerializeField] public string version; // 官方版本号
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ namespace EasyFramework.Edit.Packages
 
         public static EFPackageCatalog FromJson(string json) =>
             JsonUtility.FromJson<EFPackageCatalog>(json);
-        
-        public string ToJson() => JsonUtility.ToJson(this);
+
+        public string ToJson() => JsonUtility.ToJson(this, true);
     }
 }

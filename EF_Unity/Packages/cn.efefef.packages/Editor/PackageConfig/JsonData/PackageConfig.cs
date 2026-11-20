@@ -49,12 +49,16 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary> 总包数 </summary>
         [SerializeField] public int totalCount;
+
         /// <summary> 本地包数 </summary>
         [SerializeField] public int localCount;
+
         /// <summary> Git包数 </summary>
         [SerializeField] public int gitCount;
+
         /// <summary> 未安装包数 </summary>
         [SerializeField] public int notInstalledCount;
+
         /// <summary> 需要更新的包数 </summary>
         [SerializeField] public int needUpdateCount;
 
@@ -82,7 +86,7 @@ namespace EasyFramework.Edit.Packages
         public string ToJson()
         {
             RefreshSummary();
-            return JsonUtility.ToJson(this);
+            return JsonUtility.ToJson(this, true);
         }
     }
 }
