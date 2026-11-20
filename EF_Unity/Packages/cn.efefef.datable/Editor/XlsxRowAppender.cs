@@ -720,7 +720,12 @@ namespace EasyFramework.Edit
 
                 var packageRns = XNamespace.Get("http://schemas.openxmlformats.org/package/2006/relationships");
                 var xElement = XDocument.Parse(Encoding.UTF8.GetString(relsBytes)).Root;
-                if (xElement == null) return true;
+                if (xElement == null)
+                {
+                    D.Error(LC.Tr("[ XlsxRowAppender ] workbook.xml.rels 根节点为空，无法解析",
+                        "[ XlsxRowAppender ] workbook.xml.rels root is null, parse failed"));
+                    return false;
+                }
 
                 var relationship = xElement.Elements(packageRns + "Relationship")
                     .FirstOrDefault(r => (string)r.Attribute("Id") == rid);
