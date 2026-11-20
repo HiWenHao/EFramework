@@ -54,13 +54,16 @@ namespace EasyFramework.Systems.RedDot
         /// </summary>
         public void End()
         {
-            _batchDepth--;
-            if (_batchDepth < 0)
-                _batchDepth = 0;
-            if (_batchDepth == 0)
+            // 未配对的 End：忽略并告警，不再减负、不再误触发 Flush（旧实现钳到 0 后仍会 Flush，掩盖 Begin/End 失衡）
+            if (_batchDepth <= 0)
             {
-                Context.DirtySystem.Flush();
+                D.Warning("[ RedDotBatchSystem ] End() called without a matching Begin(). Ignored.");
+                return;
             }
+
+            _batchDepth--;
+            if (_batchDepth == 0)
+                Context.DirtySystem.Flush();
         }
     }
 }
