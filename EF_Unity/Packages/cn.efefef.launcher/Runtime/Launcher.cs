@@ -286,8 +286,24 @@ namespace EasyFramework.Launcher
                     return;
                 }
 
+                // 外部钩子不回调时不能永久挂起：按配置超时兜底（TimeoutSeconds<=0 表示不启用超时，保持兼容）
+                float waited = 0f;
+                float timeout = _config?.TimeoutSeconds ?? 0f;
                 while (!finished)
+                {
+                    if (timeout > 0f)
+                    {
+                        waited += Time.unscaledDeltaTime;
+                        if (waited >= timeout)
+                        {
+                            Fail(LauncherErrorCode.HookFailed,
+                                L($"ILauncherHook.OnBoot 超时（{timeout}s），未收到完成回调",
+                                  $"ILauncherHook.OnBoot timed out ({timeout}s), completion callback not received"));
+                            return;
+                        }
+                    }
                     await UniTask.NextFrame(token);
+                }
             }
 
             #endregion
@@ -525,9 +541,25 @@ namespace EasyFramework.Launcher
                     return;
                 }
 
-                // 与第 1 步 OnBoot 同一套轮询模式；token 随 GameObject 销毁自动取消，不会卡死
+                // 与第 1 步 OnBoot 同一套轮询模式，并同样带超时兜底：
+                // 用户永不点击确认或渠道 SDK 卡住时，Launcher 常驻不销毁、token 不会取消，无超时会永久停在等待态。
+                float waited = 0f;
+                float timeout = _config?.TimeoutSeconds ?? 0f;
                 while (!confirmed)
+                {
+                    if (timeout > 0f)
+                    {
+                        waited += Time.unscaledDeltaTime;
+                        if (waited >= timeout)
+                        {
+                            Fail(LauncherErrorCode.ConfirmFailed,
+                                L($"ILauncherEnterConfirm 超时（{timeout}s），未收到进入确认",
+                                  $"ILauncherEnterConfirm timed out ({timeout}s), no enter confirmation received"));
+                            return;
+                        }
+                    }
                     await UniTask.NextFrame(token);
+                }
             }
 
             #endregion
