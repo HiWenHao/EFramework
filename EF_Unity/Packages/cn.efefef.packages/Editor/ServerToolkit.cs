@@ -5,7 +5,7 @@
  * CreationTime:  2026-05-20 14:44:04
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-05-20 14:44:04
- * ScriptVersion: 0.1
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -267,6 +267,48 @@ namespace EasyFramework.Edit.Packages
             }
 
             numbers = parsed;
+            return true;
+        }
+
+        /// <summary>
+        /// 按 SemVer 规则上升指定段：MAJOR/MINOR/PATCH，高位+1 时低位归零
+        /// <para>Bump a specific SemVer segment (MAJOR/MINOR/PATCH); incrementing a higher
+        /// segment resets all lower segments to zero.</para>
+        /// </summary>
+        /// <param name="version">原版本号；空串按 0.0.0 起算<para>Source version; empty counts as 0.0.0.</para></param>
+        /// <param name="segment">要上升的段（0=MAJOR, 1=MINOR, 2=PATCH）<para>Segment to bump (0=MAJOR, 1=MINOR, 2=PATCH).</para></param>
+        /// <param name="bumped">上升后的版本号<para>The bumped version.</para></param>
+        /// <returns>解析成功返回 true；段越界、非数字或溢出时返回 false<para>True when parsed; false on invalid segment, non-numeric part or overflow.</para></returns>
+        public static bool TryBumpSemVer(string version, int segment, out string bumped)
+        {
+            string source = string.IsNullOrEmpty(version) ? "0.0.0" : version.Trim();
+            bumped = source;
+
+            if (segment < 0 || segment > 2)
+                return false;
+            if (!TryParseVersionParts(source, out int[] parts))
+                return false;
+
+            // 不足三段补 0（1.2 -> 1.2.0）；超过三段拒绝（SemVer 只允许三段）
+            if (parts.Length > 3)
+                return false;
+            var numbers = new int[3];
+            Array.Copy(parts, numbers, parts.Length);
+
+            if (numbers[segment] == int.MaxValue)
+                return false;
+            numbers[segment]++;
+            for (int i = segment + 1; i < numbers.Length; i++)
+                numbers[i] = 0; // 高位进位，低位归零
+
+            var builder = new StringBuilder();
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                if (i > 0)
+                    builder.Append('.');
+                builder.Append(numbers[i].ToString(CultureInfo.InvariantCulture));
+            }
+            bumped = builder.ToString();
             return true;
         }
 

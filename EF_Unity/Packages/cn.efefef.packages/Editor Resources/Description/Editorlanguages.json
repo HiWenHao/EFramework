@@ -367,6 +367,38 @@
         "Use",
         "使用"
       ]
+    },
+    {
+      "name": "Packages.BumpMajor",
+      "desc": "主版本上升（破坏性改动）",
+      "array": [
+        "Major +1",
+        "主版本 +1"
+      ]
+    },
+    {
+      "name": "Packages.BumpMinor",
+      "desc": "次版本上升（新增功能）",
+      "array": [
+        "Minor +1",
+        "次版本 +1"
+      ]
+    },
+    {
+      "name": "Packages.BumpPatch",
+      "desc": "修订号上升（修 bug）",
+      "array": [
+        "Patch +1",
+        "修订号 +1"
+      ]
+    },
+    {
+      "name": "Packages.BumpSemVerTip",
+      "desc": "{0}：{1} → {2}",
+      "array": [
+        "{0}: {1} -> {2}",
+        "{0}：{1} → {2}"
+      ]
     }
   ]
 }

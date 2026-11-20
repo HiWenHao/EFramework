@@ -5,7 +5,7 @@
  * CreationTime:  2026-05-19 17:04:50
  * ModifyAuthor:  Alvin8412
  * ModifyTime:    2026-05-19 17:04:50
- * ScriptVersion: 0.1
+ * ScriptVersion: 0.2
  * ===============================================
  */
 
@@ -54,6 +54,15 @@ namespace EasyFramework.Edit
     public class EFPackageConfigPanel : EFConfigPanelBase
     {
         private const string PackageFolderPath = ".git?path=/EF_Unity/Packages/";           // 远端Package文件夹地址
+
+        // SemVer 三按钮：段索引与 ServerToolkit.TryBumpSemVer 一致（0=MAJOR,1=MINOR,2=PATCH）
+        private static readonly int[] BumpSegments = { 0, 1, 2 };
+        private static readonly string[] BumpLabels =
+        {
+            "Packages.BumpMajor", "Packages.BumpMinor", "Packages.BumpPatch"
+        };
+        private static readonly Color[] BumpColors = { Color.red, Color.yellow, Color.cyan };
+        private const float BumpButtonWidth = 64f;
 
         // 新建包程序集依赖的固定 GUID（core Runtime / core Editor / UniTask；与 EF.RedDot 等现有包一致）
         private const string CoreRuntimeAssemblyGuid = "396fd9bc7a7442941a71f32479ef054d";
@@ -359,10 +368,10 @@ namespace EasyFramework.Edit
                     $"{LC.Combine("Packages.ServerVersion")}:  {serverText}", 
                     GUILayout.Width(160));
 
-                // 维护者专用：末位版本号 +1（Git 包在 PackageCache 内只读，故只对本地嵌入式包开放）
+                // 维护者专用：SemVer 三段上升（Git 包在 PackageCache 内只读，故只对本地嵌入式包开放）
                 if (_isMaintainer && packageInfo.SourceType == EFPackageSource.Local)
                 {
-                    DrawBumpVersionButton(packageInfo);
+                    DrawBumpVersionButtons(packageInfo);
                     // 版本与默认值不一致时才出现的"恢复默认"按钮
                     DrawResetVersionButton(packageInfo);
                 }
@@ -381,38 +390,39 @@ namespace EasyFramework.Edit
         }
 
         /// <summary>
-        /// 版本上升按钮：末位版本号 +1（按十进制进位，0.0.9 → 0.1.0），
-        /// 仅更新面板上的待发布版本，不写 package.json
-        /// <para>Bump-version button: increments the last version segment (decimal carrying,
-        /// 0.0.9 -> 0.1.0) and stages it in the panel only; package.json is untouched.</para>
+        /// SemVer 三段上升按钮：PATCH / MINOR / MAJOR，各自只改面板暂存版本，不写 package.json
+        /// <para>SemVer bump buttons for PATCH / MINOR / MAJOR; each stages the version in the
+        /// panel only and leaves package.json untouched.</para>
         /// </summary>
         /// <param name="packageInfo">目标包信息<para>Target package info.</para></param>
-        private void DrawBumpVersionButton(EFPackageInfo packageInfo)
+        private void DrawBumpVersionButtons(EFPackageInfo packageInfo)
         {
-            // 先算出目标版本，既用于禁用判断也用于悬浮提示，避免点击后才发现无法解析。
-            // 内存版本为空时（如刚卸载过）回读磁盘，保证提示与暂存值基于同一基准。
+            // 内存版本为空时（如刚卸载过）回读磁盘，保证三个按钮基于同一基准
             string sourceVersion = packageInfo.CurrentVersion;
             if (string.IsNullOrEmpty(sourceVersion)
                 && !ServerToolkit.TryReadPackageJsonVersion(packageInfo.Name, out sourceVersion))
                 sourceVersion = "0.0.0";
 
-            bool canBump = ServerToolkit.TryBumpVersion(sourceVersion, out string nextVersion);
-            string tip = canBump
-                ? LC.Format("Packages.BumpVersionTip", sourceVersion, nextVersion)
-                : LC.Combine("Packages.VersionUnparsable");
-            var content = new GUIContent(LC.Combine("Packages.BumpVersion"), tip);
+            for (int segment = 0; segment < BumpSegments.Length; segment++)
+            {
+                bool canBump = ServerToolkit.TryBumpSemVer(sourceVersion, segment, out string nextVersion);
+                string label = LC.Combine(BumpLabels[segment]);
+                string tip = canBump
+                    ? LC.Format("Packages.BumpSemVerTip", label, sourceVersion, nextVersion)
+                    : LC.Combine("Packages.VersionUnparsable");
 
-            EditorGUI.BeginDisabledGroup(!canBump);
-            bool clicked = GUILayout.Button(content,
-                GUIUtils.Button(canBump ? Color.cyan : Color.gray), GUILayout.Width(110));
-            EditorGUI.EndDisabledGroup();
-            if (!clicked)
-                return;
+                EditorGUI.BeginDisabledGroup(!canBump);
+                bool clicked = GUILayout.Button(new GUIContent(label, tip),
+                    GUIUtils.Button(canBump ? BumpColors[segment] : Color.gray), GUILayout.Width(BumpButtonWidth));
+                EditorGUI.EndDisabledGroup();
+                if (!clicked)
+                    continue;
 
-            // 只改面板暂存值：真正写 package.json 放在“发布版本”时进行
-            packageInfo.CurrentVersion = nextVersion;
-            packageInfo.PendingVersion = nextVersion;
-            ServerToolkit.SavePackageConfig(_config);
+                // 只改面板暂存值：真正写 package.json 放在“发布版本”时进行
+                packageInfo.CurrentVersion = nextVersion;
+                packageInfo.PendingVersion = nextVersion;
+                ServerToolkit.SavePackageConfig(_config);
+            }
         }
 
         /// <summary>
