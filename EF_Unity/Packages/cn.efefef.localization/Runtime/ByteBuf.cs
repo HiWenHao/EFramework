@@ -62,7 +62,7 @@ namespace EasyFramework.Localization
         /// <item><description>首字节 &lt; 0xC0：2 字节，值 = ((首字节 &amp; 0x3F) &lt;&lt; 8) | 次字节</description></item>
         /// <item><description>首字节 &lt; 0xE0：3 字节，值 = ((首字节 &amp; 0x1F) &lt;&lt; 16) | 后续 2 字节</description></item>
         /// <item><description>首字节 &lt; 0xF0：4 字节，值 = ((首字节 &amp; 0x0F) &lt;&lt; 24) | 后续 3 字节</description></item>
-        /// <item><description>首字节 == 0xF0：5 字节，值 = 后续 4 字节</description></item>
+        /// <item><description>首字节 &gt;= 0xF0：5 字节，值 = 后续 4 字节（与 Luban 官方 ReadUint 的 else 分支一致）</description></item>
         /// </list>
         /// <para>Reads an integer using Luban's prefix encoding (identical to <c>Luban.ByteBuf.ReadUint</c>).</para>
         /// </summary>
@@ -111,7 +111,7 @@ namespace EasyFramework.Localization
                 return (int)x;
             }
 
-            // 1111 0000：5 字节
+            // 1111 xxxx（>= 0xF0）：5 字节，与 Luban 官方 ReadUint else 分支一致
             if (Remaining < 4)
                 throw new ArgumentOutOfRangeException(nameof(Remaining), "[ Localization ] varint 数据不足（5 字节编码缺后续字节）");
 
