@@ -134,9 +134,12 @@ namespace EasyFramework.Managers.Ui
             // 子面板不进全局栈，单独轮询其 Update
             foreach (var collection in _childViewDic.Values)
             {
-                for (int i = collection.All.Count - 1; i >= 0; i--)
+                // 快照遍历：child.Update 内部可能移除子面板（DestroyChildView 会改 collection.All），
+                // 直接按原集合倒序遍历会索引错位/跳过；与同文件 :157/:398 的做法保持一致
+                var children = new List<IUiView>(collection.All);
+                for (int i = children.Count - 1; i >= 0; i--)
                 {
-                    var child = collection.All[i];
+                    var child = children[i];
                     if (child.View == null || child.View.gameObject == null)
                         continue;
                     child.Update(elapse, realElapse);

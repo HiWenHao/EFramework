@@ -224,6 +224,7 @@ namespace EasyFramework.Managers.Ui
         // PoolManager 对象池是否已初始化
         private bool _poolInitialized;
         private int _lastPoolPrefabId;
+        private GameObject _poolPrefab; // 创建对象池时使用的 prefab（池的 key），prefab 变更时据此销毁旧池
 
         // 当前滚动动画协程
         private Coroutine _snapCoroutine;
@@ -272,10 +273,12 @@ namespace EasyFramework.Managers.Ui
         {
             ClearAllItems();
 
-            if (_poolInitialized && _itemPrefab != null)
+            if (_poolInitialized && _poolPrefab != null)
             {
-                PoolManager.Instance.DestroyGameObjectPool(_itemPrefab);
+                // 用创建池时的 prefab（池 key）销毁，而非可能已变更的 _itemPrefab
+                PoolManager.Instance.DestroyGameObjectPool(_poolPrefab);
                 _poolInitialized = false;
+                _poolPrefab = null;
             }
 
             if (_scrollRect == null || !_isScrollListenerRegistered) return;
@@ -655,8 +658,11 @@ namespace EasyFramework.Managers.Ui
                     RecycleSlot(_activeSlots.Count - 1);
                 }
 
-                PoolManager.Instance.DestroyGameObjectPool(_itemPrefab);
+                // 池以创建时的 prefab 为 key，必须用旧 prefab 销毁；用 _itemPrefab 会销毁错对象并泄漏旧池
+                if (_poolPrefab != null)
+                    PoolManager.Instance.DestroyGameObjectPool(_poolPrefab);
                 _poolInitialized = false;
+                _poolPrefab = null;
             }
 
             if (!_poolInitialized)
@@ -673,6 +679,7 @@ namespace EasyFramework.Managers.Ui
                 );
                 _poolInitialized = true;
                 _lastPoolPrefabId = prefabId;
+                _poolPrefab = _itemPrefab;
             }
         }
 

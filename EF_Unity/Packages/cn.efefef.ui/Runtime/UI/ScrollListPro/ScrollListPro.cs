@@ -287,12 +287,15 @@ namespace EasyFramework.Managers.Ui
 
             _viewportSize = GetViewportSize();
 
-            var pfRt = itemPrefab.transform as RectTransform;
-            if (itemPrefab != null && pfRt != null)
+            if (itemPrefab != null)
             {
-                _prefabDefaultSize = (direction == Direction.Vertical)
-                    ? pfRt.rect.height
-                    : pfRt.rect.width;
+                var pfRt = itemPrefab.transform as RectTransform;
+                if (pfRt != null)
+                {
+                    _prefabDefaultSize = (direction == Direction.Vertical)
+                        ? pfRt.rect.height
+                        : pfRt.rect.width;
+                }
             }
 
             StripConflictingLayoutComponents(_contentRect);
@@ -375,6 +378,9 @@ namespace EasyFramework.Managers.Ui
         {
             for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
+                // 与其它回收路径（RefreshVisibleItemsInternal）保持一致：回收前通知业务隐藏，
+                // 避免对象池复用后 item 的事件监听/动画等业务状态残留
+                _activeItems[i].ScrollItem?.OnHide();
                 Recycle(_activeItems[i].Target);
             }
 
@@ -562,13 +568,20 @@ namespace EasyFramework.Managers.Ui
         // 当滚动位置改变时
         private void OnScrollChanged(Vector2 _)
         {
-            // 动画期间跳过刷新：AnimateScrollAsync 逐帧设 anchoredPosition 会触发 onValueChanged，
-            // 此时创建新 item 会改变累积位置 → 动画目标偏移 → 可能不吸附。
-            if (_animating) return;
+            // 用户拖动时立即终止正在运行的滚动动画，避免手势与动画叠加造成视窗漂移。
+            // 必须在 _animating 早退之前判断：动画驱动期逐帧设 anchoredPosition 不产生 velocity，
+            // 因此这里的速度阈值只会在真实拖拽时命中，不会误伤动画自身。
+            if (_animating)
+            {
+                if (scrollRect != null && scrollRect.velocity.sqrMagnitude > 10f)
+                {
+                    _scrollAnimCts?.Cancel(); // 取消滚动动画（而非布局动画），让拖动接管
+                    _animating = false;       // 立即放行刷新，避免早退导致拖动时 item 不更新
+                }
+                else
+                    return; // 非拖动的动画自驱动回调：跳过刷新，防止累积位置变化干扰动画
+            }
 
-            // 用户拖动时立即终止动画，避免视觉冲突
-            if (scrollRect != null && scrollRect.velocity.sqrMagnitude > 10f)
-                StopLayoutAnimation();
             RefreshVisibleItems(false);
             CheckEdgeReached();
             CheckSnap();
@@ -647,6 +660,7 @@ namespace EasyFramework.Managers.Ui
 
                 var cts = new CancellationTokenSource();
                 _scrollAnimCts?.Cancel();
+                _scrollAnimCts?.Dispose();
                 _scrollAnimCts = cts;
                 AnimateScrollAsync(GetContentScrollOffset(), clamped, snapDuration, null, cts.Token).Forget();
             }
@@ -1077,28 +1091,56 @@ namespace EasyFramework.Managers.Ui
             AnimationCurve curve, CancellationToken ct)
         {
             _animating = true;
-            float elapsed = 0f;
-            while (elapsed < duration && !ct.IsCancellationRequested)
+            try
             {
-                elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                if (curve != null && curve.length > 0)
-                    t = curve.Evaluate(t);
+                float elapsed = 0f;
+                while (elapsed < duration && !ct.IsCancellationRequested)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    if (curve != null && curve.length > 0)
+                        t = curve.Evaluate(t);
 
-                float currentPos = Mathf.Lerp(from, to, t);
-                SetContentScrollOffset(currentPos);
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                    float currentPos = Mathf.Lerp(from, to, t);
+                    SetContentScrollOffset(currentPos);
+
+                    // 动画期间 OnScrollChanged 被 _animating 抑制（567），可见 item 不会随滚动补充，
+                    // 跨屏滚动时起点区的 item 移出视口后即空白。这里按当前动画位置主动补齐可见项。
+                    // 用 force=false：仅在可见范围真正变化时补/回收，不做全量重建；
+                    // 刷新内的锚点补偿可能微调 anchoredPosition，随后重钉回动画位置避免抖动。
+                    RefreshVisibleItems(false);
+                    SetContentScrollOffset(currentPos);
+
+                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                }
+
+                if (!ct.IsCancellationRequested)
+                {
+                    SetContentScrollOffset(to);
+                    RefreshVisibleItems(true);
+                }
             }
-
-            _animating = false;
-            if (!ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
-                SetContentScrollOffset(to);
-                RefreshVisibleItems(true);
+                // 本令牌被取消：新滚动/OnDisable 打断，交由 finally 收尾
             }
-
-            _scrollAnimCts?.Dispose();
-            _scrollAnimCts = null;
+            finally
+            {
+                // 仅"当前动画"有权复位状态与清理令牌：
+                //  - _scrollAnimCts == null → 已被 CancelAllAnimations 清理，无新动画接管
+                //  - Token == ct → 自己仍是当前活动动画
+                // 否则已被新动画取代，_animating/CTS 由新动画负责，禁止误清
+                // （若旧动画无条件复位 _animating，新动画期间 onValueChanged 不再早退 → 视窗飞走）
+                if (_scrollAnimCts == null || _scrollAnimCts.Token == ct)
+                {
+                    _animating = false;
+                    if (_scrollAnimCts != null)
+                    {
+                        _scrollAnimCts.Dispose();
+                        _scrollAnimCts = null;
+                    }
+                }
+            }
         }
 
         // 设置 content 滚动偏移
@@ -1209,7 +1251,6 @@ namespace EasyFramework.Managers.Ui
                 IsInitialized = true;
 
             RebuildCumulativePositions();
-            FullRebuild();
 
             float actualPrepend = 0f;
             for (int i = 0; i < count; i++)
@@ -1217,10 +1258,12 @@ namespace EasyFramework.Managers.Ui
                 actualPrepend += _itemSizes[i] + itemSpacing;
             }
 
+            // 先按头部新增的高度把滚动位置补偿到正确处，再做唯一一次全量重建。
+            // 原实现先 FullRebuild（在旧偏移下按错位数据渲染）再改偏移又重建，
+            // 造成两轮全回收/新建、闪烁与位置跳变。
             float newScroll = Mathf.Clamp(originalScroll + actualPrepend, 0, GetMaxScrollOffset());
             SetContentScroll(newScroll);
-            RebuildCumulativePositions();
-            RefreshVisibleItems(true);
+            FullRebuild();
         }
 
         /// <summary>
@@ -1487,10 +1530,23 @@ namespace EasyFramework.Managers.Ui
             float p2Max = Mathf.Max(0, p2Total - viewSize);
             float p2Clamped = Mathf.Clamp(p2Target - p2Offset, 0, p2Max);
 
-            if (!(Mathf.Abs(p2Clamped - p1Clamped) > 1f)) return;
+            if (!(Mathf.Abs(p2Clamped - p1Clamped) > 1f))
+            {
+                SyncEdgeBaseline();
+                return;
+            }
+
             SetContentScroll(p2Clamped);
             Canvas.ForceUpdateCanvases();
             RefreshVisibleItems(true);
+            SyncEdgeBaseline();
+        }
+
+        // 跳跃定位后同步边缘基线，避免 OnReachTop/OnReachBottom 因状态滞后而重复或漏发
+        private void SyncEdgeBaseline()
+        {
+            _wasAtTop = IsAtTop();
+            _wasAtBottom = IsAtBottom();
         }
 
         /// <summary>
@@ -1506,32 +1562,63 @@ namespace EasyFramework.Managers.Ui
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
 
-            // 保存当前滚动位置，SetContentScroll 会改变它
+            // 保存用户当前真实位置：动画必须从"用户看到的位置"起步，不能从测量瞬移后的位置起步，
+            // 否则测量瞬移会被渲染出来（弹飞），动画第一帧又把它拉回起点（先弹飞后铆钉）。
             float startPos = GetContentScrollOffset();
             float viewSize = GetViewportSize();
 
-            // 先触发测量，确保 _itemSizes 是实测值
-            RebuildCumulativePositions();
-            float p1Clamped = Mathf.Clamp(
-                GetCumulativePosition(index) - Mathf.Max(0, viewSize - _itemSizes[index]) * alignment,
-                0, Mathf.Max(0, CalculateTotalSize() - viewSize));
-            SetContentScroll(p1Clamped);
-            scrollRect.StopMovement();
-            RefreshVisibleItems(true);
+            // 测量阶段抑制 onValueChanged 回调：SetContentScroll 会让 ScrollRect 派发事件，
+            // 若此时 CheckSnap 判定未吸附，会再启动一个 snap 动画与本动画打架。
+            // 用 _animating 复用同一抑制位，异常时复位，正常时交由动画 finally 复位。
+            _animating = true;
+            float target;
+            try
+            {
+                // 瞬移到目标附近，强制目标 item 进入视口完成实测（_itemSizes 从估算变实测）
+                RebuildCumulativePositions();
+                float p1Clamped = Mathf.Clamp(
+                    GetCumulativePosition(index) - Mathf.Max(0, viewSize - _itemSizes[index]) * alignment,
+                    0, Mathf.Max(0, CalculateTotalSize() - viewSize));
+                SetContentScroll(p1Clamped);
+                scrollRect.StopMovement();
+                RefreshVisibleItems(true);
 
-            // 用实测尺寸计算精确目标
-            RebuildCumulativePositions();
-            float itemSize = _itemSizes[index];
-            float totalSize = CalculateTotalSize();
-            float maxScroll = Mathf.Max(0, totalSize - viewSize);
-            float target = Mathf.Clamp(GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0,
-                maxScroll);
+                // 用实测尺寸计算精确目标
+                RebuildCumulativePositions();
+                float itemSize = _itemSizes[index];
+                float totalSize = CalculateTotalSize();
+                float maxScroll = Mathf.Max(0, totalSize - viewSize);
+                target = Mathf.Clamp(
+                    GetCumulativePosition(index) - Mathf.Max(0, viewSize - itemSize) * alignment, 0, maxScroll);
 
-            _scrollAnimCts?.Cancel();
-            _scrollAnimCts?.Dispose();
-            var cts = new CancellationTokenSource();
-            _scrollAnimCts = cts;
-            AnimateScrollAsync(startPos, target, duration, easeCurve, cts.Token).Forget();
+                // 测量完成后把可见状态还原到起点：content 位置 + item 集合都回到 startPos。
+                // 尺寸已实测，此次非强制刷新不会再次大幅改变尺寸，锚点补偿 ≈ 0，画面稳定。
+                SetContentScroll(startPos);
+                RefreshVisibleItems(false);
+                Canvas.ForceUpdateCanvases();
+            }
+            catch
+            {
+                // 测量异常且未启动动画时，必须清除抑制位，避免 _animating 永久为 true。
+                _animating = false;
+                throw;
+            }
+
+            // 正常路径：抑制位保持 true，交由下面启动的动画在 finally 中复位
+            try
+            {
+                _scrollAnimCts?.Cancel();
+                _scrollAnimCts?.Dispose();
+                var cts = new CancellationTokenSource();
+                _scrollAnimCts = cts;
+                AnimateScrollAsync(startPos, target, duration, easeCurve, cts.Token).Forget();
+            }
+            catch
+            {
+                // 动画未真正启动时必须交还抑制位，避免 _animating 永久为 true
+                _animating = false;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1643,7 +1730,8 @@ namespace EasyFramework.Managers.Ui
 
                 D.Log($"[ UiManager ] [ ScrollListPro ] idx={item.Index} " +
                       $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
-                      $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.Index]:F1}" +
+                      $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} " +
+                      $"_itemSize={(item.Index >= 0 && item.Index < _itemSizes.Count ? _itemSizes[item.Index] : -1f):F1}" +
                       $"{paddingInfo}");
             }
 
