@@ -37,17 +37,17 @@ namespace EasyFramework.Systems.Archive
     /// </summary>
     public class FileArchiveProvider : IArchiveProvider
     {
-        private const uint FileMagic = 0x43524145; // "EARC" — 文件魔数标识
+        private const uint FileMagic = 0x43524145;         // "EARC" — 文件魔数标识
         private const string ArchiveExtension = ".arc";    // 存档文件扩展名
         private const string BackupExtension = ".bak";     // 备份文件扩展名
         private const string MetaFile = "slot_meta.json";  // 槽位元数据文件名
 
-        private readonly string _rootPath;       // 存档根目录
-        private readonly ArchiveSettings _settings; // 全局配置引用
-        private readonly byte[] _salt;           // 加密盐值
-        private byte[] _cachedKey;               // 缓存的 AES 密钥
-        private readonly object _keyLock = new(); // 保护 _cachedKey 的锁
-        private readonly Aes _cachedAes = Aes.Create(); // 池化 AES 实例（减少 GC）
+        private readonly string _rootPath;                  // 存档根目录
+        private readonly ArchiveSettings _settings;         // 全局配置引用
+        private readonly byte[] _salt;                      // 加密盐值
+        private volatile byte[] _cachedKey;                 // 缓存的 AES 密钥
+        private readonly object _keyLock = new();           // 保护 _cachedKey 的锁
+        private readonly Aes _cachedAes = Aes.Create();     // 池化 AES 实例（减少 GC）
 
         /// <summary>
         /// 创建本地文件存档 Provider<para>Create a local file-based archive provider</para>
@@ -65,7 +65,7 @@ namespace EasyFramework.Systems.Archive
 
         /// <summary>
         /// 扫描物理目录中所有 Slot_N 目录，返回解析出的 N 整数集合。
-        /// 用于 ArchiveManager.FindFreeSlotIdAsync 防御"目录存在但无有效 meta"的残留场景。
+        /// 用于 ArchiveManager.FindFreeSlotIdAsync 防御 "目录存在但无有效 meta" 的残留场景。
         /// <para>Scan physical Slot_N directories and return parsed N integers.
         /// Used by ArchiveManager.FindFreeSlotIdAsync to recover from residual slot dirs without valid meta.</para>
         /// </summary>
@@ -78,12 +78,12 @@ namespace EasyFramework.Systems.Archive
             {
                 string name = Path.GetFileName(dir);
                 if (string.IsNullOrEmpty(name)) continue;
-                // "Slot_N" 长度至少 6（"Slot_0" = 6）
                 if (name.Length < 6 || !name.StartsWith("Slot_", StringComparison.Ordinal)) continue;
-                string idPart = name.Substring(5);
+                string idPart = name[5..];
                 if (int.TryParse(idPart, out int id) && id >= 0)
                     result.Add(id);
             }
+
             return result;
         }
 
@@ -110,7 +110,7 @@ namespace EasyFramework.Systems.Archive
             // 启用备份时：先轮转旧备份链，再将当前 .arc 复制为最新 .bak
             if (_settings.enableAutoBackup && File.Exists(finalPath))
             {
-                CleanupOldBackups(slotId, key);            // 先移位旧备份链，防止旧的 .bak 被覆盖丢失
+                CleanupOldBackups(slotId, key); // 先移位旧备份链，防止旧的 .bak 被覆盖丢失
                 File.Copy(finalPath, finalPath + BackupExtension, overwrite: true);
             }
 
@@ -147,6 +147,7 @@ namespace EasyFramework.Systems.Archive
                 fs.Write(fileData, 0, fileData.Length);
                 fs.Flush(true); // flushToDisk = true
             }
+
             AtomicReplace(tempPath, finalPath);
         }
 
@@ -322,6 +323,7 @@ namespace EasyFramework.Systems.Archive
                 fs.Write(data, 0, data.Length);
                 fs.Flush(true);
             }
+
             AtomicReplace(tempPath, metaPath);
         }
 
@@ -480,7 +482,8 @@ namespace EasyFramework.Systems.Archive
 
             byte[] actualChecksum = ComputeChecksum(ivPlusCipher);
             if (!ConstantTimeEquals(actualChecksum, expectedChecksum))
-                throw new ArchiveCorruptedException(filePath, "SHA256 checksum mismatch. File may be corrupted or tampered.");
+                throw new ArchiveCorruptedException(filePath,
+                    "SHA256 checksum mismatch. File may be corrupted or tampered.");
 
             return Decrypt(cipherOnly, iv);
         }
@@ -584,6 +587,7 @@ namespace EasyFramework.Systems.Archive
                     offset += read;
                     remaining -= read;
                 }
+
                 return result;
             }, cancellationToken: ct);
         }
@@ -653,7 +657,8 @@ namespace EasyFramework.Systems.Archive
         private static bool IsAllReplacementChars(string s)
         {
             foreach (char c in s)
-                if (c != '.' && c != '_') return false;
+                if (c != '.' && c != '_')
+                    return false;
             return true;
         }
 
@@ -701,10 +706,28 @@ namespace EasyFramework.Systems.Archive
         // 原子替换文件（NTFS 级原子：File.Replace 保留文件身份不变，失败时回退 Delete+Move）
         private static void AtomicReplace(string sourcePath, string destPath)
         {
-            if (File.Exists(destPath))
-                File.Replace(sourcePath, destPath, null);
-            else
+            if (!File.Exists(destPath))
+            {
                 File.Move(sourcePath, destPath);
+                return;
+            }
+
+            try
+            {
+                File.Replace(sourcePath, destPath, null);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // macOS / Linux / 部分 IL2CPP 平台不支持 File.Replace：回退为非原子的删除+移动
+                File.Delete(destPath);
+                File.Move(sourcePath, destPath);
+            }
+            catch (IOException)
+            {
+                // 跨卷 / 目标被占用等导致 Replace 失败：同样回退，保证新数据至少能落盘
+                File.Delete(destPath);
+                File.Move(sourcePath, destPath);
+            }
         }
 
         #endregion
