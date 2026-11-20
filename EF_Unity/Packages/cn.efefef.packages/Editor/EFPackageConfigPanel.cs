@@ -931,10 +931,12 @@ namespace EasyFramework.Edit
             string packagePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Packages", $"cn.efefef.{packageName.ToLower()}"));
             Directory.CreateDirectory(packagePath);
 
+            bool success = false;
             try
             {
                 CreatePackageJson(packageName, packageDes, author, packagePath);
                 CreatePackageStructure(packageName, packagePath);
+                success = true;
             }
             catch (Exception e)
             {
@@ -942,13 +944,18 @@ namespace EasyFramework.Edit
             }
             finally
             {
-                _config.packagesInfo.Add(_newPackageInfo);
-                _packageFolder.TryAdd(_newPackageInfo.DisplayName, true);
-                ServerToolkit.SavePackageConfig(_config);
-                
-                Client.Resolve();
-                EditorCommands.SaveAssets();
-                EditorCommands.Refresh();
+                // 仅在创建成功时提交配置：失败路径下 _newPackageInfo 可能为 null，
+                // 强行 Add(null) 会把无效包写进配置并污染后续 Resolve。
+                if (success && _newPackageInfo != null)
+                {
+                    _config.packagesInfo.Add(_newPackageInfo);
+                    _packageFolder.TryAdd(_newPackageInfo.DisplayName, true);
+                    ServerToolkit.SavePackageConfig(_config);
+
+                    Client.Resolve();
+                    EditorCommands.SaveAssets();
+                    EditorCommands.Refresh();
+                }
                 _newPackageInfo = null;
             }
         }
