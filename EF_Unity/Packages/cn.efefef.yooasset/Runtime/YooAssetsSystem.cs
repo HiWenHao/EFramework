@@ -244,7 +244,7 @@ namespace EasyFramework.Managers.Assets
         {
             // 1. 从 PatchManager 已注册包中查找第一个核心包
             var registered = PatchManager.Instance.GetRegisteredConfigs();
-            if (registered != null && registered.Count > 0)
+            if (registered is { Count: > 0 })
             {
                 foreach (var cfg in registered)
                 {
