@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7dca90a5ae2fc64e8b54a6eb9565560, type: 3}
   m_Name: FillLauncherConfig
   m_EditorClassIdentifier: 
-  PlayMode: 0
+  PlayMode: 2
   PackageName: DefaultPackage
   TimeoutSeconds: 60
   DownloadingMaxNumber: 10
@@ -21,49 +21,49 @@ MonoBehaviour:
   RetryDelaySeconds: 0
   AutoRetryOnFailure: 0
   AotMetadataDlls:
-  - {fileID: 4900000, guid: f22f7966ce8cebc4b9930e494ce4eac8, type: 3}
-  - {fileID: 4900000, guid: f79305fc88f23494b945e4e058264988, type: 3}
-  - {fileID: 4900000, guid: 5cce6dde7aacfd0469445ad0f9ee9f7d, type: 3}
+  - {fileID: 4900000, guid: 0a96f4d82ce516a4680d47885dd0e07c, type: 3}
+  - {fileID: 4900000, guid: 5fc7d4a7cf13fac45a448f93f2e7b85a, type: 3}
+  - {fileID: 4900000, guid: 692151e72052ffc4492aa745d281e644, type: 3}
   HotfixDlls:
   - Name: EF.Archive
     Location: Assets/AssetsHotfix/FullCode/EF.Archive.dll
-    FallbackAsset: {fileID: 4900000, guid: 6aed2e4207b8e5b4fbaffb24187601b5, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 2479ebbd67686b64c9238a4ab7f90250, type: 3}
     Enabled: 1
   - Name: EF.Preference
     Location: Assets/AssetsHotfix/FullCode/EF.Preference.dll
-    FallbackAsset: {fileID: 4900000, guid: 0bf8cf194fd200b469f4c62593e9ad74, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 5f605f385331b434593ca0a747803e66, type: 3}
     Enabled: 1
   - Name: EF.Audio
     Location: Assets/AssetsHotfix/FullCode/EF.Audio.dll
-    FallbackAsset: {fileID: 4900000, guid: 3a7245f6f6de1d541bfb7183ec13cfda, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 5701c078fcf0ad44795c19c18bd50058, type: 3}
     Enabled: 1
   - Name: EF.Http
     Location: Assets/AssetsHotfix/FullCode/EF.Http.dll
-    FallbackAsset: {fileID: 4900000, guid: 09485cb9c55a5984c92269129959ab5e, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: c0ce7187b9d4dcc48a9e69d1734ce1ad, type: 3}
     Enabled: 1
   - Name: EF.Localization
     Location: Assets/AssetsHotfix/FullCode/EF.Localization.dll
-    FallbackAsset: {fileID: 4900000, guid: c87bb1f577d5d8b40a8c08ee680a1885, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 9deac01e9e676e84eb79266a4a54797c, type: 3}
     Enabled: 1
   - Name: EF.Net
     Location: Assets/AssetsHotfix/FullCode/EF.Net.dll
-    FallbackAsset: {fileID: 4900000, guid: 15f9663fd42a17f41b3b0980d888d029, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 9e8bec310e94db141813dbd1c2b402f1, type: 3}
     Enabled: 1
   - Name: EF.RedDot
     Location: Assets/AssetsHotfix/FullCode/EF.RedDot.dll
-    FallbackAsset: {fileID: 4900000, guid: ab03ecffb1e4edc4fa1b44743aea8214, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 1b9c932c4faff024c81df519e13392ae, type: 3}
     Enabled: 1
   - Name: EF.UI
     Location: Assets/AssetsHotfix/FullCode/EF.UI.dll
-    FallbackAsset: {fileID: 4900000, guid: a08931b8dd2162b4f8d9f2c75d39f057, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 5ab2192c9efef6346aa1f738e66a7588, type: 3}
     Enabled: 1
   - Name: EF.YooAsset
     Location: Assets/AssetsHotfix/FullCode/EF.YooAsset.dll
-    FallbackAsset: {fileID: 4900000, guid: 46b323e6b73dc4e4f8808d4bf4f904ac, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: 2b2ab70764968d6478f5b1d467f63f45, type: 3}
     Enabled: 1
   - Name: ExampleGameHotfix
     Location: Assets/AssetsHotfix/FullCode/ExampleGameHotfix.dll
-    FallbackAsset: {fileID: 0}
+    FallbackAsset: {fileID: 4900000, guid: baa6bd971258480408b8dc8337819e5a, type: 3}
     Enabled: 1
   EntryType: EFExample.HotfixTest
   EntryMethod: Init

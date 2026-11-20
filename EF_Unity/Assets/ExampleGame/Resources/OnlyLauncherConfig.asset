@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayMode: 0
   PackageName: DefaultPackage
-  MainUrl: http://127.0.0.1:8080
-  FallbackUrl: http://127.0.0.1:8080
   TimeoutSeconds: 60
   DownloadingMaxNumber: 10
   FailedTryAgain: 3
@@ -23,13 +21,49 @@ MonoBehaviour:
   RetryDelaySeconds: 0
   AutoRetryOnFailure: 0
   AotMetadataDlls:
-  - {fileID: 4900000, guid: 40acbf272f38e914b87aceff2d446e20, type: 3}
-  - {fileID: 4900000, guid: 76c270fc21ca1fc48a79abf597222943, type: 3}
-  - {fileID: 4900000, guid: dbb046c3fb051b34193eb7341e0dccc7, type: 3}
+  - {fileID: 4900000, guid: 0a96f4d82ce516a4680d47885dd0e07c, type: 3}
+  - {fileID: 4900000, guid: 5fc7d4a7cf13fac45a448f93f2e7b85a, type: 3}
+  - {fileID: 4900000, guid: 692151e72052ffc4492aa745d281e644, type: 3}
   HotfixDlls:
+  - Name: EF.UI
+    Location: EF.UI.dll
+    FallbackAsset: {fileID: 4900000, guid: 5ab2192c9efef6346aa1f738e66a7588, type: 3}
+    Enabled: 1
+  - Name: EF.Preference
+    Location: EF.Preference.dll
+    FallbackAsset: {fileID: 4900000, guid: 5f605f385331b434593ca0a747803e66, type: 3}
+    Enabled: 1
+  - Name: EF.Audio
+    Location: EF.Audio.dll
+    FallbackAsset: {fileID: 4900000, guid: 5701c078fcf0ad44795c19c18bd50058, type: 3}
+    Enabled: 1
+  - Name: EF.YooAsset
+    Location: EF.YooAsset.dll
+    FallbackAsset: {fileID: 4900000, guid: 2b2ab70764968d6478f5b1d467f63f45, type: 3}
+    Enabled: 1
   - Name: ExampleGameHotfix.dll
     Location: Assets/AssetsHotfix/OnlyHotfixCode/ExampleGameHotfix.dll
-    FallbackAsset: {fileID: 4900000, guid: b728c14322abc7144959c68e5e297ea1, type: 3}
+    FallbackAsset: {fileID: 4900000, guid: baa6bd971258480408b8dc8337819e5a, type: 3}
+    Enabled: 1
+  - Name: EF.Archive
+    Location: EF.Archive.dll
+    FallbackAsset: {fileID: 4900000, guid: 2479ebbd67686b64c9238a4ab7f90250, type: 3}
+    Enabled: 1
+  - Name: EF.Http
+    Location: EF.Http.dll
+    FallbackAsset: {fileID: 4900000, guid: c0ce7187b9d4dcc48a9e69d1734ce1ad, type: 3}
+    Enabled: 1
+  - Name: EF.Localization
+    Location: EF.Localization.dll
+    FallbackAsset: {fileID: 4900000, guid: 9deac01e9e676e84eb79266a4a54797c, type: 3}
+    Enabled: 1
+  - Name: EF.Net
+    Location: EF.Net.dll
+    FallbackAsset: {fileID: 4900000, guid: 9e8bec310e94db141813dbd1c2b402f1, type: 3}
+    Enabled: 1
+  - Name: EF.RedDot
+    Location: EF.RedDot.dll
+    FallbackAsset: {fileID: 4900000, guid: 1b9c932c4faff024c81df519e13392ae, type: 3}
     Enabled: 1
   EntryType: EFExample.HotfixTest
   EntryMethod: Init
