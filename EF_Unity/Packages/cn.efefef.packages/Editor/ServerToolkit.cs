@@ -37,6 +37,7 @@ namespace EasyFramework.Edit.Packages
 
     /// <summary>
     /// 框架远端服务工具箱
+    /// <para>Framework remote service toolkit</para>
     /// </summary>
     public static class ServerToolkit
     {
@@ -47,16 +48,24 @@ namespace EasyFramework.Edit.Packages
         /// <summary> 本地工作状态路径（ProjectSettings 下，自动管理） </summary>
         private static string ConfigPath => Path.Combine(Application.dataPath, "../ProjectSettings/EFPackageCache.json");
 
-        /// <summary> 官方包目录路径（Editor Resources 下，应提交到 Git） </summary>
+        /// <summary>
+        /// 官方包目录路径（Editor Resources 下，应提交到 Git）
+        /// <para>Official package catalog path (under Editor Resources; should be committed to Git)</para>
+        /// </summary>
         public static string CatalogPath =>
             Path.GetFullPath(Path.Combine(Application.dataPath, "../Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json"));
 
-        /// <summary> 远端目录相对路径（在仓库中的位置） </summary>
+        /// <summary>
+        /// 远端目录相对路径（在仓库中的位置）
+        /// <para>Relative path of the remote catalog in the repository</para>
+        /// </summary>
         public const string RemoteCatalogRepoPath = "EF_Unity/Packages/cn.efefef.packages/Editor Resources/EFPackageCache.json";
 
         /// <summary>
         /// 获取包配置数据
+        /// <para>Get the package configuration data.</para>
         /// </summary>
+        /// <returns>包配置数据，文件不存在时返回 null<para>The package configuration, or null if the file does not exist.</para></returns>
         public static PackageConfig GetPackageConfig()
         {
             if (!File.Exists(ConfigPath))
@@ -69,13 +78,20 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 保存包配置数据
+        /// <para>Save the package configuration data.</para>
         /// </summary>
+        /// <param name="packageConfig">包配置数据<para>The package configuration data.</para></param>
         public static void SavePackageConfig(PackageConfig packageConfig)
         {
             string json = packageConfig.ToJson();
             File.WriteAllText(ConfigPath,  json);
         }
         
+        /// <summary>
+        /// 保存包配置 JSON 文本
+        /// <para>Save the raw package configuration JSON text.</para>
+        /// </summary>
+        /// <param name="packageConfig">包配置 JSON 文本<para>The package configuration JSON text.</para></param>
         public static void SavePackageConfig(string packageConfig)
         {
             File.WriteAllText(ConfigPath,  packageConfig);
@@ -87,6 +103,9 @@ namespace EasyFramework.Edit.Packages
         /// 判断当前项目是否为 EFramework 源码项目（而非使用者项目）
         /// 检测标记：存在 EFramework.sln / EasyFramework-Unity.xmind / .github 目录
         /// 同时支持标准布局（sln 与 Assets 同级）和 EF 布局（sln 在上级目录）
+        /// <para>Whether the current project is the EFramework source project (rather than a consumer project)</para>
+        /// <para>Detection markers: EFramework.sln / EasyFramework-Unity.xmind / .github directory</para>
+        /// <para>Supports both the standard layout (sln alongside Assets) and the EF layout (sln one level up)</para>
         /// </summary>
         public static bool IsFrameworkProject
         {
@@ -110,7 +129,9 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 加载本地官方包目录
+        /// <para>Load the local official package catalog.</para>
         /// </summary>
+        /// <returns>本地官方包目录，不存在时返回 null<para>The local official catalog, or null if none exists.</para></returns>
         public static EFPackageCatalog LoadCatalog()
         {
             if (!File.Exists(CatalogPath))
@@ -120,7 +141,9 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 保存官方包目录
+        /// <para>Save the official package catalog.</para>
         /// </summary>
+        /// <param name="catalog">官方包目录<para>The official package catalog.</para></param>
         public static void SaveCatalog(EFPackageCatalog catalog)
         {
             string dir = Path.GetDirectoryName(CatalogPath);
@@ -134,7 +157,9 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 从本地扫描所有 EF 包，生成官方目录
+        /// <para>Scan all local EF packages and generate the official catalog.</para>
         /// </summary>
+        /// <returns>生成的官方包目录<para>The generated official package catalog.</para></returns>
         public static EFPackageCatalog GenerateCatalogFromLocalPackages()
         {
             var catalog = new EFPackageCatalog
@@ -466,8 +491,10 @@ namespace EasyFramework.Edit.Packages
         
         /// <summary>
         /// 获取请求链接地址
+        /// <para>Get the request URL.</para>
         /// </summary>
-        /// <param name="platform">远端类型</param>
+        /// <param name="platform">远端类型<para>Remote platform type.</para></param>
+        /// <returns>框架仓库链接地址<para>The framework repository URL.</para></returns>
         public static string GetFrameworkPath(ServerType platform)
         {
             return platform switch
@@ -481,8 +508,10 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 获取框架作者名
+        /// <para>Get the framework author name.</para>
         /// </summary>
-        /// <param name="platform">远端类型</param>
+        /// <param name="platform">远端类型<para>Remote platform type.</para></param>
+        /// <returns>框架作者名<para>The framework author name.</para></returns>
         public static string GetFrameworkOwner(ServerType platform)
         {
             return platform switch
@@ -496,14 +525,15 @@ namespace EasyFramework.Edit.Packages
 
         /// <summary>
         /// 获取请求链接地址
+        /// <para>Get the raw file URL.</para>
         /// </summary>
-        /// <param name="platform">远端类型</param>
-        /// <param name="owner">仓库拥有者名</param>
-        /// <param name="repo">框架名</param>
-        /// <param name="branch">分支名</param>
-        /// <param name="filePath">位于项目下的具体位置</param>
-        /// <returns></returns>
-        /// <exception cref="NotSupportedException"></exception>
+        /// <param name="platform">远端类型<para>Remote platform type.</para></param>
+        /// <param name="owner">仓库拥有者名<para>Repository owner name.</para></param>
+        /// <param name="repo">框架名<para>Repository name.</para></param>
+        /// <param name="branch">分支名<para>Branch name.</para></param>
+        /// <param name="filePath">位于项目下的具体位置<para>Path of the file within the project.</para></param>
+        /// <returns>文件的原始链接地址<para>The raw file URL.</para></returns>
+        /// <exception cref="NotSupportedException">不支持的远端类型<para>Thrown for an unsupported platform.</para></exception>
         public static string GetRawUrl(ServerType platform, string owner, string repo, string branch, string filePath)
         {
             string encodedPath = Uri.EscapeDataString(filePath);
@@ -515,11 +545,23 @@ namespace EasyFramework.Edit.Packages
             };
         }
         
+        /// <summary>
+        /// 获取指定平台的请求令牌
+        /// <para>Get the request token for a platform.</para>
+        /// </summary>
+        /// <param name="platform">远端类型<para>Remote platform type.</para></param>
+        /// <returns>请求令牌<para>The request token.</para></returns>
         public static string GetToken(ServerType platform)
         {
             return EditorPrefs.GetString(Application.productName + GetKey(platform), "");
         }
 
+        /// <summary>
+        /// 设置指定平台的请求令牌
+        /// <para>Set the request token for a platform.</para>
+        /// </summary>
+        /// <param name="platform">远端类型<para>Remote platform type.</para></param>
+        /// <param name="token">请求令牌<para>The request token.</para></param>
         public static void SetToken(ServerType platform, string token)
         {
             EditorPrefs.SetString(UnityEngine.Application.productName + GetKey(platform), token);
