@@ -236,9 +236,11 @@ namespace EasyFramework.Managers.Ui
             // 刚创建、尚未入栈的实例需要立即释放
             if (uiView.View != null && uiView.View.gameObject != null)
             {
+                uiView.Quit();
                 uiView.Dispose();
                 DestroyObj(uiView.View.gameObject);
             }
+
             return true;
         }
 

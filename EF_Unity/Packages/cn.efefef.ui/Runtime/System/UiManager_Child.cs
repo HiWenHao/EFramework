@@ -119,6 +119,10 @@ namespace EasyFramework.Managers.Ui
 
             var target = (TChild)childView;
             await ViewEnableWithAnim(childView, () => enableAction?.Invoke(target), true);
+
+            if (_childParentDic == null || !_childParentDic.ContainsKey(childView))
+                return default;
+
             return target;
         }
 

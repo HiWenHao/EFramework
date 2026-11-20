@@ -30,23 +30,25 @@ namespace EasyFramework.Managers.Ui
         [Serializable]
         public struct Entry
         {
+            [HeaderPro("匹配", "Match", HeaderProType.Subtitle)]
             [HeaderPro("视窗类型", "UI view type")]
             public UIViewType viewType;
 
+            [HeaderPro("动画", "Animation", HeaderProType.Subtitle)]
             [HeaderPro("动画类型", "Animation type")]
             public UiViewAnimationType type;
 
-            [HeaderPro("动画过度时长", "Duration of animation")]
+            [HeaderPro("动画过渡时长", "Duration of animation")]
             public float duration;
 
-            [HeaderPro("面板关闭时动画反播", "The animation plays backward when the panel is closed.")]
-            public bool reverseOnClose;
-
-            [HeaderPro("动画曲线", "Animation curve")]
+            [HeaderPro("动画曲线（留空则取全局默认）", "Animation curve (empty = global default)")]
             public AnimationCurve curve;
         }
 
-        [SerializeField, HeaderPro("单动画预设列表", "Single animation preset entry list")]
+        [HeaderPro("单视图预设", "Per-view presets", HeaderProType.Title)]
+        [HeaderPro("按视窗类型匹配，命中即用该条目；未命中回退下方默认值",
+            "Matched by view type; falls back to the defaults below when no entry matches")]
+        [SerializeField]
         private List<Entry> entries = new()
         {
             new Entry
@@ -56,16 +58,14 @@ namespace EasyFramework.Managers.Ui
             }
         };
 
-        [SerializeField, HeaderPro("动画类型", "Animation type")]
-        private UiViewAnimationType defaultType = UiViewAnimationType.Scale;
-
-        [SerializeField, HeaderPro("默认过度时长", "Default duration")]
+        [HeaderPro("", "", HeaderProType.Separator), Space]
+        [HeaderPro("全局默认值", "Global defaults", HeaderProType.Title)]
+        [HeaderPro("无匹配条目时的过渡时长", "Transition duration when no entry matches")]
+        [SerializeField]
         private float defaultDuration = 0.15f;
 
-        [SerializeField, HeaderPro("面板关闭时动画反播", "The animation plays backward when the panel is closed.")]
-        private bool reverseOnClose;
-
-        [SerializeField, HeaderPro("默认动画曲线", "Default animation curve")]
+        [HeaderPro("无匹配条目时的动画曲线", "Animation curve when no entry matches")]
+        [SerializeField]
         private AnimationCurve defaultCurve = AnimationCurve.EaseInOut(0, 0.75f, 1, 1);
 
         /// <summary>

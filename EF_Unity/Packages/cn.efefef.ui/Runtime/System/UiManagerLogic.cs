@@ -148,16 +148,41 @@ namespace EasyFramework.Managers.Ui
         {
             CloseAllView(true).Forget();
 
-            _viewStackDic.Clear();
-            _viewStackDic = null;
-            _viewParentDic.Clear();
-            _viewParentDic = null;
+            // 全局 View 销毁时会级联销毁其子面板；此处兜底清理可能残留的游离子面板（父已不在栈中）
+            if (_childViewDic != null)
+            {
+                foreach (var collection in _childViewDic.Values)
+                {
+                    // 用快照遍历：DestroyChildView 会修改 child 相关字典与 collection.All
+                    var children = new List<IUiView>(collection.All);
+                    for (int i = children.Count - 1; i >= 0; i--)
+                    {
+                        DestroyChildView(children[i]);
+                    }
+                }
+            }
 
-            _autoDestroyDic.Clear();
+            _viewStackDic?.Clear();
+            _viewStackDic = null;
+            _viewParentDic?.Clear();
+            _viewParentDic = null;
+            _autoDestroyDic?.Clear();
             _autoDestroyDic = null;
 
-            DestroyObj(UICamera.gameObject);
-            UICamera = null;
+            _childViewDic?.Clear();
+            _childViewDic = null;
+            _childCacheDic?.Clear();
+            _childCacheDic = null;
+            _childContainerDic?.Clear();
+            _childContainerDic = null;
+            _childParentDic?.Clear();
+            _childParentDic = null;
+
+            if (UICamera != null)
+            {
+                DestroyObj(UICamera.gameObject);
+                UICamera = null;
+            }
         }
 
         private static string GetAssetPath(string viewName)
@@ -345,6 +370,7 @@ namespace EasyFramework.Managers.Ui
             if (prefabBinding == null)
             {
                 D.Error($"[ UiManager ] UI Prefab [ {viewName} ] not have component < UiBinding >, Please add a UiBinding component.");
+                DestroyObj(uiObj);
                 return null;
             }
 
@@ -458,7 +484,10 @@ namespace EasyFramework.Managers.Ui
 
             if (!uiView.Binding.AutoDestroy || immediateDestroy || _viewStackDic[UIViewType.Cache].Contains(uiView))
             {
-                ViewDestroy(uiView, _viewStackDic[uiView.Binding.ViewType]);
+                List<IUiView> ownerList = _viewStackDic[UIViewType.Cache].Contains(uiView)
+                    ? _viewStackDic[UIViewType.Cache]
+                    : _viewStackDic[uiView.Binding.ViewType];
+                ViewDestroy(uiView, ownerList);
                 return true;
             }
 

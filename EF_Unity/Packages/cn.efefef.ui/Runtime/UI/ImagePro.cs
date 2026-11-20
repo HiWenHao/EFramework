@@ -299,12 +299,11 @@ namespace EasyFramework
         /// <param name="spriteName">精灵名称<para>Sprite name in atlas</para></param>
         public async UniTask<Sprite> SetSprite(string uiAtlasName, string spriteName)
         {
-            string atlasName = type.ToString();
-            AssetHandle<SpriteAtlas> atlasHandle = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(atlasName);
+            AssetHandle<SpriteAtlas> atlasHandle = await AssetsManager.Instance.LoadAsync<SpriteAtlas>(uiAtlasName);
             if (atlasHandle is not { IsValid: true })
             {
                 atlasHandle?.Dispose();
-                D.Warning($"[ UiManager ] [ ImagePro ] Atlas '{atlasName}' not found for UIAtlasType.{type}");
+                D.Warning($"[ UiManager ] [ ImagePro ] Atlas '{uiAtlasName}' not found for UIAtlasType.{type}");
                 return null;
             }
 
@@ -313,7 +312,7 @@ namespace EasyFramework
             {
                 // Sprite 取不到，句柄不再需要
                 atlasHandle.Dispose();
-                D.Warning($"[ UiManager ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{atlasName}'.");
+                D.Warning($"[ UiManager ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{uiAtlasName}'.");
                 return null;
             }
 
