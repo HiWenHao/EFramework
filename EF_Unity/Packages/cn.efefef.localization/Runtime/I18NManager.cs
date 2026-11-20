@@ -293,17 +293,12 @@ namespace EasyFramework.Localization
             _loadGeneration++;
             var generation = _loadGeneration;
 
-            var previous = _currentLanguage;
-            _currentLanguage = language;
+            // 不在装载前抢先改 _currentLanguage：成功时由 TryApplyAsync 统一提交，
+            // 失败则状态从未改动，天然保持"上次成功应用的语言"。并发多请求交错时也不会出现语言标记与表不一致。
 
             // 旧语言表的资源句柄由 TryApplyAsync 在成功替换时释放；加载失败时旧表继续生效。
-
             if (!await TryApplyAsync(generation, language))
-            {
-                // 加载失败：语言标记回退，旧表仍在内存则继续生效
-                _currentLanguage = previous;
                 return false;
-            }
 
             if (AutoPersist) SavePersistedLanguage(language);
             return true;
@@ -325,6 +320,10 @@ namespace EasyFramework.Localization
 
             if (!await TryApplyAsync(generation, language))
             {
+                // 被更新的装载请求抢占：不再回落，让新请求的结果生效（旧代码复用过期代数做 fallback，会误伤新请求）
+                if (generation != _loadGeneration)
+                    return false;
+
                 if (language == FallbackLanguage)
                 {
                     D.Error($"[ Localization ] 兜底语言 {FallbackLanguage} 的语言表缺失，本地化不可用。");
@@ -332,6 +331,8 @@ namespace EasyFramework.Localization
                 }
 
                 if (OpenDebug) D.Warning($"[ Localization ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
+                // 回落本身是一次新的装载，重新抢占代数
+                generation = ++_loadGeneration;
                 if (!await TryApplyAsync(generation, FallbackLanguage)) return false;
             }
 
