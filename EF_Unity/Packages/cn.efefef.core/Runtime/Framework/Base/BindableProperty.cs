@@ -39,6 +39,6 @@ namespace EasyFramework
         /// <summary>
         /// 当值发生变化时
         /// </summary>
-        public Action<T> OnValueChanged;
+        public event Action<T> OnValueChanged;
     }
 }

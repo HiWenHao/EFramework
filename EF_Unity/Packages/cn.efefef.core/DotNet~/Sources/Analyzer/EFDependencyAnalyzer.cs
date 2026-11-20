@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -22,7 +23,8 @@ namespace EasyFramework
 
             context.RegisterCompilationStartAction(compilationStartContext =>
             {
-                var typeDeps = new Dictionary<string, (INamedTypeSymbol symbol, List<(string dep, Location location)> deps)>();
+                // EnableConcurrentExecution 下多个 SymbolAction 会并发写入，必须用线程安全集合
+                var typeDeps = new ConcurrentDictionary<string, (INamedTypeSymbol symbol, List<(string dep, Location location)> deps)>();
 
                 // 收集并立即检查自依赖
                 compilationStartContext.RegisterSymbolAction(symbolContext =>
