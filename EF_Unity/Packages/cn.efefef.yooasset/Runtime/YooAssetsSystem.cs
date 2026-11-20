@@ -9,11 +9,13 @@
  * ================================================
  */
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers.Assets
 {
@@ -23,11 +25,47 @@ namespace EasyFramework.Managers.Assets
     /// </summary>
     public class YooAssetsSystem : IAssetsSystem
     {
+        // 默认包键名：与门面 AssetsManager 的 DefaultPackageKey 保持一致
+        private const string DefaultPackageKey = "";
+
         public bool OpenDebug { get; set; }
         public AssetsSystemType SystemType => AssetsSystemType.YooAsset;
 
-        /// <summary>资源句柄缓存（key = 资源路径）<para>Asset handle cache (key = asset path)</para></summary>
-        private Dictionary<string, AssetHandle> _assetHandles;
+        /// <summary>资源句柄缓存（复合键 = 包名 + 路径，区分不同包的同名资源）<para>Asset handle cache (composite key = package name + path, distinguishes same-path assets across packages)</para></summary>
+        private Dictionary<HandleKey, AssetHandle> _assetHandles;
+
+        // 句柄复合键：包名 + 资源路径，null 包名归一为 DefaultPackageKey，与门面 AssetsManager 的引用计数键语义一致
+        private readonly struct HandleKey : IEquatable<HandleKey>
+        {
+            private readonly string _package;
+            private readonly string _path;
+
+            public HandleKey(string package, string path)
+            {
+                _package = package ?? DefaultPackageKey;
+                _path = path;
+            }
+
+            public bool Equals(HandleKey other)
+            {
+                return string.Equals(_package, other._package, StringComparison.Ordinal)
+                       && string.Equals(_path, other._path, StringComparison.Ordinal);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is HandleKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((_package != null ? _package.GetHashCode() : 0) * 397)
+                           ^ (_path != null ? _path.GetHashCode() : 0);
+                }
+            }
+        }
 
         /// <summary>
         /// 初始化管理器 —— PatchManager.Init 已先行初始化 YooAssets，此处仅创建句柄缓存
@@ -36,7 +74,7 @@ namespace EasyFramework.Managers.Assets
         public async UniTask Initialize()
         {
             await UniTask.CompletedTask;
-            _assetHandles = new Dictionary<string, AssetHandle>();
+            _assetHandles = new Dictionary<HandleKey, AssetHandle>();
             Log("YooAssetsSystem initialized.");
         }
 
@@ -61,8 +99,7 @@ namespace EasyFramework.Managers.Assets
         public T Load<T>(string path) where T : Object
         {
             var pkg = GetDefaultPackage();
-            if (pkg == null) return null;
-            return LoadInternal<T>(pkg, path);
+            return pkg == null ? null : LoadInternal<T>(pkg, null, path);
         }
 
         /// <summary>
@@ -76,7 +113,7 @@ namespace EasyFramework.Managers.Assets
         {
             var pkg = GetDefaultPackage();
             if (pkg == null) return null;
-            return await LoadAsyncInternal<T>(pkg, path, token);
+            return await LoadAsyncInternal<T>(pkg, null, path, token);
         }
 
         /// <summary>
@@ -96,7 +133,7 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
-            return LoadInternal<T>(pkg, path);
+            return LoadInternal<T>(pkg, packageName, path);
         }
 
         /// <summary>
@@ -117,23 +154,24 @@ namespace EasyFramework.Managers.Assets
                 return null;
             }
 
-            return await LoadAsyncInternal<T>(pkg, path, token);
+            return await LoadAsyncInternal<T>(pkg, packageName, path, token);
         }
 
         /// <summary>
         /// 释放指定路径的资源句柄
         /// <para>Release the asset handle at the given path</para>
         /// </summary>
-        /// <param name="packageName">包名（未使用，句柄按 path 缓存）<para>Package name (unused, handles cached by path)</para></param>
+        /// <param name="packageName">包名，null 表示默认包<para>Package name, null for default package</para></param>
         /// <param name="path">资源路径<para>Asset path</para></param>
         public async UniTask Release(string packageName, string path)
         {
             await UniTask.CompletedTask;
-            if (_assetHandles.TryGetValue(path, out var handle))
+            var key = new HandleKey(packageName, path);
+            if (_assetHandles.TryGetValue(key, out var handle))
             {
                 handle.Release();
-                _assetHandles.Remove(path);
-                Log($"Released: {path}");
+                _assetHandles.Remove(key);
+                Log($"Released: {packageName ?? DefaultPackageKey}:{path}");
             }
         }
 
@@ -233,20 +271,22 @@ namespace EasyFramework.Managers.Assets
         /// 从指定 ResourcePackage 同步加载资源（命中缓存则直接返回）
         /// <para>Synchronously load an asset from a specific ResourcePackage (returns cached handle if available)</para>
         /// </summary>
-        private T LoadInternal<T>(ResourcePackage pkg, string path) where T : Object
+        private T LoadInternal<T>(ResourcePackage pkg, string packageName, string path) where T : Object
         {
-            if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
+            var key = new HandleKey(packageName, path);
+            if (_assetHandles.TryGetValue(key, out var handle) && handle.IsValid)
                 return handle.AssetObject as T;
 
             var newHandle = pkg.LoadAssetSync<T>(path);
             if (!newHandle.IsValid || newHandle.AssetObject == null)
             {
                 Error($"Failed to load: {path} from package: {pkg.PackageName}");
+                newHandle.Release();
                 return null;
             }
 
-            _assetHandles[path] = newHandle;
-            Log($"Loaded: {path} [{pkg.PackageName}]");
+            _assetHandles[key] = newHandle;
+            Log($"Loaded: {packageName ?? DefaultPackageKey}:{path} [{pkg.PackageName}]");
             return newHandle.AssetObject as T;
         }
 
@@ -254,23 +294,33 @@ namespace EasyFramework.Managers.Assets
         /// 从指定 ResourcePackage 异步加载资源（命中缓存则直接返回）
         /// <para>Asynchronously load an asset from a specific ResourcePackage (returns cached handle if available)</para>
         /// </summary>
-        private async UniTask<T> LoadAsyncInternal<T>(ResourcePackage pkg, string path, CancellationToken token)
-            where T : Object
+        private async UniTask<T> LoadAsyncInternal<T>(ResourcePackage pkg, string packageName, string path,
+            CancellationToken token) where T : Object
         {
-            if (_assetHandles.TryGetValue(path, out var handle) && handle.IsValid)
+            var key = new HandleKey(packageName, path);
+            if (_assetHandles.TryGetValue(key, out var handle) && handle.IsValid)
                 return handle.AssetObject as T;
 
             var newHandle = pkg.LoadAssetAsync<T>(path);
-            await newHandle.ToUniTask(cancellationToken: token);
+            try
+            {
+                await newHandle.ToUniTask(cancellationToken: token);
+            }
+            catch (OperationCanceledException)
+            {
+                newHandle.Release();
+                throw;
+            }
 
             if (!newHandle.IsValid || newHandle.AssetObject == null)
             {
-                Error($"Failed to load async: {path} from package: {pkg.PackageName}");
+                Error($"Failed to load async: {packageName ?? DefaultPackageKey}:{path} from package: {pkg.PackageName}");
+                newHandle.Release();
                 return null;
             }
 
-            _assetHandles[path] = newHandle;
-            Log($"Loaded async: {path} [{pkg.PackageName}]");
+            _assetHandles[key] = newHandle;
+            Log($"Loaded async: {packageName ?? DefaultPackageKey}:{path} [{pkg.PackageName}]");
             return newHandle.AssetObject as T;
         }
 
@@ -278,7 +328,7 @@ namespace EasyFramework.Managers.Assets
         {
             if (OpenDebug) D.Log($"[ YooAssetsSystem ] {msg}");
         }
-        private void Error(string msg) => D.Error($"[ YooAssetsSystem ] {msg}");
+        private static void Error(string msg) => D.Error($"[ YooAssetsSystem ] {msg}");
 
         #endregion
     }
