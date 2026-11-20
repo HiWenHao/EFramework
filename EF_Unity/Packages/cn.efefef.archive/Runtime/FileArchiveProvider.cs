@@ -111,7 +111,7 @@ namespace EasyFramework.Systems.Archive
             if (_settings.enableAutoBackup && File.Exists(finalPath))
             {
                 CleanupOldBackups(slotId, key);            // 先移位旧备份链，防止旧的 .bak 被覆盖丢失
-                File.Copy(finalPath, finalPath + BackupExtension);
+                File.Copy(finalPath, finalPath + BackupExtension, overwrite: true);
             }
 
             string tempPath = finalPath + ".tmp";
@@ -136,7 +136,7 @@ namespace EasyFramework.Systems.Archive
             if (_settings.enableAutoBackup && File.Exists(finalPath))
             {
                 CleanupOldBackups(slotId, key);
-                File.Copy(finalPath, finalPath + BackupExtension);
+                File.Copy(finalPath, finalPath + BackupExtension, overwrite: true);
             }
 
             string tempPath = finalPath + ".tmp";
