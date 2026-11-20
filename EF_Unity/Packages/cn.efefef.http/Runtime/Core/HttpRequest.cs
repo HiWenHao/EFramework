@@ -150,6 +150,9 @@ namespace EasyFramework.Systems.Http
             {
                 var sb = new StringBuilder();
                 sb.Append(Method).Append(' ').Append(Url);
+                // ContentType 参与键：同 URL/Headers/Body 但不同内容类型应视为不同请求
+                if (!string.IsNullOrEmpty(ContentType))
+                    sb.Append('@').Append(ContentType);
 
                 if (Headers is { Count: > 0 })
                 {
@@ -161,16 +164,17 @@ namespace EasyFramework.Systems.Http
 
                 if (Body == null) return sb.ToString();
 
-                const uint offset = 2166136261u;
-                const uint prime = 16777619u;
-                uint hash = offset;
+                // 64 位 FNV-1a：降低 32 位哈希的碰撞概率（手写实现，不引入额外依赖）
+                const ulong offset = 14695981039346656037ul;
+                const ulong prime = 1099511628211ul;
+                ulong hash = offset;
                 foreach (byte b in Body)
                 {
                     hash ^= b;
                     hash *= prime;
                 }
 
-                sb.Append('#').Append(hash.ToString("X8"));
+                sb.Append('#').Append(hash.ToString("X16"));
 
                 return sb.ToString();
             }
