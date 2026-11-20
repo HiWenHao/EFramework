@@ -18,4 +18,19 @@ bool ok = await PatchManager.Instance.DownloadEssentialPackages(mode, tags, onPr
 - 运行模式 `EPlayMode`（HostPlay / Offline / WebPlay 等）见 YooAsset。
 - `OpenDebug` 控制日志；`YooAssetsSystem.OpenDebug` 独立控制加载侧日志。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.yooasset": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.yooasset"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.yooasset": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.yooasset&ref=cn.efefef.yooasset-v0.0.1"
+```
+
 依赖：`cn.efefef.core`、`com.tuyoogame.yooasset`。

@@ -19,4 +19,19 @@ RedDotSystem.Instance.EndBatch();   // 内部 Flush，统一刷新
 - 资源：`SetResourceProvider(Func<string, UniTask<Sprite>>)` 注入贴图加载；`ClearSpriteCache` 清缓存。
 - 示例见 `Samples~` 下的 `RedDotExample`。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.reddot": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.reddot"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.reddot": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.reddot&ref=cn.efefef.reddot-v0.1.0"
+```
+
 依赖：`cn.efefef.core`。

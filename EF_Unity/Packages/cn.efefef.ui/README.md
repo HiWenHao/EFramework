@@ -21,5 +21,20 @@ await UiManager.Instance.CloseAndNotify<UiCView, UiBView, string>("回传");
 - 绑定：`UiBinding` + 编辑器 `UiBindingEditor` 自动生成强类型 View 代码。
 - `OpenDebug` 控制诊断日志；错误日志始终输出。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.ui": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.ui"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.ui": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.ui&ref=cn.efefef.ui-v0.0.1"
+```
+
 依赖：`cn.efefef.core`、`com.unity.ugui`、`com.unity.render-pipelines.universal`。
 示例见 `Samples~`。

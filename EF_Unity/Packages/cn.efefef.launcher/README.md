@@ -251,3 +251,18 @@ Unity -batchmode -quit -projectPath <proj> \
   它早于 Launcher 的 `Assembly.Load`。若 `EFC` 在初始化阶段按依赖链创建热更层单例，此时类型还没加载。
   需把「容器初始化」与「单例解析」拆成两段，后者延后到热更入口。
 - 本包只管「把热更层拉起来」，不管分包下载、资源热更策略——那些属于热更层的 `EF.Patch`。
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.launcher": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.launcher"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.launcher": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.launcher&ref=cn.efefef.launcher-v0.1.0"
+```
+

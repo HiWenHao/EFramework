@@ -122,17 +122,32 @@ EasyFramework/
 
 #### 方式一：通过 Git URL 安装 (推荐)
 
-1. 打开 Unity 项目的 `Packages/manifest.json`
-2. 添加以下依赖：
+打开 Unity 项目的 `Packages/manifest.json` 添加依赖。**Gitee 是镜像（国内快，跟随最新），GitHub 是源库（CD 在此发布 tag）**——按需求选一种：
+
+**日常开发**：用 Gitee 镜像，始终跟随 master 最新：
 
 ```json
 {
   "dependencies": {
-    "cn.efefef.core": "https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/cn.efefef.core",
-    "cn.efefef.ui": "https://github.com/HiWenHao/EFramework.git?path=/EF_Unity/Packages/cn.efefef.ui"
+    "cn.efefef.core": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.core",
+    "cn.efefef.ui": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.ui"
   }
 }
 ```
+
+**锁定版本**：需要稳定版本时改用 GitHub 源库 + `&ref=` 指定 tag（Gitee 镜像没有 tag）：
+
+```json
+{
+  "dependencies": {
+    "cn.efefef.core": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.core&ref=cn.efefef.core-v0.1.0",
+    "cn.efefef.ui": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.ui&ref=cn.efefef.ui-v0.0.1"
+  }
+}
+```
+
+> 每个包的准确安装地址（含当前版本的锁定示例）见各包目录下的 `README.md`。
+> tag 由 CD 流水线在包版本变更时自动创建，命名格式 `{包名}-v{版本}`。
 
 #### 方式二：克隆仓库到本地
 

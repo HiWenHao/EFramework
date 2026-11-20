@@ -23,4 +23,19 @@ bool ok = await I18NManager.Instance.SwitchLanguage("zh");       // 切换并加
 - 菜单：EFTools 的语言同步 / ReloadLanguages（改键清单后必须重跑才刷新运行时表）。
 - 词条窗口：`EF.LanguageEntryWindow`（🌐 Language Entries）。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.localization": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.localization"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.localization": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.localization&ref=cn.efefef.localization-v0.0.1"
+```
+
 依赖：`cn.efefef.core`、`cn.efefef.preference`、`UniTask`。

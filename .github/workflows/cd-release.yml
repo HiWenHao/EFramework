@@ -1,0 +1,74 @@
+name: CD Release
+
+# 持续交付：仅当某个包的 package.json 版本相对它自己的上一次 release tag 发生变化时，
+# 才为该包打 <包名>-v<版本> 的 tag 并生成 GitHub Release。
+# 版本号不变 = 维护者没确认发布 = 不发版（这就是人工确认闸门）。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Detect version bumps
+        run: python tools/cd_release.py detect > releases.json
+
+      - name: Show detected releases
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open('releases.json', encoding='utf-8'))
+          rs = d['releases']
+          if not rs:
+            print('No package version changed -> nothing to release.')
+          for r in rs:
+            print(f"{r['tag']}: {r['previous_version']} -> {r['version']}")
+          PY
+
+      - name: Create GitHub releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          count=$(python -c "import json;print(len(json.load(open('releases.json'))['releases']))")
+          if [ "$count" -eq 0 ]; then
+            echo "Nothing to publish."
+            exit 0
+          fi
+          python - <<'PY'
+          import json, os
+          d = json.load(open('releases.json', encoding='utf-8'))
+          os.makedirs('notes', exist_ok=True)
+          for r in d['releases']:
+            with open('notes/%s.md' % r['tag'], 'w', encoding='utf-8') as f:
+              f.write(r['notes'])
+          with open('tags.txt', 'w', encoding='utf-8') as f:
+            for r in d['releases']:
+              f.write(r['tag'] + '\n')
+          PY
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "Release $tag already exists, skipping."
+              continue
+            fi
+            # target 指定当前 commit；gh 会在该 commit 上自动建 tag
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes-file "notes/$tag.md" \
+              --target "$GITHUB_SHA"
+            echo "Created release $tag"
+          done < tags.txt

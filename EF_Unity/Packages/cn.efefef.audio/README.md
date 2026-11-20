@@ -19,4 +19,19 @@ AudioManager.Instance.SetMasterVolume(0.8f);
   `SetClipCache(IAudioClipCache)` / `SetSettings(IAudioSettings)`；`Configure(AudioServices)` 一次注入全部。
 - `OpenDebug` 控制警告日志。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.audio": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.audio"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.audio": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.audio&ref=cn.efefef.audio-v0.0.1"
+```
+
 依赖：`cn.efefef.core`、`cn.efefef.preference`。

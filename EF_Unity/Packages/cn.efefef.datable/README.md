@@ -12,4 +12,19 @@ Luban 导表工具的 Unity 编辑器封装，统一表格生成流程（全量 
   （避免破坏 `DatableMgr` 注册表）。
 - 路径一律在磁盘落工程根相对值，运行时换算为绝对路径，避免跨机器 git 噪音。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.datable": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.datable"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.datable": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.datable&ref=cn.efefef.datable-v0.0.1"
+```
+
 依赖：`cn.efefef.core`。导表需本地安装 Luban（见面板配置）。

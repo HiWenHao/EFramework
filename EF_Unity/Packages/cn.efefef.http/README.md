@@ -20,4 +20,19 @@ Texture2D tex = await HttpManager.Instance.GetTextureAsync(url);
 - 缓存为可选装饰器，包内不预置实现；业务可注入 `MemoryHttpCache`。
 - `OpenDebug` 控制警告日志。
 
+
+## 安装
+
+在项目的 `Packages/manifest.json` 添加依赖。日常开发用 Gitee 镜像（国内快，跟随最新）：
+
+```json
+"cn.efefef.http": "https://gitee.com/AlvinCN/EFramework.git?path=EF_Unity/Packages/cn.efefef.http"
+```
+
+需要锁定版本时改用 GitHub 源库 + CD 发布的 tag（Gitee 是镜像，没有 tag）：
+
+```json
+"cn.efefef.http": "https://github.com/HiWenHao/EFramework.git?path=EF_Unity/Packages/cn.efefef.http&ref=cn.efefef.http-v0.1.0"
+```
+
 依赖：`cn.efefef.core`、`com.unity.nuget.newtonsoft-json`。
