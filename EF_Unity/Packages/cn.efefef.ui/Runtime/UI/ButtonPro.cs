@@ -20,6 +20,7 @@ namespace EasyFramework
 {
     /// <summary>
     /// 增强按钮组件，提供丰富的交互事件。
+    /// <para>Enhanced button component providing a variety of interaction events.</para>
     /// </summary>
     [AddComponentMenu("UI/Button Pro", 101)]
     [RequireComponent(typeof(Image))]
@@ -44,19 +45,35 @@ namespace EasyFramework
         [HeaderPro("拖拽", "Dragging", HeaderProType.Note)]
         [SerializeField] private UnityEvent<MoveDirection> onDragging;
 
+        /// <summary>
+        /// 双击最大间隔（秒）
+        /// <para>Maximum interval between clicks for double-click detection (in seconds)</para>
+        /// </summary>
         [HeaderPro("设置", "Settings", HeaderProType.Title)]
         [HeaderPro("双击间隔（秒）", "Double Click Interval (s)", HeaderProType.Note)]
         [Tooltip("双击最大间隔（秒）")]
         public float doubleClickInterval = 0.17f;
 
+        /// <summary>
+        /// 长按触发时间（秒）
+        /// <para>Time required to trigger a long press (in seconds)</para>
+        /// </summary>
         [HeaderPro("长按时长（秒）", "Long Press Duration (s)", HeaderProType.Note)]
         [Tooltip("长按触发时间（秒）")]
         public float longPressDuration = 0.5f;
 
+        /// <summary>
+        /// 持续按压触发间隔（秒），0 表示每帧触发
+        /// <para>Interval at which continuous-press events are triggered (in seconds); 0 means every frame</para>
+        /// </summary>
         [HeaderPro("连按间隔（秒）", "Keep Press Interval (s)", HeaderProType.Note)]
         [Tooltip("持续按压触发间隔（秒），0 表示每帧触发")]
         public float keepPressInterval = 0.1f;
 
+        /// <summary>
+        /// 拖拽最小移动距离（像素），小于此值不触发拖拽
+        /// <para>Minimum movement distance to trigger a drag (in pixels); smaller movements are ignored</para>
+        /// </summary>
         [HeaderPro("拖拽阈值（像素）", "Drag Threshold (px)", HeaderProType.Note)]
         [Tooltip("拖拽最小移动距离（像素），小于此值不触发拖拽")]
         public float dragThresholdPixels = 10f;
@@ -75,37 +92,116 @@ namespace EasyFramework
 
         #region Event add/remove listener - 事件增加/删除监听
         
+        /// <summary>
+        /// 添加点击事件监听器
+        /// <para>Adds a click event listener</para>
+        /// </summary>
+        /// <param name="action">点击回调 <para>Click callback</para></param>
         public void AddClickListener(UnityAction action) => onClick.AddListener(action);
+
+        /// <summary>
+        /// 移除点击事件监听器
+        /// <para>Removes a click event listener</para>
+        /// </summary>
+        /// <param name="action">点击回调 <para>Click callback</para></param>
         public void RemoveClickListener(UnityAction action) => onClick.RemoveListener(action);
 
+        /// <summary>
+        /// 添加双击事件监听器
+        /// <para>Adds a double-click event listener</para>
+        /// </summary>
+        /// <param name="action">双击回调 <para>Double-click callback</para></param>
         public void AddDoubleClickListener(UnityAction action)
         {
             _onDoubleClickListenerCount++;
             onDoubleClick.AddListener(action);
         }
+
+        /// <summary>
+        /// 移除双击事件监听器
+        /// <para>Removes a double-click event listener</para>
+        /// </summary>
+        /// <param name="action">双击回调 <para>Double-click callback</para></param>
         public void RemoveDoubleClickListener(UnityAction action)
         {
             _onDoubleClickListenerCount--;
             onDoubleClick.RemoveListener(action);
         }
 
+        /// <summary>
+        /// 添加长按事件监听器
+        /// <para>Adds a long-press event listener</para>
+        /// </summary>
+        /// <param name="action">长按回调 <para>Long-press callback</para></param>
         public void AddLongPressListener(UnityAction action) => onLongPress.AddListener(action);
+
+        /// <summary>
+        /// 移除长按事件监听器
+        /// <para>Removes a long-press event listener</para>
+        /// </summary>
+        /// <param name="action">长按回调 <para>Long-press callback</para></param>
         public void RemoveLongPressListener(UnityAction action) => onLongPress.RemoveListener(action);
 
+        /// <summary>
+        /// 添加持续按压事件监听器
+        /// <para>Adds a continuous-press event listener</para>
+        /// </summary>
+        /// <param name="action">持续按压回调 <para>Continuous-press callback</para></param>
         public void AddKeepPressListener(UnityAction action) => onKeepPress.AddListener(action);
+
+        /// <summary>
+        /// 移除持续按压事件监听器
+        /// <para>Removes a continuous-press event listener</para>
+        /// </summary>
+        /// <param name="action">持续按压回调 <para>Continuous-press callback</para></param>
         public void RemoveKeepPressListener(UnityAction action) => onKeepPress.RemoveListener(action);
 
+        /// <summary>
+        /// 添加拖拽事件监听器
+        /// <para>Adds a drag event listener</para>
+        /// </summary>
+        /// <param name="action">拖拽回调，携带拖拽方向 <para>Drag callback that receives the drag direction</para></param>
         public void AddDraggingListener(UnityAction<MoveDirection> action) => onDragging.AddListener(action);
+
+        /// <summary>
+        /// 移除拖拽事件监听器
+        /// <para>Removes a drag event listener</para>
+        /// </summary>
+        /// <param name="action">拖拽回调，携带拖拽方向 <para>Drag callback that receives the drag direction</para></param>
         public void RemoveDraggingListener(UnityAction<MoveDirection> action) => onDragging.RemoveListener(action);
 
+        /// <summary>
+        /// 移除所有点击事件监听器
+        /// <para>Removes all click event listeners</para>
+        /// </summary>
         public void RemoveAllClickListeners() => onClick.RemoveAllListeners();
+
+        /// <summary>
+        /// 移除所有双击事件监听器
+        /// <para>Removes all double-click event listeners</para>
+        /// </summary>
         public void RemoveAllDoubleClickListeners()
         {
             onDoubleClick.RemoveAllListeners();
             _onDoubleClickListenerCount = 0;
         }
+
+        /// <summary>
+        /// 移除所有长按事件监听器
+        /// <para>Removes all long-press event listeners</para>
+        /// </summary>
         public void RemoveAllLongPressListeners() => onLongPress.RemoveAllListeners();
+
+        /// <summary>
+        /// 移除所有持续按压事件监听器
+        /// <para>Removes all continuous-press event listeners</para>
+        /// </summary>
         public void RemoveAllKeepPressListeners() => onKeepPress.RemoveAllListeners();
+
+        /// <summary>
+        /// 移除所有拖拽事件监听器
+        /// <para>Removes all drag event listeners</para>
+        /// </summary>
         public void RemoveAllDraggingListeners() => onDragging.RemoveAllListeners();
         
         #endregion
@@ -293,6 +389,11 @@ namespace EasyFramework
 
         #region Interface Implement - 接口实现
 
+        /// <summary>
+        /// 指针按下时调用
+        /// <para>Called when a pointer is pressed down</para>
+        /// </summary>
+        /// <param name="eventData">指针事件数据 <para>Pointer event data</para></param>
         public override void OnPointerDown(PointerEventData eventData)
         {
             base.OnPointerDown(eventData);
@@ -310,6 +411,11 @@ namespace EasyFramework
             _keepPressCoroutine = StartCoroutine(KeepPressLoop());
         }
 
+        /// <summary>
+        /// 指针抬起时调用
+        /// <para>Called when a pointer is released</para>
+        /// </summary>
+        /// <param name="eventData">指针事件数据 <para>Pointer event data</para></param>
         public override void OnPointerUp(PointerEventData eventData)
         {
             base.OnPointerUp(eventData);
@@ -325,6 +431,11 @@ namespace EasyFramework
             HandleClickOrDoubleClick();
         }
         
+        /// <summary>
+        /// 指针点击时调用（IPointerClickHandler 接口实现）
+        /// <para>Called when a pointer clicks (implements IPointerClickHandler)</para>
+        /// </summary>
+        /// <param name="eventData">指针事件数据 <para>Pointer event data</para></param>
         public void OnPointerClick(PointerEventData eventData)
         {
         }

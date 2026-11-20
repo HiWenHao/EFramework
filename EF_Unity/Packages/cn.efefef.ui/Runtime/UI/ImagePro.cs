@@ -27,16 +27,19 @@ namespace EasyFramework
     {
         /// <summary>
         /// 默认UI材质
+        /// <para>Default UI material</para>
         /// </summary>
         Default = 0,
 
         /// <summary>
         /// 圆角
+        /// <para>Rounded corners</para>
         /// </summary>
         Round = 1,
 
         /// <summary>
         /// 灰度图
+        /// <para>Grayscale</para>
         /// </summary>
         Gray = 2,
     }
@@ -46,6 +49,10 @@ namespace EasyFramework
     /// </summary>
     public class ImagePro : Image
     {
+        // 内置 shader 资源路径（单一真源）
+        public const string RoundedRectangleShaderName = "UI/RoundedRectangle";
+        public const string DefaultGrayShaderName = "UI/DefaultGray";
+
         [HeaderPro("设置", "Settings", HeaderProType.Title)]
         [HeaderPro("资源地址", "Address", HeaderProType.Note)]
         [SerializeField] private string address;
@@ -101,7 +108,7 @@ namespace EasyFramework
                 case ImageProMaterialType.Round:
                 {
                     if (_roundedRectangleShader == null)
-                        _roundedRectangleShader = Shader.Find("UI/RoundedRectangle");
+                        _roundedRectangleShader = Shader.Find(RoundedRectangleShaderName);
                     var shader = _roundedRectangleShader;
                     if (shader == null)
                     {
@@ -120,7 +127,7 @@ namespace EasyFramework
                 case ImageProMaterialType.Gray:
                 {
                     if (_defaultGrayShader == null)
-                        _defaultGrayShader = Shader.Find("UI/DefaultGray");
+                        _defaultGrayShader = Shader.Find(DefaultGrayShaderName);
                     var shader = _defaultGrayShader;
                     if (shader == null)
                     {
@@ -265,7 +272,7 @@ namespace EasyFramework
         /// </summary>
         public void ResetRoundRectangleSize()
         {
-            if (_dynamicMaterial == null || !_dynamicMaterial.shader.name.Equals("UI/RoundedRectangle")) return;
+            if (_dynamicMaterial == null || !_dynamicMaterial.shader.name.Equals(RoundedRectangleShaderName)) return;
             _dynamicMaterial.SetFloat(Width, Mathf.Abs(rectTransform.rect.width) * rectTransform.lossyScale.x);
             _dynamicMaterial.SetFloat(Height, Mathf.Abs(rectTransform.rect.height) * rectTransform.lossyScale.y);
             _dynamicMaterial.SetFloat(CornerSize, CheckConnerArc());

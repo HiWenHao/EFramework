@@ -21,11 +21,13 @@ namespace EasyFramework.Managers.Ui
     {
         /// <summary>
         /// 当前页面对象
+        /// <para>Current page object</para>
         /// </summary>
         public RectTransform View { get; }
 
         /// <summary>
         /// 运行时绑定数据持有者
+        /// <para>Runtime bound-data holder</para>
         /// </summary>
         UiBinding Binding { get; }
 
@@ -43,6 +45,7 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 轮询更新
+        /// <para>Polling update</para>
         /// </summary>
         /// <param name="elapse">The interval in seconds from the last frame to the current one.
         /// <para>逻辑流逝时间，以秒为单位</para>
@@ -62,13 +65,15 @@ namespace EasyFramework.Managers.Ui
 
         /// <summary>
         /// 内部调用，用来处理UI组件绑定关系，在Awake函数前
+        /// <para>Internal call that resolves UI component binding relationships, invoked before the Awake function</para>
         /// </summary>
-        /// <param name="uiViewRect">UI对象</param>
-        /// <param name="binding">UI对象绑定信息</param>
+        /// <param name="uiViewRect">UI对象 <para>UI object</para></param>
+        /// <param name="binding">UI对象绑定信息 <para>UI object binding information</para></param>
         protected internal void Bind(RectTransform uiViewRect, UiBinding binding);
 
         /// <summary>
         /// 内部调用，释放该UI视窗，在Quit函数后
+        /// <para>Internal call that releases this UI view, invoked after the Quit function</para>
         /// </summary>
         protected internal void Dispose();
     }

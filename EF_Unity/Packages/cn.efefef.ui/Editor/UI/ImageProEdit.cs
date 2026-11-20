@@ -12,7 +12,6 @@
 using System;
 using UnityEngine;
 using EasyFramework;
-using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.UI;
 
@@ -105,7 +104,7 @@ namespace EasyFramework.Edit
         {
             if (_material == null)
             {
-                _material = new Material(Shader.Find("UI/RoundedRectangle"));
+                _material = new Material(Shader.Find(ImagePro.RoundedRectangleShaderName));
             }
 
             if (m_Material.objectReferenceValue != _material)
@@ -129,7 +128,7 @@ namespace EasyFramework.Edit
         private void ResetGrayMaterial()
         {
             if (_material == null)
-                _material = new Material(Shader.Find("UI/DefaultGray"));
+                _material = new Material(Shader.Find(ImagePro.DefaultGrayShaderName));
 
             if (m_Material.objectReferenceValue == _material) return;
             m_Material.objectReferenceValue = _material;
