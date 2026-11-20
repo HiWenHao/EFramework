@@ -20,8 +20,10 @@ namespace EasyFramework.Systems.RedDot
     /// 红点管理器（单例）
     /// <para>Red dot manager (singleton)</para>
     /// </summary>
-    public class RedDotSystem : MonoSingleton<RedDotSystem>, ISingleton, IRedDotContext
+    public class RedDotSystem : MonoSingleton<RedDotSystem>, ISingleton, IRedDotContext, ILateUpdate
     {
+        public bool IsPaused { get; set; }
+
         /// <summary>
         /// 脏系统，负责收集和刷新被标记为脏的红点节点。
         /// <para>Dirty system, responsible for collecting and flushing red dot nodes marked as dirty.</para>
@@ -73,7 +75,7 @@ namespace EasyFramework.Systems.RedDot
             _spriteCache.Clear();
         }
 
-        private void LateUpdate()
+        void ILateUpdate.LateUpdate(float elapse, float realElapse)
         {
             if (_subsystemsSet && _nodes != null && !BatchSystem.IsBatching)
             {
@@ -221,9 +223,8 @@ namespace EasyFramework.Systems.RedDot
 
             // 建索引：跳过空键与重复键
             var defMap = new Dictionary<string, RedDotTreeNodeDef>();
-            for (int i = 0; i < defs.Count; i++)
+            foreach (var def in defs)
             {
-                var def = defs[i];
                 if (def == null || string.IsNullOrEmpty(def.Key) || defMap.ContainsKey(def.Key))
                     continue;
                 defMap.Add(def.Key, def);
@@ -260,8 +261,11 @@ namespace EasyFramework.Systems.RedDot
                     continue;
 
                 // 无进展 = 环或缺失父，逐个告警后退出
-                for (int i = 0; i < pending.Count; i++)
-                    D.Error($"[ RedDotManager ] RegisterNode cycle detected at: {pending[i].Key}");
+                foreach (var nodeDef in pending)
+                {
+                    D.Error($"[ RedDotManager ] RegisterNode cycle detected at: {nodeDef.Key}");
+                }
+
                 break;
             }
 
@@ -316,9 +320,9 @@ namespace EasyFramework.Systems.RedDot
             {
                 var current = stack.Pop();
                 collected.Add(current);
-                for (int i = 0; i < current.Children.Count; i++)
+                foreach (var redDotNode in current.Children)
                 {
-                    stack.Push(current.Children[i]);
+                    stack.Push(redDotNode);
                 }
             }
 
@@ -343,14 +347,15 @@ namespace EasyFramework.Systems.RedDot
 
             int applied = 0;
             BeginBatch();
-            for (int i = 0; i < values.Count; i++)
+            foreach (var keyValuePair in values)
             {
-                var node = GetNode(values[i].Key);
+                var node = GetNode(keyValuePair.Key);
                 if (node == null)
                     continue;
-                node.SetNumber(values[i].Value);
+                node.SetNumber(keyValuePair.Value);
                 applied++;
             }
+
             EndBatch();
             return applied;
         }
