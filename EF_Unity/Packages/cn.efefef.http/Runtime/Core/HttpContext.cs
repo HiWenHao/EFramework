@@ -16,6 +16,19 @@ using UnityEngine.Networking;
 namespace EasyFramework.Systems.Http
 {
     /// <summary>
+    /// HTTP 默认值单一真源：门面兜底、上下文字段与设置实现全部引用此处，避免多处副本不一致
+    /// <para>Single source of truth for HTTP defaults: facade fallback, context fields and settings implementation all reference here</para>
+    /// </summary>
+    internal static class HttpDefaults
+    {
+        // 默认超时阈值（秒）
+        public const int TimeoutSeconds = 30;
+
+        // 默认 User-Agent
+        public const string UserAgent = "EasyFramework/1.0 (Unity)";
+    }
+
+    /// <summary>
     /// HTTP 服务共享上下文，存放跨切面默认值与共享状态，作为接口之间唯一的中介
     /// <para>Shared context holding cross-cutting defaults and shared state, the sole mediator between interfaces</para>
     /// </summary>
@@ -27,13 +40,13 @@ namespace EasyFramework.Systems.Http
         /// 默认超时阈值（秒）
         /// <para>Default timeout in seconds</para>
         /// </summary>
-        public int DefaultTimeout = 30;
+        public int DefaultTimeout = HttpDefaults.TimeoutSeconds;
 
         /// <summary>
         /// 默认 User-Agent 请求头
         /// <para>Default User-Agent header</para>
         /// </summary>
-        public string DefaultUserAgent = "EasyFramework/1.0 (Unity)";
+        public string DefaultUserAgent = HttpDefaults.UserAgent;
 
         /// <summary>
         /// 默认请求头副本（设置实现写入，发送器只读）

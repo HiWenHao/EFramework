@@ -39,7 +39,7 @@ namespace EasyFramework.Systems.Http
         /// </summary>
         public int DefaultTimeout
         {
-            get => _settings?.DefaultTimeout ?? 30;
+            get => _settings?.DefaultTimeout ?? HttpDefaults.TimeoutSeconds;
             set
             {
                 if (_settings != null) _settings.DefaultTimeout = value;
@@ -52,7 +52,7 @@ namespace EasyFramework.Systems.Http
         /// </summary>
         public string DefaultUserAgent
         {
-            get => _settings?.DefaultUserAgent ?? "EasyFramework/1.0 (Unity)";
+            get => _settings?.DefaultUserAgent ?? HttpDefaults.UserAgent;
             set
             {
                 if (_settings != null) _settings.DefaultUserAgent = value;

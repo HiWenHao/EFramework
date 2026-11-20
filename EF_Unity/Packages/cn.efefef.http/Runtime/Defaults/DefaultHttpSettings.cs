@@ -23,10 +23,10 @@ namespace EasyFramework.Systems.Http
         #region 字段 / Fields
 
         // 默认超时阈值（秒）
-        private int _defaultTimeout = 30;
+        private int _defaultTimeout = HttpDefaults.TimeoutSeconds;
 
         // 默认 User-Agent
-        private string _defaultUserAgent = "EasyFramework/1.0 (Unity)";
+        private string _defaultUserAgent = HttpDefaults.UserAgent;
 
         // 证书处理器
         private CertificateHandler _certificateHandler;
