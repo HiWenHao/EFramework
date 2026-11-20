@@ -156,9 +156,14 @@ namespace EasyFramework.Systems.Net
         {
             if (IsPaused) return;
 
-            for (int i = _connections.Count - 1; i >= 0; i--)
+            // 快照遍历：connection.Update 内会派发事件，业务回调可能重入连接管理
+            // （新建/关闭连接 → 增删 _connections），直接按原集合索引会错位或漏更新
+            var snapshot = _connections.ToArray();
+            foreach (var connection in snapshot)
             {
-                var connection = _connections[i];
+                // 回调可能已将该连接移除，跳过避免处理已失效对象
+                if (!_connections.Contains(connection)) continue;
+
                 connection.Update();
 
                 // 连接已终态关闭 → 移出管理

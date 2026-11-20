@@ -798,6 +798,29 @@ namespace EasyFramework.Systems.Net
         }
 
         /// <summary>
+        /// 丢弃接收队列中的下一条完整消息（含其所有分片），用于超长帧无法放入缓冲时解除队头阻塞。
+        /// <para>Discard the next complete message (all fragments) from the receive queue.</para>
+        /// </summary>
+        /// <returns>丢弃的字节数；无完整消息返回 -1<para>Bytes discarded; -1 when no complete message</para></returns>
+        public int DiscardNext()
+        {
+            if (_rcvQueue.Count == 0) return -1;
+            if (PeekSize() < 0) return -1; // 分片未收齐，不能丢弃半条消息
+
+            int discarded = 0;
+            while (_rcvQueue.Count > 0)
+            {
+                var seg = _rcvQueue.First.Value;
+                _rcvQueue.RemoveFirst();
+                discarded += seg.Len;
+                ReturnSegment(seg);
+                if (seg.Frg == 0) break; // 与 Recv 一致：Frg==0 是末片
+            }
+
+            return discarded;
+        }
+
+        /// <summary>
         /// 投喂下端收到的 UDP 数据（KCP 在此完成分片重排 / 确认处理）。
         /// <para>Feed raw UDP bytes in (KCP handles reordering and ack processing here).</para>
         /// </summary>

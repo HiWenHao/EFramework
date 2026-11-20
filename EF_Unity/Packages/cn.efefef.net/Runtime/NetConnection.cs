@@ -396,7 +396,19 @@ namespace EasyFramework.Systems.Net
         {
             SetState(NetConnectionState.Connecting);
 
-            ISocket socket = _socketFactory != null ? _socketFactory() : new UdpSocket();
+            ISocket socket;
+            try
+            {
+                // socketFactory 由业务注入，其异常不得击穿连接状态机；按一次失败尝试走退避重试
+                socket = _socketFactory != null ? _socketFactory() : new UdpSocket();
+            }
+            catch (Exception e)
+            {
+                D.Error($"[ NetConnection ] socketFactory 创建失败: {e}");
+                ScheduleReconnect("Socket factory failed");
+                return;
+            }
+
             if (!socket.Connect(_host, _port))
             {
                 socket.Close();

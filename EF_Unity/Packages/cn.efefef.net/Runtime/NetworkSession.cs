@@ -44,6 +44,7 @@ namespace EasyFramework.Systems.Net
 
         // kcp.Recv → 帧解析（大消息时扩容，故非 readonly）
         private byte[] _kcpRecvBuffer;
+        private const int MaxRecvBufferSize = 4 * 1024 * 1024; // 单帧接收缓冲上限，防恶意超长帧 OOM
 
         // 出站复用帧缓冲（按需扩容）：每条消息只做一次拷贝，不再每条新建数组
         private byte[] _frameBuffer;
@@ -274,8 +275,19 @@ namespace EasyFramework.Systems.Net
                 int size = _kcp.Recv(_kcpRecvBuffer, 0);
                 if (size == -3)
                 {
-                    // 缓冲区小于下一条完整消息：扩容后重试（消息仍留在队列，无丢失）
-                    Array.Resize(ref _kcpRecvBuffer, _kcpRecvBuffer.Length * 2);
+                    // 缓冲区小于下一条完整消息：扩容后重试（消息仍留在队列，无丢失）。
+                    // 但必须有上限，否则恶意/损坏的超长帧会让缓冲区指数扩容直至 OOM
+                    int next = _kcpRecvBuffer.Length * 2;
+                    if (next > MaxRecvBufferSize)
+                    {
+                        D.Error($"[ NetworkSession ] 消息超过接收缓冲上限 {MaxRecvBufferSize}，丢弃该帧");
+                        // 必须真正从 KCP 队列出队：Recv 在 buffer 不足时返回 -3 且不消费，
+                        // 用 Recv 丢弃会队头阻塞并每帧刷错误日志；DiscardNext 才真正移除整条消息
+                        if (_kcp.DiscardNext() < 0)
+                            break; // 分片未收齐，等后续分片到齐再处理
+                        continue;
+                    }
+                    Array.Resize(ref _kcpRecvBuffer, next);
                     continue;
                 }
                 if (size <= 0) break;

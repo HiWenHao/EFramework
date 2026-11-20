@@ -287,7 +287,14 @@ namespace EasyFramework.Systems.Net
             foreach (int rpcId in cancelled)
             {
                 if (!_pendingCalls.Remove(rpcId, out var pending)) continue;
-                pending.OnFailure?.Invoke(NetRpcFailure.SessionClosed);
+                try
+                {
+                    pending.OnFailure?.Invoke(NetRpcFailure.SessionClosed);
+                }
+                catch (Exception e)
+                {
+                    D.Error($"[ MessageDispatcher ] CancelPendingCalls 回调异常 (rpcId={rpcId}): {e}");
+                }
             }
             return cancelled.Count;
         }
@@ -304,13 +311,29 @@ namespace EasyFramework.Systems.Net
                 && (pending.SessionId == 0 || pending.SessionId == packet.SessionId))
             {
                 _pendingCalls.Remove(packet.RpcId);
-                pending.OnResponse(packet);
+                // 业务回调异常必须隔离：Dispatch 由 NetworkManager.Update 热路径驱动，
+                // 单个回调抛出会中断本帧全部包/连接/RPC 超时检查（与 Clear 的口径保持一致）
+                try
+                {
+                    pending.OnResponse(packet);
+                }
+                catch (Exception e)
+                {
+                    D.Error($"[ MessageDispatcher ] OnResponse 回调异常 (rpcId={packet.RpcId}): {e}");
+                }
                 return;
             }
 
             if (TryGetHandler(packet.SessionId, packet.Opcode, out var handler))
             {
-                handler(packet);
+                try
+                {
+                    handler(packet);
+                }
+                catch (Exception e)
+                {
+                    D.Error($"[ MessageDispatcher ] Handler 回调异常 (opcode={packet.Opcode}): {e}");
+                }
             }
         }
 
@@ -336,8 +359,23 @@ namespace EasyFramework.Systems.Net
             foreach (int rpcId in expired)
             {
                 if (!_pendingCalls.Remove(rpcId, out var pending)) continue;
-                pending.OnFailure?.Invoke(NetRpcFailure.Timeout);
-                RpcTimedOut?.Invoke(rpcId, pending.SessionId);
+                // 与 Clear 一致：单个超时回调异常不得阻断其余等待方与本帧后续检查
+                try
+                {
+                    pending.OnFailure?.Invoke(NetRpcFailure.Timeout);
+                }
+                catch (Exception e)
+                {
+                    D.Error($"[ MessageDispatcher ] 超时 OnFailure 回调异常 (rpcId={rpcId}): {e}");
+                }
+                try
+                {
+                    RpcTimedOut?.Invoke(rpcId, pending.SessionId);
+                }
+                catch (Exception e)
+                {
+                    D.Error($"[ MessageDispatcher ] RpcTimedOut 回调异常 (rpcId={rpcId}): {e}");
+                }
             }
         }
 
