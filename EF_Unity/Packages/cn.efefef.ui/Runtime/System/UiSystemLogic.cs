@@ -90,6 +90,10 @@ namespace EasyFramework.Managers.Ui
             eventSystem.transform.parent = transform;
 
             _autoDestroyDic = new Dictionary<IUiView, float>();
+            _childViewDic = new Dictionary<IUiView, ChildViewCollection>();
+            _childCacheDic = new Dictionary<Type, List<IUiView>>();
+            _childContainerDic = new Dictionary<IUiView, RectTransform>();
+            _childParentDic = new Dictionary<IUiView, IUiView>();
         }
 
         void IUpdate.Update(float elapse, float realElapse)
@@ -124,6 +128,18 @@ namespace EasyFramework.Managers.Ui
                     {
                         ViewDestroy(uiView, uiViews.Value);
                     }
+                }
+            }
+
+            // 子面板不进全局栈，单独轮询其 Update
+            foreach (var collection in _childViewDic.Values)
+            {
+                for (int i = collection.All.Count - 1; i >= 0; i--)
+                {
+                    var child = collection.All[i];
+                    if (child.View == null || child.View.gameObject == null)
+                        continue;
+                    child.Update(elapse, realElapse);
                 }
             }
         }
@@ -258,12 +274,12 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         /// <param name="uiView">目标视窗</param>
         /// <param name="beforeAnim">在视窗启用后、入场动画开始前执行的回调(用于刷新面板数据), 可为null</param>
-        private async UniTask ViewEnableWithAnim(IUiView uiView, Action beforeAnim = null)
+        private async UniTask ViewEnableWithAnim(IUiView uiView, Action beforeAnim = null, bool isChild = false)
         {
             var type = uiView.Binding.ViewAnimationType;
             if (type == UiViewAnimationType.None || animationConfig is null)
             {
-                ViewEnable(uiView);
+                ViewEnable(uiView, isChild);
                 beforeAnim?.Invoke();
                 return;
             }
@@ -276,13 +292,13 @@ namespace EasyFramework.Managers.Ui
                 else
                     uiView.View.anchoredPosition = GetSlideOffset(type, uiView.View);
 
-                ViewEnable(uiView);
+                ViewEnable(uiView, isChild);
                 beforeAnim?.Invoke();
                 await AnimateOpen(uiView.View, type, duration, curve);
             }
             else
             {
-                ViewEnable(uiView);
+                ViewEnable(uiView, isChild);
                 beforeAnim?.Invoke();
             }
         }
@@ -350,6 +366,15 @@ namespace EasyFramework.Managers.Ui
         {
             if (uiView == null) return;
 
+            // 父面板销毁前，级联销毁其名下所有子面板
+            if (_childViewDic.TryGetValue(uiView, out var collection))
+            {
+                var children = new List<IUiView>(collection.All);
+                for (int i = 0; i < children.Count; i++)
+                    DestroyChildView(children[i]);
+                _childViewDic.Remove(uiView);
+            }
+
             viewList?.Remove(uiView);
             _autoDestroyDic.Remove(uiView);
 
@@ -360,18 +385,49 @@ namespace EasyFramework.Managers.Ui
         }
 
         /// <summary>
-        /// 启用视窗：加入栈、设 parent、SetActive、调用 IUiEnable.Enable()（如实现）
+        /// 彻底销毁一个子面板（不走缓存，用于父级联销毁）
         /// </summary>
-        private bool ViewEnable(IUiView uiView)
+        private void DestroyChildView(IUiView child)
+        {
+            if (child == null) return;
+            _childContainerDic.Remove(child);
+            _childParentDic.Remove(child);
+            RemoveFromChildCache(child);
+            if (null == child.View || null == child.View.gameObject) return;
+            child.Quit();
+            child.Dispose();
+            DestroyObj(child.View.gameObject);
+        }
+
+        /// <summary>
+        /// 从子面板缓存池中移除指定实例
+        /// </summary>
+        private void RemoveFromChildCache(IUiView child)
+        {
+            Type type = child.GetType();
+            if (!_childCacheDic.TryGetValue(type, out var cache)) return;
+            cache.Remove(child);
+            if (cache.Count == 0)
+                _childCacheDic.Remove(type);
+        }
+
+        /// <summary>
+        /// 启用视窗：加入栈、设 parent、SetActive、调用 IUiEnable.Enable()（如实现）
+        /// <para>子面板模式（isChild=true）跳过入栈与类型容器 SetParent，避免与全局生命周期双重管理。</para>
+        /// </summary>
+        private bool ViewEnable(IUiView uiView, bool isChild = false)
         {
             if (null == uiView || null == uiView.View)
                 return false;
 
-            if (!_viewStackDic[uiView.Binding.ViewType].Contains(uiView))
-                _viewStackDic[uiView.Binding.ViewType].Add(uiView);
+            if (!isChild)
+            {
+                if (!_viewStackDic[uiView.Binding.ViewType].Contains(uiView))
+                    _viewStackDic[uiView.Binding.ViewType].Add(uiView);
 
-            if (!uiView.View.parent.Equals(_viewParentDic[uiView.Binding.ViewType]))
-                uiView.View.transform.SetParent(_viewParentDic[uiView.Binding.ViewType], false);
+                if (!uiView.View.parent.Equals(_viewParentDic[uiView.Binding.ViewType]))
+                    uiView.View.transform.SetParent(_viewParentDic[uiView.Binding.ViewType], false);
+            }
 
             _autoDestroyDic.Remove(uiView);
 

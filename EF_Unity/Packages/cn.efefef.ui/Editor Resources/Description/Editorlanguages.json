@@ -153,6 +153,22 @@
       ]
     },
     {
+      "name": "Ui.IsChild",
+      "desc": "作为子面板",
+      "array": [
+        "Is Child View",
+        "作为子面板"
+      ]
+    },
+    {
+      "name": "Ui.IsChildTip",
+      "desc": "子面板创建方式提示",
+      "array": [
+        "Child view: create via UiSystem.AddChild<Parent, Child>(); OpenView is not allowed.",
+        "子面板：请通过 UiSystem.AddChild<父, 子>() 创建，禁止使用 OpenView 独立打开。"
+      ]
+    },
+    {
       "name": "Ui.AutoDock",
       "desc": "自动停靠",
       "array": [

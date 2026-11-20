@@ -96,6 +96,13 @@ namespace EasyFramework.Managers.Ui
             if (null == uiView)
                 return false;
 
+            // 子面板不进全局栈：走子面板专用关闭路径（回子缓存），否则复用会失效
+            if (uiView.Binding.IsChild && _childParentDic.ContainsKey(uiView))
+            {
+                await CloseChildWithAnim(uiView);
+                return true;
+            }
+
             if (TryGetPredecessor(uiView, out var predecessor))
                 ViewEnable(predecessor);
 

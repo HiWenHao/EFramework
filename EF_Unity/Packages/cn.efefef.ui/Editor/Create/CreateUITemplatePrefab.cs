@@ -28,6 +28,7 @@ namespace EasyFramework.Edit.Create
         private const string CircularItemPrefabField = "_itemPrefab";
         private const string ProScrollRectField = "scrollRect";
         private const string ProItemPrefabField = "itemPrefab";
+        private const string ChildViewsNodeName = "ChildViews";
 
         [MenuItem("GameObject/UI/EF/New Ui View", false, 20)]
         static void CreateUINewUIPage(MenuCommand menuCommand)
@@ -46,6 +47,15 @@ namespace EasyFramework.Edit.Create
             rect.anchorMin = Vector2.zero;
             rect.sizeDelta = Vector2.zero;
             rect.anchoredPosition = Vector2.zero;
+
+            // 自动生成子面板容器：AddChild 会把子面板挂到该节点下
+            GameObject childViews = new GameObject(ChildViewsNodeName, typeof(RectTransform));
+            RectTransform childViewsRect = childViews.GetComponent<RectTransform>();
+            childViewsRect.SetParent(rect, false);
+            childViewsRect.anchorMin = Vector2.zero;
+            childViewsRect.anchorMax = Vector2.one;
+            childViewsRect.sizeDelta = Vector2.zero;
+            childViewsRect.anchoredPosition = Vector2.zero;
         }
 
         [MenuItem("GameObject/UI/EF/Image Pro", false, 40)]

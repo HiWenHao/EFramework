@@ -74,6 +74,11 @@ namespace EasyFramework.Managers.Ui
         {
             if (uiView == null || !IsExclusiveViewType(uiView.Binding.ViewType))
                 return false;
+            if (uiView.Binding.IsChild)
+            {
+                D.Error($"[ UiSystem ] {uiView.GetType().Name} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
+                return false;
+            }
 
             if (InViewList(uiView, UIViewType.Cache))
                 _viewStackDic[UIViewType.Cache].Remove(uiView);
@@ -143,6 +148,10 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         private async UniTask<TView> OpenViewCore<TView>(Action<TView> enableAction) where TView : IUiView, new()
         {
+            // 子面板标记接口：实例化前零成本拦截，避免白 Load + Instantiate
+            if (RejectChildType<TView>())
+                return default;
+
             IUiView openView;
 
             if (TryFindActive<TView>(out var activeView, out var foundType) && IsExclusiveViewType(foundType))
@@ -162,6 +171,9 @@ namespace EasyFramework.Managers.Ui
                 return default;
             }
 
+            if (RejectIfChild(openView, typeof(TView).Name))
+                return default;
+
             var target = (TView)openView;
             await ViewEnableWithAnim(openView, () => enableAction?.Invoke(target));
 
@@ -177,6 +189,10 @@ namespace EasyFramework.Managers.Ui
         /// </summary>
         private async UniTask<TView> OpenViewOverlayCore<TView>(Action<TView> enableAction) where TView : IUiView, new()
         {
+            // 子面板标记接口：实例化前零成本拦截
+            if (RejectChildType<TView>())
+                return default;
+
             if (!TryRecoverFromCache<TView>(out var uiView))
                 uiView = ViewCreate<TView>();
 
@@ -186,9 +202,44 @@ namespace EasyFramework.Managers.Ui
                 return default;
             }
 
+            if (RejectIfChild(uiView, typeof(TView).Name))
+                return default;
+
             var target = (TView)uiView;
             await ViewEnableWithAnim(uiView, () => enableAction?.Invoke(target));
             return (TView)uiView;
+        }
+
+        /// <summary>
+        /// 通过标记接口在实例化前判定是否为子面板，零成本拒绝（不触发 prefab 加载）
+        /// <para>Reject child views before instantiation via the marker interface, with zero prefab load.</para>
+        /// </summary>
+        /// <returns>true 表示已拒绝</returns>
+        private bool RejectChildType<TView>() where TView : IUiView
+        {
+            if (!typeof(IUiChildView).IsAssignableFrom(typeof(TView)))
+                return false;
+            D.Error($"[ UiSystem ] {typeof(TView).Name} implements IUiChildView and cannot be opened via OpenView; use AddChild instead.");
+            return true;
+        }
+
+        /// <summary>
+        /// 若视窗被标记为子面板则拒绝独立打开，并销毁刚创建的实例
+        /// <para>Reject independent opening of a child view and destroy the just-created instance.</para>
+        /// </summary>
+        /// <returns>true 表示已拒绝</returns>
+        private bool RejectIfChild(IUiView uiView, string viewName)
+        {
+            if (uiView.Binding == null || !uiView.Binding.IsChild)
+                return false;
+            D.Error($"[ UiSystem ] {viewName} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
+            // 刚创建、尚未入栈的实例需要立即释放
+            if (uiView.View != null && uiView.View.gameObject != null)
+            {
+                uiView.Dispose();
+                DestroyObj(uiView.View.gameObject);
+            }
+            return true;
         }
 
         #endregion

@@ -130,6 +130,12 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 EditorGUILayout.Space(6f, true);
             }
 
+            // 子面板标记：由 UiSystem.AddChild 创建，禁止 OpenView 独立打开
+            _builder.IsChild = EditorGUILayout.Toggle(LC.Combine("Ui.IsChild"), _builder.IsChild);
+            if (_builder.IsChild)
+                EditorGUILayout.HelpBox(LC.Combine("Ui.IsChildTip"), MessageType.Info);
+            EditorGUILayout.Space(6f, true);
+
             _builder.ViewType = (UIViewType)EditorGUILayout.EnumPopup("UI" + LC.Combine("Type"), _builder.ViewType);
             if (_builder.ViewType is UIViewType.Cache)
                 _builder.ViewType = UIViewType.Page;
@@ -836,9 +842,11 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             commonSb.AppendLine("{");
 
             // ========== 生成 View 文件 ==========
+            // 子面板实现 IUiChildView 标记接口，供 OpenView 在实例化前零成本拦截
+            string viewInterface = _builder.IsChild ? nameof(IUiChildView) : nameof(IUiView);
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(ScriptExplain);
-            sb.AppendLine($"    public partial class {className} : IUiView");
+            sb.AppendLine($"    public partial class {className} : {viewInterface}");
             sb.AppendLine("    {");
             sb.AppendLine("        uint IUiView.SerialId { get; set; }");
             sb.AppendLine("        public UiBinding Binding { get; private set; }");

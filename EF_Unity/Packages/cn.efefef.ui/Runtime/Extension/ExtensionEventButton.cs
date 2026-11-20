@@ -1,11 +1,11 @@
 /*
  * ================================================
- * Describe:      This script is used to .
- * Author:        Alvin8412
- * CreationTime:  2026-05-05 21:47:21
- * ModifyAuthor:  Alvin8412
- * ModifyTime:    2026-05-05 21:47:21
- * ScriptVersion: 0.1
+ * Describe:        This script is used to .
+ * Author:          Alvin8412
+ * CreationTime:    2026-05-05 21:47:21
+ * ModifyAuthor:    Alvin5100
+ * ModifyTime:      2026-11-20 08:23:11
+ * ScriptVersion:   0.1
  * ===============================================
  */
 
@@ -17,9 +17,10 @@ namespace EasyFramework.Managers.Ui
     /// <summary>
     /// Extension button event.扩展按钮事件
     /// </summary>
-    public static partial class ExtensionEventButton
-	{
+    public static class ExtensionEventButton
+    {
         #region ButtonPro
+
         /// <summary>
         /// Register inL list and bind event.向列表注册自身，并且绑定事件
         /// </summary>
@@ -27,23 +28,20 @@ namespace EasyFramework.Managers.Ui
         /// <param name="events">事件</param>
         /// <param name="list">Button list manager. 按钮列表</param>
         /// <returns></returns>
-        public static ButtonPro RegisterInListAndBindEvent(this ButtonPro button, UnityAction events, ref List<ButtonPro> list)
+        public static ButtonPro RegisterInListAndBindEvent(this ButtonPro button, UnityAction events,
+            ref List<ButtonPro> list)
         {
-            if (null == list)
-            {
-                list = new List<ButtonPro>();
-            }
+            list ??= new List<ButtonPro>();
+
             button.AddClickListener(events);
             list.Add(button);
             return button;
         }
 
-
-
-
         #endregion
 
         #region List<ButtonPro>
+
         /// <summary>
         /// Releases all button events and removes buttons one by one from the list.释放所有按钮事件并且从列表中逐一删除按钮
         /// </summary>
@@ -61,6 +59,7 @@ namespace EasyFramework.Managers.Ui
             buttons.Clear();
             return buttons;
         }
+
         #endregion
     }
 }

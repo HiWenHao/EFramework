@@ -53,6 +53,13 @@ namespace EasyFramework.Managers.Ui
         [SerializeField]
         public List<BindData> BindDatas = new List<BindData>();
 
+        /// <summary> 是否为子面板（只能由 UiSystem.AddChild 创建，禁止 OpenView 独立打开） </summary>
+        /// <para>Whether this is a child view (created only via UiSystem.AddChild; independent OpenView is forbidden).</para>
+        [HeaderPro("子面板", "Child View", HeaderProType.Title)]
+        [HeaderPro("作为子面板", "Is Child", HeaderProType.Note)]
+        [SerializeField]
+        public bool IsChild;
+
         /// <summary> 页面自动销毁 </summary>
         [HeaderPro("生命周期", "Lifecycle", HeaderProType.Title)]
         [HeaderPro("自动销毁", "Auto Destroy", HeaderProType.Note)]
