@@ -47,8 +47,15 @@ namespace EasyFramework.Edit
             }
 
             _creating = typeof(T);
-            cache = Create.CreateSettings.Instance<T>(true, path);
-            _creating = null;
+            try
+            {
+                cache = Create.CreateSettings.Instance<T>(true, path);
+            }
+            finally
+            {
+                // 创建失败也必须清标志，否则该类型之后永远返回 null（_creating 卡死）
+                _creating = null;
+            }
 
             return cache;
         }

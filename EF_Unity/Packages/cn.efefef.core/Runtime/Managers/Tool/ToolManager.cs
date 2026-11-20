@@ -24,11 +24,11 @@ namespace EasyFramework.Managers
     [Manager(Order = 99500)]
     public class ToolManager : Singleton<ToolManager>, ISingleton
     {
-        Vector3 _screenHalf;
+        // 屏幕中心半距：动态计算以响应分辨率变化（旧实现仅 Init 算一次，改分辨率后鼠标坐标失准）
+        private static Vector3 ScreenHalf => new(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
 
         void ISingleton.Init()
         {
-            _screenHalf = new Vector3(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
         }
 
         void ISingleton.Quit()
@@ -569,7 +569,7 @@ namespace EasyFramework.Managers
         public Vector2 GetMousePosInScreen(bool center = true)
         {
             if (center)
-                return Input.mousePosition - _screenHalf;
+                return Input.mousePosition - ScreenHalf;
 
             return Input.mousePosition;
         }
@@ -584,7 +584,8 @@ namespace EasyFramework.Managers
         /// <para>位置方向</para></returns>
         public PositionOrientationType GetOrientationWithScreenCenter(Vector2 v2)
         {
-            if (v2.x > _screenHalf.x || v2.x < -_screenHalf.x || v2.y > _screenHalf.y || v2.y < -_screenHalf.y)
+            var half = ScreenHalf;
+            if (v2.x > half.x || v2.x < -half.x || v2.y > half.y || v2.y < -half.y)
                 return PositionOrientationType.None;
             if (v2 == Vector2.zero)
                 return PositionOrientationType.Center;
