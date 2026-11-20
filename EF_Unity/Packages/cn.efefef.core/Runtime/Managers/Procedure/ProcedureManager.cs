@@ -49,6 +49,12 @@ namespace EasyFramework.Managers.Procedure
         private ConcurrentQueue<ProcedureInstance> _pendingExits;   // 待退出的流程队列
 
         /// <summary>
+        /// 是否开启调试日志（流程异常提示）
+        /// <para>Whether to enable debug logs (procedure error notices)</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
+
+        /// <summary>
         /// 是否有正在运行的流程
         /// </summary>
         public bool HasRunningProcedure => _instanceStack.Count > 0;

@@ -64,6 +64,12 @@ namespace EasyFramework.Systems.Net
         #region Properties
 
         /// <summary>
+        /// 是否开启调试日志（网络层预留开关；当前诊断走事件发布，暂无日志调用）
+        /// <para>Whether to enable debug logs (reserved: network diagnostics currently use events, no log calls yet)</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
+
+        /// <summary>
         /// 全局消息分发器（业务在此注册 Handler / 设置序列化器）
         /// <para>Global dispatcher (register handlers / serializer here)</para>
         /// </summary>

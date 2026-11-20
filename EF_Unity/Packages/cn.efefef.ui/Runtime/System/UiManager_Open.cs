@@ -14,7 +14,7 @@ using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Ui
 {
-    public partial class UiSystem
+    public partial class UiManager
     {
         /// <summary>
         /// 打开视窗, 通过<see cref="UIViewType"/>区分展示逻辑
@@ -76,7 +76,7 @@ namespace EasyFramework.Managers.Ui
                 return false;
             if (uiView.Binding.IsChild)
             {
-                D.Error($"[ UiSystem ] {uiView.GetType().Name} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
+                D.Error($"[ UiManager ] {uiView.GetType().Name} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
                 return false;
             }
 
@@ -167,7 +167,7 @@ namespace EasyFramework.Managers.Ui
 
             if (openView == null)
             {
-                D.Error($"[ UiSystem ] OpenView<{typeof(TView).Name}> failed: ViewCreate returned null");
+                D.Error($"[ UiManager ] OpenView<{typeof(TView).Name}> failed: ViewCreate returned null");
                 return default;
             }
 
@@ -198,7 +198,7 @@ namespace EasyFramework.Managers.Ui
 
             if (uiView == null)
             {
-                D.Error($"[ UiSystem ] OpenViewOverlay<{typeof(TView).Name}> failed: ViewCreate returned null");
+                D.Error($"[ UiManager ] OpenViewOverlay<{typeof(TView).Name}> failed: ViewCreate returned null");
                 return default;
             }
 
@@ -219,7 +219,7 @@ namespace EasyFramework.Managers.Ui
         {
             if (!typeof(IUiChildView).IsAssignableFrom(typeof(TView)))
                 return false;
-            D.Error($"[ UiSystem ] {typeof(TView).Name} implements IUiChildView and cannot be opened via OpenView; use AddChild instead.");
+            D.Error($"[ UiManager ] {typeof(TView).Name} implements IUiChildView and cannot be opened via OpenView; use AddChild instead.");
             return true;
         }
 
@@ -232,7 +232,7 @@ namespace EasyFramework.Managers.Ui
         {
             if (uiView.Binding == null || !uiView.Binding.IsChild)
                 return false;
-            D.Error($"[ UiSystem ] {viewName} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
+            D.Error($"[ UiManager ] {viewName} is marked IsChild and cannot be opened via OpenView; use AddChild instead.");
             // 刚创建、尚未入栈的实例需要立即释放
             if (uiView.View != null && uiView.View.gameObject != null)
             {

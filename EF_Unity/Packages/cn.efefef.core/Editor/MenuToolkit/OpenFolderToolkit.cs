@@ -4,13 +4,12 @@
  * Author:        Xiaohei.Wang(Wenhao)
  * CreationTime:  2023-05-12 17:11:40
  * ModifyAuthor:  Alvin5100
- * ModifyTime:    2026-10-30 10:05:00
- * ScriptVersion: 0.4
+ * ModifyTime:    2026-11-20 12:20:00
+ * ScriptVersion: 0.5
  * ===============================================
  */
 
 using System.IO;
-using EasyFramework.Edit.Windows.Dataable;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,12 +55,6 @@ namespace EasyFramework.Edit.MenuToolkit
         public static void OpenEfToolsPath()
         {
             EditorCommands.OpenFolder(Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath, "EFTools"));
-        }
-
-        [MenuItem(MenuItemToolkit.Folders + "Excel", false, MenuItemToolkit.FoldersPriority + 7)]
-        public static void OpenExcelFolderPath()
-        {
-            EditorCommands.OpenFolder(Path.Combine(DatableConfigPanel.ExcelFolderPath, "Datas"));
         }
     }
 }

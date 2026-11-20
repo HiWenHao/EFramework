@@ -64,10 +64,10 @@ namespace EFExample
             await EF.Assets.ConfirmAssetsManagerType(AssetsSystemType.YooAsset);
 
             //UI进入
-            UiSystem.Instance.OpenView<UiAView>().Forget();
+            UiManager.Instance.OpenView<UiAView>().Forget();
 
             // 旧 TipsView 调用示例（已废弃，仅供参考）
-            UiSystem.Instance.OpenViewOverlay<TipsView, string, TipsViewExtraData>("这是一个测试提示窗", new TipsViewExtraData()
+            UiManager.Instance.OpenViewOverlay<TipsView, string, TipsViewExtraData>("这是一个测试提示窗", new TipsViewExtraData()
             {
                 ConfirmName = "确定",
                 CancelName = "取消",
@@ -99,7 +99,7 @@ namespace EFExample
             for (int i = 0; i < 20; i++)
             {
                 await UniTask.WaitForSeconds(0.1f);
-                await UiSystem.Instance.OpenViewOverlay<PopupView, string>($"\t{i}\tIndex");
+                await UiManager.Instance.OpenViewOverlay<PopupView, string>($"\t{i}\tIndex");
             }
         }
 

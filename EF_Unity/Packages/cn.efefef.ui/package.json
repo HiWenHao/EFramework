@@ -21,12 +21,12 @@
     {
       "displayName": "ScrollProList Sample",
       "description": "无限不规则滑动列表案例.",
-      "path": "Samplse~/ScrollProListExample"
+      "path": "Samples~/ScrollProListExample"
     },
     {
       "displayName": "CircularScrollList Sample",
       "description": "循环滑动列表案例.",
-      "path": "Samplse~/CircularScrollListExample"
+      "path": "Samples~/CircularScrollListExample"
     }
   ]
 }

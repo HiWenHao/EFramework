@@ -2,7 +2,7 @@
 
 这个工程是 EFramework 的**能力展示实例**：用尽可能少的代码，演示框架各模块「解决什么问题、怎么调用」。
 
-融合后启动链收口为**单一入口场景** `Scenes/Launcher.unity`（Build Settings 索引 0），启动更新 → 补 AOT 元数据 → 加载热更程序集 → **（可选）用户点击确认** → 调用 `EFExample.HotfixTest.Init()` → `UiSystem.OpenView<UiAView>()`。
+融合后启动链收口为**单一入口场景** `Scenes/Launcher.unity`（Build Settings 索引 0），启动更新 → 补 AOT 元数据 → 加载热更程序集 → **（可选）用户点击确认** → 调用 `EFExample.HotfixTest.Init()` → `UiManager.OpenView<UiAView>()`。
 
 > 工程里带 `_Test`、`CahtView`、`Haoheng` 音效、`127.0.0.1` 地址等内容都是演示数据，不代表生产配置。
 
@@ -29,7 +29,7 @@ launcher 支持在**热更程序集加载完毕后、调用入口之前**插入�
 | 确认 | `GameStart`、`StartTip` | 可选：进入按钮与提示物体，留空自动放行 |
 | 失败 | `ErrorText`、`RetryButton` | 可选：错误文案与重试按钮，留空则只在 Console 报错 |
 
-> 闸门在 `Invoking` 之前，此时 `EFC` / `UiSystem` 尚未初始化，按钮只能用 AOT 侧 UGUI，不能用 EF.UI。
+> 闸门在 `Invoking` 之前，此时 `EFC` / `UiManager` 尚未初始化，按钮只能用 AOT 侧 UGUI，不能用 EF.UI。
 
 ### Launcher Inspector：显式指定契约实现
 
@@ -142,11 +142,11 @@ await PatchManager.Instance.StartUpdatePatches(...);
 | 定时事件 | `UiCViewLogic` 的 `TimerEvent` |
 
 ```csharp
-await UiSystem.Instance.OpenView<UiAView>();
-await UiSystem.Instance.OpenView<UiBView, string>("向B传递参数");
-await UiSystem.Instance.OpenViewOverlay<TipsView, string, TipsViewExtraData>(...);
-await UiSystem.Instance.CloseViewAndNotify<UiCView, UiBView, string>("回传参数");
-await UiSystem.Instance.CloseAllView();
+await UiManager.Instance.OpenView<UiAView>();
+await UiManager.Instance.OpenView<UiBView, string>("向B传递参数");
+await UiManager.Instance.OpenViewOverlay<TipsView, string, TipsViewExtraData>(...);
+await UiManager.Instance.CloseViewAndNotify<UiCView, UiBView, string>("回传参数");
+await UiManager.Instance.CloseAllView();
 ```
 
 包内还提供 `ImagePro` / `ScrollRectPro` / `RadarMap` / `Slideshow` / `ButtonPro` / `UiBinding` 等控件，本工程未逐一演示。

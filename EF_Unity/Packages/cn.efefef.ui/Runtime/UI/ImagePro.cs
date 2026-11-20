@@ -105,7 +105,7 @@ namespace EasyFramework
                     var shader = _roundedRectangleShader;
                     if (shader == null)
                     {
-                        D.Error($"[ UiSystem ] [ ImagePro ] {gameObject.name} shader UI/RoundedRectangle not found");
+                        D.Error($"[ UiManager ] [ ImagePro ] {gameObject.name} shader UI/RoundedRectangle not found");
                         break;
                     }
 
@@ -124,7 +124,7 @@ namespace EasyFramework
                     var shader = _defaultGrayShader;
                     if (shader == null)
                     {
-                        D.Error($"[ UiSystem ] [ ImagePro ] {gameObject.name} shader UI/DefaultGray not found");
+                        D.Error($"[ UiManager ] [ ImagePro ] {gameObject.name} shader UI/DefaultGray not found");
                         break;
                     }
 
@@ -304,7 +304,7 @@ namespace EasyFramework
             if (atlasHandle is not { IsValid: true })
             {
                 atlasHandle?.Dispose();
-                D.Warning($"[ UiSystem ] [ ImagePro ] Atlas '{atlasName}' not found for UIAtlasType.{type}");
+                D.Warning($"[ UiManager ] [ ImagePro ] Atlas '{atlasName}' not found for UIAtlasType.{type}");
                 return null;
             }
 
@@ -313,7 +313,7 @@ namespace EasyFramework
             {
                 // Sprite 取不到，句柄不再需要
                 atlasHandle.Dispose();
-                D.Warning($"[ UiSystem ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{atlasName}'.");
+                D.Warning($"[ UiManager ] [ ImagePro ] Sprite '{spriteName}' not found in atlas '{atlasName}'.");
                 return null;
             }
 
@@ -393,7 +393,7 @@ namespace EasyFramework
                 if (atlasHandle == null || !atlasHandle.IsValid)
                 {
                     atlasHandle?.Dispose();
-                    D.Warning($"[ UiSystem ] [ ImagePro ] Not found {atlasName} atlas..");
+                    D.Warning($"[ UiManager ] [ ImagePro ] Not found {atlasName} atlas..");
                     return null;
                 }
 
@@ -402,7 +402,7 @@ namespace EasyFramework
                 newSprite = atlasHandle.Asset.GetSprite(spriteName);
                 if (newSprite == null)
                 {
-                    D.Warning($"[ UiSystem ] [ ImagePro ] {spriteName} not found in {atlasName} atlas.");
+                    D.Warning($"[ UiManager ] [ ImagePro ] {spriteName} not found in {atlasName} atlas.");
                     atlasHandle.Dispose();
                     return null;
                 }
@@ -412,7 +412,7 @@ namespace EasyFramework
                 var spriteHandle = await AssetsManager.Instance.LoadAsync<Sprite>(url);
                 if (spriteHandle == null)
                 {
-                    D.Warning($"[ UiSystem ] [ ImagePro ] Not found {url} sprite.");
+                    D.Warning($"[ UiManager ] [ ImagePro ] Not found {url} sprite.");
                     return null;
                 }
 
@@ -423,7 +423,7 @@ namespace EasyFramework
             if (null == newSprite)
             {
                 newHandle?.Dispose();
-                if (!hasAtlas) D.Warning($"[ UiSystem ] [ ImagePro ] Not found {url} sprite.");
+                if (!hasAtlas) D.Warning($"[ UiManager ] [ ImagePro ] Not found {url} sprite.");
                 return null;
             }
 

@@ -23,8 +23,8 @@ namespace EFExample
     {
         void IUiView.Awake()
         {
-            UiSystem.Instance.OpenView<TestTopView>().Forget();
-            UiSystem.Instance.OpenView<TestBottomViewOne>().Forget();
+            UiManager.Instance.OpenView<TestTopView>().Forget();
+            UiManager.Instance.OpenView<TestBottomViewOne>().Forget();
         }
         public void Enable(int args1)
         {
@@ -40,7 +40,7 @@ namespace EFExample
 
         private void OnClickBtn_ToB()
         {
-            UiSystem.Instance.OpenView<UiBView, string>("向B传递参数").Forget();
+            UiManager.Instance.OpenView<UiBView, string>("向B传递参数").Forget();
         }
 
         private void OnClickBtn_Quit()

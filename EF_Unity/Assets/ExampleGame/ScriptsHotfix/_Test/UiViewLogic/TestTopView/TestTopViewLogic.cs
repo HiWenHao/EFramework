@@ -31,7 +31,7 @@ namespace EFExample
         private static async UniTaskVoid OpenOtherAfterDelayAsync()
         {
             await UniTask.Delay(10000);
-            await UiSystem.Instance.OpenView<TestTopViewOther>();
+            await UiManager.Instance.OpenView<TestTopViewOther>();
         }
 
         void IUiView.Quit()

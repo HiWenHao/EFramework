@@ -65,9 +65,9 @@ namespace EFExample
         private void OnClickBtn_QuitC()
         {
             if (_viewId == 2)
-                UiSystem.Instance.CloseViewAndNotify<UiCView, UiBView, string>("C页面退出，向即将被显示的页面B传递参数").Forget();
+                UiManager.Instance.CloseViewAndNotify<UiCView, UiBView, string>("C页面退出，向即将被显示的页面B传递参数").Forget();
             else
-                UiSystem.Instance.CloseView<UiCView>().Forget();
+                UiManager.Instance.CloseView<UiCView>().Forget();
         }
 
         private void OnClickBtn_AddTimeEvent()

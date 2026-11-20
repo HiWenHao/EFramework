@@ -129,8 +129,8 @@ namespace EasyFramework.Edit.Create
             if (list == null)
             {
                 D.Error(LC.Tr(
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] 循环滚动列表组件挂载失败",
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] Failed to attach CircularScrollList component"));
+                    "[ UiManager ] [ CreateUITemplatePrefab ] 循环滚动列表组件挂载失败",
+                    "[ UiManager ] [ CreateUITemplatePrefab ] Failed to attach CircularScrollList component"));
                 return;
             }
             RectTransform content = CreateScrollViewStructure(root.transform);
@@ -159,8 +159,8 @@ namespace EasyFramework.Edit.Create
             if (list == null)
             {
                 D.Error(LC.Tr(
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] 无限滚动列表组件挂载失败",
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] Failed to attach ScrollListPro component"));
+                    "[ UiManager ] [ CreateUITemplatePrefab ] 无限滚动列表组件挂载失败",
+                    "[ UiManager ] [ CreateUITemplatePrefab ] Failed to attach ScrollListPro component"));
                 return;
             }
             RectTransform content = CreateScrollViewStructure(root.transform);
@@ -301,8 +301,8 @@ namespace EasyFramework.Edit.Create
             catch (Exception e)
             {
                 D.Error(LC.Tr(
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] {0}: 挂载组件失败，绝逼是 API 变更!   {1}",
-                    "[ UiSystem ] [ CreateUITemplatePrefab ] {0}: failed to attach component, the Unity API must have changed!   {1}",
+                    "[ UiManager ] [ CreateUITemplatePrefab ] {0}: 挂载组件失败，绝逼是 API 变更!   {1}",
+                    "[ UiManager ] [ CreateUITemplatePrefab ] {0}: failed to attach component, the Unity API must have changed!   {1}",
                     types[0].Name, e.Message));
                 throw;
             }

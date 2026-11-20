@@ -60,6 +60,12 @@ namespace EasyFramework.Systems.Archive
         /// </summary>
         public ArchiveSettings Settings { get; private set; }
 
+        /// <summary>
+        /// 是否开启调试日志
+        /// <para>Whether to enable debug logs</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
+
         #region Singleton Lifecycle
 
         void ISingleton.Init()
@@ -119,11 +125,13 @@ namespace EasyFramework.Systems.Archive
         // 日志安全包装（防御 D 日志系统未初始化的 NRE，回退到 Unity Debug）
         private static void LogWarning(string msg)
         {
+            if (Instance != null && !Instance.OpenDebug) return;
             try { D.Warning(msg); } catch { Debug.LogWarning(msg); }
         }
 
         private static void LogError(string msg)
         {
+            // 错误日志始终输出，不受 OpenDebug 影响
             try { D.Error(msg); } catch { Debug.LogError(msg); }
         }
 

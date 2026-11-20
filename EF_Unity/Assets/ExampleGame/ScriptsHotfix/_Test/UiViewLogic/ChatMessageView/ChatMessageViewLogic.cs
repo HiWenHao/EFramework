@@ -25,7 +25,7 @@ namespace EFExample
 
         //void IUiView.Enable()
         //{
-        //    UiSystem.Instance.CloseView<BottomSubfieldView>().Forget();
+        //    UiManager.Instance.CloseView<BottomSubfieldView>().Forget();
         //}
 
         void IUiView.Quit()
@@ -36,8 +36,8 @@ namespace EFExample
 
         private void OnClickBtn_Back()
         {
-            UiSystem.Instance.OpenView<BottomSubfieldView>().Forget();
-            UiSystem.Instance.CloseView(this).Forget();
+            UiManager.Instance.OpenView<BottomSubfieldView>().Forget();
+            UiManager.Instance.CloseView(this).Forget();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

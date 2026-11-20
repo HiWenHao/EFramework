@@ -130,7 +130,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 EditorGUILayout.Space(6f, true);
             }
 
-            // 子面板标记：由 UiSystem.AddChild 创建，禁止 OpenView 独立打开
+            // 子面板标记：由 UiManager.AddChild 创建，禁止 OpenView 独立打开
             _builder.IsChild = EditorGUILayout.Toggle(LC.Combine("Ui.IsChild"), _builder.IsChild);
             if (_builder.IsChild)
                 EditorGUILayout.HelpBox(LC.Combine("Ui.IsChildTip"), MessageType.Info);
@@ -208,8 +208,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                     else
                     {
                         D.Warning(LC.Tr(
-                            "[ UiSystem ] [ UiBindingEditor ] 所选路径 '{0}' 不在 Assets 目录内",
-                            "[ UiSystem ] [ UiBindingEditor ] Selected path '{0}' is not inside the Assets folder.",
+                            "[ UiManager ] [ UiBindingEditor ] 所选路径 '{0}' 不在 Assets 目录内",
+                            "[ UiManager ] [ UiBindingEditor ] Selected path '{0}' is not inside the Assets folder.",
                             path));
                     }
                 }
@@ -555,8 +555,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 foreach (var issue in nameIssues)
                 {
                     D.Error(LC.Tr(
-                        "[ UiSystem ] [ UiBindingEditor ] 生成已终止，字段名问题 → {0}",
-                        "[ UiSystem ] [ UiBindingEditor ] Generation aborted, field name issue → {0}",
+                        "[ UiManager ] [ UiBindingEditor ] 生成已终止，字段名问题 → {0}",
+                        "[ UiManager ] [ UiBindingEditor ] Generation aborted, field name issue → {0}",
                         issue));
                 }
                 return;
@@ -614,8 +614,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 {
                     Component com = child.GetComponent(_tempComponentTypeNames[i]);
                     if (com == null) D.Error(LC.Tr(
-                        "[ UiSystem ] [ UiBindingEditor ] {0}上不存在{1}的组件",
-                        "[ UiSystem ] [ UiBindingEditor ] Component {1} not found on {0}",
+                        "[ UiManager ] [ UiBindingEditor ] {0}上不存在{1}的组件",
+                        "[ UiManager ] [ UiBindingEditor ] Component {1} not found on {0}",
                         child.name, _tempComponentTypeNames[i]));
                     else AddBindData(child.name, _tempFiledNames[i], com);
                 }
@@ -635,8 +635,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 if (elementName == filedName)
                 {
                     D.Error(LC.Tr(
-                        "[ UiSystem ] [ UiBindingEditor ] 有重复名字！请检查后重新生成！Name:{0}",
-                        "[ UiSystem ] [ UiBindingEditor ] Duplicate name! Please check and regenerate. Name: {0}",
+                        "[ UiManager ] [ UiBindingEditor ] 有重复名字！请检查后重新生成！Name:{0}",
+                        "[ UiManager ] [ UiBindingEditor ] Duplicate name! Please check and regenerate. Name: {0}",
                         rectName));
                     return;
                 }
@@ -705,8 +705,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 }
 
                 if (!isFind) D.Warning(LC.Tr(
-                    "[ UiSystem ] [ UiBindingEditor ] {0}的命名中{1}不存在对应的组件类型，绑定失败",
-                    "[ UiSystem ] [ UiBindingEditor ] No component type matches the prefix {1} in the name of {0}, binding failed",
+                    "[ UiManager ] [ UiBindingEditor ] {0}的命名中{1}不存在对应的组件类型，绑定失败",
+                    "[ UiManager ] [ UiBindingEditor ] No component type matches the prefix {1} in the name of {0}, binding failed",
                     trans.name, prefixes));
             }
 

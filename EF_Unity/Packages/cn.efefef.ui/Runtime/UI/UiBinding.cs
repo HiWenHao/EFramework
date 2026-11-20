@@ -53,8 +53,8 @@ namespace EasyFramework.Managers.Ui
         [SerializeField]
         public List<BindData> BindDatas = new List<BindData>();
 
-        /// <summary> 是否为子面板（只能由 UiSystem.AddChild 创建，禁止 OpenView 独立打开） </summary>
-        /// <para>Whether this is a child view (created only via UiSystem.AddChild; independent OpenView is forbidden).</para>
+        /// <summary> 是否为子面板（只能由 UiManager.AddChild 创建，禁止 OpenView 独立打开） </summary>
+        /// <para>Whether this is a child view (created only via UiManager.AddChild; independent OpenView is forbidden).</para>
         [HeaderPro("子面板", "Child View", HeaderProType.Title)]
         [HeaderPro("作为子面板", "Is Child", HeaderProType.Note)]
         [SerializeField]
@@ -130,7 +130,7 @@ namespace EasyFramework.Managers.Ui
             if (bindData == null)
             {
                 D.Error(
-                    $"[ UiSystem ] [ UiBinding ] On UI panel [{gameObject.name}] no binding entry was found with ScriptName " +
+                    $"[ UiManager ] [ UiBinding ] On UI panel [{gameObject.name}] no binding entry was found with ScriptName " +
                     $"[{scriptName}] (expected component type [{typeof(T).Name}]). " +
                     "Check that the binding was collected/saved in the editor and the name is spelled correctly.");
                 return null;
@@ -139,7 +139,7 @@ namespace EasyFramework.Managers.Ui
             if (bindData.BindCom == null)
             {
                 D.Error(
-                    $"[ UiSystem ] [ UiBinding ] On UI panel [{gameObject.name}] the binding entry for ScriptName [{scriptName}] " +
+                    $"[ UiManager ] [ UiBinding ] On UI panel [{gameObject.name}] the binding entry for ScriptName [{scriptName}] " +
                     "has a null component reference. The serialized component was lost; please re-collect and save " +
                     "the binding in the editor.");
                 return null;
@@ -149,7 +149,7 @@ namespace EasyFramework.Managers.Ui
             if (component == null)
             {
                 D.Error(
-                    $"[ UiSystem ] [ UiBinding ] On UI panel [{gameObject.name}] the binding for ScriptName [{scriptName}] is of " +
+                    $"[ UiManager ] [ UiBinding ] On UI panel [{gameObject.name}] the binding for ScriptName [{scriptName}] is of " +
                     $"type [{bindData.BindCom.GetType().Name}], which cannot be cast to the expected type " +
                     $"[{typeof(T).Name}].");
                 return null;

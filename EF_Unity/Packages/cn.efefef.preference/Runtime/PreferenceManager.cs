@@ -37,6 +37,9 @@ namespace EasyFramework.Preference
 
         #region 字段 / Fields
 
+        // 调试日志默认开关（原由全局 EFC.EnableDebug 提供，现下放到各包）
+        private const bool DefaultOpenDebug = true;
+
         // 存储实现，默认 PlayerPrefs，可在启动早期替换
         private IKeyValueStorage _storage;
 
@@ -57,7 +60,7 @@ namespace EasyFramework.Preference
         /// 是否开启调试日志（类型守卫、解密失败等提示）
         /// <para>Whether debug logs are enabled (type guard, decrypt failure notices)</para>
         /// </summary>
-        public bool OpenDebug { get; set; } = EFC.EnableDebug;
+        public bool OpenDebug { get; set; } = DefaultOpenDebug;
 
         #endregion
 

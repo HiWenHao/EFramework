@@ -21,7 +21,7 @@ namespace EasyFramework.Managers.Ui
     /// </summary>
     [Manager(Order = 99400)]
     [Dependency(typeof(AssetsManager))]
-    public partial class UiSystem : MonoSingleton<UiSystem>, ISingleton, IUpdate
+    public partial class UiManager : MonoSingleton<UiManager>, ISingleton, IUpdate
     {
         /// <summary>
         /// UI相机
@@ -29,6 +29,12 @@ namespace EasyFramework.Managers.Ui
         public Camera UICamera { get; private set; }
 
         public bool IsPaused { get; private set; }
+
+        /// <summary>
+        /// 是否开启调试日志
+        /// <para>Whether to enable debug logs</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
 
         private uint _serialId; // 页面序列号
 

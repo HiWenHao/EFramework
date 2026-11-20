@@ -26,6 +26,12 @@ namespace EasyFramework.Managers.Assets
     public class PatchManager : MonoSingleton<PatchManager>, ISingleton
     {
         /// <summary>
+        /// 是否开启调试日志
+        /// <para>Whether to enable debug logs</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
+
+        /// <summary>
         /// 是否使用Yoo
         /// <para>Yoo is in use.</para>
         /// </summary>

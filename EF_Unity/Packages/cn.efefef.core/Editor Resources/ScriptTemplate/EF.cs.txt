@@ -72,7 +72,7 @@ public static class EF
     public static AudioManager Audio => AudioManager.Instance;
 
     /// <summary>UI 管理器<para>UI system manager</para></summary>
-    public static UiSystem UI => UiSystem.Instance;
+    public static UiManager UI => UiManager.Instance;
 
     // /// <summary> 补丁更新管理器（YooAsset）<para>Patch update manager (YooAsset)</para></summary>
     // public static PatchManager Patch => PatchManager.Instance;

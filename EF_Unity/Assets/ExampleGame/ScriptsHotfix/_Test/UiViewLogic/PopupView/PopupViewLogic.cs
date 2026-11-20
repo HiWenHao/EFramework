@@ -44,7 +44,7 @@ namespace EFExample
         {
             if ((_exitTime -= elapse) < 0.0f)
             {
-                UiSystem.Instance.CloseView(this).Forget();
+                UiManager.Instance.CloseView(this).Forget();
                 return;
             }
 

@@ -25,8 +25,7 @@
         "com.code-philosophy.hybridclr": "8.11.0",
         "com.code-philosophy.luban": "1.0.0",
         "com.cysharp.unitask": "2.5.10",
-        "com.unity.nuget.newtonsoft-json": "3.2.1",
-        "com.unity.scriptablebuildpipeline": "1.21.25"
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },
     "cn.efefef.datable": {

@@ -14,7 +14,7 @@ using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Ui
 {
-    public partial class UiSystem
+    public partial class UiManager
     {
         /// <summary>
         /// 关闭 TCloseView 视窗，当 TCloseView 处于 Page 栈顶时，才会同时向实现对应的 <see cref="IUiEnable"/> 接口的 TEnableView 传递参数。
@@ -71,7 +71,7 @@ namespace EasyFramework.Managers.Ui
                 {
                     string enableName = typeof(TEnableView).Name;
                     D.Error(
-                        $"[ UiSystem ] CloseViewAndNotify<{typeof(TCloseView).Name}, {enableName}>: " +
+                        $"[ UiManager ] CloseViewAndNotify<{typeof(TCloseView).Name}, {enableName}>: " +
                         $"But the predecessor is [ {predecessor.GetType().Name} ], not [ {enableName} ]. " +
                         "TEnableView must be the immediate Page predecessor of TCloseView.");
                 }

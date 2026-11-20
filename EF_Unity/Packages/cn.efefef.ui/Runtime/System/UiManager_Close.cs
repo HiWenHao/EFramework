@@ -13,7 +13,7 @@ using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Managers.Ui
 {
-    public partial class UiSystem
+    public partial class UiManager
     {
         /// <summary>
         /// 关闭UI视窗

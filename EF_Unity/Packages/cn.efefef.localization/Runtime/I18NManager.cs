@@ -124,6 +124,12 @@ namespace EasyFramework.Localization
         private bool AutoPersist { get; set; } = true;
 
         /// <summary>
+        /// 是否开启调试日志（装载/格式化失败等提示）
+        /// <para>Whether to enable debug logs (load/format failure notices)</para>
+        /// </summary>
+        public bool OpenDebug { get; set; } = true;
+
+        /// <summary>
         /// 当前语言的译文表是否已在内存（未装载时界面组件保持美术填写的原文）
         /// <para>Whether the current language table is in memory.</para>
         /// </summary>
@@ -170,7 +176,7 @@ namespace EasyFramework.Localization
             _tableHandle = handle;
             _table = table;
             _currentLanguage = language;
-            D.Log($"[ Localization ] 语言表装载完成：{language}（{table.Count} 条）");
+            if (OpenDebug) D.Log($"[ Localization ] 语言表装载完成：{language}（{table.Count} 条）");
             NotifyLanguageChanged(language);
             return true;
         }
@@ -266,7 +272,7 @@ namespace EasyFramework.Localization
             }
             catch (FormatException e)
             {
-                D.Warning($"[ Localization ] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
+                if (OpenDebug) D.Warning($"[ Localization ] 文案格式化失败（key：{key}，参数数：{args.Length}），已返回原文。\n{e.Message}");
                 return raw;
             }
         }
@@ -324,7 +330,7 @@ namespace EasyFramework.Localization
                     return false;
                 }
 
-                D.Warning($"[ Localization ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
+                if (OpenDebug) D.Warning($"[ Localization ] 语言 {language} 加载失败，已回落 {FallbackLanguage}。");
                 if (!await TryApplyAsync(generation, FallbackLanguage)) return false;
             }
 

@@ -19,7 +19,7 @@ namespace EasyFramework.Managers.Ui
     /// UI 系统子面板扩展：动态创建/查询/移除子面板，复用 UiBinding 强类型绑定
     /// <para>Child-view extension: create/query/remove child views reusing UiBinding strong-typed binding.</para>
     /// </summary>
-    public partial class UiSystem
+    public partial class UiManager
     {
         // 父面板下默认的子面板容器节点名
         private const string ChildViewsNodeName = "ChildViews";
@@ -95,7 +95,7 @@ namespace EasyFramework.Managers.Ui
             if (parent == null || parent.View == null)
             {
                 D.Error(
-                    $"[ UiSystem ] AddChild<{typeof(TParent).Name}, {typeof(TChild).Name}> failed: no active parent view.");
+                    $"[ UiManager ] AddChild<{typeof(TParent).Name}, {typeof(TChild).Name}> failed: no active parent view.");
                 return default;
             }
 
@@ -104,7 +104,7 @@ namespace EasyFramework.Managers.Ui
             if (childView == null)
             {
                 D.Error(
-                    $"[ UiSystem ] AddChild<{typeof(TParent).Name}, {typeof(TChild).Name}> failed: could not create child view.");
+                    $"[ UiManager ] AddChild<{typeof(TParent).Name}, {typeof(TChild).Name}> failed: could not create child view.");
                 return default;
             }
 
@@ -132,7 +132,7 @@ namespace EasyFramework.Managers.Ui
             if (node is RectTransform rect)
                 return rect;
             D.Warning(
-                $"[ UiSystem ] ChildViews node not found under [{parentView.name}]; child views will attach to the root.");
+                $"[ UiManager ] ChildViews node not found under [{parentView.name}]; child views will attach to the root.");
             return parentView;
         }
 

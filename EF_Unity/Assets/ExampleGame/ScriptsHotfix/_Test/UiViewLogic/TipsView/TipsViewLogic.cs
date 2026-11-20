@@ -51,19 +51,19 @@ namespace EFExample
         private void OnClickBtn_Close()
         {
             _tipsExtraData.CloseCallBack?.Invoke();
-            UiSystem.Instance.CloseView(this).Forget();
+            UiManager.Instance.CloseView(this).Forget();
         }
 
         private void OnClickBtn_Cancel()
         {
             _tipsExtraData.CancelCallBack?.Invoke();
-            UiSystem.Instance.CloseView(this).Forget();
+            UiManager.Instance.CloseView(this).Forget();
         }
 
         private void OnClickBtn_Confirm()
         {
             _tipsExtraData.ConfirmCallBack?.Invoke();
-            UiSystem.Instance.CloseView(this).Forget();
+            UiManager.Instance.CloseView(this).Forget();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto

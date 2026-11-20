@@ -55,7 +55,7 @@ namespace EFExample
 
         private void OnClickBtn_ToC()
         {
-            UiSystem.Instance.OpenView<UiCView, int>(2).Forget();
+            UiManager.Instance.OpenView<UiCView, int>(2).Forget();
         }
 
         private void OnClickBtn_ToCPop()
@@ -65,13 +65,13 @@ namespace EFExample
 
         private async UniTaskVoid OnClickBtn_ToCPopHelper()
         {
-            await UiSystem.Instance.OpenView<UiCView, int>(1);
-            await UiSystem.Instance.CloseView<UiBView, string>("这是给被关闭的 B 页面所传递的参数");
+            await UiManager.Instance.OpenView<UiCView, int>(1);
+            await UiManager.Instance.CloseView<UiBView, string>("这是给被关闭的 B 页面所传递的参数");
         }
 
         private void OnClickBtn_BackA()
         {
-            UiSystem.Instance.CloseViewAndNotify<UiBView, UiAView, int>(456456465).Forget();
+            UiManager.Instance.CloseViewAndNotify<UiBView, UiAView, int>(456456465).Forget();
         }
 
         private void OnClickBtn_StopAllEffect()

@@ -1,0 +1,21 @@
+{
+    "name": "EF.Datable.Editor",
+    "rootNamespace": "",
+    "references": [
+        "EF.Editor",
+        "EF.Core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

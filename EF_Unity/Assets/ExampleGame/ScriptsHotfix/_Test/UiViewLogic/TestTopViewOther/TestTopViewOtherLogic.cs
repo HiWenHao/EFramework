@@ -32,15 +32,15 @@ namespace EFExample
 
         public async UniTask CloseAll()
         {
-            await UiSystem.Instance.CloseAllView();
-            UiSystem.Instance.OpenView<UiAView>().Forget();
+            await UiManager.Instance.CloseAllView();
+            UiManager.Instance.OpenView<UiAView>().Forget();
         }
 
         #region Button invoke event. Do not change here.不要更改这行 -- Auto
 
         private void OnClickBtn_OpenOne()
         {
-            UiSystem.Instance.OpenView<TestTopView>().Forget();
+            UiManager.Instance.OpenView<TestTopView>().Forget();
         }
 
         private void OnClickBtn_CloseAll()

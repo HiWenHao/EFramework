@@ -65,9 +65,6 @@ public sealed class EFC : MonoBehaviour
     #endregion
 
     #region Properties
-    /// <summary> Whether to enable debug logs. The default setting is yes.<para>是否开启调试日志，默认为是</para></summary>
-    public static bool EnableDebug { get; set; } = true;
-
     /// <summary> The object for EF framework in scene.<para>场景中的EF对象</para></summary>
     public static Transform Managers { get; private set; }
 
@@ -117,7 +114,7 @@ public sealed class EFC : MonoBehaviour
 
         Projects = Resources.Load<ProjectConfig>("Configs/ProjectConfig");
 
-        // 缺了它，UiSystemLogic / DefaultAudioClipLoader 会直接解引用空对象；这里必须点名，
+        // 缺了它，UiManagerLogic / DefaultAudioClipLoader 会直接解引用空对象；这里必须点名，
         // 否则症状只会是业务层的裸 NullReferenceException，与真正原因隔了一层
         if (Projects == null)
         {

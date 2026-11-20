@@ -164,8 +164,8 @@
       "name": "Ui.IsChildTip",
       "desc": "子面板创建方式提示",
       "array": [
-        "Child view: create via UiSystem.AddChild<Parent, Child>(); OpenView is not allowed.",
-        "子面板：请通过 UiSystem.AddChild<父, 子>() 创建，禁止使用 OpenView 独立打开。"
+        "Child view: create via UiManager.AddChild<Parent, Child>(); OpenView is not allowed.",
+        "子面板：请通过 UiManager.AddChild<父, 子>() 创建，禁止使用 OpenView 独立打开。"
       ]
     },
     {

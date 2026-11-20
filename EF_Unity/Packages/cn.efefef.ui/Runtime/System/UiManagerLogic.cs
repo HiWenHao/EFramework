@@ -20,7 +20,7 @@ using Object = UnityEngine.Object;
 
 namespace EasyFramework.Managers.Ui
 {
-    public partial class UiSystem
+    public partial class UiManager
     {
         void ISingleton.Init()
         {
@@ -335,7 +335,7 @@ namespace EasyFramework.Managers.Ui
             if (prefabHandle is not { IsValid: true })
             {
                 prefabHandle?.Dispose();
-                D.Exception($"[ UiSystem ] UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
+                D.Exception($"[ UiManager ] UI Prefab [ {viewName} ] not found in YooAsset or Resources.");
                 return null;
             }
 
@@ -344,7 +344,7 @@ namespace EasyFramework.Managers.Ui
             UiBinding prefabBinding = uiObj.GetComponent<UiBinding>();
             if (prefabBinding == null)
             {
-                D.Error($"[ UiSystem ] UI Prefab [ {viewName} ] not have component < UiBinding >, Please add a UiBinding component.");
+                D.Error($"[ UiManager ] UI Prefab [ {viewName} ] not have component < UiBinding >, Please add a UiBinding component.");
                 return null;
             }
 

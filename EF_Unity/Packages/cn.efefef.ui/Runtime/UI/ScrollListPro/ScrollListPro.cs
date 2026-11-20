@@ -277,7 +277,7 @@ namespace EasyFramework.Managers.Ui
             _contentRect = scrollRect.content;
             if (_contentRect == null)
             {
-                D.Error("[ UiSystem ] [ ScrollListPro ] ScrollRect.Content is null.");
+                D.Error("[ UiManager ] [ ScrollListPro ] ScrollRect.Content is null.");
                 return;
             }
 
@@ -353,7 +353,7 @@ namespace EasyFramework.Managers.Ui
 
             if (stripped)
                 D.Warning(
-                    "[ UiSystem ] [ ScrollListPro ] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
+                    "[ UiManager ] [ ScrollListPro ] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
                     "本组件手动管理 content 布局，这些组件会导致定位异常。");
         }
 
@@ -1594,7 +1594,7 @@ namespace EasyFramework.Managers.Ui
         [ContextMenu("Debug/Log Layout Info")]
         public void DebugLogLayoutInfo()
         {
-            D.Log("[ UiSystem ] [ ScrollListPro ] " +
+            D.Log("[ UiManager ] [ ScrollListPro ] " +
                   $"Total={_itemSizes.Count} " +
                   $"Active={_activeItems.Count} " +
                   $"PoolInit={_poolInitialized} " +
@@ -1612,7 +1612,7 @@ namespace EasyFramework.Managers.Ui
             if (_contentRect != null)
             {
                 D.Log(
-                    $"[ UiSystem ] [ ScrollListPro ] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
+                    $"[ UiManager ] [ ScrollListPro ] Content anchor=({_contentRect.anchorMin.x:F2},{_contentRect.anchorMin.y:F2})-({_contentRect.anchorMax.x:F2},{_contentRect.anchorMax.y:F2}) pivot=({_contentRect.pivot.x:F2},{_contentRect.pivot.y:F2}) sizeDelta=({_contentRect.sizeDelta.x:F1},{_contentRect.sizeDelta.y:F1})");
             }
 
             // 逐 item 诊断
@@ -1635,7 +1635,7 @@ namespace EasyFramework.Managers.Ui
                     paddingInfo =
                         $" VLGPad=({lg.padding.left},{lg.padding.right},{lg.padding.top},{lg.padding.bottom})";
 
-                D.Log($"[ UiSystem ] [ ScrollListPro ] idx={item.Index} " +
+                D.Log($"[ UiManager ] [ ScrollListPro ] idx={item.Index} " +
                       $"pos={actualPos:F1}(expect={expectedPos:F1},diff={diff:F1}) " +
                       $"sizeDelta={sizeDelta:F1} rectH={rectSize:F1} _itemSize={_itemSizes[item.Index]:F1}" +
                       $"{paddingInfo}");
@@ -1647,7 +1647,7 @@ namespace EasyFramework.Managers.Ui
             var lg2 = _contentRect.GetComponent<LayoutGroup>();
             if (csf != null || lg2 != null)
                 D.Error(
-                    $"[ UiSystem ] [ ScrollListPro ] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg2 != null} — 这会导致定位异常。");
+                    $"[ UiManager ] [ ScrollListPro ] ⚠️ Content 上检测到冲突组件！CSF={csf != null} LayoutGroup={lg2 != null} — 这会导致定位异常。");
         }
 #endif
     }

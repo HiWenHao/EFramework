@@ -36,8 +36,8 @@ namespace EFExample
 
         private void OnClickBtn_Login()
         {
-            UiSystem.Instance.OpenView<CahtView>().Forget();
-            UiSystem.Instance.OpenView<BottomSubfieldView>().Forget();
+            UiManager.Instance.OpenView<CahtView>().Forget();
+            UiManager.Instance.OpenView<BottomSubfieldView>().Forget();
         }
 
         #endregion button invoke event. Do not change here.不要更改这行 -- Auto
