@@ -21,6 +21,7 @@ namespace EasyFramework.Systems.RedDot
     {
         private readonly HashSet<RedDotNode> _dirtyNodes = new(); // 脏节点集合
         private readonly List<RedDotNode> _processingBuffer = new(); // 复用缓冲，避免每帧 GC
+        private bool _isFlushing; // 防止 Refresh 回调内重入 Flush 污染共享 buffer
 
         /// <summary>
         /// 将节点标记为脏（需要刷新）
@@ -60,26 +61,33 @@ namespace EasyFramework.Systems.RedDot
         /// </summary>
         public void Flush()
         {
+            if (_isFlushing)
+                return;
+
             if (_dirtyNodes.Count == 0)
                 return;
 
-            // 复用 buffer，避免每帧分配新 List
-            _processingBuffer.Clear();
-            foreach (var node in _dirtyNodes)
-                _processingBuffer.Add(node);
-            _dirtyNodes.Clear();
-
-            _processingBuffer.Sort((a, b) => b.Depth.CompareTo(a.Depth));
-
-            for (int i = 0; i < _processingBuffer.Count; i++)
+            _isFlushing = true;
+            try
             {
-                // 快照期间节点可能已被注销：跳过已释放节点，避免访问其清空后的子节点/父节点状态
-                var node = _processingBuffer[i];
-                if (!node.IsDisposed)
-                    node.Refresh();
-            }
+                _processingBuffer.Clear();
+                foreach (var node in _dirtyNodes)
+                    _processingBuffer.Add(node);
+                _dirtyNodes.Clear();
 
-            _processingBuffer.Clear();
+                _processingBuffer.Sort((a, b) => b.Depth.CompareTo(a.Depth));
+
+                foreach (var node in _processingBuffer)
+                {
+                    if (!node.IsDisposed)
+                        node.Refresh();
+                }
+            }
+            finally
+            {
+                _processingBuffer.Clear();
+                _isFlushing = false;
+            }
         }
     }
 }

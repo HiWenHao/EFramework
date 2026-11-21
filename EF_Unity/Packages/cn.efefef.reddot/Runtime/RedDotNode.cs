@@ -202,7 +202,7 @@ namespace EasyFramework.Systems.RedDot
             if (Parent == parent)
                 return;
 
-            if (parent != null && parent.IsChildOf(this))
+            if (parent == this || (parent != null && parent.IsChildOf(this)))
             {
                 D.Error($"RedDot Cycle Detected : {Key}");
                 return;

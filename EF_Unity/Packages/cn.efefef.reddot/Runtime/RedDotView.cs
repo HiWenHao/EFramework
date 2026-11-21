@@ -100,7 +100,8 @@ namespace EasyFramework.Systems.RedDot
         // 异步刷新所有渲染器（每个渲染器内部根据 node.Number 自行决定显隐）
         private async UniTask RefreshAsync(RedDotNode node)
         {
-            foreach (var render in _activeRenderers)
+            var activeRenderers = new List<RedDotRendererBase>(_activeRenderers);
+            foreach (var render in activeRenderers)
             {
                 if (_destroyed) return;
                 try
