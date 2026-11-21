@@ -13,7 +13,7 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点数字渲染器（TextMeshPro 版），超过 maxDisplay 显示 "max+"

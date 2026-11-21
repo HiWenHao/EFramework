@@ -13,7 +13,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点渲染器：显示图片（Image类型）

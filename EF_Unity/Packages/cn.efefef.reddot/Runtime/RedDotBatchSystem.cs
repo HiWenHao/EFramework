@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 批处理系统：支持批量修改后统一刷新

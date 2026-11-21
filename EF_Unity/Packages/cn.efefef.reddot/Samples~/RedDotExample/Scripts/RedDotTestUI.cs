@@ -11,7 +11,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using EasyFramework.Systems.RedDot;
+using EasyFramework.RedDot;
 
 namespace EasyFramework.Test.RedDot
 {

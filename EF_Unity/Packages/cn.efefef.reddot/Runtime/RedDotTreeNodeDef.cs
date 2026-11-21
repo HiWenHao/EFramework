@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点树节点定义（数据驱动注册用）

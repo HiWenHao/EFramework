@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点事件系统：发布节点变更事件

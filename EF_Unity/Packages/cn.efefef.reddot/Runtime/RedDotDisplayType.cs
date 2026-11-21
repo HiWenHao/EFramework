@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点展示类型

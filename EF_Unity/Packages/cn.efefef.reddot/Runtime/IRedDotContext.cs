@@ -13,7 +13,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点系统共享上下文：暴露节点与渲染器所需的子系统能力

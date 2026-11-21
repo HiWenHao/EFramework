@@ -12,7 +12,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.RedDot
+namespace EasyFramework.RedDot
 {
     /// <summary>
     /// 红点渲染器基类：所有渲染器继承此类

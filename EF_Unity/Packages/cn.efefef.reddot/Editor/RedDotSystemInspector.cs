@@ -16,7 +16,7 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Systems.RedDot.Editor
+namespace EasyFramework.RedDot
 {
     [CustomEditor(typeof(RedDotSystem))]
     public class RedDotSystemInspector : UnityEditor.Editor

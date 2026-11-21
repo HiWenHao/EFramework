@@ -10,7 +10,7 @@
  */
 
 using EasyFramework.Edit;
-using EasyFramework.Systems.RedDot;
+using EasyFramework.RedDot;
 using UnityEngine;
 
 namespace EasyFramework.Test.RedDot
