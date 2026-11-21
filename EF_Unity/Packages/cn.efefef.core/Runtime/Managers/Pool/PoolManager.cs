@@ -13,9 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Pool;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework
 {
     /// <summary>
     /// 池系统，负责初始化、获取和回收所有类型的池对象，并驱动空闲超时销毁。

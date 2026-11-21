@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 流程进入事件（当新流程实例被创建并即将执行 OnEnter 时发布）

@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 流程执行结果（用于 StartSubProcedureAndWait 返回）

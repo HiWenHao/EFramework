@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 单流程实例

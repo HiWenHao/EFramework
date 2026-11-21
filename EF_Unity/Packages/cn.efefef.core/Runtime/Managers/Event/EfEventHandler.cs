@@ -11,14 +11,14 @@
 
 using System;
 
-namespace EasyFramework.Managers.Event
+namespace EasyFramework.Events
 {
     /// <summary>
     /// 泛型同步处理器包装，直接持有强类型委托避免装箱
     /// <para>Generic synchronous handler wrapper, holding a strongly-typed delegate to avoid boxing</para>
     /// </summary>
     /// <typeparam name="T">事件类型<para>Event type</para></typeparam>
-    internal sealed class EventHandler<T> where T : struct
+    internal sealed class EfEventHandler<T> where T : struct
     {
         /// <summary>
         /// 强类型委托，直接调用无需装箱拆箱

@@ -16,7 +16,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework.Pool
 {
     /// <summary>
     /// GameObject 对象池，实现 IPool(GameObject)  和 IClearablePool。

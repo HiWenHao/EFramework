@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EasyFramework.Managers.Event
+namespace EasyFramework.Events
 {
     /// <summary>
     /// 类型无关的订阅容器接口，供字典持有与跨类型批量操作
@@ -40,8 +40,8 @@ namespace EasyFramework.Managers.Event
     /// <typeparam name="T">事件类型<para>Event type</para></typeparam>
     internal sealed class EventSubscriptions<T> : IEventSubscriptions where T : struct
     {
-        public readonly List<EventHandler<T>> SyncHandlers = new();
-        public readonly List<EventAsyncHandler<T>> AsyncHandlers = new();
+        public readonly List<EfEventHandler<T>> SyncHandlers = new();
+        public readonly List<EfEventAsyncHandler<T>> AsyncHandlers = new();
 
         /// <summary>
         /// 是否没有处理器
@@ -121,28 +121,31 @@ namespace EasyFramework.Managers.Event
     /// <typeparam name="T">事件类型<para>Event type</para></typeparam>
     internal sealed class EventHandlersSnapshot<T> where T : struct
     {
-        private EventHandler<T>[] _sync = new EventHandler<T>[4];
-        private EventAsyncHandler<T>[] _async = new EventAsyncHandler<T>[4];
+        private EfEventHandler<T>[] _sync = new EfEventHandler<T>[4];
+        private EfEventAsyncHandler<T>[] _async = new EfEventAsyncHandler<T>[4];
 
         // 同步处理器数组
-        public EventHandler<T>[] Sync => _sync;
+        public EfEventHandler<T>[] Sync => _sync;
+
         // 异步处理器数组
-        public EventAsyncHandler<T>[] Async => _async;
+        public EfEventAsyncHandler<T>[] Async => _async;
+
         // 有效同步处理器数量
         public int SyncCount { get; private set; }
+
         // 有效异步处理器数量
         public int AsyncCount { get; private set; }
 
         // 用处理器列表填充快照，容量不足时按 2 倍扩容
-        public void FillFrom(List<EventHandler<T>> sync, List<EventAsyncHandler<T>> asyncList)
+        public void FillFrom(List<EfEventHandler<T>> sync, List<EfEventAsyncHandler<T>> asyncList)
         {
             SyncCount = sync.Count;
             AsyncCount = asyncList.Count;
 
             if (_sync.Length < SyncCount)
-                _sync = new EventHandler<T>[GetCapacity(SyncCount)];
+                _sync = new EfEventHandler<T>[GetCapacity(SyncCount)];
             if (_async.Length < AsyncCount)
-                _async = new EventAsyncHandler<T>[GetCapacity(AsyncCount)];
+                _async = new EfEventAsyncHandler<T>[GetCapacity(AsyncCount)];
 
             for (int i = 0; i < SyncCount; i++)
                 _sync[i] = sync[i];
@@ -189,7 +192,7 @@ namespace EasyFramework.Managers.Event
     /// 池化的 Type 列表类型，用于分组批量取消
     /// <para>Pooled Type list type, used for group batch unsubscription</para>
     /// </summary>
-    internal sealed class EventTypeList : List<System.Type>
+    internal sealed class EventTypeList : List<Type>
     {
     }
 }

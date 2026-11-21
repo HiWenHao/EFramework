@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework.Pool
 {
     /// <summary>
     /// 通用对象池，可用于任何 class 类型。内部使用 ConcurrentStack 实现，可在多线程环境使用。

@@ -14,7 +14,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using EasyFramework.Managers;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -130,42 +129,47 @@ public sealed class EFC : MonoBehaviour
     private void Update()
     {
         if (!_inRunning) return;
+        // 锁内取快照、锁外执行回调：回调内 Register/Unregister 会重入修改列表，
+        // 若持锁按原列表索引遍历会导致错位/漏更新；快照同时缩短锁持有时间
+        IUpdate[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _updater.Count; i++)
-            {
-                var updater = _updater[i];
-                if (updater.IsPaused) continue;
-                updater.Update(Time.deltaTime, Time.unscaledDeltaTime);
-            }
+            snapshot = _updater.ToArray();
+        }
+        foreach (var updater in snapshot)
+        {
+            if (updater.IsPaused) continue;
+            updater.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
 
     private void FixedUpdate()
     {
         if (!_inRunning) return;
+        IFixedUpdate[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _fixedUpdaters.Count; i++)
-            {
-                var fixedUpdater = _fixedUpdaters[i];
-                if (fixedUpdater.IsPaused) continue;
-                fixedUpdater.FixedUpdate(Time.fixedDeltaTime);
-            }
+            snapshot = _fixedUpdaters.ToArray();
+        }
+        foreach (var fixedUpdater in snapshot)
+        {
+            if (fixedUpdater.IsPaused) continue;
+            fixedUpdater.FixedUpdate(Time.fixedDeltaTime);
         }
     }
 
     private void LateUpdate()
     {
         if (!_inRunning) return;
+        ILateUpdate[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _lateUpdaters.Count; i++)
-            {
-                var lateUpdater = _lateUpdaters[i];
-                if (lateUpdater.IsPaused) continue;
-                lateUpdater.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
-            }
+            snapshot = _lateUpdaters.ToArray();
+        }
+        foreach (var lateUpdater in snapshot)
+        {
+            if (lateUpdater.IsPaused) continue;
+            lateUpdater.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
 
@@ -175,26 +179,28 @@ public sealed class EFC : MonoBehaviour
     private void OnApplicationPause(bool paused)
     {
         if (!_inRunning) return;
+        IOnAppPause[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _pauseListeners.Count; i++)
-            {
-                var listener = _pauseListeners[i];
-                listener.OnAppPause(paused);
-            }
+            snapshot = _pauseListeners.ToArray();
+        }
+        foreach (var aooPause in snapshot)
+        {
+            aooPause.OnAppPause(paused);
         }
     }
 
     private void OnApplicationFocus(bool focused)
     {
         if (!_inRunning) return;
+        IOnAppFocus[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _focusListeners.Count; i++)
-            {
-                var listener = _focusListeners[i];
-                listener.OnAppFocus(focused);
-            }
+            snapshot = _focusListeners.ToArray();
+        }
+        foreach (var appFocus in snapshot)
+        {
+            appFocus.OnAppFocus(focused);
         }
     }
 
@@ -202,13 +208,14 @@ public sealed class EFC : MonoBehaviour
     private void OnLowMemory()
     {
         if (!_inRunning) return;
+        IOnLowMemory[] snapshot;
         lock (LockObj)
         {
-            for (var i = 0; i < _lowMemoryListeners.Count; i++)
-            {
-                var listener = _lowMemoryListeners[i];
-                listener.OnLowMemory();
-            }
+            snapshot = _lowMemoryListeners.ToArray();
+        }
+        foreach (var lowMemory in snapshot)
+        {
+            lowMemory.OnLowMemory();
         }
     }
 
@@ -314,9 +321,15 @@ public sealed class EFC : MonoBehaviour
                 return;
         }
 
-        if (!_resolvingSet.Add(managerType))
-            D.Exception(
-                $"[EasyFramework] Circular dependency detected: {managerType.Name} is already in the resolution chain.");
+        lock (LockObj)
+        {
+            if (!_resolvingSet.Add(managerType))
+            {
+                D.Exception(
+                    $"[EasyFramework] Circular dependency detected: [ {managerType.Name} ] is already in the resolution chain.");
+                return;
+            }
+        }
 
         object[] attributes = managerType.GetCustomAttributes(typeof(DependencyAttribute), false);
         List<Type> dependencies = new List<Type>();
@@ -343,7 +356,10 @@ public sealed class EFC : MonoBehaviour
             GetOrCreateSingletonByType(dep);
         }
 
-        _resolvingSet.Remove(managerType);
+        lock (LockObj)
+        {
+            _resolvingSet.Remove(managerType);
+        }
     }
 
     /// <summary>

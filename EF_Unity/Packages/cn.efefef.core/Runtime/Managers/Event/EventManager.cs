@@ -14,9 +14,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Pool;
+using EasyFramework.Events;
+using UnityEngine;
 
-namespace EasyFramework.Managers.Event
+namespace EasyFramework
 {
     /// <summary>
     /// 事件服务实现——类型安全、支持分组、延迟发送、异步等待
@@ -243,7 +244,7 @@ namespace EasyFramework.Managers.Event
         }
 
         // 移除同步处理器（供令牌从外部调用，内部自行加锁）
-        internal void RemoveHandler<T>(Type eventType, EventHandler<T> handler) where T : struct
+        internal void RemoveHandler<T>(Type eventType, EfEventHandler<T> handler) where T : struct
         {
             lock (_gate)
             {
@@ -257,7 +258,7 @@ namespace EasyFramework.Managers.Event
         }
 
         // 移除异步处理器（供令牌从外部调用，内部自行加锁）
-        internal void RemoveAsyncHandler<T>(Type eventType, EventAsyncHandler<T> asyncHandler) where T : struct
+        internal void RemoveAsyncHandler<T>(Type eventType, EfEventAsyncHandler<T> asyncHandler) where T : struct
         {
             lock (_gate)
             {
@@ -305,7 +306,7 @@ namespace EasyFramework.Managers.Event
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
             var eventType = typeof(T);
-            var h = new EventHandler<T>
+            var h = new EfEventHandler<T>
             {
                 Action = handler,
                 Group = group
@@ -333,7 +334,7 @@ namespace EasyFramework.Managers.Event
             if (asyncHandler == null)
                 throw new ArgumentNullException(nameof(asyncHandler));
             var eventType = typeof(T);
-            var ah = new EventAsyncHandler<T>
+            var ah = new EfEventAsyncHandler<T>
             {
                 Func = asyncHandler,
                 Group = group

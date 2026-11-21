@@ -15,7 +15,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 单流程基类

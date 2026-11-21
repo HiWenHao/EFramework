@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 流程状态

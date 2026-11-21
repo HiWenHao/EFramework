@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework.Pool
 {
     /// <summary>
     /// GameObject 对象池接口，扩展自 IPool&lt;GameObject&gt;

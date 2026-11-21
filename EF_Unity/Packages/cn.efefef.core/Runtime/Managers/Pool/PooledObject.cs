@@ -16,7 +16,7 @@
 using UnityEngine;
 using System.Diagnostics;
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework.Pool
 {
     /// <summary>
     /// 池化对象组件，每个通过池生成的 GameObject 都会附带此组件。

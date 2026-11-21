@@ -20,7 +20,7 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Procedure.Editor
+namespace EasyFramework.Procedure
 {
     [CustomEditor(typeof(ProcedureManager))]
     public class ProcedureManagerInspector : EFInspectorBase<ProcedureManager>

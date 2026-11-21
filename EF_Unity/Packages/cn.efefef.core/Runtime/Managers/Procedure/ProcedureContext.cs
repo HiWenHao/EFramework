@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 单流程的上下文

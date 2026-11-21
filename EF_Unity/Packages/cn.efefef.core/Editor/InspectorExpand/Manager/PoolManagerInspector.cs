@@ -19,7 +19,7 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Pool.Editor
+namespace EasyFramework.Pool.Editor
 {
     [CustomEditor(typeof(PoolManager))]
     public class PoolManagerInspector : EFInspectorBase<PoolManager>

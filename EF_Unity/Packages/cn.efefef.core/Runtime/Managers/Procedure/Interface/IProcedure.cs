@@ -12,7 +12,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 流程节点接口

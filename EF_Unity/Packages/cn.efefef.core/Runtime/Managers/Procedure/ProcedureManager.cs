@@ -14,11 +14,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Event;
-using EasyFramework.Managers.Pool;
+using EasyFramework.Procedure;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Procedure
+namespace EasyFramework
 {
     /// <summary>
     /// 流程系统
@@ -67,9 +66,9 @@ namespace EasyFramework.Managers.Procedure
             _factories = new Dictionary<Type, Func<IProcedure>>();
             _pendingExits = new ConcurrentQueue<ProcedureInstance>();
             
-            Pool.PoolManager.Instance.CreateObjectPool(4096, () => new ProcedureContext(), x => x.Reset());
-            Pool.PoolManager.Instance.CreateObjectPool(4096, () => new ProcedureInstance(), x => x.Reset());
-            Pool.PoolManager.Instance.CreateObjectPool(4096, () => new Dictionary<string, object>(8), x => x.Clear());
+            PoolManager.Instance.CreateObjectPool(4096, () => new ProcedureContext(), x => x.Reset());
+            PoolManager.Instance.CreateObjectPool(4096, () => new ProcedureInstance(), x => x.Reset());
+            PoolManager.Instance.CreateObjectPool(4096, () => new Dictionary<string, object>(8), x => x.Clear());
         }
 
         //  驱动当前活动流程并处理待退出队列
@@ -113,13 +112,13 @@ namespace EasyFramework.Managers.Procedure
                     if (inst.Context != null)
                     {
                         inst.Context.IsDisposed = true;
-                        Pool.PoolManager.Instance.ReturnToPool(inst.Context);
+                        PoolManager.Instance.ReturnToPool(inst.Context);
                         inst.Context = null;
                     }
 
                     if (inst.Params != null)
                     {
-                        Pool.PoolManager.Instance.ReturnToPool(inst.Params);
+                        PoolManager.Instance.ReturnToPool(inst.Params);
                         inst.Params = null;
                     }
                 }
@@ -129,7 +128,7 @@ namespace EasyFramework.Managers.Procedure
                 if (inst.State != ProcedureState.None)
                 {
                     inst.Reset();
-                    Pool.PoolManager.Instance.ReturnToPool(inst);
+                    PoolManager.Instance.ReturnToPool(inst);
                 }
             }
             _instanceStack.Clear();
@@ -238,7 +237,7 @@ namespace EasyFramework.Managers.Procedure
             if (parentInst.State == ProcedureState.Suspended)
             {
                 parentInst.State = ProcedureState.Active;
-                Event.EventManager.Instance.Publish(new ProcedureResumeEvent(parentInst.Uid, parentInst.ProcedureType, parentInst.Depth));
+                EventManager.Instance.Publish(new ProcedureResumeEvent(parentInst.Uid, parentInst.ProcedureType, parentInst.Depth));
             }
 
             return new ProcedureResult(false, ProcedureExitType.NotRegistered);
@@ -323,7 +322,7 @@ namespace EasyFramework.Managers.Procedure
             try
             {
                 // ------ 阶段1：创建与入栈（任何异常都视为未启动，需清理并返回 false）------
-                inst = Pool.PoolManager.Instance.GetFromPool<ProcedureInstance>();
+                inst = PoolManager.Instance.GetFromPool<ProcedureInstance>();
                 inst.Uid = _nextUid++;
                 inst.ParentUid = parentUid;
                 inst.Depth = newDepth;
@@ -333,7 +332,7 @@ namespace EasyFramework.Managers.Procedure
                 inst.CompletionSource = new UniTaskCompletionSource();
                 inst.ResultSource = resultSource;
 
-                paramDict = Pool.PoolManager.Instance.GetFromPool<Dictionary<string, object>>();
+                paramDict = PoolManager.Instance.GetFromPool<Dictionary<string, object>>();
                 paramDict.Clear();
                 if (parameters != null)
                 {
@@ -342,7 +341,7 @@ namespace EasyFramework.Managers.Procedure
                 }
                 inst.Params = paramDict;
 
-                ctx = Pool.PoolManager.Instance.GetFromPool<ProcedureContext>();
+                ctx = PoolManager.Instance.GetFromPool<ProcedureContext>();
                 ctx.Uid = inst.Uid;
                 ctx.ParentUid = parentUid;
                 ctx.Depth = newDepth;
@@ -359,7 +358,7 @@ namespace EasyFramework.Managers.Procedure
                 pushed = true;
 
                 // ------ 阶段2：进入异步逻辑（已入栈，异常通过退出流程处理）------
-                Event.EventManager.Instance.Publish(new ProcedureEnterEvent(inst.Uid, parentUid, targetType, newDepth));
+                EventManager.Instance.Publish(new ProcedureEnterEvent(inst.Uid, parentUid, targetType, newDepth));
                 
                 TimeoutAsync(inst.Uid, inst.RuntimeVersion, inst.EnterTimeoutCts.Token).Forget(Exception);
 
@@ -369,7 +368,7 @@ namespace EasyFramework.Managers.Procedure
                 {
                     inst.State = ProcedureState.Active;
                     CancelTimeoutSafe(inst);
-                    Event.EventManager.Instance.Publish(new ProcedureActivateEvent(inst.Uid, targetType, newDepth));
+                    EventManager.Instance.Publish(new ProcedureActivateEvent(inst.Uid, targetType, newDepth));
                 }
             }
             catch (OperationCanceledException e)
@@ -423,16 +422,16 @@ namespace EasyFramework.Managers.Procedure
             if (ctx != null)
             {
                 ctx.IsDisposed = true;
-                Pool.PoolManager.Instance.ReturnToPool(ctx);
+                PoolManager.Instance.ReturnToPool(ctx);
             }
             if (paramDict != null)
             {
-                Pool.PoolManager.Instance.ReturnToPool(paramDict);
+                PoolManager.Instance.ReturnToPool(paramDict);
             }
 
             if (inst == null) return;
             inst.Reset();
-            Pool.PoolManager.Instance.ReturnToPool(inst);
+            PoolManager.Instance.ReturnToPool(inst);
         }
 
         // 挂起指定实例（暂停更新）
@@ -443,7 +442,7 @@ namespace EasyFramework.Managers.Procedure
 
             inst.State = ProcedureState.Suspended;
             CancelTimeoutSafe(inst);
-            Event.EventManager.Instance.Publish(new ProcedureSuspendEvent(inst.Uid, inst.ProcedureType, inst.Depth));
+            EventManager.Instance.Publish(new ProcedureSuspendEvent(inst.Uid, inst.ProcedureType, inst.Depth));
         }
 
         // 请求退出指定实例（加入待退出队列）
@@ -524,7 +523,7 @@ namespace EasyFramework.Managers.Procedure
                     inst.ExitReason = defaultReason;
                 
                 CancelTimeoutSafe(inst);
-                Event.EventManager.Instance.Publish(new ProcedureExitEvent(inst.Uid, inst.ProcedureType, inst.Depth));
+                EventManager.Instance.Publish(new ProcedureExitEvent(inst.Uid, inst.ProcedureType, inst.Depth));
 
                 try
                 {
@@ -570,19 +569,19 @@ namespace EasyFramework.Managers.Procedure
             if (inst.Context != null)
             {
                 inst.Context.IsDisposed = true;
-                Pool.PoolManager.Instance.ReturnToPool(inst.Context);
+                PoolManager.Instance.ReturnToPool(inst.Context);
                 inst.Context = null;
             }
             if (inst.Params != null)
             {
-                Pool.PoolManager.Instance.ReturnToPool(inst.Params);
+                PoolManager.Instance.ReturnToPool(inst.Params);
                 inst.Params = null;
             }
 
             if (inst.State != ProcedureState.None)
             {
                 inst.Reset();
-                Pool.PoolManager.Instance.ReturnToPool(inst);
+                PoolManager.Instance.ReturnToPool(inst);
             }
 
             if (!_isClearing && _instanceStack.Count > 0)
@@ -594,7 +593,7 @@ namespace EasyFramework.Managers.Procedure
                     if (parent.ExitState == 0 && parent.State == ProcedureState.Suspended)
                     {
                         parent.State = ProcedureState.Active;
-                        Event.EventManager.Instance.Publish(new ProcedureResumeEvent(parent.Uid, parent.ProcedureType, parent.Depth));
+                        EventManager.Instance.Publish(new ProcedureResumeEvent(parent.Uid, parent.ProcedureType, parent.Depth));
                     }
                 }
             }
@@ -610,7 +609,7 @@ namespace EasyFramework.Managers.Procedure
                 {
                     _instanceStack.Pop();
                     top.Reset();
-                    Pool.PoolManager.Instance.ReturnToPool(top);
+                    PoolManager.Instance.ReturnToPool(top);
                 }
                 else
                 {
@@ -633,7 +632,7 @@ namespace EasyFramework.Managers.Procedure
                 if (inst.State != ProcedureState.Entering) return;
 
                 // 超时：不再设置 Timeout 状态（已移除），而是直接发布事件并请求退出
-                Event.EventManager.Instance.Publish(new ProcedureTimeoutEvent(inst.Uid, inst.ProcedureType, inst.Depth));
+                EventManager.Instance.Publish(new ProcedureTimeoutEvent(inst.Uid, inst.ProcedureType, inst.Depth));
                 RequestExit(inst, ProcedureExitType.Timeout);
             }
             catch (OperationCanceledException) { }

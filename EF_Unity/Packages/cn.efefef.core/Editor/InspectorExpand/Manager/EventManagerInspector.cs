@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using EasyFramework.Edit;
 
-namespace EasyFramework.Managers.Event.Editor
+namespace EasyFramework.Events.Editor
 {
     /// <summary>
     /// 事件管理器监控面板

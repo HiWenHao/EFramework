@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Managers
+namespace EasyFramework
 {
     /// <summary>
     /// 标记一个单例类的的优先级 - 数值越大更新越靠前，退出越靠后， 默认为 0

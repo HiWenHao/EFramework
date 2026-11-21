@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Managers.Pool
+namespace EasyFramework.Pool
 {
     /// <summary>
     /// 对象池清空接口

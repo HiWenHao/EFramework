@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Managers.Event
+namespace EasyFramework.Events
 {
     /// <summary>
     /// 可Dispose的泛型订阅令牌，Dispose时移除自身
@@ -21,18 +21,18 @@ namespace EasyFramework.Managers.Event
     internal sealed class EventSubscriptionToken<T> : IDisposable where T : struct
     {
         private readonly Type _eventType;
-        private readonly EventHandler<T> _handler;
-        private readonly EventAsyncHandler<T> _asyncHandler;
+        private readonly EfEventHandler<T> _handler;
+        private readonly EfEventAsyncHandler<T> _asyncHandler;
         private bool _disposed;
 
-        public EventSubscriptionToken(Type eventType, EventHandler<T> handler)
+        public EventSubscriptionToken(Type eventType, EfEventHandler<T> handler)
         {
             _eventType = eventType;
             _handler = handler;
             _asyncHandler = null;
         }
 
-        public EventSubscriptionToken(Type eventType, EventAsyncHandler<T> asyncHandler)
+        public EventSubscriptionToken(Type eventType, EfEventAsyncHandler<T> asyncHandler)
         {
             _eventType = eventType;
             _handler = null;
