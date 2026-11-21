@@ -38,7 +38,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         /// <param name="createLabel">创建按钮文案<para>The create button label.</para></param>
         /// <param name="persistent">是否保存到 Runtime 配置目录（否则 Edit 目录）<para>Whether to save into the runtime config folder.</para></param>
         /// <returns>用户点击并创建了资产则返回该资产，否则 null<para>The created asset when the user clicked, otherwise null.</para></returns>
-        protected T DrawMissingConfigGuide<T>(string message, string createLabel, bool persistent = true) where T : ScriptableObject
+        protected T DrawMissingConfigGuide<T>(string message, string createLabel, bool persistent = true) where T : ScriptableObject, new()
         {
             EditorGUILayout.Space(12f);
             EditorGUILayout.HelpBox(message, MessageType.Warning);
@@ -47,7 +47,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 return null;
 
             string folder = persistent ? ConfigManager.ConfigRuntimePath : ConfigManager.ConfigEditPath;
-            T asset = Create.CreateSettings.Instance<T>(true, folder);
+            T asset = ConfigManager.Get<T>(folder);
             EditorGUIUtility.PingObject(asset);
             return asset;
         }
