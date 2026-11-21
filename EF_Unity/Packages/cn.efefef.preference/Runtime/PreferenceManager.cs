@@ -305,8 +305,11 @@ namespace EasyFramework.Preference
 
             _types[key] = typeof(T);
 
-            GetProperty(key, raw).Value = raw;
+            // 先落盘再通知：Value setter 会同步触发 Bind 回调，若回调内重入 Set 同键，
+            // 旧顺序会用外层旧值覆盖内层新值，导致内存与存储不一致（重启读回旧值）
+            var property = GetProperty(key, raw);
             _storage.SetString(key, Encrypt(raw));
+            property.Value = raw;
         }
 
         /// <summary>

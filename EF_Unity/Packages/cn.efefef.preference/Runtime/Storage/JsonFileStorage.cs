@@ -9,6 +9,7 @@
  * ===============================================
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -49,6 +50,9 @@ namespace EasyFramework.Preference
         // 是否有未落盘的变更
         private bool _dirty;
 
+        // 读取失败/回退空缓存标记：Flush 覆盖前先备份损坏文件，避免静默抹掉尚可恢复的数据
+        private bool _loadFailed;
+
         #endregion
 
         #region 方法 / Methods
@@ -76,12 +80,29 @@ namespace EasyFramework.Preference
             if (!File.Exists(_filePath))
                 return _cache;
 
-            var file = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(_filePath));
-            if (file?.PreferenceItems == null)
-                return _cache;
+            // 文件损坏（截断/外部误编辑）、被占用或无权限时，回退空缓存而不是崩溃——
+            // EnsureCache 是 Get/Set/Flush 的公共入口，异常上抛会让偏好系统整体不可用，
+            // 且 Quit 中的 Flush 抛异常会中断退出流程
+            try
+            {
+                var file = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(_filePath));
+                if (file?.PreferenceItems == null)
+                {
+                    _loadFailed = true; // 结构无效，Flush 前需备份原文件
+                    return _cache;
+                }
 
-            foreach (var item in file.PreferenceItems)
-                _cache[item.Key] = JsonConvert.SerializeObject(item.Value);
+                foreach (var item in file.PreferenceItems)
+                {
+                    if (string.IsNullOrEmpty(item.Key)) continue; // 损坏条目：跳过而非抛 ArgumentNullException
+                    _cache[item.Key] = JsonConvert.SerializeObject(item.Value);
+                }
+            }
+            catch (Exception e)
+            {
+                _loadFailed = true;
+                Debug.LogError($"[JsonFileStorage] 读取 {_filePath} 失败，已回退空缓存：{e.Message}");
+            }
             return _cache;
         }
 
@@ -158,9 +179,29 @@ namespace EasyFramework.Preference
             }
 
             // 幂等创建根目录，避免首次落盘因目录不存在而失败
-            Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
-            File.WriteAllText(_filePath, JsonConvert.SerializeObject(file, Formatting.Indented));
-            _dirty = false;
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
+
+                // 之前读取失败回退了空缓存，这次 Flush 会用空数据整体覆盖原文件；
+                // 覆盖前备份损坏文件，保留手动恢复的可能（只备份一次）
+                if (_loadFailed && File.Exists(_filePath))
+                {
+                    string backup = $"{_filePath}.corrupt.{DateTime.Now:yyyyMMddHHmmss}";
+                    File.Copy(_filePath, backup, true);
+                    Debug.LogWarning($"[JsonFileStorage] 已备份读取失败的文件到 {backup}");
+                    _loadFailed = false;
+                }
+
+                File.WriteAllText(_filePath, JsonConvert.SerializeObject(file, Formatting.Indented),
+                    new System.Text.UTF8Encoding(false));
+                _dirty = false;
+            }
+            catch (Exception e)
+            {
+                // 磁盘满/只读/权限不足时保留 _dirty=true 供后续重试，不让异常中断 Quit 流程
+                Debug.LogError($"[JsonFileStorage] 写入 {_filePath} 失败：{e.Message}");
+            }
         }
 
         #endregion

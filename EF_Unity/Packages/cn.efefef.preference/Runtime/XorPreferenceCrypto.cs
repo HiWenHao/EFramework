@@ -58,8 +58,11 @@ namespace EasyFramework.Preference
         /// </summary>
         /// <param name="plain">明文字符串<para>The plain string</para></param>
         /// <returns>密文字符串<para>The cipher string</para></returns>
-        public string Encrypt(string plain) =>
-            JsonConvert.SerializeObject(ToBase64(Xor(System.Text.Encoding.UTF8.GetBytes(plain))));
+        public string Encrypt(string plain)
+        {
+            if (plain == null) return null; // GetBytes(null) 会抛 ArgumentNullException
+            return JsonConvert.SerializeObject(ToBase64(Xor(System.Text.Encoding.UTF8.GetBytes(plain))));
+        }
 
         /// <summary>
         /// 解密：先还原 JSON 字符串值，再 Base64 解码后逐位异或
@@ -67,9 +70,12 @@ namespace EasyFramework.Preference
         /// </summary>
         /// <param name="cipher">密文字符串<para>The cipher string</para></param>
         /// <returns>明文字符串<para>The plain string</para></returns>
-        public string Decrypt(string cipher) =>
-            System.Text.Encoding.UTF8.GetString(
+        public string Decrypt(string cipher)
+        {
+            if (cipher == null) return null; // FromBase64String(null) 会抛 ArgumentNullException
+            return System.Text.Encoding.UTF8.GetString(
                 Xor(Convert.FromBase64String(JsonConvert.DeserializeObject<string>(cipher))));
+        }
 
         #endregion
     }
