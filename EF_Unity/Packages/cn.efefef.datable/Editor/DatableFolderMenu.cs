@@ -10,9 +10,10 @@
  */
 
 using System.IO;
+using EasyFramework.Edit;
 using UnityEditor;
 
-namespace EasyFramework.Edit.Windows.Dataable
+namespace EasyFramework.Dataable
 {
     /// <summary>
     /// Datable 包在 EFTools Folders 菜单下的文件夹快捷入口

@@ -13,11 +13,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using EasyFramework.Edit;
+using EasyFramework.Edit.Windows;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEngine;
 using UnityEditor;
 
-namespace EasyFramework.Edit.Windows.Dataable
+namespace EasyFramework.Dataable
 {
     /// <summary>
     /// Excel表配置面板，方便用户设置内容
@@ -65,10 +67,19 @@ namespace EasyFramework.Edit.Windows.Dataable
 
         public override void LoadWindowData()
         {
-            if (_config is not null || !EditorUtils.CheckAssets<DatableConfig>(out string path))
+            if (_config is not null)
+            {
+                _excelFiles ??= new List<string>();
+                if (_excelFiles.Count == 0)
+                    RefreshExcelList();
+                return;
+            }
+
+            if (!EditorUtils.CheckAssets<DatableConfig>(out string path))
                 return;
 
             _config = EditorUtils.LoadSettingAtPath<DatableConfig>(path);
+            if (!_config) return;
             InitConfig();
         }
 

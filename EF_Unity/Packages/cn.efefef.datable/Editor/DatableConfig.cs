@@ -12,7 +12,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Windows.Dataable
+namespace EasyFramework.Dataable
 {
     /// <summary>
     /// 数据配置

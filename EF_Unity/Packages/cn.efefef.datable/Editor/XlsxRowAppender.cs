@@ -16,7 +16,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using EasyFramework.Edit.Windows.Dataable;
+using EasyFramework.Dataable;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace EasyFramework.Edit

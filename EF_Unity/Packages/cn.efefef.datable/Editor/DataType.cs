@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Edit.Windows.Dataable
+namespace EasyFramework.Dataable
 {
     /// <summary>
     /// 数据类型

@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using EasyFramework.Edit;
-using EasyFramework.Edit.Windows.Dataable;
+using EasyFramework.Dataable;
 using UnityEditor;
 using UnityEngine;
 
