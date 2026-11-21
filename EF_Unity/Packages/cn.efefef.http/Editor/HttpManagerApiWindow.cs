@@ -18,7 +18,7 @@
 // using UnityEngine;
 // using UnityEngine.Networking;
 //
-// namespace EasyFramework.Systems.Http.Editor
+// namespace EasyFramework.Http
 // {
 //     /// <summary>
 //     /// <see cref="HttpManager"/> 公开 API 速查窗口：反射列出全部可直接访问的成员，一键复制单行调用。

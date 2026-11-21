@@ -12,7 +12,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 缓存接口，包住一次完整发送（厚加载装饰器）

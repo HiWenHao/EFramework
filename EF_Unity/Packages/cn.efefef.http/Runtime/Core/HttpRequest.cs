@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 请求描述，作为门面与发送器之间的统一契约
@@ -157,14 +157,14 @@ namespace EasyFramework.Systems.Http
                 if (Headers is { Count: > 0 })
                 {
                     var keys = new List<string>(Headers.Keys);
-                    keys.Sort(System.StringComparer.Ordinal);
+                    keys.Sort(StringComparer.OrdinalIgnoreCase);
                     foreach (var key in keys)
-                        sb.Append('&').Append(key).Append('=').Append(Headers[key]);
+                        sb.Append('&').Append(key.ToLowerInvariant()).Append('=').Append(Headers[key]);
                 }
 
                 if (Body == null) return sb.ToString();
 
-                // 64 位 FNV-1a：降低 32 位哈希的碰撞概率（手写实现，不引入额外依赖）
+                // 64 位 FNV-1a：降低 32 位哈希的碰撞概率（手写实现，不引入额外依赖）, AI改的，我其实不明白啥意思.......
                 const ulong offset = 14695981039346656037ul;
                 const ulong prime = 1099511628211ul;
                 ulong hash = offset;

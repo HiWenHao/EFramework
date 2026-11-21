@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 四类服务的一次性注入配置包

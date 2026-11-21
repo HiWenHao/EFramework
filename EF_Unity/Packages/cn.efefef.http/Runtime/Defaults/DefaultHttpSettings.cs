@@ -12,7 +12,7 @@
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// 默认 HTTP 设置实现，持有跨切面默认值并写入共享上下文

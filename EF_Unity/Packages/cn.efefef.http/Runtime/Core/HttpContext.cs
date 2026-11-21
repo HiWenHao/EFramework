@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 默认值单一真源：门面兜底、上下文字段与设置实现全部引用此处，避免多处副本不一致

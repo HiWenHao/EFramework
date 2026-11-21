@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// 可选的内存缓存实现，供业务按需注入。门面默认不启用缓存（Cache = null 即直通）。

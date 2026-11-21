@@ -11,7 +11,7 @@
 
 using System;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 重试策略：控制失败时的重试次数与退避延迟。

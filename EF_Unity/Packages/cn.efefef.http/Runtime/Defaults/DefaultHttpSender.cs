@@ -14,7 +14,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// 默认 HTTP 发送器，使用 <see cref="UnityWebRequest"/> 执行请求

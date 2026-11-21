@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 服务生命周期接口

@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 统一响应，承载文本 / 字节 / 纹理 / 资源包 / 文件路径等结果

@@ -12,7 +12,7 @@
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 设置接口，管理默认请求头、超时、UA 与证书处理器

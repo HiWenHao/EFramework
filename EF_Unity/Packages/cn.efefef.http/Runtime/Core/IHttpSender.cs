@@ -12,7 +12,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 发送接口，执行一次真实的网络请求

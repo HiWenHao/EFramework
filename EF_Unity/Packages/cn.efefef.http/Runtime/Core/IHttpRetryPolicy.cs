@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Systems.Http
+namespace EasyFramework.Http
 {
     /// <summary>
     /// HTTP 重试策略接口，决定失败时的重试次数与退避延迟
