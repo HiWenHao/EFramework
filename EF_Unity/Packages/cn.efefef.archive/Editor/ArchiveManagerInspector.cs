@@ -15,7 +15,7 @@ using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Archive.Editor
+namespace EasyFramework.Archive
 {
     [CustomEditor(typeof(ArchiveManager))]
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>

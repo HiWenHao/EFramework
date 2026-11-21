@@ -18,7 +18,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// 存档存储后端抽象接口，实现此接口即可接入任意存储引擎。

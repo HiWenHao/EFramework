@@ -19,7 +19,7 @@ using EasyFramework.Edit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Systems.Archive.Example
+namespace EasyFramework.Archive.Example
 {
     public class ArchiveExampleRunner : MonoBehaviour
     {

@@ -29,7 +29,7 @@ using EasyFramework.Managers;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// 存档系统主管理器，负责槽位路由、JSON 序列化、加密协调与自动保存调度。

@@ -15,7 +15,7 @@ using UnityEngine;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 
-namespace EasyFramework.Systems.Archive.Editor
+namespace EasyFramework.Archive
 {
     internal static class ArchiveMenuItems
     {

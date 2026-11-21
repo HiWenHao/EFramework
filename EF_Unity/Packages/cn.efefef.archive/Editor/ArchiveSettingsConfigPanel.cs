@@ -16,7 +16,7 @@ using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Archive.Editor
+namespace EasyFramework.Archive
 {
     [EFConfigPanel(Priority = 200)]
     public class ArchiveSettingsConfigPanel : EFAssetConfigPanelBase

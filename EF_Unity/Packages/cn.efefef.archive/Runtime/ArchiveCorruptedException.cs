@@ -12,7 +12,7 @@
 
 using System;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// 存档损坏异常，当 SHA256 校验失败或文件格式错误时抛出。系统自动保留 .bak 备份供回退。

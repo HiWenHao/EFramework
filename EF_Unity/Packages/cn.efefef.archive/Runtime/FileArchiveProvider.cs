@@ -27,7 +27,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// 基于本地文件系统的存档 Provider。每项数据加密存储为 .arc 文件，采用"临时文件 + 原子重命名"防写入中断。

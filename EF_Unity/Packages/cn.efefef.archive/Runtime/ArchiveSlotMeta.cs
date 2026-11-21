@@ -12,7 +12,7 @@
 
 using System;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// 存档槽位元数据，用于存档列表界面展示。不加密，以 JSON 格式存储在每个槽位目录下。

@@ -16,7 +16,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Systems.Archive
+namespace EasyFramework.Archive
 {
     /// <summary>
     /// AES 密钥长度枚举，仅允许 AES 规范内的合法值。
