@@ -11,7 +11,7 @@
 
 using Newtonsoft.Json;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
 	/// <summary>
 	/// 用来记录从GitHub上边获取到的Package文件夹下的全部cn.efefef.开头的内容

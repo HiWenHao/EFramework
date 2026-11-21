@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
     /// <summary>
     /// 通过Unity.API获取到从GitHub拉下来的Package信息

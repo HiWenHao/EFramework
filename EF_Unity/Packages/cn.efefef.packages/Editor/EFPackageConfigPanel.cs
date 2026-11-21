@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Edit.Packages;
+using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using Newtonsoft.Json;
@@ -26,7 +26,7 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Packages
 {
 
     /// <summary>
@@ -126,9 +126,17 @@ namespace EasyFramework.Edit
 
                 _config = ServerToolkit.GetPackageConfig() ?? new PackageConfig();
 
-                foreach (EFPackageInfo packageInfo in _config.packagesInfo)
+                // 旧配置可能缺 DisplayName（JsonUtility 反序列化为 null）或存在重名；
+                // 用 TryAdd + Name 兜底，避免 Add 抛异常导致初始化中断、_packageFolder 永久不完整
+                if (_config.packagesInfo != null)
                 {
-                    _packageFolder.Add(packageInfo.DisplayName, true);
+                    foreach (EFPackageInfo packageInfo in _config.packagesInfo)
+                    {
+                        string key = string.IsNullOrEmpty(packageInfo.DisplayName)
+                            ? packageInfo.Name : packageInfo.DisplayName;
+                        if (!string.IsNullOrEmpty(key))
+                            _packageFolder.TryAdd(key, true);
+                    }
                 }
                 _token = ServerToolkit.GetToken(_config.serverType);
             }
@@ -307,8 +315,12 @@ namespace EasyFramework.Edit
             // 折叠箭头 + 包名（这是 foldout 自己的点击区域）
             float textWidth = titleStyle.CalcSize(new GUIContent(packageInfo.DisplayName)).x;
             var foldRect = new Rect(headerRect.x + 4, headerRect.y, textWidth + 24, headerRect.height);
-            _packageFolder[packageInfo.DisplayName] = EditorGUI.Foldout(
-                foldRect, _packageFolder[packageInfo.DisplayName], packageInfo.DisplayName, true, titleStyle);
+            // 远端更新可能改名 DisplayName，而 _packageFolder 的键在初始化时按旧名建立；
+            // 直接索引会 KeyNotFoundException 打断 GUI 绘制，用 TryGetValue 兜底缺键
+            string folderKey = packageInfo.DisplayName;
+            _packageFolder.TryGetValue(folderKey, out bool foldout);
+            _packageFolder[folderKey] = EditorGUI.Foldout(
+                foldRect, foldout, packageInfo.DisplayName, true, titleStyle);
 
             // 来源标签（右对齐）
             Color tagColor = packageInfo.SourceType switch
@@ -807,6 +819,14 @@ namespace EasyFramework.Edit
         /// </summary>
         private async UniTask UpdateAllFromGitOrGitee()
         {
+            // 本地模式没有远端目录，GetRawUrl(Remote/...) 的 switch 只覆盖 GitHub/Gitee，
+            // 传 Local 会抛 NotSupportedException（且在 .Forget() 中被吞成日志）
+            if (_config.serverType == ServerType.Local)
+            {
+                D.Warning("[EFPackage] Local 模式不使用远端目录，跳过更新全部信息。");
+                return;
+            }
+
             // 1. 从远端下载官方目录
             string remoteUrl = ServerToolkit.GetRawUrl(_config.serverType,
                 ServerToolkit.GetFrameworkOwner(_config.serverType), "EFramework", "master",
@@ -850,7 +870,7 @@ namespace EasyFramework.Edit
         /// </summary>
         private void MergeCatalogToConfig(EFPackageCatalog catalog)
         {
-            if (catalog == null || catalog.packages.Count == 0)
+            if (catalog == null || catalog.packages == null || catalog.packages.Count == 0)
                 return;
             // 遍历远端目录
             foreach (var remoteEntry in catalog.packages)
@@ -905,8 +925,10 @@ namespace EasyFramework.Edit
         private async UniTask<string> DownloadFileAsync(string url)
         {
             using UnityWebRequest request = UnityWebRequest.Get(url);
-            if (!string.IsNullOrEmpty(_config.token))
-                request.SetRequestHeader("Authorization", $"Bearer {_config.token}");
+            // Token 来自面板输入框 _token（写入 EditorPrefs），_config.token 从未被赋值，
+            // 用它会让私有仓库下载始终缺 Authorization 头而 401/404
+            if (!string.IsNullOrEmpty(_token))
+                request.SetRequestHeader("Authorization", $"Bearer {_token}");
 
             await request.SendWebRequest();
 

@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
     /// <summary>
     /// 官方包目录条目

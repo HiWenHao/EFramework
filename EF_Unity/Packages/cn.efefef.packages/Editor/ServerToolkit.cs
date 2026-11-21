@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
     /// <summary>
     /// 包版本写盘结果（版本上升、恢复默认版本共用）
@@ -71,9 +71,18 @@ namespace EasyFramework.Edit.Packages
             if (!File.Exists(ConfigPath))
                 return null;
 
-            string json = File.ReadAllText(ConfigPath);
-            var packageConfig = JsonUtility.FromJson<PackageConfig>(json);
-            return packageConfig;
+            // 缓存文件损坏（写入中断/手工编辑错误）时回退 null，让调用方 ?? new PackageConfig() 兜底；
+            // 否则异常会让面板初始化中断、_config 为 null 而绘制端仍解引用，每帧 NRE 刷屏
+            try
+            {
+                string json = File.ReadAllText(ConfigPath);
+                return JsonUtility.FromJson<PackageConfig>(json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[ServerToolkit] 读取包配置 {ConfigPath} 失败：{e.Message}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -136,7 +145,15 @@ namespace EasyFramework.Edit.Packages
         {
             if (!File.Exists(CatalogPath))
                 return null;
-            return EFPackageCatalog.FromJson(File.ReadAllText(CatalogPath));
+            try
+            {
+                return EFPackageCatalog.FromJson(File.ReadAllText(CatalogPath));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[ServerToolkit] 读取包目录 {CatalogPath} 失败：{e.Message}");
+                return null;
+            }
         }
 
         /// <summary>

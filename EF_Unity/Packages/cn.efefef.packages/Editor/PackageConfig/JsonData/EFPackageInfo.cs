@@ -12,7 +12,7 @@
 using System;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
     /// <summary>
     /// 包来源类型

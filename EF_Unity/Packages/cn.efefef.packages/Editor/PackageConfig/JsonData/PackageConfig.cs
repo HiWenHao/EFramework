@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace EasyFramework.Edit.Packages
+namespace EasyFramework.Packages
 {
     /// <summary>
     /// 服务器类型
