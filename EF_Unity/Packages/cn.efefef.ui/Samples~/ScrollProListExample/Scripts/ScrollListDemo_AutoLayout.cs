@@ -5,8 +5,7 @@
 
 using System.Collections.Generic;
 using EasyFramework;
-using EasyFramework.Edit;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 

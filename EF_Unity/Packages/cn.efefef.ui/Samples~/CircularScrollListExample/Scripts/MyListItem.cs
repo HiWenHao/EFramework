@@ -12,7 +12,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 你的业务 Item 脚本

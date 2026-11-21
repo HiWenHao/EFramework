@@ -12,7 +12,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 假设这是一个UI面板

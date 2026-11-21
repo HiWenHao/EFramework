@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace EasyFramework.Ui
@@ -28,7 +29,7 @@ namespace EasyFramework.Ui
     /// </summary>
     [RequireComponent(typeof(ScrollRect))]
     [DisallowMultipleComponent]
-    public class ScrollListPro : MonoBehaviour
+    public class ScrollListPro : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
         #region 内部类
 
@@ -198,6 +199,11 @@ namespace EasyFramework.Ui
         private CancellationTokenSource _layoutAnimCts; // 布局动画取消令牌
         private CancellationTokenSource _snapDebounceCts; // 吸附动画取消令牌
 
+        // 用户是否正在真实拖拽（由 IBegin/IEndDragHandler 维护）。
+        // 不能用 scrollRect.velocity 判断：动画自身改 anchoredPosition 也会产生速度，
+        // 长距离动画（大列表跨屏跳转）的 velocity 会超阈值，导致动画被自己的回调取消。
+        private bool _isDragging;
+
         private readonly List<float> _itemSizes = new List<float>(); // 每个 item 的尺寸缓存
         private readonly List<float> _cumulativePositions = new List<float>(); // 预计算累积位置 [i]=item[i] 顶部偏移
         private readonly List<ActiveItem> _activeItems = new List<ActiveItem>(); // 当前活跃 item 列表
@@ -225,8 +231,14 @@ namespace EasyFramework.Ui
                 RefreshVisibleItems(true);
         }
 
+        // 真实拖拽开始/结束：与 ScrollRect 同物体，事件系统会把 drag 同时派发给本组件。
+        // 用标志而非 velocity 区分"用户拖动"与"动画自驱动"，避免长距离动画被误判取消。
+        public void OnBeginDrag(PointerEventData eventData) => _isDragging = true;
+        public void OnEndDrag(PointerEventData eventData) => _isDragging = false;
+
         private void OnDisable()
         {
+            _isDragging = false;
             if (scrollRect != null && _scrollListenerAdded)
             {
                 scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
@@ -238,6 +250,7 @@ namespace EasyFramework.Ui
 
         private void OnDestroy()
         {
+            _isDragging = false;
             if (scrollRect != null && _scrollListenerAdded)
                 scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
 
@@ -568,11 +581,12 @@ namespace EasyFramework.Ui
         private void OnScrollChanged(Vector2 _)
         {
             // 用户拖动时立即终止正在运行的滚动动画，避免手势与动画叠加造成视窗漂移。
-            // 必须在 _animating 早退之前判断：动画驱动期逐帧设 anchoredPosition 不产生 velocity，
-            // 因此这里的速度阈值只会在真实拖拽时命中，不会误伤动画自身。
+            // 必须用真实拖拽事件标志而非 velocity：动画自身逐帧改 anchoredPosition 也会产生
+            // 巨大 velocity（尤其大列表跨屏跳转），旧判断会让动画在首帧被自己的回调 cancel，
+            // 表现为"轻微滚动后立刻停止"。_isDragging 只在用户按下并拖动时为 true。
             if (_animating)
             {
-                if (scrollRect != null && scrollRect.velocity.sqrMagnitude > 10f)
+                if (_isDragging)
                 {
                     _scrollAnimCts?.Cancel(); // 取消滚动动画（而非布局动画），让拖动接管
                     _animating = false;       // 立即放行刷新，避免早退导致拖动时 item 不更新
