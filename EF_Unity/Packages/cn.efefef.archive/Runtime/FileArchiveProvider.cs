@@ -42,8 +42,10 @@ namespace EasyFramework.Archive
         private const string BackupExtension = ".bak";     // 备份文件扩展名
         private const string MetaFile = "slot_meta.json";  // 槽位元数据文件名
 
+        private const string FallbackSalt = "EF.Archive.DefaultSalt";
+
         private readonly string _rootPath;                  // 存档根目录
-        private readonly ArchiveSettings _settings;         // 全局配置引用
+        private readonly ArchiveConfig _settings;           // 全局配置引用
         private readonly byte[] _salt;                      // 加密盐值
         private volatile byte[] _cachedKey;                 // 缓存的 AES 密钥
         private readonly object _keyLock = new();           // 保护 _cachedKey 的锁
@@ -53,21 +55,22 @@ namespace EasyFramework.Archive
         /// 创建本地文件存档 Provider<para>Create a local file-based archive provider</para>
         /// </summary>
         /// <param name="settings">存档全局配置<para>Archive settings</para></param>
-        public FileArchiveProvider(ArchiveSettings settings)
+        public FileArchiveProvider(ArchiveConfig settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _rootPath = Path.Combine(Application.persistentDataPath, settings.fileStorageRoot);
 
             string salt = string.IsNullOrEmpty(settings.encryptionSalt)
-                ? "EF.Archive.DefaultSalt"
+                ? FallbackSalt
                 : settings.encryptionSalt;
             _salt = Encoding.UTF8.GetBytes(salt);
 
             // 默认盐仅作示例值，所有未修改配置的存档共享它。这里只提示，不擅自更换默认值——
             // 更换会使已有存档的派生密钥改变、导致旧存档无法解密（需业务自行规划迁移）
-            if (salt == "EF.Archive.DefaultSalt")
-                D.Warning("[FileArchiveProvider] 正在使用默认加密盐，正式项目请在 ArchiveSettings 中配置唯一 salt；" +
-                                 "修改后已有存档将无法解密，请先规划数据迁移。");
+            if (salt == FallbackSalt)
+                ArchiveLog.Warning(
+                    "[ FileArchiveProvider ] Using the default encryption salt. Configure a unique salt in ArchiveConfig for production. Changing it will make existing archives undecryptable; plan data migration first.",
+                    settings);
 
             if (!Directory.Exists(_rootPath))
                 Directory.CreateDirectory(_rootPath);
@@ -390,7 +393,7 @@ namespace EasyFramework.Archive
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[FileArchiveProvider] Failed to read slot meta '{metaPath}': {ex.Message}");
+                    ArchiveLog.Warning($"[ FileArchiveProvider ] Failed to read slot meta '{metaPath}': {ex.Message}", _settings);
                 }
             }
 
@@ -418,9 +421,9 @@ namespace EasyFramework.Archive
                 if (string.IsNullOrEmpty(deviceId))
                 {
                     deviceId = "EF.Archive.EmptyDeviceId";
-                    Debug.LogWarning("[FileArchiveProvider] SystemInfo.deviceUniqueIdentifier is empty. " +
-                                     "Falling back to a fixed placeholder for key derivation. " +
-                                     "Archives written on this device may be readable on other devices with the same salt.");
+                    ArchiveLog.Warning(
+                        "[ FileArchiveProvider ] SystemInfo.deviceUniqueIdentifier is empty. Falling back to a fixed placeholder for key derivation. Archives written on this device may be readable on other devices with the same salt.",
+                        _settings);
                 }
 
                 using var derive = new Rfc2898DeriveBytes(

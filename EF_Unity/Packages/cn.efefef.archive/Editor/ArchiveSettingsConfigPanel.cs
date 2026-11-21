@@ -15,6 +15,7 @@ using EasyFramework.Edit;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Archive
 {
@@ -23,8 +24,8 @@ namespace EasyFramework.Archive
     {
         public override string Name => LC.Combine("Archive.ArchiveDataConfig");
 
-        private UnityEditor.Editor _cachedEditor; // 缓存的 Settings Editor 实例（避免每帧重建）
-        private ArchiveSettings _settings; // 当前存档配置资产
+        private Editor _cachedEditor;       // 缓存的 Settings Editor 实例（避免每帧重建）
+        private ArchiveConfig _config;    // 当前存档配置资产
 
         public override void OnEnable(string assetsPath)
         {
@@ -33,22 +34,24 @@ namespace EasyFramework.Archive
 
         public override void LoadWindowData()
         {
-            if (_settings is not null || !EditorUtils.CheckAssets<ArchiveSettings>(out string path))
+            if (_config is not null || !EditorUtils.CheckAssets<ArchiveConfig>(out string path))
                 return;
-            _settings = EditorUtils.LoadSettingAtPath<ArchiveSettings>(path);
+            _config = ConfigToolkit.GetConfig();
         }
 
         protected override void OnPanelGUI()
         {
-            if (_settings == null)
+            if (_config == null)
             {
-                _settings = DrawMissingConfigGuide<ArchiveSettings>(LC.Combine("Archive.ArchiveConfigNotExist"),
+                _config = DrawMissingConfigGuide<ArchiveConfig>(LC.Combine("Archive.ArchiveConfigNotExist"),
                     LC.Combine("CreateConfig"));
+                if (_config is not null)
+                    ConfigToolkit.InitSalt(_config); 
                 return;
             }
 
-            if (_cachedEditor == null || _cachedEditor.target != _settings)
-                _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
+            if (_cachedEditor == null || _cachedEditor.target != _config)
+                _cachedEditor = Editor.CreateEditor(_config);
 
             EditorGUILayout.Space(5);
             EditorGUILayout.LabelField(LC.Combine("Archive.SystemConfiguration"), EditorStyles.boldLabel);
@@ -61,7 +64,7 @@ namespace EasyFramework.Archive
 
                 if (scope.changed)
                 {
-                    EditorUtility.SetDirty(_settings);
+                    EditorUtility.SetDirty(_config);
                     AssetDatabase.SaveAssets();
                 }
             }
@@ -71,11 +74,11 @@ namespace EasyFramework.Archive
             EditorGUILayout.LabelField(LC.Combine("Archive.QuickActions"), EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(LC.Combine("Archive.LocateSettingsAsset")))
-                EditorGUIUtility.PingObject(_settings);
+                EditorGUIUtility.PingObject(_config);
 
             if (GUILayout.Button(LC.Combine("Archive.OpenArchivesFolder")))
             {
-                string path = Path.Combine(Application.persistentDataPath, _settings.fileStorageRoot);
+                string path = Path.Combine(Application.persistentDataPath, _config.fileStorageRoot);
                 EditorCommands.OpenFolder(path);
             }
 
@@ -84,12 +87,12 @@ namespace EasyFramework.Archive
                 if (EditorUtility.DisplayDialog(LC.Combine("Archive.ResetSettingsTitle"),
                         LC.Combine("Archive.ResetSettingsHint"), LC.Combine("Reset"), LC.Combine("Cancel")))
                 {
-                    var defaults = ScriptableObject.CreateInstance<ArchiveSettings>();
+                    var defaults = ScriptableObject.CreateInstance<ArchiveConfig>();
 
                     // 用 CopySerialized 替代逐字段赋值，新增字段不会遗漏
-                    EditorUtility.CopySerialized(defaults, _settings);
+                    EditorUtility.CopySerialized(defaults, _config);
 
-                    EditorUtility.SetDirty(_settings);
+                    EditorUtility.SetDirty(_config);
                     AssetDatabase.SaveAssets();
                     EditorApplication.delayCall += () => Object.DestroyImmediate(defaults);
 
@@ -100,17 +103,16 @@ namespace EasyFramework.Archive
                         _cachedEditor = null;
                     }
 
-                    _cachedEditor = UnityEditor.Editor.CreateEditor(_settings);
+                    _cachedEditor = Editor.CreateEditor(_config);
 
                     // 通知父容器重绘
                     EditorApplication.delayCall += () =>
                     {
                         if (_cachedEditor != null)
-                            EditorUtility.SetDirty(_settings);
+                            EditorUtility.SetDirty(_config);
                     };
                 }
             }
-
             EditorGUILayout.EndHorizontal();
         }
 

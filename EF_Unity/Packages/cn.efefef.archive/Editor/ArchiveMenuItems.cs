@@ -21,7 +21,7 @@ namespace EasyFramework.Archive
     {
         private const int RootPriority = 80000;
         private const string Root = MenuItemToolkit.EfRoot + "🗃️ Archive/";
-        
+
         // 打开 EF Configs 面板中的 Archive Settings 页面
         [MenuItem(Root + "⚙️ Open Config Panel", false, RootPriority + 1)]
         private static void OpenConfigPanel()
@@ -33,7 +33,7 @@ namespace EasyFramework.Archive
         [MenuItem(Root + "📂 Open Archives Folder", false, RootPriority + 2)]
         private static void OpenArchivesFolder()
         {
-            var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            var settings = Resources.Load<ArchiveConfig>("Configs/" + nameof(ArchiveConfig));
             string root = settings != null && !string.IsNullOrEmpty(settings.fileStorageRoot)
                 ? settings.fileStorageRoot
                 : "Archives";
@@ -44,9 +44,13 @@ namespace EasyFramework.Archive
             }
             catch (System.Exception ex)
             {
-                D.Warning($"[Archive] Failed to create archives directory '{path}': {ex.Message}");
+                D.Warning(LC.Tr(
+                    "[Archive] 创建存档目录 '{0}' 失败：{1}",
+                    "[Archive] Failed to create archives directory '{0}': {1}",
+                    path, ex.Message));
                 return;
             }
+
             EditorCommands.OpenFolder(path);
         }
 
@@ -55,11 +59,11 @@ namespace EasyFramework.Archive
         private static void ClearAllArchives()
         {
             if (!EditorUtility.DisplayDialog(LC.Combine("Archive.ClearAllArchives"),
-                LC.Combine("Archive.ClearAllHint"),
-                LC.Combine("Archive.YesDeleteEverything"), LC.Combine("Cancel")))
+                    LC.Combine("Archive.ClearAllHint"),
+                    LC.Combine("Archive.YesDeleteEverything"), LC.Combine("Cancel")))
                 return;
 
-            var settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            var settings = Resources.Load<ArchiveConfig>("Configs/" + nameof(ArchiveConfig));
             string root = settings != null && !string.IsNullOrEmpty(settings.fileStorageRoot)
                 ? settings.fileStorageRoot
                 : "Archives";
@@ -69,16 +73,19 @@ namespace EasyFramework.Archive
                 try
                 {
                     Directory.Delete(path, recursive: true);
-                    D.Log("[Archive] All archive data cleared.");
+                    D.Log(LC.Tr("[Archive] 已清空所有存档数据。", "[Archive] All archive data cleared."));
                 }
                 catch (System.Exception ex)
                 {
-                    D.Error($"[Archive] Failed to clear archives directory '{path}': {ex.Message}");
+                    D.Error(LC.Tr(
+                        "[Archive] 清空存档目录 '{0}' 失败：{1}",
+                        "[Archive] Failed to clear archives directory '{0}': {1}",
+                        path, ex.Message));
                 }
             }
             else
             {
-                D.Log("[Archive] No archives directory to clear.");
+                D.Log(LC.Tr("[Archive] 没有需要清空的存档目录。", "[Archive] No archives directory to clear."));
             }
         }
     }

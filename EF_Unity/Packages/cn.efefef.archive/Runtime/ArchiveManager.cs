@@ -25,11 +25,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers;
+using EasyFramework.Archive;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace EasyFramework.Archive
+namespace EasyFramework
 {
     /// <summary>
     /// 存档系统主管理器，负责槽位路由、JSON 序列化、加密协调与自动保存调度。
@@ -58,13 +58,7 @@ namespace EasyFramework.Archive
         /// 存档系统全局配置引用
         /// <para>Reference to the archive system configuration</para>
         /// </summary>
-        public ArchiveSettings Settings { get; private set; }
-
-        /// <summary>
-        /// 是否开启调试日志
-        /// <para>Whether to enable debug logs</para>
-        /// </summary>
-        public bool OpenDebug { get; set; } = true;
+        public ArchiveConfig Settings { get; private set; }
 
         #region Singleton Lifecycle
 
@@ -122,49 +116,26 @@ namespace EasyFramework.Archive
 
         #region Private
 
-        // 日志安全包装（防御 D 日志系统未初始化的 NRE，回退到 Unity Debug）
-        private static void LogWarning(string msg)
-        {
-            if (Instance != null && !Instance.OpenDebug) return;
-            try { D.Warning(msg); } catch { Debug.LogWarning(msg); }
-        }
+        // 日志统一走 ArchiveLog：受 ArchiveConfig.enableLog 开关控制
+        private static void LogWarning(string msg) => ArchiveLog.Warning(msg, Instance?.Settings);
 
-        private static void LogError(string msg)
-        {
-            // 错误日志始终输出，不受 OpenDebug 影响
-            try { D.Error(msg); } catch { Debug.LogError(msg); }
-        }
+        private static void LogError(string msg) => ArchiveLog.Error(msg, Instance?.Settings);
 
-        // 加载 ArchiveSettings 配置资产（从 Resources/Configs 读取，不存在则使用默认值）
+        // 加载 ArchiveConfig 配置资产（从 Resources/Configs 读取，不存在则使用默认值）
         private void LoadSettings()
         {
-            Settings = Resources.Load<ArchiveSettings>("Configs/ArchiveSettings");
+            Settings = Resources.Load<ArchiveConfig>("Configs/" + nameof(ArchiveConfig));
             if (Settings != null) return;
-            Settings = ScriptableObject.CreateInstance<ArchiveSettings>();
-            LogWarning("[ArchiveManager] ArchiveSettings not found at Resources/Configs/ArchiveSettings. Using defaults.");
+            Settings = ScriptableObject.CreateInstance<ArchiveConfig>();
+            LogWarning("[ArchiveManager] ArchiveConfig not found at Resources/Configs/ArchiveConfig. Using defaults.");
         }
 
         // 校验 Settings 的关键字段。无效值抛异常，防止后续静默错误。
         private void ValidateSettingsOrThrow()
         {
             if (Settings == null)
-                throw new InvalidOperationException("[ArchiveManager] Settings is null after LoadSettings.");
-
-            if (Settings.maxSlots < 1)
-                throw new InvalidOperationException(
-                    $"[ArchiveManager] maxSlots must be >= 1, got {Settings.maxSlots}.");
-
-            if (Settings.autoSaveIntervalSeconds < 0)
-                throw new InvalidOperationException(
-                    $"[ArchiveManager] autoSaveIntervalSeconds must be >= 0, got {Settings.autoSaveIntervalSeconds}.");
-
-            if (Settings.pbkdf2Iterations < 1000)
-                throw new InvalidOperationException(
-                    $"[ArchiveManager] pbkdf2Iterations must be >= 1000 (security floor), got {Settings.pbkdf2Iterations}.");
-
-            if (Settings.maxBackupCount < 0)
-                throw new InvalidOperationException(
-                    $"[ArchiveManager] maxBackupCount must be >= 0, got {Settings.maxBackupCount}.");
+            {
+                throw new InvalidOperationException("[ArchiveManager] Settings is null after LoadSettings.");}
 
             if (string.IsNullOrEmpty(Settings.fileStorageRoot))
                 throw new InvalidOperationException("[ArchiveManager] fileStorageRoot cannot be empty.");
@@ -216,8 +187,7 @@ namespace EasyFramework.Archive
                 }
                 catch (Exception ex)
                 {
-                    LogWarning($"[ArchiveManager] Failed to scan physical slot directories: {ex.Message}. " +
-                               "Falling back to metadata-only allocation.");
+                    LogWarning($"[ArchiveManager] Failed to scan physical slot directories: {ex.Message}. Falling back to metadata-only allocation.");
                 }
             }
 
@@ -319,15 +289,13 @@ namespace EasyFramework.Archive
                                 byte[] raw = Encoding.UTF8.GetBytes(json);
                                 _provider.SaveRawSync(slotId, oldestKey, raw);
                                 MarkClean(slotId, oldestKey);
-                                LogWarning($"[ArchiveManager] Cache eviction for dirty key '{oldestKey}' in slot {slotId} " +
-                                           "triggered a synchronous flush. Consider raising MaxCachedEntries to avoid this.");
+                                LogWarning($"[ArchiveManager] Cache eviction for dirty key '{oldestKey}' in slot {slotId} triggered a synchronous flush. Consider raising MaxCachedEntries to avoid this.");
                             }
                         }
                         catch (Exception ex)
                         {
                             // 刷盘失败：绝不能移除缓存中的 dirty 数据，宁可保留并警告
-                            LogError($"[ArchiveManager] Failed to flush dirty key '{oldestKey}' in slot {slotId} " +
-                                     $"during cache eviction: {ex.Message}. Keeping in cache to avoid data loss.");
+                            LogError($"[ArchiveManager] Failed to flush dirty key '{oldestKey}' in slot {slotId} during cache eviction: {ex.Message}. Keeping in cache to avoid data loss.");
                             // 跳出淘汰循环，让缓存略微超限
                             return;
                         }
@@ -412,9 +380,7 @@ namespace EasyFramework.Archive
                     // 关键修复：保留 dirty 标记，绝不静默 MarkClean。
                     foreach (var key in keys)
                     {
-                        LogError($"[ArchiveManager] Slot {slotId} key '{key}' marked dirty but slot cache is empty. " +
-                                 "Auto-save SKIPPED and dirty flag PRESERVED to prevent data loss. " +
-                                 "Use SaveToSlotAsync to provide data, or MarkDirtyWithData to provide current data.");
+                        LogError($"[ArchiveManager] Slot {slotId} key '{key}' marked dirty but slot cache is empty. Auto-save SKIPPED and dirty flag PRESERVED to prevent data loss. Use SaveToSlotAsync to provide data, or MarkDirtyWithData to provide current data.");
                     }
                     continue;
                 }
@@ -426,9 +392,7 @@ namespace EasyFramework.Archive
                     if (!slotCache.TryGetValue(key, out var cached))
                     {
                         // 关键修复：保留 dirty 标记，绝不静默 MarkClean。
-                        LogError($"[ArchiveManager] Key '{key}' in slot {slotId} marked dirty but not in cache. " +
-                                 "Auto-save SKIPPED and dirty flag PRESERVED to prevent data loss. " +
-                                 "Use MarkDirtyWithData to provide current data.");
+                        LogError($"[ArchiveManager] Key '{key}' in slot {slotId} marked dirty but not in cache. Auto-save SKIPPED and dirty flag PRESERVED to prevent data loss. Use MarkDirtyWithData to provide current data.");
                         continue;
                     }
 
@@ -448,8 +412,7 @@ namespace EasyFramework.Archive
                     catch (Exception ex)
                     {
                         // 写入失败：保留 dirty 标记，下次循环重试
-                        LogError($"[ArchiveManager] Auto-save of key '{key}' in slot {slotId} failed: {ex.Message}. " +
-                                 "Dirty flag preserved for retry.");
+                        LogError($"[ArchiveManager] Auto-save of key '{key}' in slot {slotId} failed: {ex.Message}. Dirty flag preserved for retry.");
                     }
                 }
             }
@@ -486,8 +449,7 @@ namespace EasyFramework.Archive
                     !slotCache.TryGetValue(key, out var cached))
                 {
                     // 缓存缺失:保留 dirty 标记,等下次进程启动时用户补救
-                    LogError($"[ArchiveManager] Sync flush: key '{key}' in slot {slotId} not in cache. " +
-                             "Dirty flag preserved.");
+                    LogError($"[ArchiveManager] Sync flush: key '{key}' in slot {slotId} not in cache. Dirty flag preserved.");
                     continue;
                 }
 
@@ -502,14 +464,13 @@ namespace EasyFramework.Archive
                 catch (Exception ex)
                 {
                     failedCount++;
-                    LogError($"[ArchiveManager] Sync flush of key '{key}' in slot {slotId} failed: {ex.Message}. " +
-                             "Dirty flag preserved for next session.");
+                    LogError($"[ArchiveManager] Sync flush of key '{key}' in slot {slotId} failed: {ex.Message}. Dirty flag preserved for next session.");
                 }
             }
 
             if (flushedCount > 0 || failedCount > 0)
             {
-                Debug.Log($"[ArchiveManager] Shutdown sync flush: {flushedCount} keys saved, {failedCount} failed.");
+                ArchiveLog.Log($"[ArchiveManager] Shutdown sync flush: {flushedCount} keys saved, {failedCount} failed.", Settings);
             }
 
             // 注意:不在 finally 里清 _dataCache —— FlushAsync 公开 API 也用它,
@@ -880,8 +841,8 @@ namespace EasyFramework.Archive
         #region Public — Auto Save
 
         /// <summary>
-        /// 启动自动保存（已内置在 Init 中自动调用）。间隔由 ArchiveSettings.autoSaveIntervalSeconds 控制。
-        /// <para>Start the auto-save loop. Interval controlled by ArchiveSettings.autoSaveIntervalSeconds.</para>
+        /// 启动自动保存（已内置在 Init 中自动调用）。间隔由 ArchiveConfig.autoSaveIntervalSeconds 控制。
+        /// <para>Start the auto-save loop. Interval controlled by ArchiveConfig.autoSaveIntervalSeconds.</para>
         /// </summary>
         public void StartAutoSave()
         {

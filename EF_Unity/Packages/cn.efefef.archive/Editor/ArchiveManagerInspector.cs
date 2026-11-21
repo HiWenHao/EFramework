@@ -21,7 +21,7 @@ namespace EasyFramework.Archive
     public class ArchiveManagerInspector : EFInspectorBase<ArchiveManager>
     {
         // 存档配置资产在 Resources 下的相对路径
-        private const string ConfigAssetPath = "Resources/Configs/ArchiveSettings.asset";
+        private const string ConfigAssetPath = "Resources/Configs/ArchiveConfig.asset";
 
         protected override string Title => LC.Combine("Archive.ArchiveDataMonitor");
 
@@ -137,7 +137,10 @@ namespace EasyFramework.Archive
             {
                 _cachedKeys = Array.Empty<string>();
                 _cachedSlots = Array.Empty<ArchiveSlotMeta>();
-                Debug.LogWarning($"[ ArchiveManagerInspector ] Failed to refresh key list: {ex.Message}");
+                D.Warning(LC.Tr(
+                    "[ArchiveManagerInspector] 刷新键列表失败：{0}",
+                    "[ArchiveManagerInspector] Failed to refresh key list: {0}",
+                    ex.Message));
             }
             finally
             {
