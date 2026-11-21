@@ -267,11 +267,12 @@ namespace EasyFramework.Managers.Assets
                 ? ProjectRemoteFallbackUrl
                 : cfg.RemoteFallbackUrl;
 
-            // 模拟模式不走网络，只有联机模式才强制要求地址
-            if (CurrentPlayMode != EPlayMode.EditorSimulateMode && string.IsNullOrEmpty(mainUrl))
+
+            if (CurrentPlayMode != EPlayMode.EditorSimulateMode
+                && CurrentPlayMode != EPlayMode.OfflinePlayMode
+                && string.IsNullOrEmpty(mainUrl) && string.IsNullOrEmpty(fallbackUrl))
             {
-                Error($"[{cfg.PackageName}] 没有可用的资源地址：SubPackageConfig.RemoteMainUrl 为空，" +
-                      "ProjectConfig.ResourcesArea 也没填。");
+                Error($"[{cfg.PackageName}] 没有可用的资源地址：SubPackageConfig中RemoteMainUrl与RemoteFallbackUrl 为空，ProjectConfig.ResourcesArea 也没填。");
                 return;
             }
 
