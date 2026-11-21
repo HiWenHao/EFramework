@@ -57,7 +57,17 @@ namespace EasyFramework.Systems.Archive
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _rootPath = Path.Combine(Application.persistentDataPath, settings.fileStorageRoot);
-            _salt = Encoding.UTF8.GetBytes(settings.encryptionSalt);
+
+            string salt = string.IsNullOrEmpty(settings.encryptionSalt)
+                ? "EF.Archive.DefaultSalt"
+                : settings.encryptionSalt;
+            _salt = Encoding.UTF8.GetBytes(salt);
+
+            // 默认盐仅作示例值，所有未修改配置的存档共享它。这里只提示，不擅自更换默认值——
+            // 更换会使已有存档的派生密钥改变、导致旧存档无法解密（需业务自行规划迁移）
+            if (salt == "EF.Archive.DefaultSalt")
+                D.Warning("[FileArchiveProvider] 正在使用默认加密盐，正式项目请在 ArchiveSettings 中配置唯一 salt；" +
+                                 "修改后已有存档将无法解密，请先规划数据迁移。");
 
             if (!Directory.Exists(_rootPath))
                 Directory.CreateDirectory(_rootPath);
