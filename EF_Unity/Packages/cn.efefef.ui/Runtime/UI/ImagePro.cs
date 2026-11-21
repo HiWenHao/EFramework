@@ -310,7 +310,7 @@ namespace EasyFramework.Ui
             if (atlasHandle is not { IsValid: true })
             {
                 atlasHandle?.Dispose();
-                D.Warning($"[ UiManager ] [ ImagePro ] Atlas '{uiAtlasName}' not found for UIAtlasType.{type}");
+                D.Warning($"[ UiManager ] [ ImagePro ] Atlas '{uiAtlasName}' not found.");
                 return null;
             }
 
