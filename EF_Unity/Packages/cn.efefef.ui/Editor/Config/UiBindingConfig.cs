@@ -25,10 +25,8 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
         {
             get
             {
-                if (_instance is null && EditorUtils.CheckAssets<UiBindingConfig>(out var pathConfigPath))
-                    _instance = EditorUtils.LoadSettingAtPath<UiBindingConfig>(pathConfigPath);
-                _instance ??= Create.CreateSettings.Instance<UiBindingConfig>(true, ConfigManager.ConfigEditPath);
-
+                // 统一走 ConfigManager（内部已含缓存+查找），不再自己重复 CheckAssets
+                _instance ??= ConfigManager.Get<UiBindingConfig>(ConfigManager.ConfigEditPath);
                 return _instance;
             }
         }

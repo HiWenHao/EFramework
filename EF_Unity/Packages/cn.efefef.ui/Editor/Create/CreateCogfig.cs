@@ -13,6 +13,7 @@ using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.Windows.ConfigPanel;
 using EasyFramework.Ui;
 using UnityEditor;
+using ConfigManager = EasyFramework.Edit.ConfigManager;
 
 namespace EasyFramework.Edit.Create
 {
@@ -24,19 +25,19 @@ namespace EasyFramework.Edit.Create
         [MenuItem("Assets/Create/EF/UI Binding Config", priority = 412)]
         private static void CreatedAutoBindSetting()
         {
-            CreateSettings.Instance<UiBindingConfig>();
+            ConfigManager.Get<UiBindingConfig>(Utility.Path.GetCurrentFolderPath());
         }
 
         [MenuItem("Assets/Create/EF/UI Animation Config", priority = 413)]
         private static void CreatedAnimationConfig()
         {
-            CreateSettings.Instance<UiAnimationConfig>();
+            ConfigManager.Get<UiAnimationConfig>(Utility.Path.GetCurrentFolderPath());
         }
 
         [MenuItem("Assets/Create/EF/UI Atlas Collector", priority = 414)]
         private static void CreatedAtlasCollector()
         {
-            CreateSettings.Instance<AtlasCollector>();
+            ConfigManager.Get<AtlasCollector>(Utility.Path.GetCurrentFolderPath());
         }
     }
 }
