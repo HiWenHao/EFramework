@@ -13,7 +13,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频播放接口，只接受 AudioClip

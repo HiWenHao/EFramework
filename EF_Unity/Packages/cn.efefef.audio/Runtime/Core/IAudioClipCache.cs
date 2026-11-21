@@ -13,7 +13,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频缓存接口，包住一次完整加载

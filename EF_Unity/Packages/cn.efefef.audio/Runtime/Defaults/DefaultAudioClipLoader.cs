@@ -16,7 +16,7 @@ using EasyFramework.Managers.Assets;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 默认音频加载器，按名走 AssetsManager、按 URL 走网络

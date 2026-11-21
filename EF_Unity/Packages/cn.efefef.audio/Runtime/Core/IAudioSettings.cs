@@ -14,7 +14,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频设置接口，管理音量、静音与混音器

@@ -15,7 +15,7 @@ using EasyFramework.Preference;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 默认音频设置实现，写入共享上下文并持久化

@@ -12,9 +12,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using EasyFramework.Managers.Pool;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 默认音频播放器，负责池化播放与空闲回收
@@ -75,7 +76,7 @@ namespace EasyFramework.Managers.Audio
             _context.BgmSource.playOnAwake = false;
 
             _effectPrefab = CreateEffectPrefab();
-            Pool.PoolManager.Instance.CreateGameObjectPool(_effectPrefab, _context.EffectRoot,
+            PoolManager.Instance.CreateGameObjectPool(_effectPrefab, _context.EffectRoot,
                 _context.PrewarmCount, _context.MaxEffectPoolSize, _context.EffectIdleTimeout);
 
             _context.EffectGroupChanged += OnEffectGroupChanged;
@@ -110,7 +111,7 @@ namespace EasyFramework.Managers.Audio
                 UnityEngine.Object.Destroy(_context.EffectRoot.gameObject);
 
             if (_effectPrefab)
-                Pool.PoolManager.Instance.DestroyGameObjectPool(_effectPrefab);
+                PoolManager.Instance.DestroyGameObjectPool(_effectPrefab);
 
             _effectPrefab = null;
             _activeEffects = null;
@@ -191,7 +192,7 @@ namespace EasyFramework.Managers.Audio
         // 从池中获取激活的 AudioSource
         private AudioSource GetEffectFromPool()
         {
-            var go = Pool.PoolManager.Instance.Spawn(_effectPrefab);
+            var go = PoolManager.Instance.Spawn(_effectPrefab);
             if (go)
             {
                 var source = go.GetComponent<AudioSource>();
@@ -215,7 +216,7 @@ namespace EasyFramework.Managers.Audio
             source.Stop();
             source.gameObject.SetActive(false);
             source.transform.SetParent(_context.EffectRoot, false);
-            Pool.PoolManager.Instance.Despawn(source.gameObject);
+            PoolManager.Instance.Despawn(source.gameObject);
         }
 
         // 重置从池中取出的 AudioSource 状态

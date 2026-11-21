@@ -15,14 +15,14 @@ using EasyFramework.Edit.Windows;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Audio.Editor
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频管理器自定义检视面板
     /// <para>Custom inspector for AudioManager</para>
     /// </summary>
     [CustomEditor(typeof(AudioManager))]
-    public class AudioManagerInspector : UnityEditor.Editor
+    public class AudioManagerInspector : Editor
     {
         // 主混音器序列化属性
         private SerializedProperty audioMixerProp;

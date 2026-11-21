@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 四类音频服务的一次性注入配置包

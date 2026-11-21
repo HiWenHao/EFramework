@@ -13,7 +13,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频服务共享上下文，存放配置、场景引用与共享状态

@@ -7,7 +7,7 @@
 // using UnityEngine;
 // using UnityEngine.Audio;
 //
-// namespace EasyFramework.Managers.Audio.Editor
+// namespace EasyFramework.Audio
 // {
 //     /// <summary>
 //     /// AudioManager 公开 API 速查窗口：反射列出全部可直接访问的成员，一键复制单行调用。

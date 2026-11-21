@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Managers.Audio
+namespace EasyFramework.Audio
 {
     /// <summary>
     /// 音频加载来源类型
