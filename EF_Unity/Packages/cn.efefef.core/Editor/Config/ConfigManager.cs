@@ -30,6 +30,7 @@ namespace EasyFramework.Edit
 
         // 按类型缓存：同类配置全局一份，避免每次 Get 都查 AssetDatabase
         private static readonly Dictionary<Type, ScriptableObject> Cache = new();
+
         // 正在创建的类型：防止创建过程里又 Get 同类型导致递归
         private static Type _creating;
 
@@ -88,6 +89,7 @@ namespace EasyFramework.Edit
                 }
                 else
                     D.Error($"[ConfigManager] 创建 {typeof(T).Name} 失败：路径 '{createPath}' 无效或目录只读。");
+
                 return created;
             }
             finally

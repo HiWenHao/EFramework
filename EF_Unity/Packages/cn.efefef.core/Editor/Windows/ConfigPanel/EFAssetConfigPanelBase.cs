@@ -19,7 +19,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
     /// <para>Base class for config panels that show a "create asset" guide when the config asset is missing.</para>
     /// </summary>
     /// <remarks>
-    /// 子类只需实现 <see cref="OnPanelGUI"/>，在配置缺失时调用 <see cref="DrawMissingConfigGuide{T}"/>
+    /// 子类只需实现 "OnPanelGUI"，在配置缺失时调用 <see cref="DrawMissingConfigGuide{T}"/>
     /// 即可获得一致的空态 UI 与创建逻辑；配置存在时的绘制完全由子类掌控。
     /// <para>Subclasses implement OnPanelGUI and call DrawMissingConfigGuide when the asset is missing
     /// for a consistent empty-state UI and creation flow; the loaded state is fully subclass-controlled.</para>
@@ -47,9 +47,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 return null;
 
             string folder = persistent ? ConfigManager.ConfigRuntimePath : ConfigManager.ConfigEditPath;
-            T asset = ConfigManager.Get<T>(folder);
-            EditorGUIUtility.PingObject(asset);
-            return asset;
+            return ConfigManager.Get<T>(folder);
         }
 
         #endregion
