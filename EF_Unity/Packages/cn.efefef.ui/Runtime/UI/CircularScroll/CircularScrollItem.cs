@@ -12,7 +12,7 @@
 using UnityEngine;
 using EasyFramework.Pool;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 循环滚动列表项基类 —— 挂载到列表项 Prefab 上

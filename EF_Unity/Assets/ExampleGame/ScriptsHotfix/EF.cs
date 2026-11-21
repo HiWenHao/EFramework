@@ -30,7 +30,7 @@ using EasyFramework;
 using EasyFramework.Audio;
 using EasyFramework.Managers;
 using EasyFramework.Managers.Assets;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 //using EasyFramework.Http;
 //using EasyFramework.RedDot;
 using UnityEngine;

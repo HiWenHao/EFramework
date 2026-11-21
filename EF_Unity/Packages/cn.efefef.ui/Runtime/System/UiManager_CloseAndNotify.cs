@@ -12,7 +12,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     public partial class UiManager
     {

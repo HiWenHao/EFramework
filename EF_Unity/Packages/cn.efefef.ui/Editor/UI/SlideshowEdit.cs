@@ -9,11 +9,11 @@
  * ===============================================
  */
 
-using EasyFramework.Managers.Ui;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.UI
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// Custom inspector for Slideshow component. Provides element size, spacing, auto-loop and drag settings.

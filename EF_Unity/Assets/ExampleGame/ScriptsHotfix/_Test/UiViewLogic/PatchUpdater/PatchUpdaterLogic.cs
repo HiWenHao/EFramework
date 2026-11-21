@@ -14,7 +14,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 
 namespace EFExample
 {

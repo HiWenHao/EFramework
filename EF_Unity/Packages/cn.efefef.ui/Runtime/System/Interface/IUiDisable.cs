@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// UI面板每次禁用隐藏时

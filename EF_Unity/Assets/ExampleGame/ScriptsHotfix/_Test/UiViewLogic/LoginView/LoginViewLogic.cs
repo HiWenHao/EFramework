@@ -13,7 +13,7 @@ using EasyFramework;
 
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 

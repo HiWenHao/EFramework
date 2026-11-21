@@ -17,7 +17,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 循环滚动列表 — 核心控制器

@@ -12,7 +12,7 @@
 using EasyFramework;
 
 using System.Collections.Generic;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 

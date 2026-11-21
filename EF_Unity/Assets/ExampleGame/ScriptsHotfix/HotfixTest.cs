@@ -13,7 +13,7 @@ using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Assets;
 using EasyFramework.Audio;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 using EFExample.UI.Tips;
 using Luban;
 using SimpleJSON;

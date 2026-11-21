@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using EasyFramework.Managers.Assets;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 用户界面系统

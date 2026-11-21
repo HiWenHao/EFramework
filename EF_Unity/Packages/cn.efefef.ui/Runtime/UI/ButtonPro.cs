@@ -16,7 +16,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace EasyFramework
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 增强按钮组件，提供丰富的交互事件。

@@ -13,7 +13,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 用 Image 绘制的雷达图，顶点到中心的距离由百分比驱动。

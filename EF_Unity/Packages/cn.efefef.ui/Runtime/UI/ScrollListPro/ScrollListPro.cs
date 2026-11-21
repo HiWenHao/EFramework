@@ -16,7 +16,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 无限不规则滚动列表
@@ -611,11 +611,26 @@ namespace EasyFramework.Managers.Ui
         // 吸附防抖
         private async UniTaskVoid SnapDebounceAsync(CancellationToken ct)
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(0.12), cancellationToken: ct);
-            if (!ct.IsCancellationRequested)
-                PerformSnap();
-            _snapDebounceCts?.Dispose();
-            _snapDebounceCts = null;
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(0.12), cancellationToken: ct);
+                if (!ct.IsCancellationRequested)
+                    PerformSnap();
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // 被下一次滑动/new 防抖取消，交由 finally 清理
+            }
+            finally
+            {
+                // 仅当前防抖令牌才有权清理：若已被新防抖接管，旧任务不能 Dispose 新 CTS，
+                // 否则新防抖的 Delay 会因令牌已释放而失效。与 AnimateScrollAsync 的归属判断一致
+                if (_snapDebounceCts != null && _snapDebounceCts.Token == ct)
+                {
+                    _snapDebounceCts.Dispose();
+                    _snapDebounceCts = null;
+                }
+            }
         }
 
         // 执行吸附

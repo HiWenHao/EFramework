@@ -9,7 +9,7 @@
  * ================================================
  */
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 吸附对齐

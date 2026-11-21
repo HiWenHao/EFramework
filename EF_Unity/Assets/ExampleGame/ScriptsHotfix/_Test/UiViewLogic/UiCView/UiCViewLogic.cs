@@ -13,7 +13,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using EasyFramework;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 
 namespace EFExample
 {

@@ -11,15 +11,15 @@
 
 using System;
 using System.Reflection;
+using EasyFramework.Edit;
 using EasyFramework.Edit.Windows.ConfigPanel;
-using EasyFramework.Managers.Ui;
 using EasyFramework.Pool;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Edit.Create
+namespace EasyFramework.Ui
 {
     public class CreateUITemplatePrefab
     {

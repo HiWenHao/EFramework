@@ -10,7 +10,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 子面板标记接口：实现此接口的 View 只能由 UiManager.AddChild 创建，无法用 OpenView 独立打开。

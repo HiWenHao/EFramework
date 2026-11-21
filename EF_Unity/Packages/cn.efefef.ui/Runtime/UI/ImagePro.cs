@@ -17,7 +17,7 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
 
-namespace EasyFramework
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 升级版本Image组件的材质类型

@@ -12,7 +12,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// IScrollProItem 的默认实现，可直接挂载到 prefab 上使用。

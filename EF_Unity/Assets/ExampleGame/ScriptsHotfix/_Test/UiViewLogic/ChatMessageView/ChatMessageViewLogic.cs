@@ -10,7 +10,7 @@
  */
 
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 
 namespace EFExample
 {

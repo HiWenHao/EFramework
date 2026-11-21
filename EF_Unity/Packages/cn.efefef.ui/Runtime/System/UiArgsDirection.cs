@@ -9,7 +9,7 @@
  * ===============================================
  */
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// UI参数传递方向

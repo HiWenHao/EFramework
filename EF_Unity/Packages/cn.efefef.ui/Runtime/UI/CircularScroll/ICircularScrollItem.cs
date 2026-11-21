@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 循环滚动列表项接口<br/>

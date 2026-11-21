@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// UI视窗动画目录。按<see cref="UIViewType"/>匹配预设，未匹配时回退到默认预设。

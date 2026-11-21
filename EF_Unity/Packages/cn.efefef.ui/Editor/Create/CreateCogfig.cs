@@ -11,7 +11,7 @@
 
 using EasyFramework.Edit.SpriteTools;
 using EasyFramework.Edit.Windows.ConfigPanel;
-using EasyFramework.Managers.Ui;
+using EasyFramework.Ui;
 using UnityEditor;
 
 namespace EasyFramework.Edit.Create

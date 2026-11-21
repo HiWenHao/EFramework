@@ -11,7 +11,7 @@
 
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 无限滚动列表的 item 必须实现此接口。

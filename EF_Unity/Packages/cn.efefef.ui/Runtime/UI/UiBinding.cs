@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// UI 视窗运行时绑定数据持有者（存在于运行时，非 editor-only）。

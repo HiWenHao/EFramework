@@ -11,11 +11,11 @@
 
 using System;
 using UnityEngine;
-using EasyFramework;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEditor.UI;
 
-namespace EasyFramework.Edit
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// 图片升级版编辑器

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace EasyFramework.Managers.Ui
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// UI 系统子面板扩展：动态创建/查询/移除子面板，复用 UiBinding 强类型绑定

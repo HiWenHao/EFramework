@@ -9,11 +9,11 @@
  * ================================================
  */
 
-using EasyFramework.Managers.Ui;
+using EasyFramework.Edit;
 using UnityEditor;
 using UnityEngine;
 
-namespace EasyFramework.Edit.UI
+namespace EasyFramework.Ui
 {
     /// <summary>
     /// RadarMap 组件自定义 Inspector，支持顶点数、弧度与逐顶点占比编辑。
