@@ -12,7 +12,7 @@
 using Cysharp.Threading.Tasks;
 using EasyFramework;
 using EasyFramework.Managers.Assets;
-using EasyFramework.Managers.Audio;
+using EasyFramework.Audio;
 using EasyFramework.Managers.Ui;
 using EFExample.UI.Tips;
 using Luban;

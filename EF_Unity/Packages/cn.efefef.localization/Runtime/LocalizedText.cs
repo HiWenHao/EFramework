@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using EasyFramework.Managers.Event;
 using TMPro;
 using UnityEngine;
 

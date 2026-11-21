@@ -10,7 +10,7 @@
  */
 
 using UnityEngine;
-using EasyFramework.Managers.Pool;
+using EasyFramework.Pool;
 
 namespace EasyFramework.Managers.Ui
 {

@@ -12,9 +12,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers;
 using EasyFramework.Managers.Assets;
-using EasyFramework.Managers.Event;
 using EasyFramework.Preference;
 using UnityEngine;
 

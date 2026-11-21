@@ -12,8 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using EasyFramework.Managers;
-using EasyFramework.Managers.Event;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Systems.Net

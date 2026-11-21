@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers.Event;
+using EasyFramework;
 using UnityEngine;
 
 /// <summary>

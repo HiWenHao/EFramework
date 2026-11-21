@@ -12,8 +12,6 @@
 
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using EasyFramework.Managers;
-using EasyFramework.Managers.Pool;
 using EasyFramework.Managers.Assets;
 using UnityEngine;
 using UnityEngine.Audio;

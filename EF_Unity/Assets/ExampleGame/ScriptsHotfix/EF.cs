@@ -26,15 +26,13 @@
  */
 
 using Cysharp.Threading.Tasks;
+using EasyFramework;
+using EasyFramework.Audio;
 using EasyFramework.Managers;
-using EasyFramework.Managers.Event;
-using EasyFramework.Managers.Pool;
-using EasyFramework.Managers.Procedure;
 using EasyFramework.Managers.Assets;
-using EasyFramework.Managers.Audio;
 using EasyFramework.Managers.Ui;
-//using EasyFramework.Systems.Http;
-//using EasyFramework.Systems.RedDot;
+//using EasyFramework.Http;
+//using EasyFramework.RedDot;
 using UnityEngine;
 
 /// <summary>

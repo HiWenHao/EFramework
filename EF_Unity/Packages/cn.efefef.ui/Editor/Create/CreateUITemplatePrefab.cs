@@ -12,8 +12,8 @@
 using System;
 using System.Reflection;
 using EasyFramework.Edit.Windows.ConfigPanel;
-using EasyFramework.Managers.Pool;
 using EasyFramework.Managers.Ui;
+using EasyFramework.Pool;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
