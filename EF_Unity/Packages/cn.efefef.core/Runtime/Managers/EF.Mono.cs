@@ -58,6 +58,11 @@ public sealed class EFC : MonoBehaviour
     // 注册与轮询共用的锁对象
     private static readonly object LockObj = new object();
 
+    // 三个每帧路径的快照缓存：稳态零分配（版本不变复用同一数组），仅注册/注销后的首帧重建
+    private static SnapshotCache<IUpdate> _updaterView;
+    private static SnapshotCache<IFixedUpdate> _fixedView;
+    private static SnapshotCache<ILateUpdate> _lateView;
+
     // 协程宿主实例
     private static EFC _monoEFC;
 
@@ -101,6 +106,9 @@ public sealed class EFC : MonoBehaviour
         _singletons = new List<ISingleton>();
         _lateUpdaters = new List<ILateUpdate>();
         _fixedUpdaters = new List<IFixedUpdate>();
+        _updaterView = new SnapshotCache<IUpdate>(_updater, LockObj);
+        _fixedView = new SnapshotCache<IFixedUpdate>(_fixedUpdaters, LockObj);
+        _lateView = new SnapshotCache<ILateUpdate>(_lateUpdaters, LockObj);
         _pauseListeners = new List<IOnAppPause>();
         _focusListeners = new List<IOnAppFocus>();
         _quitListeners = new List<IOnAppQuit>();
@@ -129,14 +137,9 @@ public sealed class EFC : MonoBehaviour
     private void Update()
     {
         if (!_inRunning) return;
-        // 锁内取快照、锁外执行回调：回调内 Register/Unregister 会重入修改列表，
-        // 若持锁按原列表索引遍历会导致错位/漏更新；快照同时缩短锁持有时间
-        IUpdate[] snapshot;
-        lock (LockObj)
-        {
-            snapshot = _updater.ToArray();
-        }
-        foreach (var updater in snapshot)
+        // 快照缓存：稳态零分配；锁只圈住版本检查/重建，回调在锁外执行，
+        // 回调内 Register/Unregister 重入改原列表也不会让本次遍历错位
+        foreach (var updater in _updaterView.Get())
         {
             if (updater.IsPaused) continue;
             updater.Update(Time.deltaTime, Time.unscaledDeltaTime);
@@ -146,12 +149,7 @@ public sealed class EFC : MonoBehaviour
     private void FixedUpdate()
     {
         if (!_inRunning) return;
-        IFixedUpdate[] snapshot;
-        lock (LockObj)
-        {
-            snapshot = _fixedUpdaters.ToArray();
-        }
-        foreach (var fixedUpdater in snapshot)
+        foreach (var fixedUpdater in _fixedView.Get())
         {
             if (fixedUpdater.IsPaused) continue;
             fixedUpdater.FixedUpdate(Time.fixedDeltaTime);
@@ -161,12 +159,7 @@ public sealed class EFC : MonoBehaviour
     private void LateUpdate()
     {
         if (!_inRunning) return;
-        ILateUpdate[] snapshot;
-        lock (LockObj)
-        {
-            snapshot = _lateUpdaters.ToArray();
-        }
-        foreach (var lateUpdater in snapshot)
+        foreach (var lateUpdater in _lateView.Get())
         {
             if (lateUpdater.IsPaused) continue;
             lateUpdater.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
@@ -391,6 +384,10 @@ public sealed class EFC : MonoBehaviour
             _updater.Clear();
             _fixedUpdaters.Clear();
             _lateUpdaters.Clear();
+            // 集合已清空：让缓存失效（_inRunning 已 false 不会再走 Get，但保持写后失效的不变式）
+            _updaterView?.Invalidate();
+            _fixedView?.Invalidate();
+            _lateView?.Invalidate();
             _pauseListeners.Clear();
             _focusListeners.Clear();
             _quitListeners.Clear();
@@ -445,9 +442,9 @@ public sealed class EFC : MonoBehaviour
             else
                 _singletons.Add(item);
 
-            if (item is IUpdate update) InsertByOrder(_updater, update, order);
-            if (item is IFixedUpdate fixedUpdater) InsertByOrder(_fixedUpdaters, fixedUpdater, order);
-            if (item is ILateUpdate lateUpdater) InsertByOrder(_lateUpdaters, lateUpdater, order);
+            if (item is IUpdate update) { InsertByOrder(_updater, update, order); _updaterView.Invalidate(); }
+            if (item is IFixedUpdate fixedUpdater) { InsertByOrder(_fixedUpdaters, fixedUpdater, order); _fixedView.Invalidate(); }
+            if (item is ILateUpdate lateUpdater) { InsertByOrder(_lateUpdaters, lateUpdater, order); _lateView.Invalidate(); }
             if (item is IOnAppPause pauseListener) InsertByOrder(_pauseListeners, pauseListener, order);
             if (item is IOnAppFocus focusListener) InsertByOrder(_focusListeners, focusListener, order);
             if (item is IOnAppQuit quitListener) InsertByOrder(_quitListeners, quitListener, order);
@@ -485,9 +482,9 @@ public sealed class EFC : MonoBehaviour
             else
                 _singletons.Remove(item);
 
-            if (item is IUpdate update) _updater.Remove(update);
-            if (item is IFixedUpdate fixedUpdater) _fixedUpdaters.Remove(fixedUpdater);
-            if (item is ILateUpdate lateUpdater) _lateUpdaters.Remove(lateUpdater);
+            if (item is IUpdate update) { _updater.Remove(update); _updaterView.Invalidate(); }
+            if (item is IFixedUpdate fixedUpdater) { _fixedUpdaters.Remove(fixedUpdater); _fixedView.Invalidate(); }
+            if (item is ILateUpdate lateUpdater) { _lateUpdaters.Remove(lateUpdater); _lateView.Invalidate(); }
             if (item is IOnAppPause pauseListener) _pauseListeners.Remove(pauseListener);
             if (item is IOnAppFocus focusListener) _focusListeners.Remove(focusListener);
             if (item is IOnAppQuit quitListener) _quitListeners.Remove(quitListener);
@@ -586,4 +583,39 @@ public sealed class EFC : MonoBehaviour
     }
 
     #endregion
+
+    // 监听器快照缓存：List 内容不变时复用同一数组，消除每帧 ToArray 的 GC 分配。
+    // 线程约定：Invalidate 必须与 List 的实际改动在同一把锁（LockObj）内调用；
+    // Get 的锁只圈住版本检查与重建，不覆盖回调，因此回调内重入注册不会造成遍历错乱。
+    private sealed class SnapshotCache<T>
+    {
+        private readonly List<T> _list;
+        private readonly object _gate;
+        private T[] _cache = Array.Empty<T>();
+        private int _version;
+        private int _cacheVersion = -1;
+
+        public SnapshotCache(List<T> list, object gate)
+        {
+            _list = list;
+            _gate = gate;
+        }
+
+        // 写方在持锁修改 List 后调用；版本递增即让旧快照失效
+        public void Invalidate() => _version++;
+
+        // 读方每帧调用：稳态直接返回缓存数组（零分配），仅版本变化时重建一次
+        public T[] Get()
+        {
+            lock (_gate)
+            {
+                if (_cacheVersion != _version)
+                {
+                    _cache = _list.ToArray();
+                    _cacheVersion = _version;
+                }
+                return _cache;
+            }
+        }
+    }
 }
