@@ -883,7 +883,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
                 sb.AppendLine(
                     $"            {btnProName} = Binding.Resolve<ButtonPro>(nameof({btnProName}));");
                 sb.AppendLine(
-                    $"            {btnProName}.AddClickListener(OnClick{btnProName});");
+                    $"            {btnProName}.onClick.AddListener(OnClick{btnProName});");
             }
 
             sb.AppendLine("        }");
@@ -898,7 +898,7 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
 
             foreach (var scriptName in buttonProScriptNames)
             {
-                sb.AppendLine($"            {scriptName}?.RemoveClickListener(OnClick{scriptName});");
+                sb.AppendLine($"            {scriptName}?.onClick.RemoveListener(OnClick{scriptName});");
                 sb.AppendLine($"            {scriptName} = null;");
             }
 
