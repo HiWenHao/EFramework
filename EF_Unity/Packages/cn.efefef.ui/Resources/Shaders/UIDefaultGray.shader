@@ -56,11 +56,9 @@ Shader "UI/DefaultGray"
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-        
+
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
-			// #pragma multi_compile _GrayDisable _GrayEnabled
-
 
             struct appdata_t
             {
@@ -74,9 +72,8 @@ Shader "UI/DefaultGray"
             {
                 float4 vertex   : SV_POSITION;
                 fixed4 color    : COLOR;
-                float2 texcoord  : TEXCOORD0;
-                float4 worldPosition : TEXCOORD1;
-                float4  mask : TEXCOORD2;
+                float2 texcoord : TEXCOORD0;
+                half4  mask     : TEXCOORD1;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -90,38 +87,30 @@ Shader "UI/DefaultGray"
             int _UIVertexColorAlwaysGammaSpace;
             float _GrayScaleAmount;
 
-        // int GammaToLinear(int _cpp_par_);
-            // Manual Gamma to Linear conversion function
-            float3 GammaToLinear(float3 gammaColor)
+            //  Gamma->Linear 转换，保持与原实现一致的 2.2 指数
+            half3 GammaToLinear(half3 gammaColor)
             {
-                return pow(gammaColor, 2.2); // 伽马校正公式，指数值通常是 2.2
+                return pow(gammaColor, 2.2);
             }
-        
+
             v2f vert(appdata_t v)
             {
                 v2f OUT;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
                 float4 vPosition = UnityObjectToClipPos(v.vertex);
-                OUT.worldPosition = v.vertex;
                 OUT.vertex = vPosition;
 
                 float2 pixelSize = vPosition.w;
                 pixelSize /= float2(1, 1) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 
                 float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
-                float2 maskUV = (v.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
                 OUT.texcoord = TRANSFORM_TEX(v.texcoord.xy, _MainTex);
-                OUT.mask = float4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_UIMaskSoftnessX, _UIMaskSoftnessY) + abs(pixelSize.xy)));
+                OUT.mask = half4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw,
+                    0.25 / (0.25 * half2(_UIMaskSoftnessX, _UIMaskSoftnessY) + abs(pixelSize.xy)));
 
-
-                if (_UIVertexColorAlwaysGammaSpace)
-                {
-                    if(!IsGammaSpace())
-                    {
-                        v.color.rgb = GammaToLinear(v.color.rgb);
-                    }
-                }
+                if (_UIVertexColorAlwaysGammaSpace && !IsGammaSpace())
+                    v.color.rgb = GammaToLinear(v.color.rgb);
 
                 OUT.color = v.color * _Color;
                 return OUT;
@@ -129,12 +118,10 @@ Shader "UI/DefaultGray"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                //Round up the alpha color coming from the interpolator (to 1.0/256.0 steps)
-                //The incoming alpha could have numerical instability, which makes it very sensible to
-                //HDR color transparency blend, when it blends with the world's texture.
+                //  把插值器带来的 alpha 误差向上取整到 1/256，避免 HDR 混合时边缘发花
                 const half alphaPrecision = half(0xff);
                 const half invAlphaPrecision = half(1.0/alphaPrecision);
-                IN.color.a = round(IN.color.a * alphaPrecision)*invAlphaPrecision;
+                IN.color.a = round(IN.color.a * alphaPrecision) * invAlphaPrecision;
 
                 half4 color = IN.color * (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd);
 
@@ -147,18 +134,13 @@ Shader "UI/DefaultGray"
                 clip (color.a - 0.001);
                 #endif
 
-                const float3 grayWeights = float3(0.3, 0.59, 0.11);
-                half3 originalColor = color.rgb;
-                originalColor *= color.a;
-                half gray = dot(originalColor, grayWeights);
-                color.rgb = originalColor * (1.0 - _GrayScaleAmount) + half3(gray, gray, gray) * _GrayScaleAmount;
-              
-                // color.rgb *= color.a;
-                // float gray = dot(color.rgb, float3(0.3, 0.59, 0.11)); // 经典灰度公式
-                // // float gray = dot(color.rgb, float3(0.299, 0.587, 0.114)); // 经典灰度公式
-                // color.rgb = lerp(color.rgb, float3(gray, gray, gray), _GrayScaleAmount) * color.a; // 混合灰度
-                
-				return color;
+                //  Rec.601 标准亮度权重，对已预乘 alpha 的 RGB 求灰度再按强度混合
+                const half3 grayWeights = half3(0.299, 0.587, 0.114);
+                half3 premultiplied = color.rgb * color.a;
+                half gray = dot(premultiplied, grayWeights);
+                color.rgb = lerp(premultiplied, half3(gray, gray, gray), _GrayScaleAmount);
+
+                return color;
             }
         ENDCG
         }

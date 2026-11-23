@@ -6,9 +6,11 @@ Shader "UI/RoundedRectangle"
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        _Width("UI宽度",float) =100
-        _Height("UI高度",float) =100
-        _CornerSize("圆角尺寸",float) =5
+        _Width ("UI Width (local units)", float) = 100
+        _Height ("UI Height (local units)", float) = 100
+        _CornerSize ("Corner Radius (local units)", float) = 5
+        _RectCenter ("Rect Center (local)", Vector) = (0,0,0,0)
+        _PixelWidth ("Local Units Per Pixel", float) = 1
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
         _StencilOp ("Stencil Operation", Float) = 0
@@ -74,8 +76,8 @@ Shader "UI/RoundedRectangle"
                 float4 vertex   : SV_POSITION;
                 fixed4 color    : COLOR;
                 float2 texcoord  : TEXCOORD0;
-                float4 worldPosition : TEXCOORD1;
-                half4  mask : TEXCOORD2;
+                float2 localPos  : TEXCOORD1;
+                half4  mask      : TEXCOORD2;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -89,6 +91,8 @@ Shader "UI/RoundedRectangle"
             float _Width;
             float _Height;
             float _CornerSize;
+            float2 _RectCenter;
+            float _PixelWidth;
 
             v2f vert(appdata_t v)
             {
@@ -96,16 +100,17 @@ Shader "UI/RoundedRectangle"
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
                 float4 vPosition = UnityObjectToClipPos(v.vertex);
-                OUT.worldPosition = v.vertex;
                 OUT.vertex = vPosition;
+                //  RectTransform 本地坐标，与 _RectCenter / _Width / _Height 同一坐标系
+                OUT.localPos = v.vertex.xy;
 
                 float2 pixelSize = vPosition.w;
                 pixelSize /= float2(1, 1) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
 
                 float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
-                float2 maskUV = (v.vertex.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
                 OUT.texcoord = TRANSFORM_TEX(v.texcoord.xy, _MainTex);
-                OUT.mask = half4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_UIMaskSoftnessX, _UIMaskSoftnessY) + abs(pixelSize.xy)));
+                OUT.mask = half4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw,
+                    0.25 / (0.25 * half2(_UIMaskSoftnessX, _UIMaskSoftnessY) + abs(pixelSize.xy)));
 
                 OUT.color = v.color * _Color;
                 return OUT;
@@ -113,45 +118,33 @@ Shader "UI/RoundedRectangle"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                //Round up the alpha color coming from the interpolator (to 1.0/256.0 steps)
-                //The incoming alpha could have numerical instability, which makes it very sensible to
-                //HDR color transparency blend, when it blends with the world's texture.
+                //  把插值器带来的 alpha 误差向上取整到 1/256，避免 HDR 混合时边缘发花
                 const half alphaPrecision = half(0xff);
                 const half invAlphaPrecision = half(1.0/alphaPrecision);
-                IN.color.a = round(IN.color.a * alphaPrecision)*invAlphaPrecision;
+                IN.color.a = round(IN.color.a * alphaPrecision) * invAlphaPrecision;
 
                 half4 color = IN.color * (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd);
-                //-------------------计算圆角矩形----------------------
-                float2 uv = IN.texcoord.xy- float2(0.5,0.5);
-                float valueX=(0.5-_CornerSize/_Width);
-                float valueY=(0.5-_CornerSize/_Height);
-                
-                float rx=fmod(uv.x,valueX);
-                float timesX=int(uv.x/valueX);
-                rx=rx+step(0,abs(timesX)-1)*(abs(timesX)-1)*valueX*uv.x/(abs(uv.x));
 
-                float ry=fmod(uv.y, valueY);
-                float timesY=int(uv.y/valueY);
-                ry=ry+step(0,abs(timesY)-1)*(abs(timesY)-1)*valueY*(uv.y/abs(uv.y));
-                ry=ry*(_Height/_Width);
-                
-                float mx = step(valueX, abs(uv.x)); 
-                float my = step(valueY, abs(uv.y)); 
-                float filletAlpha = 1 - mx * my * step(_CornerSize/_Width, length(half2(rx,ry)));
-                color.a=filletAlpha*IN.color.a;
-                //-----------------------------------------------------
-                
+                //  圆角矩形 SDF：用 RectTransform 本地坐标计算，不依赖精灵 UV（图集安全）
+                float2 halfSize = 0.5 * max(float2(_Width, _Height), float2(1.0, 1.0));
+                float radius = clamp(_CornerSize, 0.0, min(halfSize.x, halfSize.y));
+                float2 q = abs(IN.localPos - _RectCenter) - halfSize + radius;
+                float dist = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
+                //  抗锯齿过渡宽度 = 1 像素对应的本地单位数，缩放画布时边缘粗细恒定
+                half aaWidth = max(half(_PixelWidth), half(0.0001));
+                half cornerAlpha = saturate(half(0.5) - dist / aaWidth);
+                color.a *= cornerAlpha;
+
                 #ifdef UNITY_UI_CLIP_RECT
                 half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
                 color.a *= m.x * m.y;
                 #endif
-                
-                
+
                 color.rgb *= color.a;
                 #ifdef UNITY_UI_ALPHACLIP
                 clip (color.a - 0.001);
                 #endif
-                
+
                 return color;
             }
         ENDCG
