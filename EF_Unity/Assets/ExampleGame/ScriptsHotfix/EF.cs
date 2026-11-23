@@ -63,7 +63,7 @@ public static class EF
     /// 通用工具管理器
     /// <para>Universal tools manager</para>
     /// </summary>
-    public static ToolManager Tool => ToolManager.Instance;
+    public static ToolManager Tool => EFC.GetOrCreate<ToolManager>();
 
     /// <summary>
     /// 系统级事件管理器

@@ -22,7 +22,7 @@ namespace EasyFramework.Managers
     /// <para>工具管理器</para>
     /// </summary>
     [Manager(Order = 99500)]
-    public class ToolManager : Singleton<ToolManager>, ISingleton
+    public class ToolManager : ISingleton
     {
         // 屏幕中心半距：动态计算以响应分辨率变化（旧实现仅 Init 算一次，改分辨率后鼠标坐标失准）
         private static Vector3 ScreenHalf => new(Screen.width / 2.0f, Screen.height / 2.0f, 0.0f);
