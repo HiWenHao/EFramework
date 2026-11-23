@@ -22,6 +22,9 @@ public sealed partial class EFC : MonoBehaviour
     // 框架运行标记，防止重复初始化与退出后仍轮询
     private static volatile bool _inRunning;
 
+    // 正在退出：退出期间的 Register 不得恢复驱动（避免 QuitGames 结束时留下"running 但集合空"）
+    private static volatile bool _quitting;
+
     // 带 ManagerAttribute 的核心管理器，按优先级降序
     private static List<ISingleton> _managers;
     // 普通业务单例

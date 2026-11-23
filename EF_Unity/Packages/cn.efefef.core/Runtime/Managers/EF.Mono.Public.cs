@@ -77,40 +77,51 @@ public sealed partial class EFC
     public static void QuitGames()
     {
         if (!_inRunning) return;
-        _inRunning = false;
-
-        Application.lowMemory -= _monoEFC.OnLowMemory;
 
         lock (LockObj)
         {
-            // 与销毁同序（优先级升序）通知，低优先级先收到保存机会
-            for (int i = _quitListeners.Count - 1; i >= 0; i--)
-                _quitListeners[i].OnAppQuit();
+            // 双重检查：与 Register 的恢复驱动在同一把锁内互斥，避免"running 但没订阅"的竞态
+            if (!_inRunning) return;
+            _inRunning = false;
+            _quitting = true;
+            try
+            {
+                Application.lowMemory -= _monoEFC.OnLowMemory;
 
-            var allSingletons = new List<ISingleton>(_managers);
-            allSingletons.AddRange(_singletons);
-            allSingletons.Sort((a, b) => GetOrder(a).CompareTo(GetOrder(b)));
+                // 与销毁同序（优先级升序）通知，低优先级先收到保存机会
+                for (int i = _quitListeners.Count - 1; i >= 0; i--)
+                    _quitListeners[i].OnAppQuit();
 
-            foreach (var singleton in allSingletons)
-                Unregister(singleton, destroyGameObject: true);
+                var allSingletons = new List<ISingleton>(_managers);
+                allSingletons.AddRange(_singletons);
+                allSingletons.Sort((a, b) => GetOrder(a).CompareTo(GetOrder(b)));
 
-            _singletons.Clear();
-            _managers.Clear();
-            _updater.Clear();
-            _fixedUpdaters.Clear();
-            _lateUpdaters.Clear();
-            // 集合已清空：让缓存失效（_inRunning 已 false 不会再走 Get，但保持写后失效的不变式）
-            _updaterView?.Invalidate();
-            _fixedView?.Invalidate();
-            _lateView?.Invalidate();
-            _pauseListeners.Clear();
-            _focusListeners.Clear();
-            _quitListeners.Clear();
-            _lowMemoryListeners.Clear();
-            _singletonMap.Clear();
-            // 与 GetOrder/EnsureDependencies 的读写在同锁内互斥，避免退出时并发 Clear 损坏集合
-            _resolvingSet.Clear();
-            _orderCache.Clear();
+                foreach (var singleton in allSingletons)
+                    Unregister(singleton, destroyGameObject: true);
+
+                _singletons.Clear();
+                _managers.Clear();
+                _updater.Clear();
+                _fixedUpdaters.Clear();
+                _lateUpdaters.Clear();
+                // 集合已清空：让缓存失效（保持写后失效的不变式）
+                _updaterView?.Invalidate();
+                _fixedView?.Invalidate();
+                _lateView?.Invalidate();
+                _pauseListeners.Clear();
+                _focusListeners.Clear();
+                _quitListeners.Clear();
+                _lowMemoryListeners.Clear();
+                _singletonMap.Clear();
+                // 与 GetOrder/EnsureDependencies 的读写在同锁内互斥，避免退出时并发 Clear 损坏集合
+                _resolvingSet.Clear();
+                _orderCache.Clear();
+            }
+            finally
+            {
+                // 回调抛异常也必须复位，否则后续 Register 永远无法恢复驱动
+                _quitting = false;
+            }
         }
     }
 
@@ -163,6 +174,14 @@ public sealed partial class EFC
                 mono.transform.SetParent(isManager ? Managers : Singleton);
 
             _singletonMap[type] = item;
+
+            // 重入：QuitGames 后首次 Register 重新启动驱动；退出过程中的 Register 不恢复
+            if (!_inRunning && !_quitting)
+            {
+                _inRunning = true;
+                Application.lowMemory += _monoEFC.OnLowMemory;
+            }
+
             item.Init();
         }
     }
