@@ -22,6 +22,9 @@ namespace EasyFramework.Ui
 {
     public partial class UiManager
     {
+        private SafeAreaFitter _safeAreaFitter;  //  SafeArea 容器上的安全区适配器
+        private RectTransform _uiRootRect;   //  UIRoot 下 SafeArea 容器的 RectTransform
+
         void ISingleton.Init()
         {
             UICamera = new GameObject("UICamera").AddComponent<Camera>();
@@ -51,6 +54,17 @@ namespace EasyFramework.Ui
             cs.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
             root.transform.SetParent(transform, false);
 
+            //  安全区容器：作为 UIRoot 的子节点，所有视窗挂在它下面，随安全区收缩
+            GameObject safeAreaRoot = new GameObject("SafeArea");
+            RectTransform safeRect = safeAreaRoot.AddComponent<RectTransform>();
+            safeRect.SetParent(root.transform, false);
+            safeRect.anchorMin = Vector2.zero;
+            safeRect.anchorMax = Vector2.one;
+            safeRect.offsetMin = Vector2.zero;
+            safeRect.offsetMax = Vector2.zero;
+            _uiRootRect = safeRect;
+            ApplySafeArea();
+
             int typeCount = System.Enum.GetValues(typeof(UIViewType)).Length;
             _viewStackDic = new Dictionary<UIViewType, List<IUiView>>();
             _viewParentDic = new Dictionary<UIViewType, Transform>(typeCount);
@@ -58,7 +72,7 @@ namespace EasyFramework.Ui
             {
                 UIViewType viewType = (UIViewType)i;
                 Transform trans = new GameObject($"ViewType{i}-{viewType}").transform;
-                trans.SetParent(root.transform);
+                trans.SetParent(safeRect);
                 trans.gameObject.SetActive(i != 0);
                 trans.gameObject.layer = LayerMask.NameToLayer("UI");
                 RectTransform rect = trans.gameObject.AddComponent<RectTransform>();
@@ -181,10 +195,40 @@ namespace EasyFramework.Ui
             _childParentDic?.Clear();
             _childParentDic = null;
 
+            //  先恢复 SafeArea 容器锚点并移除适配器，再销毁相机，避免当帧 Canvas 引用已销毁相机
+            if (_safeAreaFitter != null)
+            {
+                _safeAreaFitter.Restore();
+                DestroyObj(_safeAreaFitter);
+                _safeAreaFitter = null;
+            }
+            _uiRootRect = null;
+
             if (UICamera != null)
             {
                 DestroyObj(UICamera.gameObject);
                 UICamera = null;
+            }
+        }
+
+        //  按当前开关挂载或卸载 SafeArea 容器上的安全区适配器
+        private void ApplySafeArea()
+        {
+            if (_uiRootRect == null)
+                return;
+
+            if (_enableSafeArea)
+            {
+                //  AddComponent 会同步触发 Awake/OnEnable，二者已调用 Apply，无需重复
+                if (_safeAreaFitter == null)
+                    _safeAreaFitter = _uiRootRect.gameObject.AddComponent<SafeAreaFitter>();
+                else
+                    _safeAreaFitter.enabled = true;
+            }
+            else if (_safeAreaFitter != null)
+            {
+                //  OnDisable 内部会 Restore，无需显式再调
+                _safeAreaFitter.enabled = false;
             }
         }
 

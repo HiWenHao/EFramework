@@ -36,6 +36,29 @@ namespace EasyFramework.Ui
         /// </summary>
         public bool OpenDebug { get; set; } = true;
 
+        /// <summary>
+        /// 是否启用安全区适配（开启后 UIRoot 自动避开刘海与手势条）
+        /// <para>Whether to fit UIRoot into the device safe area</para>
+        /// </summary>
+        private bool _enableSafeArea = true; //  是否启用安全区适配（代码属性 EnableSafeArea 可运行时切换）
+
+        /// <summary>
+        /// 是否启用安全区适配；运行期修改会立即生效
+        /// <para>Whether safe area fitting is enabled; changes take effect immediately at runtime</para>
+        /// </summary>
+        public bool EnableSafeArea
+        {
+            get => _enableSafeArea;
+            set
+            {
+                if (_enableSafeArea == value)
+                    return;
+
+                _enableSafeArea = value;
+                ApplySafeArea();
+            }
+        }
+
         private uint _serialId; // 页面序列号
 
         /// <summary> 自动销毁计时 </summary>
@@ -91,12 +114,10 @@ namespace EasyFramework.Ui
             {
                 All.Remove(child);
                 Type type = child.GetType();
-                if (ByType.TryGetValue(type, out var list))
-                {
-                    list.Remove(child);
-                    if (list.Count == 0)
-                        ByType.Remove(type);
-                }
+                if (!ByType.TryGetValue(type, out var list)) return;
+                list.Remove(child);
+                if (list.Count == 0)
+                    ByType.Remove(type);
             }
         }
     }
