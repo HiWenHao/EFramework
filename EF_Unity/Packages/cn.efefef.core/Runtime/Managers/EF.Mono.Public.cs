@@ -70,18 +70,6 @@ public sealed partial class EFC
         }
     }
 
-    // 每类型独立；[ThreadStatic] 提供线程隔离，跨线程并发靠 Register 判重兜底
-    private static class CreationGuard<T>
-    {
-        [ThreadStatic] internal static bool Creating;
-    }
-
-    // IgnoreAutoRegister 类型的缓存容器（泛型静态，每类型独立；Lazy 保证线程安全）
-    private static class IgnoredCache<T> where T : class, ISingleton, new()
-    {
-        internal static readonly Lazy<T> Lazy = new(() => new T());
-    }
-
     /// <summary>
     /// 退出框架：先按销毁顺序通知 IOnAppQuit 订阅者，再按优先级升序注销全部单例
     /// <para>Quit the framework: notifies IOnAppQuit subscribers in teardown order first, then unregisters all singletons in ascending priority</para>
@@ -208,30 +196,6 @@ public sealed partial class EFC
 
         if (destroyGameObject && item is MonoBehaviour mono)
             Destroy(mono.gameObject);
-    }
-
-    // 注册各更新/通知阶段的监听器（必须在 LockObj 内调用）
-    private static void AddToPhases(ISingleton item, int order)
-    {
-        if (item is IUpdate update) { InsertByOrder(_updater, update, order); _updaterView.Invalidate(); }
-        if (item is IFixedUpdate fixedUpdater) { InsertByOrder(_fixedUpdaters, fixedUpdater, order); _fixedView.Invalidate(); }
-        if (item is ILateUpdate lateUpdater) { InsertByOrder(_lateUpdaters, lateUpdater, order); _lateView.Invalidate(); }
-        if (item is IOnAppPause pauseListener) InsertByOrder(_pauseListeners, pauseListener, order);
-        if (item is IOnAppFocus focusListener) InsertByOrder(_focusListeners, focusListener, order);
-        if (item is IOnAppQuit quitListener) InsertByOrder(_quitListeners, quitListener, order);
-        if (item is IOnLowMemory lowMemoryListener) InsertByOrder(_lowMemoryListeners, lowMemoryListener, order);
-    }
-
-    // 注销各更新/通知阶段的监听器（必须在 LockObj 内调用）
-    private static void RemoveFromPhases(ISingleton item)
-    {
-        if (item is IUpdate update) { _updater.Remove(update); _updaterView.Invalidate(); }
-        if (item is IFixedUpdate fixedUpdater) { _fixedUpdaters.Remove(fixedUpdater); _fixedView.Invalidate(); }
-        if (item is ILateUpdate lateUpdater) { _lateUpdaters.Remove(lateUpdater); _lateView.Invalidate(); }
-        if (item is IOnAppPause pauseListener) _pauseListeners.Remove(pauseListener);
-        if (item is IOnAppFocus focusListener) _focusListeners.Remove(focusListener);
-        if (item is IOnAppQuit quitListener) _quitListeners.Remove(quitListener);
-        if (item is IOnLowMemory lowMemoryListener) _lowMemoryListeners.Remove(lowMemoryListener);
     }
 
     /// <summary>
