@@ -40,30 +40,30 @@ namespace EasyFramework.Ui
         private const float DefaultCornerArc = 10f;
         private const float HalfRatio = 0.5f;
         private const float EdgeInset = 1f;
-        private const float GrayOn = 1f;
         private const float GrayOff = 0f;
 
-        [HeaderPro("设置", "Settings", HeaderProType.Title)]
-        [HeaderPro("资源地址", "Address")]
-        [SerializeField] private string address;    //  当前图片地址或图集去重键
+        [HeaderPro("设置", "Settings", HeaderProType.Title)] [HeaderPro("资源地址", "Address")] [SerializeField]
+        private string address; //  当前图片地址或图集去重键
 
-        [HeaderPro("圆角弧度", "Corner Arc")]
-        [SerializeField] [Range(0, MaxCornerArc)] private float cornerArc = DefaultCornerArc;   //  圆角弧度
+        [HeaderPro("圆角弧度", "Corner Arc")] [SerializeField] [Range(0, MaxCornerArc)]
+        private float cornerArc = DefaultCornerArc; //  圆角弧度
 
-        [HeaderPro("材质类型", "Material Type")]
-        [SerializeField] private ImageProMaterialType imageProMaterialType = ImageProMaterialType.Default;    //  材质类型
+        [HeaderPro("材质类型", "Material Type")] [SerializeField]
+        private ImageProMaterialType imageProMaterialType = ImageProMaterialType.Default; //  材质类型
 
-        private static readonly int Width = Shader.PropertyToID("_Width");    //  宽度属性 ID
-        private static readonly int Height = Shader.PropertyToID("_Height");  //  高度属性 ID
-        private static readonly int CornerSize = Shader.PropertyToID("_CornerSize");    //  圆角属性 ID
-        private static readonly int RectCenter = Shader.PropertyToID("_RectCenter");    //  矩形中心属性 ID
-        private static readonly int PixelWidth = Shader.PropertyToID("_PixelWidth");    //  每像素对应本地单位 ID
-        private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayScaleAmount");   //  灰度属性 ID
+        private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayScaleAmount"); //  灰度属性 ID
 
-        private static Shader _roundedRectangleShader;   //  圆角 shader 缓存
-        private static Shader _defaultGrayShader;    //  灰度 shader 缓存
+        private static Shader _roundedRectangleShader; //  圆角 shader 缓存
 
-        private Material _dynamicMaterial; // 动态创建的材质，OnDestroy 时释放
+        private static Shader _defaultGrayShader; //  灰度 shader 缓存
+
+        //  圆角参数全走顶点通道，材质无逐图状态，可全局共享；灰度只有开关两态，拆两个共享实例切换。
+        private static Material _sharedRoundMaterial;
+        private static Material _sharedGrayOnMaterial;
+        private static Material _sharedGrayOffMaterial;
+
+        private bool _isGray = true; //  当前灰度状态，决定引用哪个共享灰度材质
+        private UIVertex _vertexScratch; //  mesh 遍历复用，避免逐顶点 GC
         private CancellationTokenSource _loadCts; // HTTP 下载取消令牌
         private IDisposable _assetHandle; // 当前资源加载句柄，换图/销毁时释放
         private bool _isHttpSprite; // 当前 sprite 是否由 HTTP 下载生成（纹理归本组件所有）
@@ -87,25 +87,21 @@ namespace EasyFramework.Ui
             {
                 cornerArc = Mathf.Clamp(value, 0f, MaxCornerArc);
                 if (imageProMaterialType == ImageProMaterialType.Round)
-                    ResetRoundRectangleSize();
+                    SetVerticesDirty();
             }
         }
 
         protected override void Awake()
         {
             base.Awake();
+            EnableCanvasShaderChannels();
             ApplyMaterialType();
         }
 
         protected override void OnDestroy()
         {
             CancelLoading();
-            if (_dynamicMaterial != null)
-            {
-                Destroy(_dynamicMaterial);
-                _dynamicMaterial = null;
-            }
-
+            //  共享材质为静态缓存，不随单个组件销毁，故此处不再 Destroy。
             UnloadInternal();
             base.OnDestroy();
         }
@@ -114,7 +110,45 @@ namespace EasyFramework.Ui
         {
             base.OnRectTransformDimensionsChange();
             if (imageProMaterialType != ImageProMaterialType.Round) return;
-            ResetRoundRectangleSize();
+            SetVerticesDirty();
+        }
+
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            base.OnPopulateMesh(vh);
+            if (imageProMaterialType != ImageProMaterialType.Round) return;
+
+            //  逐顶点写入圆角参数。position 是相对 pivot 的本地坐标，减去 center 得相对中心坐标；
+            //  UV 通道不受 Canvas batching 变换，位移/缩放/图集都不会污染它。
+            Rect rect = rectTransform.rect;
+            float width = Mathf.Abs(rect.width);
+            float height = Mathf.Abs(rect.height);
+            Vector2 center = rect.center;
+            Vector2 halfSize = new Vector2(width, height) * HalfRatio;
+            float radius = CheckConnerArc();
+            float pixelWidth = CalculatePixelWidth();
+
+            int count = vh.currentVertCount;
+            for (int i = 0; i < count; i++)
+            {
+                vh.PopulateUIVertex(ref _vertexScratch, i);
+                Vector2 localPos = (Vector2)_vertexScratch.position - center;
+                _vertexScratch.uv1 = localPos;
+                _vertexScratch.uv2 = halfSize;
+                _vertexScratch.uv3 = new Vector2(radius, pixelWidth);
+                vh.SetUIVertex(_vertexScratch, i);
+            }
+        }
+
+        //  uv1/uv2/uv3 必须让 Canvas 保留到顶点缓冲，否则合批时会被丢弃导致圆角失效。
+        //  编辑器预览也要调用，故为 public。
+        public void EnableCanvasShaderChannels()
+        {
+            Canvas myCanvas = GetComponentInParent<Canvas>();
+            if (myCanvas == null) return;
+            myCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1
+                                                 | AdditionalCanvasShaderChannels.TexCoord2
+                                                 | AdditionalCanvasShaderChannels.TexCoord3;
         }
 
         #region 内部函数 - Private Functions
@@ -133,9 +167,10 @@ namespace EasyFramework.Ui
                     if (shader == null)
                         return;
 
-                    _dynamicMaterial = new Material(shader);
-                    material = _dynamicMaterial;
-                    ResetRoundRectangleSize();
+                    if (_sharedRoundMaterial == null)
+                        _sharedRoundMaterial = new Material(shader);
+                    material = _sharedRoundMaterial;
+                    SetVerticesDirty();
                     break;
                 }
                 case ImageProMaterialType.Gray:
@@ -144,8 +179,7 @@ namespace EasyFramework.Ui
                     if (shader == null)
                         return;
 
-                    _dynamicMaterial = new Material(shader);
-                    material = _dynamicMaterial;
+                    material = GetSharedGrayMaterial(_isGray);
                     break;
                 }
             }
@@ -170,6 +204,25 @@ namespace EasyFramework.Ui
             float edgeSize = Mathf.Min(Mathf.Abs(rectTransform.rect.width), Mathf.Abs(rectTransform.rect.height));
             float maxConnerSize = edgeSize * HalfRatio - EdgeInset;
             return Mathf.Clamp(cornerArc, 0f, Mathf.Max(0f, maxConnerSize));
+        }
+
+        //  灰度材质只有开关两态，用两个静态共享实例切换，避免 clone 材质打断合批。
+        private Material GetSharedGrayMaterial(bool isGray)
+        {
+            if (isGray)
+            {
+                if (_sharedGrayOnMaterial == null)
+                    _sharedGrayOnMaterial = new Material(_defaultGrayShader);
+                return _sharedGrayOnMaterial;
+            }
+
+            if (_sharedGrayOffMaterial == null)
+            {
+                _sharedGrayOffMaterial = new Material(_defaultGrayShader);
+                _sharedGrayOffMaterial.SetFloat(GrayScaleAmount, GrayOff);
+            }
+
+            return _sharedGrayOffMaterial;
         }
 
         //  计算一个屏幕像素对应的本地单位数，供 shader 做恒定宽度的抗锯齿
@@ -303,43 +356,20 @@ namespace EasyFramework.Ui
         #endregion
 
         /// <summary>
-        /// 设置灰度。默认类型使用共享 UI 材质，不含灰度属性，需先将材质类型设为 Gray 才生效。
-        /// <para>Sets grayscale. The default shared UI material has no grayscale property; set the material type to Gray first.</para>
+        /// 设置灰度。需先将材质类型设为 Gray 才生效。
+        /// <para>Sets grayscale. Set the material type to Gray first to take effect.</para>
         /// </summary>
         /// <param name="isGray">是否置灰 <para>Whether to apply grayscale</para></param>
         public void SetGray(bool isGray)
         {
-            Material target = _dynamicMaterial;
-            if (target == null)
-            {
-                //  默认类型是共享材质，若其含灰度属性则为本组件实例化一份，避免污染全局 UI
-                Material current = material;
-                if (current == null || !current.HasProperty(GrayScaleAmount))
-                    return;
+            //  默认类型用的是不含灰度属性的共享 UI 材质，切换无效，与旧语义一致。
+            if (imageProMaterialType != ImageProMaterialType.Gray) return;
+            if (_isGray == isGray) return;
 
-                target = new Material(current);
-                _dynamicMaterial = target;
-                material = target;
-            }
-
-            if (target.HasProperty(GrayScaleAmount))
-                target.SetFloat(GrayScaleAmount, isGray ? GrayOn : GrayOff);
-        }
-
-        /// <summary>
-        /// 重置矩形圆角尺寸
-        /// <para>Resets the size of the rectangular rounded corners</para>
-        /// </summary>
-        public void ResetRoundRectangleSize()
-        {
-            if (_dynamicMaterial == null || _dynamicMaterial.shader == null ||
-                !_dynamicMaterial.shader.name.Equals(RoundedRectangleShaderName)) return;
-            Rect rect = rectTransform.rect;
-            _dynamicMaterial.SetFloat(Width, Mathf.Abs(rect.width));
-            _dynamicMaterial.SetFloat(Height, Mathf.Abs(rect.height));
-            _dynamicMaterial.SetVector(RectCenter, new Vector4(rect.center.x, rect.center.y, 0f, 0f));
-            _dynamicMaterial.SetFloat(PixelWidth, CalculatePixelWidth());
-            _dynamicMaterial.SetFloat(CornerSize, CheckConnerArc());
+            if (GetShader(DefaultGrayShaderName, ref _defaultGrayShader) == null) return;
+            _isGray = isGray;
+            //  只切共享材质引用，不写材质属性，避免污染其他灰度图。
+            material = GetSharedGrayMaterial(isGray);
         }
 
         /// <summary>
