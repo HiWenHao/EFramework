@@ -29,7 +29,7 @@ namespace EFExample
     {
         public static void Init()
         {
-            if (EFC.Managers == null)
+            if (EFC.Manager == null)
                 EFC.Initialize();
 
             D.Emphasize("Hello Game and HybridCLR");

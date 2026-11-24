@@ -103,7 +103,7 @@ public sealed partial class EFC
                 try
                 {
                     if (item is MonoBehaviour mono)
-                        mono.transform.SetParent(isManager ? Managers : Singleton, false);
+                        mono.transform.SetParent(isManager ? Manager : Singleton, false);
 
                     // 先恢复驱动再 Init：软退出重入时 Init 内读取 IsRunning 应为 true，
                     // 与首次启动（Initialize 先置位）保持一致；恢复失败也不能阻断注册

@@ -24,7 +24,7 @@ public sealed partial class EFC
     #region Properties
 
     /// <summary> 框架管理器父节点。<para>Parent transform of framework managers.</para> </summary>
-    public static Transform Managers { get; private set; }
+    public static Transform Manager { get; private set; }
 
     /// <summary> 单例父节点。<para>Parent transform of ordinary singletons.</para> </summary>
     public static Transform Singleton { get; private set; }
@@ -239,10 +239,10 @@ public sealed partial class EFC
             // 先摘除宿主引用再销毁：Destroy 延迟到帧末触发 OnDestroy，
             // 届时 _monoEfc / Managers / Singleton 均已置空，OnDestroy => QuitGames 会被 !_inRunning 短路
             // 宿主组件就挂在 Managers 根节点上，销毁该根节点即连带销毁宿主
-            Transform managersRoot = Managers;
+            Transform managersRoot = Manager;
             Transform singletonRoot = Singleton;
             _monoEfc = null;
-            Managers = null;
+            Manager = null;
             Singleton = null;
 
             // 退出过程中的 Register 已被拒绝；清空残余容器、递增代数使泛型缓存失效

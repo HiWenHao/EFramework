@@ -66,6 +66,10 @@ public sealed partial class EFC : MonoBehaviour
     // 会话代数：关闭 Domain Reload 时用于让每类型泛型静态缓存失效
     internal static int Generation;
 
+    // 只有当前宿主才驱动框架：同帧 QuitGames + Initialize 时旧宿主尚未销毁，
+    // 若不校验身份会对新框架的表重复派发 Update/FixedUpdate/LateUpdate
+    private bool IsCurrentHost => ReferenceEquals(this, _monoEfc);
+
     #endregion
 
     #region Unity Lifecycle
@@ -120,10 +124,6 @@ public sealed partial class EFC : MonoBehaviour
         SubscribeLowMemory();
     }
 
-    // 只有当前宿主才驱动框架：同帧 QuitGames + Initialize 时旧宿主尚未销毁，
-    // 若不校验身份会对新框架的表重复派发 Update/FixedUpdate/LateUpdate
-    private bool IsCurrentHost => ReferenceEquals(this, _monoEfc);
-
     private void Update()
     {
         if (!IsCurrentHost) return;
@@ -133,9 +133,8 @@ public sealed partial class EFC : MonoBehaviour
 
         if (!_inRunning) return;
         IUpdate[] snapshot = EfcState.UpdateView.Get();
-        for (int i = 0; i < snapshot.Length; i++)
+        foreach (var listener in snapshot)
         {
-            IUpdate listener = snapshot[i];
             if (listener.IsPaused) continue;
             try
             {
@@ -153,9 +152,8 @@ public sealed partial class EFC : MonoBehaviour
     {
         if (!IsCurrentHost || !_inRunning) return;
         IFixedUpdate[] snapshot = EfcState.FixedUpdateView.Get();
-        for (int i = 0; i < snapshot.Length; i++)
+        foreach (var listener in snapshot)
         {
-            IFixedUpdate listener = snapshot[i];
             if (listener.IsPaused) continue;
             try
             {
@@ -172,9 +170,8 @@ public sealed partial class EFC : MonoBehaviour
     {
         if (!IsCurrentHost || !_inRunning) return;
         ILateUpdate[] snapshot = EfcState.LateUpdateView.Get();
-        for (int i = 0; i < snapshot.Length; i++)
+        foreach (var listener in snapshot)
         {
-            ILateUpdate listener = snapshot[i];
             if (listener.IsPaused) continue;
             try
             {
@@ -312,11 +309,11 @@ public sealed partial class EFC : MonoBehaviour
     {
         if (_monoEfc != null) return;
 
-        if (Managers == null)
+        if (Manager == null)
         {
             GameObject managersRoot = new GameObject(ManagersRootName);
             DontDestroyOnLoad(managersRoot);
-            Managers = managersRoot.transform;
+            Manager = managersRoot.transform;
         }
 
         if (Singleton == null)
@@ -326,7 +323,7 @@ public sealed partial class EFC : MonoBehaviour
             Singleton = singletonRoot.transform;
         }
 
-        _monoEfc = Managers.gameObject.AddComponent<EFC>();
+        _monoEfc = Manager.gameObject.AddComponent<EFC>();
     }
 
     // 只清状态、不调用用户回调：用于域重载关闭时的幂等重建
@@ -395,8 +392,7 @@ public sealed partial class EFC : MonoBehaviour
         int index = 0;
         for (; index < list.Count; index++)
         {
-            ISingleton existing = list[index] as ISingleton;
-            if (existing != null && order > GetOrder(existing.GetType())) break;
+            if (list[index] is ISingleton existing && order > GetOrder(existing.GetType())) break;
         }
 
         list.Insert(index, item);

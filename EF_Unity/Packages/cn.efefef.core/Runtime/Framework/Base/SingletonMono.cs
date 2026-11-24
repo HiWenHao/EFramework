@@ -138,7 +138,7 @@ namespace EasyFramework
                 return;
 
             instance.transform.SetParent(Attribute.IsDefined(typeof(T), typeof(ManagerAttribute))
-                ? EFC.Managers
+                ? EFC.Manager
                 : EFC.Singleton);
 
             EFC.Register(instance);
