@@ -89,6 +89,13 @@ Shader "UI/RoundedRectangle"
             float4 _MainTex_ST;
             float _UIMaskSoftnessX;
             float _UIMaskSoftnessY;
+            int _UIVertexColorAlwaysGammaSpace;
+
+            //  Gamma->Linear 转换，与 UI/Default 及灰度 shader 保持一致
+            half3 GammaToLinear(half3 gammaColor)
+            {
+                return pow(gammaColor, 2.2);
+            }
 
             v2f vert(appdata_t v)
             {
@@ -109,6 +116,10 @@ Shader "UI/RoundedRectangle"
                 OUT.localPos = v.uv1;
                 OUT.halfSize = v.uv2;
                 OUT.radiusPixel = v.uv3;
+
+                //  线性空间下顶点色若为 gamma 编码则先转换，与 UI/Default 及灰度 shader 一致
+                if (_UIVertexColorAlwaysGammaSpace && !IsGammaSpace())
+                    v.color.rgb = GammaToLinear(v.color.rgb);
 
                 OUT.color = v.color * _Color;
                 return OUT;

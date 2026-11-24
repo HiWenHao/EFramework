@@ -41,6 +41,13 @@ namespace EasyFramework.Ui
         private const float HalfRatio = 0.5f;
         private const float EdgeInset = 1f;
         private const float GrayOff = 0f;
+        private const float MinScale = 0.0001f;
+
+        //  圆角参数占用的顶点通道：uv1/uv2/uv3
+        private const AdditionalCanvasShaderChannels RequiredShaderChannels =
+            AdditionalCanvasShaderChannels.TexCoord1
+            | AdditionalCanvasShaderChannels.TexCoord2
+            | AdditionalCanvasShaderChannels.TexCoord3;
 
         [HeaderPro("设置", "Settings", HeaderProType.Title)] [HeaderPro("资源地址", "Address")] [SerializeField]
         private string address; //  当前图片地址或图集去重键
@@ -98,6 +105,12 @@ namespace EasyFramework.Ui
             ApplyMaterialType();
         }
 
+        protected override void OnCanvasHierarchyChanged()
+        {
+            base.OnCanvasHierarchyChanged();
+            EnableCanvasShaderChannels();
+        }
+
         protected override void OnDestroy()
         {
             CancelLoading();
@@ -125,7 +138,7 @@ namespace EasyFramework.Ui
             float height = Mathf.Abs(rect.height);
             Vector2 center = rect.center;
             Vector2 halfSize = new Vector2(width, height) * HalfRatio;
-            float radius = CheckConnerArc();
+            float radius = CheckConnerArc(rect);
             float pixelWidth = CalculatePixelWidth();
 
             int count = vh.currentVertCount;
@@ -138,17 +151,6 @@ namespace EasyFramework.Ui
                 _vertexScratch.uv3 = new Vector2(radius, pixelWidth);
                 vh.SetUIVertex(_vertexScratch, i);
             }
-        }
-
-        //  uv1/uv2/uv3 必须让 Canvas 保留到顶点缓冲，否则合批时会被丢弃导致圆角失效。
-        //  编辑器预览也要调用，故为 public。
-        public void EnableCanvasShaderChannels()
-        {
-            Canvas myCanvas = GetComponentInParent<Canvas>();
-            if (myCanvas == null) return;
-            myCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1
-                                                 | AdditionalCanvasShaderChannels.TexCoord2
-                                                 | AdditionalCanvasShaderChannels.TexCoord3;
         }
 
         #region 内部函数 - Private Functions
@@ -197,11 +199,11 @@ namespace EasyFramework.Ui
             return cache;
         }
 
-        //  检查圆角弧度，不能超过短边的一半
-        private float CheckConnerArc()
+        //  检查圆角弧度，不能超过短边的一半；rect 由调用方传入，避免重复读 rectTransform.rect
+        private float CheckConnerArc(Rect rect)
         {
             //  shader 使用 RectTransform 本地坐标，因此这里也用本地尺寸，不再乘 lossyScale
-            float edgeSize = Mathf.Min(Mathf.Abs(rectTransform.rect.width), Mathf.Abs(rectTransform.rect.height));
+            float edgeSize = Mathf.Min(Mathf.Abs(rect.width), Mathf.Abs(rect.height));
             float maxConnerSize = edgeSize * HalfRatio - EdgeInset;
             return Mathf.Clamp(cornerArc, 0f, Mathf.Max(0f, maxConnerSize));
         }
@@ -229,9 +231,10 @@ namespace EasyFramework.Ui
         //  CanvasScaler.scaleFactor 不体现在 lossyScale 中，需显式相乘
         private float CalculatePixelWidth()
         {
-            float scale = Mathf.Max(Mathf.Abs(rectTransform.lossyScale.x), 0.0001f);
-            Canvas canvas = GetComponentInParent<Canvas>();
-            float scaleFactor = canvas != null ? Mathf.Max(Mathf.Abs(canvas.scaleFactor), 0.0001f) : 1f;
+            float scale = Mathf.Max(Mathf.Abs(rectTransform.lossyScale.x), MinScale);
+            //  网格重建是高频路径，这里同样只读 Graphic.canvas 的缓存字段，不再逐次查父级
+            Canvas hostCanvas = canvas;
+            float scaleFactor = hostCanvas != null ? Mathf.Max(Mathf.Abs(hostCanvas.scaleFactor), MinScale) : 1f;
             return 1f / (scale * scaleFactor);
         }
 
@@ -354,6 +357,20 @@ namespace EasyFramework.Ui
         }
 
         #endregion
+
+        /// <summary>
+        /// 启动画布着色器通道，uv1/uv2/uv3 必须让 Canvas 保留到顶点缓冲，否则合批时会被丢弃导致圆角失效。
+        /// <para>Activate the canvas shading shader channel. For uv1/uv2/uv3, Canvas must retain them in the vertex buffer;
+        /// otherwise, during batch processing, they will be discarded, resulting in the failure of rounded corners.</para>
+        /// </summary>
+        public void EnableCanvasShaderChannels()
+        {
+            Canvas myCanvas = canvas;
+            if (myCanvas == null) return;
+            if ((myCanvas.additionalShaderChannels & RequiredShaderChannels) == RequiredShaderChannels) return;
+
+            myCanvas.additionalShaderChannels |= RequiredShaderChannels;
+        }
 
         /// <summary>
         /// 设置灰度。需先将材质类型设为 Gray 才生效。
