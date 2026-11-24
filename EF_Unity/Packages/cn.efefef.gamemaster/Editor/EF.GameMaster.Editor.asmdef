@@ -1,0 +1,24 @@
+{
+    "name": "EF.GameMaster.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ebc418bc01c8422ab6cb2e52a75d554e",
+        "GUID:396fd9bc7a7442941a71f32479ef054d",
+        "GUID:a4a7eea321f5a024bb7118f90940975f",
+        "GUID:4129704b5a1a13841ba16f230bf24a57",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -22,6 +22,7 @@ namespace EasyFramework.Edit
         public const string Tools = EfRoot + "🛠️ Tools/";
         public const string Utility = EfRoot + "🎈 Utility/";
         public const string Launcher = EfRoot + "🚀 Launcher/";
+        public const string GameMaster = EfRoot + "🎮 Game Master/";
         public const string Folders = EfRoot + "📂 Folders/";
         public const string About = EfRoot + "💬 About Us/";
 
@@ -31,6 +32,7 @@ namespace EasyFramework.Edit
         public const int ToolsPriority = 10000;
         public const int UtilityPriority = 20000;
         public const int LauncherPriority = 30000;
+        public const int GameMasterPriority = 40000;
         public const int FoldersPriority = 90000;
         public const int AboutPriority = 100000;
     }

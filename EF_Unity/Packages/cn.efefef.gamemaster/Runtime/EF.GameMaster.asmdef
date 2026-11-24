@@ -1,0 +1,17 @@
+{
+    "name": "EF.GameMaster",
+    "rootNamespace": "",
+    "references": [
+        "UniTask",
+        "GUID:396fd9bc7a7442941a71f32479ef054d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

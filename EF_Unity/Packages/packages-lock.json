@@ -36,6 +36,15 @@
         "cn.efefef.core": "0.1.0"
       }
     },
+    "cn.efefef.gamemaster": {
+      "version": "file:cn.efefef.gamemaster",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "cn.efefef.core": "0.1.0",
+        "com.cysharp.unitask": "2.5.10"
+      }
+    },
     "cn.efefef.http": {
       "version": "file:cn.efefef.http",
       "depth": 0,

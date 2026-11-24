@@ -1,0 +1,244 @@
+{
+  "LcList": [
+    {
+      "name": "GameMaster.Refresh",
+      "desc": "按钮：刷新",
+      "array": [
+        "Refresh",
+        "刷新"
+      ]
+    },
+    {
+      "name": "GameMaster.CancelAll",
+      "desc": "按钮：取消全部",
+      "array": [
+        "Cancel All",
+        "取消全部"
+      ]
+    },
+    {
+      "name": "GameMaster.History",
+      "desc": "工具栏：历史开关",
+      "array": [
+        "History",
+        "历史"
+      ]
+    },
+    {
+      "name": "GameMaster.HistoryTitle",
+      "desc": "标题：执行历史",
+      "array": [
+        "Execution History",
+        "执行历史"
+      ]
+    },
+    {
+      "name": "GameMaster.TotalCount",
+      "desc": "命令总数：{0}=数量",
+      "array": [
+        "{0} total",
+        "共 {0} 条"
+      ]
+    },
+    {
+      "name": "GameMaster.Filter",
+      "desc": "标签：过滤",
+      "array": [
+        "Filter",
+        "过滤"
+      ]
+    },
+    {
+      "name": "GameMaster.Run",
+      "desc": "按钮：执行",
+      "array": [
+        "Run",
+        "执行"
+      ]
+    },
+    {
+      "name": "GameMaster.Cancel",
+      "desc": "按钮：取消",
+      "array": [
+        "Cancel",
+        "取消"
+      ]
+    },
+    {
+      "name": "GameMaster.Arguments",
+      "desc": "标签：参数",
+      "array": [
+        "Arguments",
+        "参数"
+      ]
+    },
+    {
+      "name": "GameMaster.SectionHeader",
+      "desc": "分组标题：{0}=分区名，{1}=命令数",
+      "array": [
+        "{0}  ({1})",
+        "{0}  ({1})"
+      ]
+    },
+    {
+      "name": "GameMaster.ConfirmTitle",
+      "desc": "危险命令确认标题",
+      "array": [
+        "Confirm dangerous command",
+        "危险命令确认"
+      ]
+    },
+    {
+      "name": "GameMaster.ConfirmMessage",
+      "desc": "危险命令确认内容",
+      "array": [
+        "This command is destructive. Are you sure?",
+        "该命令具有破坏性，确定执行吗？"
+      ]
+    },
+    {
+      "name": "GameMaster.PlayModeOnly",
+      "desc": "提示：仅 Play 模式可用",
+      "array": [
+        "Available only in Play mode when the EF framework is ready.",
+        "仅在 Play 模式且 EF 框架就绪时可用。"
+      ]
+    },
+    {
+      "name": "GameMaster.NoCommands",
+      "desc": "提示：无命令",
+      "array": [
+        "No commands registered. Call GameMasterManager.Register in project code first.",
+        "没有注册任何命令，请先在项目代码中调用 GameMasterManager.Register。"
+      ]
+    },
+    {
+      "name": "GameMaster.NoMatched",
+      "desc": "提示：无匹配命令",
+      "array": [
+        "No command matched.",
+        "没有匹配的命令。"
+      ]
+    },
+    {
+      "name": "GameMaster.PanelGuide",
+      "desc": "图例标题",
+      "array": [
+        "Panel Guide (what each part means)",
+        "面板说明（每一块的含义）"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendToolbarTitle",
+      "desc": "图例：工具栏",
+      "array": [
+        "Toolbar",
+        "工具栏"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendToolbarDesc",
+      "desc": "图例：工具栏说明",
+      "array": [
+        "Refresh = reload registry · Cancel All = stop running commands · History = toggle records",
+        "刷新=重读注册表 · 取消全部=停止所有执行中命令 · 历史=开关底部记录"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendFilterTitle",
+      "desc": "图例：过滤",
+      "array": [
+        "Filter",
+        "过滤"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendFilterDesc",
+      "desc": "图例：过滤说明",
+      "array": [
+        "Filter by command ID, display name or section; non-matching commands are hidden",
+        "按命令 ID、显示名或分组名筛选；不匹配的命令一并隐藏"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendSectionTitle",
+      "desc": "图例：分组",
+      "array": [
+        "Section",
+        "分组"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendSectionDesc",
+      "desc": "图例：分组说明",
+      "array": [
+        "Folded by the section given at registration; defaults to Common",
+        "按注册时的 section 折叠；默认归入 Common"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendRiskTitle",
+      "desc": "图例：风险徽章",
+      "array": [
+        "Risk badge",
+        "风险徽章"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendRiskDesc",
+      "desc": "图例：风险徽章说明",
+      "array": [
+        "ReadOnly grey · Normal green · Dangerous orange · Destructive red; Dangerous and above ask for confirmation",
+        "ReadOnly 灰 · Normal 绿 · Dangerous 橙 · Destructive 红；Dangerous 及以上需二次确认"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendCommandTitle",
+      "desc": "图例：命令项",
+      "array": [
+        "Command entry",
+        "命令项"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendCommandDesc",
+      "desc": "图例：命令项说明",
+      "array": [
+        "Click anywhere on the header to fold; ID is stable and independent of display name",
+        "点击顶部整行折叠；ID 是稳定标识，不随显示名变化"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendArgsTitle",
+      "desc": "图例：参数",
+      "array": [
+        "Arguments",
+        "参数"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendArgsDesc",
+      "desc": "图例：参数说明",
+      "array": [
+        "Input is parsed as int → float → string before being passed to the command",
+        "输入值按 int → float → string 顺序解析后传给命令"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendHistoryTitle",
+      "desc": "图例：历史",
+      "array": [
+        "History",
+        "历史"
+      ]
+    },
+    {
+      "name": "GameMaster.LegendHistoryDesc",
+      "desc": "图例：历史说明",
+      "array": [
+        "✓ success / ✗ failure, showing command ID and result reason",
+        "✓ 成功 / ✗ 失败，显示命令 ID 与结果原因"
+      ]
+    }
+  ]
+}
