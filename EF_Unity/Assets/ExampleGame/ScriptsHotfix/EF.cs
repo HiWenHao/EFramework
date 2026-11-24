@@ -34,6 +34,7 @@ using EasyFramework.Ui;
 //using EasyFramework.Http;
 //using EasyFramework.RedDot;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// EF 门面类 —— 统一管理器访问入口
@@ -105,7 +106,8 @@ public static class EF
         ClearMemory();
         EFC.QuitGames();
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+        //UnityEditor.EditorApplication.isPlaying = false;
+        SceneManager.LoadScene("Launcher");
 #endif
         Application.Quit(0);
     }

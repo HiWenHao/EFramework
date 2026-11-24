@@ -39,6 +39,16 @@ namespace EasyFramework
         /// </summary>
         public SystemLanguage DisplayLanguage { get => _displayLanguage; set => _displayLanguage = value; }
 
+        [SerializeField, HeaderPro("是否在启动时跳过 Splash（构建版请按授权要求配置）",
+            "Whether to skip the splash screen at startup (configure per license terms in builds)")]
+        private bool _skipSplashScreen;
+
+        /// <summary>
+        /// 启动时是否跳过 Splash。构建版需按授权协议决定是否开启。
+        /// <para>Whether to skip the splash screen at startup. Configure per license terms in builds.</para>
+        /// </summary>
+        public bool SkipSplashScreen => _skipSplashScreen;
+
         [SerializeField, HeaderPro("脚本版本号", "The script version")]
         private string _scriptVersion = "0.1";
 

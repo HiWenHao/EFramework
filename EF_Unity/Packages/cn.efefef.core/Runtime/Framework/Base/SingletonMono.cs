@@ -27,21 +27,41 @@ namespace EasyFramework
                 if (EFC.TryGetSingleton(out T existing))
                     return existing;
 
+                // QuitGames 是完整卸载（宿主一并销毁）；只有显式 Initialize 之后才允许创建单例。
+                if (!EFC.CanCreateSingleton)
+                {
+                    D.Error(EFC.LogTag + "框架未运行，拒绝创建 MonoSingleton " + typeof(T).Name +
+                            "。请先调用 EFC.Initialize()。");
+                    return default;
+                }
+
                 // IgnoreAutoRegister 不进注册表：本地缓存保证单实例，语义对齐 EFC.GetOrCreate<T>()
                 if (Attribute.IsDefined(typeof(T), typeof(IgnoreAutoRegisterAttribute)))
-                    return IgnoredCache.Value.Value;
+                    return IgnoredCache.Value;
 
                 // 依赖解析可能回环到本 T（此时尚未写表）：fail-fast 而非无限递归
                 if (CreationGuard.Creating)
                     throw new InvalidOperationException(
-                        $"[EFC] Re-entrant creation of {typeof(T).Name}. Check for circular dependencies.");
+                        $"{EFC.LogTag} Re-entrant creation of {typeof(T).Name}. Check for circular dependencies.");
 
                 CreationGuard.Creating = true;
                 try
                 {
-                    var instance = CreateInstance();
-                    // Unity 对象创建只能在主线程；此处兜底回环/并发下已被注册的情形，以注册表为准
-                    return EFC.TryGetSingleton(out T registered) ? registered : instance;
+                    var instance = CreateInstance(out bool createdNew);
+                    // 以注册表为唯一真源：Init 失败回滚后 instance 已被判定不可用，不得返回
+                    if (EFC.TryGetSingleton(out T registered))
+                        return registered;
+
+                    // 回滚路径未销毁对象，此处由创建方清理刚生成的 GameObject，避免场景残留。
+                    // 仅销毁本类新建的对象；复用场景中预置对象时保留原物。
+                    if (createdNew && instance != null && instance.gameObject != null)
+                    {
+                        instance.gameObject.SetActive(false);
+                        Destroy(instance.gameObject);
+                    }
+
+                    D.Error(EFC.LogTag + "MonoSingleton " + typeof(T).Name + " 创建后未能注册，已返回 null。");
+                    return null;
                 }
                 finally
                 {
@@ -59,21 +79,52 @@ namespace EasyFramework
         // IgnoreAutoRegister 的本地单实例缓存（不进 EFC 注册表）
         private static class IgnoredCache
         {
-            internal static readonly Lazy<T> Value = new(CreateInstance);
+            private static int _generation = -1;
+            private static Lazy<T> _lazy;
+
+            internal static T Value
+            {
+                get
+                {
+                    // 关闭域重载时按会话代数重建，避免拿到上一 Play 会话的 fake-null 实例
+                    if (_generation != EFC.Generation)
+                    {
+                        _lazy = new Lazy<T>(() => CreateInstance(out _));
+                        _generation = EFC.Generation;
+                    }
+
+                    return _lazy.Value;
+                }
+            }
         }
 
-        private static T CreateInstance()
+        private static T CreateInstance(out bool createdNew)
         {
-            T instance;
+            createdNew = false;
+            T instance = null;
             var existing = FindObjectsOfType<T>();
-            if (existing.Length > 0)
+            for (int i = 0; i < existing.Length; i++)
             {
-                for (int i = 1; i < existing.Length; i++)
-                    Destroy(existing[i].gameObject);
-                instance = existing[0];
+                T candidate = existing[i];
+                // 跳过已销毁或已失活的实例：Destroy 延迟到帧末，期间仍可能被 FindObjectsOfType 找到
+                if (candidate == null || !candidate.gameObject.activeInHierarchy)
+                {
+                    if (candidate != null)
+                        Destroy(candidate.gameObject);
+                    continue;
+                }
+
+                if (instance == null)
+                    instance = candidate;
+                else
+                    Destroy(candidate.gameObject);
             }
-            else
+
+            if (instance == null)
+            {
                 instance = new GameObject().AddComponent<T>();
+                createdNew = true;
+            }
 
             instance.name = $"--------------- [ {typeof(T).Name} ] ---------------";
             RegisterAndInit(instance);
