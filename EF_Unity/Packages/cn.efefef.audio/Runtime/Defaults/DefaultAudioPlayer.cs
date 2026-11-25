@@ -106,13 +106,16 @@ namespace EasyFramework.Audio
             if (_context != null && _context.BgmSource)
                 UnityEngine.Object.Destroy(_context.BgmSource.gameObject);
 
+            // 池根与 EffectPrototype 都挂在 EffectRoot 下：必须先释放池再销毁层级，
+            // 否则 _effectPrefab 会变成 fake-null，上面的 if 直接跳过，池条目与池根永久泄漏
+            var poolManager = PoolManager.Instance;
+            if (_effectPrefab && poolManager != null)
+                poolManager.DestroyGameObjectPool(_effectPrefab);
+            _effectPrefab = null;
+
             if (_context != null && _context.EffectRoot)
                 UnityEngine.Object.Destroy(_context.EffectRoot.gameObject);
 
-            if (_effectPrefab)
-                PoolManager.Instance.DestroyGameObjectPool(_effectPrefab);
-
-            _effectPrefab = null;
             _activeEffects = null;
             _activeEffectDict = null;
             _context = null;

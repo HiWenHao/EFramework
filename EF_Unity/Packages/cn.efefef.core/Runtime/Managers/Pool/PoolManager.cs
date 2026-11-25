@@ -4,8 +4,8 @@
  * Author:          Alvin5100(Wang)
  * CreationTime:    2026-04-30 14:23:19
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-05-10
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-11-25
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -43,6 +43,7 @@ namespace EasyFramework
         private float _gameObjectPoolCleanupTick;
         private Dictionary<Type, object> _objectPools;
         private Dictionary<GameObject, GameObjectPool> _gameObjectPools;
+        private Transform _gameObjectPoolRoot;          // 共享池根节点的容器，惰性创建
 
         void ISingleton.Init()
         {
@@ -69,62 +70,101 @@ namespace EasyFramework
         }
         
         /// <summary>
-        /// 清除所有池
-        /// <para>Clear all pools</para>
+        /// 强制销毁所有池（无视占用计数与活跃对象），用于退出或硬重置。
+        /// <para>Force-dispose all pools regardless of retain count and active objects,
+        /// intended for shutdown or hard reset.</para>
         /// </summary>
+        /// <remarks>
+        /// 销毁后各消费者持有的池引用全部失效，需自行重新创建。
+        /// <para>After this call every consumer's pool reference is invalid and must be recreated.</para>
+        /// </remarks>
         public void ClearAll()
         {
+            // 先快照再清表：Dispose 会触发 Disposed 回调，此时回调内的摘除自然落空，不会改动正在遍历的字典
+            var gameObjectPools = new List<GameObjectPool>(_gameObjectPools.Count);
             foreach (GameObjectPool pool in _gameObjectPools.Values)
             {
-                pool.Clear();
+                gameObjectPools.Add(pool);
             }
+            _gameObjectPools.Clear();
+
+            foreach (GameObjectPool pool in gameObjectPools)
+            {
+                pool.Dispose();
+            }
+
             foreach (object poolObj in _objectPools.Values)
             {
                 if (poolObj is IClearablePool clearable)
                     clearable.Clear();
             }
-            
-            _gameObjectPools.Clear();
+
             _objectPools.Clear();
         }
 
         #region GameObjectPool
 
         /// <summary>
-        /// 创建一个可挂载对象池
-        /// <para>Create an object pool that can be mounted</para>
+        /// 创建一个可挂载对象池（同一 prefab 全局唯一，重复调用为幂等复用）。
+        /// <para>Create a mountable object pool (unique per prefab globally, idempotent on repeated calls).</para>
         /// </summary>
+        /// <remarks>
+        /// 复用已有池时只补足 initial 的差额，max / idleTimeout / parent 以首次建池为准。
+        /// <para>When reusing an existing pool only the initial gap is filled; max / idleTimeout / parent
+        /// are taken from the first creation.</para>
+        /// </remarks>
         /// <param name="prefab">预制件</param>
-        /// <param name="parent">父节点</param>
+        /// <param name="parent">父节点（仅单消费者时用于层级归属，共享后根节点会迁到管理器下）</param>
         /// <param name="initial">初始数量</param>
         /// <param name="max">最大数量</param>
         /// <param name="idleTimeout">空闲超时销毁时间（秒），≤0 不启用
         /// <para>Idle timeout destruction time (seconds), ≤ 0 means not enabled</para></param>
         public void CreateGameObjectPool(GameObject prefab, Transform parent, int initial, int max, float idleTimeout = -1f)
         {
-            if (_gameObjectPools.ContainsKey(prefab))
-            {
-                Warning($"Pool for prefab {prefab.name} already exists.");
+            if (prefab == null)
                 return;
+
+            if (_gameObjectPools.TryGetValue(prefab, out var existing))
+            {
+                if (!existing.IsAlive)
+                    _gameObjectPools.Remove(prefab);        // 已销毁的残条目，走下方重建
+                else
+                {
+                    // 已有消费者建过池：占用计数加一，只补足预创建差额，绝不重建
+                    existing.SetSharedRoot(GameObjectPoolRoot);
+                    existing.Retain();
+                    existing.OpenDebug = OpenDebug;
+                    existing.PrewarmTo(initial);
+                    return;
+                }
             }
+
             var pool = new GameObjectPool(prefab, initial, max, parent, idleTimeout) { OpenDebug = OpenDebug };
+            pool.SetSharedRoot(GameObjectPoolRoot);
+            pool.Disposed += OnGameObjectPoolDisposed;
+            pool.Retain();
             _gameObjectPools[prefab] = pool;
         }
 
         /// <summary>
-        /// 销毁一个可挂载对象池
-        /// <para>Destroy a mountable object pool</para>
+        /// 释放对该池的占用：无其他占用者且无活跃对象时销毁，否则等最后一个对象归还。
+        /// <para>Release the hold on the pool: it is disposed when no other consumer retains it and
+        /// no active object remains, otherwise when the last object is returned.</para>
         /// </summary>
         /// <param name="prefab">对象池预制件<para>The GameObject Pool Prefab</para></param>
-        /// <returns>是否销毁成功
-        /// <para>The Destroy succeed</para></returns>
+        /// <returns>是否找到并释放了池
+        /// <para>Whether the pool was found and released</para></returns>
         public bool DestroyGameObjectPool(GameObject prefab)
         {
-            if (_gameObjectPools.TryGetValue(prefab, out var pool))
-                pool.Clear();
-            return _gameObjectPools.Remove(prefab);
+            if (prefab == null)
+                return false;
+            if (!_gameObjectPools.TryGetValue(prefab, out var pool))
+                return false;
+
+            pool.Release();
+            return true;
         }
-        
+
         /// <summary>
         /// 从对应池中获取一个 GameObject 实例
         /// <para>Obtain an instance of GameObject from the corresponding pool</para>
@@ -135,11 +175,30 @@ namespace EasyFramework
         /// <para>Activated game object</para></returns>
         public GameObject Spawn(GameObject prefab)
         {
+            if (prefab == null)
+                return null;
+
             if (TryGetPool(prefab, out var pool))
                 return pool.Get();
 
             D.Error($"Pool for prefab {prefab.name} not created. Please call CreateGameObjectPool first.");
             return null;
+        }
+
+        /// <summary>
+        /// 是否已存在可用的对象池。
+        /// <para>Whether a usable pool already exists.</para>
+        /// </summary>
+        /// <param name="prefab">对象池预制件
+        /// <para>The GameObject Pool Prefab</para></param>
+        /// <returns>存在且未销毁返回 true
+        /// <para>True when the pool exists and is still alive</para></returns>
+        public bool HasGameObjectPool(GameObject prefab)
+        {
+            if (prefab == null)
+                return false;
+
+            return _gameObjectPools.TryGetValue(prefab, out var pool) && pool.IsAlive;
         }
         
         /// <summary>
@@ -216,6 +275,9 @@ namespace EasyFramework
         public async UniTask WarmupGameObjectPoolAsync(GameObject prefab, int totalCount, int perFrame = 5,
             IProgress<(int current, int total)> progress = null, CancellationToken cancellationToken = default)
         {
+            if (prefab == null)
+                return;
+
             if (!TryGetPool(prefab, out var pool))
             {
                 D.Error($"Pool for prefab {prefab.name} not found.");
@@ -230,8 +292,8 @@ namespace EasyFramework
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 如果池已被销毁，提前退出
-                if (!pool.IsAlive)
+                // 池已被销毁或已进入待销毁状态，预热没有意义
+                if (!pool.IsAlive || pool.IsReleasePending)
                 {
                     Warning($"Pool for {prefab.name} was disposed during warmup. Warmup stopped.");
                     return;
@@ -381,7 +443,7 @@ namespace EasyFramework
             OpenDebug = openDebug;
             if (null == _gameObjectPools)
                 return;
-            
+
             foreach (var pool in _gameObjectPools.Values)
             {
                 pool.OpenDebug = OpenDebug;
@@ -391,7 +453,41 @@ namespace EasyFramework
         #endregion
         
         #region 私有函数
-        
+
+        // 池真正销毁时摘除注册表条目：按值反查键，避免 prefab 已被销毁导致键取不到
+        private void OnGameObjectPoolDisposed(GameObjectPool pool)
+        {
+            GameObject deadKey = null;
+            foreach (var kv in _gameObjectPools)
+            {
+                if (!ReferenceEquals(kv.Value, pool))
+                    continue;
+
+                deadKey = kv.Key;
+                break;
+            }
+
+            // 键本身可能已被销毁（Unity fake-null），必须用 ReferenceEquals 判断是否取到
+            if (!ReferenceEquals(deadKey, null))
+                _gameObjectPools.Remove(deadKey);
+        }
+
+        // 共享池根节点的容器：挂在管理器下，随管理者常驻，不随任何消费者的层级销毁
+        private Transform GameObjectPoolRoot
+        {
+            get
+            {
+                if (_gameObjectPoolRoot == null)
+                {
+                    var root = new GameObject("GameObjectPools");
+                    root.transform.SetParent(transform, false);
+                    _gameObjectPoolRoot = root.transform;
+                }
+
+                return _gameObjectPoolRoot;
+            }
+        }
+
         private bool TryGetPool(GameObject prefab, out GameObjectPool pool)
         {
             return _gameObjectPools.TryGetValue(prefab, out pool);

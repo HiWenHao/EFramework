@@ -4,8 +4,8 @@
  * Author:          Alvin5100
  * CreationTime:    2026-04-30 14:22:56
  * ModifyAuthor:    Alvin8412
- * ModifyTime:      2026-05-10 14:23:33
- * ScriptVersion:   0.2
+ * ModifyTime:      2026-11-25
+ * ScriptVersion:   0.3
  * ================================================
  */
 
@@ -13,8 +13,10 @@
 #define POOL_DEBUG
 #endif
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace EasyFramework.Pool
 {
@@ -24,14 +26,16 @@ namespace EasyFramework.Pool
     public sealed class GameObjectPool : IGameObjectPool
     {
         private bool _disposed;                         // 池是否已被销毁（防止继续操作）
+        private bool _releaseRequested;                 // 占用者已全部释放，等待活跃对象归零后销毁
+        private int _retainCount;                       // 当前占用该池的消费者数量
 
         private int _aliveCount;                        // 总存活对象数（包括激活和未激活）
         private int _activeCount;                       // 当前激活对象数
 
-        private float _lastCleanupTime;                 // 上次清理时间
         private readonly float _idleTimeout;            // 闲置超时秒数（ >0 启用，<=0 禁用）
 
         private Transform _root;                        // 池中对象的父节点
+        private Transform _sharedRoot;                  // 共享时使用的全局根节点，由管理器注入
         private readonly GameObject _prefab;            // 原始预制体
 
         private readonly int _maxSize;                  // 最大空闲对象数量（超过则直接销毁）
@@ -48,7 +52,26 @@ namespace EasyFramework.Pool
         /// <para>Whether the pool is not disposed (available).</para>
         /// </summary>
         public bool IsAlive => !_disposed;
-        
+
+        /// <summary>
+        /// 是否已请求释放、正在等待活跃对象归零（此状态下池仍可用）。
+        /// <para>Whether a release has been requested and the pool awaits zero active objects
+        /// (the pool is still usable in this state).</para>
+        /// </summary>
+        public bool IsReleasePending => _releaseRequested && !_disposed;
+
+        /// <summary>
+        /// 当前占用该池的消费者数量。
+        /// <para>Number of consumers currently retaining this pool.</para>
+        /// </summary>
+        public int RetainCount => _retainCount;
+
+        /// <summary>
+        /// 池的原始预制体。
+        /// <para>The original prefab of this pool.</para>
+        /// </summary>
+        public GameObject Prefab => _prefab;
+
         /// <summary>
         /// 是否开启日志（泄漏跟踪）
         /// <para>Whether to enable the log (leak tracking)</para>
@@ -72,6 +95,13 @@ namespace EasyFramework.Pool
         /// <para>Total number of surviving objects (activated + idle in the pool)</para>
         /// </summary>
         public int TotalCount => _aliveCount;
+
+        /// <summary>
+        /// 池真正销毁时触发，参数为池自身，供管理器摘除注册表条目。
+        /// <para>Raised when the pool is actually disposed; the argument is the pool itself,
+        /// allowing the manager to drop its registry entry.</para>
+        /// </summary>
+        public event Action<GameObjectPool> Disposed;
 
         /// <summary>
         /// 构造函数，创建并预热池。
@@ -105,7 +135,22 @@ namespace EasyFramework.Pool
         }
 
         #region 公共函数
-        
+
+        /// <summary>
+        /// 设置共享根节点：池被第二个及以上消费者占用时，根节点会迁到该节点下，避免随任一消费者的层级被销毁。
+        /// <para>Set the shared root: once a second consumer retains the pool, the root node is moved under it
+        /// so it no longer dies with any single consumer's hierarchy.</para>
+        /// </summary>
+        /// <param name="sharedRoot">全局共享根节点
+        /// <para>Global shared root</para></param>
+        public void SetSharedRoot(Transform sharedRoot)
+        {
+            _sharedRoot = sharedRoot;
+
+            if (_retainCount > 1)
+                MoveRootToSharedRoot();
+        }
+
         /// <summary>
         /// 预先创建指定数量的对象放入池中。
         /// <para>Pre-create a specified number of objects and place them in the pool.</para>
@@ -122,12 +167,34 @@ namespace EasyFramework.Pool
 
             for (int i = 0; i < count; i++)
             {
+                if (_stack.Count >= _maxSize)
+                    return;
+
                 var obj = Create();
+                if (obj == null)
+                    return;
+
                 _stack.Push(obj);
 #if POOL_DEBUG
                 _pooledSet.Add(obj);
 #endif
             }
+        }
+
+        /// <summary>
+        /// 补足空闲对象到指定数量（不足则创建，已足够则不动）。
+        /// <para>Top up idle objects to the target count (creates the gap, no-op when sufficient).</para>
+        /// </summary>
+        /// <param name="target">目标空闲数量
+        /// <para>Target idle count</para></param>
+        public void PrewarmTo(int target)
+        {
+            if (_disposed || target <= 0)
+                return;
+
+            int gap = Mathf.Min(target, _maxSize) - _stack.Count;
+            if (gap > 0)
+                Prewarm(gap);
         }
 
         /// <summary>
@@ -143,8 +210,16 @@ namespace EasyFramework.Pool
                 return null;
             }
 
-            if (_stack.TryPop(out var m))
+            // 跳过已被外部销毁的残留对象，避免访问已销毁的 GameObject
+            PooledObject m;
+            while (_stack.TryPop(out m))
             {
+                if (m == null)
+                {
+                    _aliveCount = Mathf.Max(0, _aliveCount - 1);
+                    continue;
+                }
+
 #if POOL_DEBUG
                 _pooledSet.Remove(m);
 #endif
@@ -153,6 +228,12 @@ namespace EasyFramework.Pool
             }
 
             m = Create();
+            if (m == null)
+            {
+                Error($"[Pool] Create failed: {_prefab.name}");
+                return null;
+            }
+
             Activate(m);
             return m.gameObject;
         }
@@ -177,6 +258,21 @@ namespace EasyFramework.Pool
             if (m == null) 
                 return;
 
+            // 已处于池中说明是重复归还：再走一遍会重复递减活跃数，并把同一实例二次压栈
+            if (m.IsInPool)
+            {
+                if (OpenDebug)
+                    Warning($"[Pool] Double return ignored: {m.name}");
+                return;
+            }
+
+            RecycleInternal(m);
+            CheckPendingDispose();
+        }
+
+        // 回收主体：保留原有全部提前返回分支，销毁判定统一放在 Recycle 收尾
+        private void RecycleInternal(PooledObject m)
+        {
             if (!m.IsFromPool)
             {
                 if (OpenDebug)
@@ -192,11 +288,25 @@ namespace EasyFramework.Pool
                 return;
             }
 
-            // 防止误归还到错误池
+            // 根节点已失效（宿主层级被卸载）：对象无处安放，直接销毁
+            if (_root == null)
+            {
+                DestroyInternal(m);
+                return;
+            }
+
+            // 防止误归还到错误池：转发给真正的归属池，否则会减错本池的活跃计数
             if (!ReferenceEquals(m.OwnerPool, this))
             {
                 if (OpenDebug)
                     Warning($"[Pool] Wrong pool return: {m.name}");
+
+                if (m.OwnerPool is GameObjectPool ownerPool)
+                {
+                    ownerPool.Recycle(m);
+                    return;
+                }
+
                 DestroyInternal(m);
                 return;
             }
@@ -256,13 +366,14 @@ namespace EasyFramework.Pool
         }
 
         /// <summary>
-        /// 清空池：销毁所有空闲对象以及根节点，并标记为 disposed。注意：不会销毁当前激活的对象，只是防止它们后续再被回收。
-        /// <para>Clear Pool: Destroy all idle objects and root nodes, and mark them as disposed.
-        /// Note: It will not destroy the currently active objects; it merely prevents them from being recycled in the future.</para>
+        /// 清空池：只销毁空闲对象，不影响已取出的对象，池保持可用。
+        /// <para>Clear the pool: destroys idle objects only, leaves retrieved objects untouched,
+        /// and keeps the pool usable.</para>
         /// </summary>
         public void Clear()
         {
-            _disposed = true;
+            if (_disposed)
+                return;
 
             while (_stack.Count > 0)
             {
@@ -274,20 +385,69 @@ namespace EasyFramework.Pool
             // 注意：不清除 _active，让激活对象仍然可以被泄漏检测
             _pooledSet.Clear();
 #endif
+        }
 
-            if (_root == null)
+        /// <summary>
+        /// 占用池：计数加一，并撤销待销毁标记。
+        /// <para>Retain the pool: increments the counter and cancels any pending disposal.</para>
+        /// </summary>
+        public void Retain()
+        {
+            if (_disposed)
                 return;
 
-            for (int i = _root.childCount - 1; i >= 0; i--)
-            {
-                var child = _root.GetChild(i);
-                var pooled = child.GetComponent<PooledObject>();
-                if (pooled != null && !pooled.IsInPool)
-                    child.SetParent(null, true);
-            }
+            _retainCount++;
+            _releaseRequested = false;
 
-            Object.Destroy(_root.gameObject);
-            _root = null;
+            // 出现第二个占用者后，池根不能再依附任何单个消费者的层级
+            if (_retainCount > 1)
+                MoveRootToSharedRoot();
+        }
+
+        /// <summary>
+        /// 释放占用：计数减一；减到 0 且无活跃对象时立即销毁，否则等最后一个对象归还时销毁。
+        /// <para>Release the hold: decrements the counter and disposes immediately when it reaches zero
+        /// with no active object, otherwise when the last active object is recycled.</para>
+        /// </summary>
+        public void Release()
+        {
+            if (_disposed)
+                return;
+
+            // 没有可释放的占用（重复释放或从未占用）：直接忽略，避免误杀别人的池
+            if (_retainCount <= 0)
+                return;
+
+            _retainCount--;
+
+            if (_retainCount > 0)
+                return;                     // 还有别的消费者，池必须继续可用
+
+            _releaseRequested = true;
+
+            // 已无人在用：连空闲缓存一起销毁；仍有活跃对象则保留缓存，等最后一个归还再统一销毁
+            if (_activeCount == 0)
+                Dispose();
+        }
+
+        /// <summary>
+        /// 彻底销毁池：清空空闲对象、销毁根节点并标记为不可用；活跃对象不主动销毁，归还时直接销毁。
+        /// <para>Dispose the pool: clears idle objects, destroys the root node and marks the pool unusable;
+        /// active objects are not destroyed here and are destroyed when returned.</para>
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            Clear();                        // 必须先于 _disposed 置位：Clear 内部有 disposed 守卫
+            _disposed = true;
+            _releaseRequested = false;
+            _retainCount = 0;
+
+            DestroyRoot();
+
+            Disposed?.Invoke(this);
         }
 
         #endregion
@@ -300,10 +460,13 @@ namespace EasyFramework.Pool
         /// </summary>
         internal void CreateOneAndPush()
         {
-            if (_disposed) 
+            if (_disposed || _stack.Count >= _maxSize)
                 return;
             
             var obj = Create();
+            if (obj == null)
+                return;
+
             _stack.Push(obj);
 #if POOL_DEBUG
             // 注意：这里不要加 _active.Add(obj)，因为对象尚未激活
@@ -351,9 +514,53 @@ namespace EasyFramework.Pool
 
         #region 私有函数
 
+        // 池被多个消费者共享后，把根节点迁到管理器提供的全局根，避免随任一消费者的层级一起被销毁
+        private void MoveRootToSharedRoot()
+        {
+            if (_sharedRoot == null || _root == null)
+                return;
+            if (_root.parent == _sharedRoot)
+                return;
+
+            _root.SetParent(_sharedRoot, false);
+        }
+
+        // 销毁池根节点：仍在根下的活跃对象先脱到场景根，避免被连带销毁
+        private void DestroyRoot()
+        {
+            if (_root == null)
+                return;
+
+            for (int i = _root.childCount - 1; i >= 0; i--)
+            {
+                var child = _root.GetChild(i);
+                var pooled = child.GetComponent<PooledObject>();
+                if (pooled != null && !pooled.IsInPool)
+                    child.SetParent(null, true);
+            }
+
+            Object.Destroy(_root.gameObject);
+            _root = null;
+        }
+
+        // 占用者已全部释放且无活跃对象时执行销毁
+        private void CheckPendingDispose()
+        {
+            if (!_releaseRequested || _disposed)
+                return;
+            if (_activeCount > 0)
+                return;
+
+            Dispose();
+        }
+
         // 创建一个新实例（不激活），并标记 IsFromPool = true。
         private PooledObject Create()
         {
+            // 根节点已被外部销毁（如宿主层级被卸载）：池已失去宿主，不再实例化
+            if (_root == null)
+                return null;
+
             var go = Object.Instantiate(_prefab, _root);
             go.SetActive(false);
 
