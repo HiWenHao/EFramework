@@ -203,7 +203,11 @@ namespace EasyFramework.Ui
                 _contentRect.anchorMin = new Vector2(0, 1);
                 _contentRect.anchorMax = new Vector2(0, 1);
                 _contentRect.pivot = new Vector2(0, 1);
-                _contentRect.sizeDelta = new Vector2(total, _viewportSize);
+                // 单点锚定下 sizeDelta 即实际宽高：X=滚动总长，Y=视口高度（拉伸轴）。
+                // 不能用 _viewportSize——横向时它是视口宽度（滚动轴），会让 content 高度错等于宽度。
+                float viewportHeight = _viewportRect != null ? _viewportRect.rect.height : 0f;
+                float crossHeight = viewportHeight > 0f ? viewportHeight : _contentRect.sizeDelta.y;
+                _contentRect.sizeDelta = new Vector2(total, crossHeight);
 
                 if (preserveScroll)
                 {
