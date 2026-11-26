@@ -793,8 +793,6 @@ namespace EasyFramework.Edit.Windows.ConfigPanel
             {
                 "UnityEngine",
                 "UnityEngine.UI",
-                "System.Collections.Generic",
-                "Cysharp.Threading.Tasks",
                 "EasyFramework"
             };
             foreach (string ns in baseNamespaces)
