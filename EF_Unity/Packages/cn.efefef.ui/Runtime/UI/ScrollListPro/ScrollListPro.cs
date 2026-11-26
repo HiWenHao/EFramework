@@ -1,4 +1,4 @@
-﻿/*
+/*
  * ================================================
  * Describe:        无限不规则滚动列表 — 虚拟滚动 + 对象池，支持不等高/不等宽
  * Author:          Alvin8412
@@ -12,7 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,8 +28,20 @@ namespace EasyFramework.Ui
     /// </summary>
     [RequireComponent(typeof(ScrollRect))]
     [DisallowMultipleComponent]
-    public class ScrollListPro : MonoBehaviour, IBeginDragHandler, IEndDragHandler
+    public partial class ScrollListPro : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
+        #region 常量
+
+        private const float PositionEpsilon = 0.5f;          // 位置/尺寸比较容差（像素）
+        private const float UnmeasuredSizeThreshold = 0.5f;  // 小于此值视为未测量，走估算
+        private const float FallbackItemSize = 100f;         // prefab 无尺寸时的兜底高度
+        private const float ViewportEstimateFactor = 0.5f;   // 可视数量估算的视口余量系数
+        private const float SnapDebounceSeconds = 0.12f;     // 吸附触发的防抖时长
+        private const float EdgeEpsilon = 0.001f;            // 归一化边缘判定容差
+        private const float DefaultScrollDuration = 0.3f;    // 跳转动画默认时长
+
+        #endregion
+
         #region 内部类
 
         /// <summary>
@@ -39,11 +50,11 @@ namespace EasyFramework.Ui
         /// </summary>
         private struct ActiveItem
         {
-            public int Index;               // 数据索引
-            public float Size;              // 当前尺寸
-            public bool JustCreated;        // 是否本帧新建，需要填充+测量
-            public GameObject Target;       // 对应的 GameObject 实例
-            public IScrollProItem ScrollItem;  // 缓存 IScrollProItem 避免重复 GetComponent
+            public int Index;                   // 数据索引
+            public float Size;                  // 当前尺寸
+            public bool JustCreated;            // 是否本帧新建，需要填充+测量
+            public GameObject Target;           // 对应的 GameObject 实例
+            public IScrollProItem ScrollItem;   // 缓存 item 契约，避免重复 GetComponent
         }
 
         #endregion
@@ -79,8 +90,8 @@ namespace EasyFramework.Ui
 
         [HeaderPro("自适应测量", "Auto Measure", HeaderProType.Title)]
         [HeaderPro("自动重建布局", "Auto Rebuild Layout", HeaderProType.Note)]
-        [Tooltip(
-            "开启后，OnUpdateItem 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
+        [Tooltip("开启后，item 的 OnShowContent 填充完内容会自动 ForceRebuildLayoutImmediate 并测量真实尺寸，" +
+                 "\n无需在 OnGetItemSize 中精确计算。OnGetItemSize 只需返回合理估算值即可。")]
         [SerializeField]
         private bool autoRebuildLayout;
 
@@ -116,12 +127,6 @@ namespace EasyFramework.Ui
         #endregion
 
         #region 公开回调
-
-        /// <summary>
-        /// 填充 item 内容
-        /// <para>Fill item content. 参数：GameObject 实例、数据索引</para>
-        /// </summary>
-        public Action<GameObject, int> OnUpdateItem;
 
         /// <summary>
         /// 估算第 index 个 item 的尺寸
@@ -186,6 +191,8 @@ namespace EasyFramework.Ui
         private bool _batchDirty; // 批处理中是否有脏数据
         private bool _wasAtTop; // 上一帧是否在顶部
         private bool _wasAtBottom; // 上一帧是否在底部
+        private bool _notifyingUnderfilled; // 不足一屏补发中，防止回调内 AppendData 同步递归
+        private bool _layoutAnimSkipSizeRestore; // 结构变更取消布局动画时，catch 不回退尺寸（索引已失效）
         private bool _refreshing; // 正在刷新中
         private bool _scrollListenerAdded; // 是否已注册 scroll 监听
         private bool _poolInitialized; // 是否已向 PoolManager 注册池
@@ -198,6 +205,7 @@ namespace EasyFramework.Ui
         private CancellationTokenSource _scrollAnimCts; // 滚动动画取消令牌
         private CancellationTokenSource _layoutAnimCts; // 布局动画取消令牌
         private CancellationTokenSource _snapDebounceCts; // 吸附动画取消令牌
+        private ISnapStrategy _snapStrategy; // 用户注入的吸附策略，null 时按 snapAlignment 枚举回退默认
 
         // 用户是否正在真实拖拽（由 IBegin/IEndDragHandler 维护）。
         // 不能用 scrollRect.velocity 判断：动画自身改 anchoredPosition 也会产生速度，
@@ -208,7 +216,8 @@ namespace EasyFramework.Ui
         private readonly List<float> _cumulativePositions = new List<float>(); // 预计算累积位置 [i]=item[i] 顶部偏移
         private readonly List<ActiveItem> _activeItems = new List<ActiveItem>(); // 当前活跃 item 列表
         private readonly Dictionary<int, GameObject> _activeIndexMap = new Dictionary<int, GameObject>(); // 查重
-        private readonly HashSet<GameObject> _onCreateCalled = new HashSet<GameObject>(); // 跟踪已调用 OnCreate 的 GO
+        // 存 InstanceID 而非 GameObject 引用：池销毁 GO 后不保留强引用，避免已销毁对象泄漏
+        private readonly HashSet<int> _onCreateCalled = new HashSet<int>();
 
         #endregion
 
@@ -231,9 +240,21 @@ namespace EasyFramework.Ui
                 RefreshVisibleItems(true);
         }
 
-        // 真实拖拽开始/结束：与 ScrollRect 同物体，事件系统会把 drag 同时派发给本组件。
-        // 用标志而非 velocity 区分"用户拖动"与"动画自驱动"，避免长距离动画被误判取消。
+        /// <summary>
+        /// 用户开始拖拽：置位真实拖拽标志。
+        /// <para>Called when the user starts dragging; sets the real-drag flag.</para>
+        /// <br/> 用标志而非 velocity 区分"用户拖动"与"动画自驱动"，避免长距离动画被误判取消。
+        /// <para>Uses a flag instead of velocity to tell user dragging from animation-driven movement,
+        /// preventing long animations from being falsely cancelled.</para>
+        /// </summary>
+        /// <param name="eventData">事件数据<para>Event data</para></param>
         public void OnBeginDrag(PointerEventData eventData) => _isDragging = true;
+
+        /// <summary>
+        /// 用户结束拖拽：清除真实拖拽标志。
+        /// <para>Called when the user ends dragging; clears the real-drag flag.</para>
+        /// </summary>
+        /// <param name="eventData">事件数据<para>Event data</para></param>
         public void OnEndDrag(PointerEventData eventData) => _isDragging = false;
 
         private void OnDisable()
@@ -246,16 +267,29 @@ namespace EasyFramework.Ui
             }
 
             CancelAllAnimations();
+            // 复位瞬时状态，避免禁用/启用窗口内动画标志残留吞掉首个滚动刷新
+            _animating = false;
+            _refreshing = false;
         }
 
         private void OnDestroy()
         {
             _isDragging = false;
             if (scrollRect != null && _scrollListenerAdded)
+            {
                 scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
+                _scrollListenerAdded = false;
+            }
 
             CancelAllAnimations();
             Clear();
+
+            // HybridCLR 域重载安全：切断公开委托/事件链，避免持有旧域对象形成泄漏与悬空引用
+            OnGetItemSize = null;
+            OnItemVisibilityChanged = null;
+            OnReachTop = null;
+            OnReachBottom = null;
+            _snapStrategy = null;
         }
 
         private void CancelAllAnimations()
@@ -269,6 +303,7 @@ namespace EasyFramework.Ui
             _snapDebounceCts?.Cancel();
             _snapDebounceCts?.Dispose();
             _snapDebounceCts = null;
+            _layoutAnimSkipSizeRestore = false;
         }
 
         private void StopLayoutAnimation()
@@ -278,909 +313,31 @@ namespace EasyFramework.Ui
             _layoutAnimCts = null;
         }
 
+        // 结构变更（插入/删除）前取消在飞的布局动画：动画只捕获 index，
+        // 数据变更后索引语义已变，若让 catch 回退尺寸会串写到别的 item。
+        // 只 Cancel 不 Dispose，令牌清理交给动画自身的 finally（A6 归属判断）。
+        private void CancelLayoutAnimationForStructuralChange()
+        {
+            if (_layoutAnimCts == null) return;
+            _layoutAnimSkipSizeRestore = true;
+            _layoutAnimCts.Cancel();
+        }
+
         #endregion
 
-        // 确保必要引用全都存在
-        private void EnsureReferences()
-        {
-            if (scrollRect == null)
-                scrollRect = GetComponent<ScrollRect>();
-
-            _contentRect = scrollRect.content;
-            if (_contentRect == null)
-            {
-                D.Error("[ UiManager ] [ ScrollListPro ] ScrollRect.Content is null.");
-                return;
-            }
-
-            _viewportRect = scrollRect.viewport != null
-                ? scrollRect.viewport
-                : scrollRect.GetComponent<RectTransform>();
-
-            _viewportSize = GetViewportSize();
-
-            if (itemPrefab != null)
-            {
-                var pfRt = itemPrefab.transform as RectTransform;
-                if (pfRt != null)
-                {
-                    _prefabDefaultSize = (direction == Direction.Vertical)
-                        ? pfRt.rect.height
-                        : pfRt.rect.width;
-                }
-            }
-
-            StripConflictingLayoutComponents(_contentRect);
-        }
-
-        // 清空全部
-        private void ClearAll()
-        {
-            // 销毁活跃 item（Despawn 归还池，池会自动管理生命周期）
-            for (int i = _activeItems.Count - 1; i >= 0; i--)
-            {
-                if (_activeItems[i].Target == null) continue;
-                _activeItems[i].ScrollItem?.OnDestroyed();
-                PoolManager.Instance.Despawn(_activeItems[i].Target);
-            }
-
-            _activeItems.Clear();
-            _activeIndexMap.Clear();
-
-            DestroyPool();
-
-            _onCreateCalled.Clear();
-            _itemSizes.Clear();
-            _cumulativePositions.Clear();
-            FirstVisibleIndex = -1;
-            LastVisibleIndex = -1;
-        }
-
-        // 移除 content 上的 LayoutGroup、ContentSizeFitter 和 AspectRatioFitter。
-        // 本组件完全手动管理 content 的布局，任何自动布局组件都会产生冲突。
-        private static void StripConflictingLayoutComponents(RectTransform content)
-        {
-            bool stripped = false;
-
-            var csf = content.GetComponent<ContentSizeFitter>();
-            if (csf != null)
-            {
-                csf.enabled = false;
-                Destroy(csf);
-                stripped = true;
-            }
-
-            var layout = content.GetComponent<LayoutGroup>();
-            if (layout != null)
-            {
-                layout.enabled = false;
-                Destroy(layout);
-                stripped = true;
-            }
-
-            var arf = content.GetComponent<AspectRatioFitter>();
-            if (arf != null)
-            {
-                arf.enabled = false;
-                Destroy(arf);
-                stripped = true;
-            }
-
-            if (stripped)
-                D.Warning(
-                    "[ UiManager ] [ ScrollListPro ] Content 上的 LayoutGroup/ContentSizeFitter/AspectRatioFitter 已自动移除。" +
-                    "本组件手动管理 content 布局，这些组件会导致定位异常。");
-        }
-
-        // 获取元素尺寸
-        private float GetItemSize(int index)
-        {
-            return OnGetItemSize != null ? Mathf.Max(1f, OnGetItemSize(index)) : _prefabDefaultSize;
-        }
-
-        // 计算最大滚动偏移 
-        private float GetMaxScrollOffset()
-        {
-            float totalSize = CalculateTotalSize();
-            return Mathf.Max(0, totalSize - _viewportSize);
-        }
-
-        // 全量重建 
-        private void FullRebuild()
-        {
-            for (int i = _activeItems.Count - 1; i >= 0; i--)
-            {
-                // 与其它回收路径（RefreshVisibleItemsInternal）保持一致：回收前通知业务隐藏，
-                // 避免对象池复用后 item 的事件监听/动画等业务状态残留
-                _activeItems[i].ScrollItem?.OnHide();
-                Recycle(_activeItems[i].Target);
-            }
-
-            _activeItems.Clear();
-            _activeIndexMap.Clear();
-            FirstVisibleIndex = -1;
-            LastVisibleIndex = -1;
-
-            RebuildCumulativePositions(); // 确保 ScrollToIndex/ScrollToBottom 能读到最新位置
-            RefreshVisibleItems(true);
-        }
-
-        // Content 布局设置 ================================================================
-
-        // 应用content布局
-        private void ApplyContentLayout(bool preserveScroll = true)
-        {
-            float total = CalculateTotalSize();
-
-            // 保存当前滚动偏移，避免 sizeDelta 变更时 ScrollRect 自动钳位丢失位置
-            float savedOffset = preserveScroll ? GetContentScrollOffset() : 0f;
-
-            if (direction == Direction.Vertical)
-            {
-                _contentRect.anchorMin = new Vector2(0, 1);
-                _contentRect.anchorMax = new Vector2(1, 1);
-                _contentRect.pivot = new Vector2(0.5f, 1);
-                _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, total);
-
-                // 恢复滚动位置（钳位到新的有效范围）
-                if (preserveScroll)
-                {
-                    float maxOff = Mathf.Max(0, total - _viewportSize);
-                    _contentRect.anchoredPosition = new Vector2(
-                        _contentRect.anchoredPosition.x,
-                        Mathf.Clamp(savedOffset, 0, maxOff));
-                }
-                else
-                {
-                    _contentRect.anchoredPosition = Vector2.zero;
-                }
-            }
-            else
-            {
-                _contentRect.anchorMin = new Vector2(0, 1);
-                _contentRect.anchorMax = new Vector2(0, 1);
-                _contentRect.pivot = new Vector2(0, 0.5f);
-                _contentRect.sizeDelta = new Vector2(total, _contentRect.sizeDelta.y);
-
-                if (preserveScroll)
-                {
-                    float maxOff = Mathf.Max(0, total - _viewportSize);
-                    _contentRect.anchoredPosition = new Vector2(
-                        -Mathf.Clamp(savedOffset, 0, maxOff),
-                        _contentRect.anchoredPosition.y);
-                }
-                else
-                {
-                    _contentRect.anchoredPosition = Vector2.zero;
-                }
-            }
-        }
-
-        // 计算总尺寸
-        private float CalculateTotalSize()
-        {
-            float total = 0f;
-            for (int i = 0; i < _itemSizes.Count; i++)
-            {
-                float s = _itemSizes[i];
-                // 未测量过的 item 用 OnGetItemSize 估算，避免 total = 0 导致滚动范围错误
-                if (s <= 0.5f) s = GetItemSize(i);
-                total += s;
-                if (i < _itemSizes.Count - 1) total += itemSpacing;
-            }
-
-            return total;
-        }
-
-        // 计算索引从 0 到index的累积偏移（含间距），未初始化时回退到线性计算
-        private float GetCumulativePosition(int index)
-        {
-            if (index < _cumulativePositions.Count)
-                return _cumulativePositions[index];
-            // 防御：_itemSizes 新增但 _cumulativePositions 尚未重建时，回退到线性计算
-            float pos = 0f;
-            for (int i = 0; i < index && i < _itemSizes.Count; i++)
-                pos += _itemSizes[i] + itemSpacing;
-            return pos;
-        }
-
-        // 重建累积位置数组 _itemSizes 变更后调用，fromIndex=0 表示全量重建。
-        private void RebuildCumulativePositions(int fromIndex = 0)
-        {
-            if (_cumulativePositions.Count != _itemSizes.Count)
-            {
-                _cumulativePositions.Clear();
-                for (int i = 0; i < _itemSizes.Count; i++)
-                    _cumulativePositions.Add(0f);
-            }
-
-            if (_cumulativePositions.Count == 0) return;
-
-            if (fromIndex <= 0)
-            {
-                _cumulativePositions[0] = 0f;
-                fromIndex = 1;
-            }
-
-            for (int i = fromIndex; i < _cumulativePositions.Count; i++)
-            {
-                float prevSize = _itemSizes[i - 1];
-                if (prevSize <= 0.5f) prevSize = GetItemSize(i - 1);
-                _cumulativePositions[i] = _cumulativePositions[i - 1] + prevSize + itemSpacing;
-            }
-        }
-
-        // 二分查找第一个可见 item 索引。返回第一个结束位置 > scrollOffset 的索引。
-        private int BinarySearchVisibleIndex(float scrollOffset)
-        {
-            int lo = 0, hi = _cumulativePositions.Count - 1;
-            while (lo <= hi)
-            {
-                int mid = (lo + hi) / 2;
-                float itemEnd = _cumulativePositions[mid] + _itemSizes[mid] + itemSpacing;
-                if (itemEnd <= scrollOffset)
-                    lo = mid + 1;
-                else
-                    hi = mid - 1;
-            }
-
-            return Mathf.Min(lo, _cumulativePositions.Count - 1);
-        }
-
-        // 可视区域计算 ================================================================
-
-        // 获取视窗尺寸
-        private float GetViewportSize()
-        {
-            if (_viewportRect == null) return 0f;
-            return direction == Direction.Vertical
-                ? _viewportRect.rect.height
-                : _viewportRect.rect.width;
-        }
-
-        // 获取内容滚动偏移
-        private float GetContentScrollOffset()
-        {
-            return direction == Direction.Vertical
-                ? _contentRect.anchoredPosition.y
-                : -_contentRect.anchoredPosition.x;
-        }
-
-        // 计算可见范围
-        private (int firstIndex, int lastIndex) CalculateVisibleRange()
-        {
-            int count = _itemSizes.Count;
-            if (count == 0) return (-1, -1);
-
-            _viewportSize = GetViewportSize();
-
-            float rawOffset = GetContentScrollOffset();
-            float maxScroll = Mathf.Max(0, CalculateTotalSize() - _viewportSize);
-            float scrollOffset = Mathf.Clamp(rawOffset, 0, maxScroll);
-
-            int first = BinarySearchVisibleIndex(scrollOffset);
-            int totalBuffer = bufferCount + preCreateBuffer;
-            first = Mathf.Max(0, first - totalBuffer);
-
-            float visibleEnd = scrollOffset + _viewportSize;
-            int last = first;
-            for (int i = first; i < count; i++)
-            {
-                float itemEnd = _cumulativePositions[i] + _itemSizes[i] + itemSpacing;
-                last = i;
-                if (itemEnd >= visibleEnd) break;
-            }
-
-            last = Mathf.Min(count - 1, last + totalBuffer);
-            return (first, last);
-        }
-
-        // Item 渲染 ================================================================
-
-        // 当滚动位置改变时
-        private void OnScrollChanged(Vector2 _)
-        {
-            // 用户拖动时立即终止正在运行的滚动动画，避免手势与动画叠加造成视窗漂移。
-            // 必须用真实拖拽事件标志而非 velocity：动画自身逐帧改 anchoredPosition 也会产生
-            // 巨大 velocity（尤其大列表跨屏跳转），旧判断会让动画在首帧被自己的回调 cancel，
-            // 表现为"轻微滚动后立刻停止"。_isDragging 只在用户按下并拖动时为 true。
-            if (_animating)
-            {
-                if (_isDragging)
-                {
-                    _scrollAnimCts?.Cancel(); // 取消滚动动画（而非布局动画），让拖动接管
-                    _animating = false;       // 立即放行刷新，避免早退导致拖动时 item 不更新
-                }
-                else
-                    return; // 非拖动的动画自驱动回调：跳过刷新，防止累积位置变化干扰动画
-            }
-
-            RefreshVisibleItems(false);
-            CheckEdgeReached();
-            CheckSnap();
-        }
-
-        // 检查吸附状态
-        private void CheckSnap()
-        {
-            if (snapAlignment == SnapAlignment.None || scrollRect == null) return;
-
-            float vel = direction == Direction.Vertical
-                ? Mathf.Abs(scrollRect.velocity.y)
-                : Mathf.Abs(scrollRect.velocity.x);
-
-            bool moving = vel > snapVelocityThreshold;
-
-            if (_wasMoving && !moving && !_refreshing)
-            {
-                _snapDebounceCts?.Cancel();
-                var cts = new CancellationTokenSource();
-                _snapDebounceCts = cts;
-                SnapDebounceAsync(cts.Token).Forget();
-            }
-
-            _wasMoving = moving;
-        }
-
-        // 吸附防抖
-        private async UniTaskVoid SnapDebounceAsync(CancellationToken ct)
-        {
-            try
-            {
-                await UniTask.Delay(TimeSpan.FromSeconds(0.12), cancellationToken: ct);
-                if (!ct.IsCancellationRequested)
-                    PerformSnap();
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                // 被下一次滑动/new 防抖取消，交由 finally 清理
-            }
-            finally
-            {
-                // 仅当前防抖令牌才有权清理：若已被新防抖接管，旧任务不能 Dispose 新 CTS，
-                // 否则新防抖的 Delay 会因令牌已释放而失效。与 AnimateScrollAsync 的归属判断一致
-                if (_snapDebounceCts != null && _snapDebounceCts.Token == ct)
-                {
-                    _snapDebounceCts.Dispose();
-                    _snapDebounceCts = null;
-                }
-            }
-        }
-
-        // 执行吸附
-        private void PerformSnap()
-        {
-            if (!IsInitialized || _itemSizes.Count == 0) return;
-
-            float alignment = snapAlignment switch
-            {
-                SnapAlignment.Top => 0f,
-                SnapAlignment.Center => 0.5f,
-                SnapAlignment.Bottom => 1f,
-                _ => float.NaN
-            };
-            if (float.IsNaN(alignment)) return;
-
-            // 找到最接近视口对齐点的 item
-            float viewAnchor = GetContentScrollOffset() + GetViewportSize() * alignment;
-            int bestIdx = -1;
-            float bestDist = float.MaxValue;
-
-            for (int i = FirstVisibleIndex; i <= LastVisibleIndex; i++)
-            {
-                if (i < 0 || i >= _cumulativePositions.Count) continue;
-                float itemAnchor = _cumulativePositions[i] + _itemSizes[i] * alignment;
-                float dist = Mathf.Abs(itemAnchor - viewAnchor);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    bestIdx = i;
-                }
-            }
-
-            if (bestIdx >= 0)
-            {
-                float target = GetCumulativePosition(bestIdx) + _itemSizes[bestIdx] * alignment -
-                               GetViewportSize() * alignment;
-                float total = CalculateTotalSize();
-                float maxOff = Mathf.Max(0, total - GetViewportSize());
-                float clamped = Mathf.Clamp(target, 0, maxOff);
-
-                var cts = new CancellationTokenSource();
-                _scrollAnimCts?.Cancel();
-                _scrollAnimCts?.Dispose();
-                _scrollAnimCts = cts;
-                AnimateScrollAsync(GetContentScrollOffset(), clamped, snapDuration, null, cts.Token).Forget();
-            }
-        }
-
-        // 检查是否已到达边缘
-        private void CheckEdgeReached()
-        {
-            bool atTop = IsAtTop();
-            bool atBottom = IsAtBottom();
-
-            if (!_wasAtTop && atTop)
-                OnReachTop?.Invoke();
-
-            if (!_wasAtBottom && atBottom)
-                OnReachBottom?.Invoke();
-
-            _wasAtTop = atTop;
-            _wasAtBottom = atBottom;
-        }
-
-        // 刷新可见 item
-        private void RefreshVisibleItemsInternal(bool force)
-        {
-            if (!IsInitialized || _itemSizes.Count == 0) return;
-
-            if (autoRebuildLayout) SyncContentSizeDelta();
-
-            var (newFirst, newLast) = CalculateVisibleRange();
-            if (newFirst < 0) return;
-
-            // force 或 范围变化 才重建
-            if (!force && newFirst == FirstVisibleIndex && newLast == LastVisibleIndex)
-                return;
-
-            // 回收不再可见的 item
-            for (int i = _activeItems.Count - 1; i >= 0; i--)
-            {
-                var item = _activeItems[i];
-                if (item.Index >= newFirst && item.Index <= newLast) continue;
-                _activeIndexMap.Remove(item.Index);
-                OnItemVisibilityChanged?.Invoke(item.Index, false);
-                item.ScrollItem?.OnHide();
-                Recycle(item.Target);
-                _activeItems.RemoveAt(i);
-            }
-
-            // 为缺失索引补齐 item
-            for (int i = newFirst; i <= newLast; i++)
-            {
-                if (_activeIndexMap.ContainsKey(i)) continue;
-                var go = Rent();
-                go.SetActive(false);
-                var si = go.GetComponent<IScrollProItem>();
-                _activeItems.Add(
-                    new ActiveItem
-                        { Target = go, ScrollItem = si, Index = i, Size = _itemSizes[i], JustCreated = true });
-                _activeIndexMap[i] = go;
-                OnItemVisibilityChanged?.Invoke(i, true);
-            }
-
-            // 保存锚点, 在填充前记录，填充后 justCreated 全被清除无法区分
-            int anchorIdx = -1;
-            foreach (var ai in _activeItems)
-            {
-                if (ai.Target != null && !ai.JustCreated && ai.Index >= newFirst && ai.Index <= newLast)
-                {
-                    anchorIdx = ai.Index;
-                    break;
-                }
-            }
-
-            if (anchorIdx < 0) anchorIdx = newFirst;
-            float oldAnchorPos = anchorIdx < _itemSizes.Count ? GetCumulativePosition(anchorIdx) : 0f;
-
-            // 在填充之前禁用 content 布局, 防冒泡篡改 item 位置
-            if (autoRebuildLayout)
-            {
-                var contentLayout = _contentRect.GetComponent<LayoutGroup>();
-                if (contentLayout != null) contentLayout.enabled = false;
-                var contentCsf = _contentRect.GetComponent<ContentSizeFitter>();
-                if (contentCsf != null) contentCsf.enabled = false;
-                var contentArf = _contentRect.GetComponent<AspectRatioFitter>();
-                if (contentArf != null) contentArf.enabled = false;
-            }
-
-            // 填充新 item, FillAndMeasureNew 内完成测量、锁定
-            bool anyFilled = false;
-            for (int i = 0; i < _activeItems.Count; i++)
-            {
-                var ai = _activeItems[i];
-                if (!ai.JustCreated) continue;
-                _activeItems[i] = FillAndMeasureNew(ai);
-                anyFilled = true;
-            }
-
-            // Batch flush + 重建累积位置
-            if (anyFilled)
-            {
-                Canvas.ForceUpdateCanvases();
-                RebuildCumulativePositions();
-            }
-
-            // 补偿顶部尺寸变化导致的视觉偏移
-            if (anyFilled && anchorIdx < _itemSizes.Count)
-            {
-                float delta = GetCumulativePosition(anchorIdx) - oldAnchorPos;
-                if (Mathf.Abs(delta) > 0.5f)
-                {
-                    if (direction == Direction.Vertical)
-                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x,
-                            _contentRect.anchoredPosition.y + delta);
-                    else
-                        _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x - delta,
-                            _contentRect.anchoredPosition.y);
-                }
-            }
-
-            // 验证 content sizeDelta
-            if (anyFilled && autoRebuildLayout)
-            {
-                float expectedTotal = CalculateTotalSize();
-                if (direction == Direction.Vertical)
-                {
-                    if (Mathf.Abs(_contentRect.sizeDelta.y - expectedTotal) > 0.5f)
-                        _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, expectedTotal);
-                }
-                else
-                {
-                    if (Mathf.Abs(_contentRect.sizeDelta.x - expectedTotal) > 0.5f)
-                        _contentRect.sizeDelta = new Vector2(expectedTotal, _contentRect.sizeDelta.y);
-                }
-            }
-
-            for (int i = newFirst; i <= newLast; i++)
-            {
-                var go = FindActiveByIndex(i);
-                if (go == null) continue;
-                var rt = go.transform as RectTransform;
-                if (rt == null) continue;
-                float pos = _cumulativePositions[i];
-                rt.anchoredPosition = (direction == Direction.Vertical)
-                    ? new Vector2(0, -pos)
-                    : new Vector2(pos, 0);
-            }
-
-            FirstVisibleIndex = newFirst;
-            LastVisibleIndex = newLast;
-
-            // 定位后再次同步 content 尺寸, 以防 ScrollRect 篡改
-            SyncContentSizeDelta();
-
-            // 最终保护：flush + 强制修正漂移
-            // 双 flush 确保 ForceRebuildLayoutImmediate 冒泡 dirty 在同一帧全部结算。
-            if (!anyFilled) return;
-            Canvas.ForceUpdateCanvases();
-            Canvas.ForceUpdateCanvases();
-
-            // 强制修正所有 item 位置
-            for (int i = newFirst; i <= newLast; i++)
-            {
-                var go = FindActiveByIndex(i);
-                if (go == null) continue;
-                var rt = go.transform as RectTransform;
-                if (rt == null) continue;
-                float expectedPos = GetCumulativePosition(i);
-                float actualPos = (direction == Direction.Vertical)
-                    ? -rt.anchoredPosition.y
-                    : rt.anchoredPosition.x;
-                if (Mathf.Abs(actualPos - expectedPos) > 0.5f)
-                {
-                    rt.anchoredPosition = direction == Direction.Vertical
-                        ? new Vector2(rt.anchoredPosition.x, -expectedPos)
-                        : new Vector2(expectedPos, rt.anchoredPosition.y);
-                }
-            }
-
-            // 最终 content sizeDelta 校验
-            float expectedTotalValue = CalculateTotalSize();
-            if (direction == Direction.Vertical)
-            {
-                if (Mathf.Abs(_contentRect.sizeDelta.y - expectedTotalValue) > 0.5f)
-                    _contentRect.sizeDelta = new Vector2(_contentRect.sizeDelta.x, expectedTotalValue);
-            }
-            else
-            {
-                if (Mathf.Abs(_contentRect.sizeDelta.x - expectedTotalValue) > 0.5f)
-                    _contentRect.sizeDelta = new Vector2(expectedTotalValue, _contentRect.sizeDelta.y);
-            }
-        }
-
-        // 查找指定索引的 item
-        private GameObject FindActiveByIndex(int index)
-        {
-            _activeIndexMap.TryGetValue(index, out var go);
-            return go;
-        }
-
-        // 仅对新创建的 item 填充内容 + 测量布局。不设置位置，由统一的锚点链 pass 处理
-        private ActiveItem FillAndMeasureNew(ActiveItem ai)
-        {
-            var go = ai.Target;
-            int index = ai.Index;
-            var rt = go.transform as RectTransform;
-            if (rt == null)
-            {
-                ai.JustCreated = false;
-                return ai;
-            }
-
-            // 设置锚点
-            if (direction == Direction.Vertical)
-            {
-                rt.anchorMin = new Vector2(0, 1);
-                rt.anchorMax = new Vector2(1, 1);
-                rt.pivot = new Vector2(0.5f, 1);
-            }
-            else
-            {
-                rt.anchorMin = new Vector2(0, 0);
-                rt.anchorMax = new Vector2(0, 1);
-                rt.pivot = new Vector2(0, 0.5f);
-            }
-
-            // 把新 item 放在内容底部，锚点链定位前绝对不可见。
-            float offScreenY = -CalculateTotalSize() - _viewportSize;
-            rt.anchoredPosition = (direction == Direction.Vertical)
-                ? new Vector2(0, offScreenY)
-                : new Vector2(offScreenY, 0);
-
-            go.name = $"Item[{index}]";
-
-            // OnCreate 已在 Rent() 中调用，此处不重复
-
-            // 首选 IScrollProItem：同步测量 + 锁定
-            if (ai.ScrollItem != null && autoRebuildLayout)
-            {
-                go.SetActive(true);
-                float measured = ai.ScrollItem.OnShow(index);
-                _itemSizes[index] = Mathf.Max(1f, measured);
-                ai.Size = measured;
-            }
-            else if (autoRebuildLayout)
-            {
-                OnUpdateItem?.Invoke(go, index);
-                rt.sizeDelta = direction == Direction.Vertical
-                    ? new Vector2(rt.sizeDelta.x, Mathf.Max(1f, _itemSizes[index]))
-                    : new Vector2(Mathf.Max(1f, _itemSizes[index]), rt.sizeDelta.y);
-
-                var rootCsf = rt.GetComponent<ContentSizeFitter>();
-                if (rootCsf != null) rootCsf.enabled = true;
-                go.SetActive(true);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-
-                float actualSize = (direction == Direction.Vertical) ? rt.rect.height : rt.rect.width;
-                _itemSizes[index] = actualSize;
-                ai.Size = actualSize;
-
-                rt.sizeDelta = (direction == Direction.Vertical)
-                    ? new Vector2(rt.sizeDelta.x, actualSize)
-                    : new Vector2(actualSize, rt.sizeDelta.y);
-                if (rootCsf != null) rootCsf.enabled = false;
-            }
-            else
-            {
-                OnUpdateItem?.Invoke(go, index);
-                rt.sizeDelta = direction == Direction.Vertical
-                    ? new Vector2(rt.sizeDelta.x, ai.Size)
-                    : new Vector2(ai.Size, rt.sizeDelta.y);
-                go.SetActive(true);
-            }
-
-            ai.JustCreated = false;
-            return ai;
-        }
-
-        // 对象池 ================================================================
-
-        // 初始化对象池
-        private void InitPool()
-        {
-            if (_poolInitialized || itemPrefab == null) return;
-            _poolInitialized = true;
-
-            float avgSize = _prefabDefaultSize > 0 ? _prefabDefaultSize : 100f;
-            _estimatedVisibleCount =
-                Mathf.CeilToInt((_viewportSize + _viewportSize * 0.5f) / (avgSize + itemSpacing)) +
-                (bufferCount + preCreateBuffer) * 2;
-
-            int initial = Mathf.Max(poolPreAlloc, _estimatedVisibleCount);
-            PoolManager.Instance.CreateGameObjectPool(itemPrefab, _contentRect, initial, poolMaxSize, poolIdleTimeout);
-        }
-
-        // 获取一个游戏物体
-        private GameObject Rent()
-        {
-            var go = PoolManager.Instance.Spawn(itemPrefab);
-            if (go != null)
-            {
-                go.transform.SetParent(_contentRect, false);
-                go.SetActive(false);
-
-                if (!_onCreateCalled.Contains(go))
-                {
-                    var si = go.GetComponent<IScrollProItem>();
-                    if (si != null)
-                    {
-                        si.OnCreate(go.transform as RectTransform);
-                        _onCreateCalled.Add(go);
-                    }
-                }
-            }
-
-            return go;
-        }
-
-        // 回收一个游戏物体
-        private void Recycle(GameObject go)
-        {
-            if (go == null) return;
-            PoolManager.Instance.Despawn(go);
-        }
-
-        // 销毁对象池
-        private void DestroyPool()
-        {
-            if (!_poolInitialized) return;
-            PoolManager.Instance.DestroyGameObjectPool(itemPrefab);
-            _poolInitialized = false;
-        }
-
-        // 布局 ================================================================
-
-        // 异步布局动画
-        private async UniTaskVoid LayoutAnimationAsync(int index, float from, float to, float duration,
-            CancellationToken ct)
-        {
-            float elapsed = 0f;
-            while (elapsed < duration && !ct.IsCancellationRequested)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                t = Mathf.SmoothStep(0f, 1f, t);
-                _itemSizes[index] = Mathf.Max(1f, Mathf.Lerp(from, to, t));
-                RebuildCumulativePositions();
-                RepositionAllActive(); // 轻量重定位，不重建 item
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
-            }
-
-            if (!ct.IsCancellationRequested)
-            {
-                _itemSizes[index] = Mathf.Max(1f, to);
-                RebuildCumulativePositions();
-                RefreshVisibleItems(true); // 动画结束，全量同步
-            }
-
-            _layoutAnimCts?.Dispose();
-            _layoutAnimCts = null;
-        }
-
-        // 仅重新定位所有活跃 item + 同步 sizeDelta, 用于动画期间轻量更新
-        private void RepositionAllActive()
-        {
-            SyncContentSizeDelta();
-            for (int i = 0; i < _activeItems.Count; i++)
-            {
-                var ai = _activeItems[i];
-                if (ai.Target == null || ai.Index < 0 || ai.Index >= _cumulativePositions.Count) continue;
-                var rt = ai.Target.transform as RectTransform;
-                if (rt == null) continue;
-
-                // 同步 sizeDelta：动画期间 _itemSizes 在 lerp，GO 的高度必须跟上
-                float cachedSize = _itemSizes[ai.Index];
-                ai.Size = cachedSize;
-                _activeItems[i] = ai;
-                rt.sizeDelta = (direction == Direction.Vertical)
-                    ? new Vector2(rt.sizeDelta.x, cachedSize)
-                    : new Vector2(cachedSize, rt.sizeDelta.y);
-
-                float pos = _cumulativePositions[ai.Index];
-                rt.anchoredPosition = (direction == Direction.Vertical)
-                    ? new Vector2(0, -pos)
-                    : new Vector2(pos, 0);
-            }
-        }
-
-        // 如果在批处理中则标记脏位，否则立即应用布局+重建
-        private void ApplyAndRebuildOrMarkDirty()
-        {
-            if (_batchDepth > 0)
-            {
-                _batchDirty = true;
-            }
-            else
-            {
-                ApplyContentLayout();
-                if (!IsInitialized)
-                {
-                    IsInitialized = true;
-                    _wasAtTop = true;
-                    _wasAtBottom = IsAtBottom();
-                }
-
-                FullRebuild();
-            }
-        }
-
-        // 同步内容尺寸
-        private void SyncContentSizeDelta()
-        {
-            float total = CalculateTotalSize();
-            _contentRect.sizeDelta = direction == Direction.Vertical
-                ? new Vector2(_contentRect.sizeDelta.x, total)
-                : new Vector2(total, _contentRect.sizeDelta.y);
-        }
-
-        // 设置 content 的 anchoredPosition
-        private void SetContentScroll(float clamped)
-        {
-            _contentRect.anchoredPosition = direction == Direction.Vertical
-                ? new Vector2(_contentRect.anchoredPosition.x, clamped)
-                : new Vector2(-clamped, _contentRect.anchoredPosition.y);
-        }
-
-        // 同步滚动动画
-        private async UniTaskVoid AnimateScrollAsync(float from, float to, float duration,
-            AnimationCurve curve, CancellationToken ct)
-        {
-            _animating = true;
-            try
-            {
-                float elapsed = 0f;
-                while (elapsed < duration && !ct.IsCancellationRequested)
-                {
-                    elapsed += Time.unscaledDeltaTime;
-                    float t = Mathf.Clamp01(elapsed / duration);
-                    if (curve != null && curve.length > 0)
-                        t = curve.Evaluate(t);
-
-                    float currentPos = Mathf.Lerp(from, to, t);
-                    SetContentScrollOffset(currentPos);
-
-                    // 动画期间 OnScrollChanged 被 _animating 抑制（567），可见 item 不会随滚动补充，
-                    // 跨屏滚动时起点区的 item 移出视口后即空白。这里按当前动画位置主动补齐可见项。
-                    // 用 force=false：仅在可见范围真正变化时补/回收，不做全量重建；
-                    // 刷新内的锚点补偿可能微调 anchoredPosition，随后重钉回动画位置避免抖动。
-                    RefreshVisibleItems(false);
-                    SetContentScrollOffset(currentPos);
-
-                    await UniTask.Yield(PlayerLoopTiming.Update, ct);
-                }
-
-                if (!ct.IsCancellationRequested)
-                {
-                    SetContentScrollOffset(to);
-                    RefreshVisibleItems(true);
-                }
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                // 本令牌被取消：新滚动/OnDisable 打断，交由 finally 收尾
-            }
-            finally
-            {
-                // 仅"当前动画"有权复位状态与清理令牌：
-                //  - _scrollAnimCts == null → 已被 CancelAllAnimations 清理，无新动画接管
-                //  - Token == ct → 自己仍是当前活动动画
-                // 否则已被新动画取代，_animating/CTS 由新动画负责，禁止误清
-                // （若旧动画无条件复位 _animating，新动画期间 onValueChanged 不再早退 → 视窗飞走）
-                if (_scrollAnimCts == null || _scrollAnimCts.Token == ct)
-                {
-                    _animating = false;
-                    if (_scrollAnimCts != null)
-                    {
-                        _scrollAnimCts.Dispose();
-                        _scrollAnimCts = null;
-                    }
-                }
-            }
-        }
-
-        // 设置 content 滚动偏移
-        private void SetContentScrollOffset(float offset)
-        {
-            if (direction == Direction.Vertical)
-                _contentRect.anchoredPosition = new Vector2(_contentRect.anchoredPosition.x, offset);
-            else
-                _contentRect.anchoredPosition = new Vector2(-offset, _contentRect.anchoredPosition.y);
-        }
-
         #region 全部公开函数
+
+        /// <summary>
+        /// 设置自定义吸附策略。注入后优先于 Inspector 的 Snap Alignment 枚举；
+        /// 传 null 恢复为按枚举使用内置策略（Top/Center/Bottom）。
+        /// <para>Sets a custom snap strategy. When injected it takes precedence over the Snap Alignment
+        /// enum; pass null to fall back to the built-in strategy selected by the enum.</para>
+        /// </summary>
+        /// <param name="strategy">自定义策略或 null<para>Custom strategy or null</para></param>
+        public void SetSnapStrategy(ISnapStrategy strategy)
+        {
+            _snapStrategy = strategy;
+        }
 
         /// <summary>
         /// 初始化列表，首次设置数据后调用或数量变更后调用 RefreshList 函数
@@ -1201,9 +358,11 @@ namespace EasyFramework.Ui
             IsInitialized = true;
             RefreshVisibleItems(true);
 
-            // 初始化边缘状态
+            // 初始化边缘状态：不足一屏时先置底部基线为 false，让补发逻辑能触发首次 OnReachBottom；
+            // NotifyUnderfilledBottom 内部 finally 会按补发后的真实数据重算基线。
             _wasAtTop = IsAtTop();
-            _wasAtBottom = IsAtBottom();
+            _wasAtBottom = false;
+            NotifyUnderfilledBottom();
         }
 
         /// <summary>
@@ -1218,8 +377,9 @@ namespace EasyFramework.Ui
 
         /// <summary>
         /// 刷新可视区 item。
+        /// <para>Refreshes the visible items.</para>
         /// </summary>
-        /// <param name="force">true 时跳过范围比较，强制全部重建</param>
+        /// <param name="force">true 时跳过范围比较，强制全部重建<para>True skips range comparison and forces a full rebuild</para></param>
         public void RefreshVisibleItems(bool force = false)
         {
             if (!IsInitialized || _itemSizes.Count == 0 || _refreshing) return;
@@ -1307,6 +467,8 @@ namespace EasyFramework.Ui
 
             RebuildCumulativePositions();
             RefreshVisibleItems(false);
+            // 追加后仍不足一屏时，确保 OnReachBottom 有机会触发（业务可继续加载）
+            NotifyUnderfilledBottom();
         }
 
         /// <summary>
@@ -1316,7 +478,11 @@ namespace EasyFramework.Ui
         public void RemoveAt(int index)
         {
             if (index < 0 || index >= _itemSizes.Count) return;
+            CancelLayoutAnimationForStructuralChange();
+            float removedSize = _itemSizes[index];
             _itemSizes.RemoveAt(index);
+            RebuildCumulativePositions();
+            CompensateOffsetForStructuralChange(index, -(removedSize + itemSpacing));
             ApplyAndRebuildOrMarkDirty();
         }
 
@@ -1327,6 +493,7 @@ namespace EasyFramework.Ui
         public void RemoveLast()
         {
             if (_itemSizes.Count == 0) return;
+            CancelLayoutAnimationForStructuralChange();
             _itemSizes.RemoveAt(_itemSizes.Count - 1);
             ApplyAndRebuildOrMarkDirty();
         }
@@ -1356,12 +523,11 @@ namespace EasyFramework.Ui
             }
 
             scrollRect.StopMovement(); // 立即停止滚动，防止与动画冲突
-            float oldSize = _itemSizes[index];
-            float target = Mathf.Max(1f, newSize);
             StopLayoutAnimation();
+            _layoutAnimSkipSizeRestore = false; // 新动画启动，清除可能残留的结构变更标志
             var cts = new CancellationTokenSource();
             _layoutAnimCts = cts;
-            LayoutAnimationAsync(index, oldSize, target, layoutAnimationDuration, cts.Token).Forget();
+            LayoutAnimationAsync(index, _itemSizes[index], Mathf.Max(1f, newSize), layoutAnimationDuration, cts.Token).Forget();
         }
 
         /// <summary>
@@ -1403,11 +569,16 @@ namespace EasyFramework.Ui
         {
             if (!IsInitialized) return;
             toIndex = Mathf.Min(toIndex, _itemSizes.Count - 1);
-            for (int i = fromIndex; i <= toIndex; i++)
+            // 倒序遍历，避免移除 _activeItems 元素时索引错位
+            for (int i = _activeItems.Count - 1; i >= 0; i--)
             {
-                var go = FindActiveByIndex(i);
-                if (go == null) continue;
-                Recycle(go);
+                var item = _activeItems[i];
+                if (item.Index < fromIndex || item.Index > toIndex) continue;
+                _activeIndexMap.Remove(item.Index);
+                OnItemVisibilityChanged?.Invoke(item.Index, false);
+                item.ScrollItem?.OnHide();
+                Recycle(item.Target);
+                _activeItems.RemoveAt(i);
             }
 
             RefreshVisibleItems(true);
@@ -1439,7 +610,7 @@ namespace EasyFramework.Ui
                 var si = go.GetComponent<IScrollProItem>();
                 if (si != null)
                 {
-                    si.OnShow(index);
+                    si.OnShow(index, true);
                     _itemSizes[index] = si.MeasuredSize;
                 }
             }
@@ -1469,7 +640,11 @@ namespace EasyFramework.Ui
         public void InsertAt(int index)
         {
             if (index < 0 || index > _itemSizes.Count) return;
-            _itemSizes.Insert(index, GetItemSize(index));
+            CancelLayoutAnimationForStructuralChange();
+            float insertedSize = GetItemSize(index);
+            _itemSizes.Insert(index, insertedSize);
+            RebuildCumulativePositions();
+            CompensateOffsetForStructuralChange(index, insertedSize + itemSpacing);
             ApplyAndRebuildOrMarkDirty();
         }
 
@@ -1480,11 +655,17 @@ namespace EasyFramework.Ui
         public void InsertRange(int index, int count)
         {
             if (index < 0 || index > _itemSizes.Count || count <= 0) return;
+            CancelLayoutAnimationForStructuralChange();
+            float insertedTotal = 0f;
             for (int i = 0; i < count; i++)
             {
-                _itemSizes.Insert(index + i, GetItemSize(index + i));
+                float size = GetItemSize(index + i);
+                insertedTotal += size;
+                _itemSizes.Insert(index + i, size);
             }
 
+            RebuildCumulativePositions();
+            CompensateOffsetForStructuralChange(index, insertedTotal + count * itemSpacing);
             ApplyAndRebuildOrMarkDirty();
         }
 
@@ -1498,7 +679,7 @@ namespace EasyFramework.Ui
             foreach (var item in _activeItems)
             {
                 if (item.Target != null)
-                    OnUpdateItem?.Invoke(item.Target, item.Index);
+                    item.ScrollItem?.OnShow(item.Index, false);
             }
         }
 
@@ -1585,7 +766,7 @@ namespace EasyFramework.Ui
         /// <param name="alignment">0=top, 0.5=center, 1=bottom</param>
         /// <param name="duration">动画时长<para>Animation duration</para></param>
         /// <param name="easeCurve">缓动曲线, null = 线性<para>Ease curve, null = linear</para></param>
-        public void ScrollToIndexAnimated(int index, float alignment = 0f, float duration = 0.3f,
+        public void ScrollToIndexAnimated(int index, float alignment = 0f, float duration = DefaultScrollDuration,
             AnimationCurve easeCurve = null)
         {
             if (!IsInitialized || index < 0 || index >= _itemSizes.Count) return;
@@ -1687,7 +868,7 @@ namespace EasyFramework.Ui
         /// </summary>
         public bool IsAtTop()
         {
-            return GetNormalizedPosition() <= 0.001f;
+            return GetNormalizedPosition() <= EdgeEpsilon;
         }
 
         /// <summary>
@@ -1696,7 +877,35 @@ namespace EasyFramework.Ui
         /// </summary>
         public bool IsAtBottom()
         {
-            return GetNormalizedPosition() >= 0.999f;
+            if (CalculateTotalSize() <= GetViewportSize()) return true;
+            return GetNormalizedPosition() >= 1f - EdgeEpsilon;
+        }
+
+        // 不足一屏时补发 OnReachBottom：这种状态滚不动，OnScrollChanged 永远不会触发，
+        // 需在初始化/追加后主动通知业务加载更多。先提交基线再回调，避免回调内 AppendData
+        // 更新基线后被旧快照覆盖；_notifyingUnderfilled 防止同步递归。
+        private void NotifyUnderfilledBottom()
+        {
+            if (!IsInitialized || _notifyingUnderfilled) return;
+            float viewSize = GetViewportSize();
+            if (viewSize <= 0f || CalculateTotalSize() > viewSize) return;
+            if (_wasAtBottom) return; // 已通知过，避免重复
+
+            _notifyingUnderfilled = true;
+            try
+            {
+                // 回调前提交基线：回调内可能 AppendData → SyncEdgeBaseline 更新基线
+                _wasAtBottom = true;
+                _wasAtTop = IsAtTop();
+                OnReachBottom?.Invoke();
+            }
+            finally
+            {
+                _notifyingUnderfilled = false;
+                // 按当前真实状态重算：既保留回调内的数据变更结果，又能检测后续离开边缘
+                _wasAtTop = IsAtTop();
+                _wasAtBottom = IsAtBottom();
+            }
         }
 
         #endregion

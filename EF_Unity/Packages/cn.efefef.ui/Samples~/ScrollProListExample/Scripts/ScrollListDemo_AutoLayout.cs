@@ -65,7 +65,7 @@ namespace EFExample
         {
             "短文本",
             "这是一段中等长度的文本，用来模拟聊天消息的不同高度。",
-            "这段文本比较长。当 VerticalLayoutGroup 和 ContentSizeFitter 协同工作时，item 的实际高度由子物体的累加高度决定。开启 Auto Rebuild Layout 后，组件会在 OnUpdateItem 填充完内容后自动调用 ForceRebuildLayoutImmediate 并测量真实高度，然后修正后续所有 item 的累积位置。",
+            "这段文本比较长。当 VerticalLayoutGroup 和 ContentSizeFitter 协同工作时，item 的实际高度由子物体的累加高度决定。开启 Auto Rebuild Layout 后，组件会在 OnShowContent 填充完内容后自动调用 ForceRebuildLayoutImmediate 并测量真实高度，然后修正后续所有 item 的累积位置。",
             "超短",
             "又是一段中等长度的文本，演示自适应布局。",
         };
