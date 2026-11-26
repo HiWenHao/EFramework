@@ -32,8 +32,8 @@ namespace EasyFramework.GameMaster
         // 稳定 ID 正则：以字母/下划线开头，仅字母数字下划线点
         private static readonly System.Text.RegularExpressions.Regex IdPattern = new("^[A-Za-z_][A-Za-z0-9_.]*$");
 
-        // 复用空参数字典
-        private static readonly IReadOnlyDictionary<string, object> EmptyArgs = new Dictionary<string, object>(0);
+        // 空参数文本
+        private const string EmptyArgs = "";
 
         #endregion
 
@@ -84,10 +84,10 @@ namespace EasyFramework.GameMaster
         /// <param name="display">显示名原文。<para>Literal display name.</para></param>
         /// <param name="risk">风险等级。<para>Risk level.</para></param>
         /// <param name="execute">执行委托。<para>Execution delegate.</para></param>
-        /// <param name="paramKeys">参数键。<para>Argument keys.</para></param>
+        /// <param name="paramHint">参数提示文本。<para>Argument hint text.</para></param>
         /// <param name="section">面板分区名。<para>Panel section name.</para></param>
         internal void Register(string id, string display, GmRisk risk,
-            GmCommandDelegate execute, IReadOnlyList<string> paramKeys, string section)
+            GmCommandDelegate execute, string paramHint, string section)
         {
             if (string.IsNullOrEmpty(id) || !IdPattern.IsMatch(id))
             {
@@ -109,7 +109,7 @@ namespace EasyFramework.GameMaster
 
             var entry = new Entry
             {
-                Info = new GmCommandInfo(id, display, risk, paramKeys, section),
+                Info = new GmCommandInfo(id, display, risk, paramHint, section),
                 Execute = execute,
             };
 
@@ -141,9 +141,9 @@ namespace EasyFramework.GameMaster
         /// <para>Executes a command serially with unified cancellation and exception isolation.</para>
         /// </summary>
         /// <param name="id">命令 ID。<para>Command ID.</para></param>
-        /// <param name="args">参数字典。<para>Argument dictionary.</para></param>
+        /// <param name="args">参数原始文本。<para>Raw argument text.</para></param>
         /// <returns>执行结果。<para>Execution result.</para></returns>
-        internal async UniTask<GmResult> Run(string id, IReadOnlyDictionary<string, object> args)
+        internal async UniTask<GmResult> Run(string id, string args)
         {
             if (_running) return new GmResult(id, false, "Busy");
 
@@ -255,7 +255,7 @@ namespace EasyFramework.GameMaster
         #region 私有方法
 
         // 执行单条命令：统一 attach 取消令牌，命令作者无需关心
-        private async UniTask<GmResult> RunOne(Entry entry, IReadOnlyDictionary<string, object> args)
+        private async UniTask<GmResult> RunOne(Entry entry, string args)
         {
             string id = entry.Info.Id;
             // 本会话 CTS 先取局部：Quit 置空后仍能安全构建 linked

@@ -8,9 +8,6 @@
  * ===============================================
  */
 
-using System;
-using System.Collections.Generic;
-
 namespace EasyFramework.GameMaster
 {
     /// <summary>
@@ -48,7 +45,7 @@ namespace EasyFramework.GameMaster
         public string Id { get; }
 
         /// <summary> 显示名：注册时传入的原文，直接展示不做多语言解析。<para>Display name: the literal text passed at registration, shown as-is without localization.</para> </summary>
-        public string DisplayKey { get; }
+        public string DisplayName { get; }
 
         /// <summary> 面板分区名，用于编辑器折叠；未指定时为 <see cref="DefaultSection"/>。
         /// <para>Panel section name used for folding in the Editor; defaults to <see cref="DefaultSection"/>.</para>
@@ -58,48 +55,28 @@ namespace EasyFramework.GameMaster
         /// <summary> 风险等级。<para>Risk level.</para> </summary>
         public GmRisk Risk { get; }
 
-        // 参数键列表（只读副本）
-        private readonly string[] _paramKeys;
+        /// <summary>
+        /// 参数提示文本（单输入框的占位提示，同时作为单值输入的默认键）
+        /// </summary>
+        public string ParamHint { get; }
 
         /// <summary>
         /// 创建命令元数据。
         /// <para>Creates command metadata.</para>
         /// </summary>
         /// <param name="id">稳定 ID。<para>Stable ID.</para></param>
-        /// <param name="displayKey">显示名原文。<para>Literal display name.</para></param>
+        /// <param name="displayName">显示名原文。<para>Literal display name.</para></param>
         /// <param name="risk">风险等级。<para>Risk level.</para></param>
-        /// <param name="paramKeys">参数键。<para>Argument keys.</para></param>
+        /// <param name="paramHint">参数提示文本，单输入框占位用；多参数时用户可输入 JSON。
+        /// <para>Argument hint for the single input box; users may enter JSON for multiple arguments.</para></param>
         /// <param name="section">面板分区名，null 视为 Common。<para>Panel section name; null means Common.</para></param>
-        public GmCommandInfo(string id, string displayKey, GmRisk risk,
-            IReadOnlyList<string> paramKeys, string section)
+        public GmCommandInfo(string id, string displayName, GmRisk risk, string paramHint, string section)
         {
             Id = id;
-            DisplayKey = displayKey;
+            DisplayName = displayName;
             Section = string.IsNullOrEmpty(section) ? DefaultSection : section;
             Risk = risk;
-            _paramKeys = paramKeys == null ? Array.Empty<string>() : CopyKeys(paramKeys);
-        }
-
-        // 复制参数键，避免外部集合可变导致元数据漂移
-        private static string[] CopyKeys(IReadOnlyList<string> source)
-        {
-            var copy = new string[source.Count];
-            for (int i = 0; i < source.Count; i++)
-                copy[i] = source[i];
-            return copy;
-        }
-
-        /// <summary>
-        /// 获取参数键的只读快照。
-        /// <para>Gets a read-only snapshot of argument keys.</para>
-        /// </summary>
-        /// <returns>参数键数组。<para>Argument key array.</para></returns>
-        public string[] GetParamKeys()
-        {
-            var copy = new string[_paramKeys.Length];
-            for (int i = 0; i < _paramKeys.Length; i++)
-                copy[i] = _paramKeys[i];
-            return copy;
+            ParamHint = paramHint ?? string.Empty;
         }
     }
 }

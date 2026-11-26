@@ -8,7 +8,6 @@
  * ===============================================
  */
 
-using System.Collections.Generic;
 using System.Threading;
 
 namespace EasyFramework.GameMaster
@@ -19,8 +18,9 @@ namespace EasyFramework.GameMaster
     /// </summary>
     public sealed class GmCommandContext
     {
-        /// <summary> 命令参数（只读字典）。<para>Read-only command arguments.</para> </summary>
-        public IReadOnlyDictionary<string, object> Args { get; }
+        /// <summary> 命令参数（用户输入的原始文本）。
+        /// <para>Raw argument text entered by the user</para></summary>
+        public string Args { get; }
 
         /// <summary> 本次执行的取消标记。<para>Cancellation token of this execution.</para> </summary>
         public CancellationToken Cancellation { get; }
@@ -29,11 +29,11 @@ namespace EasyFramework.GameMaster
         /// 创建执行上下文。
         /// <para>Creates an execution context.</para>
         /// </summary>
-        /// <param name="args">参数字典。<para>Argument dictionary.</para></param>
+        /// <param name="args">参数原始文本。<para>Raw argument text.</para></param>
         /// <param name="cancellation">取消标记。<para>Cancellation token.</para></param>
-        public GmCommandContext(IReadOnlyDictionary<string, object> args, CancellationToken cancellation)
+        public GmCommandContext(string args, CancellationToken cancellation)
         {
-            Args = args;
+            Args = args ?? string.Empty;
             Cancellation = cancellation;
         }
     }

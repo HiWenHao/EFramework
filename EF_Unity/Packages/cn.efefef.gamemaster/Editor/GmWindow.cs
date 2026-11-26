@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
+using EasyFramework.GameMaster;
 using UnityEditor;
 using UnityEngine;
 
@@ -45,9 +46,8 @@ namespace EasyFramework.GameMaster.Editor
         // 执行历史快照
         private List<GmResult> _history = new List<GmResult>();
 
-        // 每个命令的参数输入：命令 ID -> (键 -> 字符串值)
-        private readonly Dictionary<string, Dictionary<string, string>> _args =
-            new Dictionary<string, Dictionary<string, string>>();
+        // 每个命令的参数输入：命令 ID -> 输入框原始文本（可为 JSON）
+        private readonly Dictionary<string, string> _args = new Dictionary<string, string>();
 
         // 展开状态：命令 ID -> 是否展开
         private readonly Dictionary<string, bool> _expanded = new Dictionary<string, bool>();
@@ -274,8 +274,8 @@ namespace EasyFramework.GameMaster.Editor
                     if (!confirm) return;
                 }
 
-                // 参数字典在实例方法内构建，避免静态辅助反向 GetWindow
-                var args = BuildArgs(info);
+                // 直接传输入框原始文本，参数解析交给命令内部（GmArgsParser）
+                string args = GetArgs(info.Id);
                 RunAndRefresh(info.Id, args).Forget();
                 RefreshHistory();
             }
@@ -333,22 +333,16 @@ namespace EasyFramework.GameMaster.Editor
         private static bool IsDangerous(GmRisk risk) =>
             risk == GmRisk.Dangerous || risk == GmRisk.Destructive;
 
-        // 参数输入区
+        // 参数输入区：单输入框，提示文本来自命令元数据；多参数可输入 JSON 对象
         private void DrawArgs(GmCommandInfo info)
         {
-            string[] keys = info.GetParamKeys();
-            if (keys.Length == 0) return;
+            string hint = info.ParamHint;
+            if (string.IsNullOrEmpty(hint)) return;
 
             EditorGUILayout.LabelField(Tr("Arguments"), EditorStyles.miniBoldLabel);
-            Dictionary<string, string> values = GetArgs(info.Id);
-
-            for (int i = 0; i < keys.Length; i++)
-            {
-                string key = keys[i];
-                values.TryGetValue(key, out string current);
-                string next = EditorGUILayout.TextField(key, current ?? string.Empty);
-                values[key] = next;
-            }
+            string current = GetArgs(info.Id);
+            string next = EditorGUILayout.TextField(hint, current ?? string.Empty);
+            _args[info.Id] = next;
         }
 
         // 执行历史
@@ -371,7 +365,7 @@ namespace EasyFramework.GameMaster.Editor
         #region 数据
 
         // 异步执行并在完成后刷新历史（UniTask<T> 无 Forget 重载，显式包装）
-        private async UniTaskVoid RunAndRefresh(string id, Dictionary<string, object> args)
+        private async UniTaskVoid RunAndRefresh(string id, string args)
         {
             try
             {
@@ -429,7 +423,7 @@ namespace EasyFramework.GameMaster.Editor
         // 显示名：直接显示注册时传入的文本，不做多语言解析；为空回退 ID
         private static string GetDisplayName(GmCommandInfo info)
         {
-            return string.IsNullOrEmpty(info.DisplayKey) ? info.Id : info.DisplayKey;
+            return string.IsNullOrEmpty(info.DisplayName) ? info.Id : info.DisplayName;
         }
 
         // 过滤匹配
@@ -437,42 +431,16 @@ namespace EasyFramework.GameMaster.Editor
         {
             if (string.IsNullOrEmpty(_filter)) return true;
             return info.Id.IndexOf(_filter, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-                   info.DisplayKey != null &&
-                   info.DisplayKey.IndexOf(_filter, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   info.DisplayName != null &&
+                   info.DisplayName.IndexOf(_filter, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
                    info.Section != null &&
                    info.Section.IndexOf(_filter, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        // 获取命令的参数输入缓存
-        private Dictionary<string, string> GetArgs(string id)
+        // 获取命令的参数输入缓存（单输入框原始文本）
+        private string GetArgs(string id)
         {
-            if (!_args.TryGetValue(id, out var values))
-            {
-                values = new Dictionary<string, string>();
-                _args[id] = values;
-            }
-
-            return values;
-        }
-
-        // 构建参数字典：数值字符串尝试解析为 int/float
-        private Dictionary<string, object> BuildArgs(GmCommandInfo info)
-        {
-            var result = new Dictionary<string, object>();
-            string[] keys = info.GetParamKeys();
-            if (!_args.TryGetValue(info.Id, out var values)) return result;
-
-            for (int i = 0; i < keys.Length; i++)
-            {
-                string key = keys[i];
-                if (!values.TryGetValue(key, out string raw)) raw = string.Empty;
-
-                if (int.TryParse(raw, out int intValue)) result[key] = intValue;
-                else if (float.TryParse(raw, out float floatValue)) result[key] = floatValue;
-                else result[key] = raw;
-            }
-
-            return result;
+            return _args.TryGetValue(id, out string raw) ? raw : string.Empty;
         }
 
         // 取面板文本（作用域键）

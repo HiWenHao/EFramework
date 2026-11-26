@@ -8,7 +8,6 @@
  * ===============================================
  */
 
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.GameMaster
@@ -39,8 +38,8 @@ namespace EasyFramework.GameMaster
         /// <summary> 执行时刻（UTC）。<para>Execution timestamp in UTC.</para> </summary>
         public System.DateTime TimestampUtc { get; }
 
-        /// <summary> 执行时的参数快照（只读）。<para>Snapshot of arguments used at execution.</para> </summary>
-        public IReadOnlyDictionary<string, object> Args { get; }
+        /// <summary> 执行时的参数原始文本。<para>Raw argument text used at execution.</para> </summary>
+        public string Args { get; }
 
         /// <summary>
         /// 创建执行结果。
@@ -49,14 +48,14 @@ namespace EasyFramework.GameMaster
         /// <param name="id">命令 ID。<para>Command ID.</para></param>
         /// <param name="success">是否成功。<para>Whether it succeeded.</para></param>
         /// <param name="message">原因。<para>Reason.</para></param>
-        /// <param name="args">参数快照（可选）。<para>Argument snapshot (optional).</para></param>
-        public GmResult(string id, bool success, string message, IReadOnlyDictionary<string, object> args = null)
+        /// <param name="args">参数原始文本（可选）。<para>Raw argument text (optional).</para></param>
+        public GmResult(string id, bool success, string message, string args = null)
         {
             Id = id;
             Success = success;
             Message = message;
             TimestampUtc = System.DateTime.UtcNow;
-            Args = args == null ? null : new Dictionary<string, object>(args);
+            Args = args ?? string.Empty;
         }
     }
 }

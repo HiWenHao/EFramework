@@ -28,8 +28,8 @@ namespace EasyFramework.GameMaster
         // 日志前缀
         private const string LogTag = "[ GM ] ";
 
-        // 复用空参数字典
-        private static readonly IReadOnlyDictionary<string, object> EmptyArgs = new Dictionary<string, object>(0);
+        // 空参数文本
+        private const string EmptyArgs = "";
 
         #endregion
 
@@ -93,19 +93,19 @@ namespace EasyFramework.GameMaster
         /// <param name="display">面板显示名原文。<para>Literal display name.</para></param>
         /// <param name="risk">风险等级。<see cref="GmRisk"/><para>Risk level.</para></param>
         /// <param name="execute">执行委托。<para>Execution delegate.</para></param>
-        /// <param name="paramKeys">参数键（可选）。<para>Argument keys (optional).</para></param>
+        /// <param name="paramHint">参数提示文本（可选）。<para>Argument hint text (optional).</para></param>
         /// <param name="section">面板分区名，默认 Common。<para>Panel section name; defaults to Common.</para></param>
         public static void Register(string id, string display, GmRisk risk,
-            GmCommandDelegate execute, IReadOnlyList<string> paramKeys = null, string section = "Common")
+            GmCommandDelegate execute, string paramHint = null, string section = "Common")
         {
             EnsureInitialized();
 
             GmSession session = _current;
             if (_initialized && session is { IsAlive: true })
-                session.Register(id, display, risk, execute, paramKeys, section);
+                session.Register(id, display, risk, execute, paramHint, section);
             else
                 // 回放时读当前会话，不绑定旧对象
-                PendingRegistrations.Add(() => _current?.Register(id, display, risk, execute, paramKeys, section));
+                PendingRegistrations.Add(() => _current?.Register(id, display, risk, execute, paramHint, section));
         }
 
         /// <summary>
@@ -126,9 +126,9 @@ namespace EasyFramework.GameMaster
         /// <para>Executes a command serially with unified cancellation and exception isolation.</para>
         /// </summary>
         /// <param name="id">命令 ID。<para>Command ID.</para></param>
-        /// <param name="args">参数字典（可选）。<para>Argument dictionary (optional).</para></param>
+        /// <param name="args">参数原始文本（可选）。<para>Raw argument text (optional).</para></param>
         /// <returns>执行结果；框架未就绪时返回失败结果。<para>Execution result; a failed result when not ready.</para></returns>
-        public static async UniTask<GmResult> Run(string id, IReadOnlyDictionary<string, object> args = null)
+        public static async UniTask<GmResult> Run(string id, string args = null)
         {
             if (!TryGetReady(out GmSession session))
                 return new GmResult(id, false, "NotInitialized");
@@ -236,13 +236,13 @@ namespace EasyFramework.GameMaster
     {
         /// <summary> 空操作注册。<para>No-op registration.</para> </summary>
         public static void Register(string id, string display, GmRisk risk,
-            GmCommandDelegate execute, IReadOnlyList<string> paramKeys = null, string section = "Common") { }
+            GmCommandDelegate execute, string paramHint = null, string section = "Common") { }
 
         /// <summary> 空操作移除。<para>No-op removal.</para> </summary>
         public static bool Remove(string id) => false;
 
         /// <summary> 空操作执行。<para>No-op execution.</para> </summary>
-        public static UniTask<GmResult> Run(string id, IReadOnlyDictionary<string, object> args = null) =>
+        public static UniTask<GmResult> Run(string id, string args = null) =>
             UniTask.FromResult(new GmResult(id, false, "DisabledInRelease"));
 
         /// <summary> 空操作批量执行。<para>No-op batch execution.</para> </summary>
