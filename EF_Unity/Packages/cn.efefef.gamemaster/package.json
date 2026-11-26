@@ -15,5 +15,11 @@
     "cn.efefef.core": "0.1.0",
     "com.cysharp.unitask": "2.5.10"
   },
-  "samples": null
+  "samples": [
+    {
+      "displayName": "GM Panel Example",
+      "description": "GM 总控台示例：命令注册、分区列表、参数输入与执行面板（含场景与预制体）。",
+      "path": "Samples~/GmPanelExample"
+    }
+  ]
 }
