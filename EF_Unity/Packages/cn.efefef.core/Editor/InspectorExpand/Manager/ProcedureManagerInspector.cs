@@ -13,7 +13,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using EasyFramework.Edit;
 using EasyFramework.Edit.Windows;
@@ -25,6 +24,8 @@ namespace EasyFramework.Procedure
     [CustomEditor(typeof(ProcedureManager))]
     public class ProcedureManagerInspector : EFInspectorBase<ProcedureManager>
     {
+        private const int MaxRenderDepth = 16;
+
         private FieldInfo _stackField;
         private FieldInfo _factoriesField;
 
@@ -32,7 +33,6 @@ namespace EasyFramework.Procedure
         private FieldInfo _uidField;
         private FieldInfo _stateField;
         private FieldInfo _depthField;
-        private FieldInfo _paramsField;
         private FieldInfo _exitStateField;
         private FieldInfo _parentUidField;
         private FieldInfo _exitQueuedField;
@@ -46,7 +46,6 @@ namespace EasyFramework.Procedure
         private bool _showRegisteredProcedures = true;
 
         private Dictionary<long, bool> _nodeFoldouts;
-        private Dictionary<long, bool> _paramFoldouts;
 
         private Vector2 _treeScrollPos;
 
@@ -57,7 +56,8 @@ namespace EasyFramework.Procedure
         protected override void OnEditorEnable()
         {
             _nodeFoldouts = new Dictionary<long, bool>();
-            _paramFoldouts = new Dictionary<long, bool>();
+            _cachedFactories = new Dictionary<Type, Func<IProcedure>>();
+            _reflectionReady = false;
 
             try
             {
@@ -65,9 +65,13 @@ namespace EasyFramework.Procedure
                 _stackField = sysType.GetField("_instanceStack", BindingFlags.NonPublic | BindingFlags.Instance);
                 _factoriesField = sysType.GetField("_factories", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                _procedureInstanceType = sysType.Assembly.GetType("EasyFramework.Managers.Procedure.ProcedureInstance");
+                // ProcedureInstance 在 EasyFramework.Procedure 命名空间，且为 internal，只能反射获取
+                _procedureInstanceType = sysType.Assembly.GetType("EasyFramework.Procedure.ProcedureInstance", false);
                 if (_procedureInstanceType == null)
-                    D.Exception("无法获取 ProcedureInstance 类型");
+                {
+                    D.Error("[ProcedureSystemInspector] 无法获取 ProcedureInstance 类型");
+                    return;
+                }
 
                 _uidField = GetInstanceField("Uid");
                 _parentUidField = GetInstanceField("ParentUid");
@@ -79,12 +83,14 @@ namespace EasyFramework.Procedure
                 _procedureTypeField = GetInstanceField("ProcedureType");
                 _exitExceptionField = GetInstanceField("ExitException");
                 _exitReasonField = GetInstanceField("ExitReason");
-                _paramsField = GetInstanceField("Params");
 
                 if (_stackField == null || _factoriesField == null ||
-                    _procedureInstanceType == null || _uidField == null || _parentUidField == null ||
-                    _depthField == null)
-                    D.Exception("关键反射字段缺失，请检查 ProcedureSystem 和 ProcedureInstance 的字段定义");
+                    _uidField == null || _parentUidField == null || _depthField == null ||
+                    _exitStateField == null || _stateField == null || _procedureTypeField == null)
+                {
+                    D.Error("[ProcedureSystemInspector] 关键反射字段缺失，请检查 ProcedureManager 和 ProcedureInstance 的字段定义");
+                    return;
+                }
 
                 _reflectionReady = true;
                 RefreshFactoriesCache();
@@ -113,17 +119,19 @@ namespace EasyFramework.Procedure
                 return;
             }
 
-            DrawGlobalInfo(); // 新增全局信息
-            DrawRegisteredProcedures();
-            DrawRuntimeMonitor(); // 活动树
+            // 只枚举一次栈，三处共用同一份快照，避免多次分配与视图不一致
+            var activeInstances = GetActiveInstancesFromStack();
+            DrawGlobalInfo(activeInstances);
+            DrawRegisteredProcedures(activeInstances);
+            DrawRuntimeMonitor(activeInstances);
         }
 
         private void RefreshFactoriesCache()
         {
             if (!_reflectionReady || _factoriesField == null) return;
-            var factoriesObj = _factoriesField.GetValue(Target);
-            _cachedFactories = new Dictionary<Type, Func<IProcedure>>();
-            if (factoriesObj is not IDictionary dict) return;
+            _cachedFactories ??= new Dictionary<Type, Func<IProcedure>>();
+            _cachedFactories.Clear();
+            if (_factoriesField.GetValue(Target) is not IDictionary dict) return;
             foreach (DictionaryEntry entry in dict)
             {
                 if (entry is { Key: Type t, Value: Func<IProcedure> factory })
@@ -132,10 +140,9 @@ namespace EasyFramework.Procedure
         }
 
         // ---------- 全局信息 ----------
-        private void DrawGlobalInfo()
+        private void DrawGlobalInfo(List<object> activeInstances)
         {
             EditorGUILayout.BeginVertical("box");
-            var activeInstances = GetActiveInstancesFromStack();
             int stackDepth = activeInstances.Count;
             var activeTop = stackDepth > 0 ? activeInstances[^1] : null; // 栈顶
 
@@ -178,12 +185,11 @@ namespace EasyFramework.Procedure
         }
 
         // ---------- 运行时活动树 ----------
-        private void DrawRuntimeMonitor()
+        private void DrawRuntimeMonitor(List<object> activeInstances)
         {
             EditorGUILayout.Space(24);
             EditorGUILayout.BeginVertical("box");
 
-            var activeInstances = GetActiveInstancesFromStack();
             CleanupFoldoutStates(activeInstances);
             var rootInstances = BuildTree(activeInstances);
             _showActivityTree = EditorGUILayout.Foldout(_showActivityTree,
@@ -202,8 +208,9 @@ namespace EasyFramework.Procedure
                 {
                     var childMap = BuildChildMap(activeInstances);
                     EditorGUI.indentLevel++;
+                    var visited = new HashSet<long>();
                     foreach (var root in rootInstances)
-                        DrawProcedureNode(root, 0, childMap);
+                        DrawProcedureNode(root, 0, childMap, visited);
                     EditorGUI.indentLevel--;
                 }
 
@@ -214,7 +221,7 @@ namespace EasyFramework.Procedure
         }
 
         // ---------- 注册流程列表（显示所有存活实例）----------
-        private void DrawRegisteredProcedures()
+        private void DrawRegisteredProcedures(List<object> allInstances)
         {
             if (_cachedFactories == null || _cachedFactories.Count == 0)
                 return;
@@ -229,13 +236,22 @@ namespace EasyFramework.Procedure
                 return;
             }
 
-            var allInstances = GetActiveInstancesFromStack(); // 所有存活实例
-            // 按类型分组实例；GetProcedureType 可能返回 null（实例尚未设置类型），
-            // ToDictionary 遇 null key 会抛异常，先过滤
-            var instancesByType = allInstances
-                .Where(inst => GetProcedureType(inst) != null)
-                .GroupBy(GetProcedureType)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            // 按类型分组实例；GetProcedureType 可能返回 null，跳过即可
+            var instancesByType = new Dictionary<Type, List<object>>();
+            foreach (var inst in allInstances)
+            {
+                var procType = GetProcedureType(inst);
+                if (procType == null)
+                    continue;
+
+                if (!instancesByType.TryGetValue(procType, out var list))
+                {
+                    list = new List<object>();
+                    instancesByType[procType] = list;
+                }
+
+                list.Add(inst);
+            }
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             foreach (var kv in _cachedFactories)
@@ -340,20 +356,38 @@ namespace EasyFramework.Procedure
 
         private void CleanupFoldoutStates(List<object> activeInstances)
         {
-            var validUids = new HashSet<long>(activeInstances.Select(GetUid));
-            var keysToRemove = _nodeFoldouts.Keys.Where(uid => !validUids.Contains(uid)).ToList();
+            var validUids = new HashSet<long>();
+            foreach (var inst in activeInstances)
+                validUids.Add(GetUid(inst));
+
+            List<long> keysToRemove = null;
+            foreach (var key in _nodeFoldouts.Keys)
+            {
+                if (validUids.Contains(key))
+                    continue;
+
+                keysToRemove ??= new List<long>();
+                keysToRemove.Add(key);
+            }
+
+            if (keysToRemove == null)
+                return;
+
             foreach (var key in keysToRemove)
                 _nodeFoldouts.Remove(key);
-
-            var paramKeysToRemove = _paramFoldouts.Keys.Where(uid => !validUids.Contains(uid)).ToList();
-            foreach (var key in paramKeysToRemove)
-                _paramFoldouts.Remove(key);
         }
 
         // ---------- UI 绘制 ----------
-        private void DrawProcedureNode(object inst, int indentLevel, Dictionary<long, List<object>> childMap)
+        private void DrawProcedureNode(object inst, int indentLevel, Dictionary<long, List<object>> childMap, HashSet<long> visited)
         {
-            if (inst == null) return;
+            if (inst == null || indentLevel > MaxRenderDepth)
+                return;
+
+            long uid = GetUid(inst);
+            // 防御：Uid 读取异常或数据成环时禁止递归绘制，避免栈溢出
+            if (!visited.Add(uid))
+                return;
+
             const int indentStep = 20;
             int actualIndent = Mathf.Min(indentLevel * indentStep, 200);
 
@@ -362,7 +396,6 @@ namespace EasyFramework.Procedure
 
             var state = GetState(inst);
             GUILayout.Label(GetStateLabel(state), DrawStateGUIStyle(state), GUILayout.MaxWidth(70));
-            long uid = GetUid(inst);
             var children = childMap.TryGetValue(uid, out var childList) ? childList : new List<object>();
 
             string displayName = $"{GetProcedureType(inst)?.Name ?? "<unknown>"} - [ UID:{uid} ]";
@@ -388,30 +421,6 @@ namespace EasyFramework.Procedure
             EditorGUILayout.LabelField(contents, EditorStyles.miniLabel);
             GUILayout.EndHorizontal();
 
-            // 参数折叠
-            if (_paramsField?.GetValue(inst) is IDictionary { Count: > 0 } paramsDict)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(actualIndent + indentStep);
-                _paramFoldouts.TryAdd(uid, false);
-                _paramFoldouts[uid] = EditorGUILayout.Foldout(_paramFoldouts[uid], LC.Combine("Param") + $" ({paramsDict.Count})", true);
-                GUILayout.EndHorizontal();
-
-                if (_paramFoldouts[uid])
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(actualIndent + indentStep * 2);
-                    GUILayout.BeginVertical();
-                    foreach (DictionaryEntry kv in paramsDict)
-                    {
-                        EditorGUILayout.LabelField($"{kv.Key}: {kv.Value}", EditorStyles.miniLabel);
-                    }
-
-                    GUILayout.EndVertical();
-                    GUILayout.EndHorizontal();
-                }
-            }
-
             var exitException = GetExitException(inst);
             if (exitException != null)
             {
@@ -424,7 +433,7 @@ namespace EasyFramework.Procedure
             if (children.Count > 0 && _nodeFoldouts.TryGetValue(uid, out bool expanded) && expanded)
             {
                 foreach (var child in children)
-                    DrawProcedureNode(child, indentLevel + 1, childMap);
+                    DrawProcedureNode(child, indentLevel + 1, childMap, visited);
             }
         }
 

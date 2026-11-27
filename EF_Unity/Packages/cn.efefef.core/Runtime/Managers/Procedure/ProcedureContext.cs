@@ -10,13 +10,13 @@
  */
 
 using System;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace EasyFramework.Procedure
 {
     /// <summary>
     /// 单流程的上下文
+    /// <para>Context of a single procedure</para>
     /// </summary>
     public sealed class ProcedureContext
     {
@@ -45,12 +45,10 @@ namespace EasyFramework.Procedure
         public int Depth { get; internal set; }
 
         /// <summary>
-        /// 启动时传入的参数集合（只读）
-        /// <para>注意：Params 底层来自对象池。Context Dispose 后禁止继续访问。</para>
-        /// <para>The collection of parameters passed during startup (read-only)</para>
-        /// <para>Note: The Params is derived from the object pool. Access is prohibited after Context Dispose.</para>
+        /// 启动时传入的参数对象（由流程自身用 GetParams&lt;T&gt;() 强类型读取）
+        /// <para>Startup parameter object (read by the procedure itself via GetParams&lt;T&gt;())</para>
         /// </summary>
-        public IReadOnlyDictionary<string, object> Params { get; internal set; }
+        public object Params { get; internal set; }
 
         /// <summary>上下文是否已被释放</summary>
         internal bool IsDisposed { get; set; }
@@ -84,11 +82,10 @@ namespace EasyFramework.Procedure
         /// 启动子流程并等待其完全退出
         /// <para>Start a sub-procedure and wait for its full exit</para>
         /// </summary>
-        /// <param name="parameters">启动参数</param>
-        /// <typeparam name="T">子流程类型</typeparam>
-        /// <returns>异步操作，等待子流程完全退出</returns>
-        public async UniTask StartSubProcedure<T>(Dictionary<string, object> parameters = null)
-            where T : IProcedure
+        /// <param name="parameters">启动参数对象 <para>Startup parameter object</para></param>
+        /// <typeparam name="T">子流程类型 <para>Sub-procedure type</para></typeparam>
+        /// <returns>异步操作，等待子流程完全退出 <para>Asynchronous operation that waits for the sub-procedure to fully exit</para></returns>
+        public async UniTask StartSubProcedure<T>(object parameters = null) where T : IProcedure
         {
             CheckDisposed();
             await ProcedureManager.Instance.StartSubProcedureAndWait<T>(this, parameters);

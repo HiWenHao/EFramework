@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -27,25 +26,24 @@ namespace EasyFramework.Procedure
         /// <para>The context of the current procedure</para>
         /// </summary>
         protected ProcedureContext Context { get; private set; }
-        
+
         /// <summary>
         /// 当前流程取消令牌
         /// <para>Current procedure cancellation token</para>
         /// </summary>
         protected CancellationToken Token { get; private set; }
-        
+
         /// <summary>
         /// 当前流程实例唯一标识符
         /// <para>The unique identifier of the current process instance</para>
         /// </summary>
         protected long Uid => Context?.Uid ?? 0;
-        
+
         /// <summary>
         /// 当前嵌套深度（根流程深度为1）
         /// <para>Current nesting depth (root process depth is 1)</para>
         /// </summary>
         protected int Depth => Context?.Depth ?? 0;
-        private IReadOnlyDictionary<string, object> Params => Context?.Params;
 
         async UniTask IProcedure.OnEnter(ProcedureContext context, CancellationToken token)
         {
@@ -78,6 +76,25 @@ namespace EasyFramework.Procedure
         }
 
         /// <summary>
+        /// 以强类型读取启动参数，类型不符时返回 false
+        /// <para>Read startup parameters as a strongly typed reference; returns false on type mismatch</para>
+        /// </summary>
+        /// <param name="param">参数对象或 null <para>Parameter object or null</para></param>
+        /// <typeparam name="T">参数类型（引用类型） <para>Parameter type (reference type)</para></typeparam>
+        /// <returns>参数是否为指定类型</returns>
+        protected bool GetParams<T>(out T param) where T : class
+        {
+            if (Context.Params is T contextParams)
+            {
+                param = contextParams;
+                return true;
+            }
+
+            param = null;
+            return false;
+        }
+
+        /// <summary>
         /// 进入异步逻辑（子类实现）
         /// <para>Enter async logic (implemented by subclass)</para>
         /// </summary>
@@ -107,21 +124,6 @@ namespace EasyFramework.Procedure
         /// <param name="realElapse">真实流逝时间</param>
         public virtual void OnUpdate(float elapse, float realElapse)
         {
-        }
-
-        /// <summary>
-        /// 获取参数，若不存在或类型不匹配则返回默认值
-        /// <para>Get parameter, return default if key missing or type mismatch</para>
-        /// </summary>
-        /// <param name="key">参数键名</param>
-        /// <param name="defaultValue">默认值</param>
-        /// <typeparam name="T">参数类型</typeparam>
-        /// <returns>参数值或默认值</returns>
-        protected T GetParam<T>(string key, T defaultValue = default)
-        {
-            if (Params != null && Params.TryGetValue(key, out var value) && value is T t)
-                return t;
-            return defaultValue;
         }
     }
 }

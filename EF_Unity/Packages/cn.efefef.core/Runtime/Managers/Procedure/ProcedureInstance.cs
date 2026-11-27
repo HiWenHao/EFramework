@@ -10,7 +10,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -33,7 +32,6 @@ namespace EasyFramework.Procedure
         public Exception ExitException;                     // 退出异常
         public ProcedureExitType ExitReason;                // 退出原因
         public ProcedureContext Context;                    // 关联的上下文
-        public Dictionary<string, object> Params;           // 启动参数（可变字典）
         public CancellationTokenSource LifecycleCts;        // 生命周期取消令牌源
         public CancellationTokenSource EnterTimeoutCts;     // 进入超时取消令牌源
         public UniTaskCompletionSource CompletionSource;    // 完成通知源，供外部等待流程退出
@@ -60,9 +58,6 @@ namespace EasyFramework.Procedure
             Context = null;
             ExitState = 0;
             State = ProcedureState.None;
-
-            Params?.Clear();
-            Params = null;
 
             try { LifecycleCts?.Cancel(); } catch { /* ignore */ }
             try { LifecycleCts?.Dispose(); } catch { /* ignore */ }
