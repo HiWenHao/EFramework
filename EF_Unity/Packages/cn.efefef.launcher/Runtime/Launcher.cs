@@ -100,8 +100,8 @@ namespace EasyFramework.Launcher
         private CancellationToken _destroyToken;
         private float _startTime;
 
-        // 当前状态
-        private LauncherState _currentState = LauncherState.Idle;
+        // 当前状态由状态机托管
+        private readonly StateMachine _fsm = new StateMachine(nameof(Launcher));
 
         private readonly List<Assembly> _hotfixAssemblies = new List<Assembly>();
 
@@ -119,6 +119,7 @@ namespace EasyFramework.Launcher
 
         private void Awake()
         {
+            ConfigureStateMachine();
             _view = ResolveRef<ILauncherView>(_viewRef, nameof(_viewRef));
             _hook = ResolveRef<ILauncherHook>(_hookRef, nameof(_hookRef));
             _enterConfirm = ResolveRef<ILauncherEnterConfirm>(_enterConfirmRef, nameof(_enterConfirmRef));
@@ -130,6 +131,34 @@ namespace EasyFramework.Launcher
 
             if (_dontDestroyOnLoad && transform.parent == null)
                 DontDestroyOnLoad(gameObject);
+        }
+
+        // 注册启动阶段与合法转移，FSM 只记录阶段，不承载业务逻辑
+        private void ConfigureStateMachine()
+        {
+            foreach (LauncherState state in Enum.GetValues(typeof(LauncherState)))
+                _fsm.Register((int)state, state.ToString());
+
+            _fsm.Allow((int)LauncherState.Idle, (int)LauncherState.Booting);
+            _fsm.Allow((int)LauncherState.Booting, (int)LauncherState.Initializing);
+            _fsm.Allow((int)LauncherState.Initializing, (int)LauncherState.CheckingVersion);
+            _fsm.Allow((int)LauncherState.CheckingVersion, (int)LauncherState.Downloading);
+            _fsm.Allow((int)LauncherState.Downloading, (int)LauncherState.LoadingMetadata);
+            _fsm.Allow((int)LauncherState.LoadingMetadata, (int)LauncherState.LoadingHotfix);
+            _fsm.Allow((int)LauncherState.LoadingHotfix, (int)LauncherState.WaitingForConfirm);
+            _fsm.Allow((int)LauncherState.LoadingHotfix, (int)LauncherState.Invoking);
+            _fsm.Allow((int)LauncherState.WaitingForConfirm, (int)LauncherState.Invoking);
+            _fsm.Allow((int)LauncherState.Invoking, (int)LauncherState.Completed);
+
+            foreach (LauncherState state in Enum.GetValues(typeof(LauncherState)))
+            {
+                if (state != LauncherState.Failed)
+                    _fsm.Allow((int)state, (int)LauncherState.Failed);
+            }
+
+            _fsm.Allow((int)LauncherState.Failed, (int)LauncherState.Retrying);
+            _fsm.Allow((int)LauncherState.Retrying, (int)LauncherState.Idle);
+            _fsm.SetInitial((int)LauncherState.Idle);
         }
 
         private void Start()
@@ -150,7 +179,7 @@ namespace EasyFramework.Launcher
         public void Run()
         {
             // 退避等待期间 _running 已是 false，不拦 _retryScheduled 会并发跑起第二条管线
-            if (_running || _retryScheduled || _currentState == LauncherState.Completed)
+            if (_running || _retryScheduled || _fsm.Current == (int)LauncherState.Completed)
                 return;
 
             RunPipelineAsync(_destroyToken).Forget();
@@ -179,7 +208,7 @@ namespace EasyFramework.Launcher
         /// </summary>
         public void Retry()
         {
-            if (_running || _currentState == LauncherState.Completed || _retryScheduled)
+            if (_running || _fsm.Current == (int)LauncherState.Completed || _retryScheduled)
                 return;
 
             int max = _config != null && _config.MaxRetryCount > 0
@@ -910,7 +939,10 @@ namespace EasyFramework.Launcher
         // 订阅方按 state 自行解析本地化文本，换包不换文案。
         private void SetState(LauncherState state)
         {
-            _currentState = state;
+            int id = (int)state;
+            // 同状态不重复转移，避免 FSM 告警刷屏；界面仍收到通知
+            if (_fsm.Current != id)
+                _fsm.Transition(id);
 
             if (_view == null)
                 return;
@@ -976,7 +1008,7 @@ namespace EasyFramework.Launcher
         {
             float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - _startTime);
             D.Log($"{LogTag} {L("诊断", "Diagnose")} | {L("版本", "Version")}={Application.version} " +
-                  $"{L("状态", "State")}={_currentState} " +
+                  $"{L("状态", "State")}={_fsm.CurrentName} " +
                   $"{L("已加载热更程序集", "Hotfix assemblies")}={_hotfixAssemblies.Count} " +
                   $"{L("重试", "Retries")}={_retryCount} {L("耗时", "Elapsed")}={elapsed:0.0}s " +
                   $"CoreReady={EFC.Projects}");
